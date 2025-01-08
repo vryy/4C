@@ -147,7 +147,7 @@ void Cut::ParentIntersection::create_nodal_dof_set(
       }
 
     }  // end if n_gid >= 0
-  }    // end loop over nodes
+  }  // end loop over nodes
 
 
   //===============
@@ -241,7 +241,7 @@ void Cut::ParentIntersection::fill_parallel_dof_set_data(
         // decide for each set of connected volumecells, if communication is necessary
         for (std::vector<std::map<int, int>>::iterator set_it =
                  vcsets_nid_dofsetnumber_map_toComm_inside.begin();
-             set_it != vcsets_nid_dofsetnumber_map_toComm_inside.end(); set_it++)
+            set_it != vcsets_nid_dofsetnumber_map_toComm_inside.end(); set_it++)
         {
           // does the current set contain dofset data to communicate
           if (set_it->size() > 0)
@@ -273,7 +273,7 @@ void Cut::ParentIntersection::fill_parallel_dof_set_data(
         // decide for each set of connected volumecells, if communication is necessary
         for (std::vector<std::map<int, int>>::iterator set_it =
                  vcsets_nid_dofsetnumber_map_toComm_outside.begin();
-             set_it != vcsets_nid_dofsetnumber_map_toComm_outside.end(); set_it++)
+            set_it != vcsets_nid_dofsetnumber_map_toComm_outside.end(); set_it++)
         {
           // does the current set contain dofset data to communicate
           if (set_it->size() > 0)
@@ -371,7 +371,7 @@ void Cut::ParentIntersection::find_nodal_cell_sets(bool include_inner, std::set<
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 5/6 --- cut_positions_dofsets --- FindNodalCellSets");
 
   for (std::vector<int>::iterator i = sourrounding_elements.begin();
-       i != sourrounding_elements.end(); ++i)
+      i != sourrounding_elements.end(); ++i)
   {
     int eid = *i;
 
@@ -437,7 +437,7 @@ void Cut::ParentIntersection::connect_nodal_dof_sets(std::vector<Node*>& nodes, 
 
   for (std::vector<plain_volumecell_set>::const_iterator s =
            connected_vc_sets.begin();  // connections within this element
-       s != connected_vc_sets.end(); s++)
+      s != connected_vc_sets.end(); s++)
   {
     const plain_volumecell_set& cells =
         *s;  // this is one connection of volumecells, connected via subelements, within one element
@@ -602,7 +602,7 @@ void Cut::ParentIntersection::dump_gmsh_nodal_cell_set(
   file << "View \"NodalCellSet\" {\n";
 
   for (std::map<Node*, std::vector<plain_volumecell_set>>::iterator i = nodal_cell_sets.begin();
-       i != nodal_cell_sets.end(); i++)
+      i != nodal_cell_sets.end(); i++)
   {
     Node* n = i->first;
 
@@ -620,7 +620,7 @@ void Cut::ParentIntersection::dump_gmsh_nodal_cell_set(
 
         const plain_integrationcell_set& integrationcells = vc->integration_cells();
         for (plain_integrationcell_set::const_iterator i = integrationcells.begin();
-             i != integrationcells.end(); ++i)
+            i != integrationcells.end(); ++i)
         {
           IntegrationCell* ic = *i;
           ic->dump_gmsh(file, &nid);
@@ -638,7 +638,7 @@ void Cut::ParentIntersection::dump_gmsh_nodal_cell_set(
   file << "View \"NodeID\" {\n";
 
   for (std::map<Node*, std::vector<plain_volumecell_set>>::iterator i = nodal_cell_sets.begin();
-       i != nodal_cell_sets.end(); i++)
+      i != nodal_cell_sets.end(); i++)
   {
     Node* n = i->first;
 
@@ -693,7 +693,7 @@ void Cut::ParentIntersection::dump_gmsh_cell_sets(
 
     const plain_integrationcell_set& integrationcells = vc->integration_cells();
     for (plain_integrationcell_set::const_iterator i = integrationcells.begin();
-         i != integrationcells.end(); ++i)
+        i != integrationcells.end(); ++i)
     {
       IntegrationCell* ic = *i;
       ic->dump_gmsh(file, &count);
@@ -735,7 +735,7 @@ void Cut::ParentIntersection::dump_gmsh_num_dof_sets(
   int num_row_ele = dis.num_my_row_elements();
 
   for (int lid = 0; lid < num_row_ele;
-       lid++)  // std::set<int>::iterator i= eids.begin(); i!= eids.end(); i++)
+      lid++)  // std::set<int>::iterator i= eids.begin(); i!= eids.end(); i++)
   {
     Core::Elements::Element* e = dis.l_row_element(lid);
     int eid = e->id();
@@ -750,7 +750,7 @@ void Cut::ParentIntersection::dump_gmsh_num_dof_sets(
 
 
       for (std::vector<plain_volumecell_set>::const_iterator i = ele_vc_sets_outside.begin();
-           i != ele_vc_sets_outside.end(); ++i)
+          i != ele_vc_sets_outside.end(); ++i)
       {
         plain_volumecell_set volumes = *i;
 
@@ -760,7 +760,7 @@ void Cut::ParentIntersection::dump_gmsh_num_dof_sets(
 
           const plain_integrationcell_set& integrationcells = vc->integration_cells();
           for (plain_integrationcell_set::const_iterator i = integrationcells.begin();
-               i != integrationcells.end(); ++i)
+              i != integrationcells.end(); ++i)
           {
             IntegrationCell* ic = *i;
             ic->dump_gmsh(file, &count_outside);
@@ -773,7 +773,7 @@ void Cut::ParentIntersection::dump_gmsh_num_dof_sets(
       if (include_inner)
       {
         for (std::vector<plain_volumecell_set>::const_iterator i = ele_vc_sets_inside.begin();
-             i != ele_vc_sets_inside.end(); ++i)
+            i != ele_vc_sets_inside.end(); ++i)
         {
           const plain_volumecell_set& volumes = *i;
 
@@ -783,7 +783,7 @@ void Cut::ParentIntersection::dump_gmsh_num_dof_sets(
 
             const plain_integrationcell_set& integrationcells = vc->integration_cells();
             for (plain_integrationcell_set::const_iterator i = integrationcells.begin();
-                 i != integrationcells.end(); ++i)
+                i != integrationcells.end(); ++i)
             {
               IntegrationCell* ic = *i;
               ic->dump_gmsh(file, &count_inside);

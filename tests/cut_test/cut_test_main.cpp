@@ -344,7 +344,7 @@ int runtests(char** argv, std::map<std::string, testfunct>& functable, std::stri
   if (!ignore_testname.empty())
   {
     for (std::map<std::string, testfunct>::const_iterator iterator = functable.begin();
-         iterator != functable.end();)
+        iterator != functable.end();)
     {
       if (iterator->first.find(ignore_testname) != std::string::npos)
         iterator = functable.erase(iterator);
@@ -364,7 +364,7 @@ int runtests(char** argv, std::map<std::string, testfunct>& functable, std::stri
     bool testname_exist = false;
 
     for (std::map<std::string, testfunct>::const_iterator iterator = functable.begin();
-         iterator != functable.end(); iterator++)
+        iterator != functable.end(); iterator++)
     {
       if (iterator->first.find(testname) != std::string::npos)
       {
@@ -383,7 +383,7 @@ int runtests(char** argv, std::map<std::string, testfunct>& functable, std::stri
   else
   {
     for (std::map<std::string, testfunct>::const_iterator iterator = functable.begin();
-         iterator != functable.end(); ++iterator)
+        iterator != functable.end(); ++iterator)
     {
       counter_tests++;
       testfunction(iterator, failures, msgs);

@@ -346,7 +346,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
       }
 
       for (std::map<int, std::map<int, double>>::const_iterator a = derivDualMass.begin();
-           a != derivDualMass.end(); ++a)
+          a != derivDualMass.end(); ++a)
       {
         int sgid = a->first;
         Core::Nodes::Node* snode = idiscret_->g_node(sgid);
@@ -375,7 +375,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
       dualMassGlobal.fe_assemble(area, conode->dofs()[0], conode->dofs()[0]);
 
       for (Core::Gen::Pairedvector<int, double>::const_iterator p = derivArea.begin();
-           p != derivArea.end(); ++p)
+          p != derivArea.end(); ++p)
         linDualMassGlobal.fe_assemble(p->second * thermo_lm, conode->dofs()[0], p->first);
     }
   }
@@ -723,7 +723,7 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
       double temp_k = cnodek->tsi_data().temp();
       for (int d = 0; d < 3; ++d)
         for (_cip l = cnode->data().get_deriv_n()[d].begin();
-             l != cnode->data().get_deriv_n()[d].end(); ++l)
+            l != cnode->data().get_deriv_n()[d].end(); ++l)
           if (abs(l->second) > 1.e-12)
             lin_disp->fe_assemble(
                 lm(d) * k->second * l->second * fac * temp_k, cnode->dofs()[0], l->first);
@@ -740,7 +740,7 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
       double temp_k = cnodek->tsi_data().temp();
       for (int d = 0; d < 3; ++d)
         for (_cip l = cnode->data().get_deriv_n()[d].begin();
-             l != cnode->data().get_deriv_n()[d].end(); ++l)
+            l != cnode->data().get_deriv_n()[d].end(); ++l)
           if (abs(l->second) > 1.e-12)
             lin_disp->fe_assemble(
                 -lm(d) * k->second * l->second * fac * temp_k, cnode->dofs()[0], l->first);

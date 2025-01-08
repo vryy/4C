@@ -226,7 +226,7 @@ void SSI::AssembleStrategyBlockBlock::assemble_scatra_scatramanifold(
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra().size()); ++iblock)
   {
     for (int jblock = 0; jblock < static_cast<int>(block_position_scatra_manifold().size());
-         ++jblock)
+        ++jblock)
     {
       systemmatrix_block
           ->matrix(block_position_scatra().at(iblock), block_position_scatra_manifold().at(jblock))
@@ -382,7 +382,7 @@ void SSI::AssembleStrategyBlockBlock::assemble_scatramanifold_scatramanifold(
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra_manifold().size()); ++iblock)
   {
     for (int jblock = 0; jblock < static_cast<int>(block_position_scatra_manifold().size());
-         ++jblock)
+        ++jblock)
     {
       auto& systemmatrix_block_iscatramanifold_jscatramanifold = systemmatrix_block->matrix(
           block_position_scatra_manifold().at(iblock), block_position_scatra_manifold().at(jblock));

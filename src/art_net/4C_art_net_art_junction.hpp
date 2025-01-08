@@ -66,7 +66,7 @@ namespace Arteries
       \brief Standard Constructor
       */
       ArtJunctionWrapper(std::shared_ptr<Core::FE::Discretization> actdis,
-          Core::IO::DiscretizationWriter &output, Teuchos::ParameterList &params, double dta);
+          Core::IO::DiscretizationWriter& output, Teuchos::ParameterList& params, double dta);
 
       /*!
       \brief Destructor
@@ -82,12 +82,12 @@ namespace Arteries
       /*!
       \brief Standard solver
       */
-      int solve(Teuchos::ParameterList &params);
+      int solve(Teuchos::ParameterList& params);
 
       /*!
       \brief Standard solver
       */
-      void apply_bc(Teuchos::ParameterList &params);
+      void apply_bc(Teuchos::ParameterList& params);
 
 
 
@@ -107,7 +107,7 @@ namespace Arteries
       std::shared_ptr<Core::FE::Discretization> discret_;
 
       //! the output writer
-      Core::IO::DiscretizationWriter &output_;
+      Core::IO::DiscretizationWriter& output_;
 
     };  // class ArtJunctionWrapper
 
@@ -133,7 +133,7 @@ namespace Arteries
       \brief Standard Constructor
      */
       ArtJunctionBc(std::shared_ptr<Core::FE::Discretization> actdis,
-          Core::IO::DiscretizationWriter &output, std::vector<Core::Conditions::Condition *> conds,
+          Core::IO::DiscretizationWriter& output, std::vector<Core::Conditions::Condition*> conds,
           std::vector<int> IOart_flag, double dta, int condid, int numcond);
 
       /*!
@@ -155,36 +155,36 @@ namespace Arteries
       /*!
       \Solve the boundary condition to the elements
       */
-      int solve(Teuchos::ParameterList &params);
+      int solve(Teuchos::ParameterList& params);
 
 
       /*!
       \Evaluate the Jacobian matrix to solve the nonlinear problem
       */
-      void jacobian_eval(Core::LinAlg::SerialDenseMatrix &Jacobian, std::vector<double> &A,
-          std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
-          std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
+      void jacobian_eval(Core::LinAlg::SerialDenseMatrix& Jacobian, std::vector<double>& A,
+          std::vector<double>& Q, std::vector<double>& W, std::vector<double>& Ao,
+          std::vector<double>& rho, std::vector<double>& beta, std::vector<double>& Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      void residual_eval(Core::LinAlg::SerialDenseVector &f, std::vector<double> &A,
-          std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
-          std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
+      void residual_eval(Core::LinAlg::SerialDenseVector& f, std::vector<double>& A,
+          std::vector<double>& Q, std::vector<double>& W, std::vector<double>& Ao,
+          std::vector<double>& rho, std::vector<double>& beta, std::vector<double>& Pext);
 
-      void residual_eval(Core::LinAlg::SerialDenseMatrix &f, std::vector<double> &A,
-          std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
-          std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
-
-      /*!
-      \Evaluate the residual vector needed to solve the nonlinear problem
-      */
-      void update_result(Core::LinAlg::SerialDenseVector &xn, Core::LinAlg::SerialDenseVector &dx);
+      void residual_eval(Core::LinAlg::SerialDenseMatrix& f, std::vector<double>& A,
+          std::vector<double>& Q, std::vector<double>& W, std::vector<double>& Ao,
+          std::vector<double>& rho, std::vector<double>& beta, std::vector<double>& Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      double two_norm(Core::LinAlg::SerialDenseVector &x);
+      void update_result(Core::LinAlg::SerialDenseVector& xn, Core::LinAlg::SerialDenseVector& dx);
+
+      /*!
+      \Evaluate the residual vector needed to solve the nonlinear problem
+      */
+      double two_norm(Core::LinAlg::SerialDenseVector& x);
 
 
 
@@ -214,7 +214,7 @@ namespace Arteries
       std::shared_ptr<Core::FE::Discretization> discret_;
 
       //! the output writer
-      Core::IO::DiscretizationWriter &output_;
+      Core::IO::DiscretizationWriter& output_;
 
       //! the vector defining whethe an element is inlet or outlet
       std::vector<int> io_art_flag_;

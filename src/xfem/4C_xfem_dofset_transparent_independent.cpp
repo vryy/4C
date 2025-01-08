@@ -21,11 +21,11 @@ XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(
   return;
 }
 
-int XFEM::XFEMTransparentIndependentDofSet::num_dof_per_node(const Core::Nodes::Node &node) const
+int XFEM::XFEMTransparentIndependentDofSet::num_dof_per_node(const Core::Nodes::Node& node) const
 {
   if (wizard_ != nullptr)
   {
-    Cut::Node *n = wizard_->get_node(node.id());
+    Cut::Node* n = wizard_->get_node(node.id());
     if (n != nullptr)
     {
       int numdofpernode = Core::DOFSets::DofSet::num_dof_per_node(node);

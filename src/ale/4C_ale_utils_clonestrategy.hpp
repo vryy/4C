@@ -73,7 +73,7 @@ namespace ALE
 
      private:
     };  // class AleCloneStrategy
-  }     // namespace Utils
+  }  // namespace Utils
 }  // namespace ALE
 
 FOUR_C_NAMESPACE_CLOSE

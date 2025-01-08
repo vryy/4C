@@ -63,7 +63,7 @@ namespace NOX
         Teuchos::RCP<PrePostOperator> prePostOperatorPtr_ = Teuchos::null;
       };
     }  // namespace LineSearch
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

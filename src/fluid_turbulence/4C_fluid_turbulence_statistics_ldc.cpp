@@ -153,7 +153,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
       Core::Communication::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
-           x1line != x1avcoords.end(); ++x1line)
+          x1line != x1avcoords.end(); ++x1line)
       {
         add_to_pack(data, *x1line);
       }
@@ -210,7 +210,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
       Core::Communication::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
-           x2line != x2avcoords.end(); ++x2line)
+          x2line != x2avcoords.end(); ++x2line)
       {
         add_to_pack(data, *x2line);
       }
@@ -267,7 +267,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
       Core::Communication::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator x3line = x3avcoords.begin();
-           x3line != x3avcoords.end(); ++x3line)
+          x3line != x3avcoords.end(); ++x3line)
       {
         add_to_pack(data, *x3line);
       }
@@ -328,19 +328,19 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
     x3coordinates_ = std::make_shared<std::vector<double>>();
 
     for (std::set<double, LineSortCriterion>::iterator coord1 = x1avcoords.begin();
-         coord1 != x1avcoords.end(); ++coord1)
+        coord1 != x1avcoords.end(); ++coord1)
     {
       x1coordinates_->push_back(*coord1);
     }
 
     for (std::set<double, LineSortCriterion>::iterator coord2 = x2avcoords.begin();
-         coord2 != x2avcoords.end(); ++coord2)
+        coord2 != x2avcoords.end(); ++coord2)
     {
       x2coordinates_->push_back(*coord2);
     }
 
     for (std::set<double, LineSortCriterion>::iterator coord3 = x3avcoords.begin();
-         coord3 != x3avcoords.end(); ++coord3)
+        coord3 != x3avcoords.end(); ++coord3)
     {
       x3coordinates_->push_back(*coord3);
     }
@@ -535,7 +535,7 @@ void FLD::TurbulenceStatisticsLdc::do_time_sample(Core::LinAlg::Vector<double>& 
   // loop nodes on centerline in x1-direction and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator x1line = x1coordinates_->begin();
-       x1line != x1coordinates_->end(); ++x1line)
+      x1line != x1coordinates_->end(); ++x1line)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -622,7 +622,7 @@ void FLD::TurbulenceStatisticsLdc::do_time_sample(Core::LinAlg::Vector<double>& 
   // loop nodes on centerline in x2-direction and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator x2line = x2coordinates_->begin();
-       x2line != x2coordinates_->end(); ++x2line)
+      x2line != x2coordinates_->end(); ++x2line)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -709,7 +709,7 @@ void FLD::TurbulenceStatisticsLdc::do_time_sample(Core::LinAlg::Vector<double>& 
   // loop nodes on centerline in x3-direction and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator x3line = x3coordinates_->begin();
-       x3line != x3coordinates_->end(); ++x3line)
+      x3line != x3coordinates_->end(); ++x3line)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -810,7 +810,7 @@ void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(Core::LinAlg::Vector<doub
   // loop nodes on centerline in x1-direction and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator x1line = x1coordinates_->begin();
-       x1line != x1coordinates_->end(); ++x1line)
+      x1line != x1coordinates_->end(); ++x1line)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -911,7 +911,7 @@ void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(Core::LinAlg::Vector<doub
   // loop nodes on centerline in x2-direction and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator x2line = x2coordinates_->begin();
-       x2line != x2coordinates_->end(); ++x2line)
+      x2line != x2coordinates_->end(); ++x2line)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -1012,7 +1012,7 @@ void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(Core::LinAlg::Vector<doub
   // loop nodes on centerline in x3-direction and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator x3line = x3coordinates_->begin();
-       x3line != x3coordinates_->end(); ++x3line)
+      x3line != x3coordinates_->end(); ++x3line)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0

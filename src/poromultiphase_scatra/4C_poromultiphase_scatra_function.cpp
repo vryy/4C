@@ -1107,7 +1107,7 @@ double PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::evaluate(
   // Check order of variables and constants vector only once (since it does not change)
   if (not this->order_checked_) check_order(variables, constants);
 
-    // In debug mode, check order of variables and constants vector on every call
+  // In debug mode, check order of variables and constants vector on every call
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   check_order(variables, constants);
 #endif
@@ -1288,7 +1288,7 @@ double PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::evaluate(
   // Check order of variables and constants vector only once (since it does not change)
   if (not this->order_checked_) check_order(variables, constants);
 
-    // In debug mode, check order of variables and constants vector on every call
+  // In debug mode, check order of variables and constants vector on every call
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   check_order(variables, constants);
 #endif

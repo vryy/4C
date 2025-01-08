@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Cut::Impl::SimplePointGraph1D::SimplePointGraph1D(Mesh &mesh, Element *element, Side *side,
+Cut::Impl::SimplePointGraph1D::SimplePointGraph1D(Mesh& mesh, Element* element, Side* side,
     PointGraph::Location location, PointGraph::Strategy strategy)
     : PointGraph::PointGraph(1) /* explicit call of the protected base
                                    class constructor */
@@ -31,14 +31,14 @@ Cut::Impl::SimplePointGraph1D::SimplePointGraph1D(Mesh &mesh, Element *element, 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::Impl::SimplePointGraph1D::build_cycle(
-    const std::vector<Point *> &edge_points, Cycle &cycle) const
+    const std::vector<Point*>& edge_points, Cycle& cycle) const
 {
   /* since a closed cycle is not possible for 1-D elements, we have to consider
    * also the starting edge point */
-  for (std::vector<Point *>::const_iterator cit = edge_points.begin(); cit != edge_points.end();
-       ++cit)
+  for (std::vector<Point*>::const_iterator cit = edge_points.begin(); cit != edge_points.end();
+      ++cit)
   {
-    Point *p = *cit;
+    Point* p = *cit;
     cycle.push_back(p);
   }
 }
@@ -46,7 +46,7 @@ void Cut::Impl::SimplePointGraph1D::build_cycle(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::Impl::SimplePointGraph1D::add_cut_lines_to_graph(
-    Element *element, Side *side, Strategy strategy, Cycle &cycle)
+    Element* element, Side* side, Strategy strategy, Cycle& cycle)
 {
   // this is completely unnecessary for the element_side
   if (not side->is_cut_side()) return;
@@ -57,12 +57,12 @@ void Cut::Impl::SimplePointGraph1D::add_cut_lines_to_graph(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::Impl::SimplePointGraph1D::add_cut_points_to_cycle(
-    Element *element, Side *side, Cycle &cycle)
+    Element* element, Side* side, Cycle& cycle)
 {
-  std::vector<Side *> ele_sides = element->sides();
+  std::vector<Side*> ele_sides = element->sides();
   if (ele_sides.size() != 1) FOUR_C_THROW("There should be only one side in the 1-D case!");
 
-  Side &ele_side = **ele_sides.begin();
+  Side& ele_side = **ele_sides.begin();
   PointSet cuts;
 
   // get the cut point(s) (probably only one)
@@ -81,31 +81,31 @@ void Cut::Impl::SimplePointGraph1D::add_cut_points_to_cycle(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::Impl::SimplePointGraph1D::Graph::find_cycles(
-    Element *element, Side *side, Cycle &cycle, Location location, Strategy strategy)
+    Element* element, Side* side, Cycle& cycle, Location location, Strategy strategy)
 {
   // each point defines a own main cycle in 1D
-  Edge *edge = element->sides()[0]->edges()[0];
+  Edge* edge = element->sides()[0]->edges()[0];
   std::map<double, Cycle> sorted_cycles;
 
-  for (std::vector<Point *>::const_iterator cit = cycle().begin(); cit != cycle().end(); ++cit)
+  for (std::vector<Point*>::const_iterator cit = cycle().begin(); cit != cycle().end(); ++cit)
   {
-    Point *p = *cit;
+    Point* p = *cit;
     double t = p->t(edge);
 
-    Cycle pseudo_1d_cycle(std::vector<Point *>(1, p));
+    Cycle pseudo_1d_cycle(std::vector<Point*>(1, p));
     sorted_cycles[t] = pseudo_1d_cycle;
   }
 
   main_cycles_.reserve(sorted_cycles.size());
   for (std::map<double, Cycle>::const_iterator cit = sorted_cycles.begin();
-       cit != sorted_cycles.end(); ++cit)
+      cit != sorted_cycles.end(); ++cit)
     main_cycles_.push_back(cit->second);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Cut::Impl::SimplePointGraph2D::SimplePointGraph2D(Mesh &mesh, Element *element, Side *side,
+Cut::Impl::SimplePointGraph2D::SimplePointGraph2D(Mesh& mesh, Element* element, Side* side,
     PointGraph::Location location, PointGraph::Strategy strategy)
     : PointGraph::PointGraph(mesh, element, side, location, strategy),
       graph_2d_(std::dynamic_pointer_cast<SimplePointGraph2D::Graph>(graph_ptr()))
@@ -127,7 +127,7 @@ bool Cut::Impl::SimplePointGraph2D::Graph::has_single_points(Location location)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::Impl::SimplePointGraph2D::Graph::find_cycles(
-    Element *element, Side *side, Cycle &cycle, Location location, Strategy strategy)
+    Element* element, Side* side, Cycle& cycle, Location location, Strategy strategy)
 {
   if (location == element_side)
   {
@@ -150,9 +150,9 @@ void Cut::Impl::SimplePointGraph2D::Graph::find_cycles(
     }
 
     unsigned lcount = 0;
-    std::vector<Point *> line(2, nullptr);
-    for (std::map<int, Point *>::const_iterator cit = all_points_.begin(); cit != all_points_.end();
-         ++cit)
+    std::vector<Point*> line(2, nullptr);
+    for (std::map<int, Point*>::const_iterator cit = all_points_.begin(); cit != all_points_.end();
+        ++cit)
     {
       line[lcount++] = cit->second;
     }
@@ -170,7 +170,7 @@ void Cut::Impl::SimplePointGraph2D::Graph::split_main_cycles_into_line_cycles()
     Cycle closed_cycle = *ic;
     const unsigned cycle_length = closed_cycle.size();
 
-    std::vector<Point *> line(2, nullptr);
+    std::vector<Point*> line(2, nullptr);
     // split the connected cycle into line segments
     for (unsigned i = 0; i < cycle_length; ++i)
     {
@@ -198,7 +198,7 @@ Cut::Impl::SimplePointGraph2D::SimplePointGraph2D()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::Impl::SimplePointGraph2D::find_line_facet_cycles(
-    const plain_facet_set &line_facets, Element *parent_element)
+    const plain_facet_set& line_facets, Element* parent_element)
 {
   Cycle cycle;
   fill_graph_and_cycle_with_line_facets(line_facets, cycle);
@@ -211,36 +211,36 @@ void Cut::Impl::SimplePointGraph2D::find_line_facet_cycles(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::Impl::SimplePointGraph2D::fill_graph_and_cycle_with_line_facets(
-    const plain_facet_set &line_facets, Cycle &cycle)
+    const plain_facet_set& line_facets, Cycle& cycle)
 {
   plain_point_set point_set;
   for (plain_facet_set::const_iterator cit = line_facets.begin(); cit != line_facets.end(); ++cit)
   {
-    Facet *f = *cit;
+    Facet* f = *cit;
 
     if (not f->equals(Core::FE::CellType::line2))
       FOUR_C_THROW("This function works only for line facets!");
 
-    const std::vector<Point *> &line_points = f->points();
+    const std::vector<Point*>& line_points = f->points();
     get_graph().add_edge(line_points[0], line_points[1]);
 
     point_set.insert(line_points.begin(), line_points.end());
   }
 
-  cycle = Cycle(std::vector<Point *>(point_set.begin(), point_set.end()));
+  cycle = Cycle(std::vector<Point*>(point_set.begin(), point_set.end()));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::Impl::SimplePointGraph2D::find_cycles(Element *element, Cycle &cycle)
+void Cut::Impl::SimplePointGraph2D::find_cycles(Element* element, Cycle& cycle)
 {
-  Side *side = element->sides()[0];
+  Side* side = element->sides()[0];
   get_graph().find_cycles(element, side, cycle, PointGraph::element_side, PointGraph::all_lines);
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::Impl::SimplePointGraph2D::correct_rotation_direction(
-    const Side *side, std::vector<Cycle> &cycles)
+    const Side* side, std::vector<Cycle>& cycles)
 {
   Core::LinAlg::Matrix<2, 1> rs = Core::FE::get_local_center_position<2>(side->shape());
   Core::LinAlg::Matrix<3, 1> normal_side(false);
@@ -251,16 +251,16 @@ void Cut::Impl::SimplePointGraph2D::correct_rotation_direction(
   // get the normal direction of the underlying side
   eval_normal_vectors<3>(side->shape(), xyze_side, rs, normal_side);
 
-  std::vector<Point *> invert_cycle;
+  std::vector<Point*> invert_cycle;
   for (std::vector<Cycle>::iterator it = cycles.begin(); it != cycles.end(); ++it)
   {
-    Cycle &cycle = *it;
+    Cycle& cycle = *it;
 
     const unsigned cycle_size = cycle().size();
     if (cycle_size < 3) FOUR_C_THROW("The cycle needs at least three points!");
 
-    std::vector<Point *>::const_iterator it_begin = cycle().begin();
-    std::vector<Point *>::const_iterator it_end = cycle().end() - 1;
+    std::vector<Point*>::const_iterator it_begin = cycle().begin();
+    std::vector<Point*>::const_iterator it_end = cycle().end() - 1;
 
     const Core::LinAlg::Matrix<3, 1> x1((*it_begin)->x(), true);
     const Core::LinAlg::Matrix<3, 1> x2((*(++it_begin))->x(), true);
@@ -286,7 +286,7 @@ void Cut::Impl::SimplePointGraph2D::correct_rotation_direction(
 
     it_begin = cycle().end() - 1;
     it_end = cycle().begin() - 1;
-    for (std::vector<Point *>::const_iterator cit = it_begin; cit != it_end; --cit)
+    for (std::vector<Point*>::const_iterator cit = it_begin; cit != it_end; --cit)
     {
       invert_cycle.push_back(*cit);
     }

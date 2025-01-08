@@ -999,9 +999,9 @@ void Discret::Elements::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // lo
         for (int jnod = 0; jnod < NUMNOD_SOH27; ++jnod)
         {
           massfactor = shapefcts[gp](jnod) * ifactor;  // intermediate factor
-          (*massmatrix)(NUMDIM_SOH27 * inod + 0, NUMDIM_SOH27 * jnod + 0) += massfactor;
-          (*massmatrix)(NUMDIM_SOH27 * inod + 1, NUMDIM_SOH27 * jnod + 1) += massfactor;
-          (*massmatrix)(NUMDIM_SOH27 * inod + 2, NUMDIM_SOH27 * jnod + 2) += massfactor;
+          (*massmatrix)(NUMDIM_SOH27* inod + 0, NUMDIM_SOH27 * jnod + 0) += massfactor;
+          (*massmatrix)(NUMDIM_SOH27* inod + 1, NUMDIM_SOH27 * jnod + 1) += massfactor;
+          (*massmatrix)(NUMDIM_SOH27* inod + 2, NUMDIM_SOH27 * jnod + 2) += massfactor;
         }
       }
 
@@ -1390,9 +1390,9 @@ void Discret::Elements::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
         for (int jnod = 0; jnod < NUMNOD_SOH27; ++jnod)
         {
           massfactor = shapefcts[gp](jnod) * ifactor;  // intermediate factor
-          (*massmatrix)(NUMDIM_SOH27 * inod + 0, NUMDIM_SOH27 * jnod + 0) += massfactor;
-          (*massmatrix)(NUMDIM_SOH27 * inod + 1, NUMDIM_SOH27 * jnod + 1) += massfactor;
-          (*massmatrix)(NUMDIM_SOH27 * inod + 2, NUMDIM_SOH27 * jnod + 2) += massfactor;
+          (*massmatrix)(NUMDIM_SOH27* inod + 0, NUMDIM_SOH27 * jnod + 0) += massfactor;
+          (*massmatrix)(NUMDIM_SOH27* inod + 1, NUMDIM_SOH27 * jnod + 1) += massfactor;
+          (*massmatrix)(NUMDIM_SOH27* inod + 2, NUMDIM_SOH27 * jnod + 2) += massfactor;
         }
       }
 
@@ -1452,7 +1452,7 @@ void Discret::Elements::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
               double massfactor = factor * myacc(idim);
               for (int jnod = 0; jnod < NUMNOD_SOH27; ++jnod)
                 for (int jdim = 0; jdim < NUMDIM_SOH27; ++jdim)
-                  (*massmatrix)(inod * NUMDIM_SOH27 + idim, jnod * NUMDIM_SOH27 + jdim) +=
+                  (*massmatrix)(inod* NUMDIM_SOH27 + idim, jnod * NUMDIM_SOH27 + jdim) +=
                       massfactor * cb(jnod * NUMDIM_SOH27 + jdim);
             }
           }
@@ -1466,7 +1466,7 @@ void Discret::Elements::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
           {
             double forcefactor = shapefcts[gp](inod) * detJ_w;
             for (int idim = 0; idim < NUMDIM_SOH27; ++idim)
-              (*forceinert)(inod * NUMDIM_SOH27 + idim) += forcefactor * density * myacc(idim);
+              (*forceinert)(inod* NUMDIM_SOH27 + idim) += forcefactor * density * myacc(idim);
           }
         }
       }

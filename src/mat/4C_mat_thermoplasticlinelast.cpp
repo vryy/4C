@@ -1091,8 +1091,8 @@ void Mat::ThermoPlasticLinElast::setup_cmat_elasto_plastic(
         epfac2 = heaviside * 6.0 * G * G * (Dgamma / q - 1.0 / (3.0 * G + Hkin + Hiso));
         cmat(i, k) += epfac2 * Nbar(i) * Nbar(k);
       }  // end rows, loop i
-    }    // end columns, loop k
-  }      // (q != 0.0)
+    }  // end columns, loop k
+  }  // (q != 0.0)
 
 #ifdef DEBUGMATERIAL
   std::cout << "Ende SetupCmatElastPlast" << std::endl;
@@ -1288,7 +1288,7 @@ void Mat::ThermoPlasticLinElast::dissipation_coupl_cond(
     {
       Dmech_kin_d(i, k) += fac_kinlin_flowvect * N(i) * N(k);
     }  // end rows, loop i
-  }    // end columns, loop k
+  }  // end columns, loop k
 
   // ---------------------- linearisation of ISOTROPIC hardening for k_Td
 
@@ -1486,7 +1486,7 @@ double Mat::ThermoPlasticLinElast::get_iso_hard_at_strainbarnp(
         continue;
       }
     }  // load is plastic, hardening can occur
-  }    // loop over samples
+  }  // loop over samples
 
   // return current isotropic hardening modulus
   return Hiso;
@@ -1551,10 +1551,10 @@ double Mat::ThermoPlasticLinElast::get_sigma_y_at_strainbarnp(
                                          (sigma_y_ref[i] - sigma_y_ref[i - 1]) /
                                          (strainbar_p_ref[i] - strainbar_p_ref[i - 1]);
           }  // current strains between strain^{i-1} and strain^i
-        }    // plastic regime
+        }  // plastic regime
       }
     }  // loop over all samples
-  }    // samplenumber > 1
+  }  // samplenumber > 1
 
   // return current yield stress
   return sigma_y_interpol;

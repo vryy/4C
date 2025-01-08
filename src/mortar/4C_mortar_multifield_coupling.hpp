@@ -38,7 +38,7 @@ namespace Mortar
   {
    public:
     /// c-tor
-    MultiFieldCoupling(){};
+    MultiFieldCoupling() {};
 
 
     /// add a new discretization to perform coupling on

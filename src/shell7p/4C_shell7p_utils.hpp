@@ -63,7 +63,7 @@ namespace Discret::Elements::Shell::Internal
   inline static constexpr int num_internal_variables = 12;
 
   template <Core::FE::CellType distype>
-  inline static constexpr int numdofperelement = num_node<distype>* node_dof;
+  inline static constexpr int numdofperelement = num_node<distype> * node_dof;
 }  // namespace Discret::Elements::Shell::Internal
 
 namespace Solid::Utils::Shell

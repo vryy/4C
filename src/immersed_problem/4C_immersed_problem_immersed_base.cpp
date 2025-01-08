@@ -61,7 +61,7 @@ void Immersed::ImmersedBase::build_condition_dof_map(
         if (cond_dofmap_orig.LID(dofs[dim]) == -1) mydirichdofs.push_back(dofs[dim]);
       }
     }  // if my node
-  }    // loop over all conditioned nodes
+  }  // loop over all conditioned nodes
 
   int nummydirichvals = mydirichdofs.size();
   cond_dofmap = std::make_shared<Epetra_Map>(-1, nummydirichvals, mydirichdofs.data(), 0,
@@ -222,10 +222,10 @@ void Immersed::ImmersedBase::evaluate_immersed(Teuchos::ParameterList& params,
   Core::Elements::Element* ele;
 
   for (std::map<int, std::set<int>>::const_iterator closele = elementstoeval->begin();
-       closele != elementstoeval->end(); closele++)
+      closele != elementstoeval->end(); closele++)
   {
     for (std::set<int>::const_iterator eleIter = (closele->second).begin();
-         eleIter != (closele->second).end(); eleIter++)
+        eleIter != (closele->second).end(); eleIter++)
     {
       ele = dis.g_element(*eleIter);
 
@@ -279,10 +279,10 @@ void Immersed::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
   Core::Elements::Element* ele;
 
   for (std::map<int, std::set<int>>::const_iterator closele = elementstoeval->begin();
-       closele != elementstoeval->end(); closele++)
+      closele != elementstoeval->end(); closele++)
   {
     for (std::set<int>::const_iterator eleIter = (closele->second).begin();
-         eleIter != (closele->second).end(); eleIter++)
+        eleIter != (closele->second).end(); eleIter++)
     {
       ele = dis.g_element(*eleIter);
 
@@ -334,10 +334,10 @@ void Immersed::ImmersedBase::evaluate_scatra_with_internal_communication(
   Core::Elements::Element* iele;
 
   for (std::map<int, std::set<int>>::const_iterator closele = elementstoeval->begin();
-       closele != elementstoeval->end(); closele++)
+      closele != elementstoeval->end(); closele++)
   {
     for (std::set<int>::const_iterator eleIter = (closele->second).begin();
-         eleIter != (closele->second).end(); eleIter++)
+        eleIter != (closele->second).end(); eleIter++)
     {
       ele = dis.g_element(*eleIter);
       iele = idis.g_element(*eleIter);
@@ -412,7 +412,7 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(Core::FE::Discreti
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
   for (fool = evaldis.get_all_conditions().begin(); fool != evaldis.get_all_conditions().end();
-       ++fool)
+      ++fool)
   {
     if (fool->first == condstring)
     {
@@ -514,9 +514,9 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(Core::FE::Discreti
           if (i < (mygeometrysize - 1)) ++curr;
 
         }  // for 0 to max. geometrysize over all procs
-      }    // if check of condid successful
-    }      // if condstring found
-  }        // for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+      }  // if check of condid successful
+    }  // if condstring found
+  }  // for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   return;
 }  // evaluate_interpolation_condition
 
@@ -546,10 +546,10 @@ void Immersed::ImmersedBase::evaluate_subset_elements(Teuchos::ParameterList& pa
   Core::Elements::LocationArray la(1);
 
   for (std::map<int, std::set<int>>::const_iterator closele = elementstoeval.begin();
-       closele != elementstoeval.end(); closele++)
+      closele != elementstoeval.end(); closele++)
   {
     for (std::set<int>::const_iterator eleIter = (closele->second).begin();
-         eleIter != (closele->second).end(); eleIter++)
+        eleIter != (closele->second).end(); eleIter++)
     {
       ele = dis.g_element(*eleIter);
 

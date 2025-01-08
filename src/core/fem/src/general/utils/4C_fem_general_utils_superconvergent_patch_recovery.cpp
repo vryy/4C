@@ -295,7 +295,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
           nodevec.ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
         }
       }  // end inner pbc master node
-    }    // end inner nodes
+    }  // end inner nodes
     else
     {
       // we have a boundary node here -> patch is set up for closest inner node
@@ -531,7 +531,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
           nodevec.ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
         }
       }  // end boundary master pbc node
-    }    // end boundary nodes
+    }  // end boundary nodes
 
   }  // end loop over all nodes
 

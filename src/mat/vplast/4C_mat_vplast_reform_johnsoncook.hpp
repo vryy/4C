@@ -113,17 +113,17 @@ namespace Mat
           const bool log_substep, Mat::ViscoplastErrorType& err_status,
           const bool update_hist_var) override;
 
-      void setup(const int numgp, const Core::IO::InputParameterContainer& container) override{};
+      void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
 
-      void pre_evaluate(int gp) override{};
+      void pre_evaluate(int gp) override {};
 
-      void update() override{};
+      void update() override {};
 
-      void update_gp_state(int gp) override{};
+      void update_gp_state(int gp) override {};
 
-      void pack_viscoplastic_law(Core::Communication::PackBuffer& data) const override{};
+      void pack_viscoplastic_law(Core::Communication::PackBuffer& data) const override {};
 
-      void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) override{};
+      void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) override {};
 
      private:
       /// struct containing constant parameters to be evaluated only once

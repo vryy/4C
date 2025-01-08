@@ -58,7 +58,7 @@ namespace NOX
       Teuchos::RCP<::NOX::MeritFunction::Generic> build_merit_function(
           const NOX::Nln::GlobalData& noxNlnGlobalData);
     }  // namespace MeritFunction
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

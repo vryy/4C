@@ -1092,7 +1092,7 @@ namespace Solid
       std::shared_ptr<Core::LinAlg::MapExtractor> pressextractor_;
       /// @}
     };  // class BaseDataGlobalState
-  }     // namespace TimeInt
+  }  // namespace TimeInt
 }  // namespace Solid
 
 namespace NOX
@@ -1134,10 +1134,10 @@ namespace NOX
             std::shared_ptr<const FourC::Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
           };  // class RotVecUpdater
-        }     // namespace TimeInt
-      }       // namespace PrePostOp
-    }         // namespace GROUP
-  }           // namespace Nln
+        }  // namespace TimeInt
+      }  // namespace PrePostOp
+    }  // namespace GROUP
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

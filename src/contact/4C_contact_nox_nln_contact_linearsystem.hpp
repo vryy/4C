@@ -95,7 +95,7 @@ namespace NOX
               : linsys_(linsys),
                 p_jac_(Teuchos::null),
                 p_lhs_(Teuchos::null),
-                p_rhs_(Teuchos::null){/* empty */};
+                p_rhs_(Teuchos::null) { /* empty */ };
 
           inline void reset()
           {
@@ -152,8 +152,8 @@ namespace NOX
 
         mutable LinearSubProblem p_lin_prob_;
       };  // class LinearSystem
-    }     // namespace CONTACT
-  }       // namespace Nln
+    }  // namespace CONTACT
+  }  // namespace Nln
 }  // namespace NOX
 
 

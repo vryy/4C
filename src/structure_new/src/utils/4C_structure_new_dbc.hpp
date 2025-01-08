@@ -284,9 +284,9 @@ namespace NOX
           Teuchos::RCP<const Solid::Dbc> dbc_ptr_;
 
         };  // class Dbc (pre/post operator)
-      }     // namespace PrePostOp
-    }       // namespace LinSystem
-  }         // namespace Nln
+      }  // namespace PrePostOp
+    }  // namespace LinSystem
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

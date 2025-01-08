@@ -202,8 +202,8 @@ void Mat::PAR::FluidPoroSingleReaction::evaluate_function_internal(std::vector<d
                       .evaluate(variables, constants, 0);
   // evaluate derivatives
   std::vector<double> curderivs(Global::Problem::instance()
-                                    ->function_by_id<Core::Utils::FunctionOfAnything>(functID_ - 1)
-                                    .evaluate_derivative(variables, constants, 0));
+          ->function_by_id<Core::Utils::FunctionOfAnything>(functID_ - 1)
+          .evaluate_derivative(variables, constants, 0));
 
   // fill the output vector
   for (int k = 0; k < totalnummultiphasedof_; k++)

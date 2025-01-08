@@ -162,7 +162,7 @@ namespace Mortar
 
       int dim_;
     };  // namespace STRATEGY
-  }     // namespace STRATEGY
+  }  // namespace STRATEGY
 }  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE

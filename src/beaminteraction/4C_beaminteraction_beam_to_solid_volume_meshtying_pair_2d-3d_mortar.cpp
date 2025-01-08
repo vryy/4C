@@ -265,7 +265,7 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
     GEOMETRYPAIR::evaluate_shape_function_matrix<typename Mortar::curve_discretization_>(
         psi_curve, projected_gauss_point.get_eta());
     for (unsigned int i_node_mortar_centerline = 0; i_node_mortar_centerline < Mortar::n_nodes_;
-         i_node_mortar_centerline++)
+        i_node_mortar_centerline++)
     {
       constexpr int n_dof_per_node = Mortar::n_val_ * Mortar::spatial_dim_;
       for (unsigned int i_dof = 0; i_dof < n_dof_per_node; i_dof++)
@@ -501,7 +501,7 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
       for (unsigned int i_curve_segment = 0; i_curve_segment < mortar_segments; i_curve_segment++)
       {
         for (unsigned int i_circumference_segment = 0;
-             i_circumference_segment < mortar_segments_circumference; i_circumference_segment++)
+            i_circumference_segment < mortar_segments_circumference; i_circumference_segment++)
         {
           for (const auto& [offset_axial, offset_circumference] :
               std::initializer_list<std::pair<int, int>>{

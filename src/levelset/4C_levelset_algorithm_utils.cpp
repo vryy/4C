@@ -426,12 +426,12 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
         }
       }
     }  // end loop nodes
-  }    // end loop conditions
+  }  // end loop conditions
 
   // replace values in velocity vector
   const Epetra_Map* noderowmap = discret_->node_row_map();
   for (std::map<int, std::vector<double>>::iterator iter = nodal_correction.begin();
-       iter != nodal_correction.end(); iter++)
+      iter != nodal_correction.end(); iter++)
   {
     const int gnodeid = iter->first;
     const int lnodeid = noderowmap->LID(gnodeid);
@@ -684,7 +684,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
           for (size_t i = 0; i < pbcnodes.size(); ++i) allcollectednodes.insert(pbcnodes[i]);
         }
       }  // loop over elements' nodes
-    }    // loop over elements
+    }  // loop over elements
 
 
     // with all nodes collected it is time to communicate them to all other procs
@@ -697,7 +697,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       allcollectednodes.clear();
       std::set<int>::const_iterator gnodesit;
       for (gnodesit = globalcollectednodes.begin(); gnodesit != globalcollectednodes.end();
-           ++gnodesit)
+          ++gnodesit)
       {
         const int nodegid = (*gnodesit);
         const int nodelid = discret_->node_row_map()->LID(nodegid);

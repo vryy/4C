@@ -179,7 +179,7 @@ CONSTRAINTS::EMBEDDEDMESH::get_information_background_and_interface_elements(
   // Do a loop to check all the elements of the background mesh, if the element is cut, then
   // create the coupling pair
   for (auto background_ele_iter = background_elements.begin();
-       background_ele_iter != background_elements.end(); background_ele_iter++)
+      background_ele_iter != background_elements.end(); background_ele_iter++)
   {
     const std::shared_ptr<Cut::Element> background_element = background_ele_iter->second;
 
@@ -218,7 +218,7 @@ CONSTRAINTS::EMBEDDEDMESH::get_information_background_and_interface_elements(
           Cut::plain_boundarycell_set bc_temp = volume_cell->boundary_cells();
 
           for (auto it_boundarycell = bc_temp.begin(); it_boundarycell != bc_temp.end();
-               ++it_boundarycell)
+              ++it_boundarycell)
           {
             unique_interface_ele_global_ids.insert(
                 (*it_boundarycell)->get_global_boundary_cell_id());

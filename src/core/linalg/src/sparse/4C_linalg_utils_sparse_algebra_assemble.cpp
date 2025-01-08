@@ -62,7 +62,7 @@ void Core::LinAlg::assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDense
         else if (errone)
           FOUR_C_THROW("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d", errone);
       }  // for (int lcol=0; lcol<lcoldim; ++lcol)
-    }    // for (int lrow=0; lrow<lrowdim; ++lrow)
+    }  // for (int lrow=0; lrow<lrowdim; ++lrow)
   }
 }
 

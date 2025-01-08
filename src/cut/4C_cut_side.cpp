@@ -367,7 +367,7 @@ bool Cut::Side::find_parallel_intersection(
     c.clear();
     const PointPositionSet& edge_cut_points = (*e_it)->cut_points();
     for (PointPositionSet::const_iterator p_it = edge_cut_points.begin();
-         p_it != edge_cut_points.end(); ++p_it)
+        p_it != edge_cut_points.end(); ++p_it)
     {
       if (cut.find(*p_it) != cut.end()) c.insert(*p_it);  //
     }
@@ -425,7 +425,7 @@ bool Cut::Side::find_parallel_intersection(
 
         PointPositionSet::iterator next = sorted_cut_points.begin();
         for (PointPositionSet::iterator c_it = next; next != (--sorted_cut_points.end());
-             c_it = next)
+            c_it = next)
         {
           ++next;
           cut_lines_queue.push_back(std::make_pair(*c_it, *next));
@@ -438,7 +438,7 @@ bool Cut::Side::find_parallel_intersection(
 
   // If there were no anomalies, we add all point as cut lines.
   for (std::vector<std::pair<Point*, Point*>>::iterator it = cut_lines_queue.begin();
-       it != cut_lines_queue.end(); ++it)
+      it != cut_lines_queue.end(); ++it)
   {
     Point* first = it->first;
     Point* second = it->second;
@@ -666,7 +666,7 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
 #ifdef DEBUG_PARALLEL_CUT_SURFACE
   std::cout << "Points before erasing are: \n";
   for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
-       it != cut_points_for_lines.end(); ++it)
+      it != cut_points_for_lines.end(); ++it)
   {
     std::cout << (*it)->Id() << std::endl;
   }
@@ -688,7 +688,7 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
 
     // trying to find duplicate points and remove points between them
     for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
-         it != cut_points_for_lines.end();
+        it != cut_points_for_lines.end();
         /* */)
     {
       int counter = std::distance(cut_points_for_lines.begin(), it);
@@ -710,7 +710,7 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
 
         // try to find these duplicates by iterating over edges
         for (std::list<Edge*>::iterator e_it = edges_cycle.begin(); e_it != edges_cycle.end();
-             ++e_it)
+            ++e_it)
         {
           if (not current_erased)
           {
@@ -791,7 +791,7 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
 #ifdef DEBUG_PARALLEL_CUT_SURFACE
                   std::cout << "New point list is " << std::endl;
                   for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
-                       it != cut_points_for_lines.end(); ++it)
+                      it != cut_points_for_lines.end(); ++it)
                   {
                     std::cout << (*it)->Id() << std::endl;
                   }
@@ -822,7 +822,7 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
 #ifdef DEBUG_PARALLEL_CUT_SURFACE
   std::cout << "Points after erasing are" << std::endl;
   for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
-       it != cut_points_for_lines.end(); ++it)
+      it != cut_points_for_lines.end(); ++it)
   {
     // we found matching point
     std::cout << (*it)->Id() << std::endl;
@@ -852,7 +852,7 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
 #endif
 
     for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
-         it != (--cut_points_for_lines.end()); ++it)
+        it != (--cut_points_for_lines.end()); ++it)
     {
       std::vector<Point*>::iterator next = it;
       ++next;
@@ -870,7 +870,7 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
       std::ofstream file("parallel_dump_first_equal_last.pos");
       // Dump cut points for lines and normal cut points
       for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
-           it != cut_points_for_lines.end(); ++it)
+          it != cut_points_for_lines.end(); ++it)
       {
         std::stringstream pname;
         pname << "Point_for_line" << (*it)->id();
@@ -919,8 +919,7 @@ void Cut::Side::simplify_mixed_parallel_cut_surface(Mesh& mesh, Element* element
       if (common_points.size() == 2)
       {
         // we probably don't want to merge already merged-into or nodal points
-        auto p_delete_it = std::find_if(common_points.begin(), common_points.end(),
-            [](Point* p)
+        auto p_delete_it = std::find_if(common_points.begin(), common_points.end(), [](Point* p)
             { return (p->cut_node() == nullptr && p->get_merged_points().size() == 0); });
 
         if (p_delete_it == common_points.end()) FOUR_C_THROW("Cannot decide which point to merge");
@@ -1136,7 +1135,7 @@ void Cut::Side::make_internal_facets(
         const std::vector<Facet*> side_facets = s->facets();
         counter = 0;
         for (std::vector<Facet*>::const_iterator it = side_facets.begin(); it != side_facets.end();
-             ++it, ++counter)
+            ++it, ++counter)
         {
           file << "View \"ThisCycle" << counter << "\" {\n";
           Cut::Output::gmsh_facet_dump(file, *it, "lines", true, false, nullptr);
@@ -1154,12 +1153,12 @@ void Cut::Side::make_internal_facets(
 
         std::cout << "\n --- Mesh " << &mesh << " ---\n";
         for (std::map<int, std::shared_ptr<Node>>::const_iterator cit = mesh.nodes().begin();
-             cit != mesh.nodes().end(); ++cit)
+            cit != mesh.nodes().end(); ++cit)
           std::cout << "Point" << cit->second->point() << "\n";
 
         std::cout << "\n --- Element " << element << " ---\n";
         for (std::vector<Point*>::const_iterator cit = element->points().begin();
-             cit != element->points().end(); ++cit)
+            cit != element->points().end(); ++cit)
           std::cout << "Point " << (*cit) << "\n";
 
         std::cout << "\n --- Side " << s << " ---\n";
@@ -1167,7 +1166,7 @@ void Cut::Side::make_internal_facets(
 
         std::cout << "\n\n --- PointCycle ---" << std::endl;
         for (std::vector<Point*>::const_iterator cit = points().begin(); cit != points().end();
-             ++cit)
+            ++cit)
           std::cout << "Point " << (*cit) << "\n";
 
 
@@ -1183,11 +1182,11 @@ void Cut::Side::make_internal_facets(
 
         std::cout << "\n\n -- Distance between element points and cut_points --- " << std::endl;
         for (std::vector<Point*>::const_iterator eit = element->points().begin();
-             eit != element->points().end(); ++eit)
+            eit != element->points().end(); ++eit)
         {
           Point* element_point = *eit;
           for (std::vector<Point*>::const_iterator cit = points().begin(); cit != points().end();
-               ++cit)
+              ++cit)
           {
             Point* cycle_point = *cit;
             std::cout << "Between" << element_point->id() << " and " << cycle_point->id() << " is "
@@ -1494,7 +1493,7 @@ bool Cut::Side::hole_of_facet(Facet& facet, const std::vector<Cycle>& hole)
   {
     intersectioninpoint = false;
     for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator i = facetpointslocalcoord.begin();
-         i != facetpointslocalcoord.end(); ++i)
+        i != facetpointslocalcoord.end(); ++i)
     {
       Core::LinAlg::Matrix<3, 1> facetpoint1 = *i;
       Core::LinAlg::Matrix<3, 1> facetpoint2;

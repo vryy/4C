@@ -640,7 +640,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
     auto fist_macro_slave_dof_gid = discret_->dof(0, macro_slave_node)[0];
 
     for (int slave_dof_lid = 0;
-         slave_dof_lid < macro_coupling_adapter->slave_dof_map()->NumMyElements(); ++slave_dof_lid)
+        slave_dof_lid < macro_coupling_adapter->slave_dof_map()->NumMyElements(); ++slave_dof_lid)
     {
       const int slave_dof_gid = macro_coupling_adapter->slave_dof_map()->GID(slave_dof_lid);
       if (fist_macro_slave_dof_gid == slave_dof_gid)
@@ -770,12 +770,12 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   std::vector<int> my_slave_dofs;
   std::vector<int> my_perm_master_dofs;
   for (int slave_lid = 0;
-       slave_lid < macro_micro_coupling_adapter_temp.slave_dof_map()->NumMyElements(); ++slave_lid)
+      slave_lid < macro_micro_coupling_adapter_temp.slave_dof_map()->NumMyElements(); ++slave_lid)
   {
     const int slave_gid = macro_micro_coupling_adapter_temp.slave_dof_map()->GID(slave_lid);
 
     for (int dbc_lid = 0;
-         dbc_lid < micro_scatra_field()->dirich_maps()->cond_map()->NumMyElements(); ++dbc_lid)
+        dbc_lid < micro_scatra_field()->dirich_maps()->cond_map()->NumMyElements(); ++dbc_lid)
     {
       const int dbc_gid = micro_scatra_field()->dirich_maps()->cond_map()->GID(dbc_lid);
       if (slave_gid == dbc_gid)
@@ -793,8 +793,8 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   std::vector<int> my_master_dofs;
   std::vector<int> my_perm_slave_dofs;
   for (int master_lid = 0;
-       master_lid < macro_micro_coupling_adapter_temp.master_dof_map()->NumMyElements();
-       ++master_lid)
+      master_lid < macro_micro_coupling_adapter_temp.master_dof_map()->NumMyElements();
+      ++master_lid)
   {
     const int slave_gid = macro_micro_coupling_adapter_temp.perm_slave_dof_map()->GID(master_lid);
     const int master_gid = macro_micro_coupling_adapter_temp.master_dof_map()->GID(master_lid);
@@ -832,7 +832,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   // for scaling (see scale_micro_problem())
   std::set<int> my_micro_coupling_nodes;
   for (int lid_micro = 0;
-       lid_micro < macro_micro_coupling_adapter_->slave_dof_map()->NumMyElements(); ++lid_micro)
+      lid_micro < macro_micro_coupling_adapter_->slave_dof_map()->NumMyElements(); ++lid_micro)
   {
     const int gid_micro = macro_micro_coupling_adapter_->slave_dof_map()->GID(lid_micro);
     my_micro_coupling_nodes.insert(gid_micro);
@@ -845,7 +845,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   // in the sub problem are linked to the coupled node, by looping backwards through all nodes and
   // forwards through the coupled nodes
   for (int lid_micro = micro_scatra_field()->dof_row_map()->NumMyElements() - 1; lid_micro >= 0;
-       --lid_micro)
+      --lid_micro)
   {
     const int gid_micro = micro_scatra_field()->dof_row_map()->GID(lid_micro);
     for (const auto& coupled_node : glob_micro_coupling_nodes)
@@ -890,7 +890,7 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
   // attached to a macro node
   std::map<int, double> my_nodal_size_micro;
   for (int lid_micro = 0;
-       lid_micro < macro_micro_coupling_adapter_->slave_dof_map()->NumMyElements(); ++lid_micro)
+      lid_micro < macro_micro_coupling_adapter_->slave_dof_map()->NumMyElements(); ++lid_micro)
   {
     const int gid_micro = macro_micro_coupling_adapter_->slave_dof_map()->GID(lid_micro);
     my_nodal_size_micro.insert(std::make_pair(gid_micro, (*nodal_size_micro)[lid_micro]));
@@ -901,7 +901,7 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
 
   auto micro_scale = Core::LinAlg::create_vector(*micro_scatra_field()->dof_row_map(), true);
   for (int lid_micro = micro_scatra_field()->dof_row_map()->NumMyElements() - 1; lid_micro >= 0;
-       --lid_micro)
+      --lid_micro)
   {
     const int gid_micro = micro_scatra_field()->dof_row_map()->GID(lid_micro);
     const int coupled_node = coupled_micro_nodes_[gid_micro];

@@ -1136,7 +1136,7 @@ namespace Cut
       std::vector<int> allowed_ids;  // (0, 2) ( 1 is diagonal and is ignored)
       int count_id;
       for (std::vector<int>::const_iterator e_it = tri_touched_edges_ids.begin();
-           e_it != tri_touched_edges_ids.end(); ++e_it)
+          e_it != tri_touched_edges_ids.end(); ++e_it)
       {
         if ((*e_it) == 0)
           count_id = 0;
@@ -1312,7 +1312,7 @@ namespace Cut
   class IntersectionFactory
   {
    public:
-    IntersectionFactory(){};
+    IntersectionFactory() {};
 
     std::shared_ptr<IntersectionBase> create_intersection(
         Core::FE::CellType edge_type, Core::FE::CellType side_type) const;

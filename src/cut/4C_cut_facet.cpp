@@ -138,7 +138,7 @@ void Cut::Facet::corner_coordinates(double* x)
 {
   find_corner_points();
   for (std::vector<Point*>::const_iterator i = corner_points_.begin(); i != corner_points_.end();
-       ++i)
+      ++i)
   {
     Point* p = *i;
     p->coordinates(x);
@@ -162,7 +162,7 @@ void Cut::Facet::get_all_points(Mesh& mesh, PointSet& cut_points, bool dotriangu
   else
   {
     for (std::vector<std::vector<Point*>>::iterator i = triangulation_.begin();
-         i != triangulation_.end(); ++i)
+        i != triangulation_.end(); ++i)
     {
       std::vector<Point*>& tri = *i;
       std::copy(tri.begin(), tri.end(), std::inserter(cut_points, cut_points.begin()));
@@ -580,7 +580,7 @@ bool Cut::Facet::is_line(Point* p1, Point* p2)
   if (is_triangulated())
   {
     for (std::vector<std::vector<Point*>>::iterator i = triangulation_.begin();
-         i != triangulation_.end(); ++i)
+        i != triangulation_.end(); ++i)
     {
       std::vector<Point*>& points = *i;
       if (is_line(points, p1, p2)) return true;
@@ -648,7 +648,7 @@ bool Cut::Facet::contains(Point* p) const
   if (is_triangulated())
   {
     for (std::vector<std::vector<Point*>>::const_iterator i = triangulation_.begin();
-         i != triangulation_.end(); ++i)
+        i != triangulation_.end(); ++i)
     {
       const std::vector<Point*>& points = *i;
       if (std::find(points.begin(), points.end(), p) != points.end()) return true;
@@ -761,7 +761,7 @@ bool Cut::Facet::have_consistant_normal(Facet* f, bool& result)
 
   for (std::map<std::vector<Point*>*, std::vector<Point*>*>::iterator cyclepair =
            matchingcycles.begin();
-       cyclepair != matchingcycles.end(); ++cyclepair)
+      cyclepair != matchingcycles.end(); ++cyclepair)
   {
     std::vector<Point*>& points1 = *(cyclepair->first);
     std::vector<Point*>& points2 = *(cyclepair->second);
@@ -1020,7 +1020,7 @@ unsigned Cut::Facet::normal(const std::vector<Point*>& points, Core::LinAlg::Mat
 void Cut::Facet::triangulation_points(PointSet& points)
 {
   for (std::vector<std::vector<Point*>>::const_iterator i = triangulation_.begin();
-       i != triangulation_.end(); ++i)
+      i != triangulation_.end(); ++i)
   {
     const std::vector<Point*>& tri = *i;
     std::copy(tri.begin(), tri.end(), std::inserter(points, points.begin()));
@@ -1211,7 +1211,7 @@ bool Cut::Facet::is_triangulated_side(const std::vector<Point*>& tri) const
   if (tri.size() != 3) FOUR_C_THROW("three points expected");
 
   for (std::vector<std::vector<Point*>>::const_iterator i = triangulation_.begin();
-       i != triangulation_.end(); ++i)
+      i != triangulation_.end(); ++i)
   {
     const std::vector<Point*>& t = *i;
     bool found = true;
@@ -1389,7 +1389,7 @@ std::ostream& operator<<(std::ostream& stream, Cut::Facet& f)
   {
     const std::vector<std::vector<Cut::Point*>>& triangulation = f.triangulation();
     for (std::vector<std::vector<Cut::Point*>>::const_iterator i = triangulation.begin();
-         i != triangulation.end(); ++i)
+        i != triangulation.end(); ++i)
     {
       const std::vector<Cut::Point*>& tri = *i;
       stream << "{";

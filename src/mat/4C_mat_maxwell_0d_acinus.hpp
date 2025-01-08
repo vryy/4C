@@ -179,8 +179,8 @@ namespace Mat
     virtual void set_params(std::string parametername, double new_value);
 
     /// Return names of visualization data
-    virtual void vis_names(std::map<std::string, int>& names){
-        /* do nothing for simple material models */
+    virtual void vis_names(std::map<std::string, int>& names) {
+      /* do nothing for simple material models */
     };
 
     /// Return visualization data

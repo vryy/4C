@@ -142,7 +142,7 @@ namespace FLD
         Core::Communication::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
-             x1line != coords.end(); ++x1line)
+            x1line != coords.end(); ++x1line)
         {
           add_to_pack(data, *x1line);
         }
@@ -197,7 +197,7 @@ namespace FLD
       coordinates_ = std::make_shared<std::vector<double>>();
 
       for (std::set<double, LineSortCriterion>::iterator coord1 = coords.begin();
-           coord1 != coords.end(); ++coord1)
+          coord1 != coords.end(); ++coord1)
       {
         coordinates_->push_back(*coord1);
       }
@@ -1154,7 +1154,7 @@ namespace FLD
       std::vector<double> copycoordinates;
 
       for (std::vector<double>::iterator coord1 = coordinates_->begin();
-           coord1 != coordinates_->end(); ++coord1)
+          coord1 != coordinates_->end(); ++coord1)
       {
         copycoordinates.push_back(*coord1);
       }
@@ -1165,7 +1165,7 @@ namespace FLD
       // use 5 sampling locations in each element in each direction
       const std::array<double, 5> localcoords = {0.9, 0.7, 0.5, 0.3, 0.1};
       for (std::vector<double>::iterator coord1 = copycoordinates.begin();
-           coord1 != copycoordinates.end(); ++coord1)
+          coord1 != copycoordinates.end(); ++coord1)
       {
         if (coord1 != copycoordinates.begin())
           for (int i = 0; i < 5; i++) coordinates_->push_back(*coord1 - elesize * localcoords[i]);

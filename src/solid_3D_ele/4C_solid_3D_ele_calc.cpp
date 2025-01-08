@@ -223,7 +223,8 @@ void Discret::Elements::SolidEleCalc<celltype,
     Discret::Elements::for_each_gauss_point<celltype>(nodal_coordinates, mass_matrix_integration_,
         [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-            const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp) {
+            const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
+        {
           add_mass_matrix(
               shape_functions, integration_factor, element_mass / element_volume, *mass);
         });

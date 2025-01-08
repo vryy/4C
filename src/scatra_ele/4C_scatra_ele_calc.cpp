@@ -825,7 +825,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::sysmat(Core::Elements::
       //----------------------------------------------------------------
       if (scatrapara_->is_emd()) calc_rhsemd(ele, erhs, rhsfac);
     }  // end loop all scalars
-  }    // end loop Gauss points
+  }  // end loop Gauss points
 }
 
 /*----------------------------------------------------------------------*

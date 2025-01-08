@@ -264,7 +264,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> ScaTra::ScaTraTimIntImpl::cal
       set_element_time_parameter();
 
     }  // if ((solvtype_!=Inpar::ScaTra::solvertype_nonlinear) && (lastfluxoutputstep_ != step_))
-  }    // if (writeflux_==Inpar::ScaTra::flux_convective_boundary)
+  }  // if (writeflux_==Inpar::ScaTra::flux_convective_boundary)
 
   // if desired add the convective flux contribution
   // to the trueresidual_ now.

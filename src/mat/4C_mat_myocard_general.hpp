@@ -21,7 +21,7 @@ class MyocardGeneral
 {
  public:
   /// construct empty material object
-  MyocardGeneral(){};
+  MyocardGeneral() {};
 
   /// construct empty material object
   explicit MyocardGeneral(const double eps_deriv_myocard, const std::string tissue);

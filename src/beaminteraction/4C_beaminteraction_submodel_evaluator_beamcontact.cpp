@@ -828,8 +828,8 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
       // loop over all bins touched by currele
       std::set<int>::const_iterator biniter;
       for (biniter = beam_interaction_data_state_ptr()->get_row_ele_to_bin_set(elegid).begin();
-           biniter != beam_interaction_data_state_ptr()->get_row_ele_to_bin_set(elegid).end();
-           ++biniter)
+          biniter != beam_interaction_data_state_ptr()->get_row_ele_to_bin_set(elegid).end();
+          ++biniter)
       {
         std::vector<int> loc_neighboring_binIds;
         // in three-dimensional space: 26 neighbouring-bins + 1 self
@@ -982,7 +982,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   std::map<int, std::set<Core::Elements::Element*>>::const_iterator nearbyeleiter;
 
   for (nearbyeleiter = nearby_elements_map_.begin(); nearbyeleiter != nearby_elements_map_.end();
-       ++nearbyeleiter)
+      ++nearbyeleiter)
   {
     const int elegid = nearbyeleiter->first;
     std::vector<Core::Elements::Element const*> ele_ptrs(2);
@@ -995,7 +995,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
 
     std::set<Core::Elements::Element*>::const_iterator secondeleiter;
     for (secondeleiter = nearbyeleiter->second.begin();
-         secondeleiter != nearbyeleiter->second.end(); ++secondeleiter)
+        secondeleiter != nearbyeleiter->second.end(); ++secondeleiter)
     {
       ele_ptrs[1] = *secondeleiter;
 

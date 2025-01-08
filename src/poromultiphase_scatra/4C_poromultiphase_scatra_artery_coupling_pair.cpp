@@ -1246,7 +1246,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       // save the converged value
       eta_s_[i_gp] = eta_s.val();
     }  // GP loop
-  }    // !evaluate_in_ref_config_
+  }  // !evaluate_in_ref_config_
 }
 
 /*----------------------------------------------------------------------*

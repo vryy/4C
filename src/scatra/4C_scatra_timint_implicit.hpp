@@ -367,13 +367,13 @@ namespace ScaTra
     virtual void time_loop();
 
     //! operator for manipulations before call to \ref Solve() ; May be overridden by subclass.
-    virtual void pre_solve(){};
+    virtual void pre_solve() {};
 
     //! general solver call for coupled algorithms (decides if linear/nonlinear internally)
     virtual void solve();
 
     //! operator for manipulations after call to \ref Solve() ; May be overridden by subclass.
-    virtual void post_solve(){};
+    virtual void post_solve() {};
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     virtual void update();
@@ -434,11 +434,11 @@ namespace ScaTra
         std::shared_ptr<Core::LinAlg::Vector<double>> rhs);
 
     //! prepare time integrator specific things before calculation of initial time derivative
-    virtual void pre_calc_initial_time_derivative(){};
+    virtual void pre_calc_initial_time_derivative() {};
 
     //! clean up settings from pre_calc_initial_time_derivative() after initial time derivative is
     //! calculated
-    virtual void post_calc_initial_time_derivative(){};
+    virtual void post_calc_initial_time_derivative() {};
 
     //! calculate mean concentrations of micro discretization at nodes
     void calc_mean_micro_concentration();
@@ -682,7 +682,7 @@ namespace ScaTra
     //! @name Preconditioning
     /*========================================================================*/
 
-    virtual void setup_splitter(){};
+    virtual void setup_splitter() {};
 
     //! set up the (block) maps of the scatra system matrix and the meshtying object
     void setup_matrix_block_maps_and_meshtying();
@@ -819,7 +819,7 @@ namespace ScaTra
 
     //! problem-specific restart
     virtual void read_restart_problem_specific(
-        const int step, Core::IO::DiscretizationReader& reader){};
+        const int step, Core::IO::DiscretizationReader& reader) {};
 
     //! return time for evaluation of elements
     const double& dt_ele() const { return dtele_; };
@@ -1690,7 +1690,7 @@ namespace ScaTra
     /*========================================================================*/
 
     //! Standard Constructor
-    ScalarHandler() : numdofpernode_(), equalnumdof_(true), issetup_(false){};
+    ScalarHandler() : numdofpernode_(), equalnumdof_(true), issetup_(false) {};
 
     /**
      * Virtual destructor.
@@ -1844,7 +1844,7 @@ namespace ScaTra
   class OutputScalarsStrategyDomain : virtual public OutputScalarsStrategyBase
   {
    public:
-    OutputScalarsStrategyDomain() : dummy_domain_id_(-1), numdofpernode_(0), numscal_(0){};
+    OutputScalarsStrategyDomain() : dummy_domain_id_(-1), numdofpernode_(0), numscal_(0) {};
 
    protected:
     void evaluate_integrals(const ScaTraTimIntImpl* const scatratimint) override;
@@ -1872,7 +1872,7 @@ namespace ScaTra
   class OutputScalarsStrategyCondition : virtual public OutputScalarsStrategyBase
   {
    public:
-    OutputScalarsStrategyCondition() : conditions_(), numdofpernodepercondition_(){};
+    OutputScalarsStrategyCondition() : conditions_(), numdofpernodepercondition_() {};
 
    protected:
     void evaluate_integrals(const ScaTraTimIntImpl* const scatratimint) override;
@@ -1925,7 +1925,7 @@ namespace ScaTra
         : conditionsdomain_(),
           conditionsboundary_(),
           domainintegralvalues_(),
-          boundaryintegralvalues_(){};
+          boundaryintegralvalues_() {};
 
     //! initialize time integration
     void init(const ScaTraTimIntImpl* const scatratimint);

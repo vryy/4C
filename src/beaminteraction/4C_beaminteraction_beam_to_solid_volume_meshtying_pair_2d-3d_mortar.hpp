@@ -131,7 +131,7 @@ namespace GEOMETRYPAIR
         Core::LinAlg::Matrix<ElementType::n_val_, 1, typename T::scalar_type> N_fourier;
         N_fourier(0) = 1.0;
         for (unsigned int i_fourier_mode = 0; i_fourier_mode < ElementType::n_fourier_modes_;
-             i_fourier_mode++)
+            i_fourier_mode++)
         {
           N_fourier(1 + i_fourier_mode * 2) = cos((1 + i_fourier_mode) * xi(1));
           N_fourier(1 + i_fourier_mode * 2 + 1) = sin((1 + i_fourier_mode) * xi(1));

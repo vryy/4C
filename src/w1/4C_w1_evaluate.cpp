@@ -776,7 +776,7 @@ void Discret::Elements::Wall1::w1_recover(const std::vector<int>& lm,
       // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
       Core::LinAlg::multiply(1.0, (*alpha), -1.0, *oldKaainv, *oldfeas);
     }  // if (iseas)
-  }    // if (*isdefault_step_ptr_)
+  }  // if (*isdefault_step_ptr_)
   /* if it is no default step, we can correct the update and the current eas
    * state without the need for any matrix-vector products. */
   else
@@ -794,7 +794,7 @@ void Discret::Elements::Wall1::w1_recover(const std::vector<int>& lm,
       for (int i = 0; i < Wall1::neas_; ++i)
         (*alpha)(i, 0) += (step_length - old_step_length_) * (*eas_inc)(i, 0);
     }  // if (nhyb_)
-  }    // else
+  }  // else
   // save the old step length
   old_step_length_ = step_length;
 

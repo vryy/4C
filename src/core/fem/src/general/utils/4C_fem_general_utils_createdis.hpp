@@ -151,7 +151,7 @@ namespace Core::FE
       // construct new elements
       for (std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator sourceele_iter =
                sourceelements.begin();
-           sourceele_iter != sourceelements.end(); ++sourceele_iter)
+          sourceele_iter != sourceelements.end(); ++sourceele_iter)
       {
         const std::shared_ptr<Core::Elements::Element> sourceele = sourceele_iter->second;
 
@@ -303,7 +303,7 @@ namespace Core::FE
   {
    public:
     /// constructor
-    explicit DiscretizationCreator(){};
+    explicit DiscretizationCreator() {};
 
     /// Create the clone field material map from the input file
     void create_clone_field_mat_map(std::map<int, int>& matmap,
@@ -555,7 +555,7 @@ namespace Core::FE
       // construct new elements
       std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator sourceele_iter;
       for (sourceele_iter = sourceelements.begin(); sourceele_iter != sourceelements.end();
-           ++sourceele_iter)
+          ++sourceele_iter)
       {
         const std::shared_ptr<Core::Elements::Element> actele = sourceele_iter->second;
         const bool ismyele = (actele->owner() == myrank);
@@ -714,7 +714,7 @@ namespace Core::FE
     {
       // now do the elements
       for (std::map<int, int>::const_iterator mapit = matmap.begin(); mapit != matmap.end();
-           ++mapit)
+          ++mapit)
       {
         int target_id = mapit->second;
         CloneStrategy::check_material_type(target_id);

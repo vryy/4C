@@ -54,7 +54,7 @@ namespace Discret
           const std::string& disname  ///< name of discretization
       );
     };  // class ScaTraEleUtilsElchElectrode
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

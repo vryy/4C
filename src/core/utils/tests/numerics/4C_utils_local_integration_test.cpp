@@ -190,9 +190,8 @@ namespace
 
   TEST(CoreUtilsLocalIntegrationTest, IntegrateIntegrateSimpsonTrapezoidalZeroItem)
   {
-    auto function = [](double x) -> std::tuple<double, double> {
-      return {x, std::pow(x, 2) + 2 * x + 1};
-    };
+    auto function = [](double x) -> std::tuple<double, double>
+    { return {x, std::pow(x, 2) + 2 * x + 1}; };
     std::array<double, 0> times = {};
     auto value = Core::Utils::integrate_simpson_trapezoidal(times, function);
     EXPECT_NEAR(0, value, 1e-8);

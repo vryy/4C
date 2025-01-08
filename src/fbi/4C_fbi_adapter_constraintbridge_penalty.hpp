@@ -104,7 +104,7 @@ namespace Adapter
           ff_(nullptr),
           fs_(nullptr),
           fluid_scaled_(false),
-          structure_scaled_(false){};
+          structure_scaled_(false) {};
 
     /**
      * \brief Sets the flag to compute only force contributions from the beam

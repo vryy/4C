@@ -336,7 +336,7 @@ void BeamInteraction::condition_to_element_ids(
     int local_node_id = n_nodes - 1;
     Core::Elements::Element** elements = item.second->nodes()[local_node_id]->elements();
     for (int i_element = 0; i_element < item.second->nodes()[local_node_id]->num_element();
-         i_element++)
+        i_element++)
     {
       if (elements[i_element]->num_node() != n_nodes) continue;
 

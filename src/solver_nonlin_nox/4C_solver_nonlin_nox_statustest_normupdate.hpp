@@ -200,8 +200,8 @@ namespace NOX
         //! check status in first nonlinear iteration step
         ::NOX::StatusTest::StatusType check_status_first_iter() override;
       };  // class NormUpdateSkipFirstIter
-    }     // namespace StatusTest
-  }       // namespace Nln
+    }  // namespace StatusTest
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

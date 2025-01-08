@@ -21,8 +21,7 @@ int Discret::Elements::SolidPoroPressureVelocityBased::evaluate(Teuchos::Paramet
   if (!material_post_setup_)
   {
     std::visit([&](auto& interface)
-        { interface->material_post_setup(*this, struct_poro_material()); },
-        solid_calc_variant_);
+        { interface->material_post_setup(*this, struct_poro_material()); }, solid_calc_variant_);
     material_post_setup_ = true;
   }
 
@@ -162,8 +161,7 @@ int Discret::Elements::SolidPoroPressureVelocityBased::evaluate(Teuchos::Paramet
     case Core::Elements::struct_calc_recover:
     {
       std::visit([&](auto& interface)
-          { interface->recover(*this, discretization, la[0].lm_, params); },
-          solid_calc_variant_);
+          { interface->recover(*this, discretization, la[0].lm_, params); }, solid_calc_variant_);
       return 0;
     }
     case Core::Elements::struct_calc_stress:

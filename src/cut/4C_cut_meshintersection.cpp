@@ -21,7 +21,7 @@ Cut::ElementHandle* Cut::MeshIntersection::add_element(int eid, const std::vecto
     const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype, const double* lsv)
 {
   for (std::vector<std::shared_ptr<MeshHandle>>::iterator i = cut_mesh_.begin();
-       i != cut_mesh_.end(); ++i)
+      i != cut_mesh_.end(); ++i)
   {
     MeshHandle& cut_mesh_handle = **i;
     Mesh& cut_mesh = cut_mesh_handle.linear_mesh();

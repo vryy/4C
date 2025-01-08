@@ -22,7 +22,7 @@ namespace Core::FE::Internal
     // compute 3D quadrature weights and points from a tensor product of the
     // 1D quadrature formula
     void fillquadrature(const Core::FE::GaussRule1D intrule, double (&qxg)[1000][3],
-        double (&qwgt)[1000], int &nquad)
+        double (&qwgt)[1000], int& nquad)
     {
       nquad = 0;
       Core::FE::IntegrationPoints1D rule1d(intrule);
@@ -40,7 +40,7 @@ namespace Core::FE::Internal
     // compute 2D quadrature weights and points from a tensor product of the
     // 1D quadrature formula
     void fillquadrature(const Core::FE::GaussRule1D intrule, double (&qxg)[1024][2],
-        double (&qwgt)[1024], int &nquad)
+        double (&qwgt)[1024], int& nquad)
     {
       nquad = 0;
       Core::FE::IntegrationPoints1D rule1d(intrule);

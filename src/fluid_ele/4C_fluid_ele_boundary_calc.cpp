@@ -443,7 +443,7 @@ int Discret::Elements::FluidBoundaryImpl<distype>::evaluate_neumann(
               elevec1_epetra[inode * numdofpernode_ + idim] += funct_(inode) * valfacn;
             }
           }  // end is_new_ost_implementation
-        }    // if (*onoff)
+        }  // if (*onoff)
       }
       else if (*type == "neum_pseudo_orthopressure")
       {
@@ -485,7 +485,7 @@ int Discret::Elements::FluidBoundaryImpl<distype>::evaluate_neumann(
                   funct_(inode) * valfacn * (-unitnormal_(idim));
             }
           }  // end is_new_ost_implementation
-        }    // if (*onoff)
+        }  // if (*onoff)
       }
       else
         FOUR_C_THROW(
@@ -677,8 +677,8 @@ void Discret::Elements::FluidBoundaryImpl<distype>::neumann_inflow(
 
             elemat1(fvi, fui) -= vlhs * funct_(ui);
           }  // end loop over columns
-        }    // end loop over rows
-      }      // end loop over dimensions
+        }  // end loop over rows
+      }  // end loop over dimensions
 
       // compute additional matrix contribution for Newton linearization
       if (is_newton)
@@ -718,10 +718,10 @@ void Discret::Elements::FluidBoundaryImpl<distype>::neumann_inflow(
 
                 elemat1(fvi, fui) -= dens_dt_v_Du * n_x_u(idimrow, idimcol);
               }  // end loop row dimensions
-            }    // end loop rows
-          }      // end loop column dimensions
-        }        // end loop columns
-      }          // end of Newton loop
+            }  // end loop rows
+          }  // end loop column dimensions
+        }  // end loop columns
+      }  // end of Newton loop
 
       // compute rhs contribution
       Core::LinAlg::Matrix<nsd_, 1> vrhs(velint_, false);
@@ -735,7 +735,7 @@ void Discret::Elements::FluidBoundaryImpl<distype>::neumann_inflow(
 
           elevec1(fvi) += funct_(vi) * vrhs(idim);
         }  // end loop over dimensions
-      }    // end loop over rows
+      }  // end loop over rows
     }
   }
 

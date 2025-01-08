@@ -117,8 +117,7 @@ void BeamInteraction::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
     std::vector<int> gid_beam_dof;
     std::vector<int> gid_node;
     for (int i_lid = 0;
-         i_lid < couplingenforcer.get_structure()->get_discretization()->num_my_row_nodes();
-         i_lid++)
+        i_lid < couplingenforcer.get_structure()->get_discretization()->num_my_row_nodes(); i_lid++)
     {
       gid_node.clear();
       Core::Nodes::Node* current_node =

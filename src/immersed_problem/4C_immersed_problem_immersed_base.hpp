@@ -102,7 +102,7 @@ namespace Immersed
     \return void
     \date 08/16
     \author rauch  */
-    virtual void setup(){};
+    virtual void setup() {};
 
 
     /*!
@@ -741,8 +741,8 @@ namespace Immersed
               matched = 0;
 
           }  // if myrank == owner of searchbox ele and proc has searchbox ele
-        }    // loop over all seachbox elements
-      }      // enter loop only if point not yet matched
+        }  // loop over all seachbox elements
+      }  // enter loop only if point not yet matched
       /////////////////////////////////////////////////////////////////////
 
       if (numproc > 1)
@@ -958,10 +958,10 @@ namespace Immersed
       {
         for (std::map<int, std::set<int>>::const_iterator closele =
                  curr_subset_of_structdis.begin();
-             closele != curr_subset_of_structdis.end(); closele++)
+            closele != curr_subset_of_structdis.end(); closele++)
         {
           for (std::set<int>::const_iterator eleIter = (closele->second).begin();
-               eleIter != (closele->second).end(); eleIter++)
+              eleIter != (closele->second).end(); eleIter++)
           {
             bool converged = false;
             double residual = -1234.0;
@@ -1057,7 +1057,7 @@ namespace Immersed
               }
 
               break;  // break loop over all source elements
-            }         // if match
+            }  // if match
 
             // given targetpoint point lies not underneath source discretization at all
             if (closele == (curr_subset_of_structdis.end()--) and
@@ -1066,8 +1066,8 @@ namespace Immersed
               for (int dim = 0; dim < datalength; ++dim) (vectofill)(dim) = -12345.0;
             }
           }  // loop over all seachbox elements
-        }    // loop over closeele set
-      }      // enter loop only if point not yet matched
+        }  // loop over closeele set
+      }  // enter loop only if point not yet matched
       /////////////////////////////////////////////////////////////////////
 
       if (doCommunication)
@@ -1294,11 +1294,11 @@ namespace Immersed
         // loop over closeele set
         for (std::map<int, std::set<int>>::const_iterator closele =
                  curr_subset_of_structdis.begin();
-             closele != curr_subset_of_structdis.end(); closele++)
+            closele != curr_subset_of_structdis.end(); closele++)
         {
           // loop over all searchbox elements
           for (std::set<int>::const_iterator eleIter = (closele->second).begin();
-               eleIter != (closele->second).end(); eleIter++)
+              eleIter != (closele->second).end(); eleIter++)
           {
             // only surface elements (with immersed coupling condition) are relevant to find closest
             // structure point
@@ -1308,7 +1308,7 @@ namespace Immersed
             // loop over surface element, find the elements with IMMERSEDCoupling condition
             for (std::vector<std::shared_ptr<Core::Elements::Element>>::iterator surfIter =
                      surface_eles.begin();
-                 surfIter != surface_eles.end(); ++surfIter)
+                surfIter != surface_eles.end(); ++surfIter)
             {
               // pointer to current surface element
               Core::Elements::Element* structele = surfIter->get();
@@ -1416,10 +1416,10 @@ namespace Immersed
                     }
                   }
                 }  // end loop over int points
-              }    // end if fsi coupling
-            }      // end loop over all surface elements
-          }        // loop over all seachbox elements
-        }          // loop over closeele set
+              }  // end if fsi coupling
+            }  // end loop over all surface elements
+          }  // loop over all seachbox elements
+        }  // loop over closeele set
 
         // global position of closest point (that is now found) as vector
         std::vector<double> xvec(globdim);
@@ -1472,7 +1472,7 @@ namespace Immersed
           }
 
         }  // if match
-      }    // enter loop only if node not yet matched
+      }  // enter loop only if node not yet matched
 
       if (doCommunication)
       {

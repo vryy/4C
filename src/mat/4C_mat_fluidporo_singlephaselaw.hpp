@@ -165,7 +165,7 @@ namespace Mat
      public:
       /// standard constructor
       explicit FluidPoroPhaseLawConstraint(const Core::Mat::PAR::Parameter::Data& matdata)
-          : FluidPoroPhaseLaw(matdata){};
+          : FluidPoroPhaseLaw(matdata) {};
 
       /// initialize
       void initialize() override { return; };

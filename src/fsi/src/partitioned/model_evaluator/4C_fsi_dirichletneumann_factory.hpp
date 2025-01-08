@@ -32,7 +32,7 @@ namespace FSI
   {
    private:
     /// constructor
-    DirichletNeumannFactory(){};
+    DirichletNeumannFactory() {};
 
    public:
     /**
@@ -47,7 +47,7 @@ namespace FSI
      * \return Coupling algorithm based on Dirichlet-Neumann partitioning
      */
     static std::shared_ptr<DirichletNeumann> create_algorithm(
-        MPI_Comm comm, const Teuchos::ParameterList &fsidyn);
+        MPI_Comm comm, const Teuchos::ParameterList& fsidyn);
   };
 }  // namespace FSI
 

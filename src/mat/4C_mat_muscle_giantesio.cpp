@@ -651,8 +651,8 @@ double Mat::MuscleGiantesio::solve_activation_level_equation(
 
     // approximate the starting guess for the newton solver via bisection method
     omegaa_init = Core::Utils::bisection([&](double omegaa_init)
-        { return std::get<0>(actLevelEquationAndDeriv(omegaa_init)); },
-        omegaa_a_init, omegaa_b_init, tol_bisec, maxiter_bisec);
+        { return std::get<0>(actLevelEquationAndDeriv(omegaa_init)); }, omegaa_a_init,
+        omegaa_b_init, tol_bisec, maxiter_bisec);
   }
   else
     // use omegaa from the previous timestep as a starting guess

@@ -246,17 +246,17 @@ namespace Adapter
     virtual std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() = 0;
 
     /// expand dirichlet bc map
-    virtual void add_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoadd){
-        /* This is only needed for the old structural time integration.
-           For the new structural time integration this is already
-           implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */
+    virtual void add_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoadd) {
+      /* This is only needed for the old structural time integration.
+         For the new structural time integration this is already
+         implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */
     };
 
     /// contract dirichlet bc map
-    virtual void remove_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoremove){
-        /* This is only needed for the old structural time integration.
-           For the new structural time integration this is already
-           implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */
+    virtual void remove_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoremove) {
+      /* This is only needed for the old structural time integration.
+         For the new structural time integration this is already
+         implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */
     };
 
     /// set evaluation action

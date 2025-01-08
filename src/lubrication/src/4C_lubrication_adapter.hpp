@@ -45,7 +45,7 @@ namespace Lubrication
   {
    public:
     /// constructor
-    LubricationBaseAlgorithm(){};
+    LubricationBaseAlgorithm() {};
 
     /// setup
     void setup(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem

@@ -134,7 +134,7 @@ void immersed_problem_drt()
         {
           FOUR_C_THROW("no valid problem type specified");
         }  // default
-      }    // switch problemtype
+      }  // switch problemtype
       break;
     }  // case partitioned (default)
     case Inpar::Immersed::monolithic:
@@ -143,7 +143,7 @@ void immersed_problem_drt()
           "Monolithic solution scheme not implemented for immersed problems, yet.\n "
           "Make sure that the parameter COUPALGO is set to 'partitioned'");
     }  // case monolithic
-  }    // end switch(coupling)
+  }  // end switch(coupling)
 
 }  // immersed_problem_drt()
 

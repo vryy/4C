@@ -126,7 +126,7 @@ namespace Discret
       @param id    (in): A globally unique element id
       @param owner (in): owner processor of the element
       */
-      Shell7p(int id, int owner) : Core::Elements::Element(id, owner){};
+      Shell7p(int id, int owner) : Core::Elements::Element(id, owner) {};
 
 
       //! copy constructor

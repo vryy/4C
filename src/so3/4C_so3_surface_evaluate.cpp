@@ -374,7 +374,7 @@ int Discret::Elements::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
           for (int node = 0; node < numnode; ++node)
             for (int dim = 0; dim < 3; dim++)
               for (int dof = 0; dof < elevec1.numRows(); dof++)
-                (*elemat1)(node * numdf + dim, dof) -= funct[node] * Dnormal(dim, dof) * fac;
+                (*elemat1)(node* numdf + dim, dof) -= funct[node] * Dnormal(dim, dof) * fac;
         }
       }
       break;
@@ -1823,9 +1823,9 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
                                    .evaluate(displ, time, 0);
 
                   force_disp_deriv = (Global::Problem::instance()
-                                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
-                                              (*numfuncnonlinstiff)[dim] - 1)
-                                          .evaluate_spatial_derivative(displ, time, 0))[dim];
+                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
+                              (*numfuncnonlinstiff)[dim] - 1)
+                          .evaluate_spatial_derivative(displ, time, 0))[dim];
                 }
 
                 // velocity related forces and derivatives
@@ -1903,9 +1903,9 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
                                  .evaluate(displ, time, 0);
 
                 force_disp_deriv = (Global::Problem::instance()
-                                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
-                                            (*numfuncnonlinstiff)[0] - 1)
-                                        .evaluate_spatial_derivative(displ, time, 0))[0];
+                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
+                            (*numfuncnonlinstiff)[0] - 1)
+                        .evaluate_spatial_derivative(displ, time, 0))[0];
               }
 
               // velocity related forces

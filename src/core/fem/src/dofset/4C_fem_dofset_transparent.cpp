@@ -338,7 +338,7 @@ void Core::DOFSets::TransparentDofSet::set_source_dofs_available_on_this_proc(
     std::map<int, std::vector<int>>& gid_to_dofs)
 {
   for (std::map<int, std::vector<int>>::iterator curr = gid_to_dofs.begin();
-       curr != gid_to_dofs.end(); ++curr)
+      curr != gid_to_dofs.end(); ++curr)
   {
     const int lid = sourcedis_->node_row_map()->LID(curr->first);
 
@@ -387,7 +387,7 @@ void Core::DOFSets::TransparentDofSet::pack_local_source_dofs(
   add_to_pack(sblock, size);
 
   for (std::map<int, std::vector<int>>::iterator curr = gid_to_dofs.begin();
-       curr != gid_to_dofs.end(); ++curr)
+      curr != gid_to_dofs.end(); ++curr)
   {
     int gid = curr->first;
     std::vector<int> mydofs = curr->second;

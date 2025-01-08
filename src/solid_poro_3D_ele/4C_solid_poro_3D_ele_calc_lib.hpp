@@ -126,7 +126,7 @@ namespace Discret::Elements
     else if (numdofpernode == 1)
     {
       for (std::size_t inode = 0; inode < Internal::num_nodes<celltype>;
-           ++inode)  // number of nodes
+          ++inode)  // number of nodes
       {
         if (vectortofill != nullptr) (*vectortofill)(inode, 0) = mymatrix[inode * numdofpernode];
       }
@@ -357,11 +357,11 @@ namespace Discret::Elements
     porostructmat.compute_porosity(
         params, solidpressure, volchange, gp, porosity_and_linearization_od.porosity,
         &porosity_and_linearization_od
-             .d_porosity_d_pressure,  // first derivative of porosity w.r.t. pressure at gauss point
-        nullptr,                      // dphi_dJ not needed
-        nullptr,                      // dphi_dJdp not needed
-        nullptr,                      // dphi_dJJ not needed
-        nullptr                       // dphi_dpp not needed
+            .d_porosity_d_pressure,  // first derivative of porosity w.r.t. pressure at gauss point
+        nullptr,                     // dphi_dJ not needed
+        nullptr,                     // dphi_dJdp not needed
+        nullptr,                     // dphi_dJJ not needed
+        nullptr                      // dphi_dpp not needed
     );
     return porosity_and_linearization_od;
   }
@@ -395,7 +395,7 @@ namespace Discret::Elements
     for (unsigned int inode = 0; inode < Internal::num_nodes<celltype>; ++inode)  // number of nodes
     {
       for (unsigned int idim = 0; idim < Internal::num_dim<celltype>;
-           ++idim)  // number of dimensions
+          ++idim)  // number of dimensions
       {
         (fluid_variables.fluidvel_nodal)(idim, inode) =
             fluid_ephi[idim + (inode * discretization.num_dof(1, ele.nodes()[0]))];

@@ -538,7 +538,8 @@ template <Core::FE::CellType distype>
 Core::FE::ShapeValuesFaceCache<distype>& Core::FE::ShapeValuesFaceCache<distype>::instance()
 {
   static Core::Utils::SingletonOwner<Core::FE::ShapeValuesFaceCache<distype>> owner(
-      []() {
+      []()
+      {
         return std::unique_ptr<ShapeValuesFaceCache<distype>>(new ShapeValuesFaceCache<distype>);
       });
 

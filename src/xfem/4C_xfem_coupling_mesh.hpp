@@ -74,10 +74,10 @@ namespace XFEM
     }
 
     // finalized interface state vectors
-    virtual void complete_state_vectors(){};
+    virtual void complete_state_vectors() {};
 
     // zero interface state vectors for FSI
-    virtual void zero_state_vectors_fsi(){};
+    virtual void zero_state_vectors_fsi() {};
 
     /// clear state vectors
     virtual void clear_state();
@@ -103,7 +103,7 @@ namespace XFEM
     virtual void lift_drag(const int step, const double time) const {};
 
 
-    virtual void read_restart(const int step){};
+    virtual void read_restart(const int step) {};
 
     bool has_moving_interface() override { return true; }
 

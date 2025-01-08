@@ -621,14 +621,14 @@ void Cut::Output::gmsh_level_set_gradient_dump(std::ofstream& file, Element* ele
         normal_triag_midp = ele->get_level_set_gradient(facet_triang_midpoint_coord);
 
         for (std::vector<std::vector<Point*>>::iterator k = facet_triang.begin();
-             k != facet_triang.end(); k++)
+            k != facet_triang.end(); k++)
         {
           std::vector<Point*> facet_triang_tri = *k;
 
           Core::LinAlg::Matrix<3, 1> cur;
           Core::LinAlg::Matrix<3, 1> f_triang_tri_midp(true);
           for (std::vector<Point*>::iterator i = facet_triang_tri.begin();
-               i != facet_triang_tri.end(); i++)
+              i != facet_triang_tri.end(); i++)
           {
             Point* p1 = *i;
             p1->coordinates(cur.data());
@@ -697,14 +697,14 @@ void Cut::Output::gmsh_level_set_value_dump(
       {
         std::vector<std::vector<Point*>> facet_triang = facet->triangulation();
         for (std::vector<std::vector<Point*>>::iterator k = facet_triang.begin();
-             k != facet_triang.end(); k++)
+            k != facet_triang.end(); k++)
         {
           std::vector<Point*> facet_triang_tri = *k;
 
           Core::LinAlg::Matrix<3, 1> cur;
           Core::LinAlg::Matrix<3, 1> f_triang_tri_midp(true);
           for (std::vector<Point*>::iterator i = facet_triang_tri.begin();
-               i != facet_triang_tri.end(); i++)
+              i != facet_triang_tri.end(); i++)
           {
             Point* p1 = *i;
             p1->coordinates(cur.data());
@@ -918,14 +918,14 @@ void Cut::Output::gmsh_eqn_plane_normal_dump(
     facet_triang_midpoint->coordinates(&facet_triang_midpoint_coord(0, 0));
 
     for (std::vector<std::vector<Point*>>::iterator k = facet_triang.begin();
-         k != facet_triang.end(); k++)
+        k != facet_triang.end(); k++)
     {
       std::vector<Point*> facet_triang_tri = *k;
 
       Core::LinAlg::Matrix<3, 1> cur;
       Core::LinAlg::Matrix<3, 1> f_triang_tri_midp(true);
       for (std::vector<Point*>::iterator i = facet_triang_tri.begin(); i != facet_triang_tri.end();
-           i++)
+          i++)
       {
         Point* p1 = *i;
         p1->coordinates(cur.data());
@@ -1191,14 +1191,14 @@ void Cut::Output::gmsh_element_cut_test(
   plain_element_set eles;
   plain_side_set csides;
   for (std::vector<Side*>::const_iterator sit = ele->sides().begin(); sit != ele->sides().end();
-       ++sit)
+      ++sit)
   {
     for (plain_element_set::const_iterator eit = (*sit)->elements().begin();
-         eit != (*sit)->elements().end(); ++eit)
+        eit != (*sit)->elements().end(); ++eit)
     {
       eles.insert(*eit);
       for (plain_side_set::const_iterator csit = (*eit)->cut_sides().begin();
-           csit != (*eit)->cut_sides().end(); ++csit)
+          csit != (*eit)->cut_sides().end(); ++csit)
         csides.insert(*csit);
     }
   }
@@ -1419,7 +1419,7 @@ void Cut::Output::debug_dump_three_points_on_edge(
 
   const PointPositionSet& edge_cut_points = e->cut_points();
   for (PointPositionSet::const_iterator it = edge_cut_points.begin(); it != edge_cut_points.end();
-       ++it)
+      ++it)
   {
     std::stringstream point_name;
     point_name << "EdgeCutPoint" << std::distance(edge_cut_points.begin(), it);
@@ -1460,7 +1460,7 @@ void Cut::Output::debug_dump_more_than_two_intersection_points(
   for (std::vector<Point*>::const_iterator it = point_stack.begin(); it != point_stack.end(); ++it)
   {
     for (std::vector<Point*>::const_iterator jt = point_stack.begin(); jt != point_stack.end();
-         ++jt)
+        ++jt)
     {
       if (*it != *jt)
       {

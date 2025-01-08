@@ -25,7 +25,7 @@ namespace Core::Elements
   {
    public:
     //! constructor
-    ParamsMinimal() : ele_action_(none), total_time_(-1.0), delta_time_(-1.0){};
+    ParamsMinimal() : ele_action_(none), total_time_(-1.0), delta_time_(-1.0) {};
 
     enum ActionType get_action_type() const override { return ele_action_; };
 

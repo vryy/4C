@@ -299,7 +299,7 @@ namespace Discret
       /// Use complete polynomial or tensor product
       bool usescompletepoly_;
     };  // class ElemagDiffEleCalc
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

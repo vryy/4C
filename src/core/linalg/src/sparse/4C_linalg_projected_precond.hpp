@@ -70,7 +70,7 @@ namespace Core::LinAlg
 
     //! @name Mathematical functions required to support the Epetra_Operator interface (pass
     //! through)
-    int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
+    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
     {
       return (precond_->Apply(X, Y));
     }
@@ -79,17 +79,17 @@ namespace Core::LinAlg
     //! @}
 
     //! @name Atribute access functions required to support the Epetra_Operator interface
-    const char *Label() const override { return (precond_->Label()); }
+    const char* Label() const override { return (precond_->Label()); }
 
     bool UseTranspose() const override { return (precond_->UseTranspose()); }
 
     bool HasNormInf() const override { return (precond_->HasNormInf()); }
 
-    const Epetra_Comm &Comm() const override { return (precond_->Comm()); }
+    const Epetra_Comm& Comm() const override { return (precond_->Comm()); }
 
-    const Epetra_Map &OperatorDomainMap() const override { return (precond_->OperatorDomainMap()); }
+    const Epetra_Map& OperatorDomainMap() const override { return (precond_->OperatorDomainMap()); }
 
-    const Epetra_Map &OperatorRangeMap() const override { return (precond_->OperatorRangeMap()); }
+    const Epetra_Map& OperatorRangeMap() const override { return (precond_->OperatorRangeMap()); }
 
     //! @}
 
@@ -182,7 +182,7 @@ namespace Core::LinAlg
        }
 
     */
-    int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
 
    private:

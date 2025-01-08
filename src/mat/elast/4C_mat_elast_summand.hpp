@@ -83,7 +83,7 @@ namespace Mat
 
       virtual void pack_summand(Core::Communication::PackBuffer& data) const { return; };
 
-      virtual void unpack_summand(Core::Communication::UnpackBuffer& buffer){};
+      virtual void unpack_summand(Core::Communication::UnpackBuffer& buffer) {};
 
       //@}
 
@@ -113,20 +113,20 @@ namespace Mat
        * @param numgp Number of Gauss points
        * @param linedef Input line of the element
        */
-      virtual void setup(int numgp, const Core::IO::InputParameterContainer& container){};
+      virtual void setup(int numgp, const Core::IO::InputParameterContainer& container) {};
 
       //! Dummy routine for setup of patient-specific materials
-      virtual void setup_aaa(Teuchos::ParameterList& params, const int eleGID){};
+      virtual void setup_aaa(Teuchos::ParameterList& params, const int eleGID) {};
 
       /*!
        * @brief Post setup routine for summands. It will be called once after everything is set up.
        *
        * @param params Container for additional information
        */
-      virtual void post_setup(Teuchos::ParameterList& params){};
+      virtual void post_setup(Teuchos::ParameterList& params) {};
 
       //! Dummy routine for setup update of summand
-      virtual void update(){};
+      virtual void update() {};
 
       //! add strain energy
       virtual void add_strain_energy(double& psi,  ///< strain energy functions
@@ -738,15 +738,15 @@ namespace Mat
           bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution
                                          ///< according to the generalized Maxwell Model
           bool& viscofract  ///< global indicator for viscous contribution according the FSLS-Model
-      ){/* do nothing for non viscoelastic material models */};
+      ) { /* do nothing for non viscoelastic material models */ };
 
       //@}
 
       //! @name Visualization methods
 
       //! Return names of visualization data
-      virtual void vis_names(std::map<std::string, int>& names){
-          /* do nothing for simple material models */
+      virtual void vis_names(std::map<std::string, int>& names) {
+        /* do nothing for simple material models */
       };
 
       //! Return visualization data

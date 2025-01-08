@@ -681,7 +681,7 @@ void Cut::Mesh::build_static_search_tree()
 
   // inserts all linear elements into the search tree of the background mesh
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     int eid = i->first;
     Element* e = &*i->second;
@@ -691,7 +691,7 @@ void Cut::Mesh::build_static_search_tree()
 
   // inserts all quadratic elements into the search tree of the background mesh
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     int eid = i->first;
     Element* e = &*i->second;
@@ -720,7 +720,7 @@ void Cut::Mesh::cut(Mesh& mesh, plain_element_set& elements_done)
 
   // perform the cut for each side of the cut_mesh_
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = sides_.begin();
-       i != sides_.end(); ++i)
+      i != sides_.end(); ++i)
   {
     Side& side = *i->second;
     mesh.cut(side, elements_done, my_elements_done);
@@ -758,7 +758,7 @@ void Cut::Mesh::cut(Side& side, const plain_element_set& done, plain_element_set
 
     // preselection of possible cut between linear elements and the current side
     for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-         i != elements_.end(); i++)
+        i != elements_.end(); i++)
     {
       Element* e = &*(i->second);
       std::shared_ptr<BoundingBox> elementbox = std::shared_ptr<BoundingBox>(BoundingBox::create());
@@ -774,7 +774,7 @@ void Cut::Mesh::cut(Side& side, const plain_element_set& done, plain_element_set
     // preselection of possible cut between shadow elements of quadratic elements and the current
     // side
     for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-         i != shadow_elements_.end(); i++)
+        i != shadow_elements_.end(); i++)
     {
       Element* e = &*(i->second);
       std::shared_ptr<BoundingBox> elementbox = std::shared_ptr<BoundingBox>(BoundingBox::create());
@@ -817,7 +817,7 @@ void Cut::Mesh::cut(Side& side)
   if (not side.is_level_set_side()) FOUR_C_THROW("This function expects a level set side!");
 
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -831,7 +831,7 @@ void Cut::Mesh::cut(Side& side)
     }
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -853,7 +853,7 @@ void Cut::Mesh::cut(Side& side)
 void Cut::Mesh::rectify_cut_numerics()
 {
   for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = edges_.begin();
-       i != edges_.end(); ++i)
+      i != edges_.end(); ++i)
   {
     Edge* e = &*i->second;
     e->rectify_cut_numerics();
@@ -868,7 +868,7 @@ void Cut::Mesh::search_collisions(Mesh& cutmesh)
 {
   const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = cutmesh.sides();
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     Core::LinAlg::Matrix<3, 2> cutsideBV = cutside->get_bounding_volume().get_bounding_volume();
@@ -909,7 +909,7 @@ void Cut::Mesh::find_cut_points()
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 4/6 --- cut_mesh_intersection --- find_cut_points");
 
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -923,7 +923,7 @@ void Cut::Mesh::find_cut_points()
     }
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -946,7 +946,7 @@ void Cut::Mesh::make_cut_lines()
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 4/6 --- cut_mesh_intersection --- MakeCutLines");
 
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
 
@@ -964,7 +964,7 @@ void Cut::Mesh::make_cut_lines()
     }
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
 
@@ -992,7 +992,7 @@ void Cut::Mesh::make_facets()
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 4/6 --- cut_mesh_intersection --- MakeFacets");
 
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1006,7 +1006,7 @@ void Cut::Mesh::make_facets()
     }
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1030,7 +1030,7 @@ void Cut::Mesh::make_volume_cells()
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 4/6 --- cut_mesh_intersection --- MakeVolumeCells");
 
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1044,7 +1044,7 @@ void Cut::Mesh::make_volume_cells()
     }
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1074,7 +1074,7 @@ void Cut::Mesh::find_node_positions()
 
   // get nodal positions from elements
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1088,7 +1088,7 @@ void Cut::Mesh::find_node_positions()
     }
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1360,7 +1360,7 @@ bool Cut::Mesh::check_for_undecided_node_positions(
 
   // find nodes with undecided node positions for shadow nodes of e.g. hex20 elements
   for (std::map<plain_int_set, Node*>::iterator i = shadow_nodes_.begin(); i != shadow_nodes_.end();
-       ++i)
+      ++i)
   {
     Node* n = &*i->second;
     Point* p = n->point();
@@ -1416,7 +1416,7 @@ void Cut::Mesh::find_nodal_dof_sets(bool include_inner)
 void Cut::Mesh::create_integration_cells(int count, bool tetcellsonly)
 {
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1442,7 +1442,7 @@ void Cut::Mesh::create_integration_cells(int count, bool tetcellsonly)
     }
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1468,7 +1468,7 @@ void Cut::Mesh::create_integration_cells(int count, bool tetcellsonly)
 void Cut::Mesh::moment_fit_gauss_weights(bool include_inner, Cut::BCellGaussPts Bcellgausstype)
 {
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1482,7 +1482,7 @@ void Cut::Mesh::moment_fit_gauss_weights(bool include_inner, Cut::BCellGaussPts 
     }
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1504,7 +1504,7 @@ void Cut::Mesh::moment_fit_gauss_weights(bool include_inner, Cut::BCellGaussPts 
 void Cut::Mesh::direct_divergence_gauss_rule(bool include_inner, Cut::BCellGaussPts Bcellgausstype)
 {
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1518,7 +1518,7 @@ void Cut::Mesh::direct_divergence_gauss_rule(bool include_inner, Cut::BCellGauss
     }
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1540,7 +1540,7 @@ void Cut::Mesh::direct_divergence_gauss_rule(bool include_inner, Cut::BCellGauss
 void Cut::Mesh::remove_empty_volume_cells()
 {
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1554,7 +1554,7 @@ void Cut::Mesh::remove_empty_volume_cells()
     }
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
     try
@@ -1576,13 +1576,13 @@ void Cut::Mesh::remove_empty_volume_cells()
 void Cut::Mesh::test_element_volume(bool fatal, VCellGaussPts VCellGP)
 {
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     test_element_volume(e.shape(), e, fatal, VCellGP);
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
     test_element_volume(e.shape(), e, fatal, VCellGP);
@@ -1687,7 +1687,7 @@ void Cut::Mesh::print_cell_stats()
 
   // loop over elements
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element& e = *i->second;
     if (e.is_cut())
@@ -1697,7 +1697,7 @@ void Cut::Mesh::print_cell_stats()
       numvc[std::min(
           static_cast<int>(volumecells.size() - 1), static_cast<int>(numvc.size() - 1))] += 1;
       for (plain_volumecell_set::const_iterator i = volumecells.begin(); i != volumecells.end();
-           ++i)
+          ++i)
       {
         VolumeCell* vc = *i;
         std::map<Core::FE::CellType, int> cell_count;
@@ -1714,7 +1714,7 @@ void Cut::Mesh::print_cell_stats()
           cell_count[bcell->shape()] += 1;
         }
         for (std::map<Core::FE::CellType, int>::iterator i = cell_count.begin();
-             i != cell_count.end(); ++i)
+            i != cell_count.end(); ++i)
         {
           Core::FE::CellType shape = i->first;
           int count = i->second;
@@ -1731,7 +1731,7 @@ void Cut::Mesh::print_cell_stats()
 
   // loop over shadow elements
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element& e = *i->second;
     if (e.is_cut())
@@ -1741,7 +1741,7 @@ void Cut::Mesh::print_cell_stats()
       numvc[std::min(
           static_cast<int>(volumecells.size() - 1), static_cast<int>(numvc.size() - 1))] += 1;
       for (plain_volumecell_set::const_iterator i = volumecells.begin(); i != volumecells.end();
-           ++i)
+          ++i)
       {
         VolumeCell* vc = *i;
         std::map<Core::FE::CellType, int> cell_count;
@@ -1758,7 +1758,7 @@ void Cut::Mesh::print_cell_stats()
           cell_count[bcell->shape()] += 1;
         }
         for (std::map<Core::FE::CellType, int>::iterator i = cell_count.begin();
-             i != cell_count.end(); ++i)
+            i != cell_count.end(); ++i)
         {
           Core::FE::CellType shape = i->first;
           int count = i->second;
@@ -1801,7 +1801,7 @@ void Cut::Mesh::print_cell_stats()
   std::cout << "   *\n";
 
   for (std::map<Core::FE::CellType, std::vector<int>>::iterator i = numcells.begin();
-       i != numcells.end(); ++i)
+      i != numcells.end(); ++i)
   {
     Core::FE::CellType shape = i->first;
     std::vector<int>& nc = i->second;
@@ -1858,11 +1858,11 @@ void Cut::Mesh::dump_gmsh(std::string name)
   {
     Cut::Output::gmsh_new_section(file, "Elements");
     for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-         i != elements_.end(); ++i)
+        i != elements_.end(); ++i)
       Cut::Output::gmsh_element_dump(file, &(*i->second));
 
     for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-         i != shadow_elements_.end(); ++i)
+        i != shadow_elements_.end(); ++i)
       Cut::Output::gmsh_element_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
   }
@@ -1872,7 +1872,7 @@ void Cut::Mesh::dump_gmsh(std::string name)
   {
     Cut::Output::gmsh_new_section(file, "Sides");
     for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = sides_.begin();
-         i != sides_.end(); ++i)
+        i != sides_.end(); ++i)
       Cut::Output::gmsh_side_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
   }
@@ -1901,7 +1901,7 @@ void Cut::Mesh::dump_gmsh(std::string name)
   {
     Cut::Output::gmsh_new_section(file, "Edges");
     for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = edges_.begin();
-         i != edges_.end(); ++i)
+        i != edges_.end(); ++i)
       Cut::Output::gmsh_edge_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
   }
@@ -1953,7 +1953,7 @@ void Cut::Mesh::dump_gmsh(std::string name)
   bool haslevelsetside = false;
   // Does one element have a level set side?
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); i++)
+      i != elements_.end(); i++)
   {
     Element* ele = &*i->second;
     haslevelsetside = ele->has_level_set_side();
@@ -1964,19 +1964,19 @@ void Cut::Mesh::dump_gmsh(std::string name)
   {
     Cut::Output::gmsh_new_section(file, "LevelSetValues");
     for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-         i != elements_.end(); i++)
+        i != elements_.end(); i++)
       Cut::Output::gmsh_level_set_value_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
 
     Cut::Output::gmsh_new_section(file, "LevelSetGradient");
     for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-         i != elements_.end(); i++)
+        i != elements_.end(); i++)
       Cut::Output::gmsh_level_set_gradient_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
 
     Cut::Output::gmsh_new_section(file, "LevelSetOrientation");
     for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-         i != elements_.end(); i++)
+        i != elements_.end(); i++)
       Cut::Output::gmsh_level_set_orientation_dump(file, &(*i->second));
     Cut::Output::gmsh_end_section(file);
   }
@@ -2003,7 +2003,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
     {
       const plain_integrationcell_set& integrationcells = vc->integration_cells();
       for (plain_integrationcell_set::const_iterator i = integrationcells.begin();
-           i != integrationcells.end(); ++i)
+          i != integrationcells.end(); ++i)
       {
         IntegrationCell* ic = *i;
         ic->dump_gmsh(file, &count);
@@ -2016,7 +2016,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
 
   file << "View \"Elements, NumVcs\" {\n";
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); ++i)
+      i != elements_.end(); ++i)
   {
     Element* e = &*i->second;
     const plain_volumecell_set& volumes = e->volume_cells();
@@ -2028,7 +2028,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
       {
         const plain_integrationcell_set& integrationcells = vc->integration_cells();
         for (plain_integrationcell_set::const_iterator i = integrationcells.begin();
-             i != integrationcells.end(); ++i)
+            i != integrationcells.end(); ++i)
         {
           IntegrationCell* ic = *i;
           ic->dump_gmsh(file, &count);
@@ -2037,7 +2037,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
     }
   }
   for (std::map<int, std::shared_ptr<Element>>::iterator i = shadow_elements_.begin();
-       i != shadow_elements_.end(); ++i)
+      i != shadow_elements_.end(); ++i)
   {
     Element* e = &*i->second;
     const plain_volumecell_set& volumes = e->volume_cells();
@@ -2049,7 +2049,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
       {
         const plain_integrationcell_set& integrationcells = vc->integration_cells();
         for (plain_integrationcell_set::const_iterator i = integrationcells.begin();
-             i != integrationcells.end(); ++i)
+            i != integrationcells.end(); ++i)
         {
           IntegrationCell* ic = *i;
           ic->dump_gmsh(file, &count);
@@ -2083,7 +2083,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
   // Does there exist a Level Set cut side?
   bool haslevelsetside = false;
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); i++)
+      i != elements_.end(); i++)
   {
     Element* ele = &*i->second;
     haslevelsetside = ele->has_level_set_side();
@@ -2095,7 +2095,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
   {
     file << "View \"LevelSetValues\" {\n";
     for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-         i != elements_.end(); i++)
+        i != elements_.end(); i++)
     {
       Element* ele = &*i->second;
       Cut::Output::gmsh_level_set_value_dump(file, ele);
@@ -2104,7 +2104,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
 
     file << "View \"LevelSetGradient\" {\n";
     for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-         i != elements_.end(); i++)
+        i != elements_.end(); i++)
     {
       Element* ele = &*i->second;
       Cut::Output::gmsh_level_set_gradient_dump(file, ele);
@@ -2113,7 +2113,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
 
     file << "View \"LevelSetOrientation\" {\n";
     for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-         i != elements_.end(); i++)
+        i != elements_.end(); i++)
     {
       Element* ele = &*i->second;
       Cut::Output::gmsh_level_set_orientation_dump(file, ele);
@@ -2131,7 +2131,7 @@ void Cut::Mesh::dump_gmsh_integration_cells(std::string name)
   std::ofstream file(name.c_str());
   file << "View \"IntegrationCells\" {\n";
   for (std::list<std::shared_ptr<IntegrationCell>>::iterator i = integrationcells_.begin();
-       i != integrationcells_.end(); ++i)
+      i != integrationcells_.end(); ++i)
   {
     IntegrationCell* ic = &**i;
     ic->dump_gmsh(file);
@@ -2190,7 +2190,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name)
   std::ofstream file(name.c_str());
   file << "View \"VolumeCells\" {\n";
   for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-       i != elements_.end(); i++)
+      i != elements_.end(); i++)
   {
     Element& ele = *i->second;
     const plain_volumecell_set cells = ele.volume_cells();
@@ -2205,7 +2205,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name)
   file << "View \"BoundaryCells\" {\n";
   bool haslevelsetside = false;
   for (std::list<std::shared_ptr<BoundaryCell>>::iterator i = boundarycells_.begin();
-       i != boundarycells_.end(); ++i)
+      i != boundarycells_.end(); ++i)
   {
     BoundaryCell* bc = &**i;
 
@@ -2219,7 +2219,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name)
   {
     file << "View \"LevelSetInfoOnFacet\" {\n";
     for (std::map<int, std::shared_ptr<Element>>::iterator i = elements_.begin();
-         i != elements_.end(); i++)
+        i != elements_.end(); i++)
     {
       Element* ele = &*i->second;
       const plain_facet_set facets = ele->facets();
@@ -2893,7 +2893,7 @@ bool Cut::Mesh::within_bb(Element& element) { return bb_->within(norm_, element)
 void Cut::Mesh::create_side_ids_cut_test(int lastid)
 {
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = sides_.begin();
-       i != sides_.end(); ++i)
+      i != sides_.end(); ++i)
   {
     Side* s = &*i->second;
     if (!s->is_cut_side())
@@ -2911,7 +2911,7 @@ void Cut::Mesh::create_side_ids_cut_test(int lastid)
 int Cut::Mesh::create_side_ids_all_cut_test(int lastid)
 {
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = sides_.begin();
-       i != sides_.end(); ++i)
+      i != sides_.end(); ++i)
   {
     Side* s = &*i->second;
     if (!s->is_cut_side())
@@ -2931,7 +2931,7 @@ void Cut::Mesh::assign_other_volume_cells_cut_test(const Mesh& other)
   const std::list<std::shared_ptr<VolumeCell>>& other_cells = other.volume_cells();
   plain_volumecell_set cells;
   for (std::list<std::shared_ptr<VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     VolumeCell* vc = &**i;
 

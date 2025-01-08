@@ -68,7 +68,7 @@ namespace Mat
       std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class myocard
-  }     // namespace PAR
+  }  // namespace PAR
 
   class MyocardType : public Core::Communication::ParObjectType
   {

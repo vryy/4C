@@ -27,10 +27,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
-ScaTra::TimIntHDG::TimIntHDG(const std::shared_ptr<Core::FE::Discretization> &actdis,
-    const std::shared_ptr<Core::LinAlg::Solver> &solver,
-    const std::shared_ptr<Teuchos::ParameterList> &params,
-    const std::shared_ptr<Teuchos::ParameterList> &extraparams,
+ScaTra::TimIntHDG::TimIntHDG(const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Teuchos::ParameterList>& extraparams,
     std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output),
       TimIntGenAlpha(actdis, solver, params, extraparams, output),
@@ -57,7 +57,7 @@ ScaTra::TimIntHDG::TimIntHDG(const std::shared_ptr<Core::FE::Discretization> &ac
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntHDG::setup()
 {
-  hdgdis_ = dynamic_cast<Core::FE::DiscretizationHDG *>(discret_.get());
+  hdgdis_ = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis_ == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // vector to store the dofs per element
@@ -67,7 +67,7 @@ void ScaTra::TimIntHDG::setup()
   // loop over elements
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    auto *hdgele = dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
+    auto* hdgele = dynamic_cast<Discret::Elements::ScaTraHDG*>(discret_->l_col_element(iele));
     (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
 
@@ -79,7 +79,7 @@ void ScaTra::TimIntHDG::setup()
   discret_->fill_complete();
 
   // HDG vectors passed to the element
-  const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
+  const Epetra_Map* intdofrowmap = discret_->dof_row_map(nds_intvar_);
   intphinp_ = Core::LinAlg::create_vector(*intdofrowmap, true);
   intphin_ = Core::LinAlg::create_vector(*intdofrowmap, true);
 
@@ -285,12 +285,12 @@ void ScaTra::TimIntHDG::update()
 namespace
 {
   // internal helper function for output
-  void get_node_vectors_hdg(Core::FE::Discretization &dis,
-      const std::shared_ptr<Core::LinAlg::Vector<double>> &interiorValues,
-      const std::shared_ptr<Core::LinAlg::Vector<double>> &traceValues, const int ndim,
-      std::shared_ptr<Core::LinAlg::Vector<double>> &phi,
-      std::shared_ptr<Core::LinAlg::MultiVector<double>> &gradphi,
-      std::shared_ptr<Core::LinAlg::Vector<double>> &tracephi, int nds_intvar_, int ndofs)
+  void get_node_vectors_hdg(Core::FE::Discretization& dis,
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& interiorValues,
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& traceValues, const int ndim,
+      std::shared_ptr<Core::LinAlg::Vector<double>>& phi,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>>& gradphi,
+      std::shared_ptr<Core::LinAlg::Vector<double>>& tracephi, int nds_intvar_, int ndofs)
   {
     dis.clear_state(true);
 
@@ -314,7 +314,7 @@ namespace
 
     for (int el = 0; el < dis.num_my_col_elements(); ++el)
     {
-      Core::Elements::Element *ele = dis.l_col_element(el);
+      Core::Elements::Element* ele = dis.l_col_element(el);
       ele->location_vector(dis, la, false);
       interpolVec.size(ele->num_node() * (2 + ndim));
 
@@ -323,7 +323,7 @@ namespace
       // sum values on nodes into vectors and record the touch count (build average of values)
       for (int i = 0; i < ele->num_node(); ++i)
       {
-        Core::Nodes::Node *node = ele->nodes()[i];
+        Core::Nodes::Node* node = ele->nodes()[i];
         const int localIndex = dis.node_row_map()->LID(node->id());
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
@@ -452,7 +452,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, std::shared_ptr<Core::IO::I
   // store the number of dofs per element on vector
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    auto *hdgele = dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
+    auto* hdgele = dynamic_cast<Discret::Elements::ScaTraHDG*>(discret_->l_col_element(iele));
     // store the number of dofs for the element
     (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
@@ -530,13 +530,13 @@ void ScaTra::TimIntHDG::set_initial_field(
       Core::LinAlg::SerialDenseVector updateVec1, updateVec2, dummyVec;
       Core::Elements::LocationArray la(discret_->num_dof_sets());
 
-      const Epetra_Map *dofrowmap = discret_->dof_row_map();
-      const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
+      const Epetra_Map* dofrowmap = discret_->dof_row_map();
+      const Epetra_Map* intdofrowmap = discret_->dof_row_map(nds_intvar_);
       double error = 0;
 
       for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
       {
-        Core::Elements::Element *ele = discret_->l_col_element(iele);
+        Core::Elements::Element* ele = discret_->l_col_element(iele);
         ele->location_vector(*discret_, la, false);
         if (static_cast<std::size_t>(updateVec1.numRows()) != la[0].lm_.size())
           updateVec1.size(la[0].lm_.size());
@@ -656,11 +656,11 @@ void ScaTra::TimIntHDG::update_interior_variables(
   Core::LinAlg::SerialDenseVector dummyVec;
   Core::LinAlg::SerialDenseVector updateVec;
   Core::Elements::LocationArray la(discret_->num_dof_sets());
-  const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
+  const Epetra_Map* intdofrowmap = discret_->dof_row_map(nds_intvar_);
 
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->l_col_element(iele);
+    Core::Elements::Element* ele = discret_->l_col_element(iele);
     if (ele->owner() != Core::Communication::my_mpi_rank(discret_->get_comm())) continue;
 
     ele->location_vector(*discret_, la, false);
@@ -692,8 +692,8 @@ void ScaTra::TimIntHDG::fd_check()
 
   discret_->clear_state(true);
 
-  const Epetra_Map *dofrowmap = discret_->dof_row_map(0);
-  const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
+  const Epetra_Map* dofrowmap = discret_->dof_row_map(0);
+  const Epetra_Map* intdofrowmap = discret_->dof_row_map(nds_intvar_);
 
   std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1, systemmatrix2;
   std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1, systemvector2, systemvector3;
@@ -732,7 +732,7 @@ void ScaTra::TimIntHDG::fd_check()
   // loop over elements
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->l_col_element(iele);
+    Core::Elements::Element* ele = discret_->l_col_element(iele);
     ele->location_vector(*discret_, la, false);
 
     strategy.clear_element_storage(la[0].size(), la[0].size());
@@ -805,7 +805,7 @@ void ScaTra::TimIntHDG::fd_check()
 
       for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
       {
-        Core::Elements::Element *ele = discret_->l_col_element(iele);
+        Core::Elements::Element* ele = discret_->l_col_element(iele);
         ele->location_vector(*discret_, la, false);
 
         strategy.clear_element_storage(la[0].size(), la[0].size());
@@ -1028,7 +1028,7 @@ void ScaTra::TimIntHDG::calc_mat_initial()
   // loop over elements
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->l_col_element(iele);
+    Core::Elements::Element* ele = discret_->l_col_element(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
     if (ele->has_only_ghost_nodes(Core::Communication::my_mpi_rank(discret_->get_comm()))) continue;
@@ -1075,7 +1075,7 @@ void ScaTra::TimIntHDG::adapt_degree()
   const double tcadapt = Teuchos::Time::wallTime();
 
   // cast and check if hdg discretization is provided
-  Core::FE::DiscretizationHDG *hdgdis = dynamic_cast<Core::FE::DiscretizationHDG *>(discret_.get());
+  Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // vector to store the dofs per single element
@@ -1113,15 +1113,15 @@ void ScaTra::TimIntHDG::adapt_degree()
     // add new location array in vector for each element
     la_old.push_back(Core::Elements::LocationArray(discret_->num_dof_sets()));
 
-    Core::Elements::Element *ele = discret_->l_col_element(iele);
+    Core::Elements::Element* ele = discret_->l_col_element(iele);
 
     // fill location array and store it for later use
     ele->location_vector(*discret_, la_old[iele], false);
 
     if (ele->owner() == Core::Communication::my_mpi_rank(discret_->get_comm()))
     {
-      Discret::Elements::ScaTraHDG *hdgele =
-          dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
+      Discret::Elements::ScaTraHDG* hdgele =
+          dynamic_cast<Discret::Elements::ScaTraHDG*>(discret_->l_col_element(iele));
 
       // call routine on elements to calculate error on element
       ele->evaluate(
@@ -1189,8 +1189,8 @@ void ScaTra::TimIntHDG::adapt_degree()
   // store the number of dofs per element on vector
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Discret::Elements::ScaTraHDG *hdgele =
-        dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
+    Discret::Elements::ScaTraHDG* hdgele =
+        dynamic_cast<Discret::Elements::ScaTraHDG*>(discret_->l_col_element(iele));
     // store the number of dofs for the element
     (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
@@ -1294,8 +1294,8 @@ void ScaTra::TimIntHDG::adapt_variable_vector(std::shared_ptr<Core::LinAlg::Vect
   eleparams.set<int>("nds_intvar_old", nds_intvar_old);
 
   // dof row map for adapted dofset
-  const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
-  const Epetra_Map *dofrowmap = discret_->dof_row_map(0);
+  const Epetra_Map* intdofrowmap = discret_->dof_row_map(nds_intvar_);
+  const Epetra_Map* dofrowmap = discret_->dof_row_map(0);
 
 
   // set old state vector on parameter list
@@ -1313,7 +1313,7 @@ void ScaTra::TimIntHDG::adapt_variable_vector(std::shared_ptr<Core::LinAlg::Vect
 
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->l_col_element(iele);
+    Core::Elements::Element* ele = discret_->l_col_element(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
     if (ele->has_only_ghost_nodes(Core::Communication::my_mpi_rank(discret_->get_comm()))) continue;
@@ -1418,7 +1418,7 @@ void ScaTra::TimIntHDG::assemble_rhs()
   // loop over elements
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->l_col_element(iele);
+    Core::Elements::Element* ele = discret_->l_col_element(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
     if (ele->has_only_ghost_nodes(Core::Communication::my_mpi_rank(discret_->get_comm()))) continue;

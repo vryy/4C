@@ -570,7 +570,7 @@ void Discret::Elements::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
           }
         }
       }  // stiffness matrix
-    }    // bending potential cosine
+    }  // bending potential cosine
 
     else
       std::cout

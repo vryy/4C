@@ -27,7 +27,7 @@ namespace NOX
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace Inner
+    }  // namespace Inner
     namespace LineSearch
     {
       class Factory
@@ -68,7 +68,7 @@ namespace NOX
           Teuchos::ParameterList& params);
 
     }  // namespace LineSearch
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

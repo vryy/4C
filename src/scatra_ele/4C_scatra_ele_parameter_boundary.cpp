@@ -20,7 +20,8 @@ Discret::Elements::ScaTraEleParameterBoundary*
 Discret::Elements::ScaTraEleParameterBoundary::instance(const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
-      [](const std::string& disname) {
+      [](const std::string& disname)
+      {
         return std::unique_ptr<ScaTraEleParameterBoundary>(new ScaTraEleParameterBoundary(disname));
       });
 

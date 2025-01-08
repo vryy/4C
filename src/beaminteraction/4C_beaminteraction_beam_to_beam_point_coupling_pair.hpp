@@ -64,7 +64,7 @@ namespace BeamInteraction
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over
      * all contact pairs. (derived)
      */
-    void pre_evaluate() override{};
+    void pre_evaluate() override {};
 
     /**
      * \brief Evaluate this contact element pair.
@@ -96,7 +96,7 @@ namespace BeamInteraction
      * evaluate_and_assemble call.
      */
     void reset_state(const std::vector<double>& beam_centerline_dofvec,
-        const std::vector<double>& solid_nodal_dofvec) override{};
+        const std::vector<double>& solid_nodal_dofvec) override {};
 
     /**
      * \brief This pair is always active.

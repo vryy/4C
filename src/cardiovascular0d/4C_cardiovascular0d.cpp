@@ -158,7 +158,7 @@ Utils::Cardiovascular0D::Cardiovascular0D(std::shared_ptr<Core::FE::Discretizati
           FOUR_C_THROW("Unknown ATRIUM_MODEL!");
           break;
       }  // end of switch
-    }    // end if (cardiovascular0dtype_ == cardvasc0d_syspulcirculation)
+    }  // end if (cardiovascular0dtype_ == cardvasc0d_syspulcirculation)
 
     std::vector<int> coupcondID(cardiovascular0dstructcoupcond_.size());
     // set Neumann line to condition

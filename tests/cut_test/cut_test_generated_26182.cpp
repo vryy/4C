@@ -201,7 +201,7 @@ void test_generated_26182()
 
   std::vector<std::vector<Cut::Point*>> maincycletriangles = triangulatefacet.get_split_cells();
   for (std::vector<std::vector<Cut::Point*>>::iterator i = maincycletriangles.begin();
-       i != maincycletriangles.end(); ++i)
+      i != maincycletriangles.end(); ++i)
   {
     std::vector<Cut::Point*> maincycletriangle = *i;
     if (Cut::Kernel::is_on_line(maincycletriangle[0], maincycletriangle[1], maincycletriangle[2]))
@@ -212,7 +212,7 @@ void test_generated_26182()
 
   std::cout << "==| The full triangulation: |==" << std::endl;
   for (std::vector<std::vector<Cut::Point*>>::iterator ii = maincycletriangles.begin();
-       ii != maincycletriangles.end(); ++ii)
+      ii != maincycletriangles.end(); ++ii)
   {
     std::cout << "ST(" << (*ii)[0]->x()[0] << ", " << (*ii)[0]->x()[1] << ", " << (*ii)[0]->x()[2]
               << ", " << (*ii)[1]->x()[0] << ", " << (*ii)[1]->x()[1] << ", " << (*ii)[1]->x()[2]

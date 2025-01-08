@@ -156,7 +156,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
       std::cout << "In total " << numgp_desired << " GPs (" << numgp_per_artele
                 << " per artery element) required for lateral surface coupling" << std::endl;
     std::cout << "Proc. " << myrank_ << " evaluates " << numgp << " GPs "
-              << "(" << (double)(numgp) / (double)(total_num_gp)*100.0 << "% of all GPs)"
+              << "(" << (double)(numgp) / (double)(total_num_gp) * 100.0 << "% of all GPs)"
               << std::endl;
   }
 }

@@ -905,12 +905,12 @@ void Discret::Elements::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
           double bopstrbop = 0.0;  // intermediate value
           for (int idim = 0; idim < NUMDIM_WEG6; ++idim)
             bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
-          (*stiffmatrix)(NUMDIM_WEG6 * inod + 0, NUMDIM_WEG6 * jnod + 0) += bopstrbop;
-          (*stiffmatrix)(NUMDIM_WEG6 * inod + 1, NUMDIM_WEG6 * jnod + 1) += bopstrbop;
-          (*stiffmatrix)(NUMDIM_WEG6 * inod + 2, NUMDIM_WEG6 * jnod + 2) += bopstrbop;
+          (*stiffmatrix)(NUMDIM_WEG6* inod + 0, NUMDIM_WEG6 * jnod + 0) += bopstrbop;
+          (*stiffmatrix)(NUMDIM_WEG6* inod + 1, NUMDIM_WEG6 * jnod + 1) += bopstrbop;
+          (*stiffmatrix)(NUMDIM_WEG6* inod + 2, NUMDIM_WEG6 * jnod + 2) += bopstrbop;
         }
       }  // end of integrate `geometric' stiffness ******************************
-    }    // if (stiffmatrix != nullptr)
+    }  // if (stiffmatrix != nullptr)
 
     if (massmatrix != nullptr)
     {  // evaluate mass matrix +++++++++++++++++++++++++
@@ -924,9 +924,9 @@ void Discret::Elements::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
         for (int jnod = 0; jnod < NUMNOD_WEG6; ++jnod)
         {
           massfactor = ifactor * shapefcts[gp](jnod);  // intermediate factor
-          (*massmatrix)(NUMDIM_WEG6 * inod + 0, NUMDIM_WEG6 * jnod + 0) += massfactor;
-          (*massmatrix)(NUMDIM_WEG6 * inod + 1, NUMDIM_WEG6 * jnod + 1) += massfactor;
-          (*massmatrix)(NUMDIM_WEG6 * inod + 2, NUMDIM_WEG6 * jnod + 2) += massfactor;
+          (*massmatrix)(NUMDIM_WEG6* inod + 0, NUMDIM_WEG6 * jnod + 0) += massfactor;
+          (*massmatrix)(NUMDIM_WEG6* inod + 1, NUMDIM_WEG6 * jnod + 1) += massfactor;
+          (*massmatrix)(NUMDIM_WEG6* inod + 2, NUMDIM_WEG6 * jnod + 2) += massfactor;
         }
 
         // check for non constant mass matrix
@@ -986,7 +986,7 @@ void Discret::Elements::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
                 double massfactor = factor * myacc(idim);
                 for (int jnod = 0; jnod < NUMNOD_WEG6; ++jnod)
                   for (int jdim = 0; jdim < NUMDIM_WEG6; ++jdim)
-                    (*massmatrix)(inod * NUMDIM_WEG6 + idim, jnod * NUMDIM_WEG6 + jdim) +=
+                    (*massmatrix)(inod* NUMDIM_WEG6 + idim, jnod * NUMDIM_WEG6 + jdim) +=
                         massfactor * cb(jnod * NUMDIM_WEG6 + jdim);
               }
             }
@@ -1000,7 +1000,7 @@ void Discret::Elements::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
             {
               double forcefactor = shapefcts[gp](inod) * detJ_w;
               for (int idim = 0; idim < NUMDIM_WEG6; ++idim)
-                (*forceinert)(inod * NUMDIM_WEG6 + idim) += forcefactor * density * myacc(idim);
+                (*forceinert)(inod* NUMDIM_WEG6 + idim) += forcefactor * density * myacc(idim);
             }
           }
         }

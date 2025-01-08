@@ -51,10 +51,10 @@ namespace Solid
       bool evaluate_force_stiff() override;
 
       //! derived
-      void pre_evaluate() override{};
+      void pre_evaluate() override {};
 
       //! derived
-      void post_evaluate() override{};
+      void post_evaluate() override {};
 
       //! derived
       bool assemble_force(Core::LinAlg::Vector<double>& f, const double& timefac_np) const override;
@@ -71,11 +71,11 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void predict(const Inpar::Solid::PredEnum& pred_type) override{};
+      void predict(const Inpar::Solid::PredEnum& pred_type) override {};
 
       //! derived
       void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
-          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override{};
+          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override {};
 
       //! derived
       void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
@@ -85,22 +85,22 @@ namespace Solid
       }
 
       //! derived
-      void run_post_iterate(const ::NOX::Solver::Generic& solver) override{};
+      void run_post_iterate(const ::NOX::Solver::Generic& solver) override {};
 
       //! derived
       void update_step_state(const double& timefac_n) override;
 
       //! derived
-      void update_step_element() override{};
+      void update_step_element() override {};
 
       //! derived
-      void determine_stress_strain() override{};
+      void determine_stress_strain() override {};
 
       //! derived
-      void determine_energy() override{};
+      void determine_energy() override {};
 
       //! derived
-      void determine_optional_quantity() override{};
+      void determine_optional_quantity() override {};
 
       //! derived
       void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override;

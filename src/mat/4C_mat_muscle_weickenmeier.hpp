@@ -94,7 +94,7 @@ namespace Mat
       //@}
 
     };  // end class Muscle_Weickenmeier
-  }     // end namespace PAR
+  }  // end namespace PAR
 
 
   class MuscleWeickenmeierType : public Core::Communication::ParObjectType

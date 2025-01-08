@@ -480,7 +480,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
       utils()->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac,
           fac, my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, A_s, k);
     }  // end of loop over integration points gpid
-  }    // end loop over scalars
+  }  // end loop over scalars
 
   // compute matrix and residual contributions arising from closing equation for electric potential
   switch (myelch::elchparams_->equ_pot())
@@ -813,7 +813,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype,
         errors[2] += deltapot * deltapot * fac;        // electric potential in electrolyte solution
 
       }  // end of loop over integration points
-    }    // Kwok and Wu
+    }  // Kwok and Wu
     break;
     default:
     {

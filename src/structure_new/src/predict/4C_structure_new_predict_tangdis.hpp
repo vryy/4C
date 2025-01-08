@@ -54,7 +54,7 @@ namespace Solid
 
       bool apply_linear_reaction_forces_;
     };  // class TangDis
-  }     // namespace Predict
+  }  // namespace Predict
 }  // namespace Solid
 
 namespace NOX
@@ -87,9 +87,9 @@ namespace NOX
           //! pointer to the tangdis object (read-only)
           Teuchos::RCP<const Solid::Predict::TangDis> tang_predict_ptr_;
         };  // class TangDis
-      }     // namespace PrePostOp
-    }       // namespace GROUP
-  }         // namespace Nln
+      }  // namespace PrePostOp
+    }  // namespace GROUP
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

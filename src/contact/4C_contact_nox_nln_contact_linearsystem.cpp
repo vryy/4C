@@ -349,7 +349,7 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::extract_active_blocks(
 
   // solve sub-systems if possible
   for (std::vector<unsigned>::const_iterator it = skip_row_col_index.begin();
-       it != skip_row_col_index.end(); ++it)
+      it != skip_row_col_index.end(); ++it)
     linsys_.apply_diagonal_inverse(block_mat(*it, *it), lhs, rhs);
 
   // build remaining active linear problem

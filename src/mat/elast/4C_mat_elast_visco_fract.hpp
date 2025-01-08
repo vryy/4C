@@ -53,7 +53,7 @@ namespace Mat
           return nullptr;
         };
       };  // class Fract
-    }     // namespace PAR
+    }  // namespace PAR
 
 
     /*!

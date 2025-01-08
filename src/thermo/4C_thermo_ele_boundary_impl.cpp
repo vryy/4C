@@ -282,7 +282,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
             coeff, surtemp, *tempstate);
 
       }  // disp!=0
-    }    // (la.Size() > 1) and (kintype == Inpar::Solid::KinemType::nonlinearTotLag)
+    }  // (la.Size() > 1) and (kintype == Inpar::Solid::KinemType::nonlinearTotLag)
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
@@ -321,7 +321,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
         break;
       }
     }  // end of switch(timint)
-  }    // calc_thermo_fextconvection
+  }  // calc_thermo_fextconvection
 
   // only contribution in case of geometrically nonlinear analysis
   // evaluate coupling matrix k_Td for surface heat transfer boundary condition
@@ -510,8 +510,8 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
         }  // end of switch(timint)
 
       }  // disp!=0
-    }    // if ( (kintype == Inpar::Solid::KinemType::nonlinearTotLag) and (la.Size()>1) )
-  }      // calc_thermo_fextconvection_coupltang
+    }  // if ( (kintype == Inpar::Solid::KinemType::nonlinearTotLag) and (la.Size()>1) )
+  }  // calc_thermo_fextconvection_coupltang
 
   else
     FOUR_C_THROW("Unknown type of action for Temperature Implementation: %s",

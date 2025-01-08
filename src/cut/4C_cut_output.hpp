@@ -394,7 +394,7 @@ namespace Cut
     {
       if (section != "") gmsh_new_section(file, section);
       for (typename std::vector<std::shared_ptr<T>>::iterator t = container.begin();
-           t != container.end(); ++t)
+          t != container.end(); ++t)
         gmsh_object_dump<T>(file, &(*(*t)), to_local, ele);
       if (section != "") gmsh_end_section(file, close_file);
     }
@@ -407,7 +407,7 @@ namespace Cut
     {
       if (section != "") gmsh_new_section(file, section);
       for (typename std::map<int, std::shared_ptr<T>>::iterator t = container.begin();
-           t != container.end(); ++t)
+          t != container.end(); ++t)
         gmsh_object_dump<T>(file, &(*(t->second)), to_local, ele);
       if (section != "") gmsh_end_section(file, close_file);
     }
@@ -420,7 +420,7 @@ namespace Cut
     {
       if (section != "") gmsh_new_section(file, section);
       for (typename std::map<plain_int_set, std::shared_ptr<T>>::iterator t = container.begin();
-           t != container.end(); ++t)
+          t != container.end(); ++t)
       {
         gmsh_object_dump<T>(file, &(*(t->second)), to_local, ele);
       }
@@ -447,7 +447,7 @@ namespace Cut
     {
       if (section != "") gmsh_new_section(file, section);
       for (typename SortedVector<T*, true, PointPidLess>::iterator t = container.begin();
-           t != container.end(); ++t)
+          t != container.end(); ++t)
         gmsh_object_dump<T>(file, (*t), to_local, ele);
       if (section != "") gmsh_end_section(file, close_file);
     }

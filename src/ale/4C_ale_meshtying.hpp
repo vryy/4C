@@ -133,7 +133,7 @@ namespace ALE
         std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp);
 
     //! Recover method for Lagrange multipliers (do nothing in mesh tying case)
-    virtual void recover(std::shared_ptr<Core::LinAlg::Vector<double>>& inc){};
+    virtual void recover(std::shared_ptr<Core::LinAlg::Vector<double>>& inc) {};
 
     //! Solve ALE mesh tying problem
     virtual int solve_meshtying(Core::LinAlg::Solver& solver,

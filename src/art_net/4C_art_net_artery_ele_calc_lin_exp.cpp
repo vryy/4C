@@ -1062,9 +1062,9 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
       double TermIO = 0.0;
       // Get the in/out terminal condition
       std::string TerminalType = (ele->nodes()[i]
-                                      ->get_condition("ArtInOutCond")
-                                      ->parameters()
-                                      .get<std::string>("terminaltype"));
+              ->get_condition("ArtInOutCond")
+              ->parameters()
+              .get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1266,9 +1266,9 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       double TermIO = 0.0;
       // Get the in/out terminal condition
       std::string TerminalType = (ele->nodes()[i]
-                                      ->get_condition("ArtInOutCond")
-                                      ->parameters()
-                                      .get<std::string>("terminaltype"));
+              ->get_condition("ArtInOutCond")
+              ->parameters()
+              .get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1425,7 +1425,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         dbctog->ReplaceGlobalValues(1, &val, &gid);
       }
     }  // End of node i has a condition
-  }    // End of for loop
+  }  // End of for loop
 
   // ---------------------------------------------------------------------------------
   // Solve the any available junction boundary conditions
@@ -1511,9 +1511,9 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery*
 
 
       std::string TerminalType = (ele->nodes()[i]
-                                      ->get_condition("ArtInOutCond")
-                                      ->parameters()
-                                      .get<std::string>("terminaltype"));
+              ->get_condition("ArtInOutCond")
+              ->parameters()
+              .get<std::string>("terminaltype"));
       int dof = 0;
       if (TerminalType == "inlet")
       {

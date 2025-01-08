@@ -57,7 +57,7 @@ namespace
     Core::IO::Pstream ps;
     ps.setup(true, false, false, Core::IO::minimal, MPI_COMM_WORLD, 0, 0, "");
     EXPECT_EQ(ps.requested_output_level(), Core::IO::minimal);
-    Core::IO::Level &lvl = ps(Core::IO::debug);
+    Core::IO::Level& lvl = ps(Core::IO::debug);
     EXPECT_NO_THROW(lvl << 4);
   }
 
@@ -85,7 +85,7 @@ namespace
     using namespace FourC;
     Core::IO::Pstream ps;
     ps.setup(true, false, true, Core::IO::undef, MPI_COMM_WORLD, 0, 0, "");
-    Core::IO::Level &lvl = ps(Core::IO::debug);
+    Core::IO::Level& lvl = ps(Core::IO::debug);
     EXPECT_NO_THROW(lvl.stream(1.2));
     EXPECT_NO_THROW(lvl << 4);
     EXPECT_NO_THROW(lvl.set_level(Core::IO::minimal) << 5);
@@ -96,7 +96,7 @@ namespace
     using namespace FourC;
     Core::IO::Pstream ps;
     ps.setup(true, false, true, Core::IO::standard, MPI_COMM_WORLD, 0, 0, "");
-    Core::IO::Level &lvl = ps(Core::IO::debug);
+    Core::IO::Level& lvl = ps(Core::IO::debug);
     EXPECT_NO_THROW(lvl << 1.2 << Core::IO::flush);
     EXPECT_NO_THROW(lvl << 23 << Core::IO::endl);
   }

@@ -63,7 +63,7 @@ namespace Cut::Kernel
     }
 
    private:
-    CutKernelStatistics(){/* blank */};
+    CutKernelStatistics() { /* blank */ };
     unsigned long long int double_int_;
     unsigned long long int double_dist_;
     unsigned long long int cln_int_;
@@ -1007,8 +1007,8 @@ namespace Cut::Kernel
   template <bool debug, unsigned prob_dim, Core::FE::CellType element_type,
       unsigned num_nodes_element = Core::FE::num_nodes<element_type>,
       unsigned dim = Core::FE::dim<element_type>, typename FloatType = double,
-      template <bool, unsigned, Core::FE::CellType, unsigned, unsigned, typename>
-      class MemberStoragePolicy = ComputePositionStaticMembers>
+      template <bool, unsigned, Core::FE::CellType, unsigned, unsigned,
+          typename> class MemberStoragePolicy = ComputePositionStaticMembers>
   class ComputePositionStrategy : public EmptyNewtonStrategy,
                                   private MemberStoragePolicy<debug, prob_dim, element_type,
                                       num_nodes_element, dim, FloatType>
@@ -1303,7 +1303,7 @@ namespace Cut::Kernel
       size_t total = 0;
       std::cout << "REPORTING MAXIMUM MEMORY ALLOCATION IN INTERSECTION" << std::endl;
       for (std::map<size_t, int>::iterator it = memory_allocations_intersection_.begin();
-           it != memory_allocations_intersection_.end(); ++it)
+          it != memory_allocations_intersection_.end(); ++it)
       {
         std::cout << "Size " << (*it).first << " was allocated " << (*it).second << " times "
                   << std::endl;
@@ -1321,7 +1321,7 @@ namespace Cut::Kernel
       size_t total = 0;
       std::cout << "REPORTING MAXIMUM MEMORY ALLOCATION IN THE POSITION" << std::endl;
       for (std::map<size_t, int>::iterator it = memory_allocations_position_.begin();
-           it != memory_allocations_position_.end(); ++it)
+          it != memory_allocations_position_.end(); ++it)
       {
         std::cout << "Size " << (*it).first << " was allocated " << (*it).second << " times "
                   << std::endl;
@@ -1339,7 +1339,7 @@ namespace Cut::Kernel
       size_t total = 0;
       std::cout << "REPORTING MAXIMUM MEMORY ALLOCATION IN THE DISTANCE" << std::endl;
       for (std::map<size_t, int>::iterator it = memory_allocations_distance_.begin();
-           it != memory_allocations_distance_.end(); ++it)
+          it != memory_allocations_distance_.end(); ++it)
       {
         std::cout << "Size " << (*it).first << " was allocated " << (*it).second << " times "
                   << std::endl;
@@ -1596,7 +1596,7 @@ namespace Cut::Kernel
         int max_num = 0;
         int size_max_num = 0;
         for (std::unordered_map<size_t, int>::iterator it = allocation_map.begin();
-             it != allocation_map.end(); ++it)
+            it != allocation_map.end(); ++it)
         {
           size_t size = it->first;
           if (memory_allocations_position_[size] < allocation_map[size])
@@ -1857,8 +1857,8 @@ namespace Cut::Kernel
   template <bool debug, unsigned prob_dim, Core::FE::CellType side_type,
       unsigned dim_side = Core::FE::dim<side_type>,
       unsigned num_nodes_side = Core::FE::num_nodes<side_type>, typename FloatType = double,
-      template <bool, unsigned, Core::FE::CellType, unsigned, unsigned, typename>
-      class MemberStoragePolicy = ComputeDistanceStaticMembers>
+      template <bool, unsigned, Core::FE::CellType, unsigned, unsigned,
+          typename> class MemberStoragePolicy = ComputeDistanceStaticMembers>
   class ComputeDistanceStrategy
       : public EmptyNewtonStrategy,
         private MemberStoragePolicy<debug, prob_dim, side_type, dim_side, num_nodes_side, FloatType>
@@ -2823,7 +2823,7 @@ namespace Cut::Kernel
         int size_max_num = 0;
         // update the global number of allocations to the maximum
         for (std::unordered_map<size_t, int>::iterator it = allocation_map.begin();
-             it != allocation_map.end(); ++it)
+            it != allocation_map.end(); ++it)
         {
           size_t size = it->first;
           if (memory_allocations_distance_[size] < allocation_map[size])
@@ -3349,8 +3349,8 @@ namespace Cut::Kernel
       unsigned num_nodes_edge = Core::FE::num_nodes<edge_type>,
       unsigned num_nodes_side = Core::FE::num_nodes<side_type>, typename FloatType = double,
       template <bool, unsigned, Core::FE::CellType, Core::FE::CellType, unsigned, unsigned,
-          unsigned, unsigned, typename>
-      class MemberStoragePolicy = ComputeIntersectionStaticMembers>
+          unsigned, unsigned, typename> class MemberStoragePolicy =
+          ComputeIntersectionStaticMembers>
   class ComputeIntersectionStrategy
       : public EmptyNewtonStrategy,
         MemberStoragePolicy<debug, prob_dim, edge_type, side_type, dim_edge, dim_side,
@@ -4278,7 +4278,7 @@ namespace Cut::Kernel
         int size_max_num = 0;
         // update the global number of allocations to the maximum
         for (std::unordered_map<size_t, int>::iterator it = allocation_map.begin();
-             it != allocation_map.end(); ++it)
+            it != allocation_map.end(); ++it)
         {
           size_t size = it->first;
           if (memory_allocations_intersection_[size] < allocation_map[size])

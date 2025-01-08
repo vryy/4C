@@ -59,7 +59,7 @@ namespace NOX
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& precMat,
           const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject);
     }  // namespace LinSystem
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

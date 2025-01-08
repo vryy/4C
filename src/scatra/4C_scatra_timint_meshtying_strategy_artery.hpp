@@ -65,7 +65,7 @@ namespace ScaTra
     //!        actual coupling (meshtying) is evaluated in Solve
     //!        reason for that is that we need the system matrix of the continuous scatra
     //!        problem with DBCs applied which is performed directly before calling solve
-    void evaluate_meshtying() override{};
+    void evaluate_meshtying() override {};
 
     //! init
     void init_meshtying() override;

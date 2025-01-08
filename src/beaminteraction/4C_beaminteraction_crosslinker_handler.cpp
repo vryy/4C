@@ -96,7 +96,7 @@ void BeamInteraction::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
       Core::Communication::PackBuffer data;
       for (std::list<std::shared_ptr<Core::Nodes::Node>>::const_iterator currlinker =
                homelesslinker.begin();
-           currlinker != homelesslinker.end(); ++currlinker)
+          currlinker != homelesslinker.end(); ++currlinker)
       {
         (*currlinker)->pack(data);
         binstrategy_->bin_discret()->delete_node((*currlinker)->id());
@@ -144,7 +144,7 @@ void BeamInteraction::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
     exporter.wait(request);
     Core::Communication::barrier(
         binstrategy_->bin_discret()->get_comm());  // I feel better this way ;-)
-  }                                                // end for irobin
+  }  // end for irobin
 
   if (homelesslinker.size())
   {

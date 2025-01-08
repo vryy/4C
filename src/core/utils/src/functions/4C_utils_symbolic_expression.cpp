@@ -488,22 +488,19 @@ namespace Core::Utils::SymbolicExpressionDetails
       const std::map<std::string, double>& constants) const
   {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    const bool all_required_variables_passed =
-        std::all_of(parsed_variable_constant_names_.begin(), parsed_variable_constant_names_.end(),
-            [&](const auto& var_name)
-            { return (variable_values.count(var_name) + constants.count(var_name)) == 1; });
+    const bool all_required_variables_passed = std::all_of(parsed_variable_constant_names_.begin(),
+        parsed_variable_constant_names_.end(), [&](const auto& var_name)
+        { return (variable_values.count(var_name) + constants.count(var_name)) == 1; });
 
     if (!all_required_variables_passed)
     {
-      std::string evaluate_variable_names =
-          std::accumulate(variable_values.begin(), variable_values.end(), std::string(),
-              [](const std::string& acc, const auto& v)
-              { return acc.empty() ? v.first : acc + ", " + v.first; });
+      std::string evaluate_variable_names = std::accumulate(variable_values.begin(),
+          variable_values.end(), std::string(), [](const std::string& acc, const auto& v)
+          { return acc.empty() ? v.first : acc + ", " + v.first; });
 
-      std::string evaluate_constant_names =
-          std::accumulate(constants.begin(), constants.end(), std::string(),
-              [](const std::string& acc, const auto& v)
-              { return acc.empty() ? v.first : acc + ", " + v.first; });
+      std::string evaluate_constant_names = std::accumulate(constants.begin(), constants.end(),
+          std::string(), [](const std::string& acc, const auto& v)
+          { return acc.empty() ? v.first : acc + ", " + v.first; });
 
       FOUR_C_THROW(
           "Some variables that this parser encountered in the expression are not passed to "

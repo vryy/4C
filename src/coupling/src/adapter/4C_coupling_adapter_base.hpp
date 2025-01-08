@@ -33,7 +33,7 @@ namespace Coupling::Adapter
   {
    public:
     /// empty constructor
-    CouplingBase(){};
+    CouplingBase() {};
 
     /// virtual destructor
     virtual ~CouplingBase() = default;

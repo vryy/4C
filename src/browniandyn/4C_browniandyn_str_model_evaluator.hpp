@@ -61,7 +61,7 @@ namespace Solid
       void pre_evaluate() override { return; };
 
       //! derived
-      void post_evaluate() override{/* currently unused */};
+      void post_evaluate() override { /* currently unused */ };
 
       //! derived
       bool assemble_force(Core::LinAlg::Vector<double>& f, const double& timefac_np) const override;
@@ -197,7 +197,7 @@ namespace Solid
       std::shared_ptr<Core::FE::Discretization> discret_ptr_;
 
     };  // class BrownianDyn
-  }     // namespace ModelEvaluator
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 

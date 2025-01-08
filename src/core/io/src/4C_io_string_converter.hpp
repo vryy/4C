@@ -79,13 +79,13 @@ namespace Core::IO
   template <typename T, class Enable = void>
   struct StringConverter
   {
-    static T Parse(const std::string &str) = delete;
+    static T Parse(const std::string& str) = delete;
   };
 
   namespace Internal
   {
     template <typename TypeVec>
-    void check_dimension(const std::vector<TypeVec> &vec, size_t expectedSize)
+    void check_dimension(const std::vector<TypeVec>& vec, size_t expectedSize)
     {
       if (vec.size() != expectedSize)
       {
@@ -94,7 +94,7 @@ namespace Core::IO
     }
 
     template <std::size_t rank, typename TypeArr, std::size_t dim_arr>
-    constexpr char get_separator_at_rank(const std::array<TypeArr, dim_arr> &sep_list)
+    constexpr char get_separator_at_rank(const std::array<TypeArr, dim_arr>& sep_list)
     {
       static_assert(rank <= dim_arr,
           "Requesting a separator of too high rank. Your data structure is too deeply nested.");
@@ -222,9 +222,9 @@ namespace Core::IO
      */
     template <class T,
         std::enable_if_t<Internal::StringPatternTraits<T>::is_list_compatible, int> = 0>
-    void parse_split_string(T &t, const std::vector<std::string> &split_str)
+    void parse_split_string(T& t, const std::vector<std::string>& split_str)
     {
-      for (const auto &str : split_str)
+      for (const auto& str : split_str)
         t.insert(t.end(), StringConverter<typename T::value_type>::parse(str));
     };
 
@@ -234,7 +234,7 @@ namespace Core::IO
      * A check is performed to ensure the number of elements found in the split string is N.
      */
     template <typename ValueType, std::size_t n>
-    void parse_split_string(std::array<ValueType, n> &t, const std::vector<std::string> &split_str)
+    void parse_split_string(std::array<ValueType, n>& t, const std::vector<std::string>& split_str)
     {
       check_dimension(split_str, n);
       for (unsigned int i = 0; i < n; ++i)
@@ -247,7 +247,7 @@ namespace Core::IO
      * A check is performed to ensure the number of elements found in the split string is 2.
      */
     template <typename Key, typename Value>
-    void parse_split_string(std::pair<Key, Value> &t, const std::vector<std::string> &split_str)
+    void parse_split_string(std::pair<Key, Value>& t, const std::vector<std::string>& split_str)
     {
       check_dimension(split_str, 2);
       t = std::make_pair(Core::IO::StringConverter<Key>::parse(split_str[0]),
@@ -255,7 +255,7 @@ namespace Core::IO
     }
 
     template <std::size_t index, typename Tuple>
-    void parse_split_string_helper(Tuple &t, const std::vector<std::string> &split_str)
+    void parse_split_string_helper(Tuple& t, const std::vector<std::string>& split_str)
     {
       if constexpr (index < std::tuple_size<Tuple>::value)
       {
@@ -272,7 +272,7 @@ namespace Core::IO
      * the tuple size.
      */
     template <typename... Args>
-    void parse_split_string(std::tuple<Args...> &t, const std::vector<std::string> &split_str)
+    void parse_split_string(std::tuple<Args...>& t, const std::vector<std::string>& split_str)
     {
       check_dimension(split_str, sizeof...(Args));
       parse_split_string_helper<0>(t, split_str);
@@ -285,7 +285,7 @@ namespace Core::IO
   template <>
   struct StringConverter<int>
   {
-    static int parse(const std::string &str)
+    static int parse(const std::string& str)
     {
       std::istringstream is(str);
       int i;
@@ -300,7 +300,7 @@ namespace Core::IO
   template <>
   struct StringConverter<double>
   {
-    static double parse(const std::string &str)
+    static double parse(const std::string& str)
     {
       std::istringstream is(str);
       double d;
@@ -315,7 +315,7 @@ namespace Core::IO
   template <>
   struct StringConverter<char>
   {
-    static char parse(const std::string &str)
+    static char parse(const std::string& str)
     {
       std::istringstream is(str);
       char c;
@@ -330,7 +330,7 @@ namespace Core::IO
   template <>
   struct StringConverter<bool>
   {
-    static bool parse(const std::string &str)
+    static bool parse(const std::string& str)
     {
       std::istringstream is(str);
       bool d;
@@ -356,7 +356,7 @@ namespace Core::IO
   template <class T>
   struct StringConverter<T, std::enable_if_t<Internal::StringPatternTraits<T>::is_list_compatible>>
   {
-    static T parse(const std::string &str)
+    static T parse(const std::string& str)
     {
       const char sep = Internal::get_separator_at_rank<Internal::StringPatternTraits<T>::list_rank>(
           Internal::default_list_separator);
@@ -381,7 +381,7 @@ namespace Core::IO
   template <class T>
   struct StringConverter<T, std::enable_if_t<Internal::StringPatternTraits<T>::is_map_compatible>>
   {
-    static T parse(const std::string &str)
+    static T parse(const std::string& str)
     {
       T t;
 
@@ -394,7 +394,7 @@ namespace Core::IO
 
       auto split_str = Core::Utils::split_string_list(str, sep_list);
 
-      for (const auto &split_str_i : split_str)
+      for (const auto& split_str_i : split_str)
       {
         auto key_val = Core::Utils::split_string_list(split_str_i, sep_map);
         Internal::check_dimension(key_val, 2);

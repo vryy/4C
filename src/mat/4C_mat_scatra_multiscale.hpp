@@ -49,7 +49,7 @@ namespace Mat
       const double tortuosity_;
       //@}
     };  // class Mat::PAR::ScatraMultiScale
-  }     // namespace PAR
+  }  // namespace PAR
 
 
   /*----------------------------------------------------------------------*/

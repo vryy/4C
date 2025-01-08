@@ -179,7 +179,7 @@ void CONTACT::Interface::assemble_reg_normal_forces(
       cnode->data().get_deriv_z().clear();
 
     }  // Macauley-Bracket
-  }    // loop over slave nodes
+  }  // loop over slave nodes
 
   return;
 }
@@ -3603,8 +3603,8 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
         }
 #endif
       }  // if (frcoeff==0.0)
-    }    // loop over all slip nodes of the interface
-  }      // Coulomb friction
+    }  // loop over all slip nodes of the interface
+  }  // Coulomb friction
 
   //**********************************************************************
   //**********************************************************************
@@ -4289,7 +4289,7 @@ void CONTACT::Interface::assemble_normal_contact_regularization(Core::LinAlg::Sp
     }
 
     for (auto p = cnode->data().get_deriv_d().at(cnode->id()).begin();
-         p != cnode->data().get_deriv_d().at(cnode->id()).end(); ++p)
+        p != cnode->data().get_deriv_d().at(cnode->id()).end(); ++p)
     {
       const int col = p->first;
       const double val = gLM * p->second;
@@ -4301,7 +4301,7 @@ void CONTACT::Interface::assemble_normal_contact_regularization(Core::LinAlg::Sp
 
     for (int l = 0; l < dim; ++l)
       for (auto p = cnode->data().get_deriv_n().at(l).begin();
-           p != cnode->data().get_deriv_n().at(l).end(); ++p)
+          p != cnode->data().get_deriv_n().at(l).end(); ++p)
       {
         const int col = p->first;
         const double val = dval * d_gLM * lm(l) * p->second;
@@ -5112,8 +5112,8 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
           }
         }
       }  // if (frcoeff==0.0)
-    }    // loop over all slip nodes of the interface
-  }      // Coulomb friction
+    }  // loop over all slip nodes of the interface
+  }  // Coulomb friction
 
   else
   {

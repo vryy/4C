@@ -152,8 +152,8 @@ namespace NOX
          *  defined, a empty std::map is generated and set into the parameter list first. */
         NOX::Nln::GROUP::PrePostOperator::Map& get_map(Teuchos::ParameterList& p_grp_opt);
       }  // namespace PrePostOp
-    }    // namespace GROUP
-  }      // namespace Nln
+    }  // namespace GROUP
+  }  // namespace Nln
 }  // namespace NOX
 
 inline void NOX::Nln::GROUP::PrePostOperator::run_pre_compute_f(

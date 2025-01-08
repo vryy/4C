@@ -76,7 +76,7 @@ namespace Mat
       //! check whether number of parameters is consistent with curve number
       void check_provided_params(int functnr, const std::vector<double>& functparams);
     };  // class Mat::PAR::ElchSingleMat
-  }     // namespace PAR
+  }  // namespace PAR
 
 
   /*----------------------------------------------------------------------*/

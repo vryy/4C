@@ -219,7 +219,7 @@ namespace FLD
         inplanedirectset.erase(elenormdirect);
 
         for (std::set<int>::iterator id = inplanedirectset.begin(); id != inplanedirectset.end();
-             ++id)
+            ++id)
         {
           inplanedirect.push_back(*id);
         }
@@ -623,7 +623,7 @@ namespace FLD
         inplanedirectset.erase(elenormdirect);
 
         for (std::set<int>::iterator id = inplanedirectset.begin(); id != inplanedirectset.end();
-             ++id)
+            ++id)
         {
           inplanedirect.push_back(*id);
         }

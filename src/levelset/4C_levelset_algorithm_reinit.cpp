@@ -624,7 +624,7 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
     // Here we simply take the eleids from the boundaryIntCells map, which leads to our list of cut
     // elements also there is no distribution necessary, as this map is already stored on every proc
     for (std::map<int, Core::Geo::BoundaryIntCells>::const_iterator elepatches = interface.begin();
-         elepatches != interface.end(); ++elepatches)
+        elepatches != interface.end(); ++elepatches)
       allcuteleids.push_back(elepatches->first);
 
     // our local nodecoords

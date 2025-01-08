@@ -167,7 +167,7 @@ void Mat::Myocard::unpack(Core::Communication::UnpackBuffer& buffer)
         // unpack history data
         double val;
         for (int k = -1; k < unpack_nb_state_variables;
-             ++k)                                    // Starting from -1 for mechanical activation
+            ++k)                                     // Starting from -1 for mechanical activation
           for (int i = 0; i < params_->num_gp; ++i)  // loop over Gauss points
           {
             extract_from_pack(buffer, val);

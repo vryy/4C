@@ -476,7 +476,7 @@ void Discret::Elements::Beam3eb::set_up_reference_geometry(
         {
           Tref_[numgp](dof) += shapefuncderiv(node) * xrefe[3 * node + dof];
         }  // for(int dof=0; dof<3 ; dof++)
-      }    // for(int node=0; node<nnode; node++)
+      }  // for(int node=0; node<nnode; node++)
 
       // Store length factor for every GP
       // note: the length factor jacobi replaces the determinant and refers to the reference

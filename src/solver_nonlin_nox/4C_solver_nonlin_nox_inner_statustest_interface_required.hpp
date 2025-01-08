@@ -32,7 +32,7 @@ namespace NOX
           {
            public:
             //! constructor
-            Required(){};
+            Required() {};
 
             //! destructor
             virtual ~Required() = default;
@@ -48,10 +48,10 @@ namespace NOX
                 const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
                 ::NOX::StatusTest::CheckType checkType) const = 0;
           };  // class Required
-        }     // namespace Interface
-      }       // namespace StatusTest
-    }         // namespace Inner
-  }           // namespace Nln
+        }  // namespace Interface
+      }  // namespace StatusTest
+    }  // namespace Inner
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

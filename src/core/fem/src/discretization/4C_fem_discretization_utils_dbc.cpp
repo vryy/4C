@@ -416,7 +416,7 @@ void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
         info.condition[lid] = cond.id();
       }
     }  // loop over nodal DOFs
-  }    // loop over nodes
+  }  // loop over nodes
 
   return;
 }
@@ -567,7 +567,7 @@ void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
       if (systemvectors[2] != nullptr) (*systemvectors[2])[lid] = value[2];
 
     }  // loop over nodal DOFs
-  }    // loop over nodes
+  }  // loop over nodes
 
   return;
 }

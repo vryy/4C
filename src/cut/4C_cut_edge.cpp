@@ -615,7 +615,7 @@ bool Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::handle_pa
     cut_point->add_edge_intersection(this, other, side, this, msg.str());
     if (cut_points) cut_points->insert(cut_point);
 
-      // if a nodal point inserted on the other edge, we also want to add all sides of that node
+    // if a nodal point inserted on the other edge, we also want to add all sides of that node
 #if CUT_CREATION_INFO
     msg << "//Added because of intersection of the edges of the sides of this nodal point with the "
            "edge "
@@ -640,7 +640,7 @@ bool Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::handle_pa
 #endif
     cut_point->add_edge_intersection(this, other, side, this, msg.str());
     if (cut_points) cut_points->insert(cut_point);
-      // if a nodal point inserted on the other edge, we also want to add all sides of that node
+    // if a nodal point inserted on the other edge, we also want to add all sides of that node
 #if CUT_CREATION_INFO
     msg << "//Added because of intersection of the edges of the sides of this nodal point with the "
            "edge "

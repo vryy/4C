@@ -158,7 +158,7 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(Core::FE::Discret
       beam_element_list, {Core::Binstrategy::Utils::BinContentType::Beam}, colbinvec, false);
 
   for (std::set<Core::Elements::Element*>::iterator element = beam_element_list.begin();
-       element != beam_element_list.end(); element++)
+      element != beam_element_list.end(); element++)
   {
     Core::Nodes::Node** node_list = (*element)->nodes();
     unsigned int numnode = (*element)->num_node();

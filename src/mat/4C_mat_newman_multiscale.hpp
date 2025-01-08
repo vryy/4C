@@ -48,7 +48,7 @@ namespace Mat
       const int conc_dep_scale_func_num_;
       //@}
     };  // class Mat::PAR::NewmanMultiScale
-  }     // namespace PAR
+  }  // namespace PAR
 
 
   /*----------------------------------------------------------------------*/

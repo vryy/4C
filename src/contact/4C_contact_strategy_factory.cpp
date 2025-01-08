@@ -1337,7 +1337,7 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(
     {
       std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = poroCond->geometry().begin();
-           eleitergeometry != poroCond->geometry().end(); ++eleitergeometry)
+          eleitergeometry != poroCond->geometry().end(); ++eleitergeometry)
       {
         if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {
@@ -1368,7 +1368,7 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(
     {
       std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = poroCond->geometry().begin();
-           eleitergeometry != poroCond->geometry().end(); ++eleitergeometry)
+          eleitergeometry != poroCond->geometry().end(); ++eleitergeometry)
       {
         if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {

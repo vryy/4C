@@ -270,7 +270,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
   // Iterate over the boundary cells, get their gauss points and save them
   auto boundary_cells = get_boundary_cells();
   for (auto it_boundarycell = boundary_cells.begin(); it_boundarycell != boundary_cells.end();
-       ++it_boundarycell)
+      ++it_boundarycell)
   {
     // Check if the shape of the boundary cell is CellType::tri3
     FOUR_C_ASSERT(it_boundarycell->get()->shape() == Core::FE::CellType::tri3,
@@ -633,9 +633,9 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
     for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
       for (unsigned int i_mortar_val = 0; i_mortar_val < Mortar::n_val_; i_mortar_val++)
         for (unsigned int i_interface_node = 0; i_interface_node < Interface::n_nodes_;
-             i_interface_node++)
+            i_interface_node++)
           for (unsigned int i_interface_val = 0; i_interface_val < Interface::n_val_;
-               i_interface_val++)
+              i_interface_val++)
             for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
               local_D(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
                   i_interface_node * Interface::n_val_ * 3 + i_interface_val * 3 + i_dim) +=

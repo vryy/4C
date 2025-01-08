@@ -817,7 +817,7 @@ void Mortar::Utils::create_volume_ghosting(const Core::FE::Discretization& dis_s
 
   // 3 setup material pointers between newly ghosted elements
   for (std::vector<std::pair<int, int>>::const_iterator m = material_links.begin();
-       m != material_links.end(); ++m)
+      m != material_links.end(); ++m)
   {
     std::shared_ptr<Core::FE::Discretization> dis_src_mat = voldis.at(m->first);
     std::shared_ptr<Core::FE::Discretization> dis_tar_mat = voldis.at(m->second);
@@ -1037,8 +1037,7 @@ void Mortar::Utils::mortar_matrix_condensation(
 void Mortar::Utils::mortar_rhs_condensation(Core::LinAlg::Vector<double>& rhs,
     const std::vector<std::shared_ptr<Core::LinAlg::SparseMatrix>>& p)
 {
-  for (unsigned i = 0; i < p.size(); mortar_rhs_condensation(rhs, *p[i++]))
-    ;
+  for (unsigned i = 0; i < p.size(); mortar_rhs_condensation(rhs, *p[i++]));
 }
 
 /*----------------------------------------------------------------------*
@@ -1046,8 +1045,7 @@ void Mortar::Utils::mortar_rhs_condensation(Core::LinAlg::Vector<double>& rhs,
 void Mortar::Utils::mortar_recover(Core::LinAlg::Vector<double>& inc,
     const std::vector<std::shared_ptr<Core::LinAlg::SparseMatrix>>& p)
 {
-  for (unsigned i = 0; i < p.size(); mortar_recover(inc, *p[i++]))
-    ;
+  for (unsigned i = 0; i < p.size(); mortar_recover(inc, *p[i++]));
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -436,7 +436,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<PairType>::evaluate(const PairType* pair
       unsigned int counter = 0;
       for (typename std::set<ProjectionPoint1DTo3D<scalar_type>>::iterator set_iterator =
                intersection_points.begin();
-           set_iterator != intersection_points.end(); ++set_iterator)
+          set_iterator != intersection_points.end(); ++set_iterator)
       {
         // Reference to this current point.
         const ProjectionPoint1DTo3D<scalar_type>& start_point = *set_iterator;

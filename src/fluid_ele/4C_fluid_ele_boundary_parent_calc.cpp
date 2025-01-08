@@ -1231,8 +1231,8 @@ void Discret::Elements::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
       else
         FOUR_C_THROW("incorrect number of spatial dimensions for parent element!");
     }  // end of integration loop
-  }    // end of (temporarily) switching off of flow-dependent pressure boundary
-       // conditions for zero time-curve factor
+  }  // end of (temporarily) switching off of flow-dependent pressure boundary
+     // conditions for zero time-curve factor
 
   return;
 }  // Discret::Elements::FluidBoundaryParent<distype>::FlowDepPressureBC
@@ -3130,7 +3130,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
             elevec(vi * 4 + 2) += normveltimefacfacdensrhs * pfunct(vi) * unitnormal(2);
           }
         }  // end if normvel<0, i.e. boundary is an inflow boundary
-      }    // onlynormal
+      }  // onlynormal
     }
     else if (nsd == 2)
     {

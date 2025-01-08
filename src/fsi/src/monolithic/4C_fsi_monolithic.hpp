@@ -442,7 +442,7 @@ namespace FSI
     virtual void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
         std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
         std::shared_ptr<const Core::LinAlg::Vector<double>>& fx,
-        std::shared_ptr<const Core::LinAlg::Vector<double>>& ax){};
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& ax) {};
 
     /*! \brief Put all field vectors together to a monolithic vector
      *
@@ -1052,10 +1052,10 @@ namespace FSI
 
 
     //! Create #lambda_ and #lambdaold_
-    virtual void set_lambda(){};
+    virtual void set_lambda() {};
 
     //! Set #notsetup_ = true after redistribution
-    virtual void set_not_setup(){};
+    virtual void set_not_setup() {};
 
    protected:
     /*! \brief Prepare preconditioner for new time step
@@ -1084,7 +1084,7 @@ namespace FSI
         std::shared_ptr<const Core::LinAlg::Vector<double>> sv,
         std::shared_ptr<const Core::LinAlg::Vector<double>> fv,
         std::shared_ptr<const Core::LinAlg::Vector<double>> av,
-        const bool slave_vectors_contain_interface_dofs) override{};
+        const bool slave_vectors_contain_interface_dofs) override {};
 
     /// debug writer to be used inside preconditioner
     std::shared_ptr<Utils::MonolithicDebugWriter> pcdbg_;

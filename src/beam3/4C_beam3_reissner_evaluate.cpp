@@ -992,7 +992,7 @@ void Discret::Elements::Beam3r::calc_internal_force_and_stiff(
               r_s_hat(i, j) * stressn(j) * I_i[numgp](node) * wgt * jacobi_gp_elastf_[numgp];
     }
     for (unsigned int node = nnodecl; node < nnodetriad;
-         ++node)  // this loop is only entered in case of nnodetriad>nnodecl
+        ++node)  // this loop is only entered in case of nnodetriad>nnodecl
     {
       // lower left block
       for (unsigned int i = 0; i < 3; ++i)
@@ -1101,7 +1101,7 @@ void Discret::Elements::Beam3r::calc_internal_force_and_stiff(
         internal_force(dofpercombinode * node + 3 + i) += I_i_xi[numgp](node) * stressm(i) * wgt;
     }
     for (unsigned int node = nnodecl; node < nnodetriad;
-         ++node)  // this loop is only entered in case of nnodetriad>nnodecl
+        ++node)  // this loop is only entered in case of nnodetriad>nnodecl
     {
       // lower right block
       for (unsigned int i = 0; i < 3; ++i)
@@ -1438,22 +1438,22 @@ void Discret::Elements::Beam3r::calc_inertia_force_and_mass_matrix(
         for (unsigned int node = 0; node < nnodecl; node++)
         {
           // translational contribution
-          (*inertia_force)(dofpercombinode * node + i) += jacobi_gp_mass_[gp] * wgtmass *
-                                                          mass_inertia_translational *
-                                                          H_i[gp](vpernode * node) * r_tt(i);
+          (*inertia_force)(dofpercombinode* node + i) += jacobi_gp_mass_[gp] * wgtmass *
+                                                         mass_inertia_translational *
+                                                         H_i[gp](vpernode * node) * r_tt(i);
           if (centerline_hermite_)
-            (*inertia_force)(dofpercombinode * node + 6 + i) +=
+            (*inertia_force)(dofpercombinode* node + 6 + i) +=
                 jacobi_gp_mass_[gp] * wgtmass * mass_inertia_translational *
                 H_i[gp](vpernode * node + 1) * r_tt(i);
           // rotational contribution
-          (*inertia_force)(dofpercombinode * node + 3 + i) +=
+          (*inertia_force)(dofpercombinode* node + 3 + i) +=
               jacobi_gp_mass_[gp] * wgtmass * I_i[gp](node) * Pi_t(i);
         }
         for (unsigned int node = nnodecl; node < nnodetriad;
-             node++)  // this loop is only entered in case of nnodetriad>nnodecl
+            node++)  // this loop is only entered in case of nnodetriad>nnodecl
         {
           // rotational contribution
-          (*inertia_force)(dofperclnode * nnodecl + dofpertriadnode * node + i) +=
+          (*inertia_force)(dofperclnode* nnodecl + dofpertriadnode * node + i) +=
               jacobi_gp_mass_[gp] * wgtmass * I_i[gp](node) * Pi_t(i);
         }
       }
@@ -1468,18 +1468,18 @@ void Discret::Elements::Beam3r::calc_inertia_force_and_mass_matrix(
         for (unsigned int inode = 0; inode < nnodecl; inode++)
           for (unsigned int k = 0; k < 3; k++)
           {
-            (*massmatrix)(dofpercombinode * inode + k, dofpercombinode * jnode + k) +=
+            (*massmatrix)(dofpercombinode* inode + k, dofpercombinode * jnode + k) +=
                 diff_factor_acc * jacobi_gp_mass_[gp] * wgtmass * mass_inertia_translational *
                 H_i[gp](vpernode * inode) * H_i[gp](vpernode * jnode);
             if (centerline_hermite_)
             {
-              (*massmatrix)(dofpercombinode * inode + 6 + k, dofpercombinode * jnode + 6 + k) +=
+              (*massmatrix)(dofpercombinode* inode + 6 + k, dofpercombinode * jnode + 6 + k) +=
                   diff_factor_acc * jacobi_gp_mass_[gp] * wgtmass * mass_inertia_translational *
                   H_i[gp](vpernode * inode + 1) * H_i[gp](vpernode * jnode + 1);
-              (*massmatrix)(dofpercombinode * inode + k, dofpercombinode * jnode + 6 + k) +=
+              (*massmatrix)(dofpercombinode* inode + k, dofpercombinode * jnode + 6 + k) +=
                   diff_factor_acc * jacobi_gp_mass_[gp] * wgtmass * mass_inertia_translational *
                   H_i[gp](vpernode * inode) * H_i[gp](vpernode * jnode + 1);
-              (*massmatrix)(dofpercombinode * inode + 6 + k, dofpercombinode * jnode + k) +=
+              (*massmatrix)(dofpercombinode* inode + 6 + k, dofpercombinode * jnode + k) +=
                   diff_factor_acc * jacobi_gp_mass_[gp] * wgtmass * mass_inertia_translational *
                   H_i[gp](vpernode * inode + 1) * H_i[gp](vpernode * jnode);
             }
@@ -1492,21 +1492,21 @@ void Discret::Elements::Beam3r::calc_inertia_force_and_mass_matrix(
         {
           for (unsigned int i = 0; i < 3; i++)
             for (unsigned int j = 0; j < 3; j++)
-              (*massmatrix)(dofpercombinode * inode + 3 + i, dofpercombinode * jnode + 3 + j) +=
+              (*massmatrix)(dofpercombinode* inode + 3 + i, dofpercombinode * jnode + 3 + j) +=
                   jacobi_gp_mass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
         }
         for (unsigned int inode = nnodecl; inode < nnodetriad;
-             inode++)  // this loop is only entered in case of nnodetriad>nnodecl
+            inode++)  // this loop is only entered in case of nnodetriad>nnodecl
         {
           for (unsigned int i = 0; i < 3; i++)
             for (unsigned int j = 0; j < 3; j++)
-              (*massmatrix)(dofperclnode * nnodecl + dofpertriadnode * inode + i,
+              (*massmatrix)(dofperclnode* nnodecl + dofpertriadnode * inode + i,
                   dofpercombinode * jnode + 3 + j) +=
                   jacobi_gp_mass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
         }
       }
       for (unsigned int jnode = nnodecl; jnode < nnodetriad;
-           ++jnode)  // this loop is only entered in case of nnodetriad>nnodecl
+          ++jnode)  // this loop is only entered in case of nnodetriad>nnodecl
       {
         // rotational contribution
         Core::LinAlg::Matrix<3, 3> auxmatrix2(true);
@@ -1515,16 +1515,16 @@ void Discret::Elements::Beam3r::calc_inertia_force_and_mass_matrix(
         {
           for (unsigned int i = 0; i < 3; i++)
             for (unsigned int j = 0; j < 3; j++)
-              (*massmatrix)(dofpercombinode * inode + 3 + i,
+              (*massmatrix)(dofpercombinode* inode + 3 + i,
                   dofperclnode * nnodecl + dofpertriadnode * jnode + j) +=
                   jacobi_gp_mass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
         }
         for (unsigned int inode = nnodecl; inode < nnodetriad;
-             inode++)  // this loop is only entered in case of nnodetriad>nnodecl
+            inode++)  // this loop is only entered in case of nnodetriad>nnodecl
         {
           for (unsigned int i = 0; i < 3; i++)
             for (unsigned int j = 0; j < 3; j++)
-              (*massmatrix)(dofperclnode * nnodecl + dofpertriadnode * inode + i,
+              (*massmatrix)(dofperclnode* nnodecl + dofpertriadnode * inode + i,
                   dofperclnode * nnodecl + dofpertriadnode * jnode + j) +=
                   jacobi_gp_mass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
         }
@@ -1661,7 +1661,7 @@ void Discret::Elements::Beam3r::calc_stiffmat_analytic_force_contributions(
               auxmatrix3(i, j) * jacobifactor * wgt;
     }
     for (unsigned int nodej = nnodecl; nodej < nnodetriad;
-         nodej++)  // this loop is only entered in case of nnodetriad>nnodecl
+        nodej++)  // this loop is only entered in case of nnodetriad>nnodecl
     {
       // upper right block
       auxmatrix2.multiply(cn, r_s_hat);
@@ -1698,7 +1698,7 @@ void Discret::Elements::Beam3r::calc_stiffmat_analytic_force_contributions(
     }
   }
   for (unsigned int nodei = nnodecl; nodei < nnodetriad;
-       nodei++)  // this loop is only entered in case of nnodetriad>nnodecl
+      nodei++)  // this loop is only entered in case of nnodetriad>nnodecl
   {
     for (unsigned int nodej = 0; nodej < nnodecl; nodej++)
     {
@@ -1822,7 +1822,7 @@ void Discret::Elements::Beam3r::calc_stiffmat_analytic_moment_contributions(
               auxmatrix1(i, j) * wgt;
     }
     for (unsigned int nodej = nnodecl; nodej < nnodetriad;
-         nodej++)  // this loop is only entered in case of nnodetriad>nnodecl
+        nodej++)  // this loop is only entered in case of nnodetriad>nnodecl
     {
       // lower right block
       // first summand
@@ -1845,7 +1845,7 @@ void Discret::Elements::Beam3r::calc_stiffmat_analytic_moment_contributions(
   }
 
   for (unsigned int nodei = nnodecl; nodei < nnodetriad;
-       nodei++)  // this loop is only entered in case of nnodetriad>nnodecl
+      nodei++)  // this loop is only entered in case of nnodetriad>nnodecl
   {
     for (unsigned int nodej = 0; nodej < nnodecl; nodej++)
     {
@@ -1979,7 +1979,7 @@ void Discret::Elements::Beam3r::calc_stiffmat_automatic_differentiation(
       }
     }
     for (unsigned int inode = nnodecl; inode < nnodetriad;
-         inode++)  // this loop is only entered in case of nnodetriad>nnodecl
+        inode++)  // this loop is only entered in case of nnodetriad>nnodecl
     {
       // block2: derivative of nodal theta with respect to theta (rotational DOFs)
       for (unsigned int i = 0; i < 3; ++i)
@@ -1998,7 +1998,7 @@ void Discret::Elements::Beam3r::calc_stiffmat_automatic_differentiation(
   }
 
   for (unsigned int jnode = nnodecl; jnode < nnodetriad;
-       jnode++)  // this loop is only entered in case of nnodetriad>nnodecl
+      jnode++)  // this loop is only entered in case of nnodetriad>nnodecl
   {
     // compute physical total angle theta_totlag
     Core::LargeRotations::quaterniontoangle(Qnode[jnode], theta_totlag_j);
@@ -2364,14 +2364,14 @@ void Discret::Elements::Beam3r::evaluate_rotational_damping(
       {
         // loop over spatial dimensions
         for (unsigned int idim = 0; idim < ndim; idim++)
-          (*force)(dofpercombinode * inode + 3 + idim) +=
+          (*force)(dofpercombinode* inode + 3 + idim) +=
               g1g1gammaomega(idim) * (I_i[gp])(inode)*jacobifac_gp_weight;
       }
       for (unsigned int inode = nnodecl; inode < nnodetriad; inode++)
       {
         // loop over spatial dimensions
         for (unsigned int idim = 0; idim < ndim; idim++)
-          (*force)(dofperclnode * nnodecl + dofpertriadnode * inode + idim) +=
+          (*force)(dofperclnode* nnodecl + dofpertriadnode * inode + idim) +=
               g1g1gammaomega(idim) * (I_i[gp])(inode)*jacobifac_gp_weight;
       }
     }
@@ -2425,12 +2425,12 @@ void Discret::Elements::Beam3r::evaluate_rotational_damping(
             for (unsigned int jdim = 0; jdim < 3; jdim++)
             {
               (*stiffmatrix)(
-                  dofpercombinode * inode + 3 + idim, dofpercombinode * jnode + 3 + jdim) +=
+                  dofpercombinode* inode + 3 + idim, dofpercombinode * jnode + 3 + jdim) +=
                   auxmatrix(idim, jdim) * (I_i[gp])(inode)*jacobifac_gp_weight;
             }
         }
         for (unsigned int jnode = nnodecl; jnode < nnodetriad;
-             jnode++)  // this loop is only entered in case of nnodetriad>nnodecl
+            jnode++)  // this loop is only entered in case of nnodetriad>nnodecl
         {
           auxmatrix.multiply(sum, Itilde[jnode]);
 
@@ -2438,14 +2438,14 @@ void Discret::Elements::Beam3r::evaluate_rotational_damping(
           for (unsigned int idim = 0; idim < ndim; idim++)
             for (unsigned int jdim = 0; jdim < 3; jdim++)
             {
-              (*stiffmatrix)(dofpercombinode * inode + 3 + idim,
+              (*stiffmatrix)(dofpercombinode* inode + 3 + idim,
                   dofperclnode * nnodecl + dofpertriadnode * jnode + jdim) +=
                   auxmatrix(idim, jdim) * (I_i[gp])(inode)*jacobifac_gp_weight;
             }
         }
       }
       for (unsigned int inode = nnodecl; inode < nnodetriad;
-           inode++)  // this loop is only entered in case of nnodetriad>nnodecl
+          inode++)  // this loop is only entered in case of nnodetriad>nnodecl
       {
         // loop over all column nodes
         for (unsigned int jnode = 0; jnode < nnodecl; jnode++)
@@ -2456,13 +2456,13 @@ void Discret::Elements::Beam3r::evaluate_rotational_damping(
           for (unsigned int idim = 0; idim < ndim; idim++)
             for (unsigned int jdim = 0; jdim < 3; jdim++)
             {
-              (*stiffmatrix)(dofperclnode * nnodecl + dofpertriadnode * inode + idim,
+              (*stiffmatrix)(dofperclnode* nnodecl + dofpertriadnode * inode + idim,
                   dofpercombinode * jnode + 3 + jdim) +=
                   auxmatrix(idim, jdim) * (I_i[gp])(inode)*jacobifac_gp_weight;
             }
         }
         for (unsigned int jnode = nnodecl; jnode < nnodetriad;
-             jnode++)  // this loop is only entered in case of nnodetriad>nnodecl
+            jnode++)  // this loop is only entered in case of nnodetriad>nnodecl
         {
           auxmatrix.multiply(sum, Itilde[jnode]);
 
@@ -2470,7 +2470,7 @@ void Discret::Elements::Beam3r::evaluate_rotational_damping(
           for (unsigned int idim = 0; idim < ndim; idim++)
             for (unsigned int jdim = 0; jdim < 3; jdim++)
             {
-              (*stiffmatrix)(dofperclnode * nnodecl + dofpertriadnode * inode + idim,
+              (*stiffmatrix)(dofperclnode* nnodecl + dofpertriadnode * inode + idim,
                   dofperclnode * nnodecl + dofpertriadnode * jnode + jdim) +=
                   auxmatrix(idim, jdim) * (I_i[gp])(inode)*jacobifac_gp_weight;
             }
@@ -2572,10 +2572,10 @@ void Discret::Elements::Beam3r::evaluate_translational_damping(Teuchos::Paramete
         // loop over dimensions
         for (unsigned int idim = 0; idim < ndim; idim++)
         {
-          (*force)(inode * dofpernode + idim) +=
+          (*force)(inode* dofpernode + idim) +=
               H_i[gp](vpernode * inode) * f_visc(idim) * jacobifac_gp_weight;
           if (centerline_hermite_)
-            (*force)(inode * dofpernode + 6 + idim) +=
+            (*force)(inode* dofpernode + 6 + idim) +=
                 H_i[gp](vpernode * inode + 1) * f_visc(idim) * jacobifac_gp_weight;
         }
     }
@@ -2595,68 +2595,68 @@ void Discret::Elements::Beam3r::evaluate_translational_damping(Teuchos::Paramete
           for (unsigned int idim = 0; idim < ndim; idim++)
             for (unsigned int jdim = 0; jdim < ndim; jdim++)
             {
-              (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + jdim) +=
+              (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + jdim) +=
                   gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) * H_i[gp](vpernode * jnode) *
                   jacobi_gp_dampstoch_[gp] * damp_mat(idim, jdim) * dt_inv;
-              (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + jdim) -=
+              (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + jdim) -=
                   gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) * H_i[gp](vpernode * jnode) *
                   jacobi_gp_dampstoch_[gp] * dampmatvelbackgroundgrad(idim, jdim);
-              (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + idim) +=
+              (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + idim) +=
                   gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) * H_i_xi[gp](vpernode * jnode) *
                   (gamma(0) - gamma(1)) * r_s(jdim) * vel_rel(jdim);
-              (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + jdim) +=
+              (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + jdim) +=
                   gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) * H_i_xi[gp](vpernode * jnode) *
                   (gamma(0) - gamma(1)) * r_s(idim) * vel_rel(jdim);
 
               if (centerline_hermite_)
               {
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + jdim) +=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + jdim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
                     H_i[gp](vpernode * jnode) * jacobi_gp_dampstoch_[gp] * damp_mat(idim, jdim) *
                     dt_inv;
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + jdim) -=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + jdim) -=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
                     H_i[gp](vpernode * jnode) * jacobi_gp_dampstoch_[gp] *
                     dampmatvelbackgroundgrad(idim, jdim);
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + idim) +=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + idim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
                     H_i_xi[gp](vpernode * jnode) * (gamma(0) - gamma(1)) * r_s(jdim) *
                     vel_rel(jdim);
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + jdim) +=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + jdim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
                     H_i_xi[gp](vpernode * jnode) * (gamma(0) - gamma(1)) * r_s(idim) *
                     vel_rel(jdim);
 
-                (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + 6 + jdim) +=
+                (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + 6 + jdim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) *
                     H_i[gp](vpernode * jnode + 1) * jacobi_gp_dampstoch_[gp] *
                     damp_mat(idim, jdim) * dt_inv;
-                (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + 6 + jdim) -=
+                (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + 6 + jdim) -=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) *
                     H_i[gp](vpernode * jnode + 1) * jacobi_gp_dampstoch_[gp] *
                     dampmatvelbackgroundgrad(idim, jdim);
-                (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + 6 + idim) +=
+                (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + 6 + idim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) *
                     H_i_xi[gp](vpernode * jnode + 1) * (gamma(0) - gamma(1)) * r_s(jdim) *
                     vel_rel(jdim);
-                (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + 6 + jdim) +=
+                (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + 6 + jdim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) *
                     H_i_xi[gp](vpernode * jnode + 1) * (gamma(0) - gamma(1)) * r_s(idim) *
                     vel_rel(jdim);
 
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + 6 + jdim) +=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + 6 + jdim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
                     H_i[gp](vpernode * jnode + 1) * jacobi_gp_dampstoch_[gp] *
                     damp_mat(idim, jdim) * dt_inv;
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + 6 + jdim) -=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + 6 + jdim) -=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
                     H_i[gp](vpernode * jnode + 1) * jacobi_gp_dampstoch_[gp] *
                     dampmatvelbackgroundgrad(idim, jdim);
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + 6 + idim) +=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + 6 + idim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
                     H_i_xi[gp](vpernode * jnode + 1) * (gamma(0) - gamma(1)) * r_s(jdim) *
                     vel_rel(jdim);
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + 6 + jdim) +=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + 6 + jdim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
                     H_i_xi[gp](vpernode * jnode + 1) * (gamma(0) - gamma(1)) * r_s(idim) *
                     vel_rel(jdim);
@@ -2752,11 +2752,11 @@ void Discret::Elements::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
         // loop dimensions with respect to lines
         for (unsigned int idim = 0; idim < ndim; idim++)
         {
-          (*force)(inode * dofpernode + idim) -=
+          (*force)(inode* dofpernode + idim) -=
               H_i[gp](vpernode * inode) * f_stoch(idim) * sqrt_jacobifac_gp_weight;
           if (centerline_hermite_)
           {
-            (*force)(inode * dofpernode + 6 + idim) -=
+            (*force)(inode* dofpernode + 6 + idim) -=
                 H_i[gp](vpernode * inode + 1) * f_stoch(idim) * sqrt_jacobifac_gp_weight;
           }
         }
@@ -2778,33 +2778,33 @@ void Discret::Elements::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
           for (unsigned int idim = 0; idim < ndim; idim++)
             for (unsigned int jdim = 0; jdim < ndim; jdim++)
             {
-              (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + idim) -=
+              (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + idim) -=
                   H_i[gp](vpernode * inode) * H_i_xi[gp](vpernode * jnode) * r_s(jdim) *
                   randnumvec(jdim) * prefactor;
-              (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + jdim) -=
+              (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + jdim) -=
                   H_i[gp](vpernode * inode) * H_i_xi[gp](vpernode * jnode) * r_s(idim) *
                   randnumvec(jdim) * prefactor;
 
               if (centerline_hermite_)
               {
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + idim) -=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + idim) -=
                     H_i[gp](vpernode * inode + 1) * H_i_xi[gp](vpernode * jnode) * r_s(jdim) *
                     randnumvec(jdim) * prefactor;
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + jdim) -=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + jdim) -=
                     H_i[gp](vpernode * inode + 1) * H_i_xi[gp](vpernode * jnode) * r_s(idim) *
                     randnumvec(jdim) * prefactor;
 
-                (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + 6 + idim) -=
+                (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + 6 + idim) -=
                     H_i[gp](vpernode * inode) * H_i_xi[gp](vpernode * jnode + 1) * r_s(jdim) *
                     randnumvec(jdim) * prefactor;
-                (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + 6 + jdim) -=
+                (*stiffmatrix)(inode* dofpernode + idim, jnode * dofpernode + 6 + jdim) -=
                     H_i[gp](vpernode * inode) * H_i_xi[gp](vpernode * jnode + 1) * r_s(idim) *
                     randnumvec(jdim) * prefactor;
 
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + 6 + idim) -=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + 6 + idim) -=
                     H_i[gp](vpernode * inode + 1) * H_i_xi[gp](vpernode * jnode + 1) * r_s(jdim) *
                     randnumvec(jdim) * prefactor;
-                (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + 6 + jdim) -=
+                (*stiffmatrix)(inode* dofpernode + 6 + idim, jnode * dofpernode + 6 + jdim) -=
                     H_i[gp](vpernode * inode + 1) * H_i_xi[gp](vpernode * jnode + 1) * r_s(idim) *
                     randnumvec(jdim) * prefactor;
               }

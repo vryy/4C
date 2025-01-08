@@ -196,7 +196,7 @@ namespace NTS
   class MTInterpolator
   {
    public:
-    MTInterpolator(){};
+    MTInterpolator() {};
 
     // destructor
     virtual ~MTInterpolator() = default;

@@ -221,7 +221,7 @@ int Discret::Elements::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
               const int numdim = 2;
               for (int k = 0; k < numdim; k++) gp_coord2[k] = gp_coord(0, k);
               for (int k = numdim; k < 3;
-                   k++)  // set a zero value for the remaining spatial directions
+                  k++)  // set a zero value for the remaining spatial directions
                 gp_coord2[k] = 0.0;
               const double* coordgpref = gp_coord2;  // needed for function evaluation
 
@@ -327,7 +327,7 @@ int Discret::Elements::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
           for (int node = 0; node < numnod; ++node)
             for (int dim = 0; dim < 2; dim++)
               for (int dof = 0; dof < elevec1.length(); dof++)
-                (*elemat1)(node * noddof + dim, dof) -= shapefcts[node] * a_Dnormal(dim, dof) * fac;
+                (*elemat1)(node* noddof + dim, dof) -= shapefcts[node] * a_Dnormal(dim, dof) * fac;
         }
 
         break;

@@ -34,7 +34,7 @@ namespace Adapter
   {
    public:
     /// constructor
-    ArtNet(){};
+    ArtNet() {};
 
     /// virtual destructor to support polymorph destruction
     virtual ~ArtNet() = default;

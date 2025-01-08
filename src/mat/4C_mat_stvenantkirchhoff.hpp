@@ -44,7 +44,7 @@ namespace Mat
       std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class StVenantKirchhoff
-  }     // namespace PAR
+  }  // namespace PAR
 
   class StVenantKirchhoffType : public Core::Communication::ParObjectType
   {

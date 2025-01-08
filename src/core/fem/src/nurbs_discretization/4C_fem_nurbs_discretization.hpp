@@ -154,7 +154,7 @@ namespace Core::FE
       std::shared_ptr<Core::FE::Nurbs::Knotvector> knots_;
 
     };  // class NurbsDiscretization
-  }     // namespace Nurbs
+  }  // namespace Nurbs
 
   namespace Utils
   {
@@ -224,7 +224,7 @@ namespace Core::FE
           const Core::Utils::FunctionManager& function_manager) const;
 
     };  // class DbcNurbs
-  }     // namespace Utils
+  }  // namespace Utils
 }  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE

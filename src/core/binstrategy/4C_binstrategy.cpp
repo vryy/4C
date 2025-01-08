@@ -231,8 +231,8 @@ void Core::Binstrategy::BinningStrategy::gids_in_ijk_range(
           }
         }
       }  // end for int k
-    }    // end for int j
-  }      // end for int i
+    }  // end for int j
+  }  // end for int i
 }
 
 void Core::Binstrategy::BinningStrategy::gids_in_ijk_range(
@@ -262,8 +262,8 @@ void Core::Binstrategy::BinningStrategy::gids_in_ijk_range(
           }
         }
       }  // end for int k
-    }    // end for int j
-  }      // end for int i
+    }  // end for int j
+  }  // end for int i
 }
 
 int Core::Binstrategy::BinningStrategy::get_number_of_bins_in_ijk_range(
@@ -490,8 +490,8 @@ void Core::Binstrategy::BinningStrategy::get_bin_corners(
         bincorners.push_back(curr_corner);
 
       }  // end for int k
-    }    // end for int j
-  }      // end for int i
+    }  // end for int j
+  }  // end for int i
 
   // change entries to get node numbering according to 4C convention
   std::swap(bincorners[2], bincorners[3]);

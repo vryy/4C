@@ -86,7 +86,7 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void predict(const Inpar::Solid::PredEnum& pred_type) override{};
+      void predict(const Inpar::Solid::PredEnum& pred_type) override {};
 
       //! [derived]
       void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
@@ -95,10 +95,10 @@ namespace Solid
 
       //! [derived]
       void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
-          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override{};
+          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override {};
 
       //! [derived]
-      void run_post_iterate(const ::NOX::Solver::Generic& solver) override{};
+      void run_post_iterate(const ::NOX::Solver::Generic& solver) override {};
 
       //! [derived]
       void run_post_apply_jacobian_inverse(const Core::LinAlg::Vector<double>& rhs,
@@ -111,25 +111,25 @@ namespace Solid
           const NOX::Nln::Group& grp) override;
 
       //! [derived]
-      void update_step_state(const double& timefac_n) override{};
+      void update_step_state(const double& timefac_n) override {};
 
       //! [derived]
-      void update_step_element() override{};
+      void update_step_element() override {};
 
       //! [derived]
-      void determine_stress_strain() override{};
+      void determine_stress_strain() override {};
 
       //! [derived]
-      void determine_energy() override{};
+      void determine_energy() override {};
 
       //! [derived]
-      void determine_optional_quantity() override{};
+      void determine_optional_quantity() override {};
 
       //! [derived]
-      void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override{};
+      void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override {};
 
       //! [derived]
-      void reset_step_state() override{};
+      void reset_step_state() override {};
 
       //! [derived]
       std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
@@ -142,7 +142,7 @@ namespace Solid
           const override;
 
       //! [derived]
-      void post_output() override{};
+      void post_output() override {};
 
       /*! \brief Reset model specific variables (without jacobian) [derived]
        *
@@ -150,13 +150,13 @@ namespace Solid
        *
        * \param[in] x Current full state vector
        */
-      void reset(const Core::LinAlg::Vector<double>& x) override{};
+      void reset(const Core::LinAlg::Vector<double>& x) override {};
 
       //! \brief Perform actions just before the evaluate() call [derived]
-      void pre_evaluate() override{};
+      void pre_evaluate() override {};
 
       //! \brief Perform actions right after the evaluate() call [derived]
-      void post_evaluate() override{};
+      void post_evaluate() override {};
 
       //! @}
 

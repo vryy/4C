@@ -313,7 +313,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization(
   // add the conditioned elements
   for (std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator sourceele_iter =
            sourceelements.begin();
-       sourceele_iter != sourceelements.end(); ++sourceele_iter)
+      sourceele_iter != sourceelements.end(); ++sourceele_iter)
   {
     if (sourceele_iter->second->owner() == myrank)
     {
@@ -334,7 +334,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization(
   // add conditioned nodes and fill the id vectors
   // ------------------------------------------------------------------------
   for (std::map<int, Core::Nodes::Node*>::const_iterator sourcegnode_iter = sourcegnodes.begin();
-       sourcegnode_iter != sourcegnodes.end(); ++sourcegnode_iter)
+      sourcegnode_iter != sourcegnodes.end(); ++sourcegnode_iter)
   {
     const int nid = sourcegnode_iter->first;
     if (sourcegnode_iter->second->owner() == myrank)
@@ -353,7 +353,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization(
   // copy selected conditions to the new discretization
   // ------------------------------------------------------------------------
   for (std::vector<std::string>::const_iterator conditername = conditions_to_copy.begin();
-       conditername != conditions_to_copy.end(); ++conditername)
+      conditername != conditions_to_copy.end(); ++conditername)
   {
     std::vector<Core::Conditions::Condition*> conds;
     sourcedis.get_condition(*conditername, conds);
@@ -415,7 +415,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization(
   // delete conditioned elements from source discretization
   for (std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator sourceele_iter =
            sourceelements.begin();
-       sourceele_iter != sourceelements.end(); ++sourceele_iter)
+      sourceele_iter != sourceelements.end(); ++sourceele_iter)
   {
     sourcedis.delete_element(sourceele_iter->first);
   }
@@ -426,7 +426,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization(
   std::vector<std::string> src_conditions;
   sourcedis.get_condition_names(src_conditions);
   for (std::vector<std::string>::const_iterator conditername = src_conditions.begin();
-       conditername != src_conditions.end(); ++conditername)
+      conditername != src_conditions.end(); ++conditername)
   {
     std::vector<Core::Conditions::Condition*> conds;
     sourcedis.get_condition(*conditername, conds);
@@ -566,6 +566,6 @@ XFEM::Utils::XFEMDiscretizationBuilder::split_condition(const Core::Conditions::
 XFEM::DiscretizationXWall::DiscretizationXWall(
     const std::string name, MPI_Comm comm, const unsigned int n_dim)
     : DiscretizationFaces(name, comm, n_dim)  // use base class constructor
-      {};
+{};
 
 FOUR_C_NAMESPACE_CLOSE

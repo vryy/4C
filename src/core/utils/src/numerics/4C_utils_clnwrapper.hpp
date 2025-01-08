@@ -51,7 +51,7 @@ namespace Core::CLN
     /// to construct 'e' with precision fo 40 decimal points
     ClnWrapper(const char* istring) : value_(istring) {}
     /// Initialization from the constant double
-    ClnWrapper(double a) : value_(cached_convert(a, precision_)){};
+    ClnWrapper(double a) : value_(cached_convert(a, precision_)) {};
     ClnWrapper(double& a)
     {
       FOUR_C_THROW("Constructor for not compile time double to cln::cl_F is not allowed");

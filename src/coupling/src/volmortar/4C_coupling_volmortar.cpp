@@ -902,7 +902,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_segments()
         FOUR_C_THROW("ERROR: Problem dimension is not correct!");
 
     }  // end master element loop
-  }    // end slave element loop
+  }  // end slave element loop
 }
 
 /*----------------------------------------------------------------------*
@@ -1669,7 +1669,7 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
         const Cut::plain_integrationcell_set& intcells = vc->integration_cells();
 
         for (Cut::plain_integrationcell_set::const_iterator z = intcells.begin();
-             z != intcells.end(); z++)
+            z != intcells.end(); z++)
         {
           Cut::IntegrationCell* ic = *z;
 

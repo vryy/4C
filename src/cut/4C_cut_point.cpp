@@ -354,7 +354,7 @@ double Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& coord)
     // try to find if point with the same local coordinate already exist on the edge and correct its
     // location
     for (PointPositionSet::const_iterator it = current_cut_points.begin();
-         it != current_cut_points.end(); ++it)
+        it != current_cut_points.end(); ++it)
     {
       // just query, since they are already added
       if ((*it)->t(edge) == t)
@@ -689,7 +689,7 @@ void Cut::Point::dump_connectivity_info()
   else
   {
     for (std::set<std::pair<Side*, Edge*>>::iterator it = cut_pairs_.begin();
-         it != cut_pairs_.end(); ++it, ++counter)
+        it != cut_pairs_.end(); ++it, ++counter)
     {
       std::stringstream prefix;
       Point* p_from = cut_pairs_info_[*it].second;

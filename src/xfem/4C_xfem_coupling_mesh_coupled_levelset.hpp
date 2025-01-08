@@ -75,7 +75,7 @@ namespace XFEM
           evaluate_dirichlet_function(
               ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_);
 
-          // Safety checks
+        // Safety checks
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if ((conditionsmap_robin_dirch_.find(robin_id_dirch)) == conditionsmap_robin_dirch_.end())
         {

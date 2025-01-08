@@ -126,7 +126,7 @@ namespace Discret
       So3PoroP1Scatra& operator=(const So3PoroP1Scatra& old);
 
     };  // class So3_Poro_P1_Scatra
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

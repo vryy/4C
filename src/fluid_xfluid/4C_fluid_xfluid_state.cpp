@@ -293,7 +293,7 @@ void FLD::XFluidState::zero_coupling_matrices_and_rhs()
 {
   // loop all coupling objects
   for (std::map<int, std::shared_ptr<CouplingState>>::iterator cs = coup_state_.begin();
-       cs != coup_state_.end(); cs++)
+      cs != coup_state_.end(); cs++)
     cs->second->zero_coupling_matrices_and_rhs();
 }
 
@@ -315,7 +315,7 @@ void FLD::XFluidState::complete_coupling_matrices_and_rhs(
 {
   // loop all coupling objects
   for (std::map<int, std::shared_ptr<CouplingState>>::iterator cs = coup_state_.begin();
-       cs != coup_state_.end(); cs++)
+      cs != coup_state_.end(); cs++)
   {
     int coupl_idx = cs->first;
 
@@ -380,7 +380,7 @@ bool FLD::XFluidState::destroy()
 
   // destroy all coupling system matrices and rhs vectors (except for levelset coupling objects
   for (std::map<int, std::shared_ptr<CouplingState>>::iterator i = coup_state_.begin();
-       i != coup_state_.end(); ++i)
+      i != coup_state_.end(); ++i)
   {
     std::shared_ptr<CouplingState>& cs = i->second;  // RCP reference!
     if (cs != nullptr)

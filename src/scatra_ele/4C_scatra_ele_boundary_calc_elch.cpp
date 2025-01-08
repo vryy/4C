@@ -312,8 +312,8 @@ void Discret::Elements::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst
               fac * my::funct_(vi) * (pot0 - e0 - potint - log(conint[k] / c0) / (frt * nume));
         }
       }  // end of loop over integration points gpid
-    }    // end loop over scalars
-  }      // end if(kinetics == Inpar::ElCh::nernst)
+    }  // end loop over scalars
+  }  // end if(kinetics == Inpar::ElCh::nernst)
 }
 
 
@@ -433,7 +433,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElch<distype,
       utils_->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac,
           fac, my::funct_, *cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, epsilon, k);
     }  // loop over integration points
-  }    // loop over all scalars
+  }  // loop over all scalars
 
   return;
 }  // Discret::Elements::ScaTraEleBoundaryCalcElch<distype,

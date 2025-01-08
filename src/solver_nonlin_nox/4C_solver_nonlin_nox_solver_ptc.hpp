@@ -363,7 +363,7 @@ namespace NOX
         double modelReductionRatio_;
         //@}
       };  // class PseudoTransient
-    }     // namespace Solver
+    }  // namespace Solver
 
     namespace LinSystem
     {
@@ -407,8 +407,8 @@ namespace NOX
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& scaling_matrix_op_ptr_;
 
         };  // class PseudoTransient
-      }     // namespace PrePostOp
-    }       // namespace LinSystem
+      }  // namespace PrePostOp
+    }  // namespace LinSystem
 
     namespace GROUP
     {
@@ -453,9 +453,9 @@ namespace NOX
           bool is_pseudo_transient_residual_;
 
         };  // class PseudoTransient
-      }     // namespace PrePostOp
-    }       // namespace GROUP
-  }         // namespace Nln
+      }  // namespace PrePostOp
+    }  // namespace GROUP
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

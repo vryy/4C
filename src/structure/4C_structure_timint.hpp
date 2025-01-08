@@ -960,22 +960,22 @@ namespace Solid
     void prepare_step_contact();
 
     /// wrapper for things that should be done before prepare_time_step is called
-    void pre_predict() final{};
+    void pre_predict() final {};
 
     /// wrapper for things that should be done before solving the nonlinear iterations
-    void pre_solve() final{};
+    void pre_solve() final {};
 
     /// wrapper for things that should be done before updating
-    void pre_update() final{};
+    void pre_update() final {};
 
     /// wrapper for things that should be done after solving the update
-    void post_update() final{};
+    void post_update() final {};
 
     /// wrapper for things that should be done after convergence of Newton scheme
-    void post_output() final{};
+    void post_output() final {};
 
     /// wrapper for things that should be done after the actual time loop is finished
-    void post_time_loop() final{};
+    void post_time_loop() final {};
 
     //@}
 

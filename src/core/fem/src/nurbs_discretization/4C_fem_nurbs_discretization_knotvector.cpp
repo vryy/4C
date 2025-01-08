@@ -690,7 +690,7 @@ void Core::FE::Nurbs::Knotvector::finish_knots(const int smallest_gid_in_dis)
         }
       }
     }  // loop dimensions
-  }    // end loop patches
+  }  // end loop patches
 
   //--------------------------------------------------
   // generate offset arrays for element to patch
@@ -882,7 +882,7 @@ std::vector<int> Core::FE::Nurbs::Knotvector::return_n_zerosize_ele(const int np
     case 1:
     {
       for (int rr = (degree_[npatch])[0]; rr < (n_x_m_x_l_[npatch])[0] - (degree_[npatch])[0] - 1;
-           ++rr)
+          ++rr)
       {
         double size = 1.0;
 
@@ -900,7 +900,7 @@ std::vector<int> Core::FE::Nurbs::Knotvector::return_n_zerosize_ele(const int np
     {
       double size = 0.0;
       for (int rr = (degree_[npatch])[0]; rr < (n_x_m_x_l_[npatch])[0] - (degree_[npatch])[0] - 1;
-           ++rr)
+          ++rr)
       {
         size = (*(knot_values_[npatch])[0])[rr + 1] - (*(knot_values_[npatch])[0])[rr];
         if (fabs(size) < 1e-12)
@@ -909,7 +909,7 @@ std::vector<int> Core::FE::Nurbs::Knotvector::return_n_zerosize_ele(const int np
         }
       }
       for (int mm = (degree_[npatch])[1]; mm < (n_x_m_x_l_[npatch])[1] - (degree_[npatch])[1] - 1;
-           ++mm)
+          ++mm)
       {
         size = (*(knot_values_[npatch])[1])[mm + 1] - (*(knot_values_[npatch])[1])[mm];
 
@@ -925,7 +925,7 @@ std::vector<int> Core::FE::Nurbs::Knotvector::return_n_zerosize_ele(const int np
     {
       double size = 0.0;
       for (int rr = (degree_[npatch])[0]; rr < (n_x_m_x_l_[npatch])[0] - (degree_[npatch])[0] - 1;
-           ++rr)
+          ++rr)
       {
         size = (*(knot_values_[npatch])[0])[rr + 1] - (*(knot_values_[npatch])[0])[rr];
         if (fabs(size) < 1e-12)
@@ -934,7 +934,7 @@ std::vector<int> Core::FE::Nurbs::Knotvector::return_n_zerosize_ele(const int np
         }
       }
       for (int mm = (degree_[npatch])[1]; mm < (n_x_m_x_l_[npatch])[1] - (degree_[npatch])[1] - 1;
-           ++mm)
+          ++mm)
       {
         size = (*(knot_values_[npatch])[1])[mm + 1] - (*(knot_values_[npatch])[1])[mm];
 
@@ -945,7 +945,7 @@ std::vector<int> Core::FE::Nurbs::Knotvector::return_n_zerosize_ele(const int np
         }
       }
       for (int kk = (degree_[npatch])[2]; kk < (n_x_m_x_l_[npatch])[2] - (degree_[npatch])[2] - 1;
-           ++kk)
+          ++kk)
       {
         size = (*(knot_values_[npatch])[2])[kk + 1] - (*(knot_values_[npatch])[2])[kk];
 

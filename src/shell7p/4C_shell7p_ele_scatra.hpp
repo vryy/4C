@@ -70,7 +70,7 @@ namespace Discret::Elements
      * @param id (in) : A unique global id
      * @param owner (in) : elements owner
      */
-    Shell7pScatra(int id, int owner) : Core::Elements::Element(id, owner){};
+    Shell7pScatra(int id, int owner) : Core::Elements::Element(id, owner) {};
 
     //! copy Constructor
     Shell7pScatra(const Shell7pScatra& other);

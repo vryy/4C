@@ -78,7 +78,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::element_material_time_update()
 
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->l_col_element(iele);
+    Core::Elements::Element* ele = discret_->l_col_element(iele);
     ele->location_vector(*discret_, la, false);
 
     ele->evaluate(eleparams, *discret_, la, dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);
@@ -185,7 +185,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::pack_material()
   // loop over elements
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    auto *hdgele = dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
+    auto* hdgele = dynamic_cast<Discret::Elements::ScaTraHDG*>(discret_->l_col_element(iele));
     hdgele->pack_material(buffer);
   }
 
@@ -202,7 +202,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::unpack_material()
   Core::Communication::UnpackBuffer buffer(*data_);
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    auto *hdgele = dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
+    auto* hdgele = dynamic_cast<Discret::Elements::ScaTraHDG*>(discret_->l_col_element(iele));
     hdgele->unpack_material(buffer);
   }
 }
@@ -223,7 +223,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::project_material()
 
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->l_col_element(iele);
+    Core::Elements::Element* ele = discret_->l_col_element(iele);
 
     // call routine on elements to project material field
     ele->evaluate(eleparams, *discret_, dummy, dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);

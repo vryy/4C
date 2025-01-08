@@ -127,8 +127,8 @@ namespace NOX
         // constraint interface map
         ReqInterfaceMap user_constraint_interfaces_;
       };  // class Group
-    }     // end namespace CONSTRAINT
-  }       // namespace Nln
+    }  // end namespace CONSTRAINT
+  }  // namespace Nln
 }  // end namespace  NOX
 
 FOUR_C_NAMESPACE_CLOSE

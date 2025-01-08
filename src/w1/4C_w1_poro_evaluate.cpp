@@ -356,7 +356,7 @@ int Discret::Elements::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       // build the location vector only for the structure field
       std::vector<int> lm = la[0].lm_;
 
-      Core::LinAlg::Matrix<numdof_, (numdim_ + 1)* numnod_>* matptr = nullptr;
+      Core::LinAlg::Matrix<numdof_, (numdim_ + 1) * numnod_>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
       // need current fluid state,
@@ -1049,8 +1049,8 @@ void Discret::Elements::Wall1Poro<distype>::fill_matrix_and_vectors(const int& g
       {
         double bopstrbop = 0.0;  // intermediate value
         for (int idim = 0; idim < numdim_; ++idim) bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
-        (*stiffmatrix)(numdim_ * inod + 0, numdim_ * jnod + 0) += bopstrbop;
-        (*stiffmatrix)(numdim_ * inod + 1, numdim_ * jnod + 1) += bopstrbop;
+        (*stiffmatrix)(numdim_* inod + 0, numdim_ * jnod + 0) += bopstrbop;
+        (*stiffmatrix)(numdim_* inod + 1, numdim_ * jnod + 1) += bopstrbop;
       }
     }
   }
@@ -1120,8 +1120,8 @@ void Discret::Elements::Wall1Poro<distype>::fill_matrix_and_vectors_pressure_bas
       {
         double bopstrbop = 0.0;  // intermediate value
         for (int idim = 0; idim < numdim_; ++idim) bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
-        (*stiffmatrix)(numdim_ * inod + 0, numdim_ * jnod + 0) += bopstrbop;
-        (*stiffmatrix)(numdim_ * inod + 1, numdim_ * jnod + 1) += bopstrbop;
+        (*stiffmatrix)(numdim_* inod + 0, numdim_ * jnod + 0) += bopstrbop;
+        (*stiffmatrix)(numdim_* inod + 1, numdim_ * jnod + 1) += bopstrbop;
       }
     }
   }

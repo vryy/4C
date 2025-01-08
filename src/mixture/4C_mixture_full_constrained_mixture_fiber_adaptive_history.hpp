@@ -315,7 +315,7 @@ namespace Mixture
 
     std::vector<bool> items_to_delete(num_total_steps, false);
     for (unsigned int check_level = 0; check_level <= current_adaptivity_info.max_level();
-         ++check_level)
+        ++check_level)
     {
       const unsigned int begin_index = current_adaptivity_info.get_begin_index(check_level);
       const unsigned int max_simpson_intervals = std::invoke(

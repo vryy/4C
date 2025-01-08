@@ -296,7 +296,7 @@ int Discret::Elements::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList&
       // build the location vector only for the structure field
       std::vector<int> lm = la[0].lm_;
 
-      Core::LinAlg::Matrix<numdof_, (Base::numdim_ + 1)* Base::numnod_>* matptr = nullptr;
+      Core::LinAlg::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
       // need current fluid state,
@@ -442,7 +442,7 @@ void Discret::Elements::Wall1PoroP1<distype>::nonlinear_stiffness_poroelast(std:
           for (int i = 0; i < Base::numnod_; i++)
           {
             for (int j = 0; j < Base::numdim_; j++)
-              (*reamatrix)(i * noddof_ + j, k * noddof_ + l) +=
+              (*reamatrix)(i* noddof_ + j, k * noddof_ + l) +=
                   erea_v(i * Base::numdim_ + j, k * Base::numdim_ + l);
           }
         }
@@ -456,14 +456,14 @@ void Discret::Elements::Wall1PoroP1<distype>::nonlinear_stiffness_poroelast(std:
         for (int i = 0; i < Base::numnod_; i++)
         {
           for (int j = 0; j < Base::numdim_; j++)
-            (*stiffmatrix)(i * noddof_ + j, k * noddof_ + l) +=
+            (*stiffmatrix)(i* noddof_ + j, k * noddof_ + l) +=
                 sub_stiff(i * Base::numdim_ + j, k * Base::numdim_ + l);
         }
       }
       for (int i = 0; i < Base::numnod_; i++)
       {
         for (int j = 0; j < Base::numdim_; j++)
-          (*stiffmatrix)(i * noddof_ + j, k * noddof_ + Base::numdim_) +=
+          (*stiffmatrix)(i* noddof_ + j, k * noddof_ + Base::numdim_) +=
               ecoupl_p1(i * Base::noddof_ + j, k);
       }
     }
@@ -473,7 +473,7 @@ void Discret::Elements::Wall1PoroP1<distype>::nonlinear_stiffness_poroelast(std:
       for (int j = 0; j < Base::numnod_; j++)
       {
         for (int k = 0; k < noddof_; k++)
-          (*stiffmatrix)(i * noddof_ + Base::numdim_, j * noddof_ + k) +=
+          (*stiffmatrix)(i* noddof_ + Base::numdim_, j * noddof_ + k) +=
               estiff_p1(i, j * noddof_ + k);
       }
     }
@@ -485,9 +485,9 @@ void Discret::Elements::Wall1PoroP1<distype>::nonlinear_stiffness_poroelast(std:
     for (int i = 0; i < Base::numnod_; i++)
     {
       for (int j = 0; j < Base::numdim_; j++)
-        (*force)(i * noddof_ + j) += sub_force(i * Base::numdim_ + j);
+        (*force)(i* noddof_ + j) += sub_force(i * Base::numdim_ + j);
 
-      (*force)(i * noddof_ + Base::numdim_) += ecoupl_force_p1(i);
+      (*force)(i* noddof_ + Base::numdim_) += ecoupl_force_p1(i);
     }
   }
 }
@@ -739,7 +739,7 @@ void Discret::Elements::Wall1PoroP1<distype>::coupling_poroelast(
         for (int i = 0; i < Base::numnod_; i++)
         {
           for (int j = 0; j < Base::numdim_; j++)
-            (*stiffmatrix)(i * noddof_ + j, k * (Base::numdim_ + 1) + l) +=
+            (*stiffmatrix)(i* noddof_ + j, k * (Base::numdim_ + 1) + l) +=
                 ecoupl(i * Base::numdim_ + j, k * (Base::numdim_ + 1) + l);
         }
       }
@@ -748,7 +748,7 @@ void Discret::Elements::Wall1PoroP1<distype>::coupling_poroelast(
     for (int ui = 0; ui < Base::numnod_; ++ui)
     {
       for (int ni = 0; ni < Base::numnod_; ++ni)
-        (*stiffmatrix)(noddof_ * ui + Base::numdim_, (Base::numdim_ + 1) * ni + Base::numdim_) +=
+        (*stiffmatrix)(noddof_* ui + Base::numdim_, (Base::numdim_ + 1) * ni + Base::numdim_) +=
             ecoupl_p1_p(ui, ni);
     }
   }
@@ -952,7 +952,7 @@ int Discret::Elements::Wall1PoroP1<distype>::evaluate_neumann(Teuchos::Parameter
           std::array<double, 3> gp_coord2;  // the position vector has to be given in 3D!!!
           for (int k = 0; k < Base::numdim_; k++) gp_coord2[k] = gp_coord(0, k);
           for (int k = Base::numdim_; k < 3;
-               k++)  // set a zero value for the remaining spatial directions
+              k++)  // set a zero value for the remaining spatial directions
             gp_coord2[k] = 0.0;
           const double* coordgpref = gp_coord2.data();  // needed for function evaluation
 

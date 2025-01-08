@@ -43,7 +43,7 @@ namespace BeamInteraction
         right_neighbor_;         // pointer to the Element on the right side (eta=1)
     int connecting_node_left_;   // local node-ID of the connecting node of the left neighbor
     int connecting_node_right_;  // local node-ID of the connecting node of the right neighbor
-  };                             // class B3CNeighbor
+  };  // class B3CNeighbor
 
   namespace Beam3TangentSmoothing
   {

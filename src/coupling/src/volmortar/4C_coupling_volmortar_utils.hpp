@@ -55,7 +55,7 @@ namespace Coupling::VolMortar
     {
      public:
       //! standard constructor
-      DefaultMaterialStrategy(){};
+      DefaultMaterialStrategy() {};
 
       //! virtual destructor
       virtual ~DefaultMaterialStrategy() = default;

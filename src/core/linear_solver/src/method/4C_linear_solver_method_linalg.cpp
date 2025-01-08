@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::Solver::Solver(const Teuchos::ParameterList &inparams, MPI_Comm comm,
-    const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
+Core::LinAlg::Solver::Solver(const Teuchos::ParameterList& inparams, MPI_Comm comm,
+    const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
     Core::IO::Verbositylevel verbosity, const bool translate_params_to_belos)
     : comm_(comm), params_(std::make_shared<Teuchos::ParameterList>())
 {
@@ -56,7 +56,7 @@ void Core::LinAlg::Solver::adapt_tolerance(
 {
   if (!params().isSublist("Belos Parameters")) FOUR_C_THROW("Adaptive tolerance only for Belos.");
 
-  Teuchos::ParameterList &solver_params = params().sublist("Belos Parameters");
+  Teuchos::ParameterList& solver_params = params().sublist("Belos Parameters");
 
   if (!solver_params.isParameter("Convergence Tolerance"))
     FOUR_C_THROW("No iterative solver tolerance in ParameterList");
@@ -118,7 +118,7 @@ void Core::LinAlg::Solver::set_tolerance(const double tolerance)
   if (!params().isSublist("Belos Parameters"))
     FOUR_C_THROW("Set tolerance of linear solver only for Belos solver.");
 
-  Teuchos::ParameterList &solver_params = params().sublist("Belos Parameters");
+  Teuchos::ParameterList& solver_params = params().sublist("Belos Parameters");
 
   const bool have_saved_value = solver_params.isParameter("Convergence Tolerance Saved");
   if (!have_saved_value)
@@ -136,7 +136,7 @@ void Core::LinAlg::Solver::reset_tolerance()
 {
   if (!params().isSublist("Belos Parameters")) return;
 
-  Teuchos::ParameterList &solver_params = params().sublist("Belos Parameters");
+  Teuchos::ParameterList& solver_params = params().sublist("Belos Parameters");
 
   const bool have_saved_value = solver_params.isParameter("Convergence Tolerance Saved");
   if (!have_saved_value) return;
@@ -149,7 +149,7 @@ void Core::LinAlg::Solver::reset_tolerance()
  *----------------------------------------------------------------------*/
 void Core::LinAlg::Solver::setup(std::shared_ptr<Epetra_Operator> matrix,
     std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const SolverParams &params)
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const SolverParams& params)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  1)   Setup");
 
@@ -203,7 +203,7 @@ void Core::LinAlg::Solver::setup(std::shared_ptr<Epetra_Operator> matrix,
 
 int Core::LinAlg::Solver::solve_with_multi_vector(std::shared_ptr<Epetra_Operator> matrix,
     std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const Core::LinAlg::SolverParams &params)
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const Core::LinAlg::SolverParams& params)
 {
   setup(matrix, x, b, params);
 
@@ -218,7 +218,7 @@ int Core::LinAlg::Solver::solve_with_multi_vector(std::shared_ptr<Epetra_Operato
 
 int Core::LinAlg::Solver::solve(std::shared_ptr<Epetra_Operator> matrix,
     std::shared_ptr<Core::LinAlg::Vector<double>> x,
-    std::shared_ptr<Core::LinAlg::Vector<double>> b, const SolverParams &params)
+    std::shared_ptr<Core::LinAlg::Vector<double>> b, const SolverParams& params)
 {
   setup(matrix, x->get_ptr_of_MultiVector(), b->get_ptr_of_MultiVector(), params);
 
@@ -233,7 +233,7 @@ int Core::LinAlg::Solver::solve(std::shared_ptr<Epetra_Operator> matrix,
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList translate_four_c_to_ifpack(const Teuchos::ParameterList &inparams)
+Teuchos::ParameterList translate_four_c_to_ifpack(const Teuchos::ParameterList& inparams)
 {
   Teuchos::ParameterList ifpacklist;
 
@@ -249,7 +249,7 @@ Teuchos::ParameterList translate_four_c_to_ifpack(const Teuchos::ParameterList &
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 Teuchos::ParameterList translate_four_c_to_muelu(
-    const Teuchos::ParameterList &inparams, Teuchos::ParameterList *azlist)
+    const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
 {
   Teuchos::ParameterList muelulist;
 
@@ -262,7 +262,7 @@ Teuchos::ParameterList translate_four_c_to_muelu(
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 Teuchos::ParameterList translate_four_c_to_teko(
-    const Teuchos::ParameterList &inparams, Teuchos::ParameterList *azlist)
+    const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
 {
   Teuchos::ParameterList tekolist;
 
@@ -274,13 +274,13 @@ Teuchos::ParameterList translate_four_c_to_teko(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList &inparams,
-    const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
+Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& inparams,
+    const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
     Core::IO::Verbositylevel verbosity)
 {
   Teuchos::ParameterList outparams;
   outparams.set("solver", "belos");
-  Teuchos::ParameterList &beloslist = outparams.sublist("Belos Parameters");
+  Teuchos::ParameterList& beloslist = outparams.sublist("Belos Parameters");
 
   beloslist.set("reuse", inparams.get<int>("AZREUSE"));
   beloslist.set("ncall", 0);
@@ -375,29 +375,29 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList &i
   // set parameters for Ifpack if used
   if (azprectype == Core::LinearSolver::PreconditionerType::ilu)
   {
-    Teuchos::ParameterList &ifpacklist = outparams.sublist("IFPACK Parameters");
+    Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
     ifpacklist = translate_four_c_to_ifpack(inparams);
   }
 
   // set parameters for ML if used
   if (azprectype == Core::LinearSolver::PreconditionerType::multigrid_muelu)
   {
-    Teuchos::ParameterList &muelulist = outparams.sublist("MueLu Parameters");
+    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
     muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectype == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
   {
-    Teuchos::ParameterList &muelulist = outparams.sublist("MueLu (Contact) Parameters");
+    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
     muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectype == Core::LinearSolver::PreconditionerType::block_teko)
   {
-    Teuchos::ParameterList &tekolist = outparams.sublist("Teko Parameters");
+    Teuchos::ParameterList& tekolist = outparams.sublist("Teko Parameters");
     tekolist = translate_four_c_to_teko(inparams, &beloslist);
   }
   if (azprectype == Core::LinearSolver::PreconditionerType::multigrid_nxn)
   {
-    Teuchos::ParameterList &amgnxnlist = outparams.sublist("AMGnxn Parameters");
+    Teuchos::ParameterList& amgnxnlist = outparams.sublist("AMGnxn Parameters");
     std::string amgnxn_xml = inparams.get<std::string>("AMGNXN_XML_FILE");
     amgnxnlist.set<std::string>("AMGNXN_XML_FILE", amgnxn_xml);
     std::string amgnxn_type = inparams.get<std::string>("AMGNXN_TYPE");
@@ -410,8 +410,8 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList &i
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::ParameterList Core::LinAlg::Solver::translate_solver_parameters(
-    const Teuchos::ParameterList &inparams,
-    const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
+    const Teuchos::ParameterList& inparams,
+    const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
     Core::IO::Verbositylevel verbosity)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  0)   translate_solver_parameters");

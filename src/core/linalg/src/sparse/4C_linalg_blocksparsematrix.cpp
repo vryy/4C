@@ -225,7 +225,7 @@ bool Core::LinAlg::BlockSparseMatrixBase::is_dbc_applied(
     for (int cblock = 0; cblock < cols(); ++cblock)
     {
       if (not matrix(rblock, cblock)
-                  .is_dbc_applied(dbcmap, diagonalblock and (rblock == cblock), trafo))
+              .is_dbc_applied(dbcmap, diagonalblock and (rblock == cblock), trafo))
         return false;
     }
   }

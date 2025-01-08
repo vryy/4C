@@ -54,7 +54,7 @@ namespace Mat
           return nullptr;
         };
       };  // class VolOgden
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Volumetric Ogden material according to [1].

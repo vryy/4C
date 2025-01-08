@@ -74,13 +74,13 @@ namespace Solid
       //! @name Monolithic update routines
       //! @{
       //! things that should be done before updating (derived)
-      void pre_update() override{/* do nothing for now */};
+      void pre_update() override { /* do nothing for now */ };
 
       //! things that should be done after updating (derived)
-      void post_update() override{/* do nothing for now */};
+      void post_update() override { /* do nothing for now */ };
 
       //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
-      void update_constant_state_contributions() override{/* do nothing for some integrators */};
+      void update_constant_state_contributions() override { /* do nothing for some integrators */ };
       //! @}
 
       //! @name Predictor routines (dependent on the implicit integration scheme)
@@ -194,7 +194,7 @@ namespace Solid
       bool ispredictor_state_;
 
     };  // namespace IMPLICIT
-  }     // namespace IMPLICIT
+  }  // namespace IMPLICIT
 }  // namespace Solid
 
 namespace NOX
@@ -217,7 +217,7 @@ namespace NOX
          public:
           //! constructor
           Generic(const Solid::IMPLICIT::Generic& implicit)
-              : impl_(implicit), default_step_(implicit.get_default_step_length()){/* empty */};
+              : impl_(implicit), default_step_(implicit.get_default_step_length()) { /* empty */ };
 
           /*! \brief Derived function, which is called at the very beginning of a call to
            *  NOX::Nln::Group::computeX()
@@ -312,9 +312,9 @@ namespace NOX
           const double default_step_;
 
         };  // class Generic
-      }     // namespace IMPLICIT
-    }       // namespace PrePostOp
-  }         // namespace Nln
+      }  // namespace IMPLICIT
+    }  // namespace PrePostOp
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

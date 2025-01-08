@@ -869,10 +869,11 @@ void Mixture::FullConstrainedMixtureFiber<Number>::update()
                         { return growth_scalar_integrand(mass_increment, current_time_); };
 
                         auto current_cauchy_stress_integrand =
-                            [&](const MassIncrement<Number>& mass_increment) {
-                              return scaled_cauchy_stress_integrand(
-                                  mass_increment, current_time_, current_state_.lambda_f);
-                            };
+                            [&](const MassIncrement<Number>& mass_increment)
+                        {
+                          return scaled_cauchy_stress_integrand(
+                              mass_increment, current_time_, current_state_.lambda_f);
+                        };
 
                         const double begin_time = interval.adaptivity_info.get_index_time(
                             indices[0].value(), 0.0, interval.base_dt);
@@ -912,7 +913,7 @@ void Mixture::FullConstrainedMixtureFiber<Number>::update()
             {
               std::size_t num_to_delete = num_total_items - window_size;
               for (std::size_t index = 0;
-                   index < std::min(num_to_delete, interval.timesteps.size()); ++index)
+                  index < std::min(num_to_delete, interval.timesteps.size()); ++index)
               {
                 erase_item[index] = true;
               }

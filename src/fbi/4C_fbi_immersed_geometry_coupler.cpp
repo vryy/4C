@@ -34,9 +34,9 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
       beampositions_(new std::map<int, Core::LinAlg::Matrix<3, 1>>),
       searchtree_(new Core::Geo::SearchTree(5)),
       searchradius_(Global::Problem::instance()
-                        ->fbi_params()
-                        .sublist("BEAM TO FLUID MESHTYING")
-                        .get<double>("SEARCH_RADIUS")),
+              ->fbi_params()
+              .sublist("BEAM TO FLUID MESHTYING")
+              .get<double>("SEARCH_RADIUS")),
       edgebased_fluidstabilization_(false)
 {
   edgebased_fluidstabilization_ = (Teuchos::getIntegralValue<Inpar::FLUID::StabType>(
@@ -87,7 +87,7 @@ std::shared_ptr<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search
 
   // loop over beam nodes
   for (beamnodeiterator = beampositions_->begin(); beamnodeiterator != beampositions_->end();
-       beamnodeiterator++)
+      beamnodeiterator++)
   {
     const Core::LinAlg::Matrix<3, 1>& curbeamnodeposition = beamnodeiterator->second;
 
@@ -97,7 +97,7 @@ std::shared_ptr<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search
 
     // loop over the map of beam node-IDs and fluid elements within the search radius
     for (std::map<int, std::set<int>>::const_iterator closefluideles = closeeles.begin();
-         closefluideles != closeeles.end(); closefluideles++)
+        closefluideles != closeeles.end(); closefluideles++)
     {
       const Core::Nodes::Node* const beamnode = discretizations[0]->g_node(beamnodeiterator->first);
       const Core::Elements::Element* const* beamelements = beamnode->elements();
@@ -105,11 +105,11 @@ std::shared_ptr<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search
       // loop over the set of beam elements adjacent to the current beam node (this leads to
       // duplicate pairs)
       for (int beamelementsnumber = 0; beamelementsnumber < beamnode->num_element();
-           beamelementsnumber++)
+          beamelementsnumber++)
       {
         // loop over the gids of the fluid elements
         for (std::set<int>::const_iterator fluideleIter = (closefluideles->second).begin();
-             fluideleIter != (closefluideles->second).end(); fluideleIter++)
+            fluideleIter != (closefluideles->second).end(); fluideleIter++)
         {
           if (discretizations[1]->g_element(*fluideleIter)->owner() ==
               Core::Communication::my_mpi_rank(discretizations[0]->get_comm()))
@@ -206,13 +206,13 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
   int owner;
   std::map<int, std::vector<int>>::const_iterator beamelementiterator;
   for (beamelementiterator = pairids->begin(); beamelementiterator != pairids->end();
-       beamelementiterator++)
+      beamelementiterator++)
   {
     Core::Elements::Element* beamele = discretizations[0]->g_element(beamelementiterator->first);
     if (!beamele) FOUR_C_THROW("There is no element with gid %i", beamelementiterator->first);
     owner = beamele->owner();
     for (std::vector<int>::const_iterator fluideleIter = beamelementiterator->second.begin();
-         fluideleIter != (beamelementiterator->second).end(); fluideleIter++)
+        fluideleIter != (beamelementiterator->second).end(); fluideleIter++)
     {
       element_senddata[owner].push_back(*fluideleIter);
 
@@ -346,6 +346,6 @@ void FBI::FBIGeometryCoupler::compute_current_positions(Core::FE::Discretization
 /*----------------------------------------------------------------------*/
 
 void FBI::FBIGeometryCoupler::set_binning(
-    std::shared_ptr<Core::Binstrategy::BinningStrategy> binning){};
+    std::shared_ptr<Core::Binstrategy::BinningStrategy> binning) {};
 
 FOUR_C_NAMESPACE_CLOSE

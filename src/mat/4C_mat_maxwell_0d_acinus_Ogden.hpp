@@ -44,7 +44,7 @@ namespace Mat
       };
 
     };  // class Maxwell_0d_acinus_Ogden
-  }     // namespace PAR
+  }  // namespace PAR
 
 
   class Maxwell0dAcinusOgdenType : public Maxwell0dAcinusType

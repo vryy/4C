@@ -82,13 +82,13 @@ void Solid::add_valid_structure_functions(Core::Utils::FunctionManager& function
 {
   std::vector<Input::LineDefinition> lines;
   lines.emplace_back(Input::LineDefinition::Builder()
-                         .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
-                         .add_named_int("MAT_STRUC")
-                         .build());
+          .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
+          .add_named_int("MAT_STRUC")
+          .build());
   lines.emplace_back(Input::LineDefinition::Builder()
-                         .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
-                         .add_named_int("MAT_STRUC")
-                         .build());
+          .add_tag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
+          .add_named_int("MAT_STRUC")
+          .build());
 
   function_manager.add_function_definition(std::move(lines), create_structure_function);
 }
@@ -213,17 +213,17 @@ double Solid::WeaklyCompressibleEtienneFSIStructureForceFunction::evaluate(
   Core::LinAlg::Matrix<2, 1> f_u_ex;
 
   // evaluate variables
-  f_u_ex(0) = (2. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * cos(2. * M_PI * x) * (y - 1.) *
+  f_u_ex(0) = (2. * (std::pow(M_PI, 2.))*cos(2. * M_PI * t) * cos(2. * M_PI * x) * (y - 1.) *
                   (E - r - E * v + r * v + 2. * r * (std::pow(v, 2.)))) /
               (3. * (2. * (std::pow(v, 2.)) + v - 1.));
-  f_u_ex(1) = ((std::pow(M_PI, 2.)) * r * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
+  f_u_ex(1) = ((std::pow(M_PI, 2.))*r * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
                   (cos(2. * M_PI * x) - 1.)) /
                   5. -
               (E * ((M_PI * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.))) / 3. +
-                       (3. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * sin(2. * M_PI * x) *
+                       (3. * (std::pow(M_PI, 2.))*cos(2. * M_PI * x) * sin(2. * M_PI * x) *
                            sin(2. * M_PI * (t + 1. / 4.))) /
                            5. +
-                       ((std::pow(M_PI, 2.)) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
+                       ((std::pow(M_PI, 2.))*sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
                            (cos(2. * M_PI * x) - 1.)) /
                            5.)) /
                   (2. * v + 2.) +

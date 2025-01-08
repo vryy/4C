@@ -23,13 +23,13 @@ FOUR_C_NAMESPACE_OPEN
 FS3I::PartFS3I2Wc::PartFS3I2Wc(MPI_Comm comm)
     : PartFS3I(comm),
       itmax_(Global::Problem::instance()
-                 ->f_s3_i_dynamic_params()
-                 .sublist("PARTITIONED")
-                 .get<int>("ITEMAX")),
+              ->f_s3_i_dynamic_params()
+              .sublist("PARTITIONED")
+              .get<int>("ITEMAX")),
       ittol_(Global::Problem::instance()
-                 ->f_s3_i_dynamic_params()
-                 .sublist("PARTITIONED")
-                 .get<double>("CONVTOL")),
+              ->f_s3_i_dynamic_params()
+              .sublist("PARTITIONED")
+              .get<double>("CONVTOL")),
       consthermpress_(
           Global::Problem::instance()->f_s3_i_dynamic_params().get<std::string>("CONSTHERMPRESS"))
 {

@@ -1156,9 +1156,9 @@ void Discret::Elements::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
         for (int jnod = 0; jnod < NUMNOD_SOTET10; ++jnod)
         {
           massfactor = shapefcts_11gp[gp](jnod) * ifactor;  // intermediate factor
-          (*massmatrix)(NUMDIM_SOTET10 * inod + 0, NUMDIM_SOTET10 * jnod + 0) += massfactor;
-          (*massmatrix)(NUMDIM_SOTET10 * inod + 1, NUMDIM_SOTET10 * jnod + 1) += massfactor;
-          (*massmatrix)(NUMDIM_SOTET10 * inod + 2, NUMDIM_SOTET10 * jnod + 2) += massfactor;
+          (*massmatrix)(NUMDIM_SOTET10* inod + 0, NUMDIM_SOTET10 * jnod + 0) += massfactor;
+          (*massmatrix)(NUMDIM_SOTET10* inod + 1, NUMDIM_SOTET10 * jnod + 1) += massfactor;
+          (*massmatrix)(NUMDIM_SOTET10* inod + 2, NUMDIM_SOTET10 * jnod + 2) += massfactor;
         }
       }
 
@@ -1280,7 +1280,7 @@ void Discret::Elements::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
               double massfactor = factor * myacc(idim);
               for (int jnod = 0; jnod < NUMNOD_SOTET10; ++jnod)
                 for (int jdim = 0; jdim < NUMDIM_SOTET10; ++jdim)
-                  (*massmatrix)(inod * NUMDIM_SOTET10 + idim, jnod * NUMDIM_SOTET10 + jdim) +=
+                  (*massmatrix)(inod* NUMDIM_SOTET10 + idim, jnod * NUMDIM_SOTET10 + jdim) +=
                       massfactor * cb(jnod * NUMDIM_SOTET10 + jdim);
             }
           }
@@ -1294,7 +1294,7 @@ void Discret::Elements::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
           {
             double forcefactor = shapefcts_11gp[gp](inod) * detJ_mass_w;
             for (int idim = 0; idim < NUMDIM_SOTET10; ++idim)
-              (*forceinert)(inod * NUMDIM_SOTET10 + idim) += forcefactor * density * myacc(idim);
+              (*forceinert)(inod* NUMDIM_SOTET10 + idim) += forcefactor * density * myacc(idim);
           }
         }
       }

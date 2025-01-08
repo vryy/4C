@@ -464,7 +464,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
   // find the coordinates of each border node and get it parallel
   //--------------------------------------------------------------------
   for (std::map<int, std::vector<double>>::iterator it = border_nodes_coords.begin();
-       it != border_nodes_coords.end(); it++)
+      it != border_nodes_coords.end(); it++)
   {
     // define the coordinate of a border node
     std::vector<double> xyze(3, 0.0);
@@ -562,7 +562,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
 
         bool isBorderNode = false;
         for (std::map<int, std::vector<double>>::iterator it = border_nodes_coords.begin();
-             it != border_nodes_coords.end(); it++)
+            it != border_nodes_coords.end(); it++)
         {
           isBorderNode = false;
 

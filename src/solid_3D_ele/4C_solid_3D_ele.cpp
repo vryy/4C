@@ -169,8 +169,7 @@ std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Solid::
 const Core::FE::GaussIntegration& Discret::Elements::Solid::get_gauss_rule() const
 {
   return std::visit([](auto& interface) -> const Core::FE::GaussIntegration&
-      { return interface->get_gauss_rule_stiffness_integration(); },
-      solid_calc_variant_);
+      { return interface->get_gauss_rule_stiffness_integration(); }, solid_calc_variant_);
 }
 
 void Discret::Elements::Solid::pack(Core::Communication::PackBuffer& data) const
@@ -264,7 +263,8 @@ void Discret::Elements::Solid::for_each_gauss_point(Core::FE::Discretization& di
     const std::function<void(Mat::So3Material&, double, int)>& integrator) const
 {
   std::visit(
-      [&](auto& interface) {
+      [&](auto& interface)
+      {
         interface->for_each_gauss_point(*this, *solid_material(), discretization, lm, integrator);
       },
       solid_calc_variant_);

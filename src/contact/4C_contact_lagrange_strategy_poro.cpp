@@ -1373,7 +1373,7 @@ void CONTACT::LagrangeStrategyPoro::set_state(
             break;
           }
         }  // end inner switch statement
-      }    // end loop over all interfaces
+      }  // end loop over all interfaces
       break;
     }
     default:
@@ -1407,8 +1407,8 @@ void CONTACT::LagrangeStrategyPoro::set_parent_state(const enum Mortar::StateTyp
       if (poroslave_)
       {
         for (int j = 0; j < interface_[i]->slave_col_elements()->NumMyElements();
-             ++j)  // will just work for onesided poro contact as the porosity is just on slave
-                   // side!!!
+            ++j)  // will just work for onesided poro contact as the porosity is just on slave
+                  // side!!!
         {
           int gid = interface_[i]->slave_col_elements()->GID(j);
 

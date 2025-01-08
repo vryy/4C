@@ -33,7 +33,7 @@ namespace Solid
      private:
       std::shared_ptr<Solid::Predict::Generic> tangdis_ptr_;
     };  // class ConstDisVelAccPress
-  }     // namespace Predict
+  }  // namespace Predict
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

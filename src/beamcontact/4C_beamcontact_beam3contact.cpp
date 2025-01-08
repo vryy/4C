@@ -863,8 +863,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_small_angle_pai
           }
         }
       }  // for (int numgp=0; numgp<gausspoints.nquad; ++numgp)
-    }    // if(curintsegpairs.size()>0)
-  }      // for(int interval=imin;interval<=imax;interval++)
+    }  // if(curintsegpairs.size()>0)
+  }  // for(int interval=imin;interval<=imax;interval++)
 
 #ifdef ENDPOINTSEGMENTATION
   if (iminmax == nullptr or leftrightsolutionwithinsegment == nullptr or

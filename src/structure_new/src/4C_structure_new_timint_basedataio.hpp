@@ -426,7 +426,7 @@ namespace Solid
 
       ///@}
     };  // class BaseDataIO
-  }     // namespace TimeInt
+  }  // namespace TimeInt
 }  // namespace Solid
 
 namespace NOX
@@ -469,9 +469,9 @@ namespace NOX
             Core::IO::EveryIterationWriter& every_iter_writer_;
           };
         }  // namespace TimeInt
-      }    // namespace PrePostOp
-    }      // namespace Solver
-  }        // namespace Nln
+      }  // namespace PrePostOp
+    }  // namespace Solver
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

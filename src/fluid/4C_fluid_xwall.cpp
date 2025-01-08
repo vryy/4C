@@ -841,7 +841,7 @@ void FLD::XWall::setup_l2_projection()
                     mode[k % ndof][lid] = 0.0;
                 }
               }  // for (int j=0; j<actnode->Dof().NumDof(); ++j)
-            }    // for (int i=0; i<NumMyRowNodes(); ++i)
+            }  // for (int i=0; i<NumMyRowNodes(); ++i)
           }
         }
         break;
@@ -1406,7 +1406,7 @@ void FLD::XWall::overwrite_transferred_values()
         // usually we will only have one condition in nodecloudstocouple
         // but it doesn't hurt if there are several ones
         for (std::vector<Core::Conditions::Condition*>::iterator cond = nodecloudstocouple.begin();
-             cond != nodecloudstocouple.end(); ++cond)
+            cond != nodecloudstocouple.end(); ++cond)
         {
           const std::string& mytoggle = (*cond)->parameters().get<std::string>("toggle");
           if (mytoggle == "slave")

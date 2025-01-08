@@ -1261,7 +1261,7 @@ void CONTACT::MtAbstractStrategy::postprocess_quantities_per_interface(
       "master forces", std::const_pointer_cast<const Core::LinAlg::Vector<double>>(fcmaster));
 
   for (std::vector<std::shared_ptr<Mortar::Interface>>::const_iterator it = interface_.begin();
-       it < interface_.end(); ++it)
+      it < interface_.end(); ++it)
     (*it)->postprocess_quantities(*outputParams);
 }
 

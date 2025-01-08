@@ -810,7 +810,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_2d(
             comm);
 
       }  // end - if Pojection on MasterElement
-    }    // loop-end over all involved master elements
+    }  // loop-end over all involved master elements
 
     // strong discontinuity --> Boundary Segmentation
     if (is_on_mele == false)
@@ -1485,7 +1485,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_3d(
         gp_dm(sele, *meles[nummaster], lmval, sval, mval, jacslave, wgt, nrow, nmnode, ndof, bound,
             comm);
       }  // is_on_mele==true
-    }    // loop over meles
+    }  // loop over meles
 
     // strong discontinuity --> Boundary Segmentation
     if (projactable_gp == false) *boundary_ele = true;

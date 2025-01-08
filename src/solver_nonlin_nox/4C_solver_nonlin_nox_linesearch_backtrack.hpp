@@ -29,7 +29,7 @@ namespace NOX
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace Inner
+    }  // namespace Inner
     namespace LineSearch
     {
       class Backtrack : public Generic
@@ -123,7 +123,7 @@ namespace NOX
         Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> inner_tests_ptr_;
       };
     }  // namespace LineSearch
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

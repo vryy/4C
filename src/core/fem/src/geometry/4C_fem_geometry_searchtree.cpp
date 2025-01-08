@@ -401,9 +401,9 @@ void Core::Geo::SearchTree::TreeNode::create_children(const Core::FE::Discretiza
 
   // insert elements into child node
   for (std::map<int, std::set<int>>::const_iterator labelIter = element_list_.begin();
-       labelIter != element_list_.end(); labelIter++)
+      labelIter != element_list_.end(); labelIter++)
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-         eleIter != (labelIter->second).end(); eleIter++)
+        eleIter != (labelIter->second).end(); eleIter++)
     {
       std::vector<int> elementClassification =
           classify_element(dis.g_element(*eleIter), currentpositions);
@@ -431,10 +431,10 @@ void Core::Geo::SearchTree::TreeNode::create_children(
   std::vector<int> elementClassification;
   // insert elements into child node
   for (std::map<int, std::set<int>>::const_iterator labelIter = element_list_.begin();
-       labelIter != element_list_.end(); labelIter++)
+      labelIter != element_list_.end(); labelIter++)
   {
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-         eleIter != (labelIter->second).end(); eleIter++)
+        eleIter != (labelIter->second).end(); eleIter++)
     {
       classify_xaabb(currentXAABBs.find(*eleIter)->second, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
@@ -463,10 +463,10 @@ void Core::Geo::SearchTree::TreeNode::create_children(
   static std::vector<int> elementClassification;
   // insert elements into child node
   for (std::map<int, std::set<int>>::const_iterator labelIter = element_list_.begin();
-       labelIter != element_list_.end(); labelIter++)
+      labelIter != element_list_.end(); labelIter++)
   {
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-         eleIter != (labelIter->second).end(); eleIter++)
+        eleIter != (labelIter->second).end(); eleIter++)
     {
       classify_kdop(currentKDOPs.find(*eleIter)->second, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)

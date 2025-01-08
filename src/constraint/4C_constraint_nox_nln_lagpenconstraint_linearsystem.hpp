@@ -71,8 +71,8 @@ namespace NOX
         //! map of NOX::Nln::CONSTRAINT::Interface::Preconditioner objects
         NOX::Nln::CONSTRAINT::PrecInterfaceMap i_constr_prec_;
       };  // class LinearSystem
-    }     // namespace LAGPENCONSTRAINT
-  }       // namespace Nln
+    }  // namespace LAGPENCONSTRAINT
+  }  // namespace Nln
 }  // namespace NOX
 
 

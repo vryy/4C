@@ -891,8 +891,8 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
           }
         }
       }  // for (int numgp=0; numgp<gausspoints.nquad; ++numgp)
-    }    // if(curintsegpairs.size()>0)
-  }      // for(int interval=imin;interval<=imax;interval++)
+    }  // if(curintsegpairs.size()>0)
+  }  // for(int interval=imin;interval<=imax;interval++)
 
 #ifdef ENDPOINTSEGMENTATION
   if (iminmax == nullptr or leftrightsolutionwithinsegment == nullptr or

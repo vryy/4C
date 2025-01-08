@@ -57,7 +57,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     double& get_penalty_parameter_ptr() { return penalty_parameter_; }
 
     //! Generate the runtime output
-    virtual void runtime_output_step_state(std::pair<double, int> output_time_and_step){};
+    virtual void runtime_output_step_state(std::pair<double, int> output_time_and_step) {};
 
    private:
     //! Colum Map

@@ -280,7 +280,7 @@ namespace CONTACT
      *
      *  \author grill
      *  \date 05/16 */
-    void print() const override{};
+    void print() const override {};
 
     //! @name Public evaluation methods
     /*!

@@ -1547,7 +1547,7 @@ void CONTACT::Interface::pre_evaluate(const int& step, const int& iter)
   else
     FOUR_C_THROW("Invalid search algorithm");
 
-    // TODO: maybe we can remove this debug functionality
+  // TODO: maybe we can remove this debug functionality
 #ifdef MORTARGMSHCELLS
   // reset integration cell GMSH files
   int proc = Core::Communication::my_mpi_rank(Comm());
@@ -1632,7 +1632,7 @@ void CONTACT::Interface::store_nt_svalues()
     //-------------------------------------------------------------------------------------
     // store weighted gap linearization
     for (auto p = cnode->data().get_deriv_gnts().begin(); p != cnode->data().get_deriv_gnts().end();
-         ++p)
+        ++p)
     {
       cnode->data().get_deriv_g()[p->first] += (p->second);
     }
@@ -1733,7 +1733,7 @@ void CONTACT::Interface::store_lt_svalues()
     //-------------------------------------------------------------------------------------
     // store weighted gap linearization
     for (auto p = cnode->data().get_deriv_glts().begin(); p != cnode->data().get_deriv_glts().end();
-         ++p)
+        ++p)
       cnode->data().get_deriv_g()[p->first] += (p->second);
 
     //-------------------------------------------------------------------------------------
@@ -2225,7 +2225,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Core::LinAlg::SparseMatrix& 
             for (int dim = 0; dim < n_dim(); ++dim)
             {
               for (auto pp = cnode->data().get_deriv_jumpltl()[dim].begin();
-                   pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
+                  pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
               {
                 double value = penaltytan * (p.second) * (pp->second);
                 kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
@@ -2253,7 +2253,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Core::LinAlg::SparseMatrix& 
             for (int dim = 0; dim < n_dim(); ++dim)
             {
               for (auto pp = cnode->data().get_deriv_jumpltl()[dim].begin();
-                   pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
+                  pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
               {
                 double value = -penaltytan * (p.second) * (pp->second);
                 kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
@@ -2287,7 +2287,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Core::LinAlg::SparseMatrix& 
             for (int dim = 0; dim < n_dim(); ++dim)
             {
               for (auto pp = cnode->data().get_deriv_jumpltl()[dim].begin();
-                   pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
+                  pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
               {
                 double value = penaltytan * coeff * (p.second) * (pp->second);
                 kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
@@ -2344,7 +2344,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Core::LinAlg::SparseMatrix& 
             for (int dim = 0; dim < n_dim(); ++dim)
             {
               for (auto pp = cnode->data().get_deriv_jumpltl()[dim].begin();
-                   pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
+                  pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
               {
                 double value = -penaltytan * coeff * (p.second) * (pp->second);
                 kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
@@ -2763,14 +2763,14 @@ void CONTACT::Interface::add_lts_stiffness_master(Core::LinAlg::SparseMatrix& kt
           {
             // gap linearization
             for (auto pp = cnode->data().get_deriv_glts().begin();
-                 pp != cnode->data().get_deriv_glts().end(); ++pp)
+                pp != cnode->data().get_deriv_glts().end(); ++pp)
             {
               double value = -penaltyLts * (p.second) * (pp->second) * cnode->mo_data().n()[dim];
               kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
             // normal linearization
             for (auto pp = cnode->data().get_deriv_n()[dim].begin();
-                 pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
+                pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
             {
               double value = -penaltyLts * (p.second) * (pp->second) * cnode->data().getglts();
               kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
@@ -2798,14 +2798,14 @@ void CONTACT::Interface::add_lts_stiffness_master(Core::LinAlg::SparseMatrix& kt
           for (int dim = 0; dim < n_dim(); ++dim)
           {
             for (auto pp = cnode->data().get_deriv_glts().begin();
-                 pp != cnode->data().get_deriv_glts().end(); ++pp)
+                pp != cnode->data().get_deriv_glts().end(); ++pp)
             {
               double value = penaltyLts * (p.second) * (pp->second) * cnode->mo_data().n()[dim];
               kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
             // normal linearization
             for (auto pp = cnode->data().get_deriv_n()[dim].begin();
-                 pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
+                pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
             {
               double value = penaltyLts * (p.second) * (pp->second) * cnode->data().getglts();
               kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
@@ -2908,14 +2908,14 @@ void CONTACT::Interface::add_nts_stiffness_master(Core::LinAlg::SparseMatrix& kt
           {
             // gap linearization
             for (auto pp = cnode->data().get_deriv_gnts().begin();
-                 pp != cnode->data().get_deriv_gnts().end(); ++pp)
+                pp != cnode->data().get_deriv_gnts().end(); ++pp)
             {
               double value = -penalty * (p.second) * (pp->second) * cnode->mo_data().n()[dim];
               kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
             // normal linearization
             for (auto pp = cnode->data().get_deriv_n()[dim].begin();
-                 pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
+                pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
             {
               double value = -penalty * (p.second) * (pp->second) * cnode->data().getgnts();
               kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
@@ -2943,14 +2943,14 @@ void CONTACT::Interface::add_nts_stiffness_master(Core::LinAlg::SparseMatrix& kt
           for (int dim = 0; dim < n_dim(); ++dim)
           {
             for (auto pp = cnode->data().get_deriv_gnts().begin();
-                 pp != cnode->data().get_deriv_gnts().end(); ++pp)
+                pp != cnode->data().get_deriv_gnts().end(); ++pp)
             {
               double value = penalty * (p.second) * (pp->second) * cnode->mo_data().n()[dim];
               kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
             // normal linearization
             for (auto pp = cnode->data().get_deriv_n()[dim].begin();
-                 pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
+                pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
             {
               double value = penalty * (p.second) * (pp->second) * cnode->data().getgnts();
               kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
@@ -3093,7 +3093,7 @@ void CONTACT::Interface::add_ltl_stiffness(Core::LinAlg::SparseMatrix& kteff)
           for (int dim = 0; dim < n_dim(); ++dim)
           {
             for (auto pp = cnode->data().get_deriv_gltl()[dim].begin();
-                 pp != cnode->data().get_deriv_gltl()[dim].end(); ++pp)
+                pp != cnode->data().get_deriv_gltl()[dim].end(); ++pp)
             {
               double value = -penalty * (p.second) * (pp->second);
               kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
@@ -3121,7 +3121,7 @@ void CONTACT::Interface::add_ltl_stiffness(Core::LinAlg::SparseMatrix& kteff)
           for (int dim = 0; dim < n_dim(); ++dim)
           {
             for (auto pp = cnode->data().get_deriv_gltl()[dim].begin();
-                 pp != cnode->data().get_deriv_gltl()[dim].end(); ++pp)
+                pp != cnode->data().get_deriv_gltl()[dim].end(); ++pp)
             {
               double value = penalty * (p.second) * (pp->second);
               kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
@@ -4352,7 +4352,7 @@ double CONTACT::Interface::compute_cpp_normal_2d(const Mortar::Node& mrtrnode,
           }
         }
       }  // end node loop
-    }    // end element loop
+    }  // end element loop
   }
 
   // loop over found eles
@@ -4942,12 +4942,12 @@ void CONTACT::Interface::set_cpp_normal(Mortar::Node& snode, double* normal,
   if (cnode.num_dof() == 2)
   {
     for (auto p = cnode.data().get_deriv_n()[1].begin(); p != cnode.data().get_deriv_n()[1].end();
-         ++p)
+        ++p)
     {
       (cnode.data().get_deriv_txi()[0])[p->first] -= (p->second);
     }
     for (auto p = cnode.data().get_deriv_n()[0].begin(); p != cnode.data().get_deriv_n()[0].end();
-         ++p)
+        ++p)
     {
       (cnode.data().get_deriv_txi()[1])[p->first] += (p->second);
     }
@@ -5491,7 +5491,7 @@ void CONTACT::Interface::evaluate_stl()
       }
 
     }  // end found mele loop
-  }    // end slave ele loop
+  }  // end slave ele loop
 }
 
 /*----------------------------------------------------------------------*
@@ -6198,7 +6198,7 @@ bool CONTACT::Interface::mortar_coupling(Mortar::Element* sele, std::vector<Mort
       // evaluate
       coup.evaluate_coupling(mparams_ptr);
     }  // quadratic
-  }    // 3D
+  }  // 3D
   else
   {
     FOUR_C_THROW("Dimension for Mortar coupling must be 2D or 3D!");
@@ -6661,7 +6661,7 @@ void CONTACT::Interface::evaluate_relative_movement(
       }
 
     }  // active nodes
-  }    // loop over slave nodes
+  }  // loop over slave nodes
 }
 
 /*----------------------------------------------------------------------*
@@ -6924,7 +6924,7 @@ void CONTACT::Interface::evaluate_distances(
           mynode->data().getgnts() = 1.0e12;
           (mynode->data().get_deriv_gnts()).clear();
         }  // End hit ele
-      }    // End Loop over all Master Elements
+      }  // End Loop over all Master Elements
 
       if (gap_vec.size() > 0)
       {
@@ -7254,9 +7254,9 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
             }
           }
         }  // if (ftype == Inpar::CONTACT::friction_coulomb)
-      }    // if (nz - cn*wgap <= 0)
-    }      // if (cnode->Active()==false)
-  }        // loop over all slave nodes
+      }  // if (nz - cn*wgap <= 0)
+    }  // if (cnode->Active()==false)
+  }  // loop over all slave nodes
 
   // broadcast convergence status among processors
   int convcheck = 0;

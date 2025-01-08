@@ -870,7 +870,7 @@ bool Cut::Kernel::close_to_zero(const Core::CLN::ClnWrapper& a)
   return ((a < lpf) and (a > lnf));
 };
 
-  // non templated static data from cut_kernel
+// non templated static data from cut_kernel
 
 #ifdef DEBUG_MEMORY_ALLOCATION
 

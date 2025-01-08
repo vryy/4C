@@ -166,7 +166,7 @@ bool Cut::NodalDofSet::contains(Cut::Point* p)
 {
   // check if any volume-cell of the volumecell_composite contains this point
   for (std::set<plain_volumecell_set, Cmp>::iterator it = volumecell_composite_.begin();
-       it != volumecell_composite_.end(); it++)
+      it != volumecell_composite_.end(); it++)
   {
     const plain_volumecell_set& vc_set = *it;
     for (plain_volumecell_set::const_iterator vcs = vc_set.begin(); vcs != vc_set.end(); vcs++)
@@ -185,7 +185,7 @@ void Cut::NodalDofSet::collect_cut_sides(Cut::plain_int_set& cutside_ids) const
 {
   // collect all cut sides
   for (std::set<plain_volumecell_set, Cmp>::iterator it = volumecell_composite_.begin();
-       it != volumecell_composite_.end(); it++)
+      it != volumecell_composite_.end(); it++)
   {
     const plain_volumecell_set& vc_set = *it;
     for (plain_volumecell_set::const_iterator vcs = vc_set.begin(); vcs != vc_set.end(); vcs++)
@@ -244,7 +244,7 @@ void Cut::Node::assign_nodal_cell_set(const std::vector<plain_volumecell_set>& e
   std::vector<plain_volumecell_set>& nodal_cell_set = nodal_cell_sets[this];
 
   for (std::vector<plain_volumecell_set>::const_iterator s = ele_vc_sets.begin();
-       s != ele_vc_sets.end(); s++)
+      s != ele_vc_sets.end(); s++)
   {
     const plain_volumecell_set& cell_set = *s;
 
@@ -297,7 +297,7 @@ void Cut::Node::find_dof_sets(bool include_inner)
       else
       {
         for (plain_volumecell_set::const_iterator i = element_cells.begin();
-             i != element_cells.end(); ++i)
+            i != element_cells.end(); ++i)
         {
           VolumeCell* vc = *i;
           if (vc->position() == Point::outside)
@@ -312,7 +312,7 @@ void Cut::Node::find_dof_sets(bool include_inner)
       {
         Node* n = *i;
         for (plain_volumecell_set::const_iterator i = element_cells.begin();
-             i != element_cells.end(); ++i)
+            i != element_cells.end(); ++i)
         {
           VolumeCell* cell = *i;
 
@@ -344,7 +344,7 @@ void Cut::Node::find_dof_sets(bool include_inner)
   nodal_cells.erase(this);
 
   for (std::map<Node*, plain_volumecell_set>::iterator i = nodal_cells.begin();
-       i != nodal_cells.end(); ++i)
+      i != nodal_cells.end(); ++i)
   {
     Node* n = i->first;
     plain_volumecell_set& cellset = i->second;
@@ -398,7 +398,7 @@ void Cut::Node::find_dof_sets_new(
 
 
   for (std::map<Node*, std::vector<plain_volumecell_set>>::iterator i = nodal_cell_sets.begin();
-       i != nodal_cell_sets.end(); ++i)
+      i != nodal_cell_sets.end(); ++i)
   {
     Node* n = i->first;
 
@@ -467,7 +467,7 @@ int Cut::Node::dof_set_number_new(const plain_volumecell_set& cells)
         nodaldofsets_[i]->volume_cell_composite();
 
     for (std::set<plain_volumecell_set, Cut::Cmp>::const_iterator j = cellsets.begin();
-         j != cellsets.end(); j++)
+        j != cellsets.end(); j++)
     {
       if (j->count(cell) > 0)
       {
@@ -544,7 +544,7 @@ void Cut::Node::collect_nodal_dof_sets(bool connect_ghost_with_standard_nds)
   std::vector<std::shared_ptr<CompositeNodalDofSet>> collected_nodaldofsets;
 
   for (std::vector<std::shared_ptr<NodalDofSet>>::iterator it = nodaldofsets_.begin();
-       it != nodaldofsets_.end(); it++)
+      it != nodaldofsets_.end(); it++)
   {
     std::shared_ptr<NodalDofSet> nds = *it;
 
@@ -629,7 +629,7 @@ void Cut::Node::build_dof_cell_sets(Point* p, const std::vector<plain_volumecell
 
 
   for (std::vector<plain_volumecell_set>::const_iterator s = nodal_cell_sets.begin();
-       s != nodal_cell_sets.end(); s++)
+      s != nodal_cell_sets.end(); s++)
   {
     const plain_volumecell_set& nodal_cells = *s;
 
@@ -656,7 +656,7 @@ void Cut::Node::build_dof_cell_sets(Point* p, const std::vector<plain_volumecell
             VolumeCell* connected_cell = *c;
 
             for (std::vector<plain_volumecell_set>::const_iterator i = cell_sets.begin();
-                 i != cell_sets.end(); i++)
+                i != cell_sets.end(); i++)
             {
               // contains the current cell_it
               if ((*i).count(connected_cell) > 0)
@@ -671,7 +671,7 @@ void Cut::Node::build_dof_cell_sets(Point* p, const std::vector<plain_volumecell
 
           std::copy(connected.begin(), connected.end(), std::inserter(done, done.end()));
         }  // connected.size() > 0
-      }    // done.count( cell )==0
+      }  // done.count( cell )==0
     }
   }
 }

@@ -369,7 +369,7 @@ namespace Solid
 
       //!@}
     };  // namespace IMPLICIT
-  }     // namespace IMPLICIT
+  }  // namespace IMPLICIT
 
   /*! calculate GenAlpha parameters
    *

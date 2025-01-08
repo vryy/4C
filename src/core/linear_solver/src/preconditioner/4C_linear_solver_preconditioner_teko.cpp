@@ -113,16 +113,14 @@ void Core::LinearSolver::TekoPreconditioner::setup(bool create, Epetra_Operator*
             const int number_of_equations = inverseList.get<int>("PDE equations");
 
             Teuchos::RCP<XpetraMultiVector> nullspace =
-                Teuchos::make_rcp<EpetraMultiVector>(Teuchos::rcpFromRef(
-                    *inverseList
-                         .get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace")
-                         ->get_ptr_of_Epetra_MultiVector()));
+                Teuchos::make_rcp<EpetraMultiVector>(Teuchos::rcpFromRef(*inverseList
+                        .get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace")
+                        ->get_ptr_of_Epetra_MultiVector()));
 
             Teuchos::RCP<XpetraMultiVector> coordinates =
-                Teuchos::make_rcp<EpetraMultiVector>(Teuchos::rcpFromRef(
-                    *inverseList
-                         .get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("Coordinates")
-                         ->get_ptr_of_Epetra_MultiVector()));
+                Teuchos::make_rcp<EpetraMultiVector>(Teuchos::rcpFromRef(*inverseList
+                        .get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("Coordinates")
+                        ->get_ptr_of_Epetra_MultiVector()));
 
             tekoParams.sublist("Inverse Factory Library")
                 .sublist(inverse)

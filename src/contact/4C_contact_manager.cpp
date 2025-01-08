@@ -1189,7 +1189,7 @@ void CONTACT::Manager::write_restart(Core::IO::DiscretizationWriter& output, boo
   // write all vectors specified by used strategy
   for (std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>::const_iterator p =
            restart_vectors.begin();
-       p != restart_vectors.end(); ++p)
+      p != restart_vectors.end(); ++p)
     output.write_vector(p->first, p->second);
 
   return;
@@ -1208,8 +1208,8 @@ void CONTACT::Manager::read_restart(Core::IO::DiscretizationReader& reader,
   if (atype == Inpar::Mortar::algorithm_gpts)
   {
     for (unsigned i = 0;
-         i < dynamic_cast<CONTACT::AbstractStrategy&>(get_strategy()).contact_interfaces().size();
-         ++i)
+        i < dynamic_cast<CONTACT::AbstractStrategy&>(get_strategy()).contact_interfaces().size();
+        ++i)
       dynamic_cast<CONTACT::AbstractStrategy&>(get_strategy())
           .contact_interfaces()[i]
           ->create_volume_ghosting(Global::Problem::instance()->discretization_map());
@@ -1451,7 +1451,7 @@ void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
     {
       std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = porocondvec[i]->geometry().begin();
-           eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
+          eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
       {
         if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {
@@ -1480,7 +1480,7 @@ void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
     {
       std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = porocondvec[i]->geometry().begin();
-           eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
+          eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
       {
         if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {

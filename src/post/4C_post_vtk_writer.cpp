@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-PostVtkWriter::PostVtkWriter(PostField *field, const std::string &filename)
+PostVtkWriter::PostVtkWriter(PostField* field, const std::string& filename)
     : PostWriterBase(field, filename),
       currentPhase_(INIT),
       time_(std::numeric_limits<double>::min()),
@@ -124,7 +124,7 @@ void PostVtkWriter::write_vtk_footer()
 
   // Also start master file on processor 0
   typedef std::vector<std::string> pptags_type;
-  const pptags_type &ppiecetags = this->writer_p_piece_tags();
+  const pptags_type& ppiecetags = this->writer_p_piece_tags();
   if (myrank_ == 0)
   {
     if (!currentmasterout_) FOUR_C_THROW("Invalid output stream");
@@ -142,10 +142,10 @@ void PostVtkWriter::write_vtk_footer()
 
 
 
-void PostVtkWriter::write_special_field(SpecialFieldInterface &special,
-    PostResult &result,  ///< result group in the control file
-    const ResultType restype, const std::string &groupname,
-    const std::vector<std::string> &fieldnames, const std::string &outinfo)
+void PostVtkWriter::write_special_field(SpecialFieldInterface& special,
+    PostResult& result,  ///< result group in the control file
+    const ResultType restype, const std::string& groupname,
+    const std::vector<std::string>& fieldnames, const std::string& outinfo)
 {
   // Vtk writes everything into the same file, so create to each output the
   // pointer to the same output writer
@@ -188,8 +188,8 @@ void PostVtkWriter::write_special_field(SpecialFieldInterface &special,
 
 
 
-void PostVtkWriter::write_solution_vector(const std::vector<double> &solution,
-    const int ncomponents, const std::string &name, std::ofstream &file) const
+void PostVtkWriter::write_solution_vector(const std::vector<double>& solution,
+    const int ncomponents, const std::string& name, std::ofstream& file) const
 {
   using namespace FourC;
 
@@ -215,7 +215,7 @@ void PostVtkWriter::write_solution_vector(const std::vector<double> &solution,
 
   file << "    </DataArray>\n";
 
-  std::ofstream &masterfile = const_cast<std::ofstream &>(currentmasterout_);
+  std::ofstream& masterfile = const_cast<std::ofstream&>(currentmasterout_);
   if (myrank_ == 0)
   {
     masterfile << "      <PDataArray type=\"Float64\" Name=\"" << name << "\"";
@@ -303,7 +303,7 @@ void PostVtkWriter::write_result(const std::string groupname, const std::string 
 
 
 
-void PostVtkWriter::write_files(PostFilterBase &filter)
+void PostVtkWriter::write_files(PostFilterBase& filter)
 {
   using namespace FourC;
 
@@ -361,7 +361,7 @@ void PostVtkWriter::write_files(PostFilterBase &filter)
 
 
 void PostVtkWriter::write_vtk_master_file(
-    const std::vector<std::pair<double, std::string>> &filenames, const std::string &dirname) const
+    const std::vector<std::pair<double, std::string>>& filenames, const std::string& dirname) const
 {
   // finally, write a single masterfile
   if (myrank_ == 0)

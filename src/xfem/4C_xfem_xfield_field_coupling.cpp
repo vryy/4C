@@ -144,7 +144,7 @@ void XFEM::XFieldField::Coupling::master_to_slave(const Core::LinAlg::MultiVecto
       const int err = sv.Export(perm, *nodal_slaveexport_, Insert);
       if (err) FOUR_C_THROW("Export to nodal slave distribution returned err=%d", err);
     }  // end: case XFEM::MultiFieldMapExtractor::map_nodes
-  }    // end: switch (map_type)
+  }  // end: switch (map_type)
 }
 
 /*----------------------------------------------------------------------------*

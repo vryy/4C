@@ -516,7 +516,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_co
           (newman_const_a + (newman_const_b * diff_manager()->get_trans_num(k))) * conintinv[k] *
           laplawfrhs_gradc * diff_manager()->get_deriv_therm_fac(k) * my::funct_(ui);
     }  // for ui
-  }    // for vi
+  }  // for vi
 }
 
 /*----------------------------------------------------------------------------------*
@@ -607,8 +607,8 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_co
             (diff_manager()->get_deriv_trans_num(k, iscal)) * my::funct_(ui) /
             diff_manager()->get_valence(k) * term_vi;
       }  // for(iscal)
-    }    // end for ui
-  }      // end for vi
+    }  // end for ui
+  }  // end for vi
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -731,8 +731,8 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_po
         // version a: (grad phi,  Di)
         emat(fvi, fui) -= timefacfac * invf * my::derxy_(idim, vi) * my::funct_(ui);
       }  // end for(idim)
-    }    // end for(ui)
-  }      // end for(vi)
+    }  // end for(ui)
+  }  // end for(vi)
 }
 
 /*----------------------------------------------------------------------------------*
@@ -875,7 +875,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_cu
         }
       }
     }  // for ui
-  }    // for vi
+  }  // for vi
 }
 
 /*-------------------------------------------------------------------------------------*

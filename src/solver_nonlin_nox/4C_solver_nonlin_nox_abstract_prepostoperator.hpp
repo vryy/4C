@@ -78,10 +78,10 @@ namespace NOX
       {
        public:
         //! constructor (does nothing)
-        PrePostOperator(){};
+        PrePostOperator() {};
 
         //! Copy constructor (does nothing)
-        PrePostOperator(const NOX::Nln::Abstract::PrePostOperator& source){};
+        PrePostOperator(const NOX::Nln::Abstract::PrePostOperator& source) {};
 
         /** @name Solver Pre/Post Operator
          *  Non-linear solver pre/post-operator functions. See the  ::NOX::Solver::PrePostOperator
@@ -289,8 +289,8 @@ namespace NOX
 
         ///@}
       };  // class PrePostOperator
-    }     // namespace Abstract
-  }       // namespace Nln
+    }  // namespace Abstract
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

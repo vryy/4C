@@ -67,7 +67,7 @@ namespace FSI
     void prepare_time_step() override;
 
     /// Prepare preconditioner for a new time step
-    void prepare_time_step_preconditioner() override{};
+    void prepare_time_step_preconditioner() override {};
 
     /// output of fluid, structure & ALE-quantities and Lagrange multiplier
     void output() override = 0;

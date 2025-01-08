@@ -53,7 +53,7 @@ namespace Mat
       const double A_s_;
       //@}
     };  // class Mat::PAR::ScatraMicroMacroCoupling
-  }     // namespace PAR
+  }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
   //! material wrapper

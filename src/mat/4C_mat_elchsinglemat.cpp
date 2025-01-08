@@ -330,11 +330,10 @@ double Mat::ElchSingleMat::compute_concentration_derivative_of_diffusion_coeffic
   // concentration as defined in the input file
   else
   {
-    diffusion_coeff_conc_deriv =
-        (Global::Problem::instance()
-                ->function_by_id<Core::Utils::FunctionOfTime>(
-                    diffusion_coefficient_concentration_dependence_funct_num() - 1)
-                .evaluate_derivative(concentration));
+    diffusion_coeff_conc_deriv = (Global::Problem::instance()
+            ->function_by_id<Core::Utils::FunctionOfTime>(
+                diffusion_coefficient_concentration_dependence_funct_num() - 1)
+            .evaluate_derivative(concentration));
   }
 
   // do the temperature dependent scaling
@@ -468,9 +467,9 @@ double Mat::ElchSingleMat::compute_concentration_derivative_of_conductivity(
   else
   {
     conductivity_conc_deriv = (Global::Problem::instance()
-                                   ->function_by_id<Core::Utils::FunctionOfTime>(
-                                       conductivity_concentration_dependence_funct_num() - 1)
-                                   .evaluate_derivative(concentration));
+            ->function_by_id<Core::Utils::FunctionOfTime>(
+                conductivity_concentration_dependence_funct_num() - 1)
+            .evaluate_derivative(concentration));
   }
 
   // do the temperature dependent scaling

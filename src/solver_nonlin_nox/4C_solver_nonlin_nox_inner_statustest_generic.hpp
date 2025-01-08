@@ -70,7 +70,7 @@ namespace NOX
         {
          public:
           //! constructor
-          Generic(){};
+          Generic() {};
 
           //! destructor
           virtual ~Generic() = default;
@@ -94,8 +94,8 @@ namespace NOX
         // non-member function
         std::ostream& operator<<(std::ostream& os, StatusType type);
       }  // namespace StatusTest
-    }    // namespace Inner
-  }      // namespace Nln
+    }  // namespace Inner
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

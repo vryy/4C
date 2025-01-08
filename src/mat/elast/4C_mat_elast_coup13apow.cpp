@@ -32,7 +32,7 @@ void Mat::Elastic::Coup13aPow::add_strain_energy(double& psi,
 
   // strain energy: Psi = c (I_{\boldsymbol{C}}*(III_{\boldsymbol{C}}^(-a))-3)^d
   // add to overall strain energy
-  psi += c * pow((prinv(0) * (pow(prinv(2), -a)) - 3.), d);
+  psi += c * pow((prinv(0) * (pow(prinv(2), -a))-3.), d);
 }
 
 void Mat::Elastic::Coup13aPow::add_derivatives_principal(Core::LinAlg::Matrix<3, 1>& dPI,

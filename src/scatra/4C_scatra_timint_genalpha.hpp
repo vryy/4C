@@ -45,11 +45,11 @@ namespace ScaTra
 
     void compute_intermediate_values() override;
 
-    void compute_interior_values() override{};
+    void compute_interior_values() override {};
 
     void compute_time_derivative() override;
 
-    void compute_time_deriv_pot0(const bool init) override{};
+    void compute_time_deriv_pot0(const bool init) override {};
 
     void update() override;
 

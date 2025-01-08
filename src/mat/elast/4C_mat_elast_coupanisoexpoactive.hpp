@@ -73,7 +73,7 @@ namespace Mat
           return nullptr;
         };
       };  // class CoupAnisoExpoActive
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Coupled anisotropic active fiber function, implemented for one possible fiber family

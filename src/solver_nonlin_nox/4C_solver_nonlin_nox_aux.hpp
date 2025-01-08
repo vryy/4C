@@ -144,7 +144,7 @@ namespace NOX
       std::string get_direction_method_list_name(const Teuchos::ParameterList& p);
 
     }  // namespace Aux
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

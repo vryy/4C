@@ -46,7 +46,7 @@ namespace
   }
 
   template <Core::FE::CellType celltype>
-  inline static constexpr int num_str = Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2;
+  inline static constexpr int num_str = Core::FE::dim<celltype> * (Core::FE::dim<celltype> + 1) / 2;
 
   template <Core::FE::CellType celltype>
   Core::LinAlg::Matrix<num_str<celltype>, 1> evaluate_d_material_stress_d_scalar(
@@ -396,7 +396,8 @@ void Discret::Elements::SolidScatraEleCalc<celltype,
     for_each_gauss_point<celltype>(nodal_coordinates, mass_matrix_integration_,
         [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-            const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp) {
+            const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
+        {
           add_mass_matrix(
               shape_functions, integration_factor, element_mass / element_volume, *mass);
         });

@@ -44,7 +44,7 @@ namespace Core::Utils
    * @param[in]     maxiter Maximal number of iterations
    * @return        c Midpoint c where f(c) is zero
    */
-  double bisection(const std::function<double(double)> &func, const double a_init,
+  double bisection(const std::function<double(double)>& func, const double a_init,
       const double b_init, const double tol, const int maxiter);
 
   /*!
@@ -56,7 +56,7 @@ namespace Core::Utils
    * @param[in]     delta_x Step size x_{i+1}-x_i
    */
   ValuesFunctAndFunctDerivs evaluate_function_and_derivatives_central_differences(
-      const std::function<double(double)> &func, const double x, const double delta_x);
+      const std::function<double(double)>& func, const double x, const double delta_x);
 
   /*!
    * @brief Evaluate the first derivative of f(x) w.r.t. x using central differences

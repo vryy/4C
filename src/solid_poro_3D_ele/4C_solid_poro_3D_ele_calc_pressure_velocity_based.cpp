@@ -155,8 +155,8 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<
     Core::LinAlg::SerialDenseMatrix* reactive_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, num_dim_* num_nodes_>> stiff = {};
-  std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, num_dim_* num_nodes_>> react = {};
+  std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, num_dim_ * num_nodes_>> stiff = {};
+  std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, num_dim_ * num_nodes_>> react = {};
   Core::LinAlg::Matrix<num_dim_ * num_nodes_, num_dim_ * num_nodes_> react_matrix(
       reactive_matrix->values(), true);
   std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, 1>> force = {};
@@ -201,7 +201,7 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<
             evaluate_inverse_cauchy_green_linearization(
                 cauchygreen, jacobian_mapping, spatial_material_mapping);
 
-        Core::LinAlg::Matrix<num_dim_ * num_dim_, num_dim_* num_nodes_>
+        Core::LinAlg::Matrix<num_dim_ * num_dim_, num_dim_ * num_nodes_>
             dInverseDeformationGradientTransposed_dDisp =
                 compute_linearization_of_deformation_gradient_transposed_wrt_disp<celltype>(
                     jacobian_mapping, spatial_material_mapping, kinematictype);
@@ -240,7 +240,7 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<
         Core::LinAlg::Matrix<num_dim_, 1> FinvGradp(true);
         FinvGradp.multiply_tn(spatial_material_mapping.inverse_deformation_gradient_, Gradp);
 
-        Core::LinAlg::Matrix<num_dim_ * num_dim_, num_dim_* num_nodes_>
+        Core::LinAlg::Matrix<num_dim_ * num_dim_, num_dim_ * num_nodes_>
             dInverseDeformationGradient_dDisp_Gradp =
                 evaluate_inverse_deformation_gradient_linearization_multiplication<celltype>(
                     dInverseDeformationGradientTransposed_dDisp, Gradp, kinematictype);
@@ -347,7 +347,8 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix* stiffness_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, (num_dim_ + 1)* num_nodes_>> stiff = {};
+  std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, (num_dim_ + 1) * num_nodes_>> stiff =
+      {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
 
   if (stiff.has_value())

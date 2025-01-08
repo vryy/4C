@@ -137,7 +137,7 @@ namespace BeamInteraction
       void post_read_restart() override;
 
       //! derived
-      void run_post_iterate(const ::NOX::Solver::Generic& solver) override{/*empty*/};
+      void run_post_iterate(const ::NOX::Solver::Generic& solver) override { /*empty*/ };
 
       //! derived
       void init_submodel_dependencies(

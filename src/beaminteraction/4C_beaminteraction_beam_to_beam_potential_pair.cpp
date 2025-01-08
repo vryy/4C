@@ -429,10 +429,10 @@ void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                                     std::pow(Core::FADUtils::cast_to_double(norm_dist), -m_);
 
         }  // end gauss quadrature loop (element 2)
-      }    // end gauss quadrature loop (element 1)
+      }  // end gauss quadrature loop (element 1)
 
     }  // end: loop over integration segments of element 2
-  }    // end: loop over integration segments of element 1
+  }  // end: loop over integration segments of element 1
 
   // apply constant prefactor
   force_pot1.scale(prefactor);
@@ -908,10 +908,10 @@ void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
               Core::FADUtils::cast_to_double<T, 3, 1>(dist), 1.0);
 
         }  // end: loop over gauss points of element 2
-      }    // end: loop over gauss points of element 1
+      }  // end: loop over gauss points of element 1
 
     }  // end: loop over integration segments of element 2
-  }    // end: loop over integration segments of element 1
+  }  // end: loop over integration segments of element 1
 
   // apply constant prefactor
   force_pot1.scale(prefactor);
@@ -1447,7 +1447,7 @@ void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       interaction_potential_ += Core::FADUtils::cast_to_double(interaction_potential_GP);
 
     }  // end loop over Gauss points per segment
-  }    // end loop over integration segments
+  }  // end loop over integration segments
 
   if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
       stiffmat22 != nullptr)
@@ -2016,10 +2016,10 @@ void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   // assemble all pre-computed terms into the stiffness matrices
   for (unsigned int irowdofperdim = 0; irowdofperdim < num_dofs_per_spatial_dimension;
-       ++irowdofperdim)
+      ++irowdofperdim)
   {
     for (unsigned int icolumndofperdim = 0; icolumndofperdim < num_dofs_per_spatial_dimension;
-         ++icolumndofperdim)
+        ++icolumndofperdim)
     {
       for (unsigned int irowdim = 0; irowdim < num_spatial_dimensions; ++irowdim)
       {

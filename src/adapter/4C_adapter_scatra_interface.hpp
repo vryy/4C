@@ -45,7 +45,7 @@ namespace Adapter
   {
    public:
     //! constructor
-    ScatraInterface(){};
+    ScatraInterface() {};
 
     //! virtual to get polymorph destruction
     virtual ~ScatraInterface() = default;

@@ -39,7 +39,7 @@ namespace NOX
       {
        public:
         //! Constructor
-        Required(){};
+        Required() {};
 
         //! returns the right-hand-side norms of the primary DoF fields
         virtual double get_primary_rhs_norms(const Epetra_Vector& F,
@@ -117,7 +117,7 @@ namespace NOX
         };
       };
     }  // namespace Interface
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

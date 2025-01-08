@@ -137,7 +137,7 @@ void Cut::BoundingBox::init(VolumeCell& volcell, Element* elem1)
     std::vector<std::vector<double>> corLocal;
     fac->corner_points_local(elem1, corLocal);
     for (std::vector<std::vector<double>>::const_iterator m = corLocal.begin(); m != corLocal.end();
-         m++)
+        m++)
     {
       std::vector<double> loc = *m;
       for (int j = 0; j < 3; j++) x[j] = loc[j];

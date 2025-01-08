@@ -239,8 +239,7 @@ int Discret::Elements::Solid::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_reset_istep:
     {
       std::visit([&](auto& interface)
-          { interface->reset_to_last_converged(*this, *solid_material()); },
-          solid_calc_variant_);
+          { interface->reset_to_last_converged(*this, *solid_material()); }, solid_calc_variant_);
 
       return 0;
     }

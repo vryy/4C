@@ -117,7 +117,7 @@ namespace Inpar
             &sublist_IO_output_beams);
       }
     }  // namespace Beam
-  }    // namespace IORuntimeOutput
+  }  // namespace IORuntimeOutput
 }  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE

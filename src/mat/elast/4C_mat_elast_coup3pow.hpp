@@ -52,7 +52,7 @@ namespace Mat
           return nullptr;
         };
       };  // class Coup3Pow
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Volumtric general power material

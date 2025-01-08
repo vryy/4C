@@ -1462,7 +1462,7 @@ void Discret::Elements::SoHex8::soh8_recover(
       /*--------------------------- update alpha += step_length * alfa_inc */
       for (int i = 0; i < neas_; ++i) (*alpha)(i, 0) += step_length * (*eas_inc)(i, 0);
     }  // if (iseas)
-  }    // if (*isdefault_step_ptr_)
+  }  // if (*isdefault_step_ptr_)
   /* if it is no default step, we can correct the update and the current eas
    * state without the need for any matrix-vector products. */
   else
@@ -1487,7 +1487,7 @@ void Discret::Elements::SoHex8::soh8_recover(
       //        std::cout << "\n";
       //      }
     }  // if (nhyb_)
-  }    // else
+  }  // else
 
   // save the old step length
   old_step_length_ = step_length;
@@ -1982,27 +1982,27 @@ void Discret::Elements::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
 
           // only compute the symmetric components from a single eigenvector,
           // because eigenvalue directions are not consistent (it can be flipped)
-          tempCG(0, 0) += (prstr(k)) * (prstr(k)) * n_00;
-          tempCG(0, 1) += (prstr(k)) * (prstr(k)) * n_01;
-          tempCG(0, 2) += (prstr(k)) * (prstr(k)) * n_02;
-          tempCG(1, 0) += (prstr(k)) * (prstr(k)) * n_01;  // symmetry
-          tempCG(1, 1) += (prstr(k)) * (prstr(k)) * n_11;
-          tempCG(1, 2) += (prstr(k)) * (prstr(k)) * n_12;
-          tempCG(2, 0) += (prstr(k)) * (prstr(k)) * n_02;  // symmetry
-          tempCG(2, 1) += (prstr(k)) * (prstr(k)) * n_12;  // symmetry
-          tempCG(2, 2) += (prstr(k)) * (prstr(k)) * n_22;
+          tempCG(0, 0) += (prstr(k)) * (prstr(k))*n_00;
+          tempCG(0, 1) += (prstr(k)) * (prstr(k))*n_01;
+          tempCG(0, 2) += (prstr(k)) * (prstr(k))*n_02;
+          tempCG(1, 0) += (prstr(k)) * (prstr(k))*n_01;  // symmetry
+          tempCG(1, 1) += (prstr(k)) * (prstr(k))*n_11;
+          tempCG(1, 2) += (prstr(k)) * (prstr(k))*n_12;
+          tempCG(2, 0) += (prstr(k)) * (prstr(k))*n_02;  // symmetry
+          tempCG(2, 1) += (prstr(k)) * (prstr(k))*n_12;  // symmetry
+          tempCG(2, 2) += (prstr(k)) * (prstr(k))*n_22;
 
           // Computation of the Logarithmic strain tensor
 
-          lnv(0, 0) += (std::log(prstr(k))) * n_00;
-          lnv(0, 1) += (std::log(prstr(k))) * n_01;
-          lnv(0, 2) += (std::log(prstr(k))) * n_02;
-          lnv(1, 0) += (std::log(prstr(k))) * n_01;  // symmetry
-          lnv(1, 1) += (std::log(prstr(k))) * n_11;
-          lnv(1, 2) += (std::log(prstr(k))) * n_12;
-          lnv(2, 0) += (std::log(prstr(k))) * n_02;  // symmetry
-          lnv(2, 1) += (std::log(prstr(k))) * n_12;  // symmetry
-          lnv(2, 2) += (std::log(prstr(k))) * n_22;
+          lnv(0, 0) += (std::log(prstr(k)))*n_00;
+          lnv(0, 1) += (std::log(prstr(k)))*n_01;
+          lnv(0, 2) += (std::log(prstr(k)))*n_02;
+          lnv(1, 0) += (std::log(prstr(k)))*n_01;  // symmetry
+          lnv(1, 1) += (std::log(prstr(k)))*n_11;
+          lnv(1, 2) += (std::log(prstr(k)))*n_12;
+          lnv(2, 0) += (std::log(prstr(k)))*n_02;  // symmetry
+          lnv(2, 1) += (std::log(prstr(k)))*n_12;  // symmetry
+          lnv(2, 2) += (std::log(prstr(k)))*n_22;
         }
 
         // compare CG computed with deformation gradient with CG computed
@@ -2292,9 +2292,9 @@ void Discret::Elements::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
         for (int jnod = 0; jnod < NUMNOD_SOH8; ++jnod)
         {
           massfactor = shapefcts[gp](jnod) * ifactor;  // intermediate factor
-          (*massmatrix)(NUMDIM_SOH8 * inod + 0, NUMDIM_SOH8 * jnod + 0) += massfactor;
-          (*massmatrix)(NUMDIM_SOH8 * inod + 1, NUMDIM_SOH8 * jnod + 1) += massfactor;
-          (*massmatrix)(NUMDIM_SOH8 * inod + 2, NUMDIM_SOH8 * jnod + 2) += massfactor;
+          (*massmatrix)(NUMDIM_SOH8* inod + 0, NUMDIM_SOH8 * jnod + 0) += massfactor;
+          (*massmatrix)(NUMDIM_SOH8* inod + 1, NUMDIM_SOH8 * jnod + 1) += massfactor;
+          (*massmatrix)(NUMDIM_SOH8* inod + 2, NUMDIM_SOH8 * jnod + 2) += massfactor;
         }
       }
 
@@ -2354,7 +2354,7 @@ void Discret::Elements::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
               double massfactor = factor * myacc(idim);
               for (int jnod = 0; jnod < NUMNOD_SOH8; ++jnod)
                 for (int jdim = 0; jdim < NUMDIM_SOH8; ++jdim)
-                  (*massmatrix)(inod * NUMDIM_SOH8 + idim, jnod * NUMDIM_SOH8 + jdim) +=
+                  (*massmatrix)(inod* NUMDIM_SOH8 + idim, jnod * NUMDIM_SOH8 + jdim) +=
                       massfactor * cb(jnod * NUMDIM_SOH8 + jdim);
             }
           }
@@ -2368,7 +2368,7 @@ void Discret::Elements::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
           {
             double forcefactor = shapefcts[gp](inod) * detJ_w;
             for (int idim = 0; idim < NUMDIM_SOH8; ++idim)
-              (*forceinert)(inod * NUMDIM_SOH8 + idim) += forcefactor * density * myacc(idim);
+              (*forceinert)(inod* NUMDIM_SOH8 + idim) += forcefactor * density * myacc(idim);
           }
         }
       }
@@ -3103,7 +3103,7 @@ void Discret::Elements::SoHex8::evaluate_finite_difference_material_tangent(
         }
       }
     }  // check errors
-  }    // if last gp of element is reached
+  }  // if last gp of element is reached
 #endif
 }
 

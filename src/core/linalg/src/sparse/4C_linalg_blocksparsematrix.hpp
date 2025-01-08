@@ -474,10 +474,10 @@ Core::LinAlg::BlockSparseMatrix<Strategy>::clone(DataAccess access,
       domain_extractor, range_extractor, npr, explicitdirichlet, savegraph);
 
   for (std::vector<unsigned>::const_iterator r = row_block_ids.begin(); r != row_block_ids.end();
-       ++r)
+      ++r)
   {
     for (std::vector<unsigned>::const_iterator c = col_block_ids.begin(); c != col_block_ids.end();
-         ++c)
+        ++c)
     {
       bsm->matrix(*r, *c).assign(access, matrix(*r, *c));
     }

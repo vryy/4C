@@ -516,7 +516,7 @@ namespace CONTACT
     /*!
       \brief We don't need this method for beam3contact elements!
     */
-    void update_class_variables_step() override{};
+    void update_class_variables_step() override {};
 
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!

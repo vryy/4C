@@ -39,7 +39,7 @@ namespace NOX
         {
          public:
           //! Constructor
-          Required(){};
+          Required() {};
 
           //! Destrcutor
           virtual ~Required() = default;
@@ -146,7 +146,7 @@ namespace NOX
           Teuchos::RCP<NOX::Nln::CONSTRAINT::Interface::Required>>
           ReqInterfaceMap;
     }  // namespace CONSTRAINT
-  }    // end namespace Nln
+  }  // end namespace Nln
 }  // end namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

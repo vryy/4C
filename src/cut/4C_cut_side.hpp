@@ -1029,7 +1029,7 @@ namespace Cut
   class SideFactory
   {
    public:
-    SideFactory(){};
+    SideFactory() {};
 
     virtual ~SideFactory() = default;
 

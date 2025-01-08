@@ -123,7 +123,7 @@ namespace SSI
   {
    public:
     ConvCheckStrategyStd(const Teuchos::ParameterList& global_time_parameters)
-        : ConvCheckStrategyBase(global_time_parameters){};
+        : ConvCheckStrategyBase(global_time_parameters) {};
 
     bool exit_newton_raphson_init_pot_calc(const SSI::SsiMono& ssi_mono) override
     {
@@ -151,7 +151,7 @@ namespace SSI
   {
    public:
     ConvCheckStrategyElch(const Teuchos::ParameterList& global_time_parameters)
-        : ConvCheckStrategyBase(global_time_parameters){};
+        : ConvCheckStrategyBase(global_time_parameters) {};
 
     bool exit_newton_raphson_init_pot_calc(const SSI::SsiMono& ssi_mono) override;
 
@@ -178,7 +178,7 @@ namespace SSI
   {
    public:
     ConvCheckStrategyElchScaTraManifold(const Teuchos::ParameterList& global_time_parameters)
-        : ConvCheckStrategyElch(global_time_parameters){};
+        : ConvCheckStrategyElch(global_time_parameters) {};
 
     bool exit_newton_raphson_init_pot_calc(const SSI::SsiMono& ssi_mono) override;
 

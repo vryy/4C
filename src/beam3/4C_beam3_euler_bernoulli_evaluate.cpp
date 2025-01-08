@@ -398,13 +398,13 @@ int Discret::Elements::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
         for (int j = 3; j < 6; j++)
         {
 #ifndef SIMPLECALC
-          (*elemat1)(insert * dofpn + i, insert * dofpn + j) -=
+          (*elemat1)(insert* dofpn + i, insert * dofpn + j) -=
               2.0 * crossxtangent(i - 3, j - 3) / std::pow(abs_tangent, 4.0);
-          (*elemat1)(insert * dofpn + i, insert * dofpn + j) -=
+          (*elemat1)(insert* dofpn + i, insert * dofpn + j) -=
               spinmatrix(i - 3, j - 3) / std::pow(abs_tangent, 2.0);
 #else
-          (*elemat1)(insert * dofpn + i, insert * dofpn + j) -= 2.0 * crossxtangent(i - 3, j - 3);
-          (*elemat1)(insert * dofpn + i, insert * dofpn + j) -= spinmatrix(i - 3, j - 3);
+          (*elemat1)(insert* dofpn + i, insert * dofpn + j) -= 2.0 * crossxtangent(i - 3, j - 3);
+          (*elemat1)(insert* dofpn + i, insert * dofpn + j) -= spinmatrix(i - 3, j - 3);
 #endif
         }
       }
@@ -957,7 +957,7 @@ void Discret::Elements::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
             (*stiffmatrix)(i, j) += R_bending(i, j);
           }
         }  // for(int i = 0; i < dofpn*nnode; i++)
-      }    // if (stiffmatrix != nullptr)
+      }  // if (stiffmatrix != nullptr)
 
       for (int i = 0; i < 3; i++)
       {
@@ -1006,7 +1006,7 @@ void Discret::Elements::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
         for (int i = 0; i < 6 * nnode; i++) (*massmatrix)(i, i) = 1;
 
       }  // if (massmatrix != nullptr)
-    }    // for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+    }  // for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   }
 #else
   {
@@ -1168,7 +1168,7 @@ void Discret::Elements::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
     if (tangentnorm1 < 1.0e-12 or tangentnorm2 < 1.0e-12)
       FOUR_C_THROW("Tangent of norm zero --> deformation to large!!!");
 
-      // Calculate epsilon at collocation points
+    // Calculate epsilon at collocation points
 #ifdef ANS_BEAM3EB
     Core::LinAlg::Matrix<3, 1> epsilon_cp(true);
     Core::LinAlg::Matrix<3, 3> tangent_cp(true);
@@ -1306,7 +1306,7 @@ void Discret::Elements::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
           (*stiffmatrix)(i, j) += R_inextensibility(i, j).val();
         }
       }  // for(int i = 0; i < dofpn*nnode; i++)
-    }    // if (stiffmatrix != nullptr)
+    }  // if (stiffmatrix != nullptr)
 #else
     (*stiffmatrix)(6, 6) += 1.0;
     (*stiffmatrix)(13, 13) += 1.0;
@@ -1634,7 +1634,7 @@ void Discret::Elements::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
           }
         }  // for(int i = 0; i < dofpn*nnode; i++)
 #endif
-      }    // if (stiffmatrix != nullptr)
+      }  // if (stiffmatrix != nullptr)
 
       for (int i = 0; i < 3; i++)
       {
@@ -2050,7 +2050,7 @@ void Discret::Elements::Beam3eb::evaluate_translational_damping(
       for (unsigned int i = 0; i < nnode * vpernode; i++)
         // loop over dimensions
         for (unsigned int idim = 0; idim < ndim; idim++)
-          (*force)(i * ndim + idim) += N_i(i) * jacobi_ * gausspoints.qwgt[gp] * f_visc(idim);
+          (*force)(i* ndim + idim) += N_i(i) * jacobi_ * gausspoints.qwgt[gp] * f_visc(idim);
     }
 
     if (stiffmatrix != nullptr)
@@ -2067,17 +2067,17 @@ void Discret::Elements::Beam3eb::evaluate_translational_damping(
           for (unsigned int idim = 0; idim < ndim; idim++)
             for (unsigned int jdim = 0; jdim < ndim; jdim++)
             {
-              (*stiffmatrix)(i * ndim + idim, j * ndim + jdim) +=
+              (*stiffmatrix)(i* ndim + idim, j * ndim + jdim) +=
                   gausspoints.qwgt[gp] * N_i(i) * N_i(j) * jacobi_ * damp_mat(idim, jdim) / dt;
-              (*stiffmatrix)(i * ndim + idim, j * ndim + jdim) -=
+              (*stiffmatrix)(i* ndim + idim, j * ndim + jdim) -=
                   gausspoints.qwgt[gp] * N_i(i) * N_i(j) * jacobi_ *
                   dampmatvelbackgroundgrad(idim, jdim);
-              (*stiffmatrix)(i * ndim + idim, j * ndim + idim) +=
-                  gausspoints.qwgt[gp] * N_i(i) * N_i_xi(j) * (gamma(0) - gamma(1)) * r_s(jdim) *
-                  vel_rel(jdim);
-              (*stiffmatrix)(i * ndim + idim, j * ndim + jdim) +=
-                  gausspoints.qwgt[gp] * N_i(i) * N_i_xi(j) * (gamma(0) - gamma(1)) * r_s(idim) *
-                  vel_rel(jdim);
+              (*stiffmatrix)(i* ndim + idim, j * ndim + idim) += gausspoints.qwgt[gp] * N_i(i) *
+                                                                 N_i_xi(j) * (gamma(0) - gamma(1)) *
+                                                                 r_s(jdim) * vel_rel(jdim);
+              (*stiffmatrix)(i* ndim + idim, j * ndim + jdim) += gausspoints.qwgt[gp] * N_i(i) *
+                                                                 N_i_xi(j) * (gamma(0) - gamma(1)) *
+                                                                 r_s(idim) * vel_rel(jdim);
             }
         }
     }
@@ -2155,7 +2155,7 @@ void Discret::Elements::Beam3eb::evaluate_stochastic_forces(
       for (unsigned int i = 0; i < nnode * vpernode; i++)
         // loop over dimensions
         for (unsigned int idim = 0; idim < ndim; idim++)
-          (*force)(i * ndim + idim) -=
+          (*force)(i* ndim + idim) -=
               N_i(i) * f_stoch(idim) * std::sqrt(jacobi_ * gausspoints.qwgt[gp]);
     }
 
@@ -2169,11 +2169,11 @@ void Discret::Elements::Beam3eb::evaluate_stochastic_forces(
           for (unsigned int idim = 0; idim < ndim; idim++)
             for (unsigned int jdim = 0; jdim < ndim; jdim++)
             {
-              (*stiffmatrix)(i * ndim + idim, j * ndim + idim) -=
+              (*stiffmatrix)(i* ndim + idim, j * ndim + idim) -=
                   N_i(i) * N_i_xi(j) * r_s(jdim) * randnumvec(jdim) *
                   std::sqrt(gausspoints.qwgt[gp] / jacobi_) *
                   (std::sqrt(gamma(0)) - std::sqrt(gamma(1)));
-              (*stiffmatrix)(i * ndim + idim, j * ndim + jdim) -=
+              (*stiffmatrix)(i* ndim + idim, j * ndim + jdim) -=
                   N_i(i) * N_i_xi(j) * r_s(idim) * randnumvec(jdim) *
                   std::sqrt(gausspoints.qwgt[gp] / jacobi_) *
                   (std::sqrt(gamma(0)) - std::sqrt(gamma(1)));

@@ -77,8 +77,8 @@ namespace NOX
             Teuchos::RCP<Core::LinAlg::Solver>& currSolver) override;
 
       };  // class LinearSystem
-    }     // namespace Solid
-  }       // namespace Nln
+    }  // namespace Solid
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

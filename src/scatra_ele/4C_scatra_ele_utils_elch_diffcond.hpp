@@ -78,7 +78,7 @@ namespace Discret
       );
 
     };  // class ScaTraEleUtilsElchDiffCond
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

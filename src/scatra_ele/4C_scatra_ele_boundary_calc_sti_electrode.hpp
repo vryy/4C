@@ -176,7 +176,7 @@ namespace Discret
       //! nodal electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
       std::vector<Core::LinAlg::Matrix<nen_, 1>> eelchnp_;
     };  // class ScaTraEleBoundaryCalcSTIElectrode
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

@@ -111,7 +111,7 @@ namespace Core::FE
     {
      public:
       /// constructor
-      DbcHDG(){};
+      DbcHDG() {};
 
      protected:
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
@@ -135,7 +135,7 @@ namespace Core::FE
           double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
           const Core::LinAlg::Vector<int>& toggle) const;
     };  // class DbcHDG
-  }     // namespace Utils
+  }  // namespace Utils
 }  // namespace Core::FE
 
 /// << operator

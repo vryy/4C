@@ -143,12 +143,12 @@ namespace Solid
       /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
        *
        * \remark Nothing needs to be done in the static case. */
-      void add_visco_mass_contributions(Core::LinAlg::Vector<double>& f) const override{};
+      void add_visco_mass_contributions(Core::LinAlg::Vector<double>& f) const override {};
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *
        * \remark Nothing needs to be done in the static case. */
-      void add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const override{};
+      void add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const override {};
 
       //! reset the time step dependent parameters for the element evaluation [derived]
       void reset_eval_params() override;

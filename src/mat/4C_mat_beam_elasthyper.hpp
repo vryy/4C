@@ -228,9 +228,9 @@ namespace Mat
     void get_stiffness_matrix_of_forces(Core::LinAlg::Matrix<3, 3, T>& stiffness_matrix,
         const Core::LinAlg::Matrix<3, 3, T>& C_N, const int gp) override;
 
-    void update() override{};
+    void update() override {};
 
-    void reset() override{};
+    void reset() override {};
 
    protected:
     void set_parameter(Mat::PAR::BeamElastHyperMaterialParameterGeneric* parameter)

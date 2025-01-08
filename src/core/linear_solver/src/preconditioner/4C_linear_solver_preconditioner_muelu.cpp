@@ -90,7 +90,7 @@ void Core::LinearSolver::MueLuPreconditioner::setup(bool create, Epetra_Operator
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> coordinates =
           Teuchos::make_rcp<EpetraMultiVector>(Teuchos::rcpFromRef(
               *inverseList.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("Coordinates")
-                   ->get_ptr_of_Epetra_MultiVector()));
+                  ->get_ptr_of_Epetra_MultiVector()));
 
       muelu_params->set("number of equations", number_of_equations);
       Teuchos::ParameterList& user_param_list = muelu_params->sublist("user data");
@@ -170,7 +170,7 @@ void Core::LinearSolver::MueLuPreconditioner::setup(bool create, Epetra_Operator
         Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
             Teuchos::make_rcp<EpetraMultiVector>(Teuchos::rcpFromRef(
                 *inverseList.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace")
-                     ->get_ptr_of_Epetra_MultiVector()));
+                    ->get_ptr_of_Epetra_MultiVector()));
 
         H->GetLevel(0)->Set("Nullspace" + std::to_string(block + 1), nullspace);
       }

@@ -278,7 +278,7 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
         Cut::plain_facet_set facets = sub_ele->facets();
 
         for (Cut::plain_facet_set::const_iterator facet_it = facets.begin();
-             facet_it != facets.end(); facet_it++)
+            facet_it != facets.end(); facet_it++)
         {
           Cut::Facet* facet = *facet_it;
 
@@ -295,8 +295,8 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
                            << Core::IO::endl;
 #endif
           }  // !element's side
-        }    // facets
-      }      // sub elements
+        }  // facets
+      }  // sub elements
     }
   }
 
@@ -694,7 +694,7 @@ void XFEM::XfluidTimeintBase::find_pbc_node(
   int coupnodegid = -1;
   // loop all nodes with periodic boundary conditions (master nodes)
   for (std::map<int, std::vector<int>>::const_iterator pbciter = (*pbcmap_).begin();
-       pbciter != (*pbcmap_).end(); ++pbciter)
+      pbciter != (*pbcmap_).end(); ++pbciter)
   {
     if (pbciter->first == nodegid)  // node is a pbc master node
     {
@@ -715,8 +715,8 @@ void XFEM::XfluidTimeintBase::find_pbc_node(
           coupnodegid = pbciter->first;  // coupled node is the master node
         }
       }  // end loop over slave nodes
-    }    // end if
-  }      // end loop over pbc map
+    }  // end if
+  }  // end loop over pbc map
 
   // get pbcnode
   if (pbcnodefound) pbcnode = discret_->g_node(coupnodegid);
@@ -731,7 +731,7 @@ void XFEM::XfluidTimeintBase::reset_state(
     TimeIntData::State oldState, TimeIntData::State newState) const
 {
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
-       data++)
+      data++)
   {
     if (data->state_ == oldState) data->state_ = newState;
   }
@@ -751,7 +751,7 @@ void XFEM::XfluidTimeintBase::clear_state(TimeIntData::State state  /// state of
   while (true)  // while loop over data to be cleared
   {
     for (data = timeIntData_->begin(); data != timeIntData_->end();
-         data++)  // for loop over all data
+        data++)  // for loop over all data
     {
       if (data->state_ == state)
       {
@@ -886,9 +886,9 @@ XFEM::XfluidStd::XfluidStd(
     Core::LinAlg::Matrix<nsd, 1> dummyStartpoint;  // dummy startpoint for comparison
     for (int i = 0; i < nsd; i++) dummyStartpoint(i) = 777.777;
 
-      //--------------------------------------------------------------------------------------
-      // fill timeIntData_ structure with the data for the nodes which are marked for SEMILAGRANGEAN
-      // reconstruction
+    //--------------------------------------------------------------------------------------
+    // fill timeIntData_ structure with the data for the nodes which are marked for SEMILAGRANGEAN
+    // reconstruction
 
 #ifdef DEBUG_TIMINT_STD
     Core::IO::cout
@@ -951,8 +951,8 @@ XFEM::XfluidStd::XfluidStd(
                 TimeIntData::predictor_));  // data created for the node
           }
         }  // nodaldofsets
-      }    // some dofsets have to be reconstructed
-    }      // end loop over processor nodes
+      }  // some dofsets have to be reconstructed
+    }  // end loop over processor nodes
 
     //--------------------------------------------------------------------------------------
     // compute initial points on the right side of the interface to start finding the Lagrangean
@@ -963,7 +963,7 @@ XFEM::XfluidStd::XfluidStd(
 
     // test loop if all initial startpoints have been computed
     for (std::vector<TimeIntData>::iterator data = timeIntData_->begin();
-         data != timeIntData_->end(); data++)
+        data != timeIntData_->end(); data++)
     {
       if (data->startpoint_ == dummyStartpoint)  // startpoint unchanged
         FOUR_C_THROW(
@@ -1205,7 +1205,7 @@ void XFEM::XfluidStd::startpoints()
 
   // loop over nodes which changed interface side
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
-       data++)
+      data++)
   {
     if (data->state_ == TimeIntData::basicStd_)  // correct state
     {
@@ -1215,7 +1215,7 @@ void XFEM::XfluidStd::startpoints()
       project_and_trackback(*data);
 
     }  // end if correct state
-  }    // end loop over nodes which changed interface side
+  }  // end loop over nodes which changed interface side
 
 
   return;
@@ -1268,12 +1268,12 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     // get all side-ids w.r.t to all volumecells contained in current new set around the current
     // node
     for (std::set<Cut::plain_volumecell_set>::const_iterator adj_eles = cell_set_new.begin();
-         adj_eles != cell_set_new.end(); adj_eles++)
+        adj_eles != cell_set_new.end(); adj_eles++)
     {
       const Cut::plain_volumecell_set ele_vc = *adj_eles;
 
       for (Cut::plain_volumecell_set::const_iterator vcs = ele_vc.begin(); vcs != ele_vc.end();
-           vcs++)
+          vcs++)
       {
         Cut::VolumeCell* vc = *vcs;
 
@@ -1289,7 +1289,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
     // loop bcs and extract sides and nodes
     for (std::map<int, std::vector<Cut::BoundaryCell*>>::iterator bcells_it = bcells_new.begin();
-         bcells_it != bcells_new.end(); bcells_it++)
+        bcells_it != bcells_new.end(); bcells_it++)
     {
       int sid = bcells_it->first;
       sides.insert(sid);
@@ -1383,7 +1383,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     int line_count = 0;
 
     for (std::vector<std::shared_ptr<Core::Elements::Element>>::iterator line_it = lines.begin();
-         line_it != lines.end(); line_it++)
+        line_it != lines.end(); line_it++)
     {
       call_project_on_line(side, &(**line_it),
           line_count,  ///< local line id w.r.t side element
@@ -1401,7 +1401,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
       line_count++;
     }  // loop lines of side
-  }    // loop sides
+  }  // loop sides
 
 
   //------------------------------------
@@ -1467,7 +1467,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
   {
     // check if both lines are identical
     for (std::map<std::vector<int>, std::vector<int>>::iterator line = proj_nid_line.begin();
-         line != proj_nid_line.end(); line++)
+        line != proj_nid_line.end(); line++)
     {
       std::vector<int>& sides = line->second;
 
@@ -1513,7 +1513,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
           for (std::vector<std::shared_ptr<Core::Elements::Element>>::iterator line_it =
                    lines_tmp.begin();
-               line_it != lines_tmp.end(); line_it++)
+              line_it != lines_tmp.end(); line_it++)
           {
             Core::Nodes::Node** line_nodes = (*line_it)->nodes();
             std::vector<int> line_nids;
@@ -1743,7 +1743,7 @@ bool XFEM::XfluidStd::find_nearest_surf_point(
 
   // loop bcs and extract sides and nodes
   for (std::map<int, std::vector<Cut::BoundaryCell*>>::iterator bcells_it = bcells_new.begin();
-       bcells_it != bcells_new.end(); bcells_it++)
+      bcells_it != bcells_new.end(); bcells_it++)
   {
     int sid = bcells_it->first;
     sides.insert(sid);
@@ -1832,7 +1832,7 @@ bool XFEM::XfluidStd::project_to_surface(
     int line_count = 0;
 
     for (std::vector<std::shared_ptr<Core::Elements::Element>>::iterator line_it = lines.begin();
-         line_it != lines.end(); line_it++)
+        line_it != lines.end(); line_it++)
     {
       call_project_on_line(side, &(**line_it),
           line_count,  ///< local line id w.r.t side element
@@ -1850,7 +1850,7 @@ bool XFEM::XfluidStd::project_to_surface(
 
       line_count++;
     }  // loop lines of side
-  }    // loop sides
+  }  // loop sides
 
 
   //------------------------------------
@@ -1992,7 +1992,7 @@ void XFEM::XfluidStd::compute_start_point_avg(
 
   ///
   for (std::vector<Core::Elements::Element*>::const_iterator it = sides.begin(); it != sides.end();
-       it++)
+      it++)
   {
     Core::Elements::Element* side = *it;
 
@@ -3156,7 +3156,7 @@ void XFEM::XfluidStd::set_final_data()
 
   // loop over data
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
-       data++)
+      data++)
   {
     if (data->state_ != TimeIntData::doneStd_)
       FOUR_C_THROW("when data is set, all computation has to be done");
@@ -3195,7 +3195,7 @@ void XFEM::XfluidStd::set_final_data()
       (*newVectors_[index])[newdofrowmap_.LID(dofs[nsd])] = presValues[index];  // set the value
 
     data->type_ = TimeIntData::standard_;  // predictor is done, so next time standard
-  }                                        // end loop over nodes
+  }  // end loop over nodes
 }  // end set_final_data
 
 
@@ -3220,7 +3220,7 @@ void XFEM::XfluidStd::export_start_data()
 
   Core::Communication::PackBuffer dataSend;  // data to be sent
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
-       data++)
+      data++)
   {
     pack_node(dataSend, data->node_);
     add_to_pack(dataSend, data->nds_np_);
@@ -3302,7 +3302,7 @@ void XFEM::XfluidStd::export_final_data()
   // fill data into a vector where the index corresponds to the destination which is equal to the
   // node's owner
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
-       data++)
+      data++)
   {
     if (data->state_ != TimeIntData::doneStd_)
       FOUR_C_THROW("All data should be set here, having status 'done'. Thus something is wrong!");
@@ -3316,7 +3316,7 @@ void XFEM::XfluidStd::export_final_data()
   // send data to the processor where the point lies (1. nearest higher neighbour 2. 2nd nearest
   // higher neighbour...)
   for (int dest = (myrank_ + 1) % numproc_; dest != myrank_;
-       dest = (dest + 1) % numproc_)  // dest is the target processor
+      dest = (dest + 1) % numproc_)  // dest is the target processor
   {
     // Initialization
     int source = myrank_ - (dest - myrank_);  // source proc (sends (dest-myrank_) far and gets
@@ -3329,7 +3329,7 @@ void XFEM::XfluidStd::export_final_data()
     Core::Communication::PackBuffer dataSend;
 
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
-         data != dataVec[dest].end(); data++)
+        data != dataVec[dest].end(); data++)
     {
       add_to_pack(dataSend, data->node_.id());
       add_to_pack(dataSend, data->nds_np_);

@@ -697,7 +697,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
         }
       }
     }  // if(std::abs(j) > 1.e-16)
-  }    // loop over integration points
+  }  // loop over integration points
 }
 
 /*----------------------------------------------------------------------*
@@ -821,7 +821,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
         eslaveresidual[irow] -= my::funct_(irow) * factor * j * timefacrhsfac;
       }
     }  // if(std::abs(i) > 1.e-16)
-  }    // loop over integration points
+  }  // loop over integration points
 }
 
 /*----------------------------------------------------------------------*

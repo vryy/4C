@@ -3367,7 +3367,7 @@ bool Mortar::Coupling3d::integrate_cells(
     // integrate cell only if it has a non-zero area
     if (cells()[i]->area() < MORTARINTLIM * slave_element_area()) continue;
 
-      // debug output of integration cells in GMSH
+    // debug output of integration cells in GMSH
 #ifdef MORTARGMSHCELLS
     GmshOutputCells(i);
 #endif
@@ -4115,8 +4115,8 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
           // do coupling
           coupling()[coupling().size() - 1]->evaluate_coupling();
         }  // for maux
-      }    // for saux
-    }      // for m
+      }  // for saux
+    }  // for m
 
     consist_dual_shape();
 
@@ -4165,8 +4165,8 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
               // Integrate Cells
               coup.integrate_cells(mparams_ptr);
             }  // for maux
-          }    // for saux
-        }      // for m
+          }  // for saux
+        }  // for m
       }
       else
       {
@@ -4303,8 +4303,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
 
       // create an integrator for this cell
       for (int gp = 0;
-           gp < Mortar::Integrator::impl(slave_element(), master_element(m), imortar_)->n_gp();
-           ++gp)
+          gp < Mortar::Integrator::impl(slave_element(), master_element(m), imortar_)->n_gp(); ++gp)
       {
         // coordinates and weight
         double eta[2] = {Mortar::Integrator::impl(slave_element(), master_element(m), imortar_)
@@ -4358,7 +4357,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
         }
       }
     }  // cells
-  }    // mele
+  }  // mele
 
   // in case of no overlap just return, as there is no integration area
   // and therefore the consistent dual shape functions are not defined.

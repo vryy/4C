@@ -101,7 +101,7 @@ namespace Mixture
   {
    public:
     /// Constructor for the material given the material parameters
-    explicit PrestressStrategy(Mixture::PAR::PrestressStrategy* params){};
+    explicit PrestressStrategy(Mixture::PAR::PrestressStrategy* params) {};
 
     virtual ~PrestressStrategy() = default;
 
@@ -126,7 +126,7 @@ namespace Mixture
      * @param position (in/out) : current position to unpack data
      * @param data (in) : vector storing all data to be unpacked into this instance.
      */
-    virtual void unpack(Core::Communication::UnpackBuffer& buffer){};
+    virtual void unpack(Core::Communication::UnpackBuffer& buffer) {};
 
     /*!
      * @brief Setups the prestress strategy
@@ -137,7 +137,7 @@ namespace Mixture
      * @param eleGID (in) : global element id
      */
     virtual void setup(Mixture::MixtureConstituent& constituent, Teuchos::ParameterList& params,
-        int numgp, int eleGID){};
+        int numgp, int eleGID) {};
 
     /*!
      * @brief

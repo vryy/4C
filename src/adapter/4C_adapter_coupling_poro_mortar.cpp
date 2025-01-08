@@ -127,7 +127,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
     {
       std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = porocondvec[i]->geometry().begin();
-           eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
+          eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
       {
         if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {
@@ -196,7 +196,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
     {
       std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator eleitergeometry;
       for (eleitergeometry = porocondvec[i]->geometry().begin();
-           eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
+          eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
       {
         if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {

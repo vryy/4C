@@ -143,7 +143,7 @@ void Cut::Parallel::export_communication_finished(bool& procDone)
    * check whether all procs have finished     *
    *-------------------------------------------*/
   for (int iproc = 0; iproc < numproc_ - 1;
-       iproc++)  // proc obtains information from numproc_-1 other processors
+      iproc++)  // proc obtains information from numproc_-1 other processors
   {
     Core::Communication::PackBuffer dataSend;
 
@@ -204,13 +204,13 @@ void Cut::Parallel::export_node_position_data()
       //--------------------
       // copy from std::map<plain_int_set, int> -> std::map<std::vector<int>, int>
       for (std::map<plain_int_set, int>::iterator it = curr_undecided_node_pos_shadow_.begin();
-           it != curr_undecided_node_pos_shadow_.end(); it++)
+          it != curr_undecided_node_pos_shadow_.end(); it++)
       {
         std::vector<int> tmp_vec;
         tmp_vec.clear();
 
         for (plain_int_set::const_iterator vec_it = (it->first).begin();
-             vec_it != (it->first).end(); vec_it++)
+            vec_it != (it->first).end(); vec_it++)
         {
           tmp_vec.push_back(*vec_it);
         }
@@ -245,11 +245,11 @@ void Cut::Parallel::export_node_position_data()
         // copy from std::map<std::vector<int>, int> -> std::map<plain_int_set, int>
         for (std::map<std::vector<int>, int>::iterator it =
                  tmp_curr_undecidedNodePos_shadow.begin();
-             it != tmp_curr_undecidedNodePos_shadow.end(); it++)
+            it != tmp_curr_undecidedNodePos_shadow.end(); it++)
         {
           Cut::plain_int_set tmp_set;
           for (std::vector<int>::const_iterator vec_it = (it->first).begin();
-               vec_it != (it->first).end(); vec_it++)
+              vec_it != (it->first).end(); vec_it++)
           {
             tmp_set.insert(*vec_it);
           }
@@ -270,7 +270,7 @@ void Cut::Parallel::export_node_position_data()
     //---------------------------------------------------------------------------------------------------------------
     // find node positions for received nodes and set position if possible
     for (std::map<int, int>::iterator it = curr_undecided_node_pos_.begin();
-         it != curr_undecided_node_pos_.end(); it++)
+        it != curr_undecided_node_pos_.end(); it++)
     {
       int nid = it->first;
       int pos = it->second;
@@ -309,7 +309,7 @@ void Cut::Parallel::export_node_position_data()
     // do the same for shadow nodes in case of quadratic elements
     // find node positions for received shadow! nodes and set position if possible
     for (std::map<plain_int_set, int>::iterator it = curr_undecided_node_pos_shadow_.begin();
-         it != curr_undecided_node_pos_shadow_.end(); it++)
+        it != curr_undecided_node_pos_shadow_.end(); it++)
     {
       const plain_int_set& nids = it->first;
       int pos = it->second;
@@ -362,7 +362,7 @@ void Cut::Parallel::distribute_my_received_node_position_data()
 {
   // distribute the received data for myproc
   for (std::map<int, int>::iterator it = curr_undecided_node_pos_.begin();
-       it != curr_undecided_node_pos_.end(); it++)
+      it != curr_undecided_node_pos_.end(); it++)
   {
     int nid = it->first;
     Point::PointPosition received_pos = (Point::PointPosition)it->second;
@@ -387,7 +387,7 @@ void Cut::Parallel::distribute_my_received_node_position_data()
 
   // distribute the received data for myproc
   for (std::map<plain_int_set, int>::iterator it = curr_undecided_node_pos_shadow_.begin();
-       it != curr_undecided_node_pos_shadow_.end(); it++)
+      it != curr_undecided_node_pos_shadow_.end(); it++)
   {
     const plain_int_set& nids = it->first;
     Point::PointPosition received_pos = (Point::PointPosition)it->second;
@@ -514,7 +514,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
       Core::Communication::PackBuffer dataSend;  // data to be sent
       for (std::vector<std::shared_ptr<MeshIntersection::DofSetData>>::iterator data =
                dof_set_data_.begin();
-           data != dof_set_data_.end(); data++)
+          data != dof_set_data_.end(); data++)
       {
         add_to_pack(dataSend, (*data)->set_index_);
         add_to_pack(dataSend, (*data)->inside_cell_);
@@ -563,7 +563,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
     //---------------------------------------------------------------------------------------------------------------
     for (std::vector<std::shared_ptr<MeshIntersection::DofSetData>>::iterator vc_data =
              dof_set_data_.begin();
-         vc_data != dof_set_data_.end(); vc_data++)
+        vc_data != dof_set_data_.end(); vc_data++)
     {
       bool find_volumecell = false;  // do we have to identify the received volumecell on myrank?
 
@@ -585,7 +585,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
       // required, if at least one node in the received node_dofsetnumber_map is a row node on
       // myrank
       for (std::map<int, int>::iterator node_dofsetnumber_it = node_dofsetnumber_map.begin();
-           node_dofsetnumber_it != node_dofsetnumber_map.end(); node_dofsetnumber_it++)
+          node_dofsetnumber_it != node_dofsetnumber_map.end(); node_dofsetnumber_it++)
       {
         int nid = node_dofsetnumber_it->first;
 
@@ -633,7 +633,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
 
 
       for (std::map<int, int>::iterator node_dofsetnumber_it = node_dofsetnumber_map.begin();
-           node_dofsetnumber_it != node_dofsetnumber_map.end(); node_dofsetnumber_it++)
+          node_dofsetnumber_it != node_dofsetnumber_map.end(); node_dofsetnumber_it++)
       {
         // std::cout << "loop the node_dofsetnumber_map" << std::endl;
         int nid = node_dofsetnumber_it->first;
@@ -676,7 +676,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
                 Cut::Output::gmsh_new_section(file, "OtherPointsVC", true);
                 for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator rec_it =
                          ((*vc_data)->cut_points_coords_).begin();
-                     rec_it != ((*vc_data)->cut_points_coords_).end(); rec_it++)
+                    rec_it != ((*vc_data)->cut_points_coords_).end(); rec_it++)
                 {
                   Cut::Output::gmsh_coord_dump(file, (*rec_it), 0);
                 }
@@ -717,10 +717,10 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
 
 
           }  // end if myrank_
-        }    // have global node on this proc
-      }      // end loop node_dofsetnumber_it ( some elemental nodes for the current received
-             // volumecell)
-    }        // end loop dofSetData_ (data for volumecells)
+        }  // have global node on this proc
+      }  // end loop node_dofsetnumber_it ( some elemental nodes for the current received
+         // volumecell)
+    }  // end loop dofSetData_ (data for volumecells)
 
 
     //    std::cout << "replaced data: " << std::endl;
@@ -745,7 +745,7 @@ void Cut::Parallel::distribute_dof_set_data()
 
   for (std::vector<std::shared_ptr<MeshIntersection::DofSetData>>::iterator data =
            dof_set_data_.begin();
-       data != dof_set_data_.end(); data++)
+      data != dof_set_data_.end(); data++)
   {
     // set data in first volumecell of set with setindex
 
@@ -793,7 +793,7 @@ void Cut::Parallel::distribute_dof_set_data()
 
     // check if all nodes are filled with a valid dofset number
     for (std::map<int, int>::iterator dofnumber_map = (*data)->node_dofsetnumber_map_.begin();
-         dofnumber_map != (*data)->node_dofsetnumber_map_.end(); dofnumber_map++)
+        dofnumber_map != (*data)->node_dofsetnumber_map_.end(); dofnumber_map++)
     {
       // safety check if setting dofset for data was successful
       if (dofnumber_map->second == -1)
@@ -870,13 +870,13 @@ Cut::VolumeCell* Cut::Parallel::find_volume_cell(
 
       // brute force search for identical point coords
       for (plain_point_set::iterator my_it = my_cut_points.begin(); my_it != my_cut_points.end();
-           my_it++)
+          my_it++)
       {
         bool point_found = true;
 
         for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator rec_it =
                  (vc_data.cut_points_coords_).begin();
-             rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
+            rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
         {
           point_found = true;
 
@@ -908,11 +908,11 @@ Cut::VolumeCell* Cut::Parallel::find_volume_cell(
         // brute force search for identical point coords
         for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator rec_it =
                  (vc_data.cut_points_coords_).begin();
-             rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
+            rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
         {
           bool point_found = true;
           for (plain_point_set::iterator my_it = my_cut_points.begin();
-               my_it != my_cut_points.end(); my_it++)
+              my_it != my_cut_points.end(); my_it++)
           {
             point_found = true;
 
@@ -1019,7 +1019,7 @@ Cut::VolumeCell* Cut::Parallel::find_volume_cell(
     Cut::Output::gmsh_new_section(file, "OtherPoints");
     for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator rec_it =
              (vc_data.cut_points_coords_).begin();
-         rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
+        rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
     {
       Cut::Output::gmsh_coord_dump(file, (*rec_it), 0);
     }
@@ -1039,7 +1039,7 @@ Cut::VolumeCell* Cut::Parallel::find_volume_cell(
             std::inserter(my_cut_points, my_cut_points.begin()));
       }
       for (plain_point_set::iterator my_it = my_cut_points.begin(); my_it != my_cut_points.end();
-           my_it++)
+          my_it++)
       {
         Core::LinAlg::Matrix<3, 1> coord((*my_it)->x(), true);
         Cut::Output::gmsh_coord_dump(file, coord, 0);
@@ -1189,7 +1189,7 @@ void Cut::Parallel::print_dof_set_data()
 {
   for (std::vector<std::shared_ptr<MeshIntersection::DofSetData>>::iterator i =
            dof_set_data_.begin();
-       i != dof_set_data_.end(); i++)
+      i != dof_set_data_.end(); i++)
   {
     (*i)->print();
   }

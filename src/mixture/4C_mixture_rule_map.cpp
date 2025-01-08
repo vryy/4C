@@ -61,7 +61,7 @@ Mixture::PAR::MapMixtureRule::MapMixtureRule(const Core::Mat::PAR::Parameter::Da
       initial_reference_density_(matdata.parameters.get<double>("DENS")),
       num_constituents_(matdata.parameters.get<int>("NUMCONST")),
       mass_fractions_map_(matdata.parameters.get<std::unordered_map<int, std::vector<double>>>(
-          "MASSFRACMAPFILE")){};
+          "MASSFRACMAPFILE")) {};
 
 std::unique_ptr<Mixture::MixtureRule> Mixture::PAR::MapMixtureRule::create_rule()
 {

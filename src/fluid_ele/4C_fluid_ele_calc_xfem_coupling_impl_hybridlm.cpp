@@ -379,7 +379,7 @@ namespace Discret
               rhC_us_(s_index(isn, isvel), 0) -= bGussinvKssrhs_s(isn, 0);
             }
           }  // rhs - us
-        }    // end loop over slave velocity dof
+        }  // end loop over slave velocity dof
 
         // finally, build G_uss & G_sus for C_usus
 
@@ -441,7 +441,7 @@ namespace Discret
       }
 
     }  // namespace XFLUID
-  }    // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 
 

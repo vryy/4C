@@ -50,10 +50,10 @@ Core::LinAlg::EquilibrationBlock::EquilibrationBlock(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Core::LinAlg::EquilibrationBlockSpecific::EquilibrationBlockSpecific(
-    const std::vector<EquilibrationMethod> &method, std::shared_ptr<const Epetra_Map> dofrowmap)
+    const std::vector<EquilibrationMethod>& method, std::shared_ptr<const Epetra_Map> dofrowmap)
     : Equilibration(dofrowmap), method_blocks_(method)
 {
-  for (const auto &method_block : method_blocks_)
+  for (const auto& method_block : method_blocks_)
   {
     if (method_block == EquilibrationMethod::columns_full or
         method_block == EquilibrationMethod::rows_full or
@@ -64,8 +64,8 @@ Core::LinAlg::EquilibrationBlockSpecific::EquilibrationBlockSpecific(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::LinAlg::Equilibration::compute_inv_row_sums(const Core::LinAlg::SparseMatrix &matrix,
-    Core::LinAlg::Vector<double> &invrowsums, const EquilibrationMethod method) const
+void Core::LinAlg::Equilibration::compute_inv_row_sums(const Core::LinAlg::SparseMatrix& matrix,
+    Core::LinAlg::Vector<double>& invrowsums, const EquilibrationMethod method) const
 {
   // compute inverse row sums of matrix
   if (matrix.epetra_matrix()->InvRowSums(invrowsums.get_ref_of_Epetra_Vector()))
@@ -80,8 +80,8 @@ void Core::LinAlg::Equilibration::compute_inv_row_sums(const Core::LinAlg::Spars
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void Core::LinAlg::Equilibration::compute_inv_col_sums(const Core::LinAlg::SparseMatrix &matrix,
-    Core::LinAlg::Vector<double> &invcolsums, const EquilibrationMethod method) const
+void Core::LinAlg::Equilibration::compute_inv_col_sums(const Core::LinAlg::SparseMatrix& matrix,
+    Core::LinAlg::Vector<double>& invcolsums, const EquilibrationMethod method) const
 {
   // compute inverse column sums of matrix
   if (matrix.epetra_matrix()->InvColSums(invcolsums.get_ref_of_Epetra_Vector()))
@@ -96,7 +96,7 @@ void Core::LinAlg::Equilibration::compute_inv_col_sums(const Core::LinAlg::Spars
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 void Core::LinAlg::Equilibration::compute_inv_symmetry(
-    const Core::LinAlg::SparseMatrix &matrix, Core::LinAlg::Vector<double> &invsymmetry) const
+    const Core::LinAlg::SparseMatrix& matrix, Core::LinAlg::Vector<double>& invsymmetry) const
 {
   std::shared_ptr<Core::LinAlg::Vector<double>> diag =
       Core::LinAlg::create_vector(matrix.range_map(), true);
@@ -112,7 +112,7 @@ void Core::LinAlg::Equilibration::compute_inv_symmetry(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::Equilibration::equilibrate_matrix_rows(
-    Core::LinAlg::SparseMatrix &matrix, const Core::LinAlg::Vector<double> &invrowsums) const
+    Core::LinAlg::SparseMatrix& matrix, const Core::LinAlg::Vector<double>& invrowsums) const
 {
   if (matrix.left_scale(invrowsums)) FOUR_C_THROW("Row equilibration of matrix failed!");
 }
@@ -120,7 +120,7 @@ void Core::LinAlg::Equilibration::equilibrate_matrix_rows(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::Equilibration::equilibrate_matrix_columns(
-    Core::LinAlg::SparseMatrix &matrix, const Core::LinAlg::Vector<double> &invcolsums) const
+    Core::LinAlg::SparseMatrix& matrix, const Core::LinAlg::Vector<double>& invcolsums) const
 {
   if (matrix.right_scale(invcolsums)) FOUR_C_THROW("Column equilibration of matrix failed!");
 }
@@ -264,7 +264,7 @@ void Core::LinAlg::EquilibrationBlock::equilibrate_matrix(
         for (int j = 0; j < blocksparsematrix->cols(); ++j)
         {
           // extract current block of global system matrix
-          const Core::LinAlg::SparseMatrix &matrix = blocksparsematrix->matrix(i, j);
+          const Core::LinAlg::SparseMatrix& matrix = blocksparsematrix->matrix(i, j);
 
           // loop over all rows of current matrix block
           for (int irow = 0; irow < matrix.row_map().NumMyElements(); ++irow)
@@ -335,7 +335,7 @@ void Core::LinAlg::EquilibrationBlock::equilibrate_matrix(
         for (int i = 0; i < blocksparsematrix->rows(); ++i)
         {
           // extract current block of global system matrix
-          const Core::LinAlg::SparseMatrix &matrix = blocksparsematrix->matrix(i, j);
+          const Core::LinAlg::SparseMatrix& matrix = blocksparsematrix->matrix(i, j);
 
           // loop over all rows of current matrix block
           for (int irow = 0; irow < matrix.row_map().NumMyElements(); ++irow)
@@ -453,7 +453,7 @@ void Core::LinAlg::EquilibrationBlockSpecific::equilibrate_matrix(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::Equilibration> Core::LinAlg::build_equilibration(MatrixType type,
-    const std::vector<EquilibrationMethod> &method, std::shared_ptr<const Epetra_Map> dofrowmap)
+    const std::vector<EquilibrationMethod>& method, std::shared_ptr<const Epetra_Map> dofrowmap)
 {
   std::shared_ptr<Core::LinAlg::Equilibration> equilibration = nullptr;
 

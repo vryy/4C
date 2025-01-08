@@ -363,7 +363,7 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
 
       for (std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator scurr =
                slavegeom.begin();
-           scurr != slavegeom.end(); ++scurr)
+          scurr != slavegeom.end(); ++scurr)
       {
         std::pair<std::multimap<int, double>::iterator, std::multimap<int, double>::iterator> range;
         range = slaveinterfaceelementidentificationmap.equal_range(scurr->second->id());

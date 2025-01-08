@@ -255,7 +255,7 @@ void TSI::Partitioned::time_loop_one_way()
     // do the solve for the time step. All boundary conditions have been set
     do_thermo_step();
 
-  }     // displacement coupling
+  }  // displacement coupling
   else  // temperature coupling (deformation due to heating)
   {
     // ----------------------------------------------------- thermo field
@@ -517,7 +517,7 @@ void TSI::Partitioned::outer_iteration_loop()
         // end nonlinear solver / outer iteration ******************************
 
       }  // end OUTER ITERATION
-    }    // end displacement predictor
+    }  // end displacement predictor
 
     // temperature is predictor
     else  // (deformation due to heating)
@@ -813,7 +813,7 @@ void TSI::Partitioned::outer_iteration_loop()
               dispnp->Update(1.0, *(structure_field()->dispnp()), (-mu_), *dispincnp_, 0.0);
             }
           }  // itnum>1
-        }    // dynamic relaxation
+        }  // dynamic relaxation
 
         // velocity has to fit the corresponding displacements
         // --> update velocities according to relaxed displacements
@@ -821,7 +821,7 @@ void TSI::Partitioned::outer_iteration_loop()
 
         // ----------------------------------------------- end relaxation
       }  // end OUTER ITERATION
-    }    // end relax displacement
+    }  // end relax displacement
 
     // relax the temperatures
     else  // (!displacementcoupling_)
@@ -1033,13 +1033,13 @@ void TSI::Partitioned::outer_iteration_loop()
               temp_->Update(1.0, *(thermo_field()->tempnp()), (-mu_), *tempincnp_, 0.0);
             }
           }  // itnum > 1
-        }    // dynamic relaxation
+        }  // dynamic relaxation
 
         // ----------------------------------------------- end relaxation
 
       }  // end OUTER ITERATION
-    }    // relax temperatures
-  }      // iterative staggered TSI with relaxation
+    }  // relax temperatures
+  }  // iterative staggered TSI with relaxation
   return;
 
 }  // outer_iteration_loop()

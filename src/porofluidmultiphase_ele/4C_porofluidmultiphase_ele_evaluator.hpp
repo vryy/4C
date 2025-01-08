@@ -79,7 +79,7 @@ namespace Discret
       {
        public:
         //! constructor
-        AssembleInterface(const bool inittimederiv) : inittimederiv_(inittimederiv){};
+        AssembleInterface(const bool inittimederiv) : inittimederiv_(inittimederiv) {};
 
         //! destructor
         virtual ~AssembleInterface() = default;
@@ -104,7 +104,7 @@ namespace Discret
        public:
         //! constructor
         AssembleStandard(int curphase, const bool inittimederiv)
-            : AssembleInterface(inittimederiv), curphase_(curphase){};
+            : AssembleInterface(inittimederiv), curphase_(curphase) {};
 
         int num_phases_to_assemble_into() const override { return 1; };
 
@@ -170,7 +170,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorInterface(){};
+        EvaluatorInterface() {};
 
         //! destructor
         virtual ~EvaluatorInterface() = default;
@@ -258,7 +258,7 @@ namespace Discret
       {
        public:
         //! constructor
-        MultiEvaluator(){};
+        MultiEvaluator() {};
 
         //! evaluate matrixes (stiffness)
         void evaluate_matrix(
@@ -383,7 +383,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorBase(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : assembler_(assembler), myphase_(curphase){};
+            : assembler_(assembler), myphase_(curphase) {};
 
         //! evaluate matrixes (stiffness)
         void evaluate_matrix(
@@ -401,7 +401,7 @@ namespace Discret
         {
           // the assembler class decides, where the terms are assembled into
           for (int iassemble = 0; iassemble < assembler_->num_phases_to_assemble_into();
-               iassemble++)
+              iassemble++)
           {
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
@@ -428,7 +428,7 @@ namespace Discret
         {
           // the assembler class decides, where the terms are assembled into
           for (int iassemble = 0; iassemble < assembler_->num_phases_to_assemble_into();
-               iassemble++)
+              iassemble++)
           {
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
@@ -457,7 +457,7 @@ namespace Discret
         {
           // the assembler class decides, where the terms are assembled into
           for (int iassemble = 0; iassemble < assembler_->num_phases_to_assemble_into();
-               iassemble++)
+              iassemble++)
           {
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
@@ -483,7 +483,7 @@ namespace Discret
         {
           // the assembler class decides, where the terms are assembled into
           for (int iassemble = 0; iassemble < assembler_->num_phases_to_assemble_into();
-               iassemble++)
+              iassemble++)
           {
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
@@ -631,7 +631,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorConv(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
         //! destructor
         virtual ~EvaluatorConv() = default;
@@ -724,7 +724,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorDivVel(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -814,7 +814,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorSatDivVel(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorDivVel<nsd, nen>(assembler, curphase){};
+            : EvaluatorDivVel<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -904,7 +904,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorBiotStab(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -995,7 +995,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorDiff(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -1085,7 +1085,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorReac(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -1175,7 +1175,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorMassPressure(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -1277,7 +1277,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorMassSolidPressure(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -1381,7 +1381,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorMassSolidPressureSat(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorMassSolidPressure<nsd, nen>(assembler, curphase){};
+            : EvaluatorMassSolidPressure<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -1471,7 +1471,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorMassSaturation(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -1573,7 +1573,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorPressureAndSaturation(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -1663,7 +1663,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorSolidPressure(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -1756,7 +1756,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorValidVolFracPressures(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -1846,7 +1846,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorPorosity(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -1939,7 +1939,7 @@ namespace Discret
             std::vector<int> domainint_funct, int numscal)
             : EvaluatorBase<nsd, nen>(assembler, curphase),
               domainint_funct_(domainint_funct),
-              numscal_(numscal){};
+              numscal_(numscal) {};
 
        protected:
         //! evaluate element matrix
@@ -2039,7 +2039,7 @@ namespace Discret
        public:
         //! constructor
         ReconstructFluxLinearization(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -2130,7 +2130,7 @@ namespace Discret
        public:
         //! constructor
         ReconstructFluxRHS(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -2214,7 +2214,7 @@ namespace Discret
         //! constructor
         EvaluatorPhaseVelocities(
             std::shared_ptr<AssembleInterface> assembler, int curphase, bool isAle)
-            : EvaluatorBase<nsd, nen>(assembler, curphase), is_ale_(isAle){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase), is_ale_(isAle) {};
 
        protected:
         //! evaluate element matrix
@@ -2232,7 +2232,7 @@ namespace Discret
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
             bool inittimederiv    //!< calculate only parts for initial time derivative
-            ) override{};
+            ) override {};
 
         //! evaluate element vector
         void evaluate_vector_and_assemble(
@@ -2269,7 +2269,7 @@ namespace Discret
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
-            double det) override{};
+            double det) override {};
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
@@ -2285,7 +2285,7 @@ namespace Discret
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
-            ) override{};
+            ) override {};
 
        private:
         bool is_ale_;
@@ -2310,7 +2310,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorVolFracAddInstatTerms(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -2413,7 +2413,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorVolFracAddDivVelTerm(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -2506,7 +2506,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorVolFracAddDivVelTermSat(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorVolFracAddDivVelTerm<nsd, nen>(assembler, curphase){};
+            : EvaluatorVolFracAddDivVelTerm<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -2600,7 +2600,7 @@ namespace Discret
         //! constructor
         EvaluatorVolFracAddInstatTermsSat(
             std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorVolFracAddInstatTerms<nsd, nen>(assembler, curphase){};
+            : EvaluatorVolFracAddInstatTerms<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -2691,7 +2691,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorVolFracInstat(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -2782,7 +2782,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorVolFracDivVel(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -2872,7 +2872,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorVolFracDiff(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -2962,7 +2962,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorVolFracReac(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -3052,7 +3052,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorVolFracAddFlux(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -3142,7 +3142,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorVolFracPressureDiff(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix
@@ -3233,7 +3233,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorVolFracPressureReac(std::shared_ptr<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+            : EvaluatorBase<nsd, nen>(assembler, curphase) {};
 
        protected:
         //! evaluate element matrix

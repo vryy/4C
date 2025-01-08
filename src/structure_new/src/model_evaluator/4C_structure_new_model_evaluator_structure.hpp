@@ -64,10 +64,10 @@ namespace Solid
       bool evaluate_force_stiff() override;
 
       //! derived
-      void pre_evaluate() override{};
+      void pre_evaluate() override {};
 
       //! derived
-      void post_evaluate() override{};
+      void post_evaluate() override {};
 
       /*! \brief Initialize viscous and inertial matrices
        *
@@ -192,7 +192,7 @@ namespace Solid
 
      protected:
       //! pre-operator for \ref evaluate_internal
-      virtual void pre_evaluate_internal(){/* empty */};
+      virtual void pre_evaluate_internal() { /* empty */ };
 
      private:
       //! apply the internal force contributions

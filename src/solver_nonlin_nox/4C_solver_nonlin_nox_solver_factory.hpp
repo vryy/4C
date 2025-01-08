@@ -27,7 +27,7 @@ namespace NOX
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace Inner
+    }  // namespace Inner
 
     namespace Solver
     {
@@ -66,7 +66,7 @@ namespace NOX
           NOX::Nln::GlobalData& nlnGlobalData);
 
     }  // namespace Solver
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

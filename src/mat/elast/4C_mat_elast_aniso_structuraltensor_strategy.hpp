@@ -82,7 +82,7 @@ namespace Mat
         };
 
       };  // class StructuralTensorParameter
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Base class for evaluation strategy of structural tensor for anisotropic materials.

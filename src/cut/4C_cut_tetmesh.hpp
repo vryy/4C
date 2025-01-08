@@ -199,14 +199,14 @@ namespace Cut
       void disconnect()
       {
         for (typename std::vector<Entity<length - 1>*>::const_iterator i = children_.begin();
-             i != children_.end(); ++i)
+            i != children_.end(); ++i)
         {
           Entity<length - 1>* child = *i;
           child->remove_parent(this);
         }
         children_.clear();
         for (typename std::vector<Entity<length + 1>*>::const_iterator i = parents_.begin();
-             i != parents_.end(); ++i)
+            i != parents_.end(); ++i)
         {
           Entity<length + 1>* parent = *i;
           parent->remove_child(this);
@@ -310,7 +310,7 @@ namespace Cut
       {
         const typename std::vector<Entity<length - 1>*>& bs = m->children();
         for (typename std::vector<Entity<length - 1>*>::const_iterator i = bs.begin();
-             i != bs.end(); ++i)
+            i != bs.end(); ++i)
         {
           Entity<length - 1>* b = *i;
           // Each interior border_ should be visited twice (either surface for tets or lines for
@@ -350,13 +350,13 @@ namespace Cut
         // Check if a border_ (i.e. tri) has been forgotten on the boundary. And if so add it to
         // the done_border_.
         for (typename PlainEntitySet<length - 1>::iterator i = border_.begin(); i != border_.end();
-             ++i)
+            ++i)
         {
           Entity<length - 1>* b = *i;
           bool skip = false;
           const std::vector<Entity<length>*>& ms = b->parents();
           for (typename std::vector<Entity<length>*>::const_iterator i = ms.begin(); i != ms.end();
-               ++i)
+              ++i)
           {
             Entity<length>* m = *i;
             if (contains(m))
@@ -376,7 +376,7 @@ namespace Cut
         // Adds tets not in cell_domain already. These are the interior tets not associated with
         //  an element boundary.
         for (typename PlainEntitySet<length>::iterator i = members_.begin(); i != members_.end();
-             ++i)
+            ++i)
         {
           Entity<length>* m = *i;
           push_new_neighbors(stack, m);
@@ -410,14 +410,14 @@ namespace Cut
       {
         const std::vector<Entity<length - 1>*>& bs = m->children();
         for (typename std::vector<Entity<length - 1>*>::const_iterator i = bs.begin();
-             i != bs.end(); ++i)
+            i != bs.end(); ++i)
         {
           Entity<length - 1>* b = *i;
           if (done_border_.count(b) == 0)
           {
             const std::vector<Entity<length>*>& ms = b->parents();
             for (typename std::vector<Entity<length>*>::const_iterator i = ms.begin();
-                 i != ms.end(); ++i)
+                i != ms.end(); ++i)
             {
               Entity<length>* m = *i;
               if (not contains(m))
@@ -508,7 +508,7 @@ namespace Cut
         facet->get_lines(lines);
 
         for (std::map<std::pair<Point*, Point*>, plain_facet_set>::iterator i = lines.begin();
-             i != lines.end(); ++i)
+            i != lines.end(); ++i)
         {
           const std::pair<Point*, Point*>& l = i->first;
           Handle<2> h = tm->make_handle(l.first, l.second);

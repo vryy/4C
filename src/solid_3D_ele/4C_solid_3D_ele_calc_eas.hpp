@@ -45,7 +45,7 @@ namespace Discret::Elements
         solve_for_inverse.invert();
       }
     }  // namespace
-  }    // namespace Internal
+  }  // namespace Internal
 
   template <Core::FE::CellType celltype, Discret::Elements::EasType eastype>
   struct EASHistoryData

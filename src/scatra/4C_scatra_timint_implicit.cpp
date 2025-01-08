@@ -3657,7 +3657,7 @@ void ScaTra::ScaTraTimIntImpl::build_block_null_spaces(
 {
   // loop over blocks of global system matrix
   for (int iblock = init_block_number; iblock < block_maps()->num_maps() + init_block_number;
-       ++iblock)
+      ++iblock)
   {
     // store number of current block as string, starting from 1
     std::ostringstream iblockstr;

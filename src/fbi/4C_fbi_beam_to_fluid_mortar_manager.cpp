@@ -83,7 +83,7 @@ void BeamInteraction::BeamToFluidMortarManager::setup()
   // Get the global ids of all beam centerline nodes on this rank.
   std::vector<int> my_nodes_gid;
   for (int i_node = 0; i_node < discretization_structure_->node_row_map()->NumMyElements();
-       i_node++)
+      i_node++)
   {
     Core::Nodes::Node const& node = *(discretization_structure_->l_row_node(i_node));
     if (BeamInteraction::Utils::is_beam_centerline_node(node)) my_nodes_gid.push_back(node.id());
@@ -92,7 +92,7 @@ void BeamInteraction::BeamToFluidMortarManager::setup()
   // Get the global ids of all beam elements on this rank.
   std::vector<int> my_elements_gid;
   for (int i_element = 0; i_element < discretization_structure_->element_row_map()->NumMyElements();
-       i_element++)
+      i_element++)
   {
     Core::Elements::Element const& element = *(discretization_structure_->l_row_element(i_element));
     if (BeamInteraction::Utils::is_beam_element(element)) my_elements_gid.push_back(element.id());
@@ -115,7 +115,7 @@ void BeamInteraction::BeamToFluidMortarManager::setup()
   // Get the start GID for the lambda DOFs on this processor.
   int my_lambda_gid_start_value = start_value_lambda_gid_;
   for (int pid = 0; pid < Core::Communication::my_mpi_rank(discretization_structure_->get_comm());
-       pid++)
+      pid++)
     my_lambda_gid_start_value += lambda_dof_per_rank[pid];
 
   // Fill in all GIDs of the lambda DOFs on this processor.
@@ -203,7 +203,7 @@ void BeamInteraction::BeamToFluidMortarManager::set_global_maps()
   std::vector<std::vector<int>> field_dofs(2);
 
   for (int i_node = 0; i_node < discretization_structure_->node_row_map()->NumMyElements();
-       i_node++)
+      i_node++)
   {
     const Core::Nodes::Node* node = discretization_structure_->l_row_node(i_node);
     if (BeamInteraction::Utils::is_beam_node(*node))

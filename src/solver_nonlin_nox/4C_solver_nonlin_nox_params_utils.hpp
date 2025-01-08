@@ -48,7 +48,7 @@ namespace NOX
         return Teuchos::getIntegralValue<IntegralType>(p, param_name);
       }
     }  // namespace ParameterUtils
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

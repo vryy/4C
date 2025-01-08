@@ -105,7 +105,7 @@ namespace SSI
   class SSICouplingMatchingVolume : public SSICouplingBase
   {
    public:
-    SSICouplingMatchingVolume() : issetup_(false), isinit_(false){};
+    SSICouplingMatchingVolume() : issetup_(false), isinit_(false) {};
     void init(const int ndim, std::shared_ptr<Core::FE::Discretization> structdis,
         std::shared_ptr<SSI::SSIBase> ssi_base) override;
 
@@ -173,7 +173,7 @@ namespace SSI
   {
    public:
     SSICouplingNonMatchingBoundary()
-        : adaptermeshtying_(nullptr), extractor_(nullptr), issetup_(false), isinit_(false){};
+        : adaptermeshtying_(nullptr), extractor_(nullptr), issetup_(false), isinit_(false) {};
     void init(const int ndim, std::shared_ptr<Core::FE::Discretization> structdis,
         std::shared_ptr<SSI::SSIBase> ssi_base) override;
 
@@ -262,7 +262,7 @@ namespace SSI
   {
    public:
     SSICouplingNonMatchingVolume()
-        : volcoupl_structurescatra_(nullptr), issetup_(false), isinit_(false){};
+        : volcoupl_structurescatra_(nullptr), issetup_(false), isinit_(false) {};
     void init(const int ndim, std::shared_ptr<Core::FE::Discretization> structdis,
         std::shared_ptr<SSI::SSIBase> ssi_base) override;
 
@@ -338,7 +338,7 @@ namespace SSI
   class SSICouplingMatchingVolumeAndBoundary : public SSICouplingBase
   {
    public:
-    SSICouplingMatchingVolumeAndBoundary() : issetup_(false), isinit_(false){};
+    SSICouplingMatchingVolumeAndBoundary() : issetup_(false), isinit_(false) {};
     void init(const int ndim, std::shared_ptr<Core::FE::Discretization> structdis,
         std::shared_ptr<SSI::SSIBase> ssi_base) override;
 

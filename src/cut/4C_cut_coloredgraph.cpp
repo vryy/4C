@@ -319,7 +319,7 @@ namespace Cut
 
                 // iterate over all visited lines
                 for (std::vector<int>::iterator i = visited.begin() + graph.split();
-                     i != visited.end(); ++i)
+                    i != visited.end(); ++i)
                 {
                   // if it was visited only once, meaning no other facet visited this line, means
                   // it is open
@@ -429,7 +429,7 @@ namespace Cut
 
         std::ofstream filevisited("facetgraph_visited_facets.pos");
         for (std::vector<int>::iterator i = visited.begin(); i != visited.begin() + graph.split();
-             ++i)
+            ++i)
         {
           if (*i == 1)
           {
@@ -846,7 +846,7 @@ void Cut::ColoredGraph::CycleList::add_points(Graph& graph, Graph& used, Graph& 
     bool found = false;
 
     for (std::vector<std::list<Cycle>::iterator>::iterator ilist = matching.begin();
-         ilist != matching.end(); ++ilist)
+        ilist != matching.end(); ++ilist)
     {
       Cycle& c = **ilist;
 

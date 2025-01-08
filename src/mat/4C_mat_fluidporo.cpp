@@ -71,7 +71,7 @@ namespace Mat::FLUIDPORO
      *
      * @param [in] params Material parameters
      */
-    PoroAnisotropyStrategyBase(const Mat::PAR::FluidPoro* params) : params_(params){};
+    PoroAnisotropyStrategyBase(const Mat::PAR::FluidPoro* params) : params_(params) {};
 
     //! Virtual default destructor
     virtual ~PoroAnisotropyStrategyBase() = default;
@@ -185,7 +185,7 @@ namespace Mat::FLUIDPORO
   {
    public:
     //! Simple constructor
-    PoroIsotropyStrategy(const Mat::PAR::FluidPoro* params) : PoroAnisotropyStrategyBase(params){};
+    PoroIsotropyStrategy(const Mat::PAR::FluidPoro* params) : PoroAnisotropyStrategyBase(params) {};
 
     //! compute isotropy reaction coefficient
     double compute_reaction_coeff() const override
@@ -341,7 +341,7 @@ namespace Mat::FLUIDPORO
   {
    public:
     PoroConstantMaterialTransverseIsotropyStrategy(const Mat::PAR::FluidPoro* params)
-        : PoroAnisotropyStrategyBase(params){};
+        : PoroAnisotropyStrategyBase(params) {};
 
     //! compute reaction coefficient for constant material transverse isotropy
     double compute_reaction_coeff() const override
@@ -442,7 +442,7 @@ namespace Mat::FLUIDPORO
    public:
     //! Simple constructor
     PoroConstantMaterialOrthotropyStrategy(const Mat::PAR::FluidPoro* params)
-        : PoroAnisotropyStrategyBase(params){};
+        : PoroAnisotropyStrategyBase(params) {};
 
     //! compute reaction coefficient for constant material orthotropy
     double compute_reaction_coeff() const override
@@ -534,7 +534,7 @@ namespace Mat::FLUIDPORO
    public:
     //! Simple constructor
     PoroConstantMaterialNodalOrthotropyStrategy(const Mat::PAR::FluidPoro* params)
-        : PoroAnisotropyStrategyBase(params){};
+        : PoroAnisotropyStrategyBase(params) {};
 
     //! compute reaction coefficient for constant material nodal orthotropy
     double compute_reaction_coeff() const override

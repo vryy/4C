@@ -38,7 +38,7 @@ namespace GEOMETRYPAIR
      * @param element2 Pointer to the second element.
      */
     GeometryPair(const Core::Elements::Element* element1, const Core::Elements::Element* element2)
-        : element1_(element1), element2_(element2){};
+        : element1_(element1), element2_(element2) {};
 
     /**
      * \brief Destructor.

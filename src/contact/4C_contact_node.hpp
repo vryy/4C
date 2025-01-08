@@ -521,7 +521,7 @@ namespace CONTACT
     double fpres_;      // fluid pressure for porous problem
     double svel_[3];    // structural velocity for porous problem
     double porolm_[3];  // lagrange multiplier from poro no penetration condition!
-  };                    // class NodePoroDataContainer
+  };  // class NodePoroDataContainer
 
   /*!
   \brief A class containing additional data from tsi contact nodes
@@ -545,7 +545,7 @@ namespace CONTACT
     \brief empty Constructor: unpack data later
 
     */
-    NodeTSIDataContainer(){};
+    NodeTSIDataContainer() {};
 
     /*!
     \brief Destructor
@@ -646,12 +646,12 @@ namespace CONTACT
 
     //! pack for parallel communication
     virtual void pack(Core::Communication::PackBuffer& data) const {
-        /* no need to pack, since terms are re-evaluated after parallel communication */
+      /* no need to pack, since terms are re-evaluated after parallel communication */
     };
 
     //! unpack and re-init after parallel comunication
-    virtual void unpack(Core::Communication::UnpackBuffer& buffer){
-        /* no need to pack, since terms are re-evaluated after parallel communication */
+    virtual void unpack(Core::Communication::UnpackBuffer& buffer) {
+      /* no need to pack, since terms are re-evaluated after parallel communication */
     };
 
     //! clear all stored data

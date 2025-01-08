@@ -45,7 +45,7 @@ namespace ScaTra
     void init() override;
 
     //! update the solution after convergence of the nonlinear iteration.
-    void update() override{};
+    void update() override {};
 
     //! set the nodal L2-flux
     virtual void set_l2_flux_of_multi_fluid(

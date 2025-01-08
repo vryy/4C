@@ -85,7 +85,7 @@ namespace Discret
       //! diffusion manager
       std::shared_ptr<ScaTraEleDiffManagerElchDiffCond> dmedc_;
     };  // class ScaTraEleBoundaryCalcElchDiffCond
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

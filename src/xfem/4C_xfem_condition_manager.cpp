@@ -89,7 +89,7 @@ void XFEM::ConditionManager::create_couplings(
   // check if a coupling discretization has relevant conditioned nodes
   // create new coupling object for each type of condition and each coupling discretization
   for (size_t c_idx = 0; c_idx < coupl_dis.size();
-       c_idx++)  // loop all specified mesh coupling discretizations
+      c_idx++)  // loop all specified mesh coupling discretizations
   {
     if (coupl_dis[c_idx] == nullptr) continue;
 

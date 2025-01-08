@@ -41,7 +41,7 @@ int Core::FE::DiscretizationHDG::fill_complete(
   std::map<int, std::vector<int>> nodeIds, trafoMap;
   for (std::map<int, std::shared_ptr<Core::Elements::FaceElement>>::const_iterator f =
            faces_.begin();
-       f != faces_.end(); ++f)
+      f != faces_.end(); ++f)
   {
     std::vector<int> ids(f->second->num_node());
     for (int i = 0; i < f->second->num_node(); ++i) ids[i] = f->second->node_ids()[i];
@@ -53,7 +53,7 @@ int Core::FE::DiscretizationHDG::fill_complete(
   nodeexporter.do_export(trafoMap);
 
   for (std::map<int, std::shared_ptr<Core::Elements::FaceElement>>::iterator f = faces_.begin();
-       f != faces_.end(); ++f)
+      f != faces_.end(); ++f)
   {
     if (f->second->owner() == Core::Communication::my_mpi_rank(get_comm())) continue;
     std::vector<int>& ids = nodeIds[f->first];
@@ -396,8 +396,8 @@ void Core::FE::Utils::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
         }
 
       }  // loop over DOFs of face
-    }    // loop over all faces
-  }      // if there are faces
+    }  // loop over all faces
+  }  // if there are faces
 
   return;
 }
@@ -582,7 +582,7 @@ void Core::FE::Utils::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
         if (systemvectors[2] != nullptr) (*systemvectors[2])[lid] = value[2] * elevec1(j);
 
       }  // loop over all DOFs
-    }    // loop over all faces
+    }  // loop over all faces
 
   }  // if there are faces
 

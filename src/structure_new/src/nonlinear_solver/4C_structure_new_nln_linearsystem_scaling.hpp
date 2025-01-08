@@ -73,7 +73,7 @@ namespace Solid
         std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat_;
       };
     }  // namespace LinSystem
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

@@ -38,19 +38,19 @@ namespace Adapter
     int integrate() override;
 
     /// wrapper for things that should be done before prepare_time_step is called
-    void pre_predict() override{};
+    void pre_predict() override {};
 
     /// wrapper for things that should be done before solving the nonlinear iterations
-    void pre_solve() override{};
+    void pre_solve() override {};
 
     /// wrapper for things that should be done before updating
-    void pre_update() override{};
+    void pre_update() override {};
 
     /// wrapper for things that should be done after solving the update
-    void post_update() override{};
+    void post_update() override {};
 
     /// wrapper for things that should be done after the output
-    void post_output() override{};
+    void post_output() override {};
   };
 
 }  // namespace Adapter

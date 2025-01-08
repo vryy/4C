@@ -38,7 +38,7 @@ namespace ScaTra
         phinp_(timeint->phinp_),
         phiaf_(nullptr),
         threshold_wavenumber_(timeint->extraparams_->sublist("TURBULENCE MODEL")
-                                  .get<double>("THRESHOLD_WAVENUMBER", 0)),
+                .get<double>("THRESHOLD_WAVENUMBER", 0)),
         is_genalpha_(false),
         dt_(timeint->dta_)
   {
@@ -130,7 +130,7 @@ namespace ScaTra
         Core::Communication::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
-             x1line != coords.end(); ++x1line)
+            x1line != coords.end(); ++x1line)
         {
           add_to_pack(data, *x1line);
         }
@@ -185,7 +185,7 @@ namespace ScaTra
       coordinates_ = std::make_shared<std::vector<double>>();
 
       for (std::set<double, LineSortCriterion>::iterator coord1 = coords.begin();
-           coord1 != coords.end(); ++coord1)
+          coord1 != coords.end(); ++coord1)
       {
         coordinates_->push_back(*coord1);
       }

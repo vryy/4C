@@ -186,7 +186,7 @@ void CONTACT::IntegratorNitschePoro::so_ele_cauchy(Mortar::Element& moEle, doubl
           &dsntdpxi, nullptr, nullptr, nullptr, nullptr, nullptr);
     }
     else if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(moEle.parent_element());
-             solid_ele != nullptr)
+        solid_ele != nullptr)
     {
       Discret::Elements::CauchyNDirLinearizations<3> cauchy_linearizations{};
       cauchy_linearizations.d_cauchyndir_dd = &dsntdd;
@@ -219,14 +219,14 @@ void CONTACT::IntegratorNitschePoro::so_ele_cauchy(Mortar::Element& moEle, doubl
   for (int d = 0; d < dim; ++d)
   {
     for (Core::Gen::Pairedvector<int, double>::const_iterator p = normal_deriv[d].begin();
-         p != normal_deriv[d].end(); ++p)
+        p != normal_deriv[d].end(); ++p)
       deriv_sigma_nt_d[p->first] += dsntdn(d) * p->second * w;
   }
 
   for (int d = 0; d < dim; ++d)
   {
     for (Core::Gen::Pairedvector<int, double>::const_iterator p = direction_deriv[d].begin();
-         p != direction_deriv[d].end(); ++p)
+        p != direction_deriv[d].end(); ++p)
       deriv_sigma_nt_d[p->first] += dsntdt(d) * p->second * w;
   }
 

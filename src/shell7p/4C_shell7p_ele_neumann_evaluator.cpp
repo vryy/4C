@@ -341,7 +341,7 @@ void Discret::Elements::Shell::evaluate_neumann(Core::Elements::Element& ele,
       for (int nodeid = 0; nodeid < numnod; ++nodeid)
         for (int dim = 0; dim < num_dim; dim++)
           for (int dof = 0; dof < element_force_vector.numRows(); dof++)
-            (*element_stiffness_matrix)(nodeid * noddof + dim, dof) -=
+            (*element_stiffness_matrix)(nodeid* noddof + dim, dof) -=
                 shapefunctions.shapefunctions_(nodeid) * value[2] * function_scale_factors[2] *
                 gpweights * dnormal(dim, dof);
     }

@@ -55,7 +55,7 @@ namespace Solid
       mt_none = 0,  //!< none specific default value
       mt_fsi = 1,   //!< multiphysics type fluid-structure-interaction
       mt_ssi = 2    //!< multiphysics type structure-scalar-interaction
-    };              // MultiphysicType
+    };  // MultiphysicType
 
 
     /*! \brief This is the base class for all multiphysics models.
@@ -117,10 +117,10 @@ namespace Solid
       bool evaluate_force_stiff() override;
 
       //! derived
-      void pre_evaluate() override{};
+      void pre_evaluate() override {};
 
       //! derived
-      void post_evaluate() override{};
+      void post_evaluate() override {};
 
       //! derived
       bool assemble_force(Core::LinAlg::Vector<double>& f, const double& timefac_np) const override;
@@ -131,49 +131,49 @@ namespace Solid
 
       //! [derived]
       void write_restart(Core::IO::DiscretizationWriter& iowriter,
-          const bool& forced_writerestart) const override{};
+          const bool& forced_writerestart) const override {};
 
       //! [derived]
-      void read_restart(Core::IO::DiscretizationReader& ioreader) override{};
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override {};
 
       //! [derived]
-      void predict(const Inpar::Solid::PredEnum& pred_type) override{};
+      void predict(const Inpar::Solid::PredEnum& pred_type) override {};
 
       //! derived
       void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
-          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override{};
+          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override {};
 
       //! recover condensed Lagrange multipliers
       void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
           const Core::LinAlg::Vector<double>& dir,
-          const Core::LinAlg::Vector<double>& xnew) override{};
+          const Core::LinAlg::Vector<double>& xnew) override {};
 
       //! derived
-      void run_post_iterate(const ::NOX::Solver::Generic& solver) override{};
+      void run_post_iterate(const ::NOX::Solver::Generic& solver) override {};
 
       //! [derived]
       void update_step_state(const double& timefac_n) override;
 
       //! [derived]
-      void update_step_element() override{};
+      void update_step_element() override {};
 
       //! [derived]
-      void determine_stress_strain() override{};
+      void determine_stress_strain() override {};
 
       //! [derived]
-      void determine_energy() override{};
+      void determine_energy() override {};
 
       //! [derived]
-      void determine_optional_quantity() override{};
+      void determine_optional_quantity() override {};
 
       //! [derived]
-      void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override{};
+      void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override {};
 
       //! derived
-      void reset_step_state() override{};
+      void reset_step_state() override {};
 
       //! [derived]
-      void post_output() override{};
+      void post_output() override {};
 
       //! @name Accessors to model specific things
       //! @{

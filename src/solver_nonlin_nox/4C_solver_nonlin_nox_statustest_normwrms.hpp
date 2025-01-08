@@ -104,7 +104,7 @@ namespace NOX
         std::vector<bool> disable_implicit_weighting_;
       };
     }  // namespace StatusTest
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

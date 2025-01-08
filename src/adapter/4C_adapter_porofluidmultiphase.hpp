@@ -42,7 +42,7 @@ namespace Adapter
   {
    public:
     /// constructor
-    PoroFluidMultiphase(){};
+    PoroFluidMultiphase() {};
 
     /// virtual destructor to support polymorph destruction
     virtual ~PoroFluidMultiphase() = default;

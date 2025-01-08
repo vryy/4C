@@ -635,8 +635,8 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
             *cmat, fac, tmp1, tmp2, 1.0);  // N_{abba}
 
       }  // end if (a!=b)
-    }    // end loop b
-  }      // end loop a
+    }  // end loop b
+  }  // end loop a
 
   // --------------------------------------------- update plastic history
   // plastic inverse of right Cauchy-Green deformation tensor (RCG)

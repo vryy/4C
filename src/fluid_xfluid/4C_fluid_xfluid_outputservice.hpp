@@ -84,14 +84,14 @@ namespace FLD
     virtual void gmsh_solution_output(const std::string& filename_base,  ///< name for output file
         int step,                                                        ///< step number
         const std::shared_ptr<FLD::XFluidState>& state,                  ///< state
-        int count = -1){};
+        int count = -1) {};
 
     /// Gmsh solution output for previous time step
     virtual void gmsh_solution_output_previous(
         const std::string& filename_base,                ///< name for output file
         int step,                                        ///< step number
         const std::shared_ptr<FLD::XFluidState>& state,  ///< state
-        int count = -1){};
+        int count = -1) {};
 
     /// Gmsh output of solution (debug)
     virtual void gmsh_solution_output_debug(
@@ -99,7 +99,7 @@ namespace FLD
         int step,                          ///< step number
         int count,                         ///< counter for iterations within a global time step
         const std::shared_ptr<FLD::XFluidState>& state  ///< state
-    ){};
+    ) {};
 
     /// Gmsh output of residual (debug)
     virtual void gmsh_residual_output_debug(
@@ -107,7 +107,7 @@ namespace FLD
         int step,                          ///< step number
         int count,                         ///< counter for iterations within a global time step
         const std::shared_ptr<FLD::XFluidState>& state  ///< state
-    ){};
+    ) {};
 
     /// Gmsh output of increment (debug)
     virtual void gmsh_increment_output_debug(
@@ -115,11 +115,11 @@ namespace FLD
         int step,                          ///< step number
         int count,                         ///< counter for iterations within a global time step
         const std::shared_ptr<FLD::XFluidState>& state  ///< state
-    ){};
+    ) {};
 
     /// Gmsh output of discretization
     virtual void gmsh_output_discretization(bool print_faces, int step,
-        std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos = nullptr){};
+        std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos = nullptr) {};
 
     /// Main output routine for gmsh output
     virtual void gmsh_output(const std::string& filename_base,  ///< name for output file
@@ -131,12 +131,12 @@ namespace FLD
             vel,  ///< vector holding velocity and pressure dofs
         std::shared_ptr<const Core::LinAlg::Vector<double>> acc =
             nullptr  ///< vector holding acceleration
-    ){};
+    ) {};
 
     /// Gmsh output for EOS
     virtual void gmsh_output_eos(int step,             ///< step number
         std::shared_ptr<XFEM::XfemEdgeStab> edge_stab  ///< stabilization handler
-    ){};
+    ) {};
 
    protected:
     //! @name XFEM discretization

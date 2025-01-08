@@ -54,7 +54,7 @@ namespace Mat
           return nullptr;
         };
       };  // class VolPow
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Volumetric Power-law material

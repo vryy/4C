@@ -35,7 +35,7 @@ void CONTACT::CONSTITUTIVELAW::Bundle::make_parameters()
 {
   for (std::map<int, std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container>>::iterator m =
            map_.begin();
-       m != map_.end(); ++m)
+      m != map_.end(); ++m)
   {
     int lawid = m->first;
 

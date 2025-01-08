@@ -79,7 +79,7 @@ bool BeamInteraction::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::evalu
 
     // Gauss point loop.
     for (unsigned int i_gp = 0;
-         i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
+        i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
@@ -242,7 +242,7 @@ void BeamInteraction::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
       for (const auto& segment : this->line_to_3D_segments_)
       {
         for (unsigned int i_curve_segment = 0; i_curve_segment <= mortar_segments;
-             i_curve_segment++)
+            i_curve_segment++)
         {
           // Get the position, displacement and lambda value at the current point.
           xi = segment.get_eta_a() + i_curve_segment * (segment.get_eta_b() - segment.get_eta_a()) /

@@ -371,11 +371,11 @@ void CONTACT::FriNode::deriv_fr_coeff_temp(
   {
     double maxT = tsi_data().temp_master();
     for (std::map<int, double>::const_iterator i = tsi_data().deriv_temp_master_temp().begin();
-         i != tsi_data().deriv_temp_master_temp().end(); ++i)
+        i != tsi_data().deriv_temp_master_temp().end(); ++i)
       derivT[i->first] +=
           2. * frcoeff_in * (maxT - T_dam) / ((T_dam - T_ref) * (T_dam - T_ref)) * i->second;
     for (std::map<int, double>::const_iterator i = tsi_data().deriv_temp_master_disp().begin();
-         i != tsi_data().deriv_temp_master_disp().end(); ++i)
+        i != tsi_data().deriv_temp_master_disp().end(); ++i)
       derivDisp[i->first] +=
           2. * frcoeff_in * (maxT - T_dam) / ((T_dam - T_ref) * (T_dam - T_ref)) * i->second;
   }

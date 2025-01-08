@@ -412,9 +412,7 @@ void Solid::ModelEvaluator::Contact::post_update_step_state()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Contact::update_step_element()
-{ /* empty */
-}
+void Solid::ModelEvaluator::Contact::update_step_element() { /* empty */ }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

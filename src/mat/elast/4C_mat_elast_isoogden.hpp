@@ -43,7 +43,7 @@ namespace Mat
           return nullptr;
         };
       };  // class IsoOgden
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * \brief Isochoric part of the one-term Ogden material, see Holzapfel [1] or Ogden [2]

@@ -197,7 +197,7 @@ namespace
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ntam(int argc, char *argv[]);
+void ntam(int argc, char* argv[]);
 
 /**
  * @brief The main function of the central 4C executable.
@@ -209,7 +209,7 @@ void ntam(int argc, char *argv[]);
  * - delegates the actual reading of the input file and the computation.
  *
  */
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   // Initialize MPI and use RAII to create a guard object that will finalize MPI when it goes out of
   // scope.
@@ -347,7 +347,7 @@ int main(int argc, char *argv[])
     {
       ntam(argc, argv);
     }
-    catch (Core::Exception &err)
+    catch (Core::Exception& err)
     {
       char line[] = "=========================================================================\n";
       std::cout << "\n\n"

@@ -75,7 +75,7 @@ namespace Solid
       //! @name Monolithic update routines
       //! @{
       //! things that should be done before updating (derived)
-      void pre_update() override{/* do nothing for now */};
+      void pre_update() override { /* do nothing for now */ };
 
       //! (derived)
       void update_constant_state_contributions() override;
@@ -165,9 +165,9 @@ namespace NOX
           //! default step length
           const double default_step_;
         };  // class Generic
-      }     // namespace EXPLICIT
-    }       // namespace PrePostOp
-  }         // namespace Nln
+      }  // namespace EXPLICIT
+    }  // namespace PrePostOp
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

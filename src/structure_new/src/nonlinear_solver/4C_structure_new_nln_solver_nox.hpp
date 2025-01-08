@@ -41,8 +41,8 @@ namespace NOX
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace Inner
-  }      // namespace Nln
+    }  // namespace Inner
+  }  // namespace Nln
 }  // namespace NOX
 
 namespace Core::LinAlg
@@ -133,8 +133,8 @@ namespace Solid
 
         //!@}
       };  // class Nox
-    }     // namespace SOLVER
-  }       // namespace Nln
+    }  // namespace SOLVER
+  }  // namespace Nln
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

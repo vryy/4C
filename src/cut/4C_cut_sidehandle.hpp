@@ -286,7 +286,7 @@ namespace Cut
     bool isunphysical_sub_side(Side* side) override
     {
       for (std::vector<Side*>::iterator ssit = unphysical_subsides_.begin();
-           ssit != unphysical_subsides_.end(); ++ssit)
+          ssit != unphysical_subsides_.end(); ++ssit)
       {
         if ((*ssit) == side) return true;
       }

@@ -67,7 +67,7 @@ namespace
   {
     Core::LinAlg::Matrix<6, 1> pk2(std::array<double, 6>{283.6946919505318, 195.86721709838096,
         202.01904686970775, 142.72731871521245, 182.86374040756576, 278.020938548381}
-                                       .data());
+            .data());
 
     Core::LinAlg::Matrix<6, 1> cauchy(true);
     Solid::Utils::pk2_to_cauchy(pk2, get_f(), cauchy);

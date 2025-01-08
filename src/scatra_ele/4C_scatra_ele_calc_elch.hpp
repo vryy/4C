@@ -138,7 +138,7 @@ namespace Discret
               tauderpot,  //!< derivatives of stabilization parameters w.r.t. electric potential
           const std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_f)
           const double vol                    //!< element volume
-      ){};
+      ) {};
 
       /*========================================================================*/
       //! @name methods for evaluation of individual terms
@@ -229,7 +229,7 @@ namespace Discret
       virtual void calculate_current(Core::LinAlg::Matrix<nsd_, 1>& q,  //!< flux of species k
           const Inpar::ScaTra::FluxType fluxtype,                       //!< type fo flux
           const double fac                                              //!< integration factor
-      ){};
+      ) {};
 
       //! calculate error of numerical solution with respect to analytical solution
       void cal_error_compared_to_analyt_solution(const Core::Elements::Element* ele,  //!< element

@@ -82,9 +82,9 @@ namespace ScaTra
     explicit MeshtyingStrategyS2IElchSCL(
         ScaTra::ScaTraTimIntElch* elchtimint, const Teuchos::ParameterList& parameters);
 
-    void add_time_integration_specific_vectors() const override{};
+    void add_time_integration_specific_vectors() const override {};
 
-    void evaluate_meshtying() override{};
+    void evaluate_meshtying() override {};
 
     void setup_meshtying() override;
 

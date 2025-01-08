@@ -1255,7 +1255,7 @@ double Mortar::Element::compute_area_deriv(Core::Gen::Pairedvector<int, double>&
       Core::Gen::Pairedvector<int, double> derivjac(num_node() * n_dim());
       deriv_jacobian(gpc, derivjac);
       for (Core::Gen::Pairedvector<int, double>::const_iterator p = derivjac.begin();
-           p != derivjac.end(); ++p)
+          p != derivjac.end(); ++p)
         area_deriv[p->first] += integrator.weight(j) * p->second;
     }
   }

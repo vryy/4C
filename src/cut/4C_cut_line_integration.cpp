@@ -829,7 +829,7 @@ namespace
   // pt(0,0) --> y
   // pt(1,0) --> z
   double base_func_surf_x(
-      const Core::LinAlg::Matrix<2, 1> &pt, int inte_num, std::vector<double> alfa)
+      const Core::LinAlg::Matrix<2, 1>& pt, int inte_num, std::vector<double> alfa)
   {
     double basef_surf = 0.0;
     if (inte_num == 1)  // f(x,y,z) = 1
@@ -1397,7 +1397,7 @@ namespace
   // pt(0,0) --> z
   // pt(1,0) --> x
   double base_func_surf_y(
-      const Core::LinAlg::Matrix<2, 1> &pt, int inte_num, std::vector<double> alfa)
+      const Core::LinAlg::Matrix<2, 1>& pt, int inte_num, std::vector<double> alfa)
   {
     double basef_surf = 0.0;
 
@@ -1970,7 +1970,7 @@ namespace
   // pt(0,0) --> x
   // pt(1,0) --> y
   double base_func_surf_z(
-      const Core::LinAlg::Matrix<2, 1> &pt, int inte_num, std::vector<double> alfa)
+      const Core::LinAlg::Matrix<2, 1>& pt, int inte_num, std::vector<double> alfa)
   {
     double basef_surf = 0.0;
     if (inte_num == 1)  // f(x,y,z) = 1
@@ -2602,8 +2602,8 @@ double LineIntegration::integrate_line()
  *     Transform the Gaussian point coordinates and weight from (-1,1) interval to actual coordinate
  *of the lines       *
  *----------------------------------------------------------------------------------------------------------------------*/
-void LineIntegration::transform(const Core::LinAlg::Matrix<2, 2> &xyze, const double &eta,
-    Core::LinAlg::Matrix<2, 1> &x_gp_lin, Core::LinAlg::Matrix<2, 1> &normal, double &drs)
+void LineIntegration::transform(const Core::LinAlg::Matrix<2, 2>& xyze, const double& eta,
+    Core::LinAlg::Matrix<2, 1>& x_gp_lin, Core::LinAlg::Matrix<2, 1>& normal, double& drs)
 {
   const int numnodes = Core::FE::num_nodes<Core::FE::CellType::line2>;
   Core::LinAlg::Matrix<numnodes, 1> funct;

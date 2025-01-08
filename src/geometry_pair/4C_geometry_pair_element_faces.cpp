@@ -183,8 +183,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
         {
           // Add the node GIDs of this element.
           for (int i_node_connected_element = 0;
-               i_node_connected_element < find_in_faces->second->get_element()->num_node();
-               i_node_connected_element++)
+              i_node_connected_element < find_in_faces->second->get_element()->num_node();
+              i_node_connected_element++)
           {
             const Core::Nodes::Node* other_node =
                 find_in_faces->second->get_element()->nodes()[i_node_connected_element];

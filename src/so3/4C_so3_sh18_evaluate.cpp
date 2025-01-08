@@ -370,9 +370,9 @@ void Discret::Elements::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
         for (int jnod = 0; jnod < NUMNOD_SOH18; ++jnod)
         {
           massfactor = shapefunct(jnod) * ifactor;  // intermediate factor
-          (*massmatrix)(NUMDIM_SOH18 * inod + 0, NUMDIM_SOH18 * jnod + 0) += massfactor;
-          (*massmatrix)(NUMDIM_SOH18 * inod + 1, NUMDIM_SOH18 * jnod + 1) += massfactor;
-          (*massmatrix)(NUMDIM_SOH18 * inod + 2, NUMDIM_SOH18 * jnod + 2) += massfactor;
+          (*massmatrix)(NUMDIM_SOH18* inod + 0, NUMDIM_SOH18 * jnod + 0) += massfactor;
+          (*massmatrix)(NUMDIM_SOH18* inod + 1, NUMDIM_SOH18 * jnod + 1) += massfactor;
+          (*massmatrix)(NUMDIM_SOH18* inod + 2, NUMDIM_SOH18 * jnod + 2) += massfactor;
         }
       }
     }  // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++

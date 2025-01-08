@@ -811,8 +811,8 @@ void Mortar::Interface::initialize_lag_mult_lin()
             break;
           }
         }  // switch(Shape)
-      }    // if (IsSlave())
-    }      // for-loop
+      }  // if (IsSlave())
+    }  // for-loop
   }
 }
 
@@ -883,8 +883,8 @@ void Mortar::Interface::initialize_lag_mult_const()
             break;
           }
         }  // switch(Shape)
-      }    // if (IsSlave())
-    }      // for-loop
+      }  // if (IsSlave())
+    }  // for-loop
   }
 }
 
@@ -2544,7 +2544,7 @@ void Mortar::Interface::pre_evaluate(const int& step, const int& iter)
   else
     FOUR_C_THROW("Invalid search algorithm");
 
-    // TODO: maybe we can remove this debug functionality
+  // TODO: maybe we can remove this debug functionality
 #ifdef MORTARGMSHCELLS
   // reset integration cell GMSH files
   int proc = Core::Communication::my_mpi_rank(Comm());
@@ -2658,7 +2658,7 @@ void Mortar::Interface::find_master_elements(
       // fill vector
       meles.push_back(melement);
     }  // found eles
-  }    // loop over adjacent slave elements
+  }  // loop over adjacent slave elements
 }
 
 
@@ -2699,7 +2699,7 @@ void Mortar::Interface::find_master_nodes(
       // fill vector
       mnodes.push_back(mnode);
     }  // found eles
-  }    // loop over adjacent slave elements
+  }  // loop over adjacent slave elements
 }
 
 
@@ -3082,7 +3082,7 @@ void Mortar::Interface::evaluate_search_brute_force(const double& eps)
         selement->add_search_elements(mgid);
       }
     }  // for all master elements
-  }    // for all slave elements
+  }  // for all slave elements
 }
 
 /*----------------------------------------------------------------------*
@@ -3143,7 +3143,7 @@ bool Mortar::Interface::mortar_coupling(Mortar::Element* sele, std::vector<Morta
       Mortar::Coupling3dQuadManager(discret(), n_dim(), false, interface_params(), sele, mele)
           .evaluate_coupling(mparams_ptr);
     }  // quadratic
-  }    // 3D
+  }  // 3D
   else
     FOUR_C_THROW("Dimension for Mortar coupling must be either 2D or 3D.");
   // *********************************************************************

@@ -33,7 +33,7 @@ namespace ScaTra
     //! setup
     void setup() override;
 
-    void setup_context_vector() override{};
+    void setup_context_vector() override {};
 
     //! set theta_ to its value, dependent on integration method for GenAlpha and BDF2
     virtual void set_theta();

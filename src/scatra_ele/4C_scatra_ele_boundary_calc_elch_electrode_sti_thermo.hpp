@@ -132,7 +132,7 @@ namespace Discret
       //! nodal temperature variables associated with time t_{n+1} or t_{n+alpha_f}
       Core::LinAlg::Matrix<nen_, 1> etempnp_;
     };  // class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

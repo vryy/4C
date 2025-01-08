@@ -189,7 +189,7 @@ namespace Discret
           const Teuchos::ParameterList& sdyn, const std::string& eletype);
 
     }  // namespace Utils
-  }    // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

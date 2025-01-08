@@ -305,8 +305,8 @@ bool Core::FE::Discretization::build_linesin_condition(
           }  // if (nodesperline[k] == actnode)
         }
       }  // for (int j=0; j<numlines; ++j)
-    }    // for (int i=0; i<actnode->NumElement(); ++i)
-  }      // for (fool=nodes.begin(); fool != nodes.end(); ++fool)
+    }  // for (int i=0; i<actnode->NumElement(); ++i)
+  }  // for (fool=nodes.begin(); fool != nodes.end(); ++fool)
 
 
   // Lines be added to the condition: (line_id) -> (line).
@@ -495,9 +495,9 @@ bool Core::FE::Discretization::build_surfacesin_condition(
                           identical++;
                           voleleowner = adjacent_ele->owner();
                         }  // if node ids are identical
-                      }    // if number of nodes matches
-                    }      // loop over all element surfaces
-                  }        // loop over all adjacent volume elements
+                      }  // if number of nodes matches
+                    }  // loop over all element surfaces
+                  }  // loop over all adjacent volume elements
 
                   if (identical == 0)
                     FOUR_C_THROW("surface found with missing underlying volume element");
@@ -515,8 +515,8 @@ bool Core::FE::Discretization::build_surfacesin_condition(
                       surf->set_owner(voleleowner);
                       surfmap[nodes] = surf;
                     }  // if surface not yet in map
-                  }    // end if unique underlying vol ele was found
-                }      // map 'surfmap' is now filled
+                  }  // end if unique underlying vol ele was found
+                }  // map 'surfmap' is now filled
 
                 // continue with next element surface
                 break;
@@ -531,13 +531,13 @@ bool Core::FE::Discretization::build_surfacesin_condition(
                   surf->set_owner(elements[i]->owner());
                   surfmap[nodes] = surf;
                 }  // if surface not yet in map
-              }    // else if standard case
-            }      // if all nodes of surface belong to condition (is_conditioned_surface == true)
-          }        // if surface contains conditioned row node
-        }          // loop over all nodes of element surface
-      }            // loop over all element surfaces
-    }              // loop over all adjacent elements of conditioned row node
-  }                // loop over all conditioned row nodes
+              }  // else if standard case
+            }  // if all nodes of surface belong to condition (is_conditioned_surface == true)
+          }  // if surface contains conditioned row node
+        }  // loop over all nodes of element surface
+      }  // loop over all element surfaces
+    }  // loop over all adjacent elements of conditioned row node
+  }  // loop over all conditioned row nodes
 
   // surfaces be added to the condition: (surf_id) -> (surface).
   std::shared_ptr<std::map<int, std::shared_ptr<Core::Elements::Element>>> final_geometry =

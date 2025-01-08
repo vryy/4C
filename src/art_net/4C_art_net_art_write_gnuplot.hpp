@@ -116,7 +116,7 @@ namespace Arteries
 
 
     };  // class ArtWriteGnuplot
-  }     // namespace Utils
+  }  // namespace Utils
 }  // namespace Arteries
 
 

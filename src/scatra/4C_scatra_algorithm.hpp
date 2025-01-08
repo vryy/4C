@@ -55,7 +55,7 @@ namespace ScaTra
     void time_loop_two_way();
 
     /// provide information about initial field
-    virtual void prepare_time_loop(){};
+    virtual void prepare_time_loop() {};
 
     /// initial calculations for two-way coupling time loop
     void prepare_time_loop_two_way();

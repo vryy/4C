@@ -133,7 +133,7 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
       cnode->data().get_deriv_z().clear();
 
     }  // Macauley-Bracket
-  }    // loop over slave nodes
+  }  // loop over slave nodes
 
   return;
 }

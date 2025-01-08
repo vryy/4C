@@ -43,8 +43,8 @@ namespace NOX
           void runPreSolve(const ::NOX::Solver::Generic& nlnSolver) override;
         };
       }  // namespace PrePostOp
-    }    // namespace Solver
-  }      // namespace Nln
+    }  // namespace Solver
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

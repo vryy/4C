@@ -84,9 +84,9 @@ namespace ScaTra
     void update() override;
 
    protected:
-    void compute_time_deriv_pot0(const bool init) override{};
+    void compute_time_deriv_pot0(const bool init) override {};
 
-    void electrode_kinetics_time_update() override{};
+    void electrode_kinetics_time_update() override {};
 
     void explicit_predictor() const override;
 
@@ -118,7 +118,7 @@ namespace ScaTra
 
     void pre_calc_initial_potential_field() override;
 
-    void post_calc_initial_potential_field() override{};
+    void post_calc_initial_potential_field() override {};
 
    protected:
     void write_restart() const override;
@@ -186,7 +186,7 @@ namespace ScaTra
 
     void pre_calc_initial_potential_field() override;
 
-    void post_calc_initial_potential_field() override{};
+    void post_calc_initial_potential_field() override {};
 
    protected:
     void write_restart() const override;

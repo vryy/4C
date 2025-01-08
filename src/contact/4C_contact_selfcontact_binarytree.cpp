@@ -747,8 +747,8 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
           adjtreenodes.push_back(node2);
         }
       }  // else 3D
-    }    // else possadjids empty
-  }      // if eleID!=gid
+    }  // else possadjids empty
+  }  // if eleID!=gid
 }
 
 /*----------------------------------------------------------------------*
@@ -815,7 +815,7 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
         calculate_adjacent_tree_nodes_and_dual_edges(
             possadjids, gid, adjElementk, node1, adjtreenodes, adjdualedges);
       }  // all adjacent elements
-    }    // all nodes
+    }  // all nodes
 
     // add the vector of adjacent tree nodes to the adjacency matrix. We only need the matrix in 3D,
     // because in 2D the adjacency test works by comparing end nodes only
@@ -1139,7 +1139,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
         treenodes_[i][j]->set_adjacent_tnodes(adjtnodes);
       }
     }  // all treenodes of current layer
-  }    // all tree layers
+  }  // all tree layers
 }
 
 /*----------------------------------------------------------------------*
@@ -1794,9 +1794,9 @@ void CONTACT::SelfBinaryTree::update_dual_graph(std::shared_ptr<SelfDualEdge>& c
             }
           }
         }  // loop over all adjacent edges of neighbors
-      }    // 3D
-    }      // else-block (not 2 adjacent tree nodes left)
-  }        // loop over all adjacent edges
+      }  // 3D
+    }  // else-block (not 2 adjacent tree nodes left)
+  }  // loop over all adjacent edges
 
   // check for a ring of three dual edges in 3D (i.e. the edge to be contracted and two adjacent
   // edges) (in 2D there is no need to treat this case separately)

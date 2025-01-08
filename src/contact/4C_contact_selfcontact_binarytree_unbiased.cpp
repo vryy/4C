@@ -125,7 +125,7 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
         calculate_adjacent_tree_nodes_and_dual_edges(
             possadjids, gid, adjElementk, node1, adjtreenodes, adjdualedges);
       }  // all adjacent elements
-    }    // all nodes
+    }  // all nodes
 
     // add the vector of adjacent tree nodes to the adjacency matrix we only need the matrix in 3D,
     // because in 2D the adjacency test works by comparing end nodes only

@@ -348,7 +348,7 @@ void Cut::ElementHandle::boundary_cell_gauss_points_lin(
   // TEUCHOS_FUNC_TIME_MONITOR( "Cut::ElementHandle::boundary_cell_gauss_points_lin" );
 
   for (std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator i = bcells.begin();
-       i != bcells.end(); ++i)
+      i != bcells.end(); ++i)
   {
     int sid = i->first;
     const std::vector<Cut::BoundaryCell*>& cells = i->second;
@@ -394,7 +394,7 @@ void Cut::ElementHandle::get_boundary_cell_sets(
     std::vector<plain_boundarycell_set>& bcellsets)
 {
   for (std::vector<Cut::Point::PointPosition>::const_iterator ip = desired_positions.begin();
-       ip != desired_positions.end(); ++ip)
+      ip != desired_positions.end(); ++ip)
   {
     const std::vector<plain_boundarycell_set>& ele_bcellsets = get_boundary_cell_set(*ip);
 
@@ -580,14 +580,14 @@ void Cut::LinearElementHandle::boundary_cell_set(Point::PointPosition position)
 
   plain_boundarycell_set& bcells = bcell_sets[0];
   for (plain_volumecell_set::const_iterator citvol = evolcells.begin(); citvol != evolcells.end();
-       ++citvol)
+      ++citvol)
   {
     const VolumeCell& evolcell = **citvol;
     if (evolcell.position() == position)
     {
       const plain_boundarycell_set& ebcells = evolcell.boundary_cells();
       for (plain_boundarycell_set::const_iterator citbc = ebcells.begin(); citbc != ebcells.end();
-           ++citbc)
+          ++citbc)
       {
         // avoid to add boundary cells twice
         if (bcells.find(*citbc) == bcells.end()) bcells.insert(*citbc);
@@ -717,7 +717,7 @@ void Cut::QuadraticElementHandle::collect_volume_cells(
         cells_inside.insert(*i);
       }
     }  // volume-cells
-  }    // sub-elements
+  }  // sub-elements
 }
 
 
@@ -781,17 +781,17 @@ void Cut::QuadraticElementHandle::build_boundary_cell_sets(
 
   unsigned vcell_set_count = 0;
   for (std::vector<plain_volumecell_set>::const_iterator citvset = connected_vcell_set.begin();
-       citvset != connected_vcell_set.end(); ++citvset)
+      citvset != connected_vcell_set.end(); ++citvset)
   {
     const plain_volumecell_set& vcell_set = *citvset;
     plain_boundarycell_set& bcell_set = connected_bcell_set[vcell_set_count++];
     for (plain_volumecell_set::const_iterator citvc = vcell_set.begin(); citvc != vcell_set.end();
-         ++citvc)
+        ++citvc)
     {
       const VolumeCell& vcell = **citvc;
       const plain_boundarycell_set& bcells = vcell.boundary_cells();
       for (plain_boundarycell_set::const_iterator citbc = bcells.begin(); citbc != bcells.end();
-           ++citbc)
+          ++citbc)
       {
         // avoid to add bcells twice
         if (bcell_set.find(*citbc) == bcell_set.end()) bcell_set.insert(*citbc);
@@ -867,7 +867,7 @@ void Cut::QuadraticElementHandle::build_cell_sets(
   plain_volumecell_set done;
 
   for (plain_volumecell_set::const_iterator i = cells_to_connect.begin();
-       i != cells_to_connect.end(); ++i)
+      i != cells_to_connect.end(); ++i)
   {
     VolumeCell* cell = *i;
     if (done.count(cell) == 0)  // cell currently not-done

@@ -196,8 +196,8 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
       structural_tensor_stress(3) += fac * x(0) * x(1);  // A_12
       structural_tensor_stress(4) += fac * x(1) * x(2);  // A_23
       structural_tensor_stress(5) += fac * x(0) * x(2);  // A_13
-    }                                                    // loop over i
-  }                                                      // loop over j
+    }  // loop over i
+  }  // loop over j
 
   // after we evaluated the structural tensor in the auxiliary direction,
   // we rotate the tensor to the desired fiber orientation.

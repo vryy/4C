@@ -87,7 +87,7 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
   local_row_indices_beam_elements_.clear();
   local_row_indices_beam_elements_.reserve(discretization_->num_my_row_elements());
   for (unsigned int iele = 0;
-       iele < static_cast<unsigned int>(discretization_->num_my_row_elements()); ++iele)
+      iele < static_cast<unsigned int>(discretization_->num_my_row_elements()); ++iele)
   {
     const Core::Elements::Element* ele = discretization_->l_row_element(iele);
 

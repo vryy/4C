@@ -2309,7 +2309,7 @@ void FSI::MonolithicXFEM::linear_solve()
     // TODO: does or how does this work for changing Newton systems
     solver_->reset_tolerance();
 
-  }     // use block matrix
+  }  // use block matrix
   else  // (merge_fsi_blockmatrix_ == true)
   {
     if (scaling_infnorm_)

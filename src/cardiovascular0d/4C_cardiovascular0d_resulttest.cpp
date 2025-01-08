@@ -22,8 +22,7 @@ Cardiovascular0DResultTest::Cardiovascular0DResultTest(
     Utils::Cardiovascular0DManager& cardvasc0dman, std::shared_ptr<Core::FE::Discretization> discr)
     : Core::Utils::ResultTest("CARDIOVASCULAR0D"),
       actdisc_(discr),
-      cardvasc0d_dof_(
-          cardvasc0dman
+      cardvasc0d_dof_(cardvasc0dman
               .get0_d_dof_m()),  // cardiovascular 0D dofs at generalized mid-point t_{n+\theta}
       havecardio_4elementwindkessel_(
           cardvasc0dman.get_cardvasc0_d4_element_windkessel()->have_cardiovascular0_d()),

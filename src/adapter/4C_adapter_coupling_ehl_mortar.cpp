@@ -590,7 +590,7 @@ void Adapter::CouplingEhlMortar::evaluate_rel_mov()
     {
       cnode->fri_data().jump()[dim] = cnode->ehl_data().get_weighted_rel_tang_vel()(dim);
       for (auto p = cnode->ehl_data().get_weighted_rel_tang_vel_deriv().begin();
-           p != cnode->ehl_data().get_weighted_rel_tang_vel_deriv().end(); ++p)
+          p != cnode->ehl_data().get_weighted_rel_tang_vel_deriv().end(); ++p)
         cnode->fri_data().get_deriv_jump()[dim][p->first] = p->second(dim);
     }
   }
@@ -769,7 +769,7 @@ void Adapter::CouplingEhlMortar::assemble_normals_deriv()
 
     for (int d = 0; d < interface()->n_dim(); ++d)
       for (auto p = cnode->data().get_deriv_n()[d].begin();
-           p != cnode->data().get_deriv_n()[d].end(); ++p)
+          p != cnode->data().get_deriv_n()[d].end(); ++p)
         Nderiv_->assemble(p->second, cnode->dofs()[d], p->first);
   }
   Nderiv_->complete();
@@ -842,7 +842,7 @@ void Adapter::CouplingEhlMortar::assemble_real_gap_deriv()
 
     if (cnode->data().get_deriv_d().size())
       for (auto p = cnode->data().get_deriv_d().at(cnode->id()).begin();
-           p != cnode->data().get_deriv_d().at(cnode->id()).end(); ++p)
+          p != cnode->data().get_deriv_d().at(cnode->id()).end(); ++p)
       {
         const double val = -w_gap / (d * d) * p->second;
         for (int d = 0; d < interface_->n_dim(); ++d)
@@ -853,7 +853,7 @@ void Adapter::CouplingEhlMortar::assemble_real_gap_deriv()
 
     if (cnode->data().get_deriv_g().size())
       for (auto p = cnode->data().get_deriv_g().begin(); p != cnode->data().get_deriv_g().end();
-           ++p)
+          ++p)
       {
         const double val = p->second / d;
         for (int d = 0; d < interface_->n_dim(); ++d)
@@ -907,7 +907,7 @@ void Adapter::CouplingEhlMortar::assemble_interface_velocities(const double dt)
     }
 
     for (auto p = cnode->data().get_deriv_d().at(cnode->id()).begin();
-         p != cnode->data().get_deriv_d().at(cnode->id()).end(); ++p)
+        p != cnode->data().get_deriv_d().at(cnode->id()).end(); ++p)
     {
       const int col = p->first;
       for (int d = 0; d < interface()->n_dim(); ++d)
@@ -922,7 +922,7 @@ void Adapter::CouplingEhlMortar::assemble_interface_velocities(const double dt)
       }
     }
     for (auto p = cnode->ehl_data().get_weighted_av_tang_vel_deriv().begin();
-         p != cnode->ehl_data().get_weighted_av_tang_vel_deriv().end(); ++p)
+        p != cnode->ehl_data().get_weighted_av_tang_vel_deriv().end(); ++p)
     {
       const int col = p->first;
       for (int d = 0; d < interface()->n_dim(); ++d)
@@ -933,7 +933,7 @@ void Adapter::CouplingEhlMortar::assemble_interface_velocities(const double dt)
       }
     }
     for (auto p = cnode->ehl_data().get_weighted_rel_tang_vel_deriv().begin();
-         p != cnode->ehl_data().get_weighted_rel_tang_vel_deriv().end(); ++p)
+        p != cnode->ehl_data().get_weighted_rel_tang_vel_deriv().end(); ++p)
     {
       const int col = p->first;
       for (int d = 0; d < interface()->n_dim(); ++d)
@@ -983,7 +983,7 @@ void Adapter::CouplingEhlMortar::assemble_surf_grad()
     }
 
     for (auto p = cnode->ehl_data().get_surf_grad().begin();
-         p != cnode->ehl_data().get_surf_grad().end(); ++p)
+        p != cnode->ehl_data().get_surf_grad().end(); ++p)
       for (int d = 0; d < interface()->n_dim(); ++d)
         SurfGrad_->assemble(p->second(d) / dval, cnode->dofs()[d], p->first);
   }
@@ -1023,7 +1023,7 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble
     }
 
     for (auto p = cnode->ehl_data().get_surf_grad_deriv().begin();
-         p != cnode->ehl_data().get_surf_grad_deriv().end(); ++p)
+        p != cnode->ehl_data().get_surf_grad_deriv().end(); ++p)
     {
       const int col = p->first;
       for (auto q = p->second.begin(); q != p->second.end(); ++q)
@@ -1041,12 +1041,12 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble
 
     if (cnode->data().get_deriv_d().size())
       for (auto p = cnode->data().get_deriv_d().at(cnode->id()).begin();
-           p != cnode->data().get_deriv_d().at(cnode->id()).end(); ++p)
+          p != cnode->data().get_deriv_d().at(cnode->id()).end(); ++p)
       {
         const int col = p->first;
 
         for (auto q = cnode->ehl_data().get_surf_grad().begin();
-             q != cnode->ehl_data().get_surf_grad().end(); ++q)
+            q != cnode->ehl_data().get_surf_grad().end(); ++q)
           for (int d = 0; d < interface()->n_dim(); ++d)
           {
             const int row = cnode->dofs()[d];

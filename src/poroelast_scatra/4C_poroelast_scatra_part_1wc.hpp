@@ -20,7 +20,7 @@ namespace PoroElastScaTra
   {
    public:
     explicit PoroScatraPart1WC(MPI_Comm comm, const Teuchos::ParameterList& timeparams)
-        : PoroScatraPart(comm, timeparams){};
+        : PoroScatraPart(comm, timeparams) {};
 
     //! solve one time step of porous media problem
     void do_poro_step() override;

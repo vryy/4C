@@ -503,7 +503,7 @@ void Core::LinAlg::SparseMatrix::assemble(int eid, const std::vector<int>& lmstr
         }
         if (reachedlength) break;
       }  // for (int node=0; node<numnode; ++node)
-    }    // for (int lrow=0; lrow<ldim; ++lrow)
+    }  // for (int lrow=0; lrow<ldim; ++lrow)
   }
   //-----------------------------------------------------------------------------------
   else  // assembly in global indices
@@ -538,7 +538,7 @@ void Core::LinAlg::SparseMatrix::assemble(int eid, const std::vector<int>& lmstr
         else if (errone)
           FOUR_C_THROW("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d", errone);
       }  // for (int lcol=0; lcol<lcoldim; ++lcol)
-    }    // for (int lrow=0; lrow<lrowdim; ++lrow)
+    }  // for (int lrow=0; lrow<lrowdim; ++lrow)
   }
 }
 
@@ -646,7 +646,7 @@ void Core::LinAlg::SparseMatrix::assemble(int eid, const Core::LinAlg::SerialDen
         else if (errone)
           FOUR_C_THROW("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d", errone);
       }  // for (int lcol=0; lcol<lcoldim; ++lcol)
-    }    // for (int lrow=0; lrow<lrowdim; ++lrow)
+    }  // for (int lrow=0; lrow<lrowdim; ++lrow)
   }
 }
 
@@ -939,8 +939,8 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(
         sysmat_->ExtractGlobalRowCopy(
             row, maxnumentries, numentries, values.data(), indices.data());
 #endif
-          // this is also ok for FE matrices, because fill complete was called on sysmat and the
-          // globalAssemble method was called already
+        // this is also ok for FE matrices, because fill complete was called on sysmat and the
+        // globalAssemble method was called already
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         err = Anew->InsertGlobalValues(row, numentries, values.data(), indices.data());
         if (err < 0) FOUR_C_THROW("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
@@ -1074,8 +1074,8 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(const Epetra_Map& dbctoggle, bo
         sysmat_->ExtractGlobalRowCopy(
             row, maxnumentries, numentries, values.data(), indices.data());
 #endif
-          // this is also ok for FE matrices, because fill complete was called on sysmat and the
-          // globalAssemble method was called already
+        // this is also ok for FE matrices, because fill complete was called on sysmat and the
+        // globalAssemble method was called already
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         err = Anew->InsertGlobalValues(row, numentries, values.data(), indices.data());
         if (err < 0) FOUR_C_THROW("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);

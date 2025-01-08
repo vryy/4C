@@ -34,7 +34,7 @@ namespace Discret
       ScaTraEleBoundaryCalcStd(
           const int numdofpernode, const int numscal, const std::string& disname);
     };  // class ScaTraEleBoundaryCalcStd
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

@@ -137,7 +137,7 @@ namespace Discret
           int numscal, const Discret::Elements::ScaTraEleParameterElch* elchpara)
           :  // call base class constructors
             ScaTraEleInternalVariableManagerElchElectrode<nsd, nen>(numscal, elchpara),
-            ScaTraEleInternalVariableManagerSTIThermo<nsd, nen>(){};
+            ScaTraEleInternalVariableManagerSTIThermo<nsd, nen>() {};
 
 
       //! set internal variables for element evaluation
@@ -178,7 +178,7 @@ namespace Discret
       //! get GP temperature
       double temp() { return vmthermo::temp(); }
     };  // class ScaTraEleInternalVariableManagerElchElectrodeSTIThermo
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

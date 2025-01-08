@@ -253,9 +253,9 @@ namespace FLD
 
       void integrate(bool flag, Teuchos::ParameterList& params) {}
 
-      void save_state(){};
+      void save_state() {};
 
-      void load_state(){};
+      void load_state() {};
 
      private:
       /*!

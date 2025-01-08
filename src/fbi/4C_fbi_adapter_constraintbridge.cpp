@@ -24,7 +24,7 @@ Adapter::FBIConstraintBridge::FBIConstraintBridge()
       assemblystrategy_(nullptr),
       meshtying_pairs_(
           std::make_shared<std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>>()),
-      geometry_evaluation_data_(nullptr){};
+      geometry_evaluation_data_(nullptr) {};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,

@@ -110,7 +110,7 @@ void Core::FE::Utils::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
   std::vector<std::shared_ptr<Core::Conditions::Condition>> conds(0);
   std::vector<std::shared_ptr<Core::Conditions::Condition>> curr_conds(0);
   for (std::vector<std::string>::const_iterator cit_name = dbc_cond_names.begin();
-       cit_name != dbc_cond_names.end(); ++cit_name)
+      cit_name != dbc_cond_names.end(); ++cit_name)
   {
     discret.get_condition(*cit_name, curr_conds);
 

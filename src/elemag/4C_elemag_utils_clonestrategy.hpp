@@ -74,7 +74,7 @@ namespace EleMag
       /// check for correct material
       void check_material_type(const int matid);
     };  // class ScatraCloneStrategy
-  }     // namespace Utils
+  }  // namespace Utils
 }  // namespace EleMag
 
 FOUR_C_NAMESPACE_CLOSE

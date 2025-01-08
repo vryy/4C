@@ -403,7 +403,7 @@ namespace Cut
   {
    public:
     /// constructor
-    EdgeFactory(){};
+    EdgeFactory() {};
 
     /// destructor
     virtual ~EdgeFactory() = default;

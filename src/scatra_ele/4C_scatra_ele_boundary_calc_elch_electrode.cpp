@@ -799,7 +799,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
         FOUR_C_THROW("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
       }
     }  // switch(kineticmodel)
-  }    // loop over integration points
+  }  // loop over integration points
 }  // Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
    // probdim>::evaluate_s2_i_coupling_od
 

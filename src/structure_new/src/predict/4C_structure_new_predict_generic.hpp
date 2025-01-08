@@ -143,7 +143,7 @@ namespace Solid
 
       std::shared_ptr<Teuchos::ParameterList> noxparams_ptr_;
     };  // class  Generic
-  }     // namespace Predict
+  }  // namespace Predict
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

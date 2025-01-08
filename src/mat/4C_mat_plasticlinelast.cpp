@@ -909,8 +909,8 @@ void Mat::PlasticLinElast::setup_cmat_elasto_plastic(
         epfac3 = heaviside * 6.0 * G * G * (Dgamma / q - 1.0 / (3.0 * G + Hkin + Hiso));
         cmat(i, k) += epfac3 * Nbar(i) * Nbar(k);
       }  // (q != 0.0)
-    }    // end rows, loop i
-  }      // end columns, loop k
+    }  // end rows, loop i
+  }  // end columns, loop k
 
   // complete material tangent C_ep available
 

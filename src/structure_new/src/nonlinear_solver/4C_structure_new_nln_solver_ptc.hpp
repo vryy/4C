@@ -55,8 +55,8 @@ namespace Solid
         void set_pseudo_transient_params();
 
       };  // class PTC
-    }     // namespace SOLVER
-  }       // namespace Nln
+    }  // namespace SOLVER
+  }  // namespace Nln
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

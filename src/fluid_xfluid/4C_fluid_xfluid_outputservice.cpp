@@ -128,7 +128,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
       // find the standard dofset
       for (std::vector<std::shared_ptr<Cut::NodalDofSet>>::const_iterator cellsets =
                dofcellsets.begin();
-           cellsets != dofcellsets.end(); cellsets++)
+          cellsets != dofcellsets.end(); cellsets++)
       {
         is_std_set = (*cellsets)->is_standard_dof_set();
 
@@ -549,7 +549,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
         int set_counter = 0;
 
         for (std::vector<Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
-             s != cell_sets.end(); s++)
+            s != cell_sets.end(); s++)
         {
           Cut::plain_volumecell_set& cells = *s;
 
@@ -593,7 +593,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
       {
         // ghost element
       }
-    }     // element handle
+    }  // element handle
     else  // no element handle
     {
       std::vector<int> nds;  // empty vector
@@ -841,7 +841,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
       }
 
       for (std::vector<std::vector<Cut::Point*>>::const_iterator j = split.begin();
-           j != split.end(); j++)
+          j != split.end(); j++)
       {
         std::vector<Cut::Point*> cell = *j;
 
@@ -966,7 +966,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
   {
     const Cut::plain_integrationcell_set& intcells = vc->integration_cells();
     for (Cut::plain_integrationcell_set::const_iterator i = intcells.begin(); i != intcells.end();
-         ++i)
+        ++i)
     {
       Cut::IntegrationCell* ic = *i;
 
@@ -1163,7 +1163,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
   std::map<int, std::vector<Cut::BoundaryCell*>> bcells;
   vc->get_boundary_cells(bcells);
   for (std::map<int, std::vector<Cut::BoundaryCell*>>::iterator i = bcells.begin();
-       i != bcells.end(); ++i)
+      i != bcells.end(); ++i)
   {
     int sid = i->first;
     std::vector<Cut::BoundaryCell*>& bcs = i->second;

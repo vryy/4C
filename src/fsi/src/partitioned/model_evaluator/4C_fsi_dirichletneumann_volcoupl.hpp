@@ -94,7 +94,7 @@ namespace FSI
   {
    public:
     /// constructor
-    InterfaceCorrector() : idisp_(nullptr){};
+    InterfaceCorrector() : idisp_(nullptr) {};
 
     /// destructor
     virtual ~InterfaceCorrector() = default;
@@ -123,7 +123,7 @@ namespace FSI
   {
    public:
     /// constructor
-    VolCorrector() : dim_(-1){};
+    VolCorrector() : dim_(-1) {};
 
     /// destructor
     virtual ~VolCorrector() = default;

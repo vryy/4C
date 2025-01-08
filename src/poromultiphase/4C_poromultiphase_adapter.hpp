@@ -36,7 +36,7 @@ namespace POROMULTIPHASE
   {
    public:
     /// constructor
-    PoroMultiPhase(){};
+    PoroMultiPhase() {};
 
     /// virtual destructor
     virtual ~PoroMultiPhase() = default;
