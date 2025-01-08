@@ -143,7 +143,7 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y //initial temperature field
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 //                              volume
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Dead
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Dead
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // wall top

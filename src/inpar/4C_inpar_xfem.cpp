@@ -423,6 +423,7 @@ void Inpar::XFEM::set_valid_conditions(
       new IntVectorComponent("FUNCT", LengthFromInt("NUMDOF"), {0, false, true, false})));
 
   // optional
+  neumanncomponents.emplace_back(std::make_shared<SeparatorComponent>("TYPE", "", true));
   neumanncomponents.emplace_back(std::make_shared<SelectionComponent>("TYPE", "Live",
       Teuchos::tuple<std::string>(
           "Live", "Dead", "pseudo_orthopressure", "orthopressure", "PressureGrad"),

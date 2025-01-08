@@ -51,7 +51,7 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 240.5653612 NUE 0.49
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0625 0.0 FUNCT 0 1 0 Live Mid
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0625 0.0 FUNCT 0 1 0 TYPE Live
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0

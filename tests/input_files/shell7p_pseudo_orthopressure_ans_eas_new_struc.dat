@@ -91,10 +91,10 @@ STRUCTURE DIS structure NODE 33 QUANTITY dispx VALUE 1.70493269050379871e-04 TOL
 STRUCTURE DIS structure NODE 109 QUANTITY dispz VALUE -3.00423509634948846e-04 TOLERANCE 1e-10
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           4
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
-E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
-E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
-E 4 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 TYPE pseudo_orthopressure
+E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 TYPE pseudo_orthopressure
+E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 TYPE pseudo_orthopressure
+E 4 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 TYPE pseudo_orthopressure
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1082 DNODE 1
 NODE 1 DNODE 2

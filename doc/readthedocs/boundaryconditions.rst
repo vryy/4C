@@ -178,19 +178,19 @@ pressure or surface heat flux, accordingly.
 
    ----------------------------DESIGN [POINT|LINE|SURF|VOL] NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal   //  numtotal is the number of subsequent lines
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TYPE Live
    -------------------------------------------DESIGN POINT MOMENT EB CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TYPE Live
    -----------------------DESIGN [POINT|LINE|SURF] TRANSPORT NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF          numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TYPE Live
    ----------------------DESIGN [POINT|LINE|SURF|VOL] THERMO NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TYPE Live
    ------------------------DESIGN [POINT|LINE|SURF|VOL] PORO NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TYPE Live
 
 See the respective reference sections for :ref:`mechanical <designpointneumannconditions>`,
 :ref:`MOMENT EB <designpointmomentebconditions>`, :ref:`TRANSPORT <designpointtransportneumannconditions>`,

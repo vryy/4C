@@ -86,7 +86,7 @@ E 1 - DIS fluid NUMMODES 3 ONOFF 0 0 1 WEIGHTVECDEF integration // ensure that i
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // Body_force
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 0 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 4
 // Topleft

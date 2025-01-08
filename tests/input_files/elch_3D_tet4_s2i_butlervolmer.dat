@@ -99,7 +99,7 @@ SCATRA DIS scatra SPECIAL QUANTITY boundaryintegral_4 VALUE 1.43621804150714723e
 SCATRA DIS scatra SPECIAL QUANTITY boundaryintegral_5 VALUE 2.36835863726883021e-08 TOLERANCE 1.0e-17
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 -5.278302597e-4 FUNCT 0 0 Live Mid
+E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 -5.278302597e-4 FUNCT 0 0 TYPE Live
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0

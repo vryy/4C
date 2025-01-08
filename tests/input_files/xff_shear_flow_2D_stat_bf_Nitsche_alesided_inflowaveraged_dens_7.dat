@@ -98,8 +98,8 @@ COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 9
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y // shear flow; top 5.0, bottom 4.0 //(y*U_xmax)/h
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 2
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 3
 // Fluid 1 upper surface

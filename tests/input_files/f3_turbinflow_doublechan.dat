@@ -100,7 +100,7 @@ COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 //                              inflow
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Dead
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Dead
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 // turbulent inflow

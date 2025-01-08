@@ -105,9 +105,9 @@ KIMMOIN-UP MAT 1 ISSTAT 1
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 2
 // fluid_1_volume
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 0 0 0 TYPE Live
 // fluid_2_volume
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // pressure_point

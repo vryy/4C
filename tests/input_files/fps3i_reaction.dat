@@ -380,13 +380,13 @@ E 3 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 FUNCT 2 0
 ------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
 DSURF                           4
 // obstacle_surface_y-
-E 9 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0 Live Mid
+E 9 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0 TYPE Live
 // obstacle_surface_x+
-E 13 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0 Live Mid
+E 13 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0 TYPE Live
 // obstacle_surface_x-
-E 14 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0 Live Mid
+E 14 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0 TYPE Live
 // obstacle_surface_y+
-E 12 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0 Live Mid
+E 12 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0 TYPE Live
 
 --------------------------------------DESIGN SCATRA COUPLING SURF CONDITIONS
 DSURF                           2

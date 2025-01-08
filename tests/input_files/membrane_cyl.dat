@@ -35,7 +35,7 @@ STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE 2.14876994921447473e+00 TOL
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // surf
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.3 0.0 0.0 FUNCT 1 0 0 orthopressure
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.3 0.0 0.0 FUNCT 1 0 0 TYPE orthopressure
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // curve-x

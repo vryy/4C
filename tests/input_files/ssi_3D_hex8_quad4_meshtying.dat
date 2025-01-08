@@ -98,7 +98,7 @@ SCATRA DIS scatra NODE 2225 QUANTITY phi VALUE  1.39710301289586791e+00 TOLERANC
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // force1
-E 3 - NUMDOF 3  ONOFF 0 0 1 VAL 0.0  0.0 100.0 FUNCT 0  0 0 Live Mid
+E 3 - NUMDOF 3  ONOFF 0 0 1 VAL 0.0  0.0 100.0 FUNCT 0  0 0 TYPE Live
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // scatra

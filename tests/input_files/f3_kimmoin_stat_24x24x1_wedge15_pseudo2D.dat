@@ -98,7 +98,7 @@ FLUID DIS fluid NODE 231 QUANTITY pressure VALUE 1.24474639097804041e-01 TOLERAN
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   1
 // fluid_volume
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 1 1 1 Live Mid
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 1 1 1 TYPE Live
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   1
 // fluid_volume

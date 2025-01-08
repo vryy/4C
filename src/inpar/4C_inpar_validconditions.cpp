@@ -185,20 +185,15 @@ Input::valid_conditions()
   for (const auto& cond : all_neumann_conditions)
   {
     add_named_int(cond, "NUMDOF");
-    add_named_int_vector(cond, "ONOFF", "", "NUMDOF");
-    add_named_real_vector(cond, "VAL", "", "NUMDOF");
-    add_named_int_vector(cond, "FUNCT", "", "NUMDOF", 0, false, true);
-
-    // optional
-    cond->add_component(std::make_shared<SelectionComponent>("TYPE", "Live",
+    add_named_int_vector(cond, "ONOFF", "onoff", "NUMDOF");
+    add_named_real_vector(cond, "VAL", "values", "NUMDOF");
+    add_named_int_vector(cond, "FUNCT", "function ids", "NUMDOF", 0, false, true);
+    add_named_selection_component(cond, "TYPE", "type", "Live",
         Teuchos::tuple<std::string>(
             "Live", "Dead", "pseudo_orthopressure", "orthopressure", "PressureGrad"),
         Teuchos::tuple<std::string>("neum_live", "neum_dead", "neum_pseudo_orthopressure",
             "neum_orthopressure", "neum_pgrad"),
-        true));
-    cond->add_component(std::make_shared<SelectionComponent>("surface", "Mid",
-        Teuchos::tuple<std::string>("Mid", "Top", "Bot"),
-        Teuchos::tuple<std::string>("mid", "top", "bot"), true));
+        true);
 
     condlist.emplace_back(cond);
   }

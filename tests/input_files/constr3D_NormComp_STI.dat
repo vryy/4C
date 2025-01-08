@@ -72,7 +72,7 @@ MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.9E0 POISSON 0.4 DENS 1E-9 YOUNGS_FAST 3.0E
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              force
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL .75 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL .75 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              clamp

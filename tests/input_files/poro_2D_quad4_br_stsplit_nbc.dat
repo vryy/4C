@@ -93,7 +93,7 @@ STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
 // Surface x+
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // Point x+y+

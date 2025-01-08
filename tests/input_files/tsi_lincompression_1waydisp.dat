@@ -108,7 +108,7 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 1 3 VALUES 0 
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // right surface NEUMANN in x(x=4)
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // vertex fixed xyz (0,0,-1)

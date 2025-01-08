@@ -143,7 +143,7 @@ FLUID DIS fluid NODE 2001 QUANTITY pressure VALUE 1.12509828371636189e+00 TOLERA
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   1
 // accelerate faster than 0.2844518
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Dead
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Dead
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 // pressure

@@ -111,7 +111,7 @@ XFLUID DIS fluid NODE 1451 QUANTITY pressure VALUE 3.77742042937735001e-01 TOLER
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 1
 // fluid_volume
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 0 0 0 TYPE Live
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 1
 // fluid_volume
@@ -119,7 +119,7 @@ E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 2 2 2 0 0 0
 ----------------------------------DESIGN XFEM NEUMANN SURF CONDITIONS
 DSURF 1
 // surface_inner_structure
-E 1 - COUPLINGID 1 NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 1 1 1 1 1 1 FUNCT 3 3 3 3 3 3 Live Mid
+E 1 - COUPLINGID 1 NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 1 1 1 1 1 1 FUNCT 3 3 3 3 3 3 TYPE Live
 ----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 DSURF 1
 // surface_outer_structure

@@ -138,7 +138,7 @@ FLUID DIS fluid NODE 237 QUANTITY pressure VALUE 3.71485173642950887e-04 TOLERAN
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   1
 // volume1
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Dead
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Dead
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // wall_top

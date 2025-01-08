@@ -92,7 +92,7 @@ SCATRA DIS thermo SPECIAL QUANTITY omega1 VALUE 1.05000000000000004e+00 TOLERANC
 STI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 5.0 TOLERANCE 1.e-20                  // number of Newton-Raphson iterations during last time step
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
-E 3 - NUMDOF 2  ONOFF 0 1 VAL 0.0 -0.000103642 FUNCT 0 5 Live Mid
+E 3 - NUMDOF 2  ONOFF 0 1 VAL 0.0 -0.000103642 FUNCT 0 5 TYPE Live
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 E 2 - NUMDOF 2  ONOFF 0 1 VAL 0.0 0.0119  FUNCT 0 0

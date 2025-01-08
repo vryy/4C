@@ -99,7 +99,7 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 5000.0 NUE 0.0 DENS 100.0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // Fluid_inflow
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 FUNCT 0 0 0 Live Mid
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 FUNCT 0 0 0 TYPE Live
 ----------------------------------DESIGN XFEM FSI MONOLITHIC SURF CONDITIONS
 DSURF 1
 // FSI

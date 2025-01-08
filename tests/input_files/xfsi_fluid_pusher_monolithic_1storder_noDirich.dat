@@ -158,7 +158,7 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // surface inflow
-E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 5.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 5.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 0
 // top inflow points

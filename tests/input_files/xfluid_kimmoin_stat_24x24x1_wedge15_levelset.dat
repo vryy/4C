@@ -121,7 +121,7 @@ XFLUID DIS fluid NODE 6000 QUANTITY pressure VALUE 3.0188278554220827e-01 TOLERA
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   1
 // fluid_volume
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 1 1 1 Live Mid
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 1 1 1 TYPE Live
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   1
 // fluid_volume

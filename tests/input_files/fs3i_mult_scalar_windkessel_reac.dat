@@ -415,7 +415,7 @@ E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.1 0.0 FUNCT 2 0
 // ---------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
 // DSURF                           1
 // // structure_inflow_all
-// E 7 - none 1 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+// E 7 - none 1 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  TYPE Live 0 0 0 0 0 0
 //-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
 //DSURF  1
 //// fluid_fsi_all

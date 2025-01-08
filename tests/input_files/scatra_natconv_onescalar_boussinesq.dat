@@ -131,13 +131,13 @@ FLUID DIS fluid NODE 732 QUANTITY pressure VALUE -1.26640130599316430e-04 TOLERA
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              cell
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -9.81 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -9.81 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 ------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
 DLINE                           2
 //                              left_electrode
-E 1 - NUMDOF 1 ONOFF 1 VAL -0.0002 FUNCT 3 Live Mid
+E 1 - NUMDOF 1 ONOFF 1 VAL -0.0002 FUNCT 3 TYPE Live
 //                              right_electrode
-E 2 - NUMDOF 1 ONOFF 1 VAL 0.0002 FUNCT 3 Live Mid
+E 2 - NUMDOF 1 ONOFF 1 VAL 0.0002 FUNCT 3 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              fix_pressure

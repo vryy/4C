@@ -63,13 +63,6 @@ SOLVER                          UMFPACK
 MAT 1 THERM_FourierIso CAPA 1 CONDUCT 1
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
-//DSURF                         2
-// left surf Neumann heatflux
-//E 2 - none 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
-// right surf Neumann heatflux
-//E 4 - none 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // left surf Dirich

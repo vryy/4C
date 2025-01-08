@@ -100,7 +100,7 @@ FLUID DIS fluid NODE 450 QUANTITY velx VALUE 1.00248308758984184e+00 TOLERANCE 1
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   1
 // volume
-E 1 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0 Dead
+E 1 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0 TYPE Dead
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // wall_top

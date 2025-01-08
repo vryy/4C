@@ -111,10 +111,6 @@ MAT 1 MAT_Struct_ThermoPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 7.80e-06 CTE 
 MAT 2 THERM_FourierIso CAPA 3.588e-3 CONDUCT 4.5e-5
 -------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t*8/8000
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF 0
-//                              pressure
-//E 5 - 2 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              d7_xyz
