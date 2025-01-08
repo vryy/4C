@@ -1370,12 +1370,11 @@ namespace Mat
      *                  \f[ \boldsymbol{F}_{\text{in}}^{-1} \f] in matrix form
      * @param[in] plastic_strain plastic strain  \f$ \varepsilon_{\text{p}} \f$
      * @param[out] err_status error status
-     * @param[in] int_dt time step (or substep) length used for time integration
-     * @param[in] check_dt time step (or substep) length used for overflow checking
+     * @param[in] dt time step (or substep) length used for time integration
      */
     StateQuantities evaluate_state_quantities(const Core::LinAlg::Matrix<3, 3>& CM,
         const Core::LinAlg::Matrix<3, 3>& iFinM, const double plastic_strain,
-        Mat::ViscoplastErrorType& err_status, const double int_dt, const double check_dt);
+        Mat::ViscoplastErrorType& err_status, const double dt);
 
     /*! @brief Evaluate the current state variable derivatives with respect to the right
      * Cauchy-Green deformation tensor, the inverse plastic deformation gradient and the equivalent
@@ -1386,16 +1385,15 @@ namespace Mat
      *                  \f$ in matrix form
      * @param[in] plastic_strain plastic strain  \f$ \varepsilon_{\text{p}} \f$
      * @param[out] err_status error status
-     * @param[in] int_dt time step length  \f$ \Delta t
+     * @param[in] dt time step length  \f$ \Delta t
      * \f$ (used for the integration)
-     * @param[in] check_dt time step (or substep) length used for overflow checking
      * @param[in] eval_state boolean: do we want to also evaluate the current state first (true)
      *                       or is this already available from the current state variables (false)
      */
     StateQuantityDerivatives evaluate_state_quantity_derivatives(
         const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<3, 3>& iFinM,
-        const double plastic_strain, Mat::ViscoplastErrorType& err_status, const double int_dt,
-        const double check_dt, const bool eval_state = false);
+        const double plastic_strain, Mat::ViscoplastErrorType& err_status, const double dt,
+        const bool eval_state = false);
 
     //! return the fiber direction of transverse isotropy for the considered element
     Core::LinAlg::Matrix<3, 1> get_fiber_direction() { return m_; }
@@ -1580,15 +1578,14 @@ namespace Mat
      * @param[in] last_iFpM last inverse plastic deformation gradient
      *                      \f$ \boldsymbol{F}_{\text{in}, n}^{-1} \f$ in matrix form
      * @param[in] last_plastic_strain last plastic strain \f$ \varepsilon_{\text{p}, n}\f$
-     * @param[in] int_dt time step (or substep) length used for time integration
-     * @param[in] check_dt time step (or substep) length used for overflow checking
+     * @param[in] dt time step (or substep) length used for time integration
      * @param[out] err_status error status
      * @return  residual of the LNL equations
      */
     Core::LinAlg::Matrix<10, 1> calculate_local_newton_loop_residual(
         const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<10, 1>& x,
         const Core::LinAlg::Matrix<3, 3>& last_iFinM, const double last_plastic_strain,
-        const double int_dt, const double check_dt, Mat::ViscoplastErrorType& err_status);
+        const double dt, Mat::ViscoplastErrorType& err_status);
 
 
     /*!
@@ -1603,16 +1600,14 @@ namespace Mat
      * @param[in] last_iFpM last inverse plastic deformation gradient
      *                      \f$ \boldsymbol{F}_{\text{in}, n}^{-1} \f$ in matrix form
      * @param[in] last_plastic_strain last plastic strain \f$ \varepsilon_{\text{p}, n}\f$
-     * @param[in] int_dt time step (or substep) length used for time integration
-     * @param[in] check_dt time step (or substep) length used for overflow checking
+     * @param[in] dt time step (or substep) length used for time integration
      * @param[out] err_status error status
      * @return 10x10 jacobian matrix of the Local Newton Loop and of the linearization
      *         \f$ \boldsymbol{J} \f$
      */
     Core::LinAlg::Matrix<10, 10> calculate_jacobian(const Core::LinAlg::Matrix<3, 3>& CM,
         const Core::LinAlg::Matrix<10, 1>& x, const Core::LinAlg::Matrix<3, 3>& last_iFinM,
-        const double last_plastic_strain, const double int_dt, const double check_dt,
-        Mat::ViscoplastErrorType& err_status);
+        const double last_plastic_strain, const double dt, Mat::ViscoplastErrorType& err_status);
 
 
     /*!
