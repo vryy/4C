@@ -78,8 +78,8 @@ namespace NOX
           double stepmaxval_;
         };
       }  // namespace StatusTest
-    }    // namespace Inner
-  }      // namespace Nln
+    }  // namespace Inner
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

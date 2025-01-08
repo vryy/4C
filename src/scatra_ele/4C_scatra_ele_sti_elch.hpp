@@ -178,7 +178,7 @@ namespace Discret
       //! gradient of electric potential
       Core::LinAlg::Matrix<nsd, 1> gradpot_;
     };  // class ScaTraEleInternalVariableManagerSTIElch
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

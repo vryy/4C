@@ -31,7 +31,7 @@ namespace Mortar
   class Projector
   {
    public:
-    Projector(){};
+    Projector() {};
 
     virtual ~Projector() = default;
     //! @name Access methods

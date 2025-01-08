@@ -339,7 +339,7 @@ void Discret::Elements::FluidEleCalcLoma<distype>::sysmat_od(
   //  start loop over integration points
   //------------------------------------------------------------------------
   for (Core::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
-       iquad != intpoints.end(); ++iquad)
+      iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     my::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());

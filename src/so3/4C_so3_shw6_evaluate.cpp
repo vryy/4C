@@ -723,9 +723,9 @@ void Discret::Elements::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
           double Gij = detJ_w * stress.dot(G_ij_glob);
 
           // add "geometric part" Gij times detJ*weights to stiffness matrix
-          (*stiffmatrix)(NUMDIM_WEG6 * inod + 0, NUMDIM_WEG6 * jnod + 0) += Gij;
-          (*stiffmatrix)(NUMDIM_WEG6 * inod + 1, NUMDIM_WEG6 * jnod + 1) += Gij;
-          (*stiffmatrix)(NUMDIM_WEG6 * inod + 2, NUMDIM_WEG6 * jnod + 2) += Gij;
+          (*stiffmatrix)(NUMDIM_WEG6* inod + 0, NUMDIM_WEG6 * jnod + 0) += Gij;
+          (*stiffmatrix)(NUMDIM_WEG6* inod + 1, NUMDIM_WEG6 * jnod + 1) += Gij;
+          (*stiffmatrix)(NUMDIM_WEG6* inod + 2, NUMDIM_WEG6 * jnod + 2) += Gij;
         }
       }  // end of intergrate `geometric' stiffness ******************************
 
@@ -760,9 +760,9 @@ void Discret::Elements::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
         for (int jnod = 0; jnod < NUMNOD_WEG6; ++jnod)
         {
           massfactor = shapefcts[gp](jnod) * ifactor;  // intermediate factor
-          (*massmatrix)(NUMDIM_WEG6 * inod + 0, NUMDIM_WEG6 * jnod + 0) += massfactor;
-          (*massmatrix)(NUMDIM_WEG6 * inod + 1, NUMDIM_WEG6 * jnod + 1) += massfactor;
-          (*massmatrix)(NUMDIM_WEG6 * inod + 2, NUMDIM_WEG6 * jnod + 2) += massfactor;
+          (*massmatrix)(NUMDIM_WEG6* inod + 0, NUMDIM_WEG6 * jnod + 0) += massfactor;
+          (*massmatrix)(NUMDIM_WEG6* inod + 1, NUMDIM_WEG6 * jnod + 1) += massfactor;
+          (*massmatrix)(NUMDIM_WEG6* inod + 2, NUMDIM_WEG6 * jnod + 2) += massfactor;
         }
       }
     }  // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -177,7 +177,7 @@ Cut::Point* Cut::OctTreeNode::get_point(const double* x, Edge* cut_edge, Side* c
         // do gmsh side and edge dump for analysis
         std::ofstream file("pointpool_conflict_topologically_connected.pos");
         for (std::vector<Point*>::iterator it = topological_candidates.begin();
-             it != topological_candidates.end(); ++it)
+            it != topological_candidates.end(); ++it)
         {
 #if CUT_CREATION_INFO
           std::cout << "Id" << (*it)->Id()

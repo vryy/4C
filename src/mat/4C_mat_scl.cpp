@@ -33,9 +33,9 @@ Mat::PAR::Scl::Scl(const Core::Mat::PAR::Parameter::Data& matdata)
       delta_nu_(matdata.parameters.get<double>("DELTA_NU")),
       faraday_(Global::Problem::instance()->elch_control_params().get<double>("FARADAY_CONSTANT")),
       epsilon_0_(Global::Problem::instance()
-                     ->elch_control_params()
-                     .sublist("DIFFCOND")
-                     .get<double>("PERMITTIVITY_VACUUM"))
+              ->elch_control_params()
+              .sublist("DIFFCOND")
+              .get<double>("PERMITTIVITY_VACUUM"))
 {
   if (transnrparanum_ != static_cast<int>(transnr_.size()))
     FOUR_C_THROW("number of materials %d does not fit to size of material vector %d",

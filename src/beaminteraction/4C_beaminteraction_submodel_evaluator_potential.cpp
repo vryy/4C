@@ -59,12 +59,12 @@ namespace
       std::unordered_set<int> elements_at_connecting_node;
 
       for (auto it = maps.left_node_gid_ele_gid_map.equal_range(connecting_node_gid).first;
-           it != maps.left_node_gid_ele_gid_map.equal_range(connecting_node_gid).second; ++it)
+          it != maps.left_node_gid_ele_gid_map.equal_range(connecting_node_gid).second; ++it)
       {
         elements_at_connecting_node.insert(it->second);
       }
       for (auto it = maps.right_node_gid_ele_gid_map.equal_range(connecting_node_gid).first;
-           it != maps.right_node_gid_ele_gid_map.equal_range(connecting_node_gid).second; ++it)
+          it != maps.right_node_gid_ele_gid_map.equal_range(connecting_node_gid).second; ++it)
       {
         elements_at_connecting_node.insert(it->second);
       }
@@ -168,7 +168,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::reset()
 
   std::vector<std::shared_ptr<BeamInteraction::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
-       ++iter)
+      ++iter)
   {
     std::shared_ptr<BeamInteraction::BeamPotentialPair> elepairptr = *iter;
 
@@ -221,7 +221,7 @@ bool BeamInteraction::SUBMODELEVALUATOR::BeamPotential::evaluate_force()
 
   std::vector<std::shared_ptr<BeamInteraction::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
-       ++iter)
+      ++iter)
   {
     std::shared_ptr<BeamInteraction::BeamPotentialPair> elepairptr = *iter;
 
@@ -310,7 +310,7 @@ bool BeamInteraction::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff()
 
   std::vector<std::shared_ptr<BeamInteraction::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
-       ++iter)
+      ++iter)
   {
     std::shared_ptr<BeamInteraction::BeamPotentialPair> elepairptr = *iter;
 
@@ -407,7 +407,7 @@ bool BeamInteraction::SUBMODELEVALUATOR::BeamPotential::evaluate_force_stiff()
 
   std::vector<std::shared_ptr<BeamInteraction::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
-       ++iter)
+      ++iter)
   {
     std::shared_ptr<BeamInteraction::BeamPotentialPair> elepairptr = *iter;
 
@@ -686,8 +686,8 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::find_and_store_neighbori
     // loop over all bind touched by currele
     std::set<int>::const_iterator biniter;
     for (biniter = beam_interaction_data_state_ptr()->get_row_ele_to_bin_set(elegid).begin();
-         biniter != beam_interaction_data_state_ptr()->get_row_ele_to_bin_set(elegid).end();
-         ++biniter)
+        biniter != beam_interaction_data_state_ptr()->get_row_ele_to_bin_set(elegid).end();
+        ++biniter)
     {
       std::vector<int> loc_neighboring_binIds;
       loc_neighboring_binIds.reserve(27);
@@ -807,7 +807,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::setup_potential_reductio
 
   // get element data on current proc
   for (int rowele_i = 0; rowele_i < ele_type_map_extractor_ptr()->beam_map()->NumMyElements();
-       ++rowele_i)
+      ++rowele_i)
   {
     const int ele_gid = ele_type_map_extractor_ptr()->beam_map()->GID(rowele_i);
     Core::Elements::Element* ele_ptr = discret_ptr()->g_element(ele_gid);
@@ -860,7 +860,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::create_beam_potential_el
   std::map<int, std::set<Core::Elements::Element*>>::const_iterator nearbyeleiter;
 
   for (nearbyeleiter = nearby_elements_map_.begin(); nearbyeleiter != nearby_elements_map_.end();
-       ++nearbyeleiter)
+      ++nearbyeleiter)
   {
     const int elegid = nearbyeleiter->first;
     std::vector<Core::Elements::Element const*> ele_ptrs(2);
@@ -868,7 +868,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::create_beam_potential_el
 
     std::set<Core::Elements::Element*>::const_iterator secondeleiter;
     for (secondeleiter = nearbyeleiter->second.begin();
-         secondeleiter != nearbyeleiter->second.end(); ++secondeleiter)
+        secondeleiter != nearbyeleiter->second.end(); ++secondeleiter)
     {
       ele_ptrs[1] = *secondeleiter;
 
@@ -900,7 +900,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::print_all_beam_potential
   out << "\n\nCurrent BeamPotentialElementPairs: ";
   std::vector<std::shared_ptr<BeamInteraction::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
-       ++iter)
+      ++iter)
     (*iter)->print(out);
 }
 
@@ -916,7 +916,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::print_active_beam_potent
 
   std::vector<std::shared_ptr<BeamInteraction::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
-       ++iter)
+      ++iter)
     (*iter)->print_summary_one_line_per_active_segment_pair(out);
 
   out << std::endl;
@@ -985,7 +985,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::print_console_welcome_me
 
     std::cout << "Potential Law:       Phi(r) = ";
     for (unsigned int isummand = 0;
-         isummand < beam_potential_params().potential_law_prefactors().size(); ++isummand)
+        isummand < beam_potential_params().potential_law_prefactors().size(); ++isummand)
     {
       if (isummand > 0) std::cout << " + ";
 
@@ -1117,7 +1117,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
   // loop over contact pairs and retrieve all active contact point coordinates
   std::vector<std::shared_ptr<BeamInteraction::BeamPotentialPair>>::const_iterator pair_iter;
   for (pair_iter = beam_potential_element_pairs_.begin();
-       pair_iter != beam_potential_element_pairs_.end(); ++pair_iter)
+      pair_iter != beam_potential_element_pairs_.end(); ++pair_iter)
   {
     // retrieve data for interacting points of element 1 and element 2
     (*pair_iter)->get_all_interacting_point_coords_element1(coordinates_ele1_this_pair);

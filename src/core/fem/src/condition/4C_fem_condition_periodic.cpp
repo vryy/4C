@@ -142,10 +142,10 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
 
       int countslave = 0;
       for (std::map<int, std::vector<int>>::iterator iter = allcoupledcolnodes_->begin();
-           iter != allcoupledcolnodes_->end(); ++iter)
+          iter != allcoupledcolnodes_->end(); ++iter)
       {
         for (std::vector<int>::iterator viter = iter->second.begin(); viter != iter->second.end();
-             ++viter)
+            ++viter)
         {
           ++countslave;
         }
@@ -268,7 +268,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
 
     // loop over periodic directions/planes
     for (std::vector<std::string>::iterator thisplane = planes.begin(); thisplane != planes.end();
-         ++thisplane)
+        ++thisplane)
     {
       // loop over all three layers (we allow three layers since
       // the code should be able to deal with up to cubic splines
@@ -337,7 +337,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                   masteridstoadd = mastercond->get_nodes();
 
                   for (std::vector<int>::const_iterator idtoadd = (*masteridstoadd).begin();
-                       idtoadd != (*masteridstoadd).end(); ++idtoadd)
+                      idtoadd != (*masteridstoadd).end(); ++idtoadd)
                   {
                     // we only add row nodes to the set
                     if (discret_->have_global_node(*idtoadd))
@@ -373,7 +373,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                   slaveidstoadd = slavecond->get_nodes();
 
                   for (std::vector<int>::const_iterator idtoadd = (*slaveidstoadd).begin();
-                       idtoadd != (*slaveidstoadd).end(); ++idtoadd)
+                      idtoadd != (*slaveidstoadd).end(); ++idtoadd)
                   {
                     // we only add row nodes to the set
                     if (discret_->have_global_node(*idtoadd))
@@ -426,7 +426,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                 }
               }
             }  // end if i am the right condition in the right layer
-          }    // end loop over conditions
+          }  // end loop over conditions
 
 
 
@@ -474,13 +474,13 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           (slavenodeids).clear();
 
           for (std::set<int>::iterator appendednode = masterset.begin();
-               appendednode != masterset.end(); ++appendednode)
+              appendednode != masterset.end(); ++appendednode)
           {
             masternodeids.push_back(*appendednode);
           }
 
           for (std::set<int>::iterator appendednode = slaveset.begin();
-               appendednode != slaveset.end(); ++appendednode)
+              appendednode != slaveset.end(); ++appendednode)
           {
             slavenodeids.push_back(*appendednode);
           }
@@ -573,7 +573,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
         }  // end loop pairs of periodic boundary conditions
         ++num;
       }  // end loop over layers
-    }    // end loop over planes
+    }  // end loop over planes
 
     //----------------------------------------------------------------------
     //         REDISTRIBUTE ACCORDING TO THE GENERATED CONNECTIVITY
@@ -772,14 +772,14 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
             {
               ++ntimesmaster;
             }  // end is slave?
-          }    // end loop this conditions
+          }  // end loop this conditions
 
           if (ntimesmaster == thiscond.size())
           {
             // yes, we have such a pure master node
             std::vector<int> thiscoupling;
             for (std::vector<int>::iterator rr = (*allcoupledrownodes_)[masterid].begin();
-                 rr != (*allcoupledrownodes_)[masterid].end(); ++rr)
+                rr != (*allcoupledrownodes_)[masterid].end(); ++rr)
             {
               thiscoupling.push_back(*rr);
             }
@@ -811,12 +811,12 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
 
             std::vector<int> mids;
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
-                 iter != multiplecouplings.end(); ++iter)
+                iter != multiplecouplings.end(); ++iter)
               mids.push_back(iter->first);
 
             add_to_pack(data, mids);
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
-                 iter != multiplecouplings.end(); ++iter)
+                iter != multiplecouplings.end(); ++iter)
               add_to_pack(data, iter->second);
 
             std::swap(sdata, data());
@@ -858,7 +858,7 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
           // -> 3) Try to complete the matchings
 
           for (std::map<int, std::vector<int>>::iterator mciter = multiplecouplings.begin();
-               mciter != multiplecouplings.end(); ++mciter)
+              mciter != multiplecouplings.end(); ++mciter)
           {
             size_t len = mciter->second.size();
             for (size_t mm = 0; mm < len; ++mm)  // this cannot be done through an iterator since we
@@ -874,11 +874,11 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
                 // close the connectivity using the slave node which was the
                 // masternode of the previous condition
                 for (std::vector<int>::iterator fsiter = found->second.begin();
-                     fsiter != found->second.end(); ++fsiter)
+                    fsiter != found->second.end(); ++fsiter)
                 {
                   bool doit = true;
                   for (std::vector<int>::const_iterator innersiter = mciter->second.begin();
-                       innersiter != mciter->second.end(); ++innersiter)
+                      innersiter != mciter->second.end(); ++innersiter)
                     if (*fsiter == *innersiter) doit = false;
 
                   if (doit) mciter->second.push_back(*fsiter);
@@ -891,7 +891,7 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
 
         // add this information to the map of all coupled nodes
         for (std::map<int, std::vector<int>>::iterator mciter = multiplecouplings.begin();
-             mciter != multiplecouplings.end(); ++mciter)
+            mciter != multiplecouplings.end(); ++mciter)
         {
           std::map<int, std::vector<int>>::iterator found =
               allcoupledrownodes_->find(mciter->first);
@@ -952,7 +952,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     std::set<int> nodeset;
 
     for (std::vector<int>::const_iterator rr = nodesonthisproc.begin(); rr != nodesonthisproc.end();
-         ++rr)
+        ++rr)
     {
       nodeset.insert(*rr);
     }
@@ -967,14 +967,14 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     discret_->get_condition("LinePeriodic", linecond);
 
     for (std::vector<Core::Conditions::Condition*>::iterator cond = linecond.begin();
-         cond != linecond.end(); ++cond)
+        cond != linecond.end(); ++cond)
     {
       thiscond.push_back(*cond);
     }
     std::vector<Core::Conditions::Condition*> surfcond;
     discret_->get_condition("SurfacePeriodic", surfcond);
     for (std::vector<Core::Conditions::Condition*>::iterator cond = surfcond.begin();
-         cond != surfcond.end(); ++cond)
+        cond != surfcond.end(); ++cond)
     {
       thiscond.push_back(*cond);
     }
@@ -997,7 +997,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
         slaveidstodel = thiscond[numcond]->get_nodes();
 
         for (std::vector<int>::const_iterator idtodel = (*slaveidstodel).begin();
-             idtodel != (*slaveidstodel).end(); ++idtodel)
+            idtodel != (*slaveidstodel).end(); ++idtodel)
         {
           if (discret_->have_global_node(*idtodel))
           {
@@ -1051,10 +1051,10 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     // append slavenodes to this list of nodes on this proc
     {
       for (std::map<int, std::vector<int>>::iterator curr = allcoupledrownodes_->begin();
-           curr != allcoupledrownodes_->end(); ++curr)
+          curr != allcoupledrownodes_->end(); ++curr)
       {
         for (std::vector<int>::iterator iter = curr->second.begin(); iter != curr->second.end();
-             ++iter)
+            ++iter)
         {
           int slaveid = *iter;
 
@@ -1087,7 +1087,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       int allcouplednodes = 0;
 
       for (std::map<int, std::vector<int>>::iterator curr = allcoupledrownodes_->begin();
-           curr != allcoupledrownodes_->end(); ++curr)
+          curr != allcoupledrownodes_->end(); ++curr)
       {
         if ((int)curr->second.size() > mymax)
         {
@@ -1170,7 +1170,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     inversenodecoupling->clear();
 
     for (std::map<int, std::vector<int>>::iterator curr = allcoupledrownodes_->begin();
-         curr != allcoupledrownodes_->end(); ++curr)
+        curr != allcoupledrownodes_->end(); ++curr)
     {
       for (unsigned rr = 0; rr < curr->second.size(); ++rr)
       {
@@ -1204,7 +1204,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       // a ghosted master on this proc --- we have to fetch it to be able
       // to assign the dofs
       for (std::map<int, std::vector<int>>::iterator curr = inversenodecoupling->begin();
-           curr != inversenodecoupling->end(); ++curr)
+          curr != inversenodecoupling->end(); ++curr)
       {
         if (curr->second.empty())
         {
@@ -1246,7 +1246,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       // all their slaves ghosted on this proc --- we have to fetch them to be able
       // to assign the dofs
       for (std::map<int, std::vector<int>>::iterator curr = allcoupledcolnodes_->begin();
-           curr != allcoupledcolnodes_->end(); ++curr)
+          curr != allcoupledcolnodes_->end(); ++curr)
       {
         if (curr->second.empty())
         {

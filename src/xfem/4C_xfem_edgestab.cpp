@@ -310,7 +310,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
         }
 
       }  // loop facets
-    }    // if linear elements
+    }  // if linear elements
     else if (p_master->shape() == Core::FE::CellType::hex20 or
              p_master->shape() == Core::FE::CellType::hex27 or
              p_master->shape() == Core::FE::CellType::tet10 or
@@ -370,7 +370,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
             bool new_nds_master = true;
             bool new_nds_slave = true;
             for (std::vector<std::vector<int>>::iterator i = all_used_nds_master.begin();
-                 i != all_used_nds_master.end(); ++i)
+                i != all_used_nds_master.end(); ++i)
             {
               std::vector<int> used_nds_master = *i;
               if (used_nds_master == nds_master)
@@ -379,7 +379,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
               }
             }
             for (std::vector<std::vector<int>>::iterator i = all_used_nds_slave.begin();
-                 i != all_used_nds_slave.end(); ++i)
+                i != all_used_nds_slave.end(); ++i)
             {
               std::vector<int> used_nds_slave = *i;
               if (used_nds_slave == nds_slave)

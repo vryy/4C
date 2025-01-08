@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  * Constructor for the selfcut                                     wirtz 05/13
  *----------------------------------------------------------------------------*/
-Cut::Impl::PointGraph::PointGraph(Side *side) : graph_(create_graph(side->n_dim()))
+Cut::Impl::PointGraph::PointGraph(Side* side) : graph_(create_graph(side->n_dim()))
 {
   Cycle cycle;
   fill_graph(side, cycle);
@@ -45,7 +45,7 @@ Cut::Impl::PointGraph::PointGraph(Side *side) : graph_(create_graph(side->n_dim(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Cut::Impl::PointGraph::PointGraph(
-    Mesh &mesh, Element *element, Side *side, Location location, Strategy strategy)
+    Mesh& mesh, Element* element, Side* side, Location location, Strategy strategy)
     : graph_(create_graph(element->n_dim()))
 {
   // here we create the facets...
@@ -79,20 +79,20 @@ Cut::Impl::PointGraph::PointGraph(
   {
     get_graph().find_cycles(element, side, cycle, location, strategy);
   }
-  catch (Core::Exception &err)
+  catch (Core::Exception& err)
   {
     std::ofstream file("failed_pointgraph.pos");
     Cut::Output::gmsh_side_dump(file, side, std::string("Side"));
 
     // add cut lines to graph
-    const std::vector<Line *> &cut_lines = side->cut_lines();
+    const std::vector<Line*>& cut_lines = side->cut_lines();
 
-    for (std::vector<Line *>::const_iterator i = cut_lines.begin(); i != cut_lines.end(); ++i)
+    for (std::vector<Line*>::const_iterator i = cut_lines.begin(); i != cut_lines.end(); ++i)
     {
       int line_index = i - cut_lines.begin();
       std::stringstream section_name;
       section_name << "Cut_lines" << line_index;
-      Line *l = *i;
+      Line* l = *i;
       Cut::Output::gmsh_new_section(file, section_name.str());
       Cut::Output::gmsh_line_dump(file, l, false, nullptr);
       Cut::Output::gmsh_end_section(file, false);
@@ -109,21 +109,21 @@ Cut::Impl::PointGraph::PointGraph(
  * Graph is filled wihl all edges of the selfcut: uncutted edges, selfcutedges
  * and new splitted edges; but no the cutted edges                          wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void Cut::Impl::PointGraph::fill_graph(Side *side, Cycle &cycle)
+void Cut::Impl::PointGraph::fill_graph(Side* side, Cycle& cycle)
 {
-  const std::vector<Node *> &nodes = side->nodes();
-  const std::vector<Edge *> &edges = side->edges();
+  const std::vector<Node*>& nodes = side->nodes();
+  const std::vector<Edge*>& edges = side->edges();
   int end_pos = 0;
 
   // loop over all edges of the parent side
-  for (std::vector<Edge *>::const_iterator i = edges.begin(); i != edges.end(); ++i)
+  for (std::vector<Edge*>::const_iterator i = edges.begin(); i != edges.end(); ++i)
   {
-    Edge *e = *i;
+    Edge* e = *i;
 
     // get start and end node numbers corresponding to this edge
     int begin_pos = end_pos;
     end_pos = (end_pos + 1) % nodes.size();
-    std::vector<Point *> edge_points;
+    std::vector<Point*> edge_points;
 
     // get all points on this edge including start and end points
     // points are already sorted
@@ -133,20 +133,20 @@ void Cut::Impl::PointGraph::fill_graph(Side *side, Cycle &cycle)
     // store all (n+1) edges to graph
     for (unsigned i = 1; i < edge_points.size(); ++i)  // no of edges = no of points-1
     {
-      Point *p1 = edge_points[i - 1];
-      Point *p2 = edge_points[i];
+      Point* p1 = edge_points[i - 1];
+      Point* p2 = edge_points[i];
       get_graph().add_edge(p1, p2);
     }
-    for (std::vector<Point *>::iterator i = edge_points.begin() + 1; i != edge_points.end(); ++i)
+    for (std::vector<Point*>::iterator i = edge_points.begin() + 1; i != edge_points.end(); ++i)
     {
-      Point *p = *i;
+      Point* p = *i;
       cycle.push_back(p);
     }
   }
-  const plain_edge_set &selfcutedges = side->self_cut_edges();
+  const plain_edge_set& selfcutedges = side->self_cut_edges();
   for (plain_edge_set::const_iterator i = selfcutedges.begin(); i != selfcutedges.end(); ++i)
   {
-    Edge *selfcutedge = *i;
+    Edge* selfcutedge = *i;
     get_graph().add_edge(selfcutedge->begin_node()->point(), selfcutedge->end_node()->point());
   }
 }
@@ -156,10 +156,10 @@ void Cut::Impl::PointGraph::fill_graph(Side *side, Cycle &cycle)
  * side to create facet. Also add cut lines to the graph
  *----------------------------------------------------------------------------*/
 void Cut::Impl::PointGraph::fill_graph(
-    Element *element, Side *side, Cycle &cycle, Strategy strategy)
+    Element* element, Side* side, Cycle& cycle, Strategy strategy)
 {
-  const std::vector<Node *> &nodes = side->nodes();
-  const std::vector<Edge *> &edges = side->edges();
+  const std::vector<Node*>& nodes = side->nodes();
+  const std::vector<Edge*>& edges = side->edges();
   int end_pos = 0;
 
 #if DEBUG_POINTGRAPH
@@ -167,9 +167,9 @@ void Cut::Impl::PointGraph::fill_graph(
 #endif
 
   // loop over all edges of the parent side
-  for (std::vector<Edge *>::const_iterator i = edges.begin(); i != edges.end(); ++i)
+  for (std::vector<Edge*>::const_iterator i = edges.begin(); i != edges.end(); ++i)
   {
-    Edge *e = *i;
+    Edge* e = *i;
 
 #if DEBUG_POINTGRAPH
     int index = i - edges.begin();
@@ -180,7 +180,7 @@ void Cut::Impl::PointGraph::fill_graph(
     int begin_pos = end_pos;
     end_pos = (end_pos + 1) % nodes.size();
 
-    std::vector<Point *> edge_points;
+    std::vector<Point*> edge_points;
 
     // get all points on this edge including start and end points
     // points are already sorted
@@ -194,8 +194,8 @@ void Cut::Impl::PointGraph::fill_graph(
     // store all (n+1) edges to graph
     for (unsigned i = 1; i < edge_points.size(); ++i)  // number of edges = number of points-1
     {
-      Point *p1 = edge_points[i - 1];
-      Point *p2 = edge_points[i];
+      Point* p1 = edge_points[i - 1];
+      Point* p2 = edge_points[i];
 #if DEBUG_POINTGRAPH
       std::cout << "Adding line betweeen points with ids " << p1->Id() << " and " << p2->Id()
                 << std::endl;
@@ -211,29 +211,28 @@ void Cut::Impl::PointGraph::fill_graph(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::Impl::PointGraph::build_cycle(const std::vector<Point *> &edge_points, Cycle &cycle) const
+void Cut::Impl::PointGraph::build_cycle(const std::vector<Point*>& edge_points, Cycle& cycle) const
 {
-  for (std::vector<Point *>::const_iterator i = edge_points.begin() + 1; i != edge_points.end();
-       ++i)
+  for (std::vector<Point*>::const_iterator i = edge_points.begin() + 1; i != edge_points.end(); ++i)
   {
-    Point *p = *i;
+    Point* p = *i;
     cycle.push_back(p);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::Impl::PointGraph::add_cut_lines_to_graph(Element *element, Side *side, Strategy strategy)
+void Cut::Impl::PointGraph::add_cut_lines_to_graph(Element* element, Side* side, Strategy strategy)
 {
-  const std::vector<Line *> &cut_lines = side->cut_lines();
+  const std::vector<Line*>& cut_lines = side->cut_lines();
 
   // add cut lines to graph
 #if DEBUG_POINTGRAPH
   std::cout << "Adding cut lines to the graph " << std::endl;
 #endif
-  for (std::vector<Line *>::const_iterator i = cut_lines.begin(); i != cut_lines.end(); ++i)
+  for (std::vector<Line*>::const_iterator i = cut_lines.begin(); i != cut_lines.end(); ++i)
   {
-    Line *l = *i;
+    Line* l = *i;
 
     // GetGraph().AddEdge(l->BeginPoint(), l->EndPoint());
     bool element_cut = l->is_cut(element);
@@ -256,7 +255,7 @@ void Cut::Impl::PointGraph::Graph::add_edge(int row, int col)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::Impl::PointGraph::Graph::add_edge(Point *p1, Point *p2)
+void Cut::Impl::PointGraph::Graph::add_edge(Point* p1, Point* p2)
 {
   all_points_[p1->id()] = p1;
   all_points_[p2->id()] = p2;
@@ -266,13 +265,13 @@ void Cut::Impl::PointGraph::Graph::add_edge(Point *p1, Point *p2)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::Impl::PointGraph::Graph::print(std::ostream &stream)
+void Cut::Impl::PointGraph::Graph::print(std::ostream& stream)
 {
   stream << "--- PointGraph::Graph ---\n";
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
     int p = i->first;
-    plain_int_set &row = i->second;
+    plain_int_set& row = i->second;
     stream << p << ": ";
     for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
     {
@@ -286,9 +285,9 @@ void Cut::Impl::PointGraph::Graph::print(std::ostream &stream)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::Impl::PointGraph::Graph::plot_all_points(std::ostream &stream)
+void Cut::Impl::PointGraph::Graph::plot_all_points(std::ostream& stream)
 {
-  for (std::map<int, Point *>::iterator i = all_points_.begin(); i != all_points_.end(); ++i)
+  for (std::map<int, Point*>::iterator i = all_points_.begin(); i != all_points_.end(); ++i)
   {
     i->second->plot(stream);
   }
@@ -296,11 +295,11 @@ void Cut::Impl::PointGraph::Graph::plot_all_points(std::ostream &stream)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::Impl::PointGraph::Graph::plot_points(Element *element)
+void Cut::Impl::PointGraph::Graph::plot_points(Element* element)
 {
-  for (std::map<int, Point *>::iterator i = all_points_.begin(); i != all_points_.end(); ++i)
+  for (std::map<int, Point*>::iterator i = all_points_.begin(); i != all_points_.end(); ++i)
   {
-    Point *p = i->second;
+    Point* p = i->second;
     std::cout << p->id() << "(" << p->is_cut(element) << ") ";
   }
   std::cout << "\n";
@@ -308,9 +307,9 @@ void Cut::Impl::PointGraph::Graph::plot_points(Element *element)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Cut::Impl::find_cycles(graph_t &g, Cut::Cycle &cycle,
-    std::map<vertex_t, Core::LinAlg::Matrix<3, 1>> &local,
-    std::vector<Cut::Cycle> &cycles) /* non-member function */
+bool Cut::Impl::find_cycles(graph_t& g, Cut::Cycle& cycle,
+    std::map<vertex_t, Core::LinAlg::Matrix<3, 1>>& local,
+    std::vector<Cut::Cycle>& cycles) /* non-member function */
 {
   name_map_t name_map = boost::get(boost::vertex_name, g);
 
@@ -340,7 +339,7 @@ bool Cut::Impl::find_cycles(graph_t &g, Cut::Cycle &cycle,
   vertex_iterator vi, vi_end;
   for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)
   {
-    const Core::LinAlg::Matrix<3, 1> &pos = local[*vi];
+    const Core::LinAlg::Matrix<3, 1>& pos = local[*vi];
 #if DEBUG_POINTGRAPH
     std::cout << "First coordinate before substraction " << std::setprecision(16) << pos
               << std::endl;
@@ -384,9 +383,9 @@ bool Cut::Impl::find_cycles(graph_t &g, Cut::Cycle &cycle,
         // has same coordinates (sudhakar)
         // check input file for two nodes (in same domain) having same coordinates
         std::stringstream err_msg;
-        Point *first = name_map[*vi];
-        Point *second = name_map[*ai];
-        Point *previous = name_map[j->second];
+        Point* first = name_map[*vi];
+        Point* second = name_map[*ai];
+        Point* previous = name_map[j->second];
 
         std::ofstream file("double_arc.pos");
 
@@ -411,7 +410,7 @@ bool Cut::Impl::find_cycles(graph_t &g, Cut::Cycle &cycle,
       arcs[arc] = *ai;
     }
 
-    vec_t &em = embedding[*vi];
+    vec_t& em = embedding[*vi];
 
 // NOTE: We want to have embedding with clockwise ordering of edges. Otherwise it will produce an
 // error
@@ -446,7 +445,7 @@ bool Cut::Impl::find_cycles(graph_t &g, Cut::Cycle &cycle,
 #if DEBUG_POINTGRAPH
   for (std::vector<Cycle>::iterator i = cycles.begin(); i != cycles.end(); ++i)
   {
-    Cycle &c = *i;
+    Cycle& c = *i;
     c.TestUnique();
   }
 #endif
@@ -462,7 +461,7 @@ bool Cut::Impl::find_cycles(graph_t &g, Cut::Cycle &cycle,
   int erase_count = 0;
   for (std::vector<Cycle>::iterator i = cycles.begin(); i != cycles.end();)
   {
-    Cycle &c = *i;
+    Cycle& c = *i;
     if (cycle.equals(c))
     {
       if (save_first and erase_count == 0)
@@ -494,7 +493,7 @@ bool Cut::Impl::find_cycles(graph_t &g, Cut::Cycle &cycle,
     int counter = 0;
     for (std::vector<Cycle>::iterator i = cycles.begin(); i != cycles.end(); ++i, ++counter)
     {
-      Cycle &c = *i;
+      Cycle& c = *i;
       std::stringstream s;
       s << "Cycle_" << counter << ".pos";
       std::ofstream file(s.str());
@@ -514,7 +513,7 @@ bool Cut::Impl::find_cycles(graph_t &g, Cut::Cycle &cycle,
  * Creates maincycles (outer polygons) and holecycles (inner polygons = holes)
  * of the selfcut graph                                                     wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void Cut::Impl::PointGraph::Graph::find_cycles(Side *side, Cycle &cycle)
+void Cut::Impl::PointGraph::Graph::find_cycles(Side* side, Cycle& cycle)
 {
   graph_t g;
 
@@ -529,7 +528,7 @@ void Cut::Impl::PointGraph::Graph::find_cycles(Side *side, Cycle &cycle)
   {
     int n = i->first;
 
-    Point *p = get_point(n);
+    Point* p = get_point(n);
     vertex_t u = add_vertex(g);
     name_map[u] = p;
     vertex_map[n] = u;
@@ -543,7 +542,7 @@ void Cut::Impl::PointGraph::Graph::find_cycles(Side *side, Cycle &cycle)
 
     //    Point * p1 = GetPoint( u );
 
-    plain_int_set &row = i->second;
+    plain_int_set& row = i->second;
 
     for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
     {
@@ -580,7 +579,7 @@ void Cut::Impl::PointGraph::Graph::find_cycles(Side *side, Cycle &cycle)
   for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)
   {
     // prepare vars
-    Point *p = name_map[*vi];
+    Point* p = name_map[*vi];
     Core::LinAlg::Matrix<3, 1> xyz(p->x());
     Core::LinAlg::Matrix<3, 1> tmpmat;
 
@@ -640,7 +639,7 @@ void Cut::Impl::PointGraph::Graph::find_cycles(Side *side, Cycle &cycle)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::Impl::PointGraph::Graph::find_cycles(
-    Element *element, Side *side, Cycle &cycle, Location location, Strategy strategy)
+    Element* element, Side* side, Cycle& cycle, Location location, Strategy strategy)
 {
   graph_t g;
 
@@ -655,7 +654,7 @@ void Cut::Impl::PointGraph::Graph::find_cycles(
   {
     int n = i->first;
 
-    Point *p = get_point(n);
+    Point* p = get_point(n);
 
     // this check if it is  not levelset add all points and remove later, otherwise use this
     // strategy
@@ -675,16 +674,16 @@ void Cut::Impl::PointGraph::Graph::find_cycles(
   {
     int u = i->first;
 
-    Point *p1 = get_point(u);
+    Point* p1 = get_point(u);
 
     if (!(strategy == own_lines) or ((location == element_side) or (p1->is_cut(element))))
     {
-      plain_int_set &row = i->second;
+      plain_int_set& row = i->second;
 
       for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
       {
         int v = *i;
-        Point *p2 = get_point(v);
+        Point* p2 = get_point(v);
 
         if (!(strategy == own_lines) or ((location == element_side) or (p2->is_cut(element))))
         {
@@ -727,10 +726,10 @@ void Cut::Impl::PointGraph::Graph::find_cycles(
 
     for (plain_cycle_set::iterator i = base_cycles.begin(); i != base_cycles.end(); ++i)
     {
-      cycle_t *c = *i;
+      cycle_t* c = *i;
 
       main_cycles_.push_back(Cycle());
-      Cycle &pc = main_cycles_.back();
+      Cycle& pc = main_cycles_.back();
       pc.reserve(c->size());
 
       for (cycle_t::iterator i = c->begin(); i != c->end(); ++i)
@@ -754,7 +753,7 @@ void Cut::Impl::PointGraph::Graph::find_cycles(
     for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)
     {
       // prepare vars
-      Point *p = name_map[*vi];
+      Point* p = name_map[*vi];
       const Core::LinAlg::Matrix<3, 1> xyz(p->x(), true);
       Core::LinAlg::Matrix<3, 1> rst;
 
@@ -837,10 +836,10 @@ void Cut::Impl::PointGraph::Graph::find_cycles(
     std::vector<Cycle> erased_cycles;
     for (std::vector<Cycle>::iterator it = main_cycles_.begin(); it != main_cycles_.end();)
     {
-      const std::vector<Point *> cycle_points = (*it)();
+      const std::vector<Point*> cycle_points = (*it)();
       bool to_erase = false;
-      for (std::vector<Point *>::const_iterator ip = cycle_points.begin(); ip != cycle_points.end();
-           ++ip)
+      for (std::vector<Point*>::const_iterator ip = cycle_points.begin(); ip != cycle_points.end();
+          ++ip)
       {
         if (not(*ip)->is_cut(element))
         {
@@ -860,7 +859,7 @@ void Cut::Impl::PointGraph::Graph::find_cycles(
 /*---------------------------------------------------------------------------------*
  * In graph, if any edge has a single point, it will be deleted
  *---------------------------------------------------------------------------------*/
-void Cut::Impl::PointGraph::Graph::fix_single_points(Cycle &cycle)
+void Cut::Impl::PointGraph::Graph::fix_single_points(Cycle& cycle)
 {
   for (;;)
   {
@@ -868,14 +867,14 @@ void Cut::Impl::PointGraph::Graph::fix_single_points(Cycle &cycle)
     for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
     {
       int p = i->first;
-      plain_int_set &row = i->second;
+      plain_int_set& row = i->second;
       if (row.size() < 2)
       {
         found = true;
         for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
         {
           int p2 = *i;
-          plain_int_set &row2 = graph_[p2];
+          plain_int_set& row2 = graph_[p2];
           row2.erase(p);
           if (row2.size() == 0) graph_.erase(p2);
         }
@@ -904,7 +903,7 @@ bool Cut::Impl::PointGraph::Graph::has_single_points(Cut::Impl::PointGraph::Loca
 {
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
-    plain_int_set &row = i->second;
+    plain_int_set& row = i->second;
     if (row.size() < 2)
     {
       return true;
@@ -916,23 +915,23 @@ bool Cut::Impl::PointGraph::Graph::has_single_points(Cut::Impl::PointGraph::Loca
 
 // Check if this side has single point in the pointgraph, because other
 // side was touched by the "tip" at this point
-bool Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element, Side *side)
+bool Cut::Impl::PointGraph::Graph::has_touching_edge(Element* element, Side* side)
 {
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
-    plain_int_set &row = i->second;
+    plain_int_set& row = i->second;
     if (row.size() < 2)
     {
       Core::LinAlg::Matrix<3, 1> cut_pointxyz;
       // if there is  point in the poingraph, that have no less than neighbors
-      Point *cut_point = all_points_[i->first];
+      Point* cut_point = all_points_[i->first];
       cut_point->coordinates(cut_pointxyz.data());
 
       for (plain_edge_set::const_iterator e = cut_point->cut_edges().begin();
-           e != cut_point->cut_edges().end(); ++e)
+          e != cut_point->cut_edges().end(); ++e)
       {
         Core::LinAlg::Matrix<3, 1> edge_vector;
-        Edge *ed = *e;
+        Edge* ed = *e;
 
         // get the vector from opposite node of the edge to cutting point
         if (cut_point->nodal_point(ed->nodes()))
@@ -955,15 +954,15 @@ bool Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element, Side *sid
             // getting side normal with respect to resp(0,0) by default local coordiantes
             Core::LinAlg::Matrix<2, 1> resp;
             Core::LinAlg::Matrix<3, 1> norm_vec;
-            Side *sd = *s;
+            Side* sd = *s;
             sd->normal(resp, norm_vec);
 
             for (plain_element_set::const_iterator el = sd->elements().begin();
-                 el != sd->elements().end(); ++el)
+                el != sd->elements().end(); ++el)
             {
               // getting element center for this element
               Core::LinAlg::Matrix<3, 1> element_center;
-              Element *elmnt = *el;
+              Element* elmnt = *el;
               if (elmnt->shape() != Core::FE::CellType::hex8)
               {
                 std::cout << "==| WARNING: Element Type != hex8 not supported by check "
@@ -1003,7 +1002,7 @@ bool Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element, Side *sid
 
           if (row.size() == 1)
           {
-            Point *next_point = all_points_[row[0]];
+            Point* next_point = all_points_[row[0]];
             file << "//Next point has Id" << next_point->id() << std::endl;
             cut_point->dump_connectivity_info();
             next_point->dump_connectivity_info();
@@ -1013,8 +1012,8 @@ bool Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element, Side *sid
 
           /// dump all the points of the pointgraph
           std::ofstream file_pgraph("pointgraph_dump.pos");
-          for (std::map<int, Point *>::iterator it = all_points_.begin(); it != all_points_.end();
-               ++it)
+          for (std::map<int, Point*>::iterator it = all_points_.begin(); it != all_points_.end();
+              ++it)
           {
             std::stringstream point_section_name;
             point_section_name << "Point" << (it->second)->id();
@@ -1041,28 +1040,28 @@ bool Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element, Side *sid
   return true;
 }
 
-bool Cut::Impl::PointGraph::Graph::simplify_connections(Element *element, Side *side)
+bool Cut::Impl::PointGraph::Graph::simplify_connections(Element* element, Side* side)
 {
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
-    plain_int_set &row = i->second;
+    plain_int_set& row = i->second;
     if (row.size() < 2)
     {
       if (row.size() == 1)
       {
-        Point *single = all_points_[i->first];
-        Point *other = all_points_[row.front()];
+        Point* single = all_points_[i->first];
+        Point* other = all_points_[row.front()];
         if (single->nodal_point(side->nodes()))
         {
           // get touching edges of nodal point
-          const std::vector<Edge *> side_edges = side->edges();
-          std::vector<Edge *> point_side_edges;
-          for (std::vector<Edge *>::const_iterator it = side_edges.begin(); it != side_edges.end();
-               ++it)
+          const std::vector<Edge*> side_edges = side->edges();
+          std::vector<Edge*> point_side_edges;
+          for (std::vector<Edge*>::const_iterator it = side_edges.begin(); it != side_edges.end();
+              ++it)
           {
             if (single->nodal_point((*it)->nodes())) point_side_edges.push_back(*it);
           }
-          std::vector<Edge *>::iterator it = point_side_edges.begin();
+          std::vector<Edge*>::iterator it = point_side_edges.begin();
           // we are fine if single point touches all touching edges (on this side) of the cut point
           for (; it != point_side_edges.end(); ++it)
           {
@@ -1088,12 +1087,12 @@ bool Cut::Impl::PointGraph::Graph::simplify_connections(Element *element, Side *
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::Impl::PointGraph::Graph::gnuplot_dump_cycles(
-    const std::string &filename, const std::vector<Cycle> &cycles)
+    const std::string& filename, const std::vector<Cycle>& cycles)
 {
   int counter = 0;
   for (std::vector<Cycle>::const_iterator i = cycles.begin(); i != cycles.end(); ++i)
   {
-    const Cycle &points = *i;
+    const Cycle& points = *i;
 
     std::stringstream str;
     str << filename << counter << ".plot";
@@ -1107,19 +1106,19 @@ void Cut::Impl::PointGraph::Graph::gnuplot_dump_cycles(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Cut::Point *Cut::Impl::PointGraph::Graph::get_point(int i)
+Cut::Point* Cut::Impl::PointGraph::Graph::get_point(int i)
 {
-  std::map<int, Point *>::iterator j = all_points_.find(i);
+  std::map<int, Point*>::iterator j = all_points_.find(i);
   if (j != all_points_.end()) return j->second;
   return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Cut::Impl::PointGraph *Cut::Impl::PointGraph::create(Mesh &mesh, Element *element, Side *side,
+Cut::Impl::PointGraph* Cut::Impl::PointGraph::create(Mesh& mesh, Element* element, Side* side,
     PointGraph::Location location, PointGraph::Strategy strategy)
 {
-  PointGraph *pg = nullptr;
+  PointGraph* pg = nullptr;
   const unsigned dim = element->n_dim();
   switch (dim)
   {

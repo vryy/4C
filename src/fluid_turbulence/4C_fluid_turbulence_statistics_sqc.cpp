@@ -180,7 +180,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       Core::Communication::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator x1cline = x1cavcoords.begin();
-           x1cline != x1cavcoords.end(); ++x1cline)
+          x1cline != x1cavcoords.end(); ++x1cline)
       {
         add_to_pack(data, *x1cline);
       }
@@ -237,7 +237,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       // export set to sendbuffer
       Core::Communication::PackBuffer data;
       for (std::set<double, LineSortCriterion>::iterator x2cline = x2cavcoords.begin();
-           x2cline != x2cavcoords.end(); ++x2cline)
+          x2cline != x2cavcoords.end(); ++x2cline)
       {
         add_to_pack(data, *x2cline);
       }
@@ -294,7 +294,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       // export set to sendbuffer
       Core::Communication::PackBuffer data;
       for (std::set<double, LineSortCriterion>::iterator x2wline = x2wavcoords.begin();
-           x2wline != x2wavcoords.end(); ++x2wline)
+          x2wline != x2wavcoords.end(); ++x2wline)
       {
         add_to_pack(data, *x2wline);
       }
@@ -351,7 +351,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       // export set to sendbuffer
       Core::Communication::PackBuffer data;
       for (std::set<double, LineSortCriterion>::iterator clrline = clravcoords.begin();
-           clrline != clravcoords.end(); ++clrline)
+          clrline != clravcoords.end(); ++clrline)
       {
         add_to_pack(data, *clrline);
       }
@@ -408,7 +408,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       // export set to sendbuffer
       Core::Communication::PackBuffer data;
       for (std::set<double, LineSortCriterion>::iterator ctbline = ctbavcoords.begin();
-           ctbline != ctbavcoords.end(); ++ctbline)
+          ctbline != ctbavcoords.end(); ++ctbline)
       {
         add_to_pack(data, *ctbline);
       }
@@ -471,7 +471,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
           // export set to sendbuffer
           Core::Communication::PackBuffer data;
           for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
-               x1line != x1avcoords.end(); ++x1line)
+              x1line != x1avcoords.end(); ++x1line)
           {
             add_to_pack(data, *x1line);
           }
@@ -528,7 +528,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
           // export set to sendbuffer
           Core::Communication::PackBuffer data;
           for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
-               x2line != x2avcoords.end(); ++x2line)
+              x2line != x2avcoords.end(); ++x2line)
           {
             add_to_pack(data, *x2line);
           }
@@ -593,31 +593,31 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     ctbcoordinates_ = std::make_shared<std::vector<double>>();
 
     for (std::set<double, LineSortCriterion>::iterator coord1c = x1cavcoords.begin();
-         coord1c != x1cavcoords.end(); ++coord1c)
+        coord1c != x1cavcoords.end(); ++coord1c)
     {
       x1ccoordinates_->push_back(*coord1c);
     }
 
     for (std::set<double, LineSortCriterion>::iterator coord2c = x2cavcoords.begin();
-         coord2c != x2cavcoords.end(); ++coord2c)
+        coord2c != x2cavcoords.end(); ++coord2c)
     {
       x2ccoordinates_->push_back(*coord2c);
     }
 
     for (std::set<double, LineSortCriterion>::iterator coord2w = x2wavcoords.begin();
-         coord2w != x2wavcoords.end(); ++coord2w)
+        coord2w != x2wavcoords.end(); ++coord2w)
     {
       x2wcoordinates_->push_back(*coord2w);
     }
 
     for (std::set<double, LineSortCriterion>::iterator coordlr = clravcoords.begin();
-         coordlr != clravcoords.end(); ++coordlr)
+        coordlr != clravcoords.end(); ++coordlr)
     {
       clrcoordinates_->push_back(*coordlr);
     }
 
     for (std::set<double, LineSortCriterion>::iterator coordtb = ctbavcoords.begin();
-         coordtb != ctbavcoords.end(); ++coordtb)
+        coordtb != ctbavcoords.end(); ++coordtb)
     {
       ctbcoordinates_->push_back(*coordtb);
     }
@@ -632,13 +632,13 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
         x2coordinates_ = std::make_shared<std::vector<double>>();
 
         for (std::set<double, LineSortCriterion>::iterator coord1 = x1avcoords.begin();
-             coord1 != x1avcoords.end(); ++coord1)
+            coord1 != x1avcoords.end(); ++coord1)
         {
           x1coordinates_->push_back(*coord1);
         }
 
         for (std::set<double, LineSortCriterion>::iterator coord2 = x2avcoords.begin();
-             coord2 != x2avcoords.end(); ++coord2)
+            coord2 != x2avcoords.end(); ++coord2)
         {
           x2coordinates_->push_back(*coord2);
         }
@@ -920,7 +920,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
   // loop nodes on centerline in x1-direction and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator x1cline = x1ccoordinates_->begin();
-       x1cline != x1ccoordinates_->end(); ++x1cline)
+      x1cline != x1ccoordinates_->end(); ++x1cline)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -1037,7 +1037,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
   // center) and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator x2cline = x2ccoordinates_->begin();
-       x2cline != x2ccoordinates_->end(); ++x2cline)
+      x2cline != x2ccoordinates_->end(); ++x2cline)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -1153,7 +1153,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
   // pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator x2wline = x2wcoordinates_->begin();
-       x2wline != x2wcoordinates_->end(); ++x2wline)
+      x2wline != x2wcoordinates_->end(); ++x2wline)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -1270,7 +1270,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
   // pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator x2wline = x2wcoordinates_->begin();
-       x2wline != x2wcoordinates_->end(); ++x2wline)
+      x2wline != x2wcoordinates_->end(); ++x2wline)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -1386,7 +1386,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
   // loop nodes on left cylinder boundary line and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator clrline = clrcoordinates_->begin();
-       clrline != clrcoordinates_->end(); ++clrline)
+      clrline != clrcoordinates_->end(); ++clrline)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -1502,7 +1502,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
   // loop nodes on top cylinder boundary line and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator ctbline = ctbcoordinates_->begin();
-       ctbline != ctbcoordinates_->end(); ++ctbline)
+      ctbline != ctbcoordinates_->end(); ++ctbline)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -1618,7 +1618,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
   // loop nodes on right cylinder boundary line and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator clrline = clrcoordinates_->begin();
-       clrline != clrcoordinates_->end(); ++clrline)
+      clrline != clrcoordinates_->end(); ++clrline)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0
@@ -1734,7 +1734,7 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& 
   // loop nodes on bottom cylinder boundary line and calculate pointwise means
   //----------------------------------------------------------------------
   for (std::vector<double>::iterator ctbline = ctbcoordinates_->begin();
-       ctbline != ctbcoordinates_->end(); ++ctbline)
+      ctbline != ctbcoordinates_->end(); ++ctbline)
   {
     // toggle vectors are one in the position of a dof for this line,
     // else 0

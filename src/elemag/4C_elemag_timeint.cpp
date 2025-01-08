@@ -30,10 +30,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                               gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-EleMag::ElemagTimeInt::ElemagTimeInt(const std::shared_ptr<Core::FE::DiscretizationHDG> &actdis,
-    const std::shared_ptr<Core::LinAlg::Solver> &solver,
-    const std::shared_ptr<Teuchos::ParameterList> &params,
-    const std::shared_ptr<Core::IO::DiscretizationWriter> &output)
+EleMag::ElemagTimeInt::ElemagTimeInt(const std::shared_ptr<Core::FE::DiscretizationHDG>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output)
     : discret_(actdis),
       solver_(solver),
       params_(params),
@@ -101,10 +101,10 @@ void EleMag::ElemagTimeInt::init()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    eleparams.set<const Core::Utils::FunctionManager *>(
+    eleparams.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
     const Core::ProblemType problem_type = Core::ProblemType::elemag;
-    eleparams.set<const Core::ProblemType *>("problem_type", &problem_type);
+    eleparams.set<const Core::ProblemType*>("problem_type", &problem_type);
 
     // Evaluation of the dirichlet conditions (why is it here and also later?)
     discret_->evaluate_dirichlet(eleparams, zeros_, nullptr, nullptr, nullptr, dbcmaps_);
@@ -245,14 +245,14 @@ void EleMag::ElemagTimeInt::elements_init()
   for (int el = 0; el < discret_->num_my_col_elements(); ++el)
   {
     // Selecting the elements
-    Core::Elements::Element *ele = discret_->l_col_element(el);
+    Core::Elements::Element* ele = discret_->l_col_element(el);
 
     // This function is a void function and therefore the input goes to the vector "la"
     ele->location_vector(*discret_, la, true);
 
     // This is needed to store the dirichlet dofs in the
     if (std::find(la[0].lmdirich_.begin(), la[0].lmdirich_.end(), 1) != la[0].lmdirich_.end())
-      initParams.set<std::vector<int> *>("dirichdof", &la[0].lmdirich_);
+      initParams.set<std::vector<int>*>("dirichdof", &la[0].lmdirich_);
     else
       initParams.remove("dirichdof", false);
 
@@ -320,7 +320,7 @@ void EleMag::ElemagTimeInt::set_initial_field(
       for (int el = 0; el < discret_->num_my_col_elements(); ++el)
       {
         // Selecting the elements
-        Core::Elements::Element *ele = discret_->l_col_element(el);
+        Core::Elements::Element* ele = discret_->l_col_element(el);
 
         // This function is a void function and therefore the input goes to the vector "la"
         ele->location_vector(*discret_, la, false);
@@ -355,7 +355,7 @@ void EleMag::ElemagTimeInt::set_initial_field(
  |  Set initial field by scatra solution (public)      berardocco 05/20 |
  *----------------------------------------------------------------------*/
 void EleMag::ElemagTimeInt::set_initial_electric_field(
-    Core::LinAlg::Vector<double> &phi, std::shared_ptr<Core::FE::Discretization> &scatradis)
+    Core::LinAlg::Vector<double>& phi, std::shared_ptr<Core::FE::Discretization>& scatradis)
 {
   // we have to call an init for the elements first!
   Teuchos::ParameterList initParams;
@@ -384,8 +384,8 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
   for (int el = 0; el < discret_->num_my_col_elements(); ++el)
   {
     // determine owner of the scatra element
-    Core::Elements::Element *scatraele = scatradis->l_col_element(el);
-    Core::Elements::Element *elemagele = discret_->l_col_element(el);
+    Core::Elements::Element* scatraele = scatradis->l_col_element(el);
+    Core::Elements::Element* elemagele = discret_->l_col_element(el);
 
     elemagele->location_vector(*discret_, la, false);
     if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
@@ -409,7 +409,7 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
       int numscatranode = scatraele->num_node();
       (*nodevals_phi).resize(numscatranode);
       // fill nodevals with node coords and nodebased solution values
-      Core::Nodes::Node **scatranodes = scatraele->nodes();
+      Core::Nodes::Node** scatranodes = scatraele->nodes();
       for (int i = 0; i < numscatranode; ++i)
       {
         int dof = scatradis->dof(0, scatranodes[i], 0);
@@ -461,7 +461,7 @@ std::shared_ptr<Core::LinAlg::SerialDenseVector> EleMag::ElemagTimeInt::compute_
   return errors;
 }
 
-void EleMag::ElemagTimeInt::print_errors(std::shared_ptr<Core::LinAlg::SerialDenseVector> &errors)
+void EleMag::ElemagTimeInt::print_errors(std::shared_ptr<Core::LinAlg::SerialDenseVector>& errors)
 {
   if (myrank_ == 0)
   {
@@ -542,7 +542,7 @@ void EleMag::ElemagTimeInt::project_field_test(const int startfuncno)
   for (int el = 0; el < discret_->num_my_col_elements(); ++el)
   {
     // Selecting the elements
-    Core::Elements::Element *ele = discret_->l_col_element(el);
+    Core::Elements::Element* ele = discret_->l_col_element(el);
 
     // This function is a void function and therefore the input goes to the vector "la"
     ele->location_vector(*discret_, la, false);
@@ -562,7 +562,7 @@ void EleMag::ElemagTimeInt::project_field_test(const int startfuncno)
 void EleMag::ElemagTimeInt::project_field_test_trace(const int startfuncno)
 {
   // This map contains the trace values
-  const Epetra_Map *dofrowmap = discret_->dof_row_map();
+  const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // Initializing siome vectors and parameters
   Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
@@ -578,7 +578,7 @@ void EleMag::ElemagTimeInt::project_field_test_trace(const int startfuncno)
   for (int el = 0; el < discret_->num_my_col_elements(); ++el)
   {
     // Selecting the elements
-    Core::Elements::Element *ele = discret_->l_col_element(el);
+    Core::Elements::Element* ele = discret_->l_col_element(el);
 
     // This function is a void function and therefore the input goes to the vector "la"
     ele->location_vector(*discret_, la, false);
@@ -742,10 +742,10 @@ void EleMag::ElemagTimeInt::apply_dirichlet_to_system(bool resonly)
   TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
   Teuchos::ParameterList params;
   params.set<double>("total time", time_);
-  params.set<const Core::Utils::FunctionManager *>(
+  params.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
   const Core::ProblemType problem_type = Core::ProblemType::elemag;
-  params.set<const Core::ProblemType *>("problem_type", &problem_type);
+  params.set<const Core::ProblemType*>("problem_type", &problem_type);
   discret_->evaluate_dirichlet(params, zeros_, nullptr, nullptr, nullptr, nullptr);
   if (resonly)
     Core::LinAlg::apply_dirichlet_to_system(*residual_, *zeros_, *(dbcmaps_->cond_map()));
@@ -765,7 +765,7 @@ void EleMag::ElemagTimeInt::compute_silver_mueller(bool do_rhs)
 
   // absorbing boundary conditions
   std::string condname = "Silver-Mueller";
-  std::vector<Core::Conditions::Condition *> absorbingBC;
+  std::vector<Core::Conditions::Condition*> absorbingBC;
   discret_->get_condition(condname, absorbingBC);
 
   // Check if there are Silver-Mueller BC
@@ -829,14 +829,14 @@ namespace
   |  Interpolate discontinous values to nodal values     berardocco 03/18 |
   *----------------------------------------------------------------------*/
   // internal helper function for output
-  void get_node_vectors_hdg(Core::FE::Discretization &dis,
-      const std::shared_ptr<Core::LinAlg::Vector<double>> &traceValues, const int ndim,
-      std::shared_ptr<Core::LinAlg::MultiVector<double>> &electric,
-      std::shared_ptr<Core::LinAlg::MultiVector<double>> &electric_post,
-      std::shared_ptr<Core::LinAlg::MultiVector<double>> &magnetic,
-      std::shared_ptr<Core::LinAlg::MultiVector<double>> &trace,
-      Core::LinAlg::Vector<double> &conductivity, Core::LinAlg::Vector<double> &permittivity,
-      Core::LinAlg::Vector<double> &permeability)
+  void get_node_vectors_hdg(Core::FE::Discretization& dis,
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& traceValues, const int ndim,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>>& electric,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>>& electric_post,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>>& magnetic,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>>& trace,
+      Core::LinAlg::Vector<double>& conductivity, Core::LinAlg::Vector<double>& permittivity,
+      Core::LinAlg::Vector<double>& permeability)
   {
     // create dofsets for electric and pressure at nodes
     // if there is no pressure vector it means that the vectors have not yet
@@ -871,7 +871,7 @@ namespace
     for (int el = 0; el < dis.num_my_col_elements(); ++el)
     {
       // Opening the element
-      Core::Elements::Element *ele = dis.l_col_element(el);
+      Core::Elements::Element* ele = dis.l_col_element(el);
 
       // Making sure the vector is not a zero dimensional vector and in case
       // resizing it. The interpolVec has to contain all the unknown of the
@@ -896,7 +896,7 @@ namespace
       for (int i = 0; i < ele->num_node(); ++i)
       {
         // Get the i-th node of the element
-        Core::Nodes::Node *node = ele->nodes()[i];
+        Core::Nodes::Node* node = ele->nodes()[i];
         // Get the local ID starting from the node's global id
         const int localIndex = dis.node_row_map()->LID(node->id());
         ////If the local index is less than zero skip the for loop
@@ -935,18 +935,18 @@ namespace
   /*----------------------------------------------------------------------*
   |  Reads material properties from element for output   berardocco 03/18 |
   *----------------------------------------------------------------------*/
-  void get_element_material_properties(Core::FE::Discretization &dis,
-      Core::LinAlg::Vector<double> &conductivity, Core::LinAlg::Vector<double> &permittivity,
-      Core::LinAlg::Vector<double> &permeability)
+  void get_element_material_properties(Core::FE::Discretization& dis,
+      Core::LinAlg::Vector<double>& conductivity, Core::LinAlg::Vector<double>& permittivity,
+      Core::LinAlg::Vector<double>& permeability)
   {
     // For every element of the processor
     for (int el = 0; el < dis.num_my_row_elements(); ++el)
     {
       // Opening the element
-      Core::Elements::Element *ele = dis.l_row_element(el);
+      Core::Elements::Element* ele = dis.l_row_element(el);
 
-      const Mat::ElectromagneticMat *elemagmat =
-          static_cast<const Mat::ElectromagneticMat *>(ele->material().get());
+      const Mat::ElectromagneticMat* elemagmat =
+          static_cast<const Mat::ElectromagneticMat*>(ele->material().get());
       (conductivity)[dis.element_row_map()->LID(ele->id())] = elemagmat->sigma(ele->id());
       (permittivity)[dis.element_row_map()->LID(ele->id())] = elemagmat->epsilon(ele->id());
       (permeability)[dis.element_row_map()->LID(ele->id())] = elemagmat->mu(ele->id());
@@ -1100,7 +1100,7 @@ void EleMag::ElemagTimeInt::read_restart(int step)
   return;
 }  // read_restart
 
-void EleMag::ElemagTimeInt::spy_sysmat(std::ostream &out)
+void EleMag::ElemagTimeInt::spy_sysmat(std::ostream& out)
 {
   std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(sysmat_)->epetra_matrix()->Print(out);
   std::cout << "Routine has to be implemented. In the meanwhile the print() method from the "

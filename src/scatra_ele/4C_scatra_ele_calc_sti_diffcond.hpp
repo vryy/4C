@@ -187,7 +187,7 @@ namespace Discret
       //! utility class supporting element evaluation for diffusion-conduction formulation
       Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>* utils_;
     };  // class ScaTraEleCalcSTIDiffCond
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

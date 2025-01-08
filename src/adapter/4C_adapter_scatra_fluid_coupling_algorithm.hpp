@@ -58,7 +58,7 @@ namespace Adapter
 
    protected:
     /// perform algorithm specific initialization stuff
-    virtual void do_algorithm_specific_init(){};
+    virtual void do_algorithm_specific_init() {};
 
     /// provide access to algorithm parameters
     virtual const Teuchos::ParameterList& algo_parameters() { return params_; }

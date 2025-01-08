@@ -28,7 +28,7 @@ namespace Lubrication
     calc_mean_pressures,                // calc_mean_pressures,
     calc_error,                         // calc_error
     calc_lubrication_coupltang          // calculate off-diagonal tangent matrix term
-  };                                    // enum Action
+  };  // enum Action
 
   /*--------------------------------------------------------------------------*/
   /*!
@@ -40,7 +40,7 @@ namespace Lubrication
     // new action
     bd_calc_weak_Dirichlet,  // weak_dirichlet,
     bd_calc_Neumann,         // n/a
-  };                         // enum Lubrication::BoundaryAction
+  };  // enum Lubrication::BoundaryAction
 }  // namespace Lubrication
 
 FOUR_C_NAMESPACE_CLOSE

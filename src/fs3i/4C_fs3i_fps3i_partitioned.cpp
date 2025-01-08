@@ -796,8 +796,8 @@ void FS3I::PartFPS3I::extract_pressure(
 
   // ############ Poro Field ###############
   pressure.push_back(fpsi_->poro_field()
-                         ->fluid_field()
-                         ->velnp());  // we extract the velocities as well. We sort them out later.
+          ->fluid_field()
+          ->velnp());  // we extract the velocities as well. We sort them out later.
 }
 
 FOUR_C_NAMESPACE_CLOSE

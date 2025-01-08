@@ -25,7 +25,7 @@ Core::LinAlg::SerialDenseVector Cut::VolumeIntegration::compute_rhs_moment()
 {
   Core::LinAlg::SerialDenseVector rhs_mom(num_func_);
 
-  const plain_facet_set &facete = volcell_->facets();
+  const plain_facet_set& facete = volcell_->facets();
 
   // integrate each base function over this volumecell
   for (int fnc = 1; fnc <= num_func_; fnc++)
@@ -34,7 +34,7 @@ Core::LinAlg::SerialDenseVector Cut::VolumeIntegration::compute_rhs_moment()
 
     for (plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
     {
-      Facet *fe = *i;
+      Facet* fe = *i;
 
       // an equivalent function corresponding to every base function will be
       // integrated over facet of vcell
@@ -245,9 +245,9 @@ bool Cut::VolumeIntegration::compute_gaussian_points(int numeach)
 intersection point lies inside the volume or not
 *--------------------------------------------------------------------------------------------------------------------*/
 void Cut::VolumeIntegration::get_zcoordinates(
-    std::vector<std::vector<double>> &zcoord, std::vector<std::vector<double>> &ycoord)
+    std::vector<std::vector<double>>& zcoord, std::vector<std::vector<double>>& ycoord)
 {
-  const plain_facet_set &facete = volcell_->facets();
+  const plain_facet_set& facete = volcell_->facets();
   int faceno = 0;
   for (plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
   {
@@ -262,12 +262,12 @@ void Cut::VolumeIntegration::get_zcoordinates(
       faceno++;
       continue;
     }
-    Facet *face1 = *i;
+    Facet* face1 = *i;
     std::vector<std::vector<double>> corLocal;
     face1->corner_points_local(elem1_, corLocal);
     for (std::vector<std::vector<double>>::iterator k = corLocal.begin(); k != corLocal.end(); k++)
     {
-      std::vector<double> &coords1 = *k;
+      std::vector<double>& coords1 = *k;
 
       thisplane1.push_back(coords1[1]);
       thisplane2.push_back(coords1[2]);
@@ -282,8 +282,8 @@ void Cut::VolumeIntegration::get_zcoordinates(
               check whether the generated ray intersect any of the facets
               if so generate gauss points along the ray
 *------------------------------------------------------------------------------------------*/
-bool Cut::VolumeIntegration::is_intersect(double *pt, double *mini, double *maxi,
-    std::vector<std::vector<double>> &linePts, std::vector<std::vector<double>> zcoord,
+bool Cut::VolumeIntegration::is_intersect(double* pt, double* mini, double* maxi,
+    std::vector<std::vector<double>>& linePts, std::vector<std::vector<double>> zcoord,
     std::vector<std::vector<double>> ycoord, double toler, int numeach)
 {
   bool intersect = false;
@@ -389,23 +389,23 @@ bool Cut::VolumeIntegration::is_intersect(double *pt, double *mini, double *maxi
       interPoints[inter1] = fa1;
     }
 
-    const plain_facet_set &facete = volcell_->facets();
+    const plain_facet_set& facete = volcell_->facets();
     plain_facet_set::const_iterator f = facete.begin();
     unsigned cut_count = 0;
     for (std::map<std::vector<double>, int>::iterator i = interPoints.begin();
-         i != interPoints.end(); i++)
+        i != interPoints.end(); i++)
     {
       bool ptsInside = false;
       unsigned face1 = i->second;
       plain_facet_set::const_iterator f1 = f;
       for (int k = 0; k < i->second; k++) f1++;
-      Facet *facet1 = *f1;
+      Facet* facet1 = *f1;
       std::vector<double> inter1 = i->first;
       i++;
       unsigned face2 = i->second;
       plain_facet_set::const_iterator f2 = f;
       for (int k = 0; k < i->second; k++) f2++;
-      Facet *facet2 = *f2;
+      Facet* facet2 = *f2;
       std::vector<double> inter2 = i->first;
       i--;
 
@@ -509,8 +509,8 @@ int Cut::VolumeIntegration::pnpoly(
 /*-------------------------------------------------------------------------------------------------------------------*
 ???
 *--------------------------------------------------------------------------------------------------------------------*/
-int Cut::VolumeIntegration::pnpoly(const std::vector<std::vector<double>> &xp,
-    const Core::LinAlg::Matrix<3, 1> &pt, Cut::ProjectionDirection projType)
+int Cut::VolumeIntegration::pnpoly(const std::vector<std::vector<double>>& xp,
+    const Core::LinAlg::Matrix<3, 1>& pt, Cut::ProjectionDirection projType)
 {
   int npol = xp.size();
   int ind1 = 1, ind2 = 2;
@@ -586,8 +586,8 @@ int Cut::VolumeIntegration::pnpoly(const std::vector<std::vector<double>> &xp,
         Check whether the particular z-plane of the volumecell contains significant area so as to
  distribute the Gauss points in that plane
  *--------------------------------------------------------------------------------------------------------------------*/
-bool Cut::VolumeIntegration::is_contain_area(double minn[3], double maxx[3], double &zmin,
-    std::vector<std::vector<double>> &pts, std::vector<std::vector<double>> zcoord,
+bool Cut::VolumeIntegration::is_contain_area(double minn[3], double maxx[3], double& zmin,
+    std::vector<std::vector<double>>& pts, std::vector<std::vector<double>> zcoord,
     std::vector<std::vector<double>> ycoord, double toler, int numeach)
 {
   bool isArea = true;
@@ -688,7 +688,7 @@ bool Cut::VolumeIntegration::is_contain_area(double minn[3], double maxx[3], dou
 by inter1 and inter2
 *-------------------------------------------------------------------------------------------------------------------*/
 void Cut::VolumeIntegration::on_line(std::vector<double> inter1, std::vector<double> inter2,
-    std::vector<std::vector<double>> &linePts, int num)
+    std::vector<std::vector<double>>& linePts, int num)
 {
   std::vector<double> left, right;
   if (inter1[0] < inter2[0])
@@ -719,9 +719,9 @@ void Cut::VolumeIntegration::on_line(std::vector<double> inter1, std::vector<dou
  * Check whether the point with this element Local coordinates is inside,              *
  * outside or on boundary of this volumecell                            sudhakar 07/12 *
  *-------------------------------------------------------------------------------------*/
-std::string Cut::VolumeIntegration::is_point_inside(Core::LinAlg::Matrix<3, 1> &rst)
+std::string Cut::VolumeIntegration::is_point_inside(Core::LinAlg::Matrix<3, 1>& rst)
 {
-  const plain_facet_set &facete = volcell_->facets();
+  const plain_facet_set& facete = volcell_->facets();
 
   //--------------------------------------------------------------------------------
   // Step 1: Classify facets into facets having zero normal in x-direction and other
@@ -732,7 +732,7 @@ std::string Cut::VolumeIntegration::is_point_inside(Core::LinAlg::Matrix<3, 1> &
 
   for (plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
   {
-    Facet *fe = *i;
+    Facet* fe = *i;
     std::vector<std::vector<double>> cornersLocal;
     fe->corner_points_local(elem1_, cornersLocal);
 
@@ -754,7 +754,7 @@ std::string Cut::VolumeIntegration::is_point_inside(Core::LinAlg::Matrix<3, 1> &
   for (unsigned i = 0; i < XFacets.size(); i++)
   {
     // check whether the infinite ray thru given (y,z) intersect the facet
-    Facet *fe = *XFacets[i];
+    Facet* fe = *XFacets[i];
     std::vector<std::vector<double>> cornersLocal;
     fe->corner_points_local(elem1_, cornersLocal);
     int cutno = pnpoly(cornersLocal, rst, Cut::proj_x);
@@ -785,7 +785,7 @@ std::string Cut::VolumeIntegration::is_point_inside(Core::LinAlg::Matrix<3, 1> &
     {
       if (fabs((eqn[3] / eqn[1] - rst(1, 0)) / rst(1, 0)) < 1e-10)  // make sure pt is on same plane
       {
-        Facet *fe = *NotXFacets[i];
+        Facet* fe = *NotXFacets[i];
         std::vector<std::vector<double>> cornersLocal;
         fe->corner_points_local(elem1_, cornersLocal);
         int cutno = pnpoly(cornersLocal, rst, Cut::proj_y);
@@ -800,7 +800,7 @@ std::string Cut::VolumeIntegration::is_point_inside(Core::LinAlg::Matrix<3, 1> &
     {
       if (fabs((eqn[3] / eqn[2] - rst(2, 0)) / rst(2, 0)) < 1e-10)
       {
-        Facet *fe = *NotXFacets[i];
+        Facet* fe = *NotXFacets[i];
         std::vector<std::vector<double>> cornersLocal;
         fe->corner_points_local(elem1_, cornersLocal);
         int cutno = pnpoly(cornersLocal, rst, Cut::proj_z);

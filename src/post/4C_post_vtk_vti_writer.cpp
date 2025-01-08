@@ -422,7 +422,7 @@ void PostVtiWriter::writer_prep_timestep()
   {
     int k = 0;
     for (set_tol::const_iterator it = collected_coords[i].begin(); it != collected_coords[i].end();
-         ++it, ++k)
+        ++it, ++k)
       if (*it - lorigin[i] - k * spacing_[i] > TOL_N || *it - lorigin[i] - k * spacing_[i] < -TOL_N)
         FOUR_C_THROW(
             "The mesh is not a uniform rectangular grid: grid coordinate[%d]: %lf, "

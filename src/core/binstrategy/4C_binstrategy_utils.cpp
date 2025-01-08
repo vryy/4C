@@ -113,7 +113,7 @@ namespace Core::Binstrategy::Utils
 
     // ---- receive ----
     for (int rec = 0; rec < summedtargets[Core::Communication::my_mpi_rank(discret.get_comm())];
-         ++rec)
+        ++rec)
     {
       std::vector<char> rdata;
       int length = 0;
@@ -208,7 +208,7 @@ namespace Core::Binstrategy::Utils
 
     // ---- receive ----
     for (int rec = 0; rec < summedtargets[Core::Communication::my_mpi_rank(discret.get_comm())];
-         ++rec)
+        ++rec)
     {
       std::vector<char> rdata;
       int length = 0;

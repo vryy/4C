@@ -406,7 +406,7 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
         break;
       }
     }  // end of switch(timint)
-  }    // action == Thermo::calc_thermo_finttang
+  }  // action == Thermo::calc_thermo_finttang
 
   //============================================================================
   // Calculate/ evaluate heatflux q and temperature gradients gradtemp at
@@ -980,7 +980,7 @@ void Discret::Elements::TemperImpl<distype>::linear_disp_contribution(
     kappa = thrstvk->Conductivity();
     kappa /= thrstvk->Capacity();
 #endif  // CALCSTABILOFREACTTERM
-  }     // m_thermostvenant
+  }  // m_thermostvenant
 
   Core::LinAlg::Matrix<nen_, 1> Ndctemp_dTBvNT(true);
 
@@ -1079,7 +1079,7 @@ void Discret::Elements::TemperImpl<distype>::linear_disp_contribution(
     std::cout << "K_thr abs = " << abs(K_thr) << std::endl;
     if (abs(K_thr) > 1.0)
       std::cout << "stability problems can occur: abs(K_thr) = " << abs(K_thr) << std::endl;
-      // -------------------------------------- end reactive term check
+    // -------------------------------------- end reactive term check
 #endif  // CALCSTABILOFREACTTERM
 
     // N_T^T . (- ctemp) : ( B_L .  (d^e)' )
@@ -1106,7 +1106,7 @@ void Discret::Elements::TemperImpl<distype>::linear_disp_contribution(
         std::cout << "ncBv\n" << ncBv << std::endl;
       }
 #endif  // TSIMONOLITHASOUTPUT
-    }   // if (efint != nullptr)
+    }  // if (efint != nullptr)
 
     // update conductivity matrix (with displacement dependent term)
     if (econd != nullptr)
@@ -3055,25 +3055,25 @@ void Discret::Elements::TemperImpl<distype>::calculate_boplin(
     // [ N1,Z 0 N1,X | N2,Z 0 N2,X | ... | Ni,Z 0 Ni,X ]
     for (int i = 0; i < nen_; ++i)
     {
-      (*boplin)(0, nsd_ * numdofpernode_ * i + 0) = (*N_XYZ)(0, i);
-      (*boplin)(0, nsd_ * numdofpernode_ * i + 1) = 0.0;
-      (*boplin)(0, nsd_ * numdofpernode_ * i + 2) = 0.0;
-      (*boplin)(1, nsd_ * numdofpernode_ * i + 0) = 0.0;
-      (*boplin)(1, nsd_ * numdofpernode_ * i + 1) = (*N_XYZ)(1, i);
-      (*boplin)(1, nsd_ * numdofpernode_ * i + 2) = 0.0;
-      (*boplin)(2, nsd_ * numdofpernode_ * i + 0) = 0.0;
-      (*boplin)(2, nsd_ * numdofpernode_ * i + 1) = 0.0;
-      (*boplin)(2, nsd_ * numdofpernode_ * i + 2) = (*N_XYZ)(2, i);
+      (*boplin)(0, nsd_* numdofpernode_* i + 0) = (*N_XYZ)(0, i);
+      (*boplin)(0, nsd_* numdofpernode_* i + 1) = 0.0;
+      (*boplin)(0, nsd_* numdofpernode_* i + 2) = 0.0;
+      (*boplin)(1, nsd_* numdofpernode_* i + 0) = 0.0;
+      (*boplin)(1, nsd_* numdofpernode_* i + 1) = (*N_XYZ)(1, i);
+      (*boplin)(1, nsd_* numdofpernode_* i + 2) = 0.0;
+      (*boplin)(2, nsd_* numdofpernode_* i + 0) = 0.0;
+      (*boplin)(2, nsd_* numdofpernode_* i + 1) = 0.0;
+      (*boplin)(2, nsd_* numdofpernode_* i + 2) = (*N_XYZ)(2, i);
       /* ~~~ */
-      (*boplin)(3, nsd_ * numdofpernode_ * i + 0) = (*N_XYZ)(1, i);
-      (*boplin)(3, nsd_ * numdofpernode_ * i + 1) = (*N_XYZ)(0, i);
-      (*boplin)(3, nsd_ * numdofpernode_ * i + 2) = 0.0;
-      (*boplin)(4, nsd_ * numdofpernode_ * i + 0) = 0.0;
-      (*boplin)(4, nsd_ * numdofpernode_ * i + 1) = (*N_XYZ)(2, i);
-      (*boplin)(4, nsd_ * numdofpernode_ * i + 2) = (*N_XYZ)(1, i);
-      (*boplin)(5, nsd_ * numdofpernode_ * i + 0) = (*N_XYZ)(2, i);
-      (*boplin)(5, nsd_ * numdofpernode_ * i + 1) = 0.0;
-      (*boplin)(5, nsd_ * numdofpernode_ * i + 2) = (*N_XYZ)(0, i);
+      (*boplin)(3, nsd_* numdofpernode_* i + 0) = (*N_XYZ)(1, i);
+      (*boplin)(3, nsd_* numdofpernode_* i + 1) = (*N_XYZ)(0, i);
+      (*boplin)(3, nsd_* numdofpernode_* i + 2) = 0.0;
+      (*boplin)(4, nsd_* numdofpernode_* i + 0) = 0.0;
+      (*boplin)(4, nsd_* numdofpernode_* i + 1) = (*N_XYZ)(2, i);
+      (*boplin)(4, nsd_* numdofpernode_* i + 2) = (*N_XYZ)(1, i);
+      (*boplin)(5, nsd_* numdofpernode_* i + 0) = (*N_XYZ)(2, i);
+      (*boplin)(5, nsd_* numdofpernode_* i + 1) = 0.0;
+      (*boplin)(5, nsd_* numdofpernode_* i + 2) = (*N_XYZ)(0, i);
     }
   }
 }
@@ -3113,33 +3113,33 @@ void Discret::Elements::TemperImpl<distype>::calculate_bop(
     */
     for (int i = 0; i < nen_; ++i)
     {
-      (*bop)(0, nsd_ * numdofpernode_ * i + 0) = (*defgrd)(0, 0) * (*N_XYZ)(0, i);
-      (*bop)(0, nsd_ * numdofpernode_ * i + 1) = (*defgrd)(1, 0) * (*N_XYZ)(0, i);
-      (*bop)(0, nsd_ * numdofpernode_ * i + 2) = (*defgrd)(2, 0) * (*N_XYZ)(0, i);
-      (*bop)(1, nsd_ * numdofpernode_ * i + 0) = (*defgrd)(0, 1) * (*N_XYZ)(1, i);
-      (*bop)(1, nsd_ * numdofpernode_ * i + 1) = (*defgrd)(1, 1) * (*N_XYZ)(1, i);
-      (*bop)(1, nsd_ * numdofpernode_ * i + 2) = (*defgrd)(2, 1) * (*N_XYZ)(1, i);
-      (*bop)(2, nsd_ * numdofpernode_ * i + 0) = (*defgrd)(0, 2) * (*N_XYZ)(2, i);
-      (*bop)(2, nsd_ * numdofpernode_ * i + 1) = (*defgrd)(1, 2) * (*N_XYZ)(2, i);
-      (*bop)(2, nsd_ * numdofpernode_ * i + 2) = (*defgrd)(2, 2) * (*N_XYZ)(2, i);
+      (*bop)(0, nsd_* numdofpernode_* i + 0) = (*defgrd)(0, 0) * (*N_XYZ)(0, i);
+      (*bop)(0, nsd_* numdofpernode_* i + 1) = (*defgrd)(1, 0) * (*N_XYZ)(0, i);
+      (*bop)(0, nsd_* numdofpernode_* i + 2) = (*defgrd)(2, 0) * (*N_XYZ)(0, i);
+      (*bop)(1, nsd_* numdofpernode_* i + 0) = (*defgrd)(0, 1) * (*N_XYZ)(1, i);
+      (*bop)(1, nsd_* numdofpernode_* i + 1) = (*defgrd)(1, 1) * (*N_XYZ)(1, i);
+      (*bop)(1, nsd_* numdofpernode_* i + 2) = (*defgrd)(2, 1) * (*N_XYZ)(1, i);
+      (*bop)(2, nsd_* numdofpernode_* i + 0) = (*defgrd)(0, 2) * (*N_XYZ)(2, i);
+      (*bop)(2, nsd_* numdofpernode_* i + 1) = (*defgrd)(1, 2) * (*N_XYZ)(2, i);
+      (*bop)(2, nsd_* numdofpernode_* i + 2) = (*defgrd)(2, 2) * (*N_XYZ)(2, i);
       /* ~~~ */
-      (*bop)(3, nsd_ * numdofpernode_ * i + 0) =
+      (*bop)(3, nsd_* numdofpernode_* i + 0) =
           (*defgrd)(0, 0) * (*N_XYZ)(1, i) + (*defgrd)(0, 1) * (*N_XYZ)(0, i);
-      (*bop)(3, nsd_ * numdofpernode_ * i + 1) =
+      (*bop)(3, nsd_* numdofpernode_* i + 1) =
           (*defgrd)(1, 0) * (*N_XYZ)(1, i) + (*defgrd)(1, 1) * (*N_XYZ)(0, i);
-      (*bop)(3, nsd_ * numdofpernode_ * i + 2) =
+      (*bop)(3, nsd_* numdofpernode_* i + 2) =
           (*defgrd)(2, 0) * (*N_XYZ)(1, i) + (*defgrd)(2, 1) * (*N_XYZ)(0, i);
-      (*bop)(4, nsd_ * numdofpernode_ * i + 0) =
+      (*bop)(4, nsd_* numdofpernode_* i + 0) =
           (*defgrd)(0, 1) * (*N_XYZ)(2, i) + (*defgrd)(0, 2) * (*N_XYZ)(1, i);
-      (*bop)(4, nsd_ * numdofpernode_ * i + 1) =
+      (*bop)(4, nsd_* numdofpernode_* i + 1) =
           (*defgrd)(1, 1) * (*N_XYZ)(2, i) + (*defgrd)(1, 2) * (*N_XYZ)(1, i);
-      (*bop)(4, nsd_ * numdofpernode_ * i + 2) =
+      (*bop)(4, nsd_* numdofpernode_* i + 2) =
           (*defgrd)(2, 1) * (*N_XYZ)(2, i) + (*defgrd)(2, 2) * (*N_XYZ)(1, i);
-      (*bop)(5, nsd_ * numdofpernode_ * i + 0) =
+      (*bop)(5, nsd_* numdofpernode_* i + 0) =
           (*defgrd)(0, 2) * (*N_XYZ)(0, i) + (*defgrd)(0, 0) * (*N_XYZ)(2, i);
-      (*bop)(5, nsd_ * numdofpernode_ * i + 1) =
+      (*bop)(5, nsd_* numdofpernode_* i + 1) =
           (*defgrd)(1, 2) * (*N_XYZ)(0, i) + (*defgrd)(1, 0) * (*N_XYZ)(2, i);
-      (*bop)(5, nsd_ * numdofpernode_ * i + 2) =
+      (*bop)(5, nsd_* numdofpernode_* i + 2) =
           (*defgrd)(2, 2) * (*N_XYZ)(0, i) + (*defgrd)(2, 0) * (*N_XYZ)(2, i);
     }
   }
@@ -3424,12 +3424,12 @@ void Discret::Elements::TemperImpl<distype>::fd_check_coupl_nln_fint_cond_capa(
   // save old variables
   Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> efint_old =
       Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>(*efint);
-  Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_* numdofpernode_> etang_old =
+  Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang_old =
       Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>(*etang);
   Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> etemp_old =
       Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>(etempn_);
 
-  Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_* numdofpernode_> etang_approx =
+  Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang_approx =
       Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>();
 
   // create a vector for evaluation of disturbed fint

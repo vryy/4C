@@ -71,7 +71,7 @@ namespace NOX
       };  // class Combo
 
     }  // namespace StatusTest
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

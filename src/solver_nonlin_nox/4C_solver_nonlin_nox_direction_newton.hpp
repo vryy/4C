@@ -40,7 +40,7 @@ namespace NOX
         Teuchos::RCP<::NOX::Utils> utils_;
       };
     }  // namespace Direction
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

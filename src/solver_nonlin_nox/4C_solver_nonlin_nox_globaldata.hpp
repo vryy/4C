@@ -35,7 +35,7 @@ namespace NOX
       {
         class Required;
       }  // namespace Interface
-    }    // namespace CONSTRAINT
+    }  // namespace CONSTRAINT
 
     class GlobalData
     {
@@ -194,7 +194,7 @@ namespace NOX
       /// output object
       Teuchos::RCP<::NOX::Utils> nox_utils_;
     };  // namespace GlobalData
-  }     // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

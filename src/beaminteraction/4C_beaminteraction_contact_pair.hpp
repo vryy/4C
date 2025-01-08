@@ -111,7 +111,7 @@ namespace BeamInteraction
      * \brief Update state of rotational DoFs of both elements
      */
     virtual void reset_rotation_state(const Core::FE::Discretization& discret,
-        const std::shared_ptr<const Core::LinAlg::Vector<double>>& ia_discolnp){};
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& ia_discolnp) {};
 
     //@}
 
@@ -253,7 +253,7 @@ namespace BeamInteraction
         const std::shared_ptr<const Core::FE::Discretization>& discret,
         const std::shared_ptr<Epetra_FEVector>& force_vector,
         const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector){};
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector) {};
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
@@ -279,7 +279,7 @@ namespace BeamInteraction
         const std::shared_ptr<Epetra_FEVector>& force_vector,
         const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Core::LinAlg::Vector<double>& global_lambda,
-        const Core::LinAlg::Vector<double>& displacement_vector){};
+        const Core::LinAlg::Vector<double>& displacement_vector) {};
 
     /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
@@ -323,7 +323,7 @@ namespace BeamInteraction
         Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
         Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
         Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector){};
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector) {};
 
     /**
      * \brief Add the visualization of this pair to the beam to solid visualization output writer.

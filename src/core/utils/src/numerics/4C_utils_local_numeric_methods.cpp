@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Core::Utils::bisection(const std::function<double(double)> &funct, const double a_init,
+double Core::Utils::bisection(const std::function<double(double)>& funct, const double a_init,
     const double b_init, const double tol, const int maxiter)
 {
   double a = a_init;
@@ -58,7 +58,7 @@ double Core::Utils::bisection(const std::function<double(double)> &funct, const 
  *----------------------------------------------------------------------*/
 Core::Utils::ValuesFunctAndFunctDerivs
 Core::Utils::evaluate_function_and_derivatives_central_differences(
-    const std::function<double(double)> &func, const double x, const double delta_x)
+    const std::function<double(double)>& func, const double x, const double delta_x)
 {
   ValuesFunctAndFunctDerivs f_df_ddf;
 

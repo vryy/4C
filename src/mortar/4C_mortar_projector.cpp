@@ -431,7 +431,8 @@ Mortar::ProjectorCalc<distype>* Mortar::ProjectorCalc<distype>::instance(
     Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
-      []() {
+      []()
+      {
         return std::unique_ptr<Mortar::ProjectorCalc<distype>>(
             new Mortar::ProjectorCalc<distype>());
       });
@@ -1616,7 +1617,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal_3d_lin(
     for (int k = 0; k < 3; ++k)
     {
       for (_CI p = mnode->data().get_deriv_n()[k].begin();
-           p != mnode->data().get_deriv_n()[k].end(); ++p)
+          p != mnode->data().get_deriv_n()[k].end(); ++p)
       {
         (auxnormalLin[k])[p->first] += mval(i) * (p->second);
       }
@@ -1685,13 +1686,13 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal_3d_lin(
     }
 
     for (_CI p = mnode->data().get_deriv_n()[0].begin(); p != mnode->data().get_deriv_n()[0].end();
-         ++p)
+        ++p)
       (n_n_deriv[0])[p->first] += mval(k) * (p->second);
     for (_CI p = mnode->data().get_deriv_n()[1].begin(); p != mnode->data().get_deriv_n()[1].end();
-         ++p)
+        ++p)
       (n_n_deriv[1])[p->first] += mval(k) * (p->second);
     for (_CI p = mnode->data().get_deriv_n()[2].begin(); p != mnode->data().get_deriv_n()[2].end();
-         ++p)
+        ++p)
       (n_n_deriv[2])[p->first] += mval(k) * (p->second);
   }
 
@@ -1916,7 +1917,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal_2d_lin(
     for (int k = 0; k < 3; ++k)
     {
       for (_CI p = mnode->data().get_deriv_n()[k].begin();
-           p != mnode->data().get_deriv_n()[k].end(); ++p)
+          p != mnode->data().get_deriv_n()[k].end(); ++p)
       {
         (auxnormalLin[k])[p->first] += mval(i) * (p->second);
       }
@@ -1977,13 +1978,13 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal_2d_lin(
     }
 
     for (_CI p = mnode->data().get_deriv_n()[0].begin(); p != mnode->data().get_deriv_n()[0].end();
-         ++p)
+        ++p)
       (n_n_deriv[0])[p->first] += mval(k) * (p->second);
     for (_CI p = mnode->data().get_deriv_n()[1].begin(); p != mnode->data().get_deriv_n()[1].end();
-         ++p)
+        ++p)
       (n_n_deriv[1])[p->first] += mval(k) * (p->second);
     for (_CI p = mnode->data().get_deriv_n()[2].begin(); p != mnode->data().get_deriv_n()[2].end();
-         ++p)
+        ++p)
       (n_n_deriv[2])[p->first] += mval(k) * (p->second);
   }
 

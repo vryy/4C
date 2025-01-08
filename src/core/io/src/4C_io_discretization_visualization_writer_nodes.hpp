@@ -43,7 +43,7 @@ namespace Core::IO
      * @param parameters (in)     Visualization parameters
      */
     DiscretizationVisualizationWriterNodes(
-        const std::shared_ptr<const Core::FE::Discretization> &discretization,
+        const std::shared_ptr<const Core::FE::Discretization>& discretization,
         VisualizationParameters parameters);
 
     /**
@@ -59,8 +59,8 @@ namespace Core::IO
      * used if not all nodal DOFs should be output, e.g., velocity or pressure in fluid.
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void append_dof_based_result_data_vector(Core::LinAlg::Vector<double> &result_data_dofbased,
-        unsigned int result_num_dofs_per_node, const std::string &resultname);
+    void append_dof_based_result_data_vector(Core::LinAlg::Vector<double>& result_data_dofbased,
+        unsigned int result_num_dofs_per_node, const std::string& resultname);
 
     /**
      * @brief Append result vector with num_components values per node to output data
@@ -79,8 +79,8 @@ namespace Core::IO
      * @param resultname (in) Name of the field to be written to the visualization file
      */
     void append_node_based_result_data_vector(
-        Core::LinAlg::MultiVector<double> &result_data_nodebased,
-        unsigned int result_num_components_per_node, const std::string &resultname);
+        Core::LinAlg::MultiVector<double>& result_data_nodebased,
+        unsigned int result_num_components_per_node, const std::string& resultname);
 
     /**
      * \brief Write the visualization files to disk

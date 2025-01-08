@@ -71,8 +71,8 @@ namespace NOX
             const ::NOX::Utils& utils,
             std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests = nullptr);
       }  // namespace StatusTest
-    }    // namespace Inner
-  }      // namespace Nln
+    }  // namespace Inner
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

@@ -25,7 +25,7 @@ namespace Mat
       /// standard constructor
       explicit FluidPoroRelPermeabilityLaw(
           const Core::Mat::PAR::Parameter::Data& matdata, bool constrelpermeability)
-          : Parameter(matdata), constrelpermeability_(constrelpermeability){};
+          : Parameter(matdata), constrelpermeability_(constrelpermeability) {};
 
       // get relative permeability
       virtual double get_rel_permeability(const double saturation) const = 0;

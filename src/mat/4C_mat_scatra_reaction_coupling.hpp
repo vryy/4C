@@ -44,7 +44,7 @@ namespace Mat
         );
 
         /// standard constructor
-        ReactionInterface(){};
+        ReactionInterface() {};
 
         /// destructor
         virtual ~ReactionInterface() = default;
@@ -131,7 +131,7 @@ namespace Mat
        public:
         /// standard constructor
         ReacStart(std::shared_ptr<ReactionInterface> reaction, const std::vector<double>& reacstart)
-            : reaction_(reaction), reacstart_(reacstart){};
+            : reaction_(reaction), reacstart_(reacstart) {};
 
         /// initialization
         void initialize(int numscal,             //!< number of scalars
@@ -190,7 +190,8 @@ namespace Mat
       {
        public:
         /// standard constructor
-        ReactionWithPhiScaling(std::shared_ptr<ReactionInterface> reaction) : reaction_(reaction){};
+        ReactionWithPhiScaling(std::shared_ptr<ReactionInterface> reaction)
+            : reaction_(reaction) {};
 
         /// initialization (to be called by derived classes)
         void initialize(int numscal,             //!< number of scalars
@@ -271,7 +272,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        ReactionBase() : isinit_(false){};
+        ReactionBase() : isinit_(false) {};
 
         /// initialization (to be called by derived classes)
         void initialize(int numscal,             //!< number of scalars
@@ -368,7 +369,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        SimpleMultiplicative(){};
+        SimpleMultiplicative() {};
 
         /// initialization
         void initialize(int numscal,             //!< number of scalars
@@ -411,7 +412,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        PowerMultiplicative(){};
+        PowerMultiplicative() {};
 
         /// initialization
         void initialize(int numscal,             //!< number of scalars
@@ -453,7 +454,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        Constant(){};
+        Constant() {};
 
         /// initialization
         void initialize(int numscal,             //!< number of scalars
@@ -496,7 +497,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        MichaelisMenten(){};
+        MichaelisMenten() {};
 
         /// initialization
         void initialize(int numscal,             //!< number of scalars
@@ -539,7 +540,7 @@ namespace Mat
       {
        public:
         /// standard constructor
-        ByFunction(){};
+        ByFunction() {};
 
         /// initialization
         void initialize(int numscal,             //!< number of scalars

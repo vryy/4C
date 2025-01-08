@@ -121,13 +121,9 @@ namespace Core::Gen
       return unique_entries;
     }
 
-    void swap(class_type& x)
-    { /* empty */
-    }
+    void swap(class_type& x) { /* empty */ }
 
-    void clone(const class_type& source)
-    { /* empty */
-    }
+    void clone(const class_type& source) { /* empty */ }
 
     /** @brief return a constant number of offset values
      *
@@ -438,7 +434,7 @@ namespace Core::Gen
           non_unique_entries_(0),
           dyn_max_allowed_capacity_(CONST_MAX_ALLOWED_CAPACITY),
           isfilled_(true),
-          max_value_(0.0){};
+          max_value_(0.0) {};
 
     iterator begin(const iterator& first)
     {

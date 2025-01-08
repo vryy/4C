@@ -55,7 +55,7 @@ FOUR_C_NAMESPACE_OPEN
 TSI::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& sdynparams)
     : Algorithm(comm),
       solveradapttol_(((Global::Problem::instance()->tsi_dynamic_params()).sublist("MONOLITHIC"))
-                          .get<bool>("ADAPTCONV")),
+              .get<bool>("ADAPTCONV")),
       solveradaptolbetter_(
           ((Global::Problem::instance()->tsi_dynamic_params()).sublist("MONOLITHIC"))
               .get<double>("ADAPTCONV_BETTER")),
@@ -2553,8 +2553,8 @@ void TSI::Monolithic::calculate_necking_tsi_results()
         if (this_is_new_gid) sdata.push_back(structure_field()->discretization()->dof(0, node, 2));
         one_dof_in_dbc.at(0) = structure_field()->discretization()->dof(0, node, 2);
       }  // top surface
-    }    // loop over DBC nodes
-  }      // loop over all STRUCTURAL DBC conditions
+    }  // loop over DBC nodes
+  }  // loop over all STRUCTURAL DBC conditions
 
   // map containing all z-displacement DOFs which have a DBC
   Epetra_Map newdofmap(-1, (int)sdata.size(), sdata.data(), 0,
@@ -2622,7 +2622,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   std::vector<int> necking_radius_dof(1);
   necking_radius_dof.at(0) = -1.;
   for (int k = 0; k < (int)structure_field()->discretization()->node_row_map()->NumMyElements();
-       k++)
+      k++)
   {
     Core::Nodes::Node* node = structure_field()->discretization()->l_row_node(k);
     // change here value for different geometries
@@ -2636,7 +2636,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
       break;  // we only look for one specific node, if we have found it: stop
 
     }  // end point A(6.413/0/-13.3335)
-  }    // sum all nodes
+  }  // sum all nodes
   std::vector<double> necking_radius(1);
   necking_radius.at(0) = 0.0;
   if (necking_radius_dof.at(0) != -1)

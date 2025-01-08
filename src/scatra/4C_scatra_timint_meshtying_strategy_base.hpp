@@ -170,7 +170,7 @@ namespace ScaTra
     virtual void evaluate_meshtying() = 0;
 
     //! evaluate coupling between two points/nodes. Does not need to be evaluated on element level
-    virtual void evaluate_point_coupling(){};
+    virtual void evaluate_point_coupling() {};
 
     //! explicit predictor step to obtain better starting value for Newton-Raphson iteration
     virtual void explicit_predictor() const { return; };

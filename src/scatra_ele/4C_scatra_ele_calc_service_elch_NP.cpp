@@ -394,7 +394,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_anal
         errors[2] += deltapot * deltapot * fac;        // electric potential in electrolyte solution
 
       }  // end of loop over integration points
-    }    // Kwok and Wu
+    }  // Kwok and Wu
     break;
     case Inpar::ScaTra::calcerror_cylinder:
     {
@@ -466,7 +466,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_anal
         errors[2] += deltapot * deltapot * fac;        // electric potential in electrolyte solution
 
       }  // end of loop over integration points
-    }    // concentric cylinders
+    }  // concentric cylinders
     break;
     case Inpar::ScaTra::calcerror_electroneutrality:
     {

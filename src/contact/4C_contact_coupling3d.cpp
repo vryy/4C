@@ -107,7 +107,7 @@ bool CONTACT::Coupling3d::integrate_cells(
     // integrate cell only if it has a non-zero area
     if (cells()[i]->area() < MORTARINTLIM * slave_element_area()) continue;
 
-      // debug output of integration cells in GMSH
+    // debug output of integration cells in GMSH
 #ifdef MORTARGMSHCELLS
     GmshOutputCells(i);
 #endif
@@ -1317,8 +1317,8 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
           smintpairs_ += 1;
           intcells_ += (int)coupling()[coupling().size() - 1]->cells().size();
         }  // for maux
-      }    // for saux
-    }      // for m
+      }  // for saux
+    }  // for m
 
     consistent_dual_shape();
 
@@ -1399,8 +1399,8 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
               smintpairs_ += 1;
               intcells_ += (int)coupling()[coupling().size() - 1]->cells().size();
             }  // for maux
-          }    // for saux
-        }      // for m
+          }  // for saux
+        }  // for m
 
         consistent_dual_shape();
 
@@ -1802,7 +1802,7 @@ void CONTACT::Coupling3dManager::consistent_dual_shape()
         for (int v = 0; v < 3; ++v)
           for (int d = 0; d < 3; ++d)
             for (_CI p = (currcell->get_deriv_vertex(v))[d].begin();
-                 p != (currcell->get_deriv_vertex(v))[d].end(); ++p)
+                p != (currcell->get_deriv_vertex(v))[d].end(); ++p)
               lingp[p->first](d) += svalcell(v) * (p->second);
 
         // compute GP slave coordinate derivatives
@@ -1870,7 +1870,7 @@ void CONTACT::Coupling3dManager::consistent_dual_shape()
         }
       }
     }  // cells
-  }    // master elements
+  }  // master elements
 
   // in case of no overlap just return, as there is no integration area
   // and therefore the consistent dual shape functions are not defined.

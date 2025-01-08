@@ -1698,7 +1698,7 @@ namespace Core::FE
         }
       }
     } /* end of loop over integration points gpid */
-  }   // element_node_normal
+  }  // element_node_normal
 
 }  // namespace Core::FE
 

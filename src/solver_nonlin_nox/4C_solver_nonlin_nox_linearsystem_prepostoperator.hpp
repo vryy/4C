@@ -156,8 +156,8 @@ namespace NOX
          *  defined, a empty std::map is generated and set into the parameter list first. */
         NOX::Nln::LinSystem::PrePostOperator::Map& get_map(Teuchos::ParameterList& p_linsolver);
       }  // namespace PrePostOp
-    }    // namespace LinSystem
-  }      // namespace Nln
+    }  // namespace LinSystem
+  }  // namespace Nln
 }  // namespace NOX
 
 inline void NOX::Nln::LinSystem::PrePostOperator::run_pre_apply_jacobian_inverse(

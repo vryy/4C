@@ -43,7 +43,7 @@ namespace Solid
       std::shared_ptr<Solid::Nln::SOLVER::Generic> build_nln_solver(
           const enum Inpar::Solid::NonlinSolTech& nlnSolType);
     }  // namespace SOLVER
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

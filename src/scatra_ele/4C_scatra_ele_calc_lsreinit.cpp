@@ -146,8 +146,8 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
 
       // check the type: ToDo change to FOUR_C_ASSERT
       if (not params.INVALID_TEMPLATE_QUALIFIER
-                  isType<std::shared_ptr<const std::map<int, Core::Geo::BoundaryIntCellPtrs>>>(
-                      "boundary cells"))
+              isType<std::shared_ptr<const std::map<int, Core::Geo::BoundaryIntCellPtrs>>>(
+                  "boundary cells"))
         FOUR_C_THROW("The given boundary cells have the wrong type!");
 
       const std::shared_ptr<const std::map<int, Core::Geo::BoundaryIntCellPtrs>>& allcells =
@@ -486,7 +486,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_hyperbo
         sign_function(signphi, charelelength, phizero, gradphizero, phinp, gradphinp);
 
         if (gradphinp_norm > 1e-8) convelint.update(signphi / gradphinp_norm, gradphinp);
-          // otherwise gradphi is almost zero and we keep a zero velocity
+        // otherwise gradphi is almost zero and we keep a zero velocity
 #else
         // gradient of scalar value at t_n at element center
         Core::LinAlg::Matrix<nsd_, 1> gradphin(true);
@@ -504,7 +504,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_hyperbo
         sign_function(signphi, charelelength, phizero, gradphizero, phin, gradphin);
 
         if (gradphin_norm > 1e-8) convelint.update(signphi / gradphin_norm, gradphin);
-          // otherwise gradphi is almost zero and we keep a zero velocity
+        // otherwise gradphi is almost zero and we keep a zero velocity
 #endif
       }
       else
@@ -583,13 +583,13 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_hyperbo
       const double gradphinp_norm = gradphinp.norm2();
 
       if (gradphinp_norm > 1e-8) convelint.update(signphi / gradphinp_norm, gradphinp);
-        // otherwise gradphi is almost zero and we keep a zero velocity
+      // otherwise gradphi is almost zero and we keep a zero velocity
 #else
       // get norm
       const double gradphin_norm = gradphin.norm2();
 
       if (gradphin_norm > 1e-8) convelint.update(signphi / gradphin_norm, gradphin);
-        // otherwise gradphi is almost zero and we keep a zero velocity
+      // otherwise gradphi is almost zero and we keep a zero velocity
 #endif
     }
     else
@@ -1145,7 +1145,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_inter
   // loop over boundary integration cells
   //---------------------------------------------------------------------------
   for (Core::Geo::BoundaryIntCellPtrs::const_iterator cell = bcell.begin(); cell != bcell.end();
-       ++cell)
+      ++cell)
   {
     // get shape of boundary cell
     Core::FE::CellType celldistype = (*cell)->shape();

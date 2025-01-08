@@ -96,9 +96,9 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
       block_map_scatra_manifold_(ssi_mono.block_map_scatra_manifold()),
       block_map_structure_(ssi_mono.block_map_structure()),
       do_output_(Global::Problem::instance()
-                     ->ssi_control_params()
-                     .sublist("MANIFOLD")
-                     .get<bool>("OUTPUT_INFLOW")),
+              ->ssi_control_params()
+              .sublist("MANIFOLD")
+              .get<bool>("OUTPUT_INFLOW")),
       full_map_manifold_(ssi_mono.maps_sub_problems()->Map(
           Utils::SSIMaps::get_problem_position(Subproblem::manifold))),
       full_map_scatra_(ssi_mono.maps_sub_problems()->Map(
@@ -1104,7 +1104,7 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_matrix(
             auto coupling_adapter = block_meshtying.first[row];
             auto slave_dof_map = coupling_adapter->slave_dof_map();
             for (int doflid_slave = 0; doflid_slave < slave_dof_map->NumMyElements();
-                 ++doflid_slave)
+                ++doflid_slave)
             {
               // extract global ID of current slave-side row
               const int dofgid_slave = slave_dof_map->GID(doflid_slave);

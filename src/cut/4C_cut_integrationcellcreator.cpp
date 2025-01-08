@@ -290,7 +290,7 @@ bool Cut::IntegrationCellCreator::create_tet4_cell(
 
     const std::vector<Point*>& side_points = f->corner_points();
     for (std::vector<Point*>::const_iterator cit_sp = side_points.begin();
-         cit_sp != side_points.end(); ++cit_sp)
+        cit_sp != side_points.end(); ++cit_sp)
     {
       Point* p = *cit_sp;
       if (std::find(bot_points.begin(), bot_points.end(), p) == bot_points.end())
@@ -438,7 +438,7 @@ bool Cut::IntegrationCellCreator::create_hex8_cell(
       {
         const std::vector<Point*>& side_points = f->corner_points();
         for (std::vector<Point*>::const_iterator i = side_points.begin(); i != side_points.end();
-             ++i)
+            ++i)
         {
           Point* p = *i;
           std::vector<Point*>::iterator pointpos1 = std::find(points.begin(), end, p);
@@ -1198,7 +1198,7 @@ bool Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Element* eleme
       }
 
       for (std::vector<Point*>::const_iterator i = corner_points.begin(); i != corner_points.end();
-           ++i)
+          ++i)
       {
         Point* p = *i;
 
@@ -1267,7 +1267,7 @@ bool Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Element* eleme
       }
 
       for (std::vector<Point*>::const_iterator i = corner_points.begin(); i != corner_points.end();
-           ++i)
+          ++i)
       {
         Point* p = *i;
 

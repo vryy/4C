@@ -58,7 +58,8 @@ namespace Cut
 
    protected:
     /// empty constructor for derived classes only
-    FacetGraph(const unsigned& graph_size = 0) : graph_(graph_size){/* intentionally left blank */};
+    FacetGraph(const unsigned& graph_size = 0)
+        : graph_(graph_size) { /* intentionally left blank */ };
 
     void collect_volume_lines(plain_facet_set& collected_facets,
         std::map<std::pair<Point*, Point*>, plain_facet_set>& volume_lines) const;

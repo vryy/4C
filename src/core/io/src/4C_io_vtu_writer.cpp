@@ -148,7 +148,7 @@ void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& poin
 
     int counter = 1;
     for (std::vector<double>::const_iterator it = point_coordinates.begin();
-         it != point_coordinates.end(); ++it)
+        it != point_coordinates.end(); ++it)
     {
       currentout_ << std::setprecision(15) << std::scientific << *it;
 
@@ -185,7 +185,7 @@ void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& poin
     currentout_ << " format=\"ascii\">\n";
 
     for (std::vector<int32_t>::const_iterator it = point_cell_connectivity.begin();
-         it != point_cell_connectivity.end(); ++it)
+        it != point_cell_connectivity.end(); ++it)
       currentout_ << *it << " ";
   }
 
@@ -206,7 +206,7 @@ void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& poin
   {
     currentout_ << " format=\"ascii\">\n";
     for (std::vector<int32_t>::const_iterator it = cell_offset.begin(); it != cell_offset.end();
-         ++it)
+        ++it)
       currentout_ << *it << " ";
   }
 

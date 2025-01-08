@@ -23,10 +23,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::evaluate_and_solve_nodal_l2_projection(
-    Core::FE::Discretization &dis, const Epetra_Map &noderowmap, const std::string &statename,
-    const int &numvec, Teuchos::ParameterList &params, const Teuchos::ParameterList &solverparams,
-    const std::function<const Teuchos::ParameterList &(int)> get_solver_params,
-    const Epetra_Map &fullnoderowmap, const std::map<int, int> &slavetomastercolnodesmap)
+    Core::FE::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
+    const int& numvec, Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
+    const std::function<const Teuchos::ParameterList&(int)> get_solver_params,
+    const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap)
 {
   // create empty matrix
   Core::LinAlg::SparseMatrix massmatrix(noderowmap, 108, false, true);
@@ -47,7 +47,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::evaluate_and_solve_
 
   // loop column elements
 
-  for (auto *actele : dis.my_col_element_range())
+  for (auto* actele : dis.my_col_element_range())
   {
     const int numnode = actele->num_node();
 
@@ -71,7 +71,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::evaluate_and_solve_
     lm.resize(numnode);
     lmowner.resize(numnode);
 
-    Core::Nodes::Node **nodes = actele->nodes();
+    Core::Nodes::Node** nodes = actele->nodes();
     for (int n = 0; n < numnode; ++n)
     {
       const int nodeid = nodes[n]->id();
@@ -113,9 +113,9 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::evaluate_and_solve_
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_nodal_l2_projection(
-    Core::FE::Discretization &dis, const std::string &statename, const int &numvec,
-    Teuchos::ParameterList &params, const Teuchos::ParameterList &solverparams,
-    const std::function<const Teuchos::ParameterList &(int)> get_solver_params)
+    Core::FE::Discretization& dis, const std::string& statename, const int& numvec,
+    Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
+    const std::function<const Teuchos::ParameterList&(int)> get_solver_params)
 {
   // check if the statename has been set
   if (!dis.has_state(statename))
@@ -133,7 +133,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_nodal_l2_pr
   // build inverse map from slave to master nodes
   std::map<int, int> slavetomastercolnodesmap;
 
-  std::map<int, std::vector<int>> *allcoupledcolnodes = dis.get_all_pbc_coupled_col_nodes();
+  std::map<int, std::vector<int>>* allcoupledcolnodes = dis.get_all_pbc_coupled_col_nodes();
   if (allcoupledcolnodes)
   {
     for (auto [master_gid, slave_gids] : *allcoupledcolnodes)
@@ -146,7 +146,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_nodal_l2_pr
   }
 
   // get reduced node row map of fluid field --> will be used for setting up linear system
-  const auto *fullnoderowmap = dis.node_row_map();
+  const auto* fullnoderowmap = dis.node_row_map();
   // remove pbc slave nodes from full noderowmap
   std::vector<int> reducednoderowmap;
   // a little more memory than necessary is possibly reserved here
@@ -199,11 +199,11 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_nodal_l2_pr
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_projection(
-    Core::LinAlg::SparseMatrix &massmatrix, Core::LinAlg::MultiVector<double> &rhs, MPI_Comm comm,
-    const int &numvec, const Teuchos::ParameterList &solverparams,
-    const std::function<const Teuchos::ParameterList &(int)> get_solver_params,
-    const Epetra_Map &noderowmap, const Epetra_Map &fullnoderowmap,
-    const std::map<int, int> &slavetomastercolnodesmap)
+    Core::LinAlg::SparseMatrix& massmatrix, Core::LinAlg::MultiVector<double>& rhs, MPI_Comm comm,
+    const int& numvec, const Teuchos::ParameterList& solverparams,
+    const std::function<const Teuchos::ParameterList&(int)> get_solver_params,
+    const Epetra_Map& noderowmap, const Epetra_Map& fullnoderowmap,
+    const std::map<int, int>& slavetomastercolnodesmap)
 {
   // get solver parameter list of linear solver
   const auto solvertype =
@@ -222,14 +222,14 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_proj
     {
       case Core::LinearSolver::PreconditionerType::multigrid_muelu:
       {
-        Teuchos::ParameterList *preclist_ptr = nullptr;
+        Teuchos::ParameterList* preclist_ptr = nullptr;
         // Parameter for MueLu
         if (prectype == Core::LinearSolver::PreconditionerType::multigrid_muelu)
           preclist_ptr = &((solver.params()).sublist("MueLu Parameters"));
         else
           FOUR_C_THROW("please add correct parameter list");
 
-        Teuchos::ParameterList &preclist = *preclist_ptr;
+        Teuchos::ParameterList& preclist = *preclist_ptr;
         preclist.set("PDE equations", 1);
         preclist.set("null space: dimension", 1);
         preclist.set("null space: type", "pre-computed");

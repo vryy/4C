@@ -147,7 +147,7 @@ namespace Discret
       //! nodal growth variables
       Core::LinAlg::Matrix<nen_, 1> egrowth_;
     };  // class ScaTraEleBoundaryCalcElchElectrodeGrowth
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

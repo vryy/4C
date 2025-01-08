@@ -33,10 +33,10 @@ namespace Core::LinearSolver
   class AmGnxnPreconditioner : public PreconditionerTypeBase
   {
    public:
-    AmGnxnPreconditioner(Teuchos::ParameterList &params);
+    AmGnxnPreconditioner(Teuchos::ParameterList& params);
 
-    void setup(bool create, Epetra_Operator *matrix, Core::LinAlg::MultiVector<double> *x,
-        Core::LinAlg::MultiVector<double> *b) override;
+    void setup(bool create, Epetra_Operator* matrix, Core::LinAlg::MultiVector<double>* x,
+        Core::LinAlg::MultiVector<double>* b) override;
 
     virtual void setup(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> A);
 
@@ -47,14 +47,14 @@ namespace Core::LinearSolver
     // Private variables
     std::shared_ptr<Epetra_Operator> p_;  // The underlying preconditioner object
     std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> a_;  // A own copy of the system matrix
-    Teuchos::ParameterList &params_;
+    Teuchos::ParameterList& params_;
 
   };  // AMGnxn_Preconditioner
 
   class AmGnxnInterface
   {
    public:
-    AmGnxnInterface(Teuchos::ParameterList &params, int NumBlocks);
+    AmGnxnInterface(Teuchos::ParameterList& params, int NumBlocks);
 
     std::vector<std::string> get_mue_lu_xml_files() { return xml_files_; }
     std::vector<int> get_num_pdes() { return num_pdes_; }
@@ -93,11 +93,11 @@ namespace Core::LinearSolver
     AmGnxnOperator(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> A,
         std::vector<int> num_pdes, std::vector<int> null_spaces_dim,
         std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data,
-        const Teuchos::ParameterList &amgnxn_params, const Teuchos::ParameterList &smoothers_params,
-        const Teuchos::ParameterList &muelu_params);
+        const Teuchos::ParameterList& amgnxn_params, const Teuchos::ParameterList& smoothers_params,
+        const Teuchos::ParameterList& muelu_params);
 
     // virtual functions given by Epetra_Operator. The only one to be used is ApplyInverse()
-    int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     int SetUseTranspose(bool UseTranspose) override
     {
@@ -105,7 +105,7 @@ namespace Core::LinearSolver
       return 0;
     }
 
-    int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
+    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
     {
       FOUR_C_THROW("Function not implemented");
       return -1;
@@ -117,7 +117,7 @@ namespace Core::LinearSolver
       return -1.0;
     }
 
-    const char *Label() const override { return "AMG(BlockSmoother)"; }
+    const char* Label() const override { return "AMG(BlockSmoother)"; }
 
     bool UseTranspose() const override
     {
@@ -132,13 +132,13 @@ namespace Core::LinearSolver
     }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Comm &Comm() const override { return a_->Comm(); }
+    const Epetra_Comm& Comm() const override { return a_->Comm(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Map &OperatorDomainMap() const override { return a_->OperatorDomainMap(); }
+    const Epetra_Map& OperatorDomainMap() const override { return a_->OperatorDomainMap(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Map &OperatorRangeMap() const override { return a_->OperatorRangeMap(); }
+    const Epetra_Map& OperatorRangeMap() const override { return a_->OperatorRangeMap(); }
 
     void setup();
 
@@ -164,11 +164,11 @@ namespace Core::LinearSolver
     BlockSmootherOperator(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> A,
         std::vector<int> num_pdes, std::vector<int> null_spaces_dim,
         std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data,
-        const Teuchos::ParameterList &amgnxn_params,
-        const Teuchos::ParameterList &smoothers_params);
+        const Teuchos::ParameterList& amgnxn_params,
+        const Teuchos::ParameterList& smoothers_params);
 
     // virtual functions given by Epetra_Operator. The only one to be used is ApplyInverse()
-    int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     int SetUseTranspose(bool UseTranspose) override
     {
@@ -176,7 +176,7 @@ namespace Core::LinearSolver
       return 0;
     }
 
-    int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
+    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
     {
       FOUR_C_THROW("Function not implemented");
       return -1;
@@ -188,7 +188,7 @@ namespace Core::LinearSolver
       return -1.0;
     }
 
-    const char *Label() const override { return "BlockSmoother(X)"; }
+    const char* Label() const override { return "BlockSmoother(X)"; }
 
     bool UseTranspose() const override
     {
@@ -203,13 +203,13 @@ namespace Core::LinearSolver
     }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Comm &Comm() const override { return a_->Comm(); }
+    const Epetra_Comm& Comm() const override { return a_->Comm(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Map &OperatorDomainMap() const override { return a_->OperatorDomainMap(); }
+    const Epetra_Map& OperatorDomainMap() const override { return a_->OperatorDomainMap(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Map &OperatorRangeMap() const override { return a_->OperatorRangeMap(); }
+    const Epetra_Map& OperatorRangeMap() const override { return a_->OperatorRangeMap(); }
 
     void setup();  // TODO
 

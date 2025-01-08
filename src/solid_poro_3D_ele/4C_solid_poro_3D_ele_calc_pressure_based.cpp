@@ -43,7 +43,7 @@ void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, num_dim_* num_nodes_>> stiff = {};
+  std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, num_dim_ * num_nodes_>> stiff = {};
   std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, 1>> force = {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);

@@ -96,7 +96,7 @@ bool BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::eval
   // Calculate the meshtying forces.
   // Loop over segments.
   for (unsigned int i_integration_point = 0; i_integration_point < projection_points.size();
-       i_integration_point++)
+      i_integration_point++)
   {
     // Get the current Gauss point.
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =

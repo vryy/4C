@@ -121,7 +121,7 @@ namespace Airway
 
       \param vel new guess at velocity, cross-sectional area, and pressure
     */
-    void evaluate(const Core::LinAlg::Vector<double>& vel){};
+    void evaluate(const Core::LinAlg::Vector<double>& vel) {};
 
     /*!
     \brief Update the solution after convergence of the linear

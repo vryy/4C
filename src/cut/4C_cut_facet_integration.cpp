@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 points
 *------------------------------------------------------------------------------------------------------*/
 std::vector<double> Cut::FacetIntegration::equation_plane(
-    const std::vector<std::vector<double>> &cornersLocal)
+    const std::vector<std::vector<double>>& cornersLocal)
 {
   // TODO: use references for return!!!
   // Newell's method of determining equation of plane
@@ -52,7 +52,7 @@ the facet. This vector must be in the correct normal direction. Take the dot pro
 vector and the normal vector of facet. If the dot product < 0, then the facet is clockwise ordered
 *----------------------------------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::is_clockwise(
-    const std::vector<double> &eqn_plane, const std::vector<std::vector<double>> &cornersLocal)
+    const std::vector<double>& eqn_plane, const std::vector<std::vector<double>>& cornersLocal)
 {
   ordering_computed_ = true;
   clockwise_ = false;
@@ -64,18 +64,18 @@ void Cut::FacetIntegration::is_clockwise(
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (iscut)
   {
-    Side *parent = face1_->parent_side();
+    Side* parent = face1_->parent_side();
 
     double dotProduct = 0.0;
 
     if (not face1_->belongs_to_level_set_side())
     {
-      const std::vector<Node *> &par_nodes = parent->nodes();
+      const std::vector<Node*>& par_nodes = parent->nodes();
       std::vector<std::vector<double>> corners(par_nodes.size());
       int mm = 0;
-      for (std::vector<Node *>::const_iterator i = par_nodes.begin(); i != par_nodes.end(); i++)
+      for (std::vector<Node*>::const_iterator i = par_nodes.begin(); i != par_nodes.end(); i++)
       {
-        Node *nod = *i;
+        Node* nod = *i;
         double x1[3];
         nod->coordinates(x1);
 
@@ -197,9 +197,9 @@ void Cut::FacetIntegration::is_clockwise(
     Core::LinAlg::Matrix<3, 1> facecen;
     unsigned npts = cornersLocal.size();
     for (std::vector<std::vector<double>>::const_iterator fit = cornersLocal.begin();
-         fit != cornersLocal.end(); fit++)
+        fit != cornersLocal.end(); fit++)
     {
-      const std::vector<double> &fpt = *fit;
+      const std::vector<double>& fpt = *fit;
       for (unsigned dim = 0; dim < 3; dim++) facecen(dim, 0) += fpt[dim];
     }
 
@@ -251,7 +251,7 @@ bool Cut::FacetIntegration::is_clockwise_ordering()
                   equation of this form is used to replace x in the line integral
 *------------------------------------------------------------------------------------------------*/
 std::vector<double> Cut::FacetIntegration::compute_alpha(
-    std::vector<double> &eqn_plane, Cut::ProjectionDirection intType)
+    std::vector<double>& eqn_plane, Cut::ProjectionDirection intType)
 {
   std::vector<double> alfa(3);
   double a = eqn_plane[0];
@@ -350,7 +350,7 @@ double Cut::FacetIntegration::integrate_facet()
     std::vector<double> alpha;
     alpha = compute_alpha(eqn_plane_, Cut::proj_x);
     for (std::vector<std::vector<double>>::const_iterator k = cornersLocal.begin();
-         k != cornersLocal.end(); k++)
+        k != cornersLocal.end(); k++)
     {
       const std::vector<double> coords1 = *k;
       std::vector<double> coords2;
@@ -448,14 +448,14 @@ double Cut::FacetIntegration::integrate_facet()
                             Performs integration over the boundarycell
 *------------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::boundary_facet_integration(
-    const std::vector<std::vector<double>> &cornersLocal, double &facet_integ,
+    const std::vector<std::vector<double>>& cornersLocal, double& facet_integ,
     Cut::ProjectionDirection intType)
 {
   std::vector<double> alpha;
   double abs_normal = 0.0;
 
   for (std::vector<std::vector<double>>::const_iterator k = cornersLocal.begin();
-       k != cornersLocal.end(); k++)
+      k != cornersLocal.end(); k++)
   {
     const std::vector<double> coords1 = *k;
     std::vector<double> coords2;
@@ -539,7 +539,7 @@ void Cut::FacetIntegration::boundary_facet_integration(
       directly to generate Gauss integration rule for the facet
 *--------------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::divergence_integration_rule(
-    Mesh &mesh, Core::FE::CollectedGaussPoints &cgp)
+    Mesh& mesh, Core::FE::CollectedGaussPoints& cgp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut::FacetIntegration::divergence_integration_rule");
 
@@ -565,16 +565,16 @@ void Cut::FacetIntegration::divergence_integration_rule(
        << "\" {\n";
 #endif
   for (std::list<std::shared_ptr<BoundaryCell>>::iterator i = divCells.begin(); i != divCells.end();
-       ++i)
+      ++i)
   {
-    BoundaryCell *bcell = &**i;
+    BoundaryCell* bcell = &**i;
 
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
     if (face1_->IsFacetSplit())
     {
-      std::vector<std::vector<Point *>> facetSplit = face1_->GetSplitCells();
-      for (std::vector<std::vector<Point *>>::iterator k = facetSplit.begin();
-           k != facetSplit.end(); k++)
+      std::vector<std::vector<Point*>> facetSplit = face1_->GetSplitCells();
+      for (std::vector<std::vector<Point*>>::iterator k = facetSplit.begin(); k != facetSplit.end();
+          k++)
       {
         std::cout << "Split cell output." << std::endl;
         Cut::Output::GmshTriSideDump(file, *k);
@@ -594,7 +594,7 @@ void Cut::FacetIntegration::divergence_integration_rule(
     if (bcell->area() < REF_AREA_BCELL) continue;
 
     for (Core::FE::GaussIntegration::iterator iquad = gi_temp.begin(); iquad != gi_temp.end();
-         ++iquad)
+        ++iquad)
     {
       double drs = 0.0;
       Core::LinAlg::Matrix<3, 1> x_gp_loc(true), normal(true);
@@ -642,7 +642,7 @@ void Cut::FacetIntegration::divergence_integration_rule(
 *------------------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::generate_divergence_cells(
     bool divergenceRule,  // if called to generate direct divergence rule
-    Mesh &mesh, std::list<std::shared_ptr<BoundaryCell>> &divCells)
+    Mesh& mesh, std::list<std::shared_ptr<BoundaryCell>>& divCells)
 {
 #ifdef LOCAL
   std::vector<std::vector<double>> cornersLocal;
@@ -667,7 +667,7 @@ void Cut::FacetIntegration::generate_divergence_cells(
 
   is_clockwise(eqn_plane_, cornersLocal);
 
-  std::vector<Point *> corners = face1_->corner_points();
+  std::vector<Point*> corners = face1_->corner_points();
 
   if (divergenceRule)
   {
@@ -684,7 +684,7 @@ void Cut::FacetIntegration::generate_divergence_cells(
     {
       std::string splitMethod;
 
-      std::vector<std::vector<Point *>> split;
+      std::vector<std::vector<Point*>> split;
 
       // if the facet is warped, do centre point triangulation --> reduced error (??)
       if (not face1_->is_planar(mesh, face1_->corner_points()))
@@ -701,10 +701,10 @@ void Cut::FacetIntegration::generate_divergence_cells(
         splitMethod = "split";
       }
 
-      for (std::vector<std::vector<Point *>>::const_iterator j = split.begin(); j != split.end();
-           ++j)
+      for (std::vector<std::vector<Point*>>::const_iterator j = split.begin(); j != split.end();
+          ++j)
       {
-        const std::vector<Point *> &tri = *j;
+        const std::vector<Point*>& tri = *j;
         if (tri.size() == 3)
           temporary_tri3(tri, divCells);
         else if (tri.size() == 4)  // split algorithm always gives convex quad
@@ -724,7 +724,7 @@ void Cut::FacetIntegration::generate_divergence_cells(
                     this is temporary because this is not stored for the volumecell
 *--------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::temporary_tri3(
-    const std::vector<Point *> &corners, std::list<std::shared_ptr<BoundaryCell>> &divCells)
+    const std::vector<Point*>& corners, std::list<std::shared_ptr<BoundaryCell>>& divCells)
 {
   Core::LinAlg::SerialDenseMatrix xyz(3, 3);
   for (int i = 0; i < 3; ++i) corners[i]->coordinates(&xyz(0, i));
@@ -736,7 +736,7 @@ void Cut::FacetIntegration::temporary_tri3(
                     this is temporary because this is not stored for the volumecell
 *--------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::temporary_quad4(
-    const std::vector<Point *> &corners, std::list<std::shared_ptr<BoundaryCell>> &divCells)
+    const std::vector<Point*>& corners, std::list<std::shared_ptr<BoundaryCell>>& divCells)
 {
   Core::LinAlg::SerialDenseMatrix xyz(3, 4);
   for (int i = 0; i < 4; ++i) corners[i]->coordinates(&xyz(0, i));
@@ -748,7 +748,7 @@ void Cut::FacetIntegration::temporary_quad4(
       directly to generate Gauss integration rule for the facet
 *--------------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::divergence_integration_rule_new(
-    Mesh &mesh, Core::FE::CollectedGaussPoints &cgp)
+    Mesh& mesh, Core::FE::CollectedGaussPoints& cgp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut::FacetIntegration::divergence_integration_rule");
 
@@ -781,7 +781,7 @@ void Cut::FacetIntegration::divergence_integration_rule_new(
   //  face1_->belongs_to_level_set_side())
   if (triangulate_and_levelset)
   {
-    std::vector<std::vector<Point *>> facet_triang;
+    std::vector<std::vector<Point*>> facet_triang;
     if (face1_->is_triangulated())
       facet_triang = face1_->triangulation();
     else
@@ -791,8 +791,8 @@ void Cut::FacetIntegration::divergence_integration_rule_new(
 #endif
 
     unsigned counterDivCells = 0;
-    for (std::vector<std::vector<Point *>>::const_iterator j = facet_triang.begin();
-         j != facet_triang.end(); ++j)
+    for (std::vector<std::vector<Point*>>::const_iterator j = facet_triang.begin();
+        j != facet_triang.end(); ++j)
     {
       generate_divergence_cells_new(true, mesh, divCells, *j);
       while (counterDivCells < divCells.size())
@@ -826,9 +826,9 @@ void Cut::FacetIntegration::divergence_integration_rule_new(
 
   int zz = 0;
   for (std::list<std::shared_ptr<BoundaryCell>>::iterator i = divCells.begin(); i != divCells.end();
-       ++i)
+      ++i)
   {
-    BoundaryCell *bcell = &**i;
+    BoundaryCell* bcell = &**i;
 
     // Get equation of plane for divergence Cell.
     std::vector<double> eqn_plane_bcell = eqn_plane_divCell[zz];
@@ -841,16 +841,16 @@ void Cut::FacetIntegration::divergence_integration_rule_new(
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
     if (face1_->IsFacetSplit())
     {
-      std::vector<std::vector<Point *>> facetSplit = face1_->GetSplitCells();
-      for (std::vector<std::vector<Point *>>::iterator k = facetSplit.begin();
-           k != facetSplit.end(); k++)
+      std::vector<std::vector<Point*>> facetSplit = face1_->GetSplitCells();
+      for (std::vector<std::vector<Point*>>::iterator k = facetSplit.begin(); k != facetSplit.end();
+          k++)
       {
         Core::LinAlg::Matrix<3, 1> midpt(true);
 
         std::vector<std::vector<double>> corners_split;
-        for (std::vector<Point *>::iterator l = (*k).begin(); l != (*k).end(); l++)
+        for (std::vector<Point*>::iterator l = (*k).begin(); l != (*k).end(); l++)
         {
-          const double *coords = (*l)->X();
+          const double* coords = (*l)->X();
           midpt(0, 0) += coords[0];
           midpt(1, 0) += coords[1];
           midpt(2, 0) += coords[2];
@@ -878,7 +878,7 @@ void Cut::FacetIntegration::divergence_integration_rule_new(
     if (bcell->area() < REF_AREA_BCELL) continue;
 
     for (Core::FE::GaussIntegration::iterator iquad = gi_temp.begin(); iquad != gi_temp.end();
-         ++iquad)
+        ++iquad)
     {
       double drs = 0.0;
       Core::LinAlg::Matrix<3, 1> x_gp_loc(true), normal(true);
@@ -923,16 +923,15 @@ void Cut::FacetIntegration::divergence_integration_rule_new(
 #endif
 }
 
-void Cut::FacetIntegration::generate_divergence_cells_new(bool divergenceRule, Mesh &mesh,
-    std::list<std::shared_ptr<BoundaryCell>> &divCells, const std::vector<Point *> &cornersGlobal)
+void Cut::FacetIntegration::generate_divergence_cells_new(bool divergenceRule, Mesh& mesh,
+    std::list<std::shared_ptr<BoundaryCell>>& divCells, const std::vector<Point*>& cornersGlobal)
 {
 // First convert format...
 #ifdef LOCAL
   std::vector<std::vector<double>> cornersLocal;      //(cornersGlobal.size(),3);
   std::vector<std::vector<double>> cornersGlobalVec;  //(cornersGlobal.size(),3);
 
-  for (std::vector<Point *>::const_iterator j = cornersGlobal.begin(); j != cornersGlobal.end();
-       ++j)
+  for (std::vector<Point*>::const_iterator j = cornersGlobal.begin(); j != cornersGlobal.end(); ++j)
   {
     Core::LinAlg::Matrix<3, 1> cornersLocMatrix;
     Core::LinAlg::Matrix<3, 1> cornersGloMatrix((*j)->X());
@@ -957,8 +956,7 @@ void Cut::FacetIntegration::generate_divergence_cells_new(bool divergenceRule, M
 #else
   std::vector<std::vector<double>> cornersGlobalVec;  //(cornersGlobal.size(),3);
 
-  for (std::vector<Point *>::const_iterator j = cornersGlobal.begin(); j != cornersGlobal.end();
-       ++j)
+  for (std::vector<Point*>::const_iterator j = cornersGlobal.begin(); j != cornersGlobal.end(); ++j)
   {
     Core::LinAlg::Matrix<3, 1> cornersGloMatrix((*j)->x());
 
@@ -983,7 +981,7 @@ void Cut::FacetIntegration::generate_divergence_cells_new(bool divergenceRule, M
     {
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
       for (std::vector<std::vector<double>>::const_iterator j = cornersLocal.begin();
-           j != cornersLocal.end(); ++j)
+          j != cornersLocal.end(); ++j)
       {
         std::cout << "cornerLocal: " << (*j)[0] << ", " << (*j)[1] << ", " << (*j)[2] << std::endl;
       }
@@ -999,7 +997,7 @@ void Cut::FacetIntegration::generate_divergence_cells_new(bool divergenceRule, M
 
   is_clockwise(eqn_plane_, cornersLocal);
 
-  std::vector<Point *> corners = cornersGlobal;
+  std::vector<Point*> corners = cornersGlobal;
 
   if (clockwise_)
   {
@@ -1025,7 +1023,7 @@ void Cut::FacetIntegration::generate_divergence_cells_new(bool divergenceRule, M
     {
       std::string splitMethod;
 
-      std::vector<std::vector<Point *>> split;
+      std::vector<std::vector<Point*>> split;
 
       // if the facet is warped, do centre point triangulation --> reduced error (??)
       if (not face1_->is_planar(mesh, face1_->corner_points()))
@@ -1042,10 +1040,10 @@ void Cut::FacetIntegration::generate_divergence_cells_new(bool divergenceRule, M
         splitMethod = "split";
       }
 
-      for (std::vector<std::vector<Point *>>::const_iterator j = split.begin(); j != split.end();
-           ++j)
+      for (std::vector<std::vector<Point*>>::const_iterator j = split.begin(); j != split.end();
+          ++j)
       {
-        const std::vector<Point *> &tri = *j;
+        const std::vector<Point*>& tri = *j;
         if (tri.size() == 3)
           temporary_tri3(tri, divCells);
         else if (tri.size() == 4)  // split algorithm always gives convex quad

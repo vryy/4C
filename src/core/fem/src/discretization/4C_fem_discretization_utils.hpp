@@ -227,7 +227,7 @@ namespace Core::FE
       /** \brief constructor
        *
        *  Intentionally left blank! */
-      Dbc(){};
+      Dbc() {};
 
       /// destructor
       virtual ~Dbc() = default;
@@ -441,7 +441,7 @@ namespace Core::FE
           const std::shared_ptr<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
 
     };  // class Dbc
-  }     // namespace Utils
+  }  // namespace Utils
 }  // namespace Core::FE
 
 

@@ -558,7 +558,8 @@ namespace Discret::Elements
       SolidFormulationHistory<SolidFormulation>& history_data)
   {
     std::apply(
-        [](auto&&... args) {
+        [](auto&&... args)
+        {
           SolidFormulation::reset_condensed_variable_integration(
               std::forward<decltype(args)>(args)...);
         },
@@ -587,7 +588,8 @@ namespace Discret::Elements
   {
     // only needed if there are condensed variables
     std::apply(
-        [](auto&&... args) {
+        [](auto&&... args)
+        {
           SolidFormulation::integrate_condensed_contribution(std::forward<decltype(args)>(args)...);
         },
         std::tuple_cat(std::forward_as_tuple(linearization, stress, integration_factor),
@@ -609,7 +611,8 @@ namespace Discret::Elements
   {
     // only needed if there are condensed variables
     return std::apply(
-        [](auto&&... args) {
+        [](auto&&... args)
+        {
           return SolidFormulation::prepare_condensed_contribution(
               std::forward<decltype(args)>(args)...);
         },

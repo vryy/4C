@@ -1196,7 +1196,7 @@ void Thermo::TimIntImpl::fd_check()
         }
       }
     }  // fd_check only for DOFs which have NO DBC
-  }    // loop over dofs of successful FD check
+  }  // loop over dofs of successful FD check
 
   // --------------------------------------------------- fd_check was successful
   // i.e. tang and its approxiamation are equal w.r.t. given tolerance

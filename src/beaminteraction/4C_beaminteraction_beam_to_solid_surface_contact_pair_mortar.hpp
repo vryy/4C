@@ -51,7 +51,7 @@ namespace BeamInteraction
     /**
      * \brief Destructor.
      */
-    ~BeamToSolidSurfaceContactPairMortar() override{};
+    ~BeamToSolidSurfaceContactPairMortar() override {};
 
     /**
      * \brief This pair has no direct stiffness contribution.

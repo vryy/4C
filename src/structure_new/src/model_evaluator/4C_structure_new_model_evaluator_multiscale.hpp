@@ -30,7 +30,7 @@ namespace Solid
 
       Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_multiscale; }
 
-      void reset(const Core::LinAlg::Vector<double>& x) override{};
+      void reset(const Core::LinAlg::Vector<double>& x) override {};
 
       bool evaluate_force() override { return true; };
 
@@ -38,9 +38,9 @@ namespace Solid
 
       bool evaluate_force_stiff() override { return true; };
 
-      void pre_evaluate() override{};
+      void pre_evaluate() override {};
 
-      void post_evaluate() override{};
+      void post_evaluate() override {};
 
       bool assemble_force(Core::LinAlg::Vector<double>& f, const double& timefac_np) const override
       {
@@ -69,10 +69,10 @@ namespace Solid
 
       void post_setup() override;
 
-      void predict(const Inpar::Solid::PredEnum& pred_type) override{};
+      void predict(const Inpar::Solid::PredEnum& pred_type) override {};
 
       void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
-          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override{};
+          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override {};
 
       void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
           const Core::LinAlg::Vector<double>& dir,
@@ -80,21 +80,21 @@ namespace Solid
       {
       }
 
-      void run_post_iterate(const ::NOX::Solver::Generic& solver) override{};
+      void run_post_iterate(const ::NOX::Solver::Generic& solver) override {};
 
-      void update_step_state(const double& timefac_n) override{};
+      void update_step_state(const double& timefac_n) override {};
 
-      void update_step_element() override{};
+      void update_step_element() override {};
 
-      void determine_stress_strain() override{};
+      void determine_stress_strain() override {};
 
-      void determine_energy() override{};
+      void determine_energy() override {};
 
       void determine_optional_quantity() override;
 
       void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override;
 
-      void reset_step_state() override{};
+      void reset_step_state() override {};
 
       void post_time_loop() override;
 
@@ -114,7 +114,7 @@ namespace Solid
         return nullptr;
       };
 
-      void post_output() override{};
+      void post_output() override {};
 
      private:
     };

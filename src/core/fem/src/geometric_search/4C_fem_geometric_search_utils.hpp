@@ -43,7 +43,7 @@ namespace Core::GeometricSearch
    * element GIDs.
    */
   template <typename T>
-  std::vector<std::pair<int, int>> get_pairs(const T &indices, const T &offset)
+  std::vector<std::pair<int, int>> get_pairs(const T& indices, const T& offset)
   {
     std::vector<std::pair<int, int>> pairs;
     for (size_t i_offset = 0; i_offset < offset.size() - 1; i_offset++)

@@ -49,7 +49,7 @@ namespace Core::DOFSets
     //! @name Construction
 
     /// Standard Constructor
-    DofSetInterface(){};
+    DofSetInterface() {};
 
     /// Destructor
     virtual ~DofSetInterface() = default;

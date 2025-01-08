@@ -167,7 +167,7 @@ void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam,
 
     // Gauss point loop.
     for (unsigned int i_gp = 0;
-         i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
+        i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
@@ -573,7 +573,7 @@ void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
 
       // Gauss point loop.
       for (unsigned int i_gp = 0;
-           i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
+          i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
       {
         // Get the current Gauss point.
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
@@ -823,7 +823,7 @@ void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
 
       // Gauss point loop.
       for (unsigned int i_gp = 0;
-           i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
+          i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
       {
         // Get the current Gauss point.
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =

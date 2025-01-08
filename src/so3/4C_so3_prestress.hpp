@@ -133,7 +133,7 @@ namespace Discret
       inline int num_node() const { return numnode_; }
 
     };  // class PreStress
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 
 

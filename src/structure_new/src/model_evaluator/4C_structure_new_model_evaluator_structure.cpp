@@ -99,8 +99,7 @@ void Solid::ModelEvaluator::Structure::setup()
       const auto discretization =
           std::dynamic_pointer_cast<const Core::FE::Discretization>(discret_ptr());
       int number_my_solid_elements = std::count_if(discretization->my_row_element_range().begin(),
-          discretization->my_row_element_range().end(),
-          [](const auto* row_element)
+          discretization->my_row_element_range().end(), [](const auto* row_element)
           { return dynamic_cast<const Discret::Elements::Beam3Base*>(row_element) == nullptr; });
       int number_my_beam_elements =
           discretization->num_my_row_elements() - number_my_solid_elements;
@@ -630,9 +629,9 @@ void Solid::ModelEvaluator::Structure::init_output_runtime_structure_gauss_point
   eval_data().set_action_type(Core::Elements::struct_init_gauss_point_data_output);
   eval_data().set_gauss_point_data_output_manager_ptr(
       std::make_shared<GaussPointDataOutputManager>(global_in_output()
-                                                        .get_runtime_output_params()
-                                                        ->get_structure_params()
-                                                        ->gauss_point_data_output()));
+              .get_runtime_output_params()
+              ->get_structure_params()
+              ->gauss_point_data_output()));
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
 

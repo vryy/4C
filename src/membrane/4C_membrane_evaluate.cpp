@@ -656,12 +656,12 @@ int Discret::Elements::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
               (dxds1(2) * derivs_ortho(1, i) - dxds2(2) * derivs_ortho(0, i)) * (shapefcts)(j);
 
           // entries of P matrix are in round brackets
-          (*elemat1_epetra)(noddof_ * i + 0, noddof_ * j + 1) += fac * -p3_ij;
-          (*elemat1_epetra)(noddof_ * i + 0, noddof_ * j + 2) += fac * +p2_ij;
-          (*elemat1_epetra)(noddof_ * i + 1, noddof_ * j + 0) += fac * +p3_ij;
-          (*elemat1_epetra)(noddof_ * i + 1, noddof_ * j + 2) += fac * -p1_ij;
-          (*elemat1_epetra)(noddof_ * i + 2, noddof_ * j + 0) += fac * -p2_ij;
-          (*elemat1_epetra)(noddof_ * i + 2, noddof_ * j + 1) += fac * +p1_ij;
+          (*elemat1_epetra)(noddof_* i + 0, noddof_ * j + 1) += fac * -p3_ij;
+          (*elemat1_epetra)(noddof_* i + 0, noddof_ * j + 2) += fac * +p2_ij;
+          (*elemat1_epetra)(noddof_* i + 1, noddof_ * j + 0) += fac * +p3_ij;
+          (*elemat1_epetra)(noddof_* i + 1, noddof_ * j + 2) += fac * -p1_ij;
+          (*elemat1_epetra)(noddof_* i + 2, noddof_ * j + 0) += fac * -p2_ij;
+          (*elemat1_epetra)(noddof_* i + 2, noddof_ * j + 1) += fac * +p1_ij;
         }
       }
     }
@@ -960,9 +960,9 @@ void Discret::Elements::Membrane<distype>::mem_nlnstiffmass(
         {
           massfactor = shapefcts(j) * ifactor;  // intermediate factor
 
-          (*massmatrix)(noddof_ * i + 0, noddof_ * j + 0) += massfactor;
-          (*massmatrix)(noddof_ * i + 1, noddof_ * j + 1) += massfactor;
-          (*massmatrix)(noddof_ * i + 2, noddof_ * j + 2) += massfactor;
+          (*massmatrix)(noddof_* i + 0, noddof_ * j + 0) += massfactor;
+          (*massmatrix)(noddof_* i + 1, noddof_ * j + 1) += massfactor;
+          (*massmatrix)(noddof_* i + 2, noddof_ * j + 2) += massfactor;
         }
       }
 
@@ -1089,27 +1089,27 @@ void Discret::Elements::Membrane<distype>::mem_nlnstiffmass(
 
           // only compute the symmetric components from a single eigenvector,
           // because eigenvalue directions are not consistent (it can be flipped)
-          tempCG(0, 0) += (prstr(k)) * (prstr(k)) * n_00;
-          tempCG(0, 1) += (prstr(k)) * (prstr(k)) * n_01;
-          tempCG(0, 2) += (prstr(k)) * (prstr(k)) * n_02;
-          tempCG(1, 0) += (prstr(k)) * (prstr(k)) * n_01;  // symmetry
-          tempCG(1, 1) += (prstr(k)) * (prstr(k)) * n_11;
-          tempCG(1, 2) += (prstr(k)) * (prstr(k)) * n_12;
-          tempCG(2, 0) += (prstr(k)) * (prstr(k)) * n_02;  // symmetry
-          tempCG(2, 1) += (prstr(k)) * (prstr(k)) * n_12;  // symmetry
-          tempCG(2, 2) += (prstr(k)) * (prstr(k)) * n_22;
+          tempCG(0, 0) += (prstr(k)) * (prstr(k))*n_00;
+          tempCG(0, 1) += (prstr(k)) * (prstr(k))*n_01;
+          tempCG(0, 2) += (prstr(k)) * (prstr(k))*n_02;
+          tempCG(1, 0) += (prstr(k)) * (prstr(k))*n_01;  // symmetry
+          tempCG(1, 1) += (prstr(k)) * (prstr(k))*n_11;
+          tempCG(1, 2) += (prstr(k)) * (prstr(k))*n_12;
+          tempCG(2, 0) += (prstr(k)) * (prstr(k))*n_02;  // symmetry
+          tempCG(2, 1) += (prstr(k)) * (prstr(k))*n_12;  // symmetry
+          tempCG(2, 2) += (prstr(k)) * (prstr(k))*n_22;
 
           // Computation of the Logarithmic strain tensor
 
-          lnv(0, 0) += (std::log(prstr(k))) * n_00;
-          lnv(0, 1) += (std::log(prstr(k))) * n_01;
-          lnv(0, 2) += (std::log(prstr(k))) * n_02;
-          lnv(1, 0) += (std::log(prstr(k))) * n_01;  // symmetry
-          lnv(1, 1) += (std::log(prstr(k))) * n_11;
-          lnv(1, 2) += (std::log(prstr(k))) * n_12;
-          lnv(2, 0) += (std::log(prstr(k))) * n_02;  // symmetry
-          lnv(2, 1) += (std::log(prstr(k))) * n_12;  // symmetry
-          lnv(2, 2) += (std::log(prstr(k))) * n_22;
+          lnv(0, 0) += (std::log(prstr(k)))*n_00;
+          lnv(0, 1) += (std::log(prstr(k)))*n_01;
+          lnv(0, 2) += (std::log(prstr(k)))*n_02;
+          lnv(1, 0) += (std::log(prstr(k)))*n_01;  // symmetry
+          lnv(1, 1) += (std::log(prstr(k)))*n_11;
+          lnv(1, 2) += (std::log(prstr(k)))*n_12;
+          lnv(2, 0) += (std::log(prstr(k)))*n_02;  // symmetry
+          lnv(2, 1) += (std::log(prstr(k)))*n_12;  // symmetry
+          lnv(2, 2) += (std::log(prstr(k)))*n_22;
         }
 
         // compare CG computed with deformation gradient with CG computed

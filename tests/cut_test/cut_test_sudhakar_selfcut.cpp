@@ -210,14 +210,14 @@ void test_sud_sc1()
   Cut::Mesh mesh = intersection.NormalMesh();
   const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = mesh.VolumeCells();
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     tessVol.push_back(vc->Volume());
   }
 
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     vc->moment_fit_gauss_weights(vc->parent_element(), mesh, true, "Tessellation");
@@ -225,7 +225,7 @@ void test_sud_sc1()
   }
 
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     vc->direct_divergence_gauss_rule(vc->parent_element(), mesh, true, "DirectDivergence");

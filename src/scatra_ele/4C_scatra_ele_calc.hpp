@@ -789,7 +789,7 @@ namespace Discret
       virtual void calc_mat_chemo(Core::LinAlg::SerialDenseMatrix& emat, const int k,
           const double timefacfac, const double timetaufac, const double densnp,
           const double scatrares, const Core::LinAlg::Matrix<nen_, 1>& sgconv,
-          const Core::LinAlg::Matrix<nen_, 1>& diff){};
+          const Core::LinAlg::Matrix<nen_, 1>& diff) {};
 
       //! calculation of linearized mass rhs vector
       void calc_rhs_lin_mass(
@@ -873,7 +873,7 @@ namespace Discret
 
       virtual void calc_rhs_chemo(Core::LinAlg::SerialDenseVector& erhs, const int k,
           const double rhsfac, const double rhstaufac, const double scatrares,
-          const double densnp){};
+          const double densnp) {};
 
       //! fine-scale subgrid-diffusivity term on right hand side
       void calc_rhsfssgd(Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled

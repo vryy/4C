@@ -21,7 +21,7 @@ namespace PoroMultiPhaseScaTra
   {
    public:
     PoroMultiPhaseScaTraMonolithic(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
-        : PoroMultiPhaseScaTraBase(comm, globaltimeparams){};  // Problem builder
+        : PoroMultiPhaseScaTraBase(comm, globaltimeparams) {};  // Problem builder
 
 
   };  // PoroMultiPhaseMonolithic

@@ -25,7 +25,7 @@ namespace Mat
       /// standard constructor
       explicit FluidPoroViscosityLaw(
           const Core::Mat::PAR::Parameter::Data& matdata, bool constviscosity)
-          : Parameter(matdata), constviscosity_(constviscosity){};
+          : Parameter(matdata), constviscosity_(constviscosity) {};
 
       // get viscosity
       virtual double get_viscosity(const double abspressgrad) const = 0;

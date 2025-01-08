@@ -308,7 +308,7 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
     for (int v = 0; v < 2; ++v)
       for (int d = 0; d < 3; ++d)
         for (_CI p = (currcell->get_deriv_vertex(v))[d].begin();
-             p != (currcell->get_deriv_vertex(v))[d].end(); ++p)
+            p != (currcell->get_deriv_vertex(v))[d].end(); ++p)
           lingp[p->first](d) += svalcell(v) * (p->second);
 
     // compute GP slave coordinate derivatives
@@ -1761,13 +1761,13 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
     auxn()[2] += 0.5 * mycnode->mo_data().n()[2];
 
     for (_CI p = mycnode->data().get_deriv_n()[0].begin();
-         p != mycnode->data().get_deriv_n()[0].end(); ++p)
+        p != mycnode->data().get_deriv_n()[0].end(); ++p)
       (dauxn[0])[p->first] += 0.5 * (p->second);
     for (_CI p = mycnode->data().get_deriv_n()[1].begin();
-         p != mycnode->data().get_deriv_n()[1].end(); ++p)
+        p != mycnode->data().get_deriv_n()[1].end(); ++p)
       (dauxn[1])[p->first] += 0.5 * (p->second);
     for (_CI p = mycnode->data().get_deriv_n()[2].begin();
-         p != mycnode->data().get_deriv_n()[2].end(); ++p)
+        p != mycnode->data().get_deriv_n()[2].end(); ++p)
       (dauxn[2])[p->first] += 0.5 * (p->second);
 
     // new aux center
@@ -2728,7 +2728,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
       if (dynamic_cast<FriNode*>(contactnode)->fri_data().get_d_old_ltl().size() > 0)
       {
         for (_CI p = dynamic_cast<FriNode*>(contactnode)->fri_data().get_d_old_ltl().begin();
-             p != dynamic_cast<FriNode*>(contactnode)->fri_data().get_d_old_ltl().end(); ++p)
+            p != dynamic_cast<FriNode*>(contactnode)->fri_data().get_d_old_ltl().end(); ++p)
         {
           // node id
           int gid3 = p->first;
@@ -2750,7 +2750,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
           FOUR_C_THROW("something went wrong!");
 
         for (CI p = dynamic_cast<FriNode*>(contactnode)->fri_data().get_m_old_ltl().begin();
-             p != dynamic_cast<FriNode*>(contactnode)->fri_data().get_m_old_ltl().end(); ++p)
+            p != dynamic_cast<FriNode*>(contactnode)->fri_data().get_m_old_ltl().end(); ++p)
         {
           // node id
           int gid3 = p->first;
@@ -3022,13 +3022,13 @@ void CONTACT::LineToLineCouplingPoint3d::line_intersection(double* sxi, double* 
     ts2[2] *= -1.0;
 
     for (_CI p = ns2->data().get_deriv_tangent()[0].begin();
-         p != ns2->data().get_deriv_tangent()[0].end(); ++p)
+        p != ns2->data().get_deriv_tangent()[0].end(); ++p)
       ns2->data().get_deriv_tangent()[0][p->first] *= -1.0;
     for (_CI p = ns2->data().get_deriv_tangent()[1].begin();
-         p != ns2->data().get_deriv_tangent()[1].end(); ++p)
+        p != ns2->data().get_deriv_tangent()[1].end(); ++p)
       ns2->data().get_deriv_tangent()[1][p->first] *= -1.0;
     for (_CI p = ns2->data().get_deriv_tangent()[2].begin();
-         p != ns2->data().get_deriv_tangent()[2].end(); ++p)
+        p != ns2->data().get_deriv_tangent()[2].end(); ++p)
       ns2->data().get_deriv_tangent()[2][p->first] *= -1.0;
   }
   if (out)
@@ -3053,13 +3053,13 @@ void CONTACT::LineToLineCouplingPoint3d::line_intersection(double* sxi, double* 
     tm2[2] *= -1.0;
 
     for (_CI p = nm2->data().get_deriv_tangent()[0].begin();
-         p != nm2->data().get_deriv_tangent()[0].end(); ++p)
+        p != nm2->data().get_deriv_tangent()[0].end(); ++p)
       nm2->data().get_deriv_tangent()[0][p->first] *= -1.0;
     for (_CI p = nm2->data().get_deriv_tangent()[1].begin();
-         p != nm2->data().get_deriv_tangent()[1].end(); ++p)
+        p != nm2->data().get_deriv_tangent()[1].end(); ++p)
       nm2->data().get_deriv_tangent()[1][p->first] *= -1.0;
     for (_CI p = nm2->data().get_deriv_tangent()[2].begin();
-         p != nm2->data().get_deriv_tangent()[2].end(); ++p)
+        p != nm2->data().get_deriv_tangent()[2].end(); ++p)
       nm2->data().get_deriv_tangent()[2][p->first] *= -1.0;
   }
   if (out)
@@ -3214,11 +3214,11 @@ void CONTACT::LineToLineCouplingPoint3d::line_intersection(double* sxi, double* 
   for (int i = 0; i < 3; ++i)
   {
     for (_CI p = ns1->data().get_deriv_tangent()[i].begin();
-         p != ns1->data().get_deriv_tangent()[i].end(); ++p)
+        p != ns1->data().get_deriv_tangent()[i].end(); ++p)
       (vsLin[i])[p->first] += sval[0] * p->second;
 
     for (_CI p = ns2->data().get_deriv_tangent()[i].begin();
-         p != ns2->data().get_deriv_tangent()[i].end(); ++p)
+        p != ns2->data().get_deriv_tangent()[i].end(); ++p)
       (vsLin[i])[p->first] += sval[1] * p->second;
   }
 
@@ -3226,11 +3226,11 @@ void CONTACT::LineToLineCouplingPoint3d::line_intersection(double* sxi, double* 
   for (int i = 0; i < 3; ++i)
   {
     for (_CI p = nm1->data().get_deriv_tangent()[i].begin();
-         p != nm1->data().get_deriv_tangent()[i].end(); ++p)
+        p != nm1->data().get_deriv_tangent()[i].end(); ++p)
       (vmLin[i])[p->first] += mval[0] * p->second;
 
     for (_CI p = nm2->data().get_deriv_tangent()[i].begin();
-         p != nm2->data().get_deriv_tangent()[i].end(); ++p)
+        p != nm2->data().get_deriv_tangent()[i].end(); ++p)
       (vmLin[i])[p->first] += mval[1] * p->second;
   }
 

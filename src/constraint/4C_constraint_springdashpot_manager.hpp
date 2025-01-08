@@ -84,7 +84,7 @@ namespace CONSTRAINTS
 
     bool havespringdashpot_;  ///< are there any spring dashpot BCs at all?
     int n_conds_;             ///< number of spring dashpot conditions
-  };                          // class
+  };  // class
 }  // namespace CONSTRAINTS
 FOUR_C_NAMESPACE_CLOSE
 

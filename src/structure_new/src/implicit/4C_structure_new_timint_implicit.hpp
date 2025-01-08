@@ -32,7 +32,7 @@ namespace Solid
     {
       class Required;
     }  // namespace INTERFACE
-  }    // namespace Nln::SOLVER
+  }  // namespace Nln::SOLVER
 
   namespace TimeInt
   {

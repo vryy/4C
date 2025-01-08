@@ -79,8 +79,8 @@ namespace NOX
           virtual Core::LinAlg::Solver* get_linear_solver() const { return nullptr; };
         };
       }  // namespace Interface
-    }    // namespace CONSTRAINT
-  }      // namespace Nln
+    }  // namespace CONSTRAINT
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

@@ -59,7 +59,7 @@ Cut::TetMesh::TetMesh(
 
   tets_.reserve(original_tets.size());
   for (std::vector<std::vector<int>>::iterator i = original_tets.begin(); i != original_tets.end();
-       ++i)
+      ++i)
   {
     std::vector<int>& t = *i;
     std::vector<Point*> tet;
@@ -308,7 +308,7 @@ void Cut::TetMesh::init()
   }
 
   for (std::map<Handle<3>, Entity<3>>::iterator i = tet_surfaces_.begin(); i != tet_surfaces_.end();
-       ++i)
+      ++i)
   {
     Entity<3>& e = i->second;
     e.create_children(tet_lines_);
@@ -361,7 +361,7 @@ void Cut::TetMesh::call_q_hull(
     double length = 0;
     Core::LinAlg::Matrix<3, 1> l;
     for (int i = 0; i < n;
-         ++i)  // Find the distance to the point furthest away from the mid-point (length)
+        ++i)  // Find the distance to the point furthest away from the mid-point (length)
     {
       Point* p = points[i];
       Core::LinAlg::Matrix<3, 1> x(p->x());
@@ -469,7 +469,7 @@ void Cut::TetMesh::call_q_hull(
 
             // FOREACHvertex_(facet->vertices)
             for (void** vertexp = &facet->vertices->e[0].p;
-                 (vertex = static_cast<vertexT*>(*vertexp++));)
+                (vertex = static_cast<vertexT*>(*vertexp++));)
             {
               int p = qh_pointid(vertex->point);
               if (p >= n)

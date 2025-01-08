@@ -753,10 +753,9 @@ namespace Core::IO
      * @note The one_of() function is not intended to be used for selecting from a fixed set of
      * different values of the same type. Use the selection() function for this purpose.
      */
-    [[nodiscard]] InputSpec one_of(
-        std::vector<InputSpec> specs, std::function<void(ValueParser& parser,
-                                          InputParameterContainer& container, std::size_t index)>
-                                          on_parse_callback = nullptr);
+    [[nodiscard]] InputSpec one_of(std::vector<InputSpec> specs,
+        std::function<void(ValueParser& parser, InputParameterContainer& container,
+            std::size_t index)> on_parse_callback = nullptr);
   }  // namespace InputSpecBuilders
 }  // namespace Core::IO
 

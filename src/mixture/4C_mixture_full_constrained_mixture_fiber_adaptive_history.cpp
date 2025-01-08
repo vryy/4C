@@ -93,7 +93,8 @@ void Mixture::TimestepAdaptivityInfo::emplace_back(
   {
     FOUR_C_ASSERT(list_.size() == 0 || std::min_element(list_.begin(), list_.end(),
                                            [](const TimestepAdaptivityInfoItem& item1,
-                                               const TimestepAdaptivityInfoItem& item2) {
+                                               const TimestepAdaptivityInfoItem& item2)
+                                           {
                                              return item1.level_ < item2.level_;
                                            })->level_ > level,
         "The timestep adaptivity info list contains an item with a smaller level than you want "

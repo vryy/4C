@@ -746,7 +746,7 @@ namespace Discret
       //! current density at Gauss point
       Core::LinAlg::Matrix<nsd, 1> curint_;
     };  // class ScaTraEleInternalVariableManagerElchDiffCond
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

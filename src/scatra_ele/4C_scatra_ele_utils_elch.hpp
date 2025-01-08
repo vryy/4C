@@ -115,7 +115,7 @@ namespace Discret
       //! number of transported scalars
       const int numscal_;
     };  // class ScaTraEleUtilsElch
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

@@ -189,7 +189,7 @@ bool Cut::VolumeCell::contains(Core::LinAlg::Matrix<3, 1>& x)
         "integrationcells");
 
   for (Cut::plain_integrationcell_set::iterator it = integrationcells_.begin();
-       it != integrationcells_.end(); it++)
+      it != integrationcells_.end(); it++)
   {
     Cut::IntegrationCell* intcell = *it;
 
@@ -216,7 +216,7 @@ void Cut::VolumeCell::create_tet4_integration_cells(Mesh& mesh,
   }
 
   for (std::map<Facet*, std::vector<Point*>>::const_iterator i = sides_xyz.begin();
-       i != sides_xyz.end(); ++i)
+      i != sides_xyz.end(); ++i)
   {
     Facet* f = i->first;
     const std::vector<Point*>& points = i->second;
@@ -287,7 +287,7 @@ void Cut::VolumeCell::get_boundary_cells_to_be_integrated(
       // Loop over all marked actions and extract bc's for corresponding coupling object.
       for (std::map<Cut::MarkedActions, int>::iterator markit =
                f->parent_side()->get_markedsidemap().begin();
-           markit != f->parent_side()->get_markedsidemap().end(); ++markit)
+          markit != f->parent_side()->get_markedsidemap().end(); ++markit)
       {
         if (markit->first == Cut::mark_and_create_boundarycells)
           bcells[markit->second].push_back(bc);
@@ -385,7 +385,7 @@ void Cut::VolumeCell::print(std::ostream& stream) const
 
   count = 0;
   for (plain_integrationcell_set::const_iterator i = integrationcells_.begin();
-       i != integrationcells_.end(); ++i)
+      i != integrationcells_.end(); ++i)
   {
     IntegrationCell* icell = *i;
     stream << "\n# IntegrationCell " << count++ << " of VolumeCell:\n";
@@ -480,7 +480,7 @@ int Cut::VolumeCell::num_gauss_points(Core::FE::CellType shape)
   int numgp = 0;
 
   for (plain_integrationcell_set::const_iterator i = integrationcells_.begin();
-       i != integrationcells_.end(); ++i)
+      i != integrationcells_.end(); ++i)
   {
     IntegrationCell* ic = *i;
 
@@ -851,7 +851,7 @@ void Cut::VolumeCell::dump_gmsh_solid(std::ofstream& file, Mesh& mesh)
       const std::vector<std::vector<Point*>>& triangulation = fac->triangulation();
 
       for (std::vector<std::vector<Point*>>::const_iterator j = triangulation.begin();
-           j != triangulation.end(); ++j)
+          j != triangulation.end(); ++j)
       {
         std::vector<Point*> tri = *j;
 
@@ -1149,7 +1149,7 @@ void Cut::VolumeCell::generate_boundary_cells(Mesh& mesh, const Cut::Point::Poin
         const std::vector<std::vector<Point*>>& triangulation = fac->triangulation();
 
         for (std::vector<std::vector<Point*>>::const_iterator j = triangulation.begin();
-             j != triangulation.end(); ++j)
+            j != triangulation.end(); ++j)
         {
           std::vector<Point*> tri = *j;
 
@@ -1230,7 +1230,7 @@ void Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& mesh,
       facet_triang = fac->get_split_cells();
 
     for (std::vector<std::vector<Point*>>::const_iterator j = facet_triang.begin();
-         j != facet_triang.end(); ++j)
+        j != facet_triang.end(); ++j)
     {
       std::vector<Point*> tri = *j;
       std::vector<Point*> tri_temp(tri);  // could be quad?
@@ -1393,7 +1393,7 @@ std::shared_ptr<Core::FE::GaussPoints> Cut::VolumeCell::generate_internal_gauss_
       std::make_shared<Core::FE::CollectedGaussPoints>(0);
 
   for (Core::FE::GaussIntegration::iterator quadint = grule.begin(); quadint != grule.end();
-       ++quadint)
+      ++quadint)
   {
     const Core::LinAlg::Matrix<3, 1> etaFacet(
         quadint.point());  // coordinates and weight of main gauss point
@@ -1672,7 +1672,7 @@ bool Cut::VolumeCell::set_position_cut_side_based()
       //-----
       Core::LinAlg::Matrix<3, 1> facecen;
       for (std::vector<Point*>::const_iterator fit = f->corner_points().begin();
-           fit != f->corner_points().end(); fit++)
+          fit != f->corner_points().end(); fit++)
       {
         for (unsigned dim = 0; dim < 3; dim++) facecen(dim, 0) += (*fit)->x()[dim];
       }
@@ -1716,7 +1716,7 @@ bool Cut::VolumeCell::set_position_cut_side_based()
 
       outsidenormal[f] = (dotProduct > 0);
     }  // if not cutfacet
-  }    // for facets
+  }  // for facets
 
   int iter = 0;
   bool done = false;
@@ -1728,7 +1728,7 @@ bool Cut::VolumeCell::set_position_cut_side_based()
       if (ff->on_cut_side() && outsidenormal.find(ff) == outsidenormal.end())  // cutside
       {
         for (std::map<Facet*, bool>::iterator on = outsidenormal.begin(); on != outsidenormal.end();
-             ++on)
+            ++on)
         {
           bool consistant_normal = false;
           if (ff->have_consistant_normal(on->first, consistant_normal))

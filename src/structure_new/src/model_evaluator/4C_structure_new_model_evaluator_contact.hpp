@@ -81,7 +81,7 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void predict(const Inpar::Solid::PredEnum& pred_type) override{};
+      void predict(const Inpar::Solid::PredEnum& pred_type) override {};
 
       //! recover condensed Lagrange multipliers
       void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
@@ -210,7 +210,7 @@ namespace Solid
       std::shared_ptr<CONTACT::AbstractStrategy> strategy_ptr_;
 
     };  // class Contact
-  }     // namespace ModelEvaluator
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

@@ -77,7 +77,7 @@ namespace Cut
         // print node_dofsetnumber_map
         std::cout << "\tnode_dofsetnumber_map" << std::endl;
         for (std::map<int, int>::iterator i = node_dofsetnumber_map_.begin();
-             i != node_dofsetnumber_map_.end(); ++i)
+            i != node_dofsetnumber_map_.end(); ++i)
         {
           std::cout << "\t\tnodeId \t" << i->first << "\t dofsetnumber \t" << i->second
                     << std::endl;

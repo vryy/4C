@@ -717,7 +717,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::prepare_fluid_op()
     for (int i = 0; i < (int)conditions.size(); ++i)
     {
       for (curr = conditions[i]->geometry().begin(); curr != conditions[i]->geometry().end();
-           ++curr)
+          ++curr)
       {
         settoinsert.insert(curr->second->id());
       }

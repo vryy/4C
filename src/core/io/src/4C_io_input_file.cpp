@@ -42,7 +42,7 @@ namespace Core::IO
       Teuchos::ParameterList* sublist = &list;
 
       for (std::string::size_type pos = name.find('/'); pos != std::string::npos;
-           pos = name.find('/'))
+          pos = name.find('/'))
       {
         sublist = &sublist->sublist(name.substr(0, pos));
         name = name.substr(pos + 1);

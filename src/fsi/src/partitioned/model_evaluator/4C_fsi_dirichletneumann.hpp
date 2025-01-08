@@ -81,7 +81,7 @@ namespace FSI
      * \param[in, out] F residual vector
      * \param[in] fillFlag Type of evaluation in computeF() (cf. NOX documentation for details)
      */
-    void fsi_op(const Core::LinAlg::Vector<double> &x, Core::LinAlg::Vector<double> &F,
+    void fsi_op(const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& F,
         const FillType fillFlag) override;
 
     /** \brief interface fluid operator

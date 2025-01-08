@@ -1459,7 +1459,7 @@ namespace Mortar
     virtual void pre_mortar_coupling(const Mortar::Element* sele,
         const std::vector<Mortar::Element*> mele,
         const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) const {
-        /* does nothing in the default case */
+      /* does nothing in the default case */
     };
 
     /** \brief function called at the end of each mortar_coupling call
@@ -1473,7 +1473,7 @@ namespace Mortar
     virtual void post_mortar_coupling(const Mortar::Element* sele,
         const std::vector<Mortar::Element*> mele,
         const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr) const {
-        /* does nothing in the default case */
+      /* does nothing in the default case */
     };
 
     /*!

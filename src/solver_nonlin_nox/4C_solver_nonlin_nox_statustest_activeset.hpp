@@ -58,8 +58,8 @@ namespace NOX
 
         std::deque<Teuchos::RCP<const Epetra_Map>> cycling_maps_;
       };  // class ActiveSet
-    }     // namespace StatusTest
-  }       // namespace Nln
+    }  // namespace StatusTest
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

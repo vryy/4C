@@ -121,7 +121,7 @@ namespace FBI
      * \param[in] structure_displacement vector containing the column structure displacement
      */
     virtual void update_binning(std::shared_ptr<Core::FE::Discretization>& structure_discretization,
-        std::shared_ptr<const Core::LinAlg::Vector<double>> structure_column_displacement){};
+        std::shared_ptr<const Core::LinAlg::Vector<double>> structure_column_displacement) {};
 
    protected:
     /**

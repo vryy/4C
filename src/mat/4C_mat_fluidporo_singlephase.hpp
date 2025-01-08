@@ -207,7 +207,7 @@ namespace Mat
   {
    public:
     /// construct empty material object
-    FluidPoroSinglePhaseBase(){};
+    FluidPoroSinglePhaseBase() {};
 
     /// initialize
     virtual void initialize() = 0;

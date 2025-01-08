@@ -30,7 +30,7 @@ namespace NOX
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace Inner
+    }  // namespace Inner
     namespace Solver
     {
       class LineSearchBased : public ::NOX::Solver::LineSearchBased
@@ -90,8 +90,8 @@ namespace NOX
 
         void printUpdate() override;
       };  // class LineSearchBased
-    }     // namespace Solver
-  }       // namespace Nln
+    }  // namespace Solver
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

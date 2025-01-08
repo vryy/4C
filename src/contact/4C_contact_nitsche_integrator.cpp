@@ -493,7 +493,7 @@ void CONTACT::IntegratorNitsche::so_ele_cauchy(Mortar::Element& moEle, double* b
           return cauchy_n_dir;
         }
         else if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(moEle.parent_element());
-                 solid_ele != nullptr)
+            solid_ele != nullptr)
         {
           // new solid element
           return solid_ele->get_normal_cauchy_stress_at_xi<dim>(

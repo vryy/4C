@@ -53,7 +53,7 @@ namespace Mat
           return nullptr;
         };
       };  // class IsoYeoh
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Isochoric Yeoh material according to [1]

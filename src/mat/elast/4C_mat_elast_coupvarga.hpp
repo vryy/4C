@@ -54,7 +54,7 @@ namespace Mat
         };
 
       };  // class CoupVarga
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Varga's material according to [1], [2]

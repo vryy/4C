@@ -2051,7 +2051,7 @@ void test_hex8quad4selfcut42()
   Cut::Mesh mesh = intersection.normal_mesh();
   const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     dirdivVol.push_back(vc->volume());
@@ -4212,14 +4212,14 @@ void test_hex8quad4selfcut71()
   Cut::Mesh mesh = intersection.normal_mesh();
   const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     tessVol.push_back(vc->volume());
   }
 
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     vc->moment_fit_gauss_weights(vc->parent_element(), mesh, true, Cut::BCellGaussPts_Tessellation);
@@ -4227,7 +4227,7 @@ void test_hex8quad4selfcut71()
   }
 
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     vc->direct_divergence_gauss_rule(

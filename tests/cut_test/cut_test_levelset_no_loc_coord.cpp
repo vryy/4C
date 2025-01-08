@@ -174,7 +174,7 @@ void test_level_set_cut_tesselation_and_dd(std::vector<int> nids, std::vector<do
   std::cout << "# Volume Cells Tesselation: " << other_cells.size() << std::endl;
   int iteration_VC = 0;
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     tessVol.push_back(vc->volume());
@@ -200,7 +200,7 @@ void test_level_set_cut_tesselation_and_dd(std::vector<int> nids, std::vector<do
       cidd.normal_mesh().volume_cells();
   std::cout << "# Volume Cells Direct Divergence: " << other_cellsdd.size() << std::endl;
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator idd = other_cellsdd.begin();
-       idd != other_cellsdd.end(); ++idd)
+      idd != other_cellsdd.end(); ++idd)
   {
     Cut::VolumeCell* vc = &**idd;
     dirDivVol.push_back(vc->volume());
@@ -241,7 +241,7 @@ void test_level_set_cut_tesselation_and_dd_same_vc(std::vector<int> nids, std::v
   std::cout << "# Volume Cells Tesselation: " << other_cells.size() << std::endl;
   int iteration_VC = 0;
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     tessVol.push_back(vc->volume());
@@ -264,7 +264,7 @@ void test_level_set_cut_tesselation_and_dd_same_vc(std::vector<int> nids, std::v
 
   // Cut with DirectDivergence as well
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     vc->direct_divergence_gauss_rule(
@@ -1263,7 +1263,7 @@ void test_ls_mesh_hex8_simple()
   Cut::Mesh mesh = intersection.normal_mesh();
   const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     tessVol.push_back(vc->volume());
@@ -1271,7 +1271,7 @@ void test_ls_mesh_hex8_simple()
 
   int counter = 1;
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL USING MESH #" << counter << ".....!"
@@ -1418,7 +1418,7 @@ void test_ls_hex8_experiment_magnus()
 
   int iteration_VC = 0;
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     iteration_VC++;
     std::cout << "VC(" << iteration_VC << "):" << std::endl;

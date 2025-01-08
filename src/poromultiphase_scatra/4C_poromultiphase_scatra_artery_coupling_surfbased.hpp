@@ -63,20 +63,20 @@ namespace PoroMultiPhaseScaTra
      * @brief et the artery diameter in material to be able to use it on 1D discretization
      * \note nothing to do for surface-based formulation since varying diameter not yet possible
      */
-    void set_artery_diam_in_material() override{};
+    void set_artery_diam_in_material() override {};
 
     /*!
      * @brief reset the integrated diameter vector to zero
      * \note nothing to do for surface-based formulation since varying diameter not yet possible
      */
-    void reset_integrated_diam_to_zero() override{};
+    void reset_integrated_diam_to_zero() override {};
 
     /*!
      * @brief evaluate additional linearization of (integrated) element diameter dependent terms
      * (Hagen-Poiseuille)
      * \note nothing to do for surface-based formulation since varying diameter not yet possible
      */
-    void evaluate_additional_linearizationof_integrated_diam() override{};
+    void evaluate_additional_linearizationof_integrated_diam() override {};
 
     //! get the segment lengths of element 'artelegid'
     std::vector<double> get_ele_segment_lengths(const int artelegid) override { return {2.0}; };

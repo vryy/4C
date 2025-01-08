@@ -39,7 +39,7 @@ namespace Mat
       const double soretcoefficient_;
       //@}
     };  // class Mat::PAR::Soret
-  }     // namespace PAR
+  }  // namespace PAR
 
 
   /*----------------------------------------------------------------------*/

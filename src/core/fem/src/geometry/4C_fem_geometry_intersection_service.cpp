@@ -68,7 +68,7 @@ void Core::Geo::check_geo_type(const Core::Elements::Element* element,
         break;
       }
     }  // for xfem surfaces
-  }    // if eleDim == 3
+  }  // if eleDim == 3
   else if (eleDim == 2 || eleDim == 1)
   {
     CartesianCount = 0;

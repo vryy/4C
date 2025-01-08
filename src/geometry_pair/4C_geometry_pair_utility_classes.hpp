@@ -60,7 +60,7 @@ namespace GEOMETRYPAIR
           gauss_weight_(gauss_weight),
           intersection_face_(-1),
           eta_cross_section_(true),
-          is_cross_section_point_(false){};
+          is_cross_section_point_(false) {};
 
     /**
      * \brief Constructor.
@@ -68,19 +68,19 @@ namespace GEOMETRYPAIR
      * @param xi Parameter coordinates in volume.
      */
     ProjectionPoint1DTo3D(ScalarType eta, Core::LinAlg::Matrix<3, 1, ScalarType> xi)
-        : ProjectionPoint1DTo3D(eta, xi, -1.){};
+        : ProjectionPoint1DTo3D(eta, xi, -1.) {};
 
     /**
      * \brief Constructor.
      * @param eta Parameter coordinate on the line.
      */
     ProjectionPoint1DTo3D(ScalarType eta)
-        : ProjectionPoint1DTo3D(eta, Core::LinAlg::Matrix<3, 1, ScalarType>(true), -1.){};
+        : ProjectionPoint1DTo3D(eta, Core::LinAlg::Matrix<3, 1, ScalarType>(true), -1.) {};
 
     /**
      * \brief Empty constructor.
      */
-    ProjectionPoint1DTo3D() : ProjectionPoint1DTo3D(0.0){};
+    ProjectionPoint1DTo3D() : ProjectionPoint1DTo3D(0.0) {};
 
     /**
      * \brief Destructor.
@@ -270,7 +270,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Default constructor, the segment is from -1 to 1.
      */
-    LineSegment() : LineSegment(ScalarType(-1.0), ScalarType(1.0)){};
+    LineSegment() : LineSegment(ScalarType(-1.0), ScalarType(1.0)) {};
 
     /**
      * \brief Constructor. Set the range of the segment.

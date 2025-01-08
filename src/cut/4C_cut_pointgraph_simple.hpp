@@ -90,9 +90,8 @@ namespace Cut
        public:
         /// constructor
         Graph()
-            : PointGraph::Graph(),
-              correct_rotation_direction_(false){
-                  // empty
+            : PointGraph::Graph(), correct_rotation_direction_(false) {
+                // empty
               };
 
         /** \brief Overloaded version of the base class implementation

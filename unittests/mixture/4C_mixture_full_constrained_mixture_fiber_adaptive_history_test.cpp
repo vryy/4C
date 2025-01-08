@@ -371,9 +371,8 @@ namespace
     GTEST_SKIP() << "Skip debug assertion tests in release mode.";
 #endif
     Mixture::TimestepAdaptivityInfo level{};
-    auto get_indices_from_base = [&]() {
-      return level.get_indices_from_base<unsigned int, 3>({0, 3, 1});
-    };
+    auto get_indices_from_base = [&]()
+    { return level.get_indices_from_base<unsigned int, 3>({0, 3, 1}); };
     EXPECT_ANY_THROW(get_indices_from_base());
   }
 

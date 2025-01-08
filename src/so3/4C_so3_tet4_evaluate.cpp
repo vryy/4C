@@ -1157,27 +1157,27 @@ void Discret::Elements::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
 
           // only compute the symmetric components from a single eigenvector,
           // because eigenvalue directions are not consistent (it can be flipped)
-          tempCG(0, 0) += (prstr(k)) * (prstr(k)) * n_00;
-          tempCG(0, 1) += (prstr(k)) * (prstr(k)) * n_01;
-          tempCG(0, 2) += (prstr(k)) * (prstr(k)) * n_02;
-          tempCG(1, 0) += (prstr(k)) * (prstr(k)) * n_01;  // symmetry
-          tempCG(1, 1) += (prstr(k)) * (prstr(k)) * n_11;
-          tempCG(1, 2) += (prstr(k)) * (prstr(k)) * n_12;
-          tempCG(2, 0) += (prstr(k)) * (prstr(k)) * n_02;  // symmetry
-          tempCG(2, 1) += (prstr(k)) * (prstr(k)) * n_12;  // symmetry
-          tempCG(2, 2) += (prstr(k)) * (prstr(k)) * n_22;
+          tempCG(0, 0) += (prstr(k)) * (prstr(k))*n_00;
+          tempCG(0, 1) += (prstr(k)) * (prstr(k))*n_01;
+          tempCG(0, 2) += (prstr(k)) * (prstr(k))*n_02;
+          tempCG(1, 0) += (prstr(k)) * (prstr(k))*n_01;  // symmetry
+          tempCG(1, 1) += (prstr(k)) * (prstr(k))*n_11;
+          tempCG(1, 2) += (prstr(k)) * (prstr(k))*n_12;
+          tempCG(2, 0) += (prstr(k)) * (prstr(k))*n_02;  // symmetry
+          tempCG(2, 1) += (prstr(k)) * (prstr(k))*n_12;  // symmetry
+          tempCG(2, 2) += (prstr(k)) * (prstr(k))*n_22;
 
           // Computation of the Logarithmic strain tensor
 
-          lnv(0, 0) += (std::log(prstr(k))) * n_00;
-          lnv(0, 1) += (std::log(prstr(k))) * n_01;
-          lnv(0, 2) += (std::log(prstr(k))) * n_02;
-          lnv(1, 0) += (std::log(prstr(k))) * n_01;  // symmetry
-          lnv(1, 1) += (std::log(prstr(k))) * n_11;
-          lnv(1, 2) += (std::log(prstr(k))) * n_12;
-          lnv(2, 0) += (std::log(prstr(k))) * n_02;  // symmetry
-          lnv(2, 1) += (std::log(prstr(k))) * n_12;  // symmetry
-          lnv(2, 2) += (std::log(prstr(k))) * n_22;
+          lnv(0, 0) += (std::log(prstr(k)))*n_00;
+          lnv(0, 1) += (std::log(prstr(k)))*n_01;
+          lnv(0, 2) += (std::log(prstr(k)))*n_02;
+          lnv(1, 0) += (std::log(prstr(k)))*n_01;  // symmetry
+          lnv(1, 1) += (std::log(prstr(k)))*n_11;
+          lnv(1, 2) += (std::log(prstr(k)))*n_12;
+          lnv(2, 0) += (std::log(prstr(k)))*n_02;  // symmetry
+          lnv(2, 1) += (std::log(prstr(k)))*n_12;  // symmetry
+          lnv(2, 2) += (std::log(prstr(k)))*n_22;
         }
 
         // compare CG computed with deformation gradient with CG computed
@@ -1320,9 +1320,9 @@ void Discret::Elements::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
             double bopstrbop = 0.0;  // intermediate value
             for (int idim = 0; idim < NUMDIM_SOTET4; ++idim)
               bopstrbop += nxyz(jnod, idim) * SmB_L[idim];
-            (*stiffmatrix)(NUMDIM_SOTET4 * inod + 0, NUMDIM_SOTET4 * jnod + 0) += bopstrbop;
-            (*stiffmatrix)(NUMDIM_SOTET4 * inod + 1, NUMDIM_SOTET4 * jnod + 1) += bopstrbop;
-            (*stiffmatrix)(NUMDIM_SOTET4 * inod + 2, NUMDIM_SOTET4 * jnod + 2) += bopstrbop;
+            (*stiffmatrix)(NUMDIM_SOTET4* inod + 0, NUMDIM_SOTET4 * jnod + 0) += bopstrbop;
+            (*stiffmatrix)(NUMDIM_SOTET4* inod + 1, NUMDIM_SOTET4 * jnod + 1) += bopstrbop;
+            (*stiffmatrix)(NUMDIM_SOTET4* inod + 2, NUMDIM_SOTET4 * jnod + 2) += bopstrbop;
           }
         }
       }
@@ -1351,9 +1351,9 @@ void Discret::Elements::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
         for (int jnod = 0; jnod < NUMNOD_SOTET4; ++jnod)
         {
           massfactor = (shapefcts4gp[gp])(jnod)*ifactor;
-          (*massmatrix)(NUMDIM_SOTET4 * inod + 0, NUMDIM_SOTET4 * jnod + 0) += massfactor;
-          (*massmatrix)(NUMDIM_SOTET4 * inod + 1, NUMDIM_SOTET4 * jnod + 1) += massfactor;
-          (*massmatrix)(NUMDIM_SOTET4 * inod + 2, NUMDIM_SOTET4 * jnod + 2) += massfactor;
+          (*massmatrix)(NUMDIM_SOTET4* inod + 0, NUMDIM_SOTET4 * jnod + 0) += massfactor;
+          (*massmatrix)(NUMDIM_SOTET4* inod + 1, NUMDIM_SOTET4 * jnod + 1) += massfactor;
+          (*massmatrix)(NUMDIM_SOTET4* inod + 2, NUMDIM_SOTET4 * jnod + 2) += massfactor;
         }
       }
 
@@ -1497,7 +1497,7 @@ void Discret::Elements::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
               double massfactor = factor * myacc(idim);
               for (int jnod = 0; jnod < NUMNOD_SOTET4; ++jnod)
                 for (int jdim = 0; jdim < NUMDIM_SOTET4; ++jdim)
-                  (*massmatrix)(inod * NUMDIM_SOTET4 + idim, jnod * NUMDIM_SOTET4 + jdim) +=
+                  (*massmatrix)(inod* NUMDIM_SOTET4 + idim, jnod * NUMDIM_SOTET4 + jdim) +=
                       massfactor * cb(jnod * NUMDIM_SOTET4 + jdim);
             }
           }
@@ -1511,7 +1511,7 @@ void Discret::Elements::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
           {
             double forcefactor = shapefcts4gp[gp](inod) * detJ * gpweights4gp[gp];
             for (int idim = 0; idim < NUMDIM_SOTET4; ++idim)
-              (*forceinert)(inod * NUMDIM_SOTET4 + idim) += forcefactor * density * myacc(idim);
+              (*forceinert)(inod* NUMDIM_SOTET4 + idim) += forcefactor * density * myacc(idim);
           }
         }
       }

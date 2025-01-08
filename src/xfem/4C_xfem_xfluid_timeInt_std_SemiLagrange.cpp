@@ -128,7 +128,7 @@ void XFEM::XfluidSemiLagrange::compute(
       // loop over all nodes (their std-dofsets) that have been chosen for SEMI-Lagrangean
       // reconstruction
       for (std::vector<TimeIntData>::iterator data = timeIntData_->begin();
-           data != timeIntData_->end(); data++)
+          data != timeIntData_->end(); data++)
       {
 #ifdef DEBUG_SEMILAGRANGE
         Core::IO::cout << "\n\t * STD-SL algorithm for node " << data->node_.Id();
@@ -383,7 +383,7 @@ void XFEM::XfluidSemiLagrange::compute(
                   << Core::IO::endl;
 #endif
             }  // not converged in max_iter
-          }    // if(elefound)
+          }  // if(elefound)
           // if element is not found, look at another processor and so add all
           // according data to the vectors which will be sent to the next processor
           else  // (!elefound)
@@ -402,7 +402,7 @@ void XFEM::XfluidSemiLagrange::compute(
           }  // end if elefound
         }
       }  // end loop over all nodes stored in TiminitData marked for Semilagrangean algorithm
-    }    // !global_newton_finished(counter)
+    }  // !global_newton_finished(counter)
     else
     {
       // reset the state to failed
@@ -768,7 +768,7 @@ bool XFEM::XfluidSemiLagrange::global_newton_finished(int counter) const
 {
   if (counter == newton_max_iter_ * numproc_) return true;  // maximal number of iterations reached
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
-       data++)
+      data++)
   {
     if ((data->state_ == TimeIntData::currSL_) or (data->state_ == TimeIntData::nextSL_))
     {
@@ -860,7 +860,7 @@ void XFEM::XfluidSemiLagrange::get_data_for_not_converged_nodes()
   // remark: all data have to be sent to the processor where
   //         the startpoint lies before calling this function
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
-       data++)
+      data++)
   {
     if (data->state_ == TimeIntData::failedSL_)
     {
@@ -900,7 +900,7 @@ void XFEM::XfluidSemiLagrange::get_data_for_not_converged_nodes()
       //-------------------------------------------------------------------
 
     }  // if(failedSL_)
-  }    // end loop over nodes
+  }  // end loop over nodes
 
   return;
 }  // end get_data_for_not_converged_nodes
@@ -913,7 +913,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_prepare(
     std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> newRowVectors)
 {
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
-       data++)
+      data++)
   {
     data->searchedProcs_ = 1;
     data->counter_ = 0;
@@ -948,7 +948,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
   }
 
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
-       data++)
+      data++)
   {
     if (data->type_ == TimeIntData::predictor_)
       continue;  // no info at new interface position required
@@ -992,7 +992,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
       // exists in the cut won't be found here
       for (std::set<Cut::plain_volumecell_set, Cut::Cmp>::const_iterator cellset_it =
                cellset.begin();
-           cellset_it != cellset.end(); cellset_it++)
+          cellset_it != cellset.end(); cellset_it++)
       {
         // the first vc representing the set
         Cut::VolumeCell* vc = *((*cellset_it).begin());
@@ -1412,7 +1412,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
       // exists in the cut won't be found here
       for (std::set<Cut::plain_volumecell_set, Cut::Cmp>::const_iterator cellset_it =
                cellset.begin();
-           cellset_it != cellset.end(); cellset_it++)
+          cellset_it != cellset.end(); cellset_it++)
       {
         // the first vc representing the set
         Cut::VolumeCell* vc = *((*cellset_it).begin());
@@ -1577,7 +1577,7 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
       FOUR_C_THROW("Cut::Element %d does not contain any volume cell", ele->id());
 
     for (Cut::plain_volumecell_set::iterator cell_it = cells.begin(); cell_it != cells.end();
-         cell_it++)
+        cell_it++)
     {
       Cut::VolumeCell* cell = *cell_it;
       //      if(cell->Contains(x))
@@ -1643,7 +1643,7 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
 
       Core::IO::cout << "point: " << x << Core::IO::endl;
       for (Cut::plain_volumecell_set::iterator cell_it = cells.begin(); cell_it != cells.end();
-           cell_it++)
+          cell_it++)
       {
         Cut::VolumeCell* cell = *cell_it;
         Core::IO::cout << "vc-pos: " << cell->position() << Core::IO::endl;
@@ -1802,7 +1802,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
 
   // fill vectors with the data
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
-       data++)
+      data++)
   {
     if (data->state_ == TimeIntData::failedSL_)
     {
@@ -1818,7 +1818,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
   // send data to the processor where the point lies (1. nearest higher neighbour 2. 2nd nearest
   // higher neighbour...)
   for (int dest = (myrank_ + 1) % numproc_; dest != myrank_;
-       dest = (dest + 1) % numproc_)  // dest is the target processor
+      dest = (dest + 1) % numproc_)  // dest is the target processor
   {
     // Initialization of sending
     Core::Communication::PackBuffer
@@ -1833,7 +1833,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
       source -= numproc_;
 
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
-         data != dataVec[dest].end(); data++)
+        data != dataVec[dest].end(); data++)
     {
       if (data->state_ == TimeIntData::failedSL_)
       {
@@ -1886,7 +1886,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
       timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp,
           initialpoint, initial_eid, initial_ele_owner,
           newtype));  // startOwner is current proc
-    }                 // end loop over number of nodes to get
+    }  // end loop over number of nodes to get
 
     // processors wait for each other
     Core::Communication::barrier(discret_->get_comm());
@@ -1951,7 +1951,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     Core::Communication::PackBuffer dataSend;
 
     for (std::vector<TimeIntData>::iterator data = timeIntData_->begin();
-         data != timeIntData_->end(); data++)
+        data != timeIntData_->end(); data++)
     {
       if (data->state_ == TimeIntData::nextSL_)
       {

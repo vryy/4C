@@ -141,7 +141,7 @@ namespace Discret
           :  // call base class constructors
             ScaTraEleInternalVariableManagerElchDiffCond<nsd, nen>(
                 numscal, elchparams, diffcondparams),
-            ScaTraEleInternalVariableManagerSTIThermo<nsd, nen>(){};
+            ScaTraEleInternalVariableManagerSTIThermo<nsd, nen>() {};
 
 
       //! set internal variables for element evaluation
@@ -177,7 +177,7 @@ namespace Discret
                 vmthermo::temp());
       }
     };  // class ScaTraEleInternalVariableManagerElchDiffCondSTIThermo
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

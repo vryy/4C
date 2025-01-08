@@ -51,7 +51,7 @@ namespace Mat
           return nullptr;
         };
       };  // class IsoNeoHooke
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Isochoric neo-Hooke material according to [1]

@@ -103,7 +103,7 @@ namespace Core::IO::GridGenerator
       const double dinterval[] = {static_cast<double>(inputData.interval_[0]),
           static_cast<double>(inputData.interval_[1]), static_cast<double>(inputData.interval_[2])};
       for (std::vector<int>::const_reverse_iterator fac = factors.rbegin(); fac != factors.rend();
-           ++fac)
+          ++fac)
       {
         const double ratios[] = {dinterval[0] / subdivisions[0], dinterval[1] / subdivisions[1],
             dinterval[2] / subdivisions[2]};

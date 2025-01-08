@@ -168,9 +168,9 @@ namespace
           for (unsigned int i_der_2 = 0; i_der_2 < face_element->get_patch_gid().size(); i_der_2++)
           {
             EXPECT_NEAR(Core::FADUtils::cast_to_double(face_element->get_face_element_data()
-                                                           .nodal_normals_(i_dof)
-                                                           .dx(dof_offset + i_der)
-                                                           .dx(dof_offset + i_der_2)),
+                                .nodal_normals_(i_dof)
+                                .dx(dof_offset + i_der)
+                                .dx(dof_offset + i_der_2)),
                 current_normals_derivative_2[i_dof][i_der][i_der_2], eps);
           }
         }

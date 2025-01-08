@@ -291,7 +291,7 @@ int Discret::Elements::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       // build the location vector only for the structure field
       std::vector<int> lm = la[0].lm_;
 
-      Core::LinAlg::Matrix<numdof_, (numdim_ + 1)* numnod_>* matptr = nullptr;
+      Core::LinAlg::Matrix<numdof_, (numdim_ + 1) * numnod_>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
       if (isNurbs_)
@@ -2002,7 +2002,7 @@ void Discret::Elements::So3Poro<So3Ele, distype>::fill_matrix_and_vectors(const 
              D(us)
              - detJ * w(gp) * d(phi)/d(us) * J * F^-T * Grad(p) * D(us)
              */
-            (*stiffmatrix)(numdim_ * inode + idim, fi + jdim) += shapefct(inode) * val;
+            (*stiffmatrix)(numdim_* inode + idim, fi + jdim) += shapefct(inode) * val;
           }
         }
       }
@@ -2029,7 +2029,7 @@ void Discret::Elements::So3Poro<So3Ele, distype>::fill_matrix_and_vectors(const 
              - detJ * w(gp) *  2 * ( J * dJ/d(us) * v^f * reacoeff * phi^2 + J * reacoeff * phi *
              d(phi)/d(us) * v^f ) * D(us)
              */
-            (*stiffmatrix)(numdim_ * inode + idim, fi + jdim) += shapefct(inode) * val;
+            (*stiffmatrix)(numdim_* inode + idim, fi + jdim) += shapefct(inode) * val;
           }
         }
       }
@@ -2068,7 +2068,7 @@ void Discret::Elements::So3Poro<So3Ele, distype>::fill_matrix_and_vectors(const 
                 }
               }
 
-              (*stiffmatrix)(numdim_ * inode + idim, fi + jdim) += shapefct(inode) * val;
+              (*stiffmatrix)(numdim_* inode + idim, fi + jdim) += shapefct(inode) * val;
             }
           }
         }
@@ -2113,7 +2113,7 @@ void Discret::Elements::So3Poro<So3Ele, distype>::fill_matrix_and_vectors(const 
                   }
                 }
               }
-              (*stiffmatrix)(numdim_ * inode + idim, fi + jdim) += val * shapefct(inode);
+              (*stiffmatrix)(numdim_* inode + idim, fi + jdim) += val * shapefct(inode);
             }
           }
         }
@@ -2164,9 +2164,9 @@ void Discret::Elements::So3Poro<So3Ele, distype>::fill_matrix_and_vectors(const 
       {
         double bopstrbop = 0.0;  // intermediate value
         for (int idim = 0; idim < numdim_; ++idim) bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
-        (*stiffmatrix)(numdim_ * inod + 0, numdim_ * jnod + 0) += bopstrbop;
-        (*stiffmatrix)(numdim_ * inod + 1, numdim_ * jnod + 1) += bopstrbop;
-        (*stiffmatrix)(numdim_ * inod + 2, numdim_ * jnod + 2) += bopstrbop;
+        (*stiffmatrix)(numdim_* inod + 0, numdim_ * jnod + 0) += bopstrbop;
+        (*stiffmatrix)(numdim_* inod + 1, numdim_ * jnod + 1) += bopstrbop;
+        (*stiffmatrix)(numdim_* inod + 2, numdim_ * jnod + 2) += bopstrbop;
       }
     }
   }
@@ -2238,9 +2238,9 @@ void Discret::Elements::So3Poro<So3Ele, distype>::fill_matrix_and_vectors_pressu
       {
         double bopstrbop = 0.0;  // intermediate value
         for (int idim = 0; idim < numdim_; ++idim) bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
-        (*stiffmatrix)(numdim_ * inod + 0, numdim_ * jnod + 0) += bopstrbop;
-        (*stiffmatrix)(numdim_ * inod + 1, numdim_ * jnod + 1) += bopstrbop;
-        (*stiffmatrix)(numdim_ * inod + 2, numdim_ * jnod + 2) += bopstrbop;
+        (*stiffmatrix)(numdim_* inod + 0, numdim_ * jnod + 0) += bopstrbop;
+        (*stiffmatrix)(numdim_* inod + 1, numdim_ * jnod + 1) += bopstrbop;
+        (*stiffmatrix)(numdim_* inod + 2, numdim_ * jnod + 2) += bopstrbop;
       }
     }
   }
@@ -2453,7 +2453,7 @@ void Discret::Elements::So3Poro<So3Ele, distype>::fill_matrix_and_vectors_od(con
            - 2 * reacoeff * J * v^f * phi * d(phi)/dp  Dp
            + 2 * reacoeff * J * v^s * phi * d(phi)/dp  Dp
            */
-          (*stiffmatrix)(numdim_ * inode + idim, fkp1 + numdim_) += shapefct(inode) * val;
+          (*stiffmatrix)(numdim_* inode + idim, fkp1 + numdim_) += shapefct(inode) * val;
         }
       }
     }
@@ -2478,7 +2478,7 @@ void Discret::Elements::So3Poro<So3Ele, distype>::fill_matrix_and_vectors_od(con
            -B^T . ( -1*J*C^-1 ) * Dp
            - J * F^-T * dphi/dp * Dp - J * F^-T * d(Grad((p))/(dp) * phi * Dp
            */
-          (*stiffmatrix)(numdim_ * inode + idim, fkp1 + numdim_) +=
+          (*stiffmatrix)(numdim_* inode + idim, fkp1 + numdim_) +=
               val1 * cinvb(numdim_ * inode + idim) + val2 * shapefct(inode);
         }
       }
@@ -2518,7 +2518,7 @@ void Discret::Elements::So3Poro<So3Ele, distype>::fill_matrix_and_vectors_od(con
            + J * J * phi * phi * defgrd_^-T * d(mat_reacoeff)/d(phi) * defgrd_^-1 * (v^s-v^f) *
            d(phi)/dp Dp
            */
-          (*stiffmatrix)(numdim_ * inode + idim, fkp1 + numdim_) += shapefct(inode) * val;
+          (*stiffmatrix)(numdim_* inode + idim, fkp1 + numdim_) += shapefct(inode) * val;
         }
       }
     }
@@ -2539,7 +2539,7 @@ void Discret::Elements::So3Poro<So3Ele, distype>::fill_matrix_and_vectors_od(con
            -reacoeff * J * J *  phi^2 *  Dv^f
            */
           for (int inode = 0; inode < numnod_; inode++)
-            (*stiffmatrix)(numdim_ * inode + idim, (numdim_ + 1) * jnode + jdim) +=
+            (*stiffmatrix)(numdim_* inode + idim, (numdim_ + 1) * jnode + jdim) +=
                 val * shapefct(inode);
         }
       }

@@ -282,7 +282,7 @@ double CONTACT::Utils::solid_cauchy_at_xi(CONTACT::Element* cele,
           nullptr, nullptr, nullptr, nullptr);
     }
     else if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(cele->parent_element());
-             solid_ele != nullptr)
+        solid_ele != nullptr)
     {
       Discret::Elements::CauchyNDirLinearizations<3> cauchy_linearizations{};
       sigma_nt = solid_ele->get_normal_cauchy_stress_at_xi<3>(

@@ -115,7 +115,7 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
       element_.erase(actele->id());
     }
     for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
-         fool != sendpb.end(); ++fool)
+        fool != sendpb.end(); ++fool)
       swap(sendmap[fool->first], fool->second());
   }
 
@@ -145,7 +145,7 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
   if (!myrank)
   {
     for (std::map<int, std::vector<char>>::iterator fool = sendmap.begin(); fool != sendmap.end();
-         ++fool)
+        ++fool)
     {
       exporter.i_send(
           0, fool->first, fool->second.data(), (int)fool->second.size(), tag, request[tag]);
@@ -217,14 +217,14 @@ void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& tar
       node_.erase(node->id());
     }
     for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
-         fool != sendpb.end(); ++fool)
+        fool != sendpb.end(); ++fool)
       swap(sendmap[fool->first], fool->second());
   }
 
   // tell everybody who is to receive something
   std::vector<int> receivers;
   for (std::map<int, std::vector<char>>::iterator fool = sendmap.begin(); fool != sendmap.end();
-       ++fool)
+      ++fool)
     receivers.push_back(fool->first);
   size = (int)receivers.size();
   Core::Communication::broadcast(&size, 1, 0, get_comm());
@@ -246,7 +246,7 @@ void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& tar
   if (!myrank)
   {
     for (std::map<int, std::vector<char>>::iterator fool = sendmap.begin(); fool != sendmap.end();
-         ++fool)
+        ++fool)
     {
       exporter.i_send(
           0, fool->first, fool->second.data(), (int)fool->second.size(), tag, request[tag]);
@@ -591,7 +591,7 @@ Core::FE::Discretization::build_element_row_column(
       FOUR_C_THROW("Error in logic of element ownerships");
 
     }  // for (int i=0; i<size;)
-  }    // for (int proc=0; proc<numproc; ++proc)
+  }  // for (int proc=0; proc<numproc; ++proc)
 
   // at this point we have
   // myele, length nummyele
@@ -713,7 +713,7 @@ void Core::FE::Discretization::extended_ghosting(const Epetra_Map& elecolmap,
       // fill content of pbcmap int std::map<int, std::set<int> > in preparation for gather_all
       std::map<int, std::vector<int>>* tmp = pbcdofset->get_coupled_nodes();
       for (std::map<int, std::vector<int>>::const_iterator it = tmp->begin(); it != tmp->end();
-           ++it)
+          ++it)
         pbcmap[it->first].insert(it->second.begin(), it->second.end());
 
       // it is assumed that, if one pbc set is available, all other potential dofsets hold the same
@@ -785,7 +785,7 @@ void Core::FE::Discretization::extended_ghosting(const Epetra_Map& elecolmap,
   std::shared_ptr<std::map<int, std::vector<int>>> pbcmapvec =
       std::make_shared<std::map<int, std::vector<int>>>();
   for (std::map<int, std::set<int>>::const_iterator it = pbcmapnew.begin(); it != pbcmapnew.end();
-       ++it)
+      ++it)
     std::copy(it->second.begin(), it->second.end(), std::back_inserter((*pbcmapvec)[it->first]));
 
   // transfer master and slave information to pbc dofset
@@ -815,7 +815,7 @@ void Core::FE::Discretization::setup_ghosting(
   // build the graph ourselves
   std::map<int, std::set<int>> localgraph;
   for (std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator i = element_.begin();
-       i != element_.end(); ++i)
+      i != element_.end(); ++i)
   {
     int numnodes = i->second->num_node();
     const int* nodes = i->second->node_ids();
@@ -837,7 +837,7 @@ void Core::FE::Discretization::setup_ghosting(
   entriesperrow.reserve(localgraph.size());
 
   for (std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator i = node_.begin();
-       i != node_.end(); ++i)
+      i != node_.end(); ++i)
   {
     gids.push_back(i->first);
     entriesperrow.push_back(localgraph[i->first].size());

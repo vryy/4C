@@ -163,7 +163,7 @@ void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
     {
       linkertypes_.push_back(std::dynamic_pointer_cast<Mat::CrosslinkerMat>(
           Mat::factory(matcrosslinkerpertype_[type_i]))
-                                 ->linker_type());
+              ->linker_type());
     }
   }
 

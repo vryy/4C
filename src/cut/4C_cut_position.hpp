@@ -129,7 +129,7 @@ namespace Cut
     /// @}
    public:
     /// constructor
-    Position(){/* intentionally left blank */};
+    Position() { /* intentionally left blank */ };
 
     /// destructor
     virtual ~Position() = default;
@@ -402,7 +402,7 @@ namespace Cut
     /// constructor
     ComputePosition(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
         const Core::LinAlg::Matrix<probdim, 1>& xyz)
-        : PositionGeneric<probdim, eletype, num_nodes_element, dim, floattype>(xyze, xyz){};
+        : PositionGeneric<probdim, eletype, num_nodes_element, dim, floattype>(xyze, xyz) {};
 
     /* Don't call any of these methods directly! Use the base class public
      * methods, instead. */

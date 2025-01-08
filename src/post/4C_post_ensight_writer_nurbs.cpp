@@ -3526,7 +3526,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
     {
       Core::LinAlg::Vector<double> column((allsols)(idf));
       for (int inode = 0; inode < finalnumnode;
-           inode++)  // inode == lid of node because we use proc0map_
+          inode++)  // inode == lid of node because we use proc0map_
       {
         //        Write(file, static_cast<float>(idf));
         write(file, static_cast<float>((column)[inode]));

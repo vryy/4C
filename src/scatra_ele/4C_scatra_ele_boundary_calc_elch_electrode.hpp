@@ -272,7 +272,7 @@ namespace Discret
       //! evaluate factor F/RT
       virtual double get_frt() const;
     };  // class ScaTraEleBoundaryCalcElchElectrode
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

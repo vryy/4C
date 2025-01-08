@@ -108,7 +108,7 @@ void Cut::MeshHandle::create_element_sides(Element& element)
     plain_int_set elementsidenodeids;
     std::vector<int> sidenodeids;
     for (std::vector<Node*>::iterator i = elementsidenodes.begin(); i != elementsidenodes.end();
-         ++i)
+        ++i)
     {
       Node* elementsidenode = *i;
       int elementsidenodeid = elementsidenode->id();

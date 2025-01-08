@@ -150,7 +150,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set_contour(
     Core::FE::CellType distype)
 {
   for (Cut::plain_element_set::const_iterator icutele = cuteles.begin(); icutele != cuteles.end();
-       ++icutele)
+      ++icutele)
   {
     // get pointer to cut element
     Cut::Element* cutele = *icutele;
@@ -159,7 +159,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set_contour(
     volcells = cutele->volume_cells();
 
     for (Cut::plain_volumecell_set::const_iterator ivolcell = volcells.begin();
-         ivolcell != volcells.end(); ++ivolcell)
+        ivolcell != volcells.end(); ++ivolcell)
     {
       Cut::VolumeCell* volcell = *ivolcell;
       const Cut::Point::PointPosition vol_pos = volcell->position();
@@ -171,7 +171,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set_contour(
         // cells twice
         const Cut::plain_boundarycell_set& bcells = volcell->boundary_cells();
         for (Cut::plain_boundarycell_set::const_iterator ibcell = bcells.begin();
-             ibcell != bcells.end(); ++ibcell)
+            ibcell != bcells.end(); ++ibcell)
         {
           Cut::BoundaryCell* bcell = *ibcell;
 
@@ -373,7 +373,7 @@ bool ScaTra::LevelSet::Intersection::is_point_position(const Cut::Point::PointPo
     const std::vector<Cut::Point::PointPosition>& desired_pos) const
 {
   for (std::vector<Cut::Point::PointPosition>::const_iterator cit = desired_pos.begin();
-       cit != desired_pos.end(); ++cit)
+      cit != desired_pos.end(); ++cit)
   {
     // OR - combination
     if (curr_pos == *cit) return true;
@@ -485,7 +485,7 @@ void ScaTra::LevelSet::Intersection::export_interface(
      * within an element) are collected here */
     for (std::map<int, Core::Geo::BoundaryIntCells>::const_iterator cellgroup =
              interface_recv.begin();
-         cellgroup != interface_recv.end(); ++cellgroup)
+        cellgroup != interface_recv.end(); ++cellgroup)
     {
       myinterface.insert(*cellgroup);
     }
@@ -512,7 +512,7 @@ void ScaTra::LevelSet::Intersection::pack_boundary_int_cells(
   // pack data on all processors
   // loop entries of map (groups of boundary integration cells)
   for (std::map<int, Core::Geo::BoundaryIntCells>::const_iterator cellgroup = intcellmap.begin();
-       cellgroup != intcellmap.end(); ++cellgroup)
+      cellgroup != intcellmap.end(); ++cellgroup)
   {
     // pack data of all boundary integrations cells belonging to an element
     const int elegid = cellgroup->first;

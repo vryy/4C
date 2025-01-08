@@ -100,7 +100,7 @@ namespace Mat
           return nullptr;
         };
       };  // class CoupAnisoSimple
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * \brief Implementation of the simple orthotropic, transversely isotropic hyperelastic

@@ -1064,9 +1064,9 @@ might become invalid after a redistribution of the discretization.
 
     \param p (in): Parameter list coming from the time integrator.
      */
-    virtual void set_params_interface_ptr(const Teuchos::ParameterList& p){
-        /* This is a dummy function. Please implement the function in the derived classes, if
-           necessary. */
+    virtual void set_params_interface_ptr(const Teuchos::ParameterList& p) {
+      /* This is a dummy function. Please implement the function in the derived classes, if
+         necessary. */
     };
 
     /*!

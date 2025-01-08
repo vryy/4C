@@ -160,7 +160,7 @@ namespace Discret
             ScaTraEleDiffManager(numscal),
 
             // initialize internal member variable
-            soret_(0.){};
+            soret_(0.) {};
 
       //! set Soret coefficient
       void set_soret(const double& soret  //!< Soret coefficient
@@ -183,7 +183,7 @@ namespace Discret
     {
      public:
       //! constructor
-      ScaTraEleInternalVariableManagerSTIThermo() : temp_(0.), gradtemp_(true){};
+      ScaTraEleInternalVariableManagerSTIThermo() : temp_(0.), gradtemp_(true) {};
 
       //! set internal variables for element evaluation
       void set_internal_variables_sti_thermo(

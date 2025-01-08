@@ -121,7 +121,7 @@ namespace PoroMultiPhaseScaTra
     //!  \note not performed here since penalty approach will force solution to be
     //!        equal anyway
     void check_initial_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> vec_cont,
-        std::shared_ptr<const Core::LinAlg::Vector<double>> vec_art) override{};
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vec_art) override {};
 
     //! access artery (1D) dof row map
     std::shared_ptr<const Epetra_Map> artery_dof_row_map() const override;

@@ -1590,7 +1590,7 @@ void ThermoMonWriter::write_thermo_result(std::ofstream& outfile, PostField*& fi
     outfile << std::right << std::setw(16) << std::scientific << result.time();
     // current heatfluxes
     for (std::vector<double>::iterator ns = nodal_heatfluxes.begin(); ns != nodal_heatfluxes.end();
-         ++ns)
+        ++ns)
       outfile << std::right << std::setw(16) << std::scientific << *ns;
     outfile << std::endl;
   }

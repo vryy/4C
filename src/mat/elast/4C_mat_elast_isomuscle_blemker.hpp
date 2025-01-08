@@ -58,7 +58,7 @@ namespace Mat
         /// Create material instance of matching type with my parameters
         std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
       };  // class IsoMuscleBlemker
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * \brief Isochoric part of the Blemker muscle material

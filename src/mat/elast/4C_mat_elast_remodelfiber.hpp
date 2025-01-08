@@ -25,7 +25,7 @@ namespace Mat
   struct GrowthEvolution
   {
     /// Constructor
-    GrowthEvolution(double const k, double const sig) : sig_h(sig), k_sig(k){};
+    GrowthEvolution(double const k, double const sig) : sig_h(sig), k_sig(k) {};
 
     /// Set cauchy prestress of new mass which is deposited during G&R
     void set_sig_h(double const& sig) { sig_h = sig; };
@@ -104,7 +104,7 @@ namespace Mat
   {
     /// Constructor
     RemodelEvolution(double const k, double const sig, double const t)
-        : sig_h(sig), k_sig(k), t_decay(t){};
+        : sig_h(sig), k_sig(k), t_decay(t) {};
 
     /// Set cauchy prestress of new mass which is deposited during G&R
     void set_sig_h(double const& sig) { sig_h = sig; };
@@ -209,7 +209,7 @@ namespace Mat
     struct FiberData
     {
       /// Constructor
-      FiberData(std::shared_ptr<Mat::Elastic::Summand> sum) : fiber(std::move(sum)), G(0){};
+      FiberData(std::shared_ptr<Mat::Elastic::Summand> sum) : fiber(std::move(sum)), G(0) {};
 
       /// Update of internal data
       void update_newton(int const gp, double const dt)

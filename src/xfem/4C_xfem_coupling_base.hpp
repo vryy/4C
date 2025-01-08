@@ -72,7 +72,7 @@ namespace XFEM
       dofset_coupling_map_ = dofset_coupling_map;
     }
 
-    virtual void set_coupling_dofsets(){};
+    virtual void set_coupling_dofsets() {};
 
     int get_coupling_dofset_nds(const std::string& name)
     {
@@ -219,7 +219,7 @@ namespace XFEM
 
     Inpar::XFEM::AveragingStrategy get_averaging_strategy() { return averaging_strategy_; }
 
-    virtual void prepare_solve(){};
+    virtual void prepare_solve() {};
 
     virtual bool has_moving_interface() = 0;
 
@@ -391,7 +391,7 @@ namespace XFEM
     }
 
     virtual void gmsh_output(const std::string& filename_base, const int step,
-        const int gmsh_step_diff, const bool gmsh_debug_out_screen){};
+        const int gmsh_step_diff, const bool gmsh_debug_out_screen) {};
 
     /// get viscosity of the master fluid
     void get_viscosity_master(Core::Elements::Element* xfele,  ///< xfluid ele
@@ -461,11 +461,11 @@ namespace XFEM
           cond_name_;  // the standard case are equal name of condition and coupling object
     }
 
-    virtual void set_conditions_to_copy(){};
+    virtual void set_conditions_to_copy() {};
 
-    virtual void set_cutter_discretization(){};
+    virtual void set_cutter_discretization() {};
 
-    virtual void set_condition_specific_parameters(){};
+    virtual void set_condition_specific_parameters() {};
 
     virtual void set_element_conditions();
 
@@ -473,12 +473,12 @@ namespace XFEM
 
     void set_coupling_discretization();
 
-    virtual void prepare_cutter_output(){};
+    virtual void prepare_cutter_output() {};
 
-    virtual void do_condition_specific_setup(){};
+    virtual void do_condition_specific_setup() {};
 
     //! set the configuration map up for the specific coupling object
-    virtual void setup_configuration_map(){};
+    virtual void setup_configuration_map() {};
 
     //! Updates configurationmap for specific Gausspoint
     virtual void update_configuration_map_gp(double& kappa_m,  //< fluid sided weighting
@@ -497,11 +497,11 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
         Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
-    ){};
+    ) {};
 
-    virtual void init_state_vectors(){};
+    virtual void init_state_vectors() {};
 
-    virtual void perpare_cutter_output(){};
+    virtual void perpare_cutter_output() {};
 
     void evaluate_dirichlet_function(Core::LinAlg::Matrix<3, 1>& ivel,
         const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond, double time);

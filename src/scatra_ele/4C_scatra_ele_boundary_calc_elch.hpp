@@ -136,7 +136,7 @@ namespace Discret
       //! utility class supporting element evaluation
       const Discret::Elements::ScaTraEleUtilsElch<distype>* utils_;
     };  // class ScaTraEleBoundaryCalcElch
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

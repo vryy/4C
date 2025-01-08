@@ -233,7 +233,7 @@ namespace Discret
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      void vis_names(std::map<std::string, int>& names) override{};
+      void vis_names(std::map<std::string, int>& names) override {};
 
       /*!
       \brief Query data to be visualized using BINIO of a given name

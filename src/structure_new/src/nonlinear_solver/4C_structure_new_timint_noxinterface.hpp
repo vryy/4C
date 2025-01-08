@@ -194,7 +194,7 @@ namespace Solid
 
       std::shared_ptr<Solid::Dbc> dbc_ptr_;
     };  // class nox_interface
-  }     // namespace TimeInt
+  }  // namespace TimeInt
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

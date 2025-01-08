@@ -1091,9 +1091,9 @@ void Discret::Elements::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
           const double Gij = detJ_w * stress.dot(G_ij_glob);
 
           // add "geometric part" Gij times detJ*weights to stiffness matrix
-          (*stiffmatrix)(NUMDIM_SOH8 * inod + 0, NUMDIM_SOH8 * jnod + 0) += Gij;
-          (*stiffmatrix)(NUMDIM_SOH8 * inod + 1, NUMDIM_SOH8 * jnod + 1) += Gij;
-          (*stiffmatrix)(NUMDIM_SOH8 * inod + 2, NUMDIM_SOH8 * jnod + 2) += Gij;
+          (*stiffmatrix)(NUMDIM_SOH8* inod + 0, NUMDIM_SOH8 * jnod + 0) += Gij;
+          (*stiffmatrix)(NUMDIM_SOH8* inod + 1, NUMDIM_SOH8 * jnod + 1) += Gij;
+          (*stiffmatrix)(NUMDIM_SOH8* inod + 2, NUMDIM_SOH8 * jnod + 2) += Gij;
         }
       }  // end of intergrate `geometric' stiffness ******************************
 
@@ -1112,7 +1112,7 @@ void Discret::Elements::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
         Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_eassosh8, Mat::NUM_STRESS_3D, 1>(
             1.0, feas.values(), detJ_w, M.data(), stress.data());
       }  // ------------------------------------------------------------------ EAS
-    }    // if (stiffmatrix != nullptr)
+    }  // if (stiffmatrix != nullptr)
 
     if (massmatrix != nullptr)
     {  // evaluate mass matrix +++++++++++++++++++++++++
@@ -1126,9 +1126,9 @@ void Discret::Elements::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
         for (int jnod = 0; jnod < NUMNOD_SOH8; ++jnod)
         {
           massfactor = shapefcts[gp](jnod) * ifactor;  // intermediate factor
-          (*massmatrix)(NUMDIM_SOH8 * inod + 0, NUMDIM_SOH8 * jnod + 0) += massfactor;
-          (*massmatrix)(NUMDIM_SOH8 * inod + 1, NUMDIM_SOH8 * jnod + 1) += massfactor;
-          (*massmatrix)(NUMDIM_SOH8 * inod + 2, NUMDIM_SOH8 * jnod + 2) += massfactor;
+          (*massmatrix)(NUMDIM_SOH8* inod + 0, NUMDIM_SOH8 * jnod + 0) += massfactor;
+          (*massmatrix)(NUMDIM_SOH8* inod + 1, NUMDIM_SOH8 * jnod + 1) += massfactor;
+          (*massmatrix)(NUMDIM_SOH8* inod + 2, NUMDIM_SOH8 * jnod + 2) += massfactor;
         }
       }
     }  // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++

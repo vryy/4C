@@ -50,10 +50,10 @@ namespace Discret::Elements::Internal
   inline static constexpr int num_dim = Core::FE::dim<celltype>;
 
   template <Core::FE::CellType celltype>
-  inline static constexpr int num_str = num_dim<celltype>*(num_dim<celltype> + 1) / 2;
+  inline static constexpr int num_str = num_dim<celltype> * (num_dim<celltype> + 1) / 2;
 
   template <Core::FE::CellType celltype>
-  inline static constexpr int num_dof_per_ele = num_nodes<celltype>* num_dim<celltype>;
+  inline static constexpr int num_dof_per_ele = num_nodes<celltype> * num_dim<celltype>;
 }  // namespace Discret::Elements::Internal
 
 namespace Discret::Elements

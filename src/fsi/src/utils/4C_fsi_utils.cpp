@@ -709,7 +709,7 @@ void FSI::Utils::SlideAleUtils::rotation(
 
     std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
     for (elemiter = ifluidslidstructeles_[i].begin(); elemiter != ifluidslidstructeles_[i].end();
-         elemiter++)
+        elemiter++)
     {
       // define stuff needed by the elements
       Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -752,7 +752,7 @@ void FSI::Utils::SlideAleUtils::rotation(
     // second round!
     // compute correction displacement to account for rotation
     for (elemiter = ifluidslidstructeles_[i].begin(); elemiter != ifluidslidstructeles_[i].end();
-         elemiter++)
+        elemiter++)
     {
       // define stuff needed by the elements
       Core::LinAlg::SerialDenseMatrix elematrix1;

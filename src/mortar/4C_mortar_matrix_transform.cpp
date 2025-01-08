@@ -82,7 +82,7 @@ void Mortar::MatrixRowColTransformer::setup()
 
 
   for (plain_block_map_pairs::const_iterator cit = slave_row_.begin(); cit != slave_row_.end();
-       ++cit)
+      ++cit)
   {
     const CONTACT::MatBlockType bt = cit->first;
 

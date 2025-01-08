@@ -535,7 +535,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   std::vector<std::map<double, double, PlaneSortCriterion>> meanphiphi(numscatradofpernode_);
 
   for (std::vector<double>::iterator coord = (*shellcoordinates_).begin();
-       coord != (*shellcoordinates_).end(); ++coord)
+      coord != (*shellcoordinates_).end(); ++coord)
   {
     double r = *coord;
 
@@ -1080,7 +1080,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   std::vector<int> pointcount(size);
 
   for (std::map<double, int, PlaneSortCriterion>::iterator shell = countpoints.begin();
-       shell != countpoints.end(); ++shell)
+      shell != countpoints.end(); ++shell)
   {
     lpointcount.push_back(shell->second);
   }
@@ -1129,7 +1129,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanu.begin();
-       shell != meanu.end(); ++shell)
+      shell != meanu.end(); ++shell)
   {
     if (fabs(pointcount[rr]) < 1e-6)
     {
@@ -1143,7 +1143,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanv.begin();
-       shell != meanv.end(); ++shell)
+      shell != meanv.end(); ++shell)
   {
     lmeanv.push_back(shell->second / pointcount[rr]);
     ++rr;
@@ -1152,7 +1152,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanw.begin();
-       shell != meanw.end(); ++shell)
+      shell != meanw.end(); ++shell)
   {
     lmeanw.push_back(shell->second / pointcount[rr]);
     ++rr;
@@ -1161,7 +1161,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanp.begin();
-       shell != meanp.end(); ++shell)
+      shell != meanp.end(); ++shell)
   {
     lmeanp.push_back(shell->second / pointcount[rr]);
     ++rr;
@@ -1170,7 +1170,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanuu.begin();
-       shell != meanuu.end(); ++shell)
+      shell != meanuu.end(); ++shell)
   {
     lmeanuu.push_back(shell->second / pointcount[rr]);
     ++rr;
@@ -1179,7 +1179,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanvv.begin();
-       shell != meanvv.end(); ++shell)
+      shell != meanvv.end(); ++shell)
   {
     lmeanvv.push_back(shell->second / pointcount[rr]);
     ++rr;
@@ -1188,7 +1188,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanww.begin();
-       shell != meanww.end(); ++shell)
+      shell != meanww.end(); ++shell)
   {
     lmeanww.push_back(shell->second / pointcount[rr]);
     ++rr;
@@ -1197,7 +1197,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanpp.begin();
-       shell != meanpp.end(); ++shell)
+      shell != meanpp.end(); ++shell)
   {
     lmeanpp.push_back(shell->second / pointcount[rr]);
     ++rr;
@@ -1206,7 +1206,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanuv.begin();
-       shell != meanuv.end(); ++shell)
+      shell != meanuv.end(); ++shell)
   {
     lmeanuv.push_back(shell->second / pointcount[rr]);
     ++rr;
@@ -1215,7 +1215,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanuw.begin();
-       shell != meanuw.end(); ++shell)
+      shell != meanuw.end(); ++shell)
   {
     lmeanuw.push_back(shell->second / pointcount[rr]);
     ++rr;
@@ -1225,7 +1225,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanvw.begin();
-       shell != meanvw.end(); ++shell)
+      shell != meanvw.end(); ++shell)
   {
     lmeanvw.push_back(shell->second / pointcount[rr]);
     ++rr;
@@ -1253,7 +1253,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   {
     rr = 0;
     for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanc.begin();
-         shell != meanc.end(); ++shell)
+        shell != meanc.end(); ++shell)
     {
       lmeanc.push_back(shell->second / pointcount[rr]);
       ++rr;
@@ -1262,7 +1262,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
     rr = 0;
     for (std::map<double, double, PlaneSortCriterion>::iterator shell = meancc.begin();
-         shell != meancc.end(); ++shell)
+        shell != meancc.end(); ++shell)
     {
       lmeancc.push_back(shell->second / pointcount[rr]);
       ++rr;
@@ -1292,7 +1292,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
       rr = 0;
       for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanphi[k].begin();
-           shell != meanphi[k].end(); ++shell)
+          shell != meanphi[k].end(); ++shell)
       {
         lmeanphi.push_back(shell->second / pointcount[rr]);
         gmeanphi[rr] = 0.0;  // initialize due to sequential reuse of this vector
@@ -1302,7 +1302,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
       rr = 0;
       for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanphiphi[k].begin();
-           shell != meanphiphi[k].end(); ++shell)
+          shell != meanphiphi[k].end(); ++shell)
       {
         lmeanphiphi.push_back(shell->second / pointcount[rr]);
         gmeanphiphi[rr] = 0.0;  // initialize due to sequential reuse of this vector

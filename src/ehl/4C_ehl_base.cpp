@@ -790,8 +790,8 @@ void EHL::Base::output(bool forced_writerestart)
     const int ndim = Global::Problem::instance()->n_dim();
     Core::LinAlg::Vector<double> visc_vec(*lubrication_->lubrication_field()->dof_row_map(1));
     for (int i = 0;
-         i < lubrication_->lubrication_field()->discretization()->node_row_map()->NumMyElements();
-         ++i)
+        i < lubrication_->lubrication_field()->discretization()->node_row_map()->NumMyElements();
+        ++i)
     {
       Core::Nodes::Node* lnode = lubrication_->lubrication_field()->discretization()->l_row_node(i);
       if (!lnode) FOUR_C_THROW("node not found");

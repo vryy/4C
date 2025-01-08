@@ -70,7 +70,7 @@ namespace Inpar
             "NODE_GID", "No", "write 4C internal node GIDs", &sublist_IO_output_fluid);
       }
     }  // namespace FLUID
-  }    // namespace IORuntimeOutput
+  }  // namespace IORuntimeOutput
 }  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE

@@ -391,7 +391,7 @@ namespace Solid
     const Solid::TimeInt::Base& tim_int() const;
 
     //! reset the time step dependent parameters for the element evaluation
-    virtual void reset_eval_params(){};
+    virtual void reset_eval_params() {};
 
     double get_condensed_global_norm(const enum NOX::Nln::StatusTest::QuantityType& qtype,
         const enum ::NOX::Abstract::Vector::NormType& normtype, double& mynorm) const;

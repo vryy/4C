@@ -5249,7 +5249,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
 
     // loop over all volume fraction pressures
     for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
-         ivolfracpress++)
+        ivolfracpress++)
     {
       const bool evaluatevolfracpress = variablemanager.element_has_valid_vol_frac_pressure(
           ivolfracpress - numvolfrac - numfluidphases);
@@ -5316,7 +5316,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
-       ivolfracpress++)
+      ivolfracpress++)
   {
     double absgradphi = 0.0;
     for (int idim = 0; idim < nsd; idim++)
@@ -5378,7 +5378,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
-       ivolfracpress++)
+      ivolfracpress++)
   {
     const bool evaluatevolfracpress = variablemanager.element_has_valid_vol_frac_pressure(
         ivolfracpress - numvolfrac - numfluidphases);
@@ -5454,7 +5454,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
 
     // loop over all volume fractions
     for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
-         ivolfracpress++)
+        ivolfracpress++)
     {
       const bool evaluatevolfracpress = variablemanager.element_has_valid_vol_frac_pressure(
           ivolfracpress - numvolfrac - numfluidphases);
@@ -5511,7 +5511,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
-       ivolfracpress++)
+      ivolfracpress++)
   {
     const bool evaluatevolfracpress = variablemanager.element_has_valid_vol_frac_pressure(
         ivolfracpress - numvolfrac - numfluidphases);
@@ -5558,7 +5558,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
-       ivolfracpress++)
+      ivolfracpress++)
   {
     const bool evaluatevolfracpress = variablemanager.element_has_valid_vol_frac_pressure(
         ivolfracpress - numvolfrac - numfluidphases);
@@ -5618,7 +5618,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
-       ivolfracpress++)
+      ivolfracpress++)
   {
     const bool evaluatevolfracpress = variablemanager.element_has_valid_vol_frac_pressure(
         ivolfracpress - numvolfrac - numfluidphases);

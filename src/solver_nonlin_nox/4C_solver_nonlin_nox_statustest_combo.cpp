@@ -88,7 +88,7 @@ bool NOX::Nln::StatusTest::Combo::isSafe(::NOX::StatusTest::Generic& a)
   // Recursively test that we're not adding something that's already
   // in the list because that can also lead to infinite recursions.
   for (std::vector<Teuchos::RCP<::NOX::StatusTest::Generic>>::iterator i = tests_.begin();
-       i != tests_.end(); ++i)
+      i != tests_.end(); ++i)
   {
     NOX::Nln::StatusTest::Combo* ptr = dynamic_cast<NOX::Nln::StatusTest::Combo*>(i->get());
     if (ptr != nullptr)

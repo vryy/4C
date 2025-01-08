@@ -490,9 +490,9 @@ namespace CONTACT
     void inttime_init() override { inttime_ = 0.0; };
     int number_of_active_nodes() const override { return 0; }
     int number_of_slip_nodes() const override { return 0; }
-    void compute_contact_stresses() final{};
+    void compute_contact_stresses() final {};
     void aug_forces(Core::LinAlg::Vector<double>& augfs_lm, Core::LinAlg::Vector<double>& augfs_g,
-        Core::LinAlg::Vector<double>& augfm_lm, Core::LinAlg::Vector<double>& augfm_g){};
+        Core::LinAlg::Vector<double>& augfm_lm, Core::LinAlg::Vector<double>& augfm_g) {};
     bool redistribute_contact(std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
         std::shared_ptr<const Core::LinAlg::Vector<double>> vel) final
     {
@@ -581,8 +581,7 @@ namespace CONTACT
 
     //! modify result after linear solve
     virtual void run_post_apply_jacobian_inverse(Core::LinAlg::Vector<double>& result)
-    { /* do nothing */
-    }
+    { /* do nothing */ }
 
     //! evaluate force terms
     virtual bool evaluate_force(const std::shared_ptr<const Core::LinAlg::Vector<double>> dis) = 0;
@@ -596,7 +595,7 @@ namespace CONTACT
 
     //! after applying Newton increment
     virtual void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
-        const Core::LinAlg::Vector<double>& dir, const Core::LinAlg::Vector<double>& xnew){};
+        const Core::LinAlg::Vector<double>& dir, const Core::LinAlg::Vector<double>& xnew) {};
 
     /*! \brief Get the correct RHS for convergence check
      *

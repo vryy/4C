@@ -119,7 +119,7 @@ namespace Discret
       int gp_iquad_;
 
     };  // class FluidEleCalcImmersed
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

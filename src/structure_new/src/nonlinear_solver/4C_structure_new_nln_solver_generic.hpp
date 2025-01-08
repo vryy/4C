@@ -218,8 +218,8 @@ namespace Solid
         Teuchos::RCP<::NOX::Abstract::Group> group_ptr_;
 
       };  // namespace SOLVER
-    }     // namespace SOLVER
-  }       // namespace Nln
+    }  // namespace SOLVER
+  }  // namespace Nln
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

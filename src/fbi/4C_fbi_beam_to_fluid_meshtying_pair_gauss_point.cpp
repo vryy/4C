@@ -83,7 +83,7 @@ bool BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
 
     // Gauss point loop.
     for (unsigned int i_gp = 0;
-         i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
+        i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
@@ -118,7 +118,7 @@ bool BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
             for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
               for (unsigned int i_fluid_node2 = 0; i_fluid_node2 < Fluid::n_nodes_; i_fluid_node2++)
                 for (unsigned int i_fluid_val2 = 0; i_fluid_val2 < Fluid::n_val_; i_fluid_val2++)
-                  (*stiffmat22)(i_fluid_node1 * Fluid::n_val_ * 3 + i_fluid_val1 * 3 + i_dir,
+                  (*stiffmat22)(i_fluid_node1* Fluid::n_val_ * 3 + i_fluid_val1 * 3 + i_dir,
                       i_fluid_node2 * Fluid::n_val_ * 3 + i_fluid_val2 * 3 + i_dir) +=
                       N_fluid(i_fluid_node1) * N_fluid(i_fluid_node2) *
                       projected_gauss_point.get_gauss_weight() * segment_jacobian;
@@ -132,7 +132,7 @@ bool BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
             for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
               for (unsigned int i_beam_node2 = 0; i_beam_node2 < Beam::n_nodes_; i_beam_node2++)
                 for (unsigned int i_beam_val2 = 0; i_beam_val2 < Beam::n_val_; i_beam_val2++)
-                  (*stiffmat11)(i_beam_node1 * Beam::n_val_ * 3 + 3 * i_beam_val1 + i_dir,
+                  (*stiffmat11)(i_beam_node1* Beam::n_val_ * 3 + 3 * i_beam_val1 + i_dir,
                       i_beam_node2 * Beam::n_val_ * 3 + 3 * i_beam_val2 + i_dir) +=
                       N_beam(i_beam_node1 * Beam::n_val_ + i_beam_val1) *
                       N_beam(i_beam_node2 * Beam::n_val_ + i_beam_val2) *
@@ -147,7 +147,7 @@ bool BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
             for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
               for (unsigned int i_beam_node2 = 0; i_beam_node2 < Beam::n_nodes_; i_beam_node2++)
                 for (unsigned int i_beam_val2 = 0; i_beam_val2 < Beam::n_val_; i_beam_val2++)
-                  (*stiffmat21)(i_fluid_node1 * Fluid::n_val_ * 3 + i_fluid_val1 * 3 + i_dir,
+                  (*stiffmat21)(i_fluid_node1* Fluid::n_val_ * 3 + i_fluid_val1 * 3 + i_dir,
                       i_beam_node2 * Beam::n_val_ * 3 + 3 * i_beam_val2 + i_dir) +=
                       N_fluid(i_fluid_node1) * N_beam(i_beam_node2 * Beam::n_val_ + i_beam_val2) *
                       projected_gauss_point.get_gauss_weight() * segment_jacobian;
@@ -161,7 +161,7 @@ bool BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
             for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
               for (unsigned int i_fluid_node2 = 0; i_fluid_node2 < Fluid::n_nodes_; i_fluid_node2++)
                 for (unsigned int i_fluid_val2 = 0; i_fluid_val2 < Fluid::n_val_; i_fluid_val2++)
-                  (*stiffmat12)(i_beam_node1 * Beam::n_val_ * 3 + 3 * i_beam_val1 + i_dir,
+                  (*stiffmat12)(i_beam_node1* Beam::n_val_ * 3 + 3 * i_beam_val1 + i_dir,
                       i_fluid_node2 * Fluid::n_val_ * 3 + 3 * i_fluid_val2 + i_dir) +=
                       N_fluid(i_fluid_node2) * N_beam(i_beam_node1 * Beam::n_val_ + i_beam_val1) *
                       projected_gauss_point.get_gauss_weight() * segment_jacobian;
@@ -190,7 +190,7 @@ bool BeamInteraction::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
     if (forcevec2 != nullptr)
     {
       if (!std::dynamic_pointer_cast<FBI::BeamToFluidMeshtyingParams>(this->params())
-               ->get_weak_dirichlet_flag())
+              ->get_weak_dirichlet_flag())
 
       {
         for (unsigned int i_dof1 = 0; i_dof1 < Fluid::n_dof_; i_dof1++)

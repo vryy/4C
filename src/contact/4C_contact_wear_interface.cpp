@@ -1569,7 +1569,7 @@ void Wear::WearInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstic
           }
         }
       }  // if wearimpl_
-    }    // loop over stick nodes
+    }  // loop over stick nodes
   }
   else
   {
@@ -1941,9 +1941,9 @@ void Wear::WearInterface::assemble_lin_slip_w(Core::LinAlg::SparseMatrix& linsli
             if (abs(valteta) > 1.0e-12) linslipWglobal.assemble(valteta, row[1], col);
           }
         }  // if (frcoeff==0.0)
-      }    // if (frictionlessandfirst == false)
-    }      // loop over all slip nodes of the interface
-  }        // Coulomb friction
+      }  // if (frictionlessandfirst == false)
+    }  // loop over all slip nodes of the interface
+  }  // Coulomb friction
   else
     FOUR_C_THROW("linslip wear only for coulomb friction!");
 }
@@ -2717,9 +2717,9 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
           }
 #endif
         }  // end wearimplicit
-      }    // if (frcoeff==0.0)
-    }      // loop over all slip nodes of the interface
-  }        // Coulomb friction
+      }  // if (frcoeff==0.0)
+    }  // loop over all slip nodes of the interface
+  }  // Coulomb friction
 
   //**********************************************************************
   //**********************************************************************
@@ -2752,7 +2752,7 @@ void Wear::WearInterface::assemble_lin_w_lm(Core::LinAlg::SparseMatrix& sglobal)
 
   // loop over all active slave nodes of the interface
   for (int i = 0; i < activenodes_->NumMyElements();
-       ++i)  //(int i=0;i<activenodes_->NumMyElements();++i)
+      ++i)  //(int i=0;i<activenodes_->NumMyElements();++i)
   {
     int gid = activenodes_->GID(i);
     Core::Nodes::Node* node = idiscret_->g_node(gid);
@@ -3206,7 +3206,7 @@ bool Wear::WearInterface::build_active_set_master()
       for (int k = 0; k < (int)dynamic_cast<Mortar::Element*>(frinode->elements()[u])
                               ->mo_data()
                               .num_search_elements();
-           ++k)
+          ++k)
       {
         int gid2 =
             dynamic_cast<Mortar::Element*>(frinode->elements()[u])->mo_data().search_elements()[k];
@@ -3832,7 +3832,7 @@ void Wear::WearInterface::initialize()
         Core::LinAlg::allreduce_e_map(*(master_row_nodes()));
 
     for (int i = 0; i < masternodes->NumMyElements();
-         ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
+        ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
     {
       int gid = masternodes->GID(i);
       Core::Nodes::Node* node = discret().g_node(gid);
@@ -3962,7 +3962,7 @@ void Wear::WearInterface::initialize()
         Core::LinAlg::allreduce_e_map(*(master_row_nodes()));
 
     for (int i = 0; i < masternodes->NumMyElements();
-         ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
+        ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
     {
       int gid = masternodes->GID(i);
       Core::Nodes::Node* node = discret().g_node(gid);

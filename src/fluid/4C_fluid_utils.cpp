@@ -627,7 +627,7 @@ void FLD::Utils::lift_drag(const std::shared_ptr<const Core::FE::Discretization>
     // now step the label map
     for (std::map<const int, std::set<Core::Nodes::Node*>>::const_iterator labelit =
              ldnodemap.begin();
-         labelit != ldnodemap.end(); ++labelit)
+        labelit != ldnodemap.end(); ++labelit)
     {
       const std::set<Core::Nodes::Node*>& nodes =
           labelit->second;                    // pointer to nodeset of present label
@@ -642,7 +642,7 @@ void FLD::Utils::lift_drag(const std::shared_ptr<const Core::FE::Discretization>
 
       // loop all nodes within my set
       for (std::set<Core::Nodes::Node*>::const_iterator actnode = nodes.begin();
-           actnode != nodes.end(); ++actnode)
+          actnode != nodes.end(); ++actnode)
       {
         const Core::LinAlg::Matrix<3, 1> x(
             (*actnode)->x().data(), false);  // pointer to nodal coordinates
@@ -763,7 +763,7 @@ void FLD::Utils::write_lift_drag_to_file(
 
 
   for (std::map<int, std::vector<double>>::const_iterator liftdragval = liftdragvals.begin();
-       liftdragval != liftdragvals.end(); ++liftdragval)
+      liftdragval != liftdragvals.end(); ++liftdragval)
   {
     std::ostringstream s;
     s << std::right << std::setw(16) << std::scientific << time << std::right << std::setw(10)
@@ -828,7 +828,7 @@ std::map<int, double> FLD::Utils::compute_flow_rates(Core::FE::Discretization& d
 
   // each condition is on every proc , but might not have condition elements there
   for (std::vector<Core::Conditions::Condition*>::const_iterator conditer = conds.begin();
-       conditer != conds.end(); ++conditer)
+      conditer != conds.end(); ++conditer)
   {
     const Core::Conditions::Condition* cond = *conditer;
     const int condID = cond->parameters().get<int>("ConditionID");

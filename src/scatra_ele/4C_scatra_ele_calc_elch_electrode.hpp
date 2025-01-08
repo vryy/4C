@@ -94,7 +94,7 @@ namespace Discret
           const std::vector<int>& lm,                //!< location vector
           Core::LinAlg::SerialDenseMatrix& emat,     //!< element matrix to calculate
           Core::LinAlg::SerialDenseVector& erhs      //!< element rhs to calculate
-          ) override{};
+          ) override {};
 
       /*========================================================================*/
       //! @name material and related and related functions
@@ -263,7 +263,7 @@ namespace Discret
             tempderivdiff_(numscal, std::vector<double>(numscal, 0.0)),
             cond_(0.0),
             concderivcond_(numscal, 0.0),
-            tempderivcond_(numscal, 0.0){};
+            tempderivcond_(numscal, 0.0) {};
 
       /*========================================================================*/
       //! @name access methods
@@ -442,7 +442,7 @@ namespace Discret
       //! constant parameter 1./F
       const double invf_;
     };  // class ScaTraEleInternalVariableManagerElchElectrode
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

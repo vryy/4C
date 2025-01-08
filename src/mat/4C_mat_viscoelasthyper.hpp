@@ -283,7 +283,7 @@ namespace Mat
         histfractartstresslastall_;  ///< artificial fractional stress of all last converged states
 
     bool isinitvis_;  ///< indicates if #Initialized routine has been called
-  };                  // class ViscoElastHyper
+  };  // class ViscoElastHyper
 
 }  // namespace Mat
 

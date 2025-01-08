@@ -117,7 +117,7 @@ namespace Mortar
      protected:
      private:
     };  // class FactoryMT
-  }     // namespace STRATEGY
+  }  // namespace STRATEGY
 }  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE

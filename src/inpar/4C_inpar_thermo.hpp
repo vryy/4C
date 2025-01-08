@@ -38,7 +38,7 @@ namespace Inpar
       dyna_onesteptheta,  //!< one-step-theta time integrator (implicit)
       dyna_genalpha,      //!< generalised-alpha time integrator (implicit)
       dyna_expleuler      //!< forward Euler (explicit)
-    };                    // DynamicType()
+    };  // DynamicType()
 
     //! Map time integrator to std::string
     static inline std::string dynamic_type_string(const enum DynamicType name  //!< enum to convert
@@ -94,7 +94,7 @@ namespace Inpar
                          //!< \f$ = \alpha_f . F_{int}(\alpha_f . D_{n+1}) + (1-\alpha_f) .
                          //!< F_{int}(D_n)\f$
                          //!<  (TR means trapezoidal rule.)
-    };                   // MidAverageEnum()
+    };  // MidAverageEnum()
 
     /// Map mid-averaging to std::string
     static inline std::string mid_average_string(

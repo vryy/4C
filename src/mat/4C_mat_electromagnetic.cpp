@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::PAR::ElectromagneticMat::ElectromagneticMat(const Core::Mat::PAR::Parameter::Data &matdata)
+Mat::PAR::ElectromagneticMat::ElectromagneticMat(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
   Epetra_Map dummy_map(1, 1, 0,
@@ -43,10 +43,10 @@ std::shared_ptr<Core::Mat::Material> Mat::PAR::ElectromagneticMat::create_materi
 Mat::ElectromagneticMatType Mat::ElectromagneticMatType::instance_;
 
 
-Core::Communication::ParObject *Mat::ElectromagneticMatType::create(
-    Core::Communication::UnpackBuffer &buffer)
+Core::Communication::ParObject* Mat::ElectromagneticMatType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
-  Mat::ElectromagneticMat *soundprop = new Mat::ElectromagneticMat();
+  Mat::ElectromagneticMat* soundprop = new Mat::ElectromagneticMat();
   soundprop->unpack(buffer);
   return soundprop;
 }
@@ -59,14 +59,14 @@ Mat::ElectromagneticMat::ElectromagneticMat() : params_(nullptr) {}
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-Mat::ElectromagneticMat::ElectromagneticMat(Mat::PAR::ElectromagneticMat *params) : params_(params)
+Mat::ElectromagneticMat::ElectromagneticMat(Mat::PAR::ElectromagneticMat* params) : params_(params)
 {
 }
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::ElectromagneticMat::pack(Core::Communication::PackBuffer &data) const
+void Mat::ElectromagneticMat::pack(Core::Communication::PackBuffer& data) const
 {
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
@@ -81,7 +81,7 @@ void Mat::ElectromagneticMat::pack(Core::Communication::PackBuffer &data) const
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::ElectromagneticMat::unpack(Core::Communication::UnpackBuffer &buffer)
+void Mat::ElectromagneticMat::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -93,10 +93,10 @@ void Mat::ElectromagneticMat::unpack(Core::Communication::UnpackBuffer &buffer)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
-      Core::Mat::PAR::Parameter *mat =
+      Core::Mat::PAR::Parameter* mat =
           Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
       if (mat->type() == material_type())
-        params_ = static_cast<Mat::PAR::ElectromagneticMat *>(mat);
+        params_ = static_cast<Mat::PAR::ElectromagneticMat*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
             material_type());

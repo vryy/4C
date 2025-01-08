@@ -45,8 +45,8 @@ namespace NOX
         class Required;
         class Preconditioner;
       }  // namespace Interface
-    }    // namespace CONSTRAINT
-  }      // namespace Nln
+    }  // namespace CONSTRAINT
+  }  // namespace Nln
 }  // namespace NOX
 
 namespace Solid

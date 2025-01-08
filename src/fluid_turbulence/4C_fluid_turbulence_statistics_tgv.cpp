@@ -289,7 +289,7 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
     {
       for (std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>::iterator state =
                statevecs.begin();
-           state != statevecs.end(); ++state)
+          state != statevecs.end(); ++state)
       {
         if (state->first == "velaf")
         {
@@ -309,7 +309,7 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
   // set state vectors for element call
   for (std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>::iterator state =
            statevecs.begin();
-       state != statevecs.end(); ++state)
+      state != statevecs.end(); ++state)
   {
     discret_->set_state(state->first, state->second);
   }

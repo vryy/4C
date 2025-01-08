@@ -121,7 +121,7 @@ namespace Core::Conditions
 
 
     //! @name method that returns a pointer to the vector of the conditions
-    std::vector<Core::Conditions::Condition *> *return_surface_pb_cs() { return &mysurfpbcs_; }
+    std::vector<Core::Conditions::Condition*>* return_surface_pb_cs() { return &mysurfpbcs_; }
     //@}
 
 
@@ -208,7 +208,7 @@ namespace Core::Conditions
     \return void
 
     */
-    void create_node_coupling_for_single_pbc(std::map<int, std::vector<int>> &midtosid,
+    void create_node_coupling_for_single_pbc(std::map<int, std::vector<int>>& midtosid,
         const std::vector<int> masternodeids, const std::vector<int> slavenodeids,
         const std::vector<int> dofsforpbcplane, const double rotangle, const double abstol);
 
@@ -245,7 +245,7 @@ namespace Core::Conditions
     \return void
 
     */
-    void add_connectivity(std::map<int, std::vector<int>> &midtosid, const int pbcid);
+    void add_connectivity(std::map<int, std::vector<int>>& midtosid, const int pbcid);
 
     //@}
 
@@ -320,7 +320,7 @@ namespace Core::Conditions
     int numpbcpairs_;
 
     //!\brief vector of periodic surface boundary conditions
-    std::vector<Core::Conditions::Condition *> mysurfpbcs_;
+    std::vector<Core::Conditions::Condition*> mysurfpbcs_;
 
     //!\brief map connecting master to slave nodes owned by this proc
     //       master node -> list of his slave node(s)

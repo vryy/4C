@@ -24,7 +24,7 @@ namespace Mat
      public:
       /// standard constructor
       explicit PoroDensityLaw(const Core::Mat::PAR::Parameter::Data& matdata)
-          : Parameter(matdata){};
+          : Parameter(matdata) {};
 
       //! compute derivative of density w.r.t. pressure
       virtual double compute_cur_density_derivative(
@@ -66,7 +66,7 @@ namespace Mat
      public:
       /// standard constructor
       explicit PoroDensityLawConstant(const Core::Mat::PAR::Parameter::Data& matdata)
-          : PoroDensityLaw(matdata){};
+          : PoroDensityLaw(matdata) {};
 
       /// create material instance of matching type with my parameters
       std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };

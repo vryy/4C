@@ -157,7 +157,7 @@ std::vector<Core::LinAlg::Matrix<3, 2>> Core::Geo::compute_xaabb_for_labeled_str
   std::vector<Core::LinAlg::Matrix<3, 2>> XAABBs;
 
   for (std::map<int, std::set<int>>::const_iterator labelIter = elementList.begin();
-       labelIter != elementList.end(); labelIter++)
+      labelIter != elementList.end(); labelIter++)
   {
     Core::LinAlg::Matrix<3, 2> xaabb_label;
     // initialize xaabb_label with box around first point
@@ -171,7 +171,7 @@ std::vector<Core::LinAlg::Matrix<3, 2>> Core::Geo::compute_xaabb_for_labeled_str
     }
     // run over set elements
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-         eleIter != (labelIter->second).end(); eleIter++)
+        eleIter != (labelIter->second).end(); eleIter++)
     {
       const Core::Elements::Element* element = dis.g_element(*eleIter);
       const Core::LinAlg::SerialDenseMatrix xyze_element(
@@ -201,12 +201,12 @@ std::map<int, std::set<int>> Core::Geo::get_elements_in_radius(const Core::FE::D
 
   // collect all nodes with different label
   for (std::map<int, std::set<int>>::const_iterator labelIter = elementList.begin();
-       labelIter != elementList.end(); labelIter++)
+      labelIter != elementList.end(); labelIter++)
   {
     if (label != labelIter->first)  // don't collect nodes which belong to the same label
     {
       for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-           eleIter != (labelIter->second).end(); eleIter++)
+          eleIter != (labelIter->second).end(); eleIter++)
       {
         Core::Elements::Element* element = dis.g_element(*eleIter);
         for (int i = 0; i < Core::FE::get_number_of_element_corner_nodes(element->shape()); i++)
@@ -216,9 +216,9 @@ std::map<int, std::set<int>> Core::Geo::get_elements_in_radius(const Core::FE::D
   }
 
   for (std::map<int, std::set<int>>::const_iterator labelIter = nodeList.begin();
-       labelIter != nodeList.end(); labelIter++)
+      labelIter != nodeList.end(); labelIter++)
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
-         nodeIter != (labelIter->second).end(); nodeIter++)
+        nodeIter != (labelIter->second).end(); nodeIter++)
     {
       double distance = std::numeric_limits<double>::max();
       const Core::Nodes::Node* node = dis.g_node(*nodeIter);
@@ -245,12 +245,12 @@ void Core::Geo::search_collisions(const std::map<int, Core::LinAlg::Matrix<3, 2>
   // loop over all entries of elementList (= intersection candidates) with different label
   // run over global ids
   for (std::map<int, std::set<int>>::const_iterator labelIter = elementList.begin();
-       labelIter != elementList.end(); labelIter++)
+      labelIter != elementList.end(); labelIter++)
   {
     if (label != labelIter->first)  // don t collect nodes which belong to the same label
     {
       for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-           eleIter != (labelIter->second).end(); eleIter++)
+          eleIter != (labelIter->second).end(); eleIter++)
       {
         if (intersection_of_b_vs(queryBV, currentBVs.find(*eleIter)->second))
         {
@@ -274,12 +274,12 @@ void Core::Geo::search_collisions(const std::map<int, Core::LinAlg::Matrix<9, 2>
   // loop over all entries of elementList (= intersection candidates) with different label
   // run over global ids
   for (std::map<int, std::set<int>>::const_iterator labelIter = elementList.begin();
-       labelIter != elementList.end(); labelIter++)
+      labelIter != elementList.end(); labelIter++)
   {
     if (label != labelIter->first)  // don t collect nodes which belong to the same label
     {
       for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-           eleIter != (labelIter->second).end(); eleIter++)
+          eleIter != (labelIter->second).end(); eleIter++)
       {
         if (intersection_of_kdo_ps(queryKDOP, currentKDOPs.find(*eleIter)->second))
           contactEleIds.insert(*eleIter);
@@ -311,9 +311,9 @@ void Core::Geo::nearest_2d_object_in_node(const Core::FE::Discretization& dis,
 
   // run over all line elements
   for (std::map<int, std::set<int>>::const_iterator labelIter = elementList.begin();
-       labelIter != elementList.end(); labelIter++)
+      labelIter != elementList.end(); labelIter++)
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-         eleIter != (labelIter->second).end(); eleIter++)
+        eleIter != (labelIter->second).end(); eleIter++)
     {
       // not const because otherwise no lines can be obtained
       Core::Elements::Element* element = elements[*eleIter].get();
@@ -333,9 +333,9 @@ void Core::Geo::nearest_2d_object_in_node(const Core::FE::Discretization& dis,
 
   // run over all nodes
   for (std::map<int, std::set<int>>::const_iterator labelIter = nodeList.begin();
-       labelIter != nodeList.end(); labelIter++)
+      labelIter != nodeList.end(); labelIter++)
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
-         nodeIter != (labelIter->second).end(); nodeIter++)
+        nodeIter != (labelIter->second).end(); nodeIter++)
     {
       const Core::Nodes::Node* node = dis.g_node(*nodeIter);
       Core::Geo::get_distance_to_point(node, currentpositions, point, distance);
@@ -379,9 +379,9 @@ int Core::Geo::nearest_3d_object_in_node(const Core::FE::Discretization& dis,
 
   // run over all surface elements
   for (std::map<int, std::set<int>>::const_iterator labelIter = elementList.begin();
-       labelIter != elementList.end(); labelIter++)
+      labelIter != elementList.end(); labelIter++)
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-         eleIter != (labelIter->second).end(); eleIter++)
+        eleIter != (labelIter->second).end(); eleIter++)
     {
       // not const because otherwise no lines can be obtained
       Core::Elements::Element* element = elements[*eleIter].get();
@@ -416,9 +416,9 @@ int Core::Geo::nearest_3d_object_in_node(const Core::FE::Discretization& dis,
 
   // run over all nodes
   for (std::map<int, std::set<int>>::const_iterator labelIter = nodeList.begin();
-       labelIter != nodeList.end(); labelIter++)
+      labelIter != nodeList.end(); labelIter++)
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
-         nodeIter != (labelIter->second).end(); nodeIter++)
+        nodeIter != (labelIter->second).end(); nodeIter++)
     {
       const Core::Nodes::Node* node = dis.g_node(*nodeIter);
       Core::Geo::get_distance_to_point(node, currentpositions, point, distance);
@@ -481,7 +481,7 @@ Core::Geo::ObjectType Core::Geo::nearest_3d_object_on_element(
   // run over all nodes
   for (std::map<int, Core::LinAlg::Matrix<3, 1>>::const_iterator nodeIter =
            currentpositions.begin();
-       nodeIter != currentpositions.end(); nodeIter++)
+      nodeIter != currentpositions.end(); nodeIter++)
   {
     Core::LinAlg::Matrix<3, 1> distance_vector;
     // vector pointing away from the node towards physCoord

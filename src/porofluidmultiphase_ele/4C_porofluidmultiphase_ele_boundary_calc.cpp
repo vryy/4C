@@ -239,8 +239,8 @@ int Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
         for (int node = 0; node < nen_; ++node)
           elevec1[node * numdofpernode_ + dof] += funct_(node) * val_fac_funct_fac;
       }  // if ((*onoff)[dof])
-    }    // loop over dofs
-  }      // loop over integration points
+    }  // loop over dofs
+  }  // loop over integration points
 
   return 0;
 }

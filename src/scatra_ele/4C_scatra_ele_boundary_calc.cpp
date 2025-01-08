@@ -557,8 +557,8 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
           // TODO: with or without eps_
           elevec1[node * numdofpernode_ + dof] += scalar * funct_(node) * val_fac_funct_fac;
       }  // if ((*onoff)[dof])
-    }    // loop over dofs
-  }      // loop over integration points
+    }  // loop over dofs
+  }  // loop over integration points
 
   return 0;
 }
@@ -1509,8 +1509,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
           break;
         }
       }  // selection of kinetic model
-    }    // loop over scalars
-  }      // loop over integration points
+    }  // loop over scalars
+  }  // loop over integration points
 }  // Discret::Elements::ScaTraEleBoundaryCalc<distype>::evaluate_s2_i_coupling_od
 
 /*----------------------------------------------------------------------*
@@ -1733,7 +1733,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
           }
         }
       }  // loop over integration points
-    }    // if((*onoff)[k]==1)
+    }  // if((*onoff)[k]==1)
     // else //in the case of "OFF", a no flux condition is automatically applied
 
   }  // loop over scalars
@@ -3116,7 +3116,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype,
       }
 
     }  // loop over scalars
-  }    // loop over integration points
+  }  // loop over integration points
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

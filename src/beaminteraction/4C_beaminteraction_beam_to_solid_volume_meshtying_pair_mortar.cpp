@@ -228,7 +228,7 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
       for (const auto& segment : this->line_to_3D_segments_)
       {
         for (unsigned int i_curve_segment = 0; i_curve_segment <= mortar_segments;
-             i_curve_segment++)
+            i_curve_segment++)
         {
           // Get the position, displacement and lambda value at the current point.
           xi = segment.get_eta_a() + i_curve_segment * (segment.get_eta_b() - segment.get_eta_a()) /
@@ -257,7 +257,7 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
           pair_cell_beam_id->push_back(this->element1()->id());
           pair_cell_solid_id->push_back(this->element2()->id());
           for (unsigned int i_curve_segment = 0; i_curve_segment <= mortar_segments;
-               i_curve_segment++)
+              i_curve_segment++)
           {
             pair_point_beam_id->push_back(this->element1()->id());
             pair_point_solid_id->push_back(this->element2()->id());

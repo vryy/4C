@@ -464,7 +464,7 @@ void XFEM::XFluidContactComm::get_penalty_param(Core::Elements::Element* fluidel
     std::vector<Cut::plain_volumecell_set>::iterator sit = cell_sets.end();
     // if we have just one dof in this element this isn't a loop
     for (std::vector<Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
-         s != cell_sets.end(); s++)
+        s != cell_sets.end(); s++)
     {
       Cut::plain_volumecell_set& cells = *s;
       for (Cut::plain_volumecell_set::iterator i = cells.begin(); i != cells.end(); ++i)
@@ -489,7 +489,7 @@ void XFEM::XFluidContactComm::get_penalty_param(Core::Elements::Element* fluidel
     }
 
     for (std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator bc = element_bcells.begin();
-         bc != element_bcells.end(); ++bc)
+        bc != element_bcells.end(); ++bc)
     {
       std::vector<Cut::BoundaryCell*>& bc_new = bcells[bc->first];
       bc_new.clear();
@@ -939,7 +939,7 @@ Cut::Side* XFEM::XFluidContactComm::findnext_physical_side(Core::LinAlg::Matrix<
   Cut::Side* newSide = nullptr;
 
   for (std::set<Cut::Side*>::iterator psit = physical_sides.begin(); psit != physical_sides.end();
-       ++psit)
+      ++psit)
   {
     static Core::LinAlg::Matrix<3, 1> tmpx(true);
     double tmpdistance = distanceto_side(x, *psit, tmpx);
@@ -995,7 +995,7 @@ double XFEM::XFluidContactComm::distanceto_side(
 {
   double distance = 1e200;
   for (std::vector<Cut::Edge*>::const_iterator eit = side->edges().begin();
-       eit != side->edges().end(); ++eit)
+      eit != side->edges().end(); ++eit)
   {
     Cut::Edge* e = *eit;
     Core::LinAlg::Matrix<3, 2> xyzl;
@@ -1022,7 +1022,7 @@ double XFEM::XFluidContactComm::distanceto_side(
     }
   }
   for (std::vector<Cut::Node*>::const_iterator nit = side->nodes().begin();
-       nit != side->nodes().end(); ++nit)
+      nit != side->nodes().end(); ++nit)
   {
     Cut::Node* n = *nit;
     Core::LinAlg::Matrix<3, 1> xyzn;
@@ -1070,11 +1070,11 @@ std::vector<Cut::Side*> XFEM::XFluidContactComm::get_new_neighboring_sides(
 {
   std::vector<Cut::Side*> neighbors;
   for (std::vector<Cut::Node*>::const_iterator nit = side->nodes().begin();
-       nit != side->nodes().end(); ++nit)
+      nit != side->nodes().end(); ++nit)
   {
     Cut::Node* n = *nit;
     for (Cut::plain_side_set::const_iterator sit = n->sides().begin(); sit != n->sides().end();
-         ++sit)
+        ++sit)
     {
       Cut::Side* s = *sit;
       if (s == side) continue;
@@ -1215,7 +1215,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
     Cut::Side* side = *sit;
     side->normal(Core::LinAlg::Matrix<2, 1>(true), normal_side, true);
     for (std::vector<Cut::Facet*>::const_iterator fit = side->facets().begin();
-         fit != side->facets().end(); ++fit)
+        fit != side->facets().end(); ++fit)
     {
       Cut::Facet* facet = *fit;
       if (facet->is_triangulated())
@@ -1225,7 +1225,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
           double* coord = tcoords.values();
           for (std::vector<Cut::Point*>::const_iterator tp =
                    facet->triangulation()[triangle].begin();
-               tp != facet->triangulation()[triangle].end(); ++tp)
+              tp != facet->triangulation()[triangle].end(); ++tp)
           {
             Cut::Point* p = *tp;
             p->coordinates(coord);
@@ -1243,7 +1243,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
             double* coord = tcoords.values();
             for (std::vector<Cut::Point*>::const_iterator tp =
                      facet->triangulation()[triangle].end() - 1;
-                 tp != facet->triangulation()[triangle].begin() - 1; --tp)
+                tp != facet->triangulation()[triangle].begin() - 1; --tp)
             {
               Cut::Point* p = *tp;
               p->coordinates(coord);
@@ -1269,7 +1269,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
           std::reverse(points.begin(), points.end());
           double* coord = tcoords.values();
           for (std::vector<Cut::Point*>::const_iterator tp = facet->points().end() - 1;
-               tp != facet->points().begin() - 1; --tp)
+              tp != facet->points().begin() - 1; --tp)
           {
             Cut::Point* p = *tp;
             p->coordinates(coord);
@@ -1315,7 +1315,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
           std::reverse(tmp_points.begin(), tmp_points.end());
           double* coord = tcoords.values();
           for (std::vector<Cut::Node*>::const_iterator tp = side->nodes().end() - 1;
-               tp != side->nodes().begin() - 1; --tp)
+              tp != side->nodes().begin() - 1; --tp)
           {
             Cut::Point* p = (*tp)->point();
             p->coordinates(coord);
@@ -1419,7 +1419,7 @@ void XFEM::XFluidContactComm::prepare_iteration_step()
   {
     std::cout << "==| Interface Elements with an increased number of Contact Gausspoins:";
     for (std::set<int>::iterator sit = higher_contact_elements_comm_.begin();
-         sit != higher_contact_elements_comm_.end(); ++sit)
+        sit != higher_contact_elements_comm_.end(); ++sit)
       std::cout << " " << get_surf_sid(*sit) << "(" << *sit << ") |";
     std::cout << "==" << std::endl;
   }

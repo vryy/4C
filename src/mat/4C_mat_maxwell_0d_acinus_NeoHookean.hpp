@@ -35,7 +35,7 @@ namespace Mat
       std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class Maxwell_0d_acinus_NeoHookean
-  }     // namespace PAR
+  }  // namespace PAR
 
 
   class Maxwell0dAcinusNeoHookeanType : public Maxwell0dAcinusType

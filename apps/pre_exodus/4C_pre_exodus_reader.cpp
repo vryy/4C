@@ -1418,7 +1418,7 @@ EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype,
 {
   // do a sanity check
   for (std::map<int, std::vector<int>>::const_iterator elem = eleconn->begin();
-       elem != eleconn->end(); ++elem)
+      elem != eleconn->end(); ++elem)
   {
     if (Core::FE::get_number_of_element_nodes(pre_shape_to_drt(Distype)) !=
         (int)elem->second.size())

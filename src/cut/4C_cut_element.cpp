@@ -470,7 +470,7 @@ void Cut::Element::find_node_positions()
 
             for (std::map<std::pair<Point*, Point*>, plain_facet_set>::iterator line_it =
                      lines.begin();
-                 line_it != lines.end(); line_it++)
+                line_it != lines.end(); line_it++)
             {
               std::pair<Point*, Point*> line = line_it->first;
 
@@ -546,7 +546,7 @@ bool Cut::Element::compute_position(Point* p, Point* cutpoint, Facet* f, Side* s
   plain_volumecell_set adjacent_cells;
 
   for (plain_volumecell_set::const_iterator f_cells_it = facet_cells.begin();
-       f_cells_it != facet_cells.end(); f_cells_it++)
+      f_cells_it != facet_cells.end(); f_cells_it++)
   {
     if (cells_.count(*f_cells_it)) adjacent_cells.insert(*f_cells_it);  // insert this cell
   }
@@ -578,7 +578,7 @@ bool Cut::Element::compute_position(Point* p, Point* cutpoint, Facet* f, Side* s
 
   //  plain_side_set e_cut_sides;
   for (plain_side_set::const_iterator side_it = cut_sides.begin(); side_it != cut_sides.end();
-       side_it++)
+      side_it++)
   {
     /* Is the cut-point a cut-point of this element's cut_side?
      * Is this side a cut-side adjacent to this volume-cell ?

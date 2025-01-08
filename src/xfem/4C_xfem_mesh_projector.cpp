@@ -113,7 +113,7 @@ void XFEM::MeshProjector::find_search_radius()
 
   // loop over element surfaces
   for (std::vector<std::vector<int>>::const_iterator ic = connectivity.begin();
-       ic != connectivity.end(); ++ic)
+      ic != connectivity.end(); ++ic)
   {
     // get the set of nodes (connected in sequence) for the current surface
     const std::vector<int>& surf_nodeset = *ic;
@@ -215,7 +215,7 @@ void XFEM::MeshProjector::project(std::map<int, std::set<int>>& projection_nodeT
 
   // set position of nodes in target cloud
   for (std::map<int, std::set<int>>::const_iterator i = projection_nodeToDof.begin();
-       i != projection_nodeToDof.end(); ++i)
+      i != projection_nodeToDof.end(); ++i)
   {
     const Core::Nodes::Node* node = targetdis_->g_node(i->first);
 
@@ -414,11 +414,11 @@ void XFEM::MeshProjector::find_covering_elements_and_interpolate_values(
 
     // loop over the map of target node-IDs and source elements within the search radius
     for (std::map<int, std::set<int>>::const_iterator closele = closeeles.begin();
-         closele != closeeles.end(); closele++)
+        closele != closeeles.end(); closele++)
     {
       // loop over the set of source elements within the search radius
       for (std::set<int>::const_iterator eleIter = (closele->second).begin();
-           eleIter != (closele->second).end(); eleIter++)
+          eleIter != (closele->second).end(); eleIter++)
       {
         Core::Elements::Element* pele = sourcedis_->g_element(*eleIter);
         // determine values for target fluid node

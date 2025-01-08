@@ -113,7 +113,7 @@ void FLD::get_relevant_slave_nodes_of_rot_sym_pbc(
         pbcslavenodemap[nodegid] = rotangle;
       }
     }  // end is slave condition?
-  }    // end loop periodic boundary conditions
+  }  // end loop periodic boundary conditions
 }
 
 FOUR_C_NAMESPACE_CLOSE

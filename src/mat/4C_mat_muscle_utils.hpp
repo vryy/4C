@@ -32,7 +32,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     tol Tolerance for Halley's approximation
    * @param[in]     maxiter Maximal number of iterations
    */
-  void evaluate_lambert(const double xi, double &W0, const double tol, const int maxiter);
+  void evaluate_lambert(const double xi, double& W0, const double tol, const int maxiter);
 
   /*!
    * @brief Evaluate the force-stretch dependency according to Ehret et al.
@@ -158,9 +158,9 @@ namespace Mat::Utils::Muscle
    * @param[out]    Poptft Time-dependent optimal active stress at currentTime
    */
   double evaluate_time_dependent_active_stress_ehret(const double Na, const int muTypesNum,
-      const std::vector<double> &rho, const std::vector<double> &I, const std::vector<double> &F,
-      const std::vector<double> &T, const int actIntervalsNum, const std::vector<double> &actTimes,
-      const std::vector<double> &actValues, const double currentTime);
+      const std::vector<double>& rho, const std::vector<double>& I, const std::vector<double>& F,
+      const std::vector<double>& T, const int actIntervalsNum, const std::vector<double>& actTimes,
+      const std::vector<double>& actValues, const double currentTime);
 
   /*!
    * @brief Evaluate the active force-stretch dependency according to Blemker et al.
@@ -264,8 +264,8 @@ namespace Mat::Utils::Muscle
    * @param[out]    sigma_max_ft Time-/space-dependent optimal active stress at x, t_current
    */
   double evaluate_time_space_dependent_active_stress_by_funct(const double sigma_max,
-      const Core::Utils::FunctionOfSpaceTime &activation_function, const double t_current,
-      const Core::LinAlg::Matrix<3, 1> &x);
+      const Core::Utils::FunctionOfSpaceTime& activation_function, const double t_current,
+      const Core::LinAlg::Matrix<3, 1>& x);
 
   /*!
    * @brief Evaluate the time- and space-dependent optimal (i.e. maximal) active stress through
@@ -290,7 +290,7 @@ namespace Mat::Utils::Muscle
    *                             id and t_current
    */
   double evaluate_time_space_dependent_active_stress_by_map(const double sigma_max,
-      const std::unordered_map<int, std::vector<std::pair<double, double>>> &activation_map,
+      const std::unordered_map<int, std::vector<std::pair<double, double>>>& activation_map,
       const double t_current, const int activation_map_key);
 
   /*!
@@ -300,7 +300,7 @@ namespace Mat::Utils::Muscle
    *  @param[in] M Structural tensor of fiber directions
    *  @param[out] lambdaM Fiber stretch
    */
-  double fiber_stretch(const Core::LinAlg::Matrix<3, 3> &C, const Core::LinAlg::Matrix<3, 3> &M);
+  double fiber_stretch(const Core::LinAlg::Matrix<3, 3>& C, const Core::LinAlg::Matrix<3, 3>& M);
 
   /*!
    *  @brief Returns the derivative of the fiber stretch w.r.t. the Cauchy-Green strain
@@ -311,7 +311,7 @@ namespace Mat::Utils::Muscle
    *  @param[out] dlambdaMdC Derivative of the fiber stretch w.r.t. the Cauchy-Green strains
    */
   Core::LinAlg::Matrix<3, 3> d_fiber_stretch_dc(const double lambdaM,
-      const Core::LinAlg::Matrix<3, 3> &C, const Core::LinAlg::Matrix<3, 3> &M);
+      const Core::LinAlg::Matrix<3, 3>& C, const Core::LinAlg::Matrix<3, 3>& M);
 
   /*!
    *  @brief Returns the contraction velocity computed by a Backward Euler approximation

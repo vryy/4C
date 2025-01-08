@@ -38,7 +38,7 @@ namespace POROFLUIDMULTIPHASE
     recon_flux_at_nodes,          // reconstruct flux at nodes
     set_general_parameter,        // set general parameters for element evaluation
     set_timestep_parameter,       // set time-integration parameters for element evaluation
-  };                              // enum Action
+  };  // enum Action
 
   /*--------------------------------------------------------------------------*/
   /*!
@@ -48,7 +48,7 @@ namespace POROFLUIDMULTIPHASE
   enum BoundaryAction
   {
     bd_calc_Neumann,  // evaluate neumann loads
-  };                  // enum POROFLUIDMULTIPHASE::BoundaryAction
+  };  // enum POROFLUIDMULTIPHASE::BoundaryAction
 }  // namespace POROFLUIDMULTIPHASE
 
 FOUR_C_NAMESPACE_CLOSE

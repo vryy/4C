@@ -64,7 +64,7 @@ namespace Discret
       {
        public:
         //! constructor
-        VariableManagerMinAccess(){};
+        VariableManagerMinAccess() {};
 
         //! destructor
         virtual ~VariableManagerMinAccess() = default;
@@ -103,7 +103,7 @@ namespace Discret
       {
        public:
         //! constructor
-        VariableManagerInterface(){};
+        VariableManagerInterface() {};
 
         //! factory method
         static std::shared_ptr<VariableManagerInterface<nsd, nen>> create_variable_manager(
@@ -171,7 +171,7 @@ namespace Discret
             : VariableManagerInterface<nsd, nen>(),
               numdofpernode_(numdofpernode),
               isextracted_(false),
-              isevaluated_(false){};
+              isevaluated_(false) {};
 
         //! check if evaluate_gp_variables has been called
         void check_is_evaluated() const override
@@ -296,7 +296,7 @@ namespace Discret
         VariableManagerPhi(int numdofpernode)
             : VariableManagerBase<nsd, nen>(numdofpernode),
               ephinp_(numdofpernode),
-              phinp_(numdofpernode, 0.0){};
+              phinp_(numdofpernode, 0.0) {};
 
         //! extract node values related to the state vector 'phinp'
         //! dofsetnum is the number of the porofluid-dofset on the current element
@@ -352,7 +352,7 @@ namespace Discret
        public:
         //! constructor
         VariableManagerPhiGradPhi(int numdofpernode)
-            : VariableManagerPhi<nsd, nen>(numdofpernode), gradphi_(numdofpernode){};
+            : VariableManagerPhi<nsd, nen>(numdofpernode), gradphi_(numdofpernode) {};
 
         //! evaluate phi and its gradient at gauss point
         void evaluate_gp_variables(
@@ -394,7 +394,7 @@ namespace Discret
        public:
         //! constructor
         VariableManagerDecorator(std::shared_ptr<VariableManagerInterface<nsd, nen>> varmanager)
-            : VariableManagerInterface<nsd, nen>(), varmanager_(varmanager){};
+            : VariableManagerInterface<nsd, nen>(), varmanager_(varmanager) {};
 
         //! @name Access methods
         const std::vector<double>* phinp() const override { return varmanager_->phinp(); };
@@ -475,7 +475,7 @@ namespace Discret
               ephidtnp_(varmanager->num_dof_per_node()),
               ehist_(varmanager->num_dof_per_node()),
               phidtnp_(varmanager->num_dof_per_node(), 0.0),
-              hist_(varmanager->num_dof_per_node(), 0.0){};
+              hist_(varmanager->num_dof_per_node(), 0.0) {};
 
         //! extract node values related to time derivatives
         //! dofsetnum is the number of the porofluid-dofset on the current element
@@ -547,7 +547,7 @@ namespace Discret
               edispnp_(true),    // initialized to zero
               divconvelint_(0.0),
               convelint_(true),
-              dispint_(true){};
+              dispint_(true) {};
 
         //! extract variables related to structure coupling
         //! dofsetnum is the number of the porofluid-dofset on the current element
@@ -633,7 +633,7 @@ namespace Discret
               ndsscalar_(ndsscalar),
               escalarnp_(),
               scalarnp_(),
-              gradscalarnp_(){};
+              gradscalarnp_() {};
 
         //! extract node values related to ScaTra coupling
         //! dofsetnum is the number of the porofluid-dofset on the current element
@@ -704,7 +704,7 @@ namespace Discret
               numvolfrac_(numvolfrac),
               ele_has_valid_volfrac_press_(numvolfrac_, false),
               ele_has_valid_volfrac_spec_(numvolfrac_, false),
-              multiphasemat_(multiphasemat){};
+              multiphasemat_(multiphasemat) {};
 
         //! extract node values related to time derivatives
         //! dofsetnum is the number of the porofluid-dofset on the current element

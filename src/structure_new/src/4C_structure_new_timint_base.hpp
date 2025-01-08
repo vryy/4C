@@ -887,7 +887,7 @@ namespace Solid
       /// pointer to the dirichlet boundary condition handler
       std::shared_ptr<Solid::Dbc> dbc_ptr_;
     };  // class Base
-  }     // namespace TimeInt
+  }  // namespace TimeInt
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

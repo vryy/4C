@@ -52,7 +52,7 @@ namespace Mat
           return nullptr;
         };
       };  // class IsoMooneyRivlin
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Isochoric Mooney-Rivlin material according to [1]

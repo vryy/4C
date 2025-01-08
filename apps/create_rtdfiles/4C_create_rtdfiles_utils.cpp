@@ -26,7 +26,7 @@ namespace RTD
 {
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  Table::Table(const unsigned &size) : tablewidth_(size)
+  Table::Table(const unsigned& size) : tablewidth_(size)
   {
     for (unsigned i = 0; i < tablewidth_; ++i)
     {
@@ -35,7 +35,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void Table::add_row(const std::vector<std::string> &row)
+  void Table::add_row(const std::vector<std::string>& row)
   {
     if (row.size() != tablewidth_)
     {
@@ -46,7 +46,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void Table::set_widths(const std::vector<unsigned> &widths)
+  void Table::set_widths(const std::vector<unsigned>& widths)
   {
     if (widths.size() != tablewidth_)
     {
@@ -59,7 +59,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void Table::add_directive(const std::string &key, const std::string &value)
+  void Table::add_directive(const std::string& key, const std::string& value)
   {
     directives_[key] = value;
   }
@@ -68,14 +68,14 @@ namespace RTD
   unsigned Table::get_rows() const { return tablerows_.size(); }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void Table::print(std::ostream &stream) const
+  void Table::print(std::ostream& stream) const
   {
     // if the widths are not set, they are currently set to 100/tablewidth_
     unsigned defaultcolsize = 100 / tablewidth_;
     bool isWidthDirectiveGiven = false;
     stream << ".. list-table::\n";
     // write directives
-    for (const auto &directive : directives_)
+    for (const auto& directive : directives_)
     {
       stream << "   :" << directive.first << ": " << directive.second << "\n";
       if (directive.first.substr(0, 5) == "width") isWidthDirectiveGiven = true;
@@ -96,7 +96,7 @@ namespace RTD
     stream << "\n";
     //
     // now write table content (split if necessary, i.e., more characters than given in widths_)
-    for (const auto &tablerow : tablerows_)
+    for (const auto& tablerow : tablerows_)
     {
       for (unsigned i = 0; i < tablewidth_; ++i)
       {
@@ -132,13 +132,13 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_linktarget(std::ostream &stream, const std::string &line)
+  void write_linktarget(std::ostream& stream, const std::string& line)
   {
     stream << ".. _" << line << ":\n\n";
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_header(std::ostream &stream, unsigned level, const std::string &line)
+  void write_header(std::ostream& stream, unsigned level, const std::string& line)
   {
     const std::vector<char> headerchar{'=', '-', '~', '^'};
     unsigned headerlength = line.length();
@@ -152,7 +152,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_paragraph(std::ostream &stream, std::string paragraph, size_t indent)
+  void write_paragraph(std::ostream& stream, std::string paragraph, size_t indent)
   {
     size_t mathstartpos = paragraph.find("\f$");
     size_t mathendpos = 0;
@@ -174,10 +174,10 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_code(std::ostream &stream, const std::vector<std::string> &lines)
+  void write_code(std::ostream& stream, const std::vector<std::string>& lines)
   {
     stream << "::\n\n";
-    for (const auto &line : lines)
+    for (const auto& line : lines)
     {
       stream << "   " << line << "\n";
     }
@@ -185,7 +185,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_note(std::ostream &stream, const std::string &paragraph)
+  void write_note(std::ostream& stream, const std::string& paragraph)
   {
     stream << ".. note::\n\n";
     stream << "   " << paragraph << "\n\n";
@@ -193,7 +193,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  std::ostream &operator<<(std::ostream &stream, const Table &table)
+  std::ostream& operator<<(std::ostream& stream, const Table& table)
   {
     table.print(stream);
     return stream;
@@ -201,7 +201,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_celltype_reference(std::ostream &stream)
+  void write_celltype_reference(std::ostream& stream)
   {
     write_linktarget(stream, "celltypes");
     write_header(stream, 1, "Cell types");
@@ -261,7 +261,7 @@ namespace RTD
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void write_material_reference(
-      std::ostream &stream, const std::vector<std::shared_ptr<Mat::MaterialDefinition>> &matlist)
+      std::ostream& stream, const std::vector<std::shared_ptr<Mat::MaterialDefinition>>& matlist)
   {
     write_linktarget(stream, "materialsreference");
     write_header(stream, 0, "Material reference");
@@ -269,7 +269,7 @@ namespace RTD
     std::vector<std::string> materialsectionstring{std::string(58, '-') + "MATERIALS"};
     write_code(stream, materialsectionstring);
 
-    for (auto &material : matlist)
+    for (auto& material : matlist)
     {
       write_single_material_read_the_docs(stream, material);
     }
@@ -297,7 +297,7 @@ namespace RTD
 
 
   void write_single_material_read_the_docs(
-      std::ostream &stream, const std::shared_ptr<Mat::MaterialDefinition> material)
+      std::ostream& stream, const std::shared_ptr<Mat::MaterialDefinition> material)
   {
     /* Each entry consists of a number of fields:
     - header
@@ -326,7 +326,7 @@ namespace RTD
     parametertable.add_row(tablerow);
 
 
-    for (const auto &spec : material->specs())
+    for (const auto& spec : material->specs())
     {
       std::vector<std::string> table_row;
       table_row.push_back(spec.name());
@@ -367,7 +367,7 @@ namespace RTD
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void write_header_reference(
-      std::ostream &stream, const Teuchos::ParameterList &list, std::string parentname)
+      std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname)
   {
     // prevent invalid ordering of parameters caused by alphabetical output:
     // in the first run, print out all list elements that are not a sublist
@@ -379,9 +379,9 @@ namespace RTD
       bool loop_isList = (j == 1);
       for (Teuchos::ParameterList::ConstIterator it = list.begin(); it != list.end(); ++it)
       {
-        const Teuchos::ParameterEntry &entry = list.entry(it);
+        const Teuchos::ParameterEntry& entry = list.entry(it);
         if (entry.isList() != loop_isList) continue;
-        const std::string &name = list.name(it);
+        const std::string& name = list.name(it);
         Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
 
         std::string doc = (entry.docString() == "") ? "no description yet" : entry.docString();
@@ -425,7 +425,7 @@ namespace RTD
         {
           write_linktarget(stream, linktarget);
 
-          const Teuchos::any &v = entry.getAny(false);
+          const Teuchos::any& v = entry.getAny(false);
 
           std::string s =
               std::format("**{}** | *default:* {} |break| {}", name, Teuchos::toString(v), doc);
@@ -447,13 +447,13 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_conditions_reference(std::ostream &stream,
-      const std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>> &condlist)
+  void write_conditions_reference(std::ostream& stream,
+      const std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
   {
     write_linktarget(stream, "prescribedconditionreference");
     write_header(stream, 0, "Prescribed Condition Reference");
 
-    for (auto &condition : condlist)
+    for (auto& condition : condlist)
     {
       write_single_condition_read_the_docs(stream, *condition);
     }
@@ -461,7 +461,7 @@ namespace RTD
 
 
   void write_single_condition_read_the_docs(
-      std::ostream &stream, Core::Conditions::ConditionDefinition &condition)
+      std::ostream& stream, Core::Conditions::ConditionDefinition& condition)
   {
     /* Each entry consists of a number of fields:
     - Part 1: link target and header
@@ -536,7 +536,7 @@ namespace RTD
     std::vector<std::string> condCompStrings;
     std::string condCompName("");
     parametertable.add_row(tablerow);
-    for (auto &condparameter : condition.inputline())
+    for (auto& condparameter : condition.inputline())
     {
       // newline after some 60 characters, but no newline after a separator condition
       if (isNewlinePossible)
@@ -546,13 +546,13 @@ namespace RTD
       }
       conditioncodeline += " " + condparameter->write_read_the_docs();
       isNewlinePossible = (conditioncodeline.length() > 60);
-      if (auto *previousparameter = dynamic_cast<Input::SeparatorComponent *>(condparameter.get()))
+      if (auto* previousparameter = dynamic_cast<Input::SeparatorComponent*>(condparameter.get()))
       {
         previousparameter->get_options();  // just needed to prevent an unusedVariable warning
         isNewlinePossible = false;
       }
       // If the component is a string component, store the admissible parameters in the table:
-      if (auto *stringComponent = dynamic_cast<Input::SelectionComponent *>(condparameter.get()))
+      if (auto* stringComponent = dynamic_cast<Input::SelectionComponent*>(condparameter.get()))
       {
         tablerow[0] = stringComponent->name();
         std::ostringstream parametercell;
@@ -563,7 +563,7 @@ namespace RTD
         parametertable.add_row(tablerow);
       }
       // if the component is a bundleselector (bundle of variables following a string keyword):
-      if (auto *compBundleSelector = dynamic_cast<Input::SwitchComponent *>(condparameter.get()))
+      if (auto* compBundleSelector = dynamic_cast<Input::SwitchComponent*>(condparameter.get()))
       {
         condCompName = compBundleSelector->name();
         std::vector<std::string> bundle = compBundleSelector->write_read_the_docs_lines();
@@ -602,7 +602,7 @@ namespace RTD
           "The following parameter sets are possible for `<" + condCompName + ">`:";
       write_paragraph(stream, optionheaderstring);
       conditioncode.clear();
-      for (auto &condCompString : condCompStrings)
+      for (auto& condCompString : condCompStrings)
       {
         conditioncode.push_back(condCompString);
       }
@@ -613,8 +613,8 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_contact_law_reference(std::ostream &stream,
-      const std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>> &coconstlawlist)
+  void write_contact_law_reference(std::ostream& stream,
+      const std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist)
   {
     write_linktarget(stream, "contactconstitutivelawreference");
     write_header(stream, 0, "Contact Constitutive Law Reference");
@@ -624,7 +624,7 @@ namespace RTD
         std::string(43, '-') + "CONTACT CONSTITUTIVE LAW"};
     write_code(stream, contactlawsectionstring);
 
-    for (auto &contactlaw : coconstlawlist)
+    for (auto& contactlaw : coconstlawlist)
     {
       write_single_contact_law_read_the_docs(stream, contactlaw);
     }
@@ -633,7 +633,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_single_contact_law_read_the_docs(std::ostream &stream,
+  void write_single_contact_law_read_the_docs(std::ostream& stream,
       const std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> contactlaw)
   {
     /* Each entry consists of a number of fields:
@@ -662,9 +662,9 @@ namespace RTD
     tablerow = {"Parameter", "optional", "Description"};
     parametertable.add_row(tablerow);
 
-    for (auto &parameterterm : contactlaw->inputline())
+    for (auto& parameterterm : contactlaw->inputline())
     {
-      if (auto *separator = dynamic_cast<Input::SeparatorComponent *>(parameterterm.get()))
+      if (auto* separator = dynamic_cast<Input::SeparatorComponent*>(parameterterm.get()))
       {
         parametertable.add_row(separator->write_read_the_docs_table_row());
 
@@ -698,7 +698,7 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void write_various_reference(std::ostream &stream)
+  void write_various_reference(std::ostream& stream)
   {
     //
     // adding the sections for the RESULT DESCRIPTION
@@ -735,7 +735,7 @@ namespace RTD
       write_code(stream, functionList);
     }
   }
-  void write_yaml_cell_type_information(std::ostream &yamlfile)
+  void write_yaml_cell_type_information(std::ostream& yamlfile)
   {
     for (auto celltype : Core::FE::celltype_array<Core::FE::all_physical_celltypes>)
     {

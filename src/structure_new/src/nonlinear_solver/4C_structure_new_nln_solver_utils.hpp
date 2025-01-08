@@ -158,7 +158,7 @@ namespace Solid
           Teuchos::ParameterList& qlist, const enum NOX::Nln::StatusTest::QuantityType& qtype);
 
     }  // namespace SOLVER
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

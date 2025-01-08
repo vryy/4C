@@ -291,7 +291,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::print_trace(Core::Elements::
   unsigned int index = 0;
   unsigned int second_index = 0;
   for (std::vector<double>::iterator iter = localtrace_.begin(); iter != localtrace_.end();
-       iter++, index++, second_index++)
+      iter++, index++, second_index++)
   {
     if (index % ele->num_dof_per_face(0) == 0)
     {
@@ -2269,9 +2269,9 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_face_ma
             tempH(d * ndofs_ + i, shapesface_->nfdofs_ * d + j) -= temp;
           }
         }  // for (unsigned int d = 0; d < nsd_; ++d)
-      }    // for (unsigned int j=0; j<ndofs_; ++j)
-    }      // if( shapesface_->shfunctI.NonzeroOnFace(i) )
-  }        // for (unsigned int i = 0; i < ndofs_; ++i)
+      }  // for (unsigned int j=0; j<ndofs_; ++j)
+    }  // if( shapesface_->shfunctI.NonzeroOnFace(i) )
+  }  // for (unsigned int i = 0; i < ndofs_; ++i)
 
   // Fill face values into the matrices
   {
@@ -2311,7 +2311,7 @@ void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_face_ma
         }
       }
     }  // for (unsigned int j = 0; j < shapesface_->nfdofs_; ++j)
-  }    // for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
+  }  // for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
 
   // INTERIOR SHAPE FUNCTIONS
   // Some terms are still missing in G!!

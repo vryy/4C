@@ -450,7 +450,7 @@ void Solid::Nln::SOLVER::split_and_or_combo(
             "\"Inpar::Solid::BinaryOp\" enums for more information.");
         break;
     }  // switch case
-  }    // loop over the model type vector
+  }  // loop over the model type vector
 }
 
 

@@ -806,7 +806,7 @@ void Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
     {
       std::vector<Point*> holecyclepoints = *i;
       for (std::vector<Point*>::iterator i = holecyclepoints.begin(); i != holecyclepoints.end();
-           ++i)
+          ++i)
       {
         Point* holecyclepoint = *i;
         Core::LinAlg::Matrix<3, 1> holecyclepointcoordinates;
@@ -825,7 +825,7 @@ void Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
     std::vector<int> maximumxvalueid(2);
     for (std::map<std::vector<int>, Core::LinAlg::Matrix<3, 1>>::iterator i =
              localholecyclespoints.begin();
-         i != localholecyclespoints.end(); ++i)
+        i != localholecyclespoints.end(); ++i)
     {
       Core::LinAlg::Matrix<3, 1> localholecyclespoint = i->second;
       if (localholecyclespoint(0, 0) > maximumxvalue)
@@ -984,7 +984,7 @@ void Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
       std::vector<int> reflexmaincyclepointids =
           Kernel::check_convexity(ptlist_, geoType, false, false);
       for (std::vector<int>::iterator i = reflexmaincyclepointids.begin();
-           i != reflexmaincyclepointids.end(); ++i)
+          i != reflexmaincyclepointids.end(); ++i)
       {
         int* reflexmaincyclepointid = &*i;
         (*reflexmaincyclepointid)++;  // a little inconsistency here with Kernel::CheckConvexity
@@ -998,7 +998,7 @@ void Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
         triangle(i, 2) = potentuallyvisiblepoint(i, 0);
       }
       for (std::vector<int>::iterator i = reflexmaincyclepointids.begin();
-           i != reflexmaincyclepointids.end(); ++i)
+          i != reflexmaincyclepointids.end(); ++i)
       {
         int reflexmaincyclepointid = *i;
         Core::LinAlg::Matrix<3, 1> reflexmaincyclepoint =
@@ -1021,7 +1021,7 @@ void Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
         double closestangle = 4;
         std::vector<int> closestanglemaincyclepointids;
         for (std::vector<int>::iterator i = insidemaincyclepointids.begin();
-             i != insidemaincyclepointids.end(); ++i)
+            i != insidemaincyclepointids.end(); ++i)
         {
           int insidemaincyclepointid = *i;
           Core::LinAlg::Matrix<3, 1> insidemaincyclepoint =
@@ -1053,7 +1053,7 @@ void Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
           // 8) Mutually visible point
           double closestdistance = 5;
           for (std::vector<int>::iterator i = closestanglemaincyclepointids.begin();
-               i != closestanglemaincyclepointids.end(); ++i)
+              i != closestanglemaincyclepointids.end(); ++i)
           {
             int closestanglemaincyclepointid = *i;
             Core::LinAlg::Matrix<3, 1> closestanglemaincyclepoint =

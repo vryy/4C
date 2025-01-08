@@ -262,7 +262,7 @@ namespace Solid
 
       /*! \brief Post setup operations
        */
-      virtual void post_setup(){};
+      virtual void post_setup() {};
 
       /*! \brief predict the values for DoFs that are defined in
        *         the respective model evaluators, e.g. condensed variables.*/
@@ -270,7 +270,7 @@ namespace Solid
 
       /*! \brief Recover condensed solution variables, meant to be called by run_post_compute_x
        */
-      virtual void run_recover(){};
+      virtual void run_recover() {};
 
       /*! \brief Recover condensed solution variables
        *
@@ -300,7 +300,7 @@ namespace Solid
        *  \param solver (in) : reference to the non-linear nox solver object (read-only)
        *
        *  \author hiermeier */
-      virtual void run_pre_solve(const ::NOX::Solver::Generic& solver){};
+      virtual void run_pre_solve(const ::NOX::Solver::Generic& solver) {};
 
       /*! \brief Executed at the end of the NOX::Nln::LinearSystem::applyJacobianInverse()
        *  method
@@ -343,18 +343,16 @@ namespace Solid
       virtual void update_step_state(const double& timefac_n) = 0;
 
       // compute the element contributions for element based scaling using PTC
-      virtual void evaluate_jacobian_contributions_from_element_level_for_ptc(){};
+      virtual void evaluate_jacobian_contributions_from_element_level_for_ptc() {};
       // assemble the element contributions
       virtual void assemble_jacobian_contributions_from_element_level_for_ptc(
-          std::shared_ptr<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n){};
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n) {};
 
       //! Update the element by end of the time step
       virtual void update_step_element() = 0;
 
       //! Compute the residual by difference of {n+1} and {n} state
-      virtual void update_residual()
-      { /* do nothing by default */
-      }
+      virtual void update_residual() { /* do nothing by default */ }
 
       /*! \brief calculate the stress/strain contributions of each model evaluator
        *
@@ -401,7 +399,7 @@ namespace Solid
       /**
        * \brief This method is called before the runtime output method is called.
        */
-      virtual void runtime_pre_output_step_state(){};
+      virtual void runtime_pre_output_step_state() {};
 
       //! runtime output routine for model evaluator
       virtual void runtime_output_step_state() const {};
@@ -413,7 +411,7 @@ namespace Solid
       virtual void post_output() = 0;
 
       //! things that should be done after the timeloop
-      virtual void post_time_loop(){};
+      virtual void post_time_loop() {};
 
       /** \brief Create a backup state
        *
@@ -422,8 +420,9 @@ namespace Solid
        *  global state in terms of the x-vector is stored more globally.
        *
        *  \author hiermeier \date 12/17 */
-      virtual void create_backup_state(const Core::LinAlg::Vector<double>& dir){
-          /* do nothing in default */};
+      virtual void create_backup_state(const Core::LinAlg::Vector<double>& dir) {
+        /* do nothing in default */
+      };
 
       /** \brief Recover from the previously created backup state
        *
@@ -432,7 +431,7 @@ namespace Solid
        *  global state in terms of the x-vector is recovered more globally.
        *
        *  \author hiermeier \date 12/17 */
-      virtual void recover_from_backup_state(){/* do nothing in default */};
+      virtual void recover_from_backup_state() { /* do nothing in default */ };
 
       //! @name Accessors to model specific things
       //! @{

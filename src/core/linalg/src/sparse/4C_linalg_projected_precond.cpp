@@ -32,7 +32,7 @@ Core::LinAlg::LinalgPrecondOperator::LinalgPrecondOperator(std::shared_ptr<Epetr
                     (Modified) ApplyInverse call
    -------------------------------------------------------------------- */
 int Core::LinAlg::LinalgPrecondOperator::ApplyInverse(
-    const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+    const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   int ierr = 0;
   // Apply the inverse preconditioner to get new basis vector for the

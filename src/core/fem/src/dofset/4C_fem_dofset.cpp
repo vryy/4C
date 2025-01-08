@@ -480,7 +480,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     // printf("\n");
   }
   for (std::map<int, std::vector<int>>::iterator i = elementdofset.begin();
-       i != elementdofset.end(); ++i)
+      i != elementdofset.end(); ++i)
   {
     std::vector<int>& dofs = i->second;
     std::copy(dofs.begin(), dofs.end(), std::back_inserter(localrowdofs));
@@ -522,7 +522,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     std::copy(dofs.begin(), dofs.end(), std::back_inserter(localcoldofs));
   }
   for (std::map<int, std::vector<int>>::iterator i = elementdofset.begin();
-       i != elementdofset.end(); ++i)
+      i != elementdofset.end(); ++i)
   {
     std::vector<int>& dofs = i->second;
     std::copy(dofs.begin(), dofs.end(), std::back_inserter(localcoldofs));

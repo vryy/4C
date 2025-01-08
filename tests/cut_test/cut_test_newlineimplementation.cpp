@@ -472,7 +472,7 @@ void test_christoph_1()
   Cut::Mesh mesh = intersection.normal_mesh();
   const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
   for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
+      i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     std::cout << "Volume of Volumecell: " << vc->volume() << std::endl;

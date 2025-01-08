@@ -61,7 +61,7 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
   // loop all master nodes and set the dofs of the slaves to the dofs of the master
   // remark: the previously assigned dofs of slave nodes are overwritten here
   for (std::map<int, std::vector<int>>::iterator master = perbndcouples_->begin();
-       master != perbndcouples_->end(); ++master)
+      master != perbndcouples_->end(); ++master)
   {
     int master_lid = dis.node_col_map()->LID(master->first);
 
@@ -72,7 +72,7 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
     }
 
     for (std::vector<int>::iterator slave = master->second.begin(); slave != master->second.end();
-         ++slave)
+        ++slave)
     {
       int slave_lid = dis.node_col_map()->LID(*slave);
 
@@ -108,7 +108,7 @@ void Core::DOFSets::PBCDofSet::set_coupled_nodes(
   slavenodeids_ = std::make_shared<std::set<int>>();
 
   for (std::map<int, std::vector<int>>::iterator curr = perbndcouples_->begin();
-       curr != perbndcouples_->end(); ++curr)
+      curr != perbndcouples_->end(); ++curr)
   {
     std::vector<int>& sids = curr->second;
     std::copy(sids.begin(), sids.end(), std::inserter(*slavenodeids_, slavenodeids_->begin()));
@@ -129,11 +129,11 @@ void Core::DOFSets::PBCDofSet::build_slave_to_master_node_connectivity()
   perbnd_slavetomaster_ = std::make_shared<std::map<int, int>>();
 
   for (std::map<int, std::vector<int>>::const_iterator masterslavepair = perbndcouples_->begin();
-       masterslavepair != perbndcouples_->end(); ++masterslavepair)
+      masterslavepair != perbndcouples_->end(); ++masterslavepair)
   {
     // loop slave nodes associated with master
     for (std::vector<int>::const_iterator iter = masterslavepair->second.begin();
-         iter != masterslavepair->second.end(); ++iter)
+        iter != masterslavepair->second.end(); ++iter)
     {
       const int slavegid = *iter;
       (*perbnd_slavetomaster_)[slavegid] = masterslavepair->first;

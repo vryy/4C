@@ -24,10 +24,10 @@ namespace Solid
       class Uzawa : public Generic
       {
        public:
-        Uzawa(){};
+        Uzawa() {};
       };
     }  // namespace SOLVER
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

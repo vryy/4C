@@ -822,8 +822,8 @@ namespace CONTACT
     void store_dirichlet_status(std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmaps) override;
 
     virtual void set_parent_state(const enum Mortar::StateType& statetype,
-        const Core::LinAlg::Vector<double>& vec, const Core::FE::Discretization& dis){
-        /* standard contact methods don't need the corresponding bulk element */
+        const Core::LinAlg::Vector<double>& vec, const Core::FE::Discretization& dis) {
+      /* standard contact methods don't need the corresponding bulk element */
     };
 
     /*! \brief Update contact at end of time step
@@ -992,19 +992,19 @@ namespace CONTACT
 
     //! Run after the store_dirichlet_status() routine has been called
     virtual void post_store_dirichlet_status(
-        std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmaps){};
+        std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmaps) {};
 
     /*! \brief Run at the beginning of the evaluate() routine
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void pre_evaluate(CONTACT::ParamsInterface& cparams){};
+    virtual void pre_evaluate(CONTACT::ParamsInterface& cparams) {};
 
     /*! \brief Run in the end of the evaluate() routine
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void post_evaluate(CONTACT::ParamsInterface& cparams){};
+    virtual void post_evaluate(CONTACT::ParamsInterface& cparams) {};
 
     /*! \brief Run in the end of the setup() routine
      *
@@ -1012,7 +1012,7 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void post_setup(bool redistributed, bool init){};
+    virtual void post_setup(bool redistributed, bool init) {};
 
     //!@}
 

@@ -91,7 +91,7 @@ namespace GEOMETRYPAIR
      * @param core_element (in) Pointer to the element.
      */
     FaceElement(const std::shared_ptr<const Core::Elements::Element>& core_element)
-        : core_element_(core_element), part_of_pair_(false), patch_dof_gid_(){};
+        : core_element_(core_element), part_of_pair_(false), patch_dof_gid_() {};
 
     /**
      * \brief Destructor.
@@ -130,7 +130,8 @@ namespace GEOMETRYPAIR
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
     virtual void calculate_averaged_reference_normals(
-        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements){};
+        const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements) {
+    };
 
     /**
      * \brief Return the position on this face as a double.
@@ -208,7 +209,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      */
     FaceElementTemplate(const std::shared_ptr<const Core::Elements::Element>& core_element)
-        : FaceElement(core_element), n_dof_other_element_(0){};
+        : FaceElement(core_element), n_dof_other_element_(0) {};
 
 
     /**
@@ -424,7 +425,7 @@ namespace GEOMETRYPAIR
           face_to_volume_coordinate_axis_map_(true),
           face_to_volume_coordinate_axis_factor_(true),
           third_direction_(-1),
-          third_direction_factor_(0){};
+          third_direction_factor_(0) {};
 
     /**
      * \brief Get the face GIDs and set the reference configuration.

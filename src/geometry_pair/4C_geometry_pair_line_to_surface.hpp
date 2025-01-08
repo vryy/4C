@@ -224,7 +224,7 @@ namespace GEOMETRYPAIR
         const std::shared_ptr<GeometryPairLineToSurface<double, Line, Surface>>&
             double_geometry_pair)
         : base_class(element1, element2, double_geometry_pair->get_evaluation_data()),
-          geometry_pair_double_(double_geometry_pair){};
+          geometry_pair_double_(double_geometry_pair) {};
 
     /**
      * \brief Set the pointer to the second element.

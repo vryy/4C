@@ -353,7 +353,7 @@ namespace Discret
 
       /// Nodal block information
       void nodal_block_information(
-          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override{};
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override {};
 
       /// Null space
       Core::LinAlg::SerialDenseMatrix compute_null_space(

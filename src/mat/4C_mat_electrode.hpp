@@ -83,7 +83,7 @@ namespace Mat
       //! convert string to model for half cell open circuit potential
       [[nodiscard]] OCPModels string_to_ocp_model(const std::string& ocpmodelstring) const;
     };  // class Mat::PAR::Electrode
-  }     // namespace PAR
+  }  // namespace PAR
 
 
   /*----------------------------------------------------------------------*/

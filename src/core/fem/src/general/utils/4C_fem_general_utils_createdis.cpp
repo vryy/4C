@@ -256,11 +256,11 @@ void Core::FE::DiscretizationCreatorBase::finalize(
 std::vector<Input::LineDefinition> Core::FE::valid_cloning_material_map_lines()
 {
   return {Input::LineDefinition::Builder()
-              .add_named_string("SRC_FIELD")
-              .add_named_int("SRC_MAT")
-              .add_named_string("TAR_FIELD")
-              .add_named_int("TAR_MAT")
-              .build()};
+          .add_named_string("SRC_FIELD")
+          .add_named_int("SRC_MAT")
+          .add_named_string("TAR_FIELD")
+          .add_named_int("TAR_MAT")
+          .build()};
 }
 
 FOUR_C_NAMESPACE_CLOSE

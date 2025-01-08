@@ -64,7 +64,7 @@ namespace NOX
           const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
     }  // namespace Direction
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

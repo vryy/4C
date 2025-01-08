@@ -134,8 +134,8 @@ namespace NOX
         //! Ostream used to print errors
         ::NOX::Utils utils_;
       };  // class NormF
-    }     // namespace StatusTest
-  }       // namespace Nln
+    }  // namespace StatusTest
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

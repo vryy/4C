@@ -320,7 +320,7 @@ void Arteries::Utils::solve_prescribed_terminal_bc(Core::FE::Discretization& act
       FOUR_C_THROW("%s is not defined!", BC.c_str());
       exit(1);
     }
-  }                  // If BC is prescribed at the inlet
+  }  // If BC is prescribed at the inlet
   else if (IO == 1)  // If BC is prescribed at the outlet
   {
     Wfnp = params.get<double>("forward characteristic wave speed");
@@ -721,7 +721,7 @@ void Arteries::Utils::solve_expl_windkessel_bc(Core::FE::Discretization& actdis,
       // finally find evaluate Wb
       Wb = Wf - 8.0 * sqrt(beta / (2.0 * dens * Ao) * sqrt(A));
 
-    }                          // if(wk_type == "R")
+    }  // if(wk_type == "R")
     else if (wk_type == "RC")  // an RC circuit with a peripheral Pressure (Pout)
     {
       FOUR_C_THROW("So far, only the 3 element windkessel model is implimented\n");
@@ -781,7 +781,7 @@ void Arteries::Utils::solve_expl_windkessel_bc(Core::FE::Discretization& actdis,
       // Calculate W2
 
 
-    }                           // if (wk_type == "RC")
+    }  // if (wk_type == "RC")
     else if (wk_type == "RCR")  // The famous 3 element wind kessel model
     {
       // ---------------------------------------------------------------
@@ -915,7 +915,7 @@ void Arteries::Utils::solve_expl_windkessel_bc(Core::FE::Discretization& actdis,
       // finally find evaluate Wb
       Wb = Wf - 8.0 * sqrt(beta / (2.0 * dens * Ao) * sqrt(A));
 
-    }                            // if (wk_type == "RCR")
+    }  // if (wk_type == "RCR")
     else if (wk_type == "RCRL")  // four element windkessel model
     {
       FOUR_C_THROW("So far, only the 3 element windkessel model is implimented\n");

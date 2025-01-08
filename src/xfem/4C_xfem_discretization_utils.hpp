@@ -53,7 +53,7 @@ namespace XFEM
     {
      public:
       /// constructor
-      XFEMDiscretizationBuilder(){/* should stay empty! */};
+      XFEMDiscretizationBuilder() { /* should stay empty! */ };
 
       void setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
           std::shared_ptr<Core::FE::Discretization> dis, int numdof = 4) const;
@@ -160,7 +160,7 @@ namespace XFEM
           const Core::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
           MPI_Comm comm) const;
     };  // class XFEMDiscretizationBuilder
-  }     // namespace Utils
+  }  // namespace Utils
 
   class DiscretizationXWall : public Core::FE::DiscretizationFaces
   {

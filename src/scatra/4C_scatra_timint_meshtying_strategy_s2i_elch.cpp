@@ -507,8 +507,8 @@ void ScaTra::MeshtyingStrategyS2IElch::update() const
                 // update lithium plating variable
                 (*growthn_)[doflid_growth] -= i * integrationfac;
               }  // nodes owned by current processor
-            }    // nodes stored by current processor
-          }      // loop over all nodes
+            }  // nodes stored by current processor
+          }  // loop over all nodes
 
           break;
         }
@@ -520,8 +520,8 @@ void ScaTra::MeshtyingStrategyS2IElch::update() const
           break;
         }
       }  // kinetic models
-    }    // loop over all conditions
-  }      // semi-implicit evaluation of scatra-scatra interface layer growth
+    }  // loop over all conditions
+  }  // semi-implicit evaluation of scatra-scatra interface layer growth
 
   else
     // call base class routine

@@ -196,7 +196,7 @@ void FLD::XFluidStateCreator::create_new_cut_state(
 
   //--------------------------------------------------------------------------------------
   // set the new dofset after cut
-  int maxNumMyReservedDofsperNode = (maxnumdofsets_)*4;
+  int maxNumMyReservedDofsperNode = (maxnumdofsets_) * 4;
 
   // create a new XFEM-dofset
   dofset = std::make_shared<XFEM::XFEMDofSet>(*wizard, maxNumMyReservedDofsperNode, *xdiscret);

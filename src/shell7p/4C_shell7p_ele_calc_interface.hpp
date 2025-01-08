@@ -186,7 +186,7 @@ namespace Discret
        */
       virtual void vis_data(const std::string& name, std::vector<double>& data) = 0;
     };  // class Shell7pEleInterface
-  }     // namespace Elements
+  }  // namespace Elements
 
 }  // namespace Discret
 

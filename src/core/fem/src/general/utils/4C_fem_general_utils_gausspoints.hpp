@@ -116,7 +116,7 @@ namespace Core::FE
     {
       int numpoints = 0;
       for (std::vector<std::shared_ptr<GaussPoints>>::const_iterator i = gp_.begin();
-           i != gp_.end(); ++i)
+          i != gp_.end(); ++i)
       {
         std::shared_ptr<GaussPoints> gp = *i;
         numpoints += gp->num_points();
@@ -153,7 +153,7 @@ namespace Core::FE
     void print() const override
     {
       for (std::vector<std::shared_ptr<GaussPoints>>::const_iterator i = gp_.begin();
-           i != gp_.end(); ++i)
+          i != gp_.end(); ++i)
       {
         std::shared_ptr<GaussPoints> gp = *i;
         gp->print();
@@ -164,7 +164,7 @@ namespace Core::FE
     std::shared_ptr<GaussPoints> find(int& point) const
     {
       for (std::vector<std::shared_ptr<GaussPoints>>::const_iterator i = gp_.begin();
-           i != gp_.end(); ++i)
+          i != gp_.end(); ++i)
       {
         std::shared_ptr<GaussPoints> gp = *i;
         int numpoints = gp->num_points();
@@ -314,7 +314,7 @@ namespace Core::FE
       Core::LinAlg::Matrix<nsd, 1> xi;
 
       for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-           ++iquad)
+          ++iquad)
       {
         Core::LinAlg::Matrix<nsd, 1> eta(iquad.point());
 
@@ -355,7 +355,7 @@ namespace Core::FE
           std::make_shared<Core::FE::CollectedGaussPoints>(intpoints.num_points());
 
       for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-           ++iquad)
+          ++iquad)
       {
         Core::LinAlg::Matrix<nsd, 1> glo(iquad.point());
 

@@ -34,7 +34,7 @@ namespace FLD
     {
      public:
       /// constructor
-      DbcHdgFluid(){};
+      DbcHdgFluid() {};
 
      protected:
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
@@ -58,7 +58,7 @@ namespace FLD
           double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
           const Core::LinAlg::Vector<int>& toggle) const;
     };  // class DbcHDG_Fluid
-  }     // namespace Utils
+  }  // namespace Utils
 
 }  // namespace FLD
 

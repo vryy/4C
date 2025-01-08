@@ -684,7 +684,7 @@ namespace Cut
     {
       double* x = xyze;
       for (std::vector<Node*>::const_iterator i = quad_corners().begin(); i != quad_corners().end();
-           ++i)
+          ++i)
       {
         Node& n = **i;
         n.coordinates(x);
@@ -991,7 +991,7 @@ namespace Cut
   {
    public:
     /// constructor
-    ElementFactory(){};
+    ElementFactory() {};
 
     std::shared_ptr<Element> create_element(Core::FE::CellType elementtype, int eid,
         const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active) const;

@@ -33,8 +33,8 @@ namespace
    * @param[in|out]  eigenpairs  eigenpairs to be sorted w.r.t. reference matrix
    */
   void order_eigenpairs_wrt_reference(
-      const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> &ref_eigenpairs,
-      std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> &eigenpairs)
+      const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>& ref_eigenpairs,
+      std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>& eigenpairs)
   {
     // auxiliaries
     Core::LinAlg::Matrix<3, 1> temp3x1(true);
@@ -130,8 +130,8 @@ namespace
    */
   template <unsigned int loc_dim>
   void align_eigenpairs_of_base_matrix(
-      std::vector<std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>> &spectral_pairs,
-      const std::vector<Core::LinAlg::Matrix<loc_dim, 1>> &ref_locs, const unsigned int &base_ind)
+      std::vector<std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>>& spectral_pairs,
+      const std::vector<Core::LinAlg::Matrix<loc_dim, 1>>& ref_locs, const unsigned int& base_ind)
   {
     // difference vector between the locations of matrices and the location of the determined base
     // matrix
@@ -207,7 +207,7 @@ namespace
         // value
         std::transform(spectral_pairs.begin(), spectral_pairs.end(), max_eigenval.begin(),
             max_eigenval.begin(),
-            [i](const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> &arr,
+            [i](const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>& arr,
                 double curr_val) { return std::max(arr[i].first, curr_val); });
         continue;
       }
@@ -217,7 +217,7 @@ namespace
       {
         // set maximum eigenvalues to the current eigenvalues
         std::transform(spectral_pairs.begin(), spectral_pairs.end(), max_eigenval.begin(),
-            [i](const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> &arr)
+            [i](const std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>& arr)
             { return arr[i].first; });
         continue;
       }
@@ -253,9 +253,9 @@ namespace
 template <unsigned int loc_dim>
 Core::LinAlg::Matrix<3, 3>
 Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
-    const std::vector<Core::LinAlg::Matrix<3, 3>> &ref_matrices,
-    const std::vector<Core::LinAlg::Matrix<loc_dim, 1>> &ref_locs,
-    const Core::LinAlg::Matrix<loc_dim, 1> &interp_loc)
+    const std::vector<Core::LinAlg::Matrix<3, 3>>& ref_matrices,
+    const std::vector<Core::LinAlg::Matrix<loc_dim, 1>>& ref_locs,
+    const Core::LinAlg::Matrix<loc_dim, 1>& interp_loc)
 {
   // declare output variable
   Core::LinAlg::Matrix<3, 3> output(true);
@@ -516,10 +516,10 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
 }
 
 
-void Core::LinAlg::matrix_3x3_polar_decomposition(const Core::LinAlg::Matrix<3, 3> &inp_matrix,
-    Core::LinAlg::Matrix<3, 3> &R_matrix, Core::LinAlg::Matrix<3, 3> &U_matrix,
-    Core::LinAlg::Matrix<3, 3> &eigenval_matrix,
-    std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> &spectral_pairs)
+void Core::LinAlg::matrix_3x3_polar_decomposition(const Core::LinAlg::Matrix<3, 3>& inp_matrix,
+    Core::LinAlg::Matrix<3, 3>& R_matrix, Core::LinAlg::Matrix<3, 3>& U_matrix,
+    Core::LinAlg::Matrix<3, 3>& eigenval_matrix,
+    std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>& spectral_pairs)
 {
   // auxiliaries
   Core::LinAlg::Matrix<3, 3> temp3x3(true);
@@ -570,7 +570,7 @@ void Core::LinAlg::matrix_3x3_polar_decomposition(const Core::LinAlg::Matrix<3, 
 
 
 Core::LinAlg::Matrix<3, 1> Core::LinAlg::calc_rot_vect_from_rot_matrix(
-    const Core::LinAlg::Matrix<3, 3> &rot_matrix)
+    const Core::LinAlg::Matrix<3, 3>& rot_matrix)
 {
   // declare output rotation vector
   Core::LinAlg::Matrix<3, 1> rot_vect(true);
@@ -647,7 +647,7 @@ Core::LinAlg::Matrix<3, 1> Core::LinAlg::calc_rot_vect_from_rot_matrix(
 }
 
 Core::LinAlg::Matrix<3, 3> Core::LinAlg::calc_rot_matrix_from_rot_vect(
-    const Core::LinAlg::Matrix<3, 1> &rot_vect)
+    const Core::LinAlg::Matrix<3, 1>& rot_vect)
 {
   // auxiliaries
   Core::LinAlg::Matrix<3, 3> id3x3(true);
@@ -695,8 +695,8 @@ Core::LinAlg::Matrix<3, 3> Core::LinAlg::calc_rot_matrix_from_rot_vect(
 
 template <>
 Core::LinAlg::Matrix<3, 3> Core::LinAlg::SecondOrderTensorInterpolator<1>::get_interpolated_matrix(
-    const std::vector<Core::LinAlg::Matrix<3, 3>> &ref_matrices,
-    const std::vector<double> &ref_locs, const double interp_loc)
+    const std::vector<Core::LinAlg::Matrix<3, 3>>& ref_matrices,
+    const std::vector<double>& ref_locs, const double interp_loc)
 {
   // auxiliaries
   Core::LinAlg::Matrix<1, 1> temp_matrix;

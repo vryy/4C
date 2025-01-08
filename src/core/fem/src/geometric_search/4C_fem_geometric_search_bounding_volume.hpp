@@ -47,7 +47,7 @@ namespace ArborX::Details
   struct GetKDOPDirections
       : private KDOP_Directions<FourC::Core::GeometricSearch::kdop_dim, 2 * n_directions, float>
   {
-    static KOKKOS_FUNCTION auto const &directions()
+    static KOKKOS_FUNCTION auto const& directions()
     {
       return KDOP_Directions<FourC::Core::GeometricSearch::kdop_dim, 2 * n_directions,
           float>::directions();
@@ -79,7 +79,7 @@ namespace Core::GeometricSearch
           "To use it, enable ArborX during the configure process.");
     }
     inline void extend_boundaries(const double offset) {}
-    inline void add_point(const Core::LinAlg::Matrix<3, 1, double> &point) {}
+    inline void add_point(const Core::LinAlg::Matrix<3, 1, double>& point) {}
 #else
     /*! \brief Constructor initializing the bounding volume corners with numerical limit values.
      */

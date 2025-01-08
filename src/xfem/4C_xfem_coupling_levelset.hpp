@@ -56,7 +56,7 @@ namespace XFEM
 
     void set_cutter_discretization() override;
 
-    void set_condition_specific_parameters() override{};
+    void set_condition_specific_parameters() override {};
 
     void prepare_cutter_output() override;
 
@@ -99,7 +99,7 @@ namespace XFEM
     XFEM::CouplingBase::LevelSetBooleanType get_boolean_combination() { return ls_boolean_type_; }
 
     //! export row vectors storing geometric quantities to col vectors
-    virtual void export_geometric_quantities(){};
+    virtual void export_geometric_quantities() {};
 
 
    private:

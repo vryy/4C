@@ -157,7 +157,7 @@ void PostVtuWriterNode::write_geo()
     currentout_ << " format=\"ascii\">\n";
     int counter = 1;
     for (std::vector<double>::const_iterator it = coordinates.begin(); it != coordinates.end();
-         ++it)
+        ++it)
     {
       currentout_ << std::setprecision(15) << std::scientific << *it << " ";
       // dimension is hard coded to three, thus
@@ -193,7 +193,7 @@ void PostVtuWriterNode::write_geo()
   else
   {
     for (std::vector<int32_t>::const_iterator it = connectivity.begin(); it != connectivity.end();
-         ++it)
+        ++it)
       currentout_ << *it << " ";
   }
 

@@ -363,7 +363,7 @@ namespace Discret
         return (dyplus_duplus - df_duplus);
       }
     };  // end class fluid3boundaryImpl
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

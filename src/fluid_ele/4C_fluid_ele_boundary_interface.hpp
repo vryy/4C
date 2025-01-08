@@ -40,7 +40,7 @@ namespace Discret
     {
      public:
       /// Empty constructor
-      FluidBoundaryInterface(){};
+      FluidBoundaryInterface() {};
 
       /// Empty destructor
       virtual ~FluidBoundaryInterface() = default;

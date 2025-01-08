@@ -46,7 +46,7 @@ namespace Cut
     /// @}
    protected:
     /// empty constructor
-    BoundingBox() : empty_(true){};
+    BoundingBox() : empty_(true) {};
 
     /// Initialize the BoundingBox by using information of a node
     void init(Node& node);
@@ -153,7 +153,7 @@ namespace Cut
   {
    public:
     /// empty constructor
-    ConcreteBoundingBox() : BoundingBox(){};
+    ConcreteBoundingBox() : BoundingBox() {};
 
     /** add a new point under consideration of the problem dimension. If a
      *  2-dimensional problem is observed, we ignore the z-coordinate and keep

@@ -78,8 +78,8 @@ namespace NOX
         NOX::Nln::CONSTRAINT::PrecInterfaceMap i_constr_prec_;
 
       };  // class LinearSystem
-    }     // namespace MeshTying
-  }       // namespace Nln
+    }  // namespace MeshTying
+  }  // namespace Nln
 }  // namespace NOX
 
 

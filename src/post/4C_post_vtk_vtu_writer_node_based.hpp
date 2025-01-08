@@ -65,7 +65,7 @@ class PostVtuWriterNode : public PostVtuWriter
   const std::vector<std::string>& writer_p_piece_tags() const override;
 
   //! Give every writer a chance to do preparations before writing
-  void writer_prep_timestep() override{};
+  void writer_prep_timestep() override {};
 
   //! Return the parallel file suffix including the dot for this file type
   const std::string& writer_p_suffix() const override;

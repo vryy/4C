@@ -33,7 +33,7 @@ Core::DOFSets::DofSetBase::~DofSetBase()
 {
   // disconnect from proxies
   for (std::list<DofSetInterface*>::iterator i = registered_dofsets_.begin();
-       i != registered_dofsets_.end(); ++i)
+      i != registered_dofsets_.end(); ++i)
   {
     (*i)->disconnect(this);
   }
@@ -81,7 +81,7 @@ int Core::DOFSets::DofSetBase::max_gi_din_list(MPI_Comm comm) const
 {
   int count = -1;
   for (std::list<DofSetInterface*>::const_iterator i = static_dofsets_.begin();
-       i != static_dofsets_.end(); ++i)
+      i != static_dofsets_.end(); ++i)
   {
     if (*i == this) break;
 
@@ -103,7 +103,7 @@ void Core::DOFSets::DofSetBase::print_all_dofsets(MPI_Comm comm) const
     std::vector<int> min;
     std::vector<int> max;
     for (std::list<DofSetInterface*>::const_iterator i = static_dofsets_.begin();
-         i != static_dofsets_.end(); ++i)
+        i != static_dofsets_.end(); ++i)
     {
       min.push_back((*i)->min_all_gid());
       max.push_back((*i)->max_all_gid());
@@ -194,7 +194,7 @@ void Core::DOFSets::DofSetBase::unregister(DofSetInterface* dofset)
 void Core::DOFSets::DofSetBase::notify_assigned()
 {
   for (std::list<DofSetInterface*>::iterator i = registered_dofsets_.begin();
-       i != registered_dofsets_.end(); ++i)
+      i != registered_dofsets_.end(); ++i)
     (*i)->notify_assigned();
 }
 
@@ -204,7 +204,7 @@ void Core::DOFSets::DofSetBase::notify_assigned()
 void Core::DOFSets::DofSetBase::notify_reset()
 {
   for (std::list<DofSetInterface*>::iterator i = registered_dofsets_.begin();
-       i != registered_dofsets_.end(); ++i)
+      i != registered_dofsets_.end(); ++i)
     (*i)->notify_reset();
 }
 

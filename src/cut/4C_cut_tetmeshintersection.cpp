@@ -140,7 +140,7 @@ Cut::TetMeshIntersection::TetMeshIntersection(Options& options, Element* element
     {
       const std::vector<std::vector<Point*>>& triangulation = f->triangulation();
       for (std::vector<std::vector<Point*>>::const_iterator i = triangulation.begin();
-           i != triangulation.end(); ++i)
+          i != triangulation.end(); ++i)
       {
         const std::vector<Point*>& tri = *i;
         if (tri.size() != 3) FOUR_C_THROW("tri3 expected");
@@ -208,7 +208,7 @@ void Cut::TetMeshIntersection::find_edge_cuts()
   plain_edge_set cut_edges;
   const std::map<plain_int_set, std::shared_ptr<Edge>>& c_edges = mesh_.edges();
   for (std::map<plain_int_set, std::shared_ptr<Edge>>::const_iterator i = c_edges.begin();
-       i != c_edges.end(); ++i)
+      i != c_edges.end(); ++i)
   {
     Edge* e = &*i->second;
     cut_edges.insert(e);
@@ -344,7 +344,7 @@ void Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, Element* elem
       // match parent and child volumes at cut surface
 
       for (std::map<Side*, std::vector<Facet*>>::iterator i = facetsonsurface.begin();
-           i != facetsonsurface.end(); ++i)
+          i != facetsonsurface.end(); ++i)
       {
         Side* child_side = i->first;
         std::vector<Facet*>& parent_facets = i->second;
@@ -359,7 +359,7 @@ void Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, Element* elem
           std::vector<ChildCell*> parent_cell_info;
           parent_cell_info.reserve(2);
           for (plain_volumecell_set::const_iterator i = parent_cells.begin();
-               i != parent_cells.end(); ++i)
+              i != parent_cells.end(); ++i)
           {
             VolumeCell* vc = *i;
 
@@ -379,7 +379,7 @@ void Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, Element* elem
             {
               const std::vector<Facet*>& child_facets = child_side->facets();
               for (std::vector<Facet*>::const_iterator i = child_facets.begin();
-                   i != child_facets.end(); ++i)
+                  i != child_facets.end(); ++i)
               {
                 Facet* f = *i;
                 const plain_volumecell_set& child_cells = f->cells();
@@ -449,7 +449,7 @@ void Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, Element* elem
               //               }
 
               for (std::vector<Facet*>::const_iterator i = child_facets.begin();
-                   i != child_facets.end(); ++i)
+                  i != child_facets.end(); ++i)
               {
                 Facet* f = *i;
                 const plain_volumecell_set& child_cells = f->cells();
@@ -578,7 +578,7 @@ void Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, Element* elem
 
       const std::list<std::shared_ptr<VolumeCell>>& all_child_cells = mesh_.volume_cells();
       for (std::list<std::shared_ptr<VolumeCell>>::const_iterator i = all_child_cells.begin();
-           i != all_child_cells.end(); ++i)
+          i != all_child_cells.end(); ++i)
       {
         VolumeCell* child_vc = &**i;
         if (done_child_cells.count(child_vc) == 0)
@@ -617,7 +617,7 @@ void Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, Element* elem
       bool found = false;
       const std::list<std::shared_ptr<VolumeCell>>& all_child_cells = mesh_.volume_cells();
       for (std::list<std::shared_ptr<VolumeCell>>::const_iterator i = all_child_cells.begin();
-           i != all_child_cells.end(); ++i)
+          i != all_child_cells.end(); ++i)
       {
         VolumeCell* child_vc = &**i;
         if (done_child_cells.count(child_vc) == 0)
@@ -632,7 +632,7 @@ void Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, Element* elem
         // Done. There are a few empty parent cells. We do not mind.
         nonnodecells = 0;
         for (std::map<VolumeCell*, ChildCell>::iterator i = cellmap.begin(); i != cellmap.end();
-             ++i)
+            ++i)
         {
           ChildCell& cc = i->second;
           cc.done_ = true;
@@ -719,7 +719,7 @@ void Cut::TetMeshIntersection::seed_cells(Mesh& parent_mesh,
   // seed cells with unique point
 
   for (std::map<Point*, std::vector<VolumeCell*>>::iterator i = parent_point_cells.begin();
-       i != parent_point_cells.end(); ++i)
+      i != parent_point_cells.end(); ++i)
   {
     Point* p = i->first;
     std::vector<VolumeCell*>& vcs = i->second;
@@ -748,7 +748,7 @@ void Cut::TetMeshIntersection::seed_cells(Mesh& parent_mesh,
 
   const std::list<std::shared_ptr<VolumeCell>>& all_child_cells = mesh_.volume_cells();
   for (std::list<std::shared_ptr<VolumeCell>>::const_iterator i = all_child_cells.begin();
-       i != all_child_cells.end(); ++i)
+      i != all_child_cells.end(); ++i)
   {
     VolumeCell* child_vc = &**i;
     if (done_child_cells.count(child_vc) == 0)
@@ -900,7 +900,7 @@ void Cut::TetMeshIntersection::fill(Mesh& parent_mesh, Element* element,
           if (not child_facet->has_holes() and not child_facet->is_triangulated())
           {
             for (std::map<Side*, std::vector<Side*>>::iterator i = side_parent_to_child_.begin();
-                 i != side_parent_to_child_.end(); ++i)
+                i != side_parent_to_child_.end(); ++i)
             {
               Side* parent_side = i->first;
               std::vector<Side*>& children = i->second;
@@ -1041,7 +1041,7 @@ void Cut::TetMeshIntersection::fill(VolumeCell* parent_cell, ChildCell& childcel
 
       for (std::map<std::pair<Point*, Point*>, std::vector<Facet*>>::iterator i =
                facet_mesh.facet_mesh_.begin();
-           i != facet_mesh.facet_mesh_.end(); ++i)
+          i != facet_mesh.facet_mesh_.end(); ++i)
       {
         const std::pair<Point*, Point*>& line = i->first;
         const std::vector<Facet*>& facets = i->second;

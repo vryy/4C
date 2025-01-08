@@ -37,7 +37,7 @@ namespace Core::FE
     unsigned int degree_;
     bool completeSpace_;
 
-    bool operator<(const PolynomialSpaceParams &otherparams) const
+    bool operator<(const PolynomialSpaceParams& otherparams) const
     {
       return std::tie(distype_, degree_, completeSpace_) <
              std::tie(otherparams.distype_, otherparams.degree_, otherparams.completeSpace_);
@@ -53,7 +53,7 @@ namespace Core::FE
     /*!
      \brief Constructor.
      */
-    LagrangePolynomial(const std::vector<double> &supportPoints, const double nodePoint)
+    LagrangePolynomial(const std::vector<double>& supportPoints, const double nodePoint)
         : support_points_(supportPoints), node_point_(nodePoint)
     {
       long double weight = 1.;
@@ -67,7 +67,7 @@ namespace Core::FE
     /*!
      \brief Copy constructor
      */
-    LagrangePolynomial(const LagrangePolynomial &other)
+    LagrangePolynomial(const LagrangePolynomial& other)
         : support_points_(other.support_points_),
           node_point_(other.node_point_),
           weight_(other.weight_)
@@ -77,7 +77,7 @@ namespace Core::FE
     /*!
      \brief Assignment operator
      */
-    LagrangePolynomial &operator=(const LagrangePolynomial &other)
+    LagrangePolynomial& operator=(const LagrangePolynomial& other)
     {
       support_points_ = other.support_points_;
       node_point_ = other.node_point_;
@@ -100,7 +100,7 @@ namespace Core::FE
             the length of values) on the given point
      */
     template <typename M>
-    void evaluate(const double point, M &derivatives) const
+    void evaluate(const double point, M& derivatives) const
     {
       FOUR_C_ASSERT(derivatives.num_cols() == 1, "Only column vectors supported");
       if (derivatives.num_rows() == 1)
@@ -154,12 +154,12 @@ namespace Core::FE
     /*!
      \brief Copy constructor
      */
-    Polynomial(const Polynomial &other) : coefficients_(other.coefficients_) {}
+    Polynomial(const Polynomial& other) : coefficients_(other.coefficients_) {}
 
     /*!
     \brief Assignment operator
     */
-    Polynomial &operator=(const Polynomial &other)
+    Polynomial& operator=(const Polynomial& other)
     {
       coefficients_ = other.coefficients_;
       return *this;
@@ -172,7 +172,7 @@ namespace Core::FE
     {
       // classical Horner's method
       return std::accumulate(coefficients_.rbegin(), coefficients_.rend(), 0.0,
-          [point](const double &acc, const double &coeff) { return acc * point + coeff; });
+          [point](const double& acc, const double& coeff) { return acc * point + coeff; });
     }
 
     /*!
@@ -180,7 +180,7 @@ namespace Core::FE
          the length of values) on the given point
      */
     template <typename M>
-    void evaluate(const double point, M &derivatives) const
+    void evaluate(const double point, M& derivatives) const
     {
       FOUR_C_ASSERT(derivatives.num_cols() == 1, "Only column vectors supported");
       if (derivatives.num_rows() == 1)
@@ -282,25 +282,25 @@ namespace Core::FE
     /*
      \brief Evaluates the values of all polynomials on the given point
      */
-    virtual void evaluate(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseVector &values) const = 0;
+    virtual void evaluate(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseVector& values) const = 0;
 
     /*
      \brief Evaluates the values of all polynomials on the given point
      */
-    virtual void evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseMatrix &derivatives) const = 0;
+    virtual void evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseMatrix& derivatives) const = 0;
 
     /*
      \brief Evaluates the first derivative of all polynomials on the given point
      */
-    virtual void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseMatrix &derivatives) const = 0;
+    virtual void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseMatrix& derivatives) const = 0;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void fill_unit_node_points(Core::LinAlg::SerialDenseMatrix &matrix) const = 0;
+    virtual void fill_unit_node_points(Core::LinAlg::SerialDenseMatrix& matrix) const = 0;
   };
 
 
@@ -349,26 +349,26 @@ namespace Core::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void evaluate(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseVector &values) const override;
+    void evaluate(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseVector& values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    void evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
+    void evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseMatrix& derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
+    void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseMatrix& derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
     template <typename M>
-    void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point, M &derivatives) const
+    void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1>& point, M& derivatives) const
     {
     }
 
@@ -405,7 +405,7 @@ namespace Core::FE
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    void fill_unit_node_points(Core::LinAlg::SerialDenseMatrix &matrix) const override;
+    void fill_unit_node_points(Core::LinAlg::SerialDenseMatrix& matrix) const override;
 
    private:
     std::vector<POLY> poly_space1d_;
@@ -460,25 +460,25 @@ namespace Core::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void evaluate(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseVector &values) const override;
+    void evaluate(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseVector& values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    void evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
+    void evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseMatrix& derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
+    void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseMatrix& derivatives) const override;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    void fill_unit_node_points(Core::LinAlg::SerialDenseMatrix &matrix) const override;
+    void fill_unit_node_points(Core::LinAlg::SerialDenseMatrix& matrix) const override;
 
    private:
     std::vector<POLY> poly_space1d_;
@@ -579,25 +579,25 @@ namespace Core::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void evaluate(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseVector &values) const override;
+    void evaluate(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseVector& values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    void evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
+    void evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseMatrix& derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
+    void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseMatrix& derivatives) const override;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    void fill_unit_node_points(Core::LinAlg::SerialDenseMatrix &matrix) const override;
+    void fill_unit_node_points(Core::LinAlg::SerialDenseMatrix& matrix) const override;
 
    private:
     void fill_fekete_points(const unsigned int degree);
@@ -629,11 +629,11 @@ namespace Core::FE
     PolynomialSpace(
         const Core::FE::CellType distype, const unsigned int degree, const bool completeSpace)
         : polyspace_((Core::FE::get_number_of_element_faces(distype) == 1 + nsd && nsd > 1)
-                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd>*>(
                                new Core::FE::LagrangeBasisTet<nsd>(degree))
-                     : completeSpace ? static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                     : completeSpace ? static_cast<Core::FE::PolynomialSpaceBase<nsd>*>(
                                            new Core::FE::LegendreBasis<nsd>(degree))
-                                     : static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                                     : static_cast<Core::FE::PolynomialSpaceBase<nsd>*>(
                                            new Core::FE::LagrangeBasis<nsd>(degree)))
     {
       if (nsd != Core::FE::get_dimension(distype))
@@ -642,12 +642,12 @@ namespace Core::FE
 
     PolynomialSpace(PolynomialSpaceParams params)
         : polyspace_((Core::FE::get_number_of_element_faces(params.distype_) == 1 + nsd && nsd > 1)
-                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd>*>(
                                new Core::FE::LagrangeBasisTet<nsd>(params.degree_))
                      : params.completeSpace_
-                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd>*>(
                                new Core::FE::LegendreBasis<nsd>(params.degree_))
-                         : static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                         : static_cast<Core::FE::PolynomialSpaceBase<nsd>*>(
                                new Core::FE::LagrangeBasis<nsd>(params.degree_)))
     {
     }
@@ -661,7 +661,7 @@ namespace Core::FE
    \brief Evaluates the values of all polynomials on the given point
      */
     void evaluate(
-        const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseVector &values) const
+        const Core::LinAlg::Matrix<nsd, 1>& point, Core::LinAlg::SerialDenseVector& values) const
     {
       polyspace_->evaluate(point, values);
     }
@@ -669,8 +669,8 @@ namespace Core::FE
     /*
    \brief Evaluates the values of all polynomials on the given point
      */
-    void evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseMatrix &derivatives) const
+    void evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseMatrix& derivatives) const
     {
       polyspace_->evaluate_deriv1(point, derivatives);
     }
@@ -678,8 +678,8 @@ namespace Core::FE
     /*
    \brief Evaluates the first derivative of all polynomials on the given point
      */
-    void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point,
-        Core::LinAlg::SerialDenseMatrix &derivatives) const
+    void evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1>& point,
+        Core::LinAlg::SerialDenseMatrix& derivatives) const
     {
       polyspace_->evaluate_deriv2(point, derivatives);
     }
@@ -693,7 +693,7 @@ namespace Core::FE
 
    The output matrix is resized to the correct dimension.
      */
-    void fill_unit_node_points(Core::LinAlg::SerialDenseMatrix &matrix) const
+    void fill_unit_node_points(Core::LinAlg::SerialDenseMatrix& matrix) const
     {
       polyspace_->fill_unit_node_points(matrix);
     }
@@ -712,7 +712,7 @@ namespace Core::FE
   class PolynomialSpaceCache
   {
    public:
-    static PolynomialSpaceCache<nsd> &instance();
+    static PolynomialSpaceCache<nsd>& instance();
 
     std::shared_ptr<PolynomialSpace<nsd>> create(PolynomialSpaceParams params);
 

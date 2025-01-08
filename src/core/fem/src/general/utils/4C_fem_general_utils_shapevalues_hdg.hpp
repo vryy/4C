@@ -36,7 +36,7 @@ namespace Core::FE
     }
 
     // for analog usage as a pure matrix
-    double &operator()(const int row, const int col) { return matrix_(row, col); }
+    double& operator()(const int row, const int col) { return matrix_(row, col); }
 
     // for analog usage as a pure matrix
     double operator()(const int row, const int col) const { return matrix_(row, col); }
@@ -119,7 +119,7 @@ namespace Core::FE
     \brief Compute element-dependent data, like gradients in real cell, integration weights, for
     element dofs
     */
-    void evaluate(const Core::Elements::Element &ele, const std::vector<double> &aleDis = {});
+    void evaluate(const Core::Elements::Element& ele, const std::vector<double>& aleDis = {});
 
     /// polynomial degree
     unsigned int degree_;
@@ -201,13 +201,13 @@ namespace Core::FE
     \brief Compute element-dependent data on faces, like integration weights, normal vectors,
     correctly oriented trace variables
     */
-    void evaluate_face(const Core::Elements::Element &ele, const unsigned int face,
-        const std::vector<double> &aleDis = {});
+    void evaluate_face(const Core::Elements::Element& ele, const unsigned int face,
+        const std::vector<double>& aleDis = {});
 
     /*!
     \brief Consider the orientation of faces for face degrees of freedom
      */
-    void adjust_face_orientation(const Core::Elements::Element &ele, const unsigned int face);
+    void adjust_face_orientation(const Core::Elements::Element& ele, const unsigned int face);
 
     /// Parameters underlying this structure, necessary for evaluating element basis functions on
     /// faces
@@ -275,7 +275,7 @@ namespace Core::FE
 
     \Author: Berardocco
      */
-    void compute_face_reference_system(const Core::Elements::Element &ele, const unsigned int face);
+    void compute_face_reference_system(const Core::Elements::Element& ele, const unsigned int face);
   };
 
   /*!
@@ -288,7 +288,7 @@ namespace Core::FE
   {
    public:
     /// return instance
-    static ShapeValuesFaceCache<distype> &instance();
+    static ShapeValuesFaceCache<distype>& instance();
 
     /// give pointer to corresponding shape values face
     std::shared_ptr<ShapeValuesFace<distype>> create(ShapeValuesFaceParams params);
@@ -310,7 +310,7 @@ namespace Core::FE
   {
    public:
     /// return instance
-    static ShapeValuesInteriorOnFaceCache &instance();
+    static ShapeValuesInteriorOnFaceCache& instance();
 
     /// give pointer to corresponding shape values face
     std::shared_ptr<ShapeValuesInteriorOnFace> create(ShapeValuesFaceParams params);

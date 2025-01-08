@@ -28,7 +28,7 @@ namespace GEOMETRYPAIR
      *
      * \param input_parameter_list (in) Parameter list with the geometry evaluation parameters.
      */
-    GeometryEvaluationDataBase(const Teuchos::ParameterList& input_parameter_list){};
+    GeometryEvaluationDataBase(const Teuchos::ParameterList& input_parameter_list) {};
 
     /**
      * \brief Destructor.
@@ -38,7 +38,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Clear data in this evaluation container.
      */
-    virtual void clear(){};
+    virtual void clear() {};
   };
 }  // namespace GEOMETRYPAIR
 

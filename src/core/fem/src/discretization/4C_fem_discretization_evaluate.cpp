@@ -601,10 +601,10 @@ void Core::FE::Discretization::evaluate_scalars(
             // update result vector on single processor
             cpuscalars += elescalars;
           }  // if(element.Owner() == Core::Communication::my_mpi_rank(Comm()))
-        }    // loop over elements
-      }      // if(condid == -1 or condid == condition.get<int>("ConditionID"))
-    }        // if(conditionpair->first == condstring)
-  }          // loop over conditions
+        }  // loop over elements
+      }  // if(condid == -1 or condid == condition.get<int>("ConditionID"))
+    }  // if(conditionpair->first == condstring)
+  }  // loop over conditions
 
   // communicate results across all processors
   Core::Communication::sum_all(cpuscalars.values(), scalars.values(), numscalars, get_comm());

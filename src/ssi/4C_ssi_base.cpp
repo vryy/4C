@@ -154,8 +154,7 @@ void SSI::SSIBase::setup()
       temperature_vector_ = std::make_shared<Core::LinAlg::Vector<double>>(
           *Global::Problem::instance()->get_dis("structure")->dof_row_map(2), true);
 
-      temperature_vector_->PutScalar(
-          Global::Problem::instance()
+      temperature_vector_->PutScalar(Global::Problem::instance()
               ->function_by_id<Core::Utils::FunctionOfTime>(temperature_funct_num_ - 1)
               .evaluate(time()));
 

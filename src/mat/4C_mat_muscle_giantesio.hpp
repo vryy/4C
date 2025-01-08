@@ -96,7 +96,7 @@ namespace Mat
       //@}
 
     };  // end class Muscle_Giantesio
-  }     // end namespace PAR
+  }  // end namespace PAR
 
 
   class MuscleGiantesioType : public Core::Communication::ParObjectType

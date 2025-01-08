@@ -1468,7 +1468,7 @@ void XFEM::MeshCouplingNavierSlip::set_condition_specific_parameters()
     bool force_tangential = (cond->parameters().get<int>("FORCE_ONLY_TANG_VEL") == 1);
 
     if (!sliplength_map_.insert(std::make_pair(cond_int, std::make_pair(sliplength, slip_bool)))
-             .second)
+            .second)
       FOUR_C_THROW("ID already existing! For sliplength_map_.");
 
     if (!force_tangvel_map_.insert(std::make_pair(cond_int, force_tangential)).second)
@@ -1804,7 +1804,7 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
     bool slip_bool = (cond->parameters().get<int>("FUNCT") < 1);
 
     if (!sliplength_map_.insert(std::make_pair(cond_int, std::make_pair(sliplength, slip_bool)))
-             .second)
+            .second)
       FOUR_C_THROW("ID already existing! For sliplength_map_.");
 
     Inpar::XFEM::InterfaceLaw interfacelaw =
@@ -2345,7 +2345,7 @@ void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(Core::Elements::El
           };
         }
         else if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(coupl_ele);
-                 solid_ele != nullptr)
+            solid_ele != nullptr)
         {
           return [&, solid_ele](const Core::LinAlg::Matrix<NUMDIM_SOH8, 1>& dir,
                      double& cauchy_n_dir, Core::LinAlg::SerialDenseMatrix& d_cauchy_d_d,

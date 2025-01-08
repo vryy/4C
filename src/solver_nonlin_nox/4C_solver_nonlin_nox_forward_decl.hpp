@@ -46,7 +46,7 @@ namespace NOX
       class Preconditioner;
       class Required;
     }  // namespace Interface
-  }    // namespace Epetra
+  }  // namespace Epetra
   namespace LineSearch
   {
     class Generic;

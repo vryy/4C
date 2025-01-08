@@ -139,7 +139,7 @@ void EnsightWriter::write_files(PostFilterBase& filter)
     int setcounter = 0;
     int allresulttimeset = 0;
     for (std::map<std::string, std::vector<double>>::const_iterator entry = timesetmap_.begin();
-         entry != timesetmap_.end(); ++entry)
+        entry != timesetmap_.end(); ++entry)
     {
       std::string key = entry->first;
       if ((entry->second).size() == numsoltimes)
@@ -162,7 +162,7 @@ void EnsightWriter::write_files(PostFilterBase& filter)
     // Paraview wants the geo file to be fileset number one
     setcounter = 1;
     for (std::map<std::string, std::vector<int>>::const_iterator entry = filesetmap_.begin();
-         entry != filesetmap_.end(); ++entry)
+        entry != filesetmap_.end(); ++entry)
     {
       std::string key = entry->first;
       if (entry->first == "geo")
@@ -611,7 +611,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
 
   // now we start the communication
   for (unsigned int pid = 0;
-       pid < static_cast<unsigned int>(Core::Communication::num_mpi_ranks(dis.get_comm())); ++pid)
+      pid < static_cast<unsigned int>(Core::Communication::num_mpi_ranks(dis.get_comm())); ++pid)
   {
     MPI_Request request;
     int tag = 0;
@@ -820,7 +820,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
 
     // now we start the communication
     for (unsigned int pid = 0;
-         pid < static_cast<unsigned int>(Core::Communication::num_mpi_ranks(dis.get_comm())); ++pid)
+        pid < static_cast<unsigned int>(Core::Communication::num_mpi_ranks(dis.get_comm())); ++pid)
     {
       MPI_Request request;
       int tag = 0;
@@ -870,7 +870,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
       }  // end unpack
 
     }  // for pid
-  }    // for iter over type
+  }  // for iter over type
 
   // note: this map is only filled on proc 0 !!!!
   return globaleleGidPerDisType;
@@ -1622,7 +1622,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
       for (int idf = 0; idf < numdf; ++idf)
       {
         for (int inode = 0; inode < finalnumnode;
-             inode++)  // inode == lid of node because we use proc0map_
+            inode++)  // inode == lid of node because we use proc0map_
         {
           // local storage position of desired dof gid
           const int doflid = inode + (idf * numnp);
@@ -1764,7 +1764,7 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file,
         Core::LinAlg::Vector<double> column((data_proc0)(mycols[idf]));
 
         for (int inode = 0; inode < finalnumnode;
-             inode++)  // inode == lid of node because we use proc0map_
+            inode++)  // inode == lid of node because we use proc0map_
         {
           write(file, static_cast<float>((column)[inode]));
         }
@@ -1899,7 +1899,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
       for (int idof = 0; idof < numdof; ++idof)
       {
         for (int ielem = 0; ielem < numelepertype;
-             ielem++)  // inode == lid of node because we use proc0map_
+            ielem++)  // inode == lid of node because we use proc0map_
         {
           // local storage position of desired dof gid
           const int doflid = ielem + (idof * numglobelem);

@@ -436,7 +436,7 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
           std::stringstream stringID;
           stringID << "_" << ID;
           for (std::map<std::string, double>::iterator itr = map3D->begin(); itr != map3D->end();
-               itr++)
+              itr++)
           {
             std::string VariableWithId = itr->first;
             size_t found;
@@ -673,7 +673,7 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
       }  // END of if there is no BC but the node still is at the terminal
 
     }  // END of if node is available on this processor
-  }    // End of node i has a condition
+  }  // End of node i has a condition
 }
 
 
@@ -934,7 +934,7 @@ void Discret::Elements::AcinusImpl<distype>::get_coupled_values(RedAcinus* ele,
         (*map1D)[returnedBCwithId.str()] = BC3d;
       }
     }  // END of if node is available on this processor
-  }    // End of node i has a condition
+  }  // End of node i has a condition
 }
 
 FOUR_C_NAMESPACE_CLOSE

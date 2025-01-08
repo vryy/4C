@@ -81,7 +81,7 @@ namespace Mat
       //@}
 
     };  // end class MuscleCombo
-  }     // end namespace PAR
+  }  // end namespace PAR
 
 
   class MuscleComboType : public Core::Communication::ParObjectType

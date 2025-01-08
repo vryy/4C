@@ -517,7 +517,7 @@ void EXODUS::correct_yz_plane_for_periodic_boundary_conditions(
 
       // loop over all master nodes
       for (std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
-           m_node_id != master_nodeset_ids.end(); m_node_id++)
+          m_node_id != master_nodeset_ids.end(); m_node_id++)
       {
         // get master node coordinates
         std::vector<double> m_coord = mesh.get_node(*m_node_id);
@@ -527,7 +527,7 @@ void EXODUS::correct_yz_plane_for_periodic_boundary_conditions(
         int count_slavenodes = 0;
         // loop over all slave nodes and find matching node
         for (std::set<int>::const_iterator s_node_id = slave_nodeset_ids.begin();
-             s_node_id != slave_nodeset_ids.end(); s_node_id++)
+            s_node_id != slave_nodeset_ids.end(); s_node_id++)
         {
           count_slavenodes++;
           // get master node coordinates
@@ -553,7 +553,7 @@ void EXODUS::correct_yz_plane_for_periodic_boundary_conditions(
             break;
           }
         }  // loop all slave nodes
-      }    // loop all master nodes
+      }  // loop all master nodes
       if (mesh.get_node_set(master_nodeset_id).get_num_nodes() !=
           mesh.get_node_set(slave_nodeset_id).get_num_nodes())
       {
@@ -655,7 +655,7 @@ void EXODUS::correct_xz_plane_for_periodic_boundary_conditions(
 
       // loop over all master nodes
       for (std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
-           m_node_id != master_nodeset_ids.end(); m_node_id++)
+          m_node_id != master_nodeset_ids.end(); m_node_id++)
       {
         // get master node coordinates
         std::vector<double> m_coord = mesh.get_node(*m_node_id);
@@ -665,7 +665,7 @@ void EXODUS::correct_xz_plane_for_periodic_boundary_conditions(
         int count_slavenodes = 0;
         // loop over all slave nodes and find matching node
         for (std::set<int>::const_iterator s_node_id = slave_nodeset_ids.begin();
-             s_node_id != slave_nodeset_ids.end(); s_node_id++)
+            s_node_id != slave_nodeset_ids.end(); s_node_id++)
         {
           count_slavenodes++;
           // get master node coordinates
@@ -691,7 +691,7 @@ void EXODUS::correct_xz_plane_for_periodic_boundary_conditions(
             break;
           }
         }  // loop all slave nodes
-      }    // loop all master nodes
+      }  // loop all master nodes
       if (mesh.get_node_set(master_nodeset_id).get_num_nodes() !=
           mesh.get_node_set(slave_nodeset_id).get_num_nodes())
       {
@@ -792,7 +792,7 @@ void EXODUS::correct_xy_plane_for_periodic_boundary_conditions(
 
       // loop over all master nodes
       for (std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
-           m_node_id != master_nodeset_ids.end(); m_node_id++)
+          m_node_id != master_nodeset_ids.end(); m_node_id++)
       {
         // get master node coordinates
         std::vector<double> m_coord = mesh.get_node(*m_node_id);
@@ -802,7 +802,7 @@ void EXODUS::correct_xy_plane_for_periodic_boundary_conditions(
         int count_slavenodes = 0;
         // loop over all slave nodes and find matching node
         for (std::set<int>::const_iterator s_node_id = slave_nodeset_ids.begin();
-             s_node_id != slave_nodeset_ids.end(); s_node_id++)
+            s_node_id != slave_nodeset_ids.end(); s_node_id++)
         {
           count_slavenodes++;
           // get master node coordinates
@@ -828,7 +828,7 @@ void EXODUS::correct_xy_plane_for_periodic_boundary_conditions(
             break;
           }
         }  // loop all slave nodes
-      }    // loop all master nodes
+      }  // loop all master nodes
       if (mesh.get_node_set(master_nodeset_id).get_num_nodes() !=
           mesh.get_node_set(slave_nodeset_id).get_num_nodes())
       {

@@ -38,8 +38,8 @@ namespace Solid
         void set_full_newton_params();
 
       };  // class FullNewton
-    }     // namespace SOLVER
-  }       // namespace Nln
+    }  // namespace SOLVER
+  }  // namespace Nln
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

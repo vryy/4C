@@ -669,7 +669,7 @@ namespace Discret
           // find the distance
           int count = 0;
           for (std::map<int, std::vector<int>>::iterator iter = p_lines_nodes.begin();
-               iter != p_lines_nodes.end(); iter++)
+              iter != p_lines_nodes.end(); iter++)
           {
             std::vector<int>& nodesofline = iter->second;
             for (int isd = 0; isd < nsd_; isd++)
@@ -686,7 +686,7 @@ namespace Discret
           // find the distance
           int count = 0;
           for (std::map<int, std::vector<int>>::iterator iter = p_lines_nodes.begin();
-               iter != p_lines_nodes.end(); iter++)
+              iter != p_lines_nodes.end(); iter++)
           {
             std::vector<int>& nodesofline = iter->second;
             for (int isd = 0; isd < nsd_; isd++)

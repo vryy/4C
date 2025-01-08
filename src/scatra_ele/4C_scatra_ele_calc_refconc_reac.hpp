@@ -106,9 +106,7 @@ namespace Discret
 
       // add nodal displacements to point coordinates
       void update_node_coordinates() override
-      { /*nothing to to since we want reference coordinates*/
-        return;
-      };
+      { /*nothing to to since we want reference coordinates*/ return; };
 
      private:
       /// determinante of deformation gradient

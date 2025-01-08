@@ -67,7 +67,7 @@ Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::instance(
   {
     for (typename std::map<std::string, ScaTraEleCalcHDG<distype, probdim>*>::iterator i =
              instances.begin();
-         i != instances.end(); ++i)
+        i != instances.end(); ++i)
     {
       delete i->second;
       i->second = nullptr;
@@ -698,7 +698,7 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute
         hdgele->Gmat_(indexstart + p, q) = tau * tempE;
       }
     }  // for (unsigned int q=0; q<hdgele->ndofs_; ++q)
-  }    // for (unsigned int p=0; p<nfdofs_; ++p)
+  }  // for (unsigned int p=0; p<nfdofs_; ++p)
 
   // H
   // loop over number of shape functions (scalar dofs per face)
@@ -723,7 +723,7 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute
       }
       hdgele->Hmat_(indexstart + p, indexstart + q) = tempH - tau * tempG;
     }  // for (unsigned int q=0; q<nfdofs_; ++q)
-  }    // for (unsigned int p=0; p<nfdofs_; ++p)
+  }  // for (unsigned int p=0; p<nfdofs_; ++p)
 
 
   // one term is still missing in A
@@ -1369,7 +1369,7 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute
       for (unsigned int node = 0; node < shapesface_->nfdofs_; node++)
         elevec[indexstart + node] += shapesface_->shfunct(node, iquad) * val_fac_funct_fac;
     }  // if ((*onoff)[dof])
-  }    // loop over integration points
+  }  // loop over integration points
 
 
   return;

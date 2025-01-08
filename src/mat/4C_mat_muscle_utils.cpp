@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   double lineraly_interpolate_between_times(
-      const std::vector<std::pair<double, double>> &time_value_pairs, double time)
+      const std::vector<std::pair<double, double>>& time_value_pairs, double time)
   {
     // iterator pointing to the first element greater than time
     auto upper_bound_time = std::upper_bound(time_value_pairs.begin(), time_value_pairs.end(), time,
-        [](double t, const std::pair<double, double> &pair) { return t < pair.first; });
+        [](double t, const std::pair<double, double>& pair) { return t < pair.first; });
 
     // catch errors if time is smaller or larger than the time range
     if (upper_bound_time == time_value_pairs.begin() || upper_bound_time == time_value_pairs.end())
@@ -55,7 +55,7 @@ namespace
 }  // namespace
 
 void Mat::Utils::Muscle::evaluate_lambert(
-    const double xi, double &W0, const double tol, const int maxiter)
+    const double xi, double& W0, const double tol, const int maxiter)
 {
   double W0_old =
       std::numeric_limits<double>::infinity();  // s.t. error is infinite in the beginning
@@ -172,9 +172,9 @@ double Mat::Utils::Muscle::evaluate_derivative_force_velocity_dependency_boel(
 }
 
 double Mat::Utils::Muscle::evaluate_time_dependent_active_stress_ehret(const double Na,
-    const int muTypesNum, const std::vector<double> &rho, const std::vector<double> &I,
-    const std::vector<double> &F, const std::vector<double> &T, const int actIntervalsNum,
-    const std::vector<double> &actTimes, const std::vector<double> &actValues,
+    const int muTypesNum, const std::vector<double>& rho, const std::vector<double>& I,
+    const std::vector<double>& F, const std::vector<double>& T, const int actIntervalsNum,
+    const std::vector<double>& actTimes, const std::vector<double>& actValues,
     const double currentTime)
 {
   // compute twitch force of motor unit (MU) type iMU
@@ -361,8 +361,8 @@ double Mat::Utils::Muscle::evaluate_time_dependent_active_stress_tanh(const doub
 }
 
 double Mat::Utils::Muscle::evaluate_time_space_dependent_active_stress_by_funct(
-    const double sigma_max, const Core::Utils::FunctionOfSpaceTime &activation_function,
-    const double t_current, const Core::LinAlg::Matrix<3, 1> &x)
+    const double sigma_max, const Core::Utils::FunctionOfSpaceTime& activation_function,
+    const double t_current, const Core::LinAlg::Matrix<3, 1>& x)
 {
   const std::vector<double> x_vec{x(0), x(1), x(2)};
 
@@ -381,7 +381,7 @@ double Mat::Utils::Muscle::evaluate_time_space_dependent_active_stress_by_funct(
 
 double Mat::Utils::Muscle::evaluate_time_space_dependent_active_stress_by_map(
     const double sigma_max,
-    const std::unordered_map<int, std::vector<std::pair<double, double>>> &activation_map,
+    const std::unordered_map<int, std::vector<std::pair<double, double>>>& activation_map,
     const double t_current, const int activation_map_key)
 {
   // compute time-dependency ft
@@ -404,7 +404,7 @@ double Mat::Utils::Muscle::evaluate_time_space_dependent_active_stress_by_map(
 }
 
 double Mat::Utils::Muscle::fiber_stretch(
-    const Core::LinAlg::Matrix<3, 3> &C, const Core::LinAlg::Matrix<3, 3> &M)
+    const Core::LinAlg::Matrix<3, 3>& C, const Core::LinAlg::Matrix<3, 3>& M)
 {
   // product C^T*M
   Core::LinAlg::Matrix<3, 3> transpCM(false);
@@ -418,7 +418,7 @@ double Mat::Utils::Muscle::fiber_stretch(
 }
 
 Core::LinAlg::Matrix<3, 3> Mat::Utils::Muscle::d_fiber_stretch_dc(
-    const double lambdaM, const Core::LinAlg::Matrix<3, 3> &C, const Core::LinAlg::Matrix<3, 3> &M)
+    const double lambdaM, const Core::LinAlg::Matrix<3, 3>& C, const Core::LinAlg::Matrix<3, 3>& M)
 {
   // derivative of lambdaM w.r.t. C
   Core::LinAlg::Matrix<3, 3> dlambdaMdC(M);

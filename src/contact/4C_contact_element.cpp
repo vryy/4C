@@ -402,7 +402,7 @@ void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
 
         for (Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>::const_iterator p =
                  d_matrix_deriv_->begin();
-             p != d_matrix_deriv_->end(); ++p)
+            p != d_matrix_deriv_->end(); ++p)
           ddmap_jk[p->first] += (p->second)(j, k);
       }
     }
@@ -412,7 +412,7 @@ void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
 
       for (Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>::const_iterator p =
                d_matrix_deriv_->begin();
-           p != d_matrix_deriv_->end(); ++p)
+          p != d_matrix_deriv_->end(); ++p)
         ddmap_jj[p->first] += (p->second)(j, j);
     }
   }
@@ -436,7 +436,7 @@ void CONTACT::Element::assemble_mderiv_to_nodes(Mortar::Element& mele)
 
       for (Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>::const_iterator p =
                m_matrix_deriv_->begin();
-           p != m_matrix_deriv_->end(); ++p)
+          p != m_matrix_deriv_->end(); ++p)
         dmmap_jk[p->first] += (p->second)(j, k);
     }
   }

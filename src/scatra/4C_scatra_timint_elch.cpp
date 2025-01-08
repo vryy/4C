@@ -1405,7 +1405,8 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_info_interior()
     }
 
     cellcrate_ = std::abs(std::max_element(electrodecrates_.begin(), electrodecrates_.end(),
-        [](const auto& a, const auto& b) {
+        [](const auto& a, const auto& b)
+        {
           return std::abs(a.second) < std::abs(b.second);
         })->second);
   }
@@ -2919,7 +2920,7 @@ void ScaTra::ScaTraTimIntElch::apply_dirichlet_bc(const double time,
           // leave loop after relevant condition has been processed
           break;
         }  // relevant condition
-      }    // loop over all conditions
+      }  // loop over all conditions
 
       // transform set into vector and then into Epetra map
       std::vector<int> dbcgidsvec(dbcgids.begin(), dbcgids.end());
@@ -3026,7 +3027,7 @@ void ScaTra::ScaTraTimIntElch::apply_neumann_bc(
           // leave loop after relevant condition has been processed
           break;
         }  // relevant condition
-      }    // loop over all conditions
+      }  // loop over all conditions
     }
   }
 }

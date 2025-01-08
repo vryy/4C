@@ -137,7 +137,7 @@ void Core::Elements::ElementDefinition::print_element_lines(std::ostream& stream
   {
     std::map<std::string, Input::LineDefinition>& defs = definitions_[name];
     for (std::map<std::string, Input::LineDefinition>::iterator i = defs.begin(); i != defs.end();
-         ++i)
+        ++i)
     {
       stream << "// 0 " << name << " ";
       i->second.print(stream);

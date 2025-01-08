@@ -56,7 +56,7 @@ namespace NOX
         void throw_error(const std::string& functionName, const std::string& errorMsg) const;
       };
     }  // namespace SINGLESTEP
-  }    // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

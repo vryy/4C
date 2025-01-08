@@ -392,7 +392,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
             // loop over all slave-side rows of system matrix
             for (int slavedoflid = 0; slavedoflid < icoup_->slave_dof_map()->NumMyElements();
-                 ++slavedoflid)
+                ++slavedoflid)
             {
               // determine global ID of current matrix row
               const int slavedofgid = icoup_->slave_dof_map()->GID(slavedoflid);
@@ -538,7 +538,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
         // loop over all slave-side entries of residual vector
         for (int slavedoflid = 0; slavedoflid < icoup_->slave_dof_map()->NumMyElements();
-             ++slavedoflid)
+            ++slavedoflid)
         {
           // determine global ID of current vector entry
           const int slavedofgid = icoup_->slave_dof_map()->GID(slavedoflid);
@@ -2264,10 +2264,10 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
             idiscret.g_element(elegid)->set_material(
                 0, Mat::factory(std::dynamic_pointer_cast<Core::Elements::FaceElement>(
                        kinetics_slave_cond.second->geometry()[elegid])
-                                    ->parent_element()
-                                    ->material()
-                                    ->parameter()
-                                    ->id()));
+                           ->parent_element()
+                           ->material()
+                           ->parameter()
+                           ->id()));
           }
 
           // assign physical implementation type to each slave-side mortar element by copying the
@@ -2915,8 +2915,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               // set initial value
               (*growthn_)[doflid_growth] = initthickness;
             }  // nodes owned by current processor
-          }    // nodes stored by current processor
-        }      // loop over all nodes
+          }  // nodes stored by current processor
+        }  // loop over all nodes
 
         // copy initial state
         if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_monolithic)
@@ -3303,8 +3303,8 @@ void ScaTra::MeshtyingStrategyS2I::collect_output_data() const
           // layer thicknesses
           (intlayerthickness)[nodelid] = growth[doflid_growth];
         }  // nodes owned by current processor
-      }    // nodes stored by current processor
-    }      // loop over all nodes
+      }  // nodes stored by current processor
+    }  // loop over all nodes
 
     // output target state vector of discrete scatra-scatra interface layer thicknesses
     scatratimint_->visualization_writer().append_result_data_vector_with_context(

@@ -623,7 +623,7 @@ void Discret::Elements::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
   const double vol = Base::fac_;
 
   for (Core::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
-       iquad != intpoints.end(); ++iquad)
+      iquad != intpoints.end(); ++iquad)
   {
     lin_resM_Dus.clear();
     lin_resM_Dus_gridvel.clear();
@@ -881,7 +881,7 @@ void Discret::Elements::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
     }
 
     if (!static_cast<Discret::Elements::FluidEleParameterPoro*>(Base::fldpara_)
-             ->poro_conti_part_int())
+            ->poro_conti_part_int())
     {
       /*
         /                           \     /                             \
@@ -1075,7 +1075,7 @@ void Discret::Elements::FluidEleCalcPoroP1<distype>::compute_linearization_od(co
   dgradphi_dus.clear();
 
   if (!static_cast<Discret::Elements::FluidEleParameterPoro*>(Base::fldpara_)
-           ->poro_conti_part_int() or
+          ->poro_conti_part_int() or
       Base::visceff_)
   {
     //---------------------d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J *
@@ -1196,7 +1196,7 @@ int Discret::Elements::FluidEleCalcPoroP1<distype>::compute_volume(Teuchos::Para
 
   // integration loop
   for (Core::FE::GaussIntegration::iterator iquad = Base::intpoints_.begin();
-       iquad != Base::intpoints_.end(); ++iquad)
+      iquad != Base::intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     Base::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());

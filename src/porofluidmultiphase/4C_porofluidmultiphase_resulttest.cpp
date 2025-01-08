@@ -216,8 +216,9 @@ double POROFLUIDMULTIPHASE::ResultTest::result_element(
 
   if (quantity == "bloodvesselvolfrac")
   {
-    result = (*porotimint_.mesh_tying_strategy()->blood_vessel_volume_fraction())
-        [porotimint_.discretization()->element_row_map()->LID(element->id())];
+    result = (*porotimint_.mesh_tying_strategy()
+            ->blood_vessel_volume_fraction())[porotimint_.discretization()->element_row_map()->LID(
+        element->id())];
   }
   else if (!quantity.compare(0, 13, "phasevelocity"))
   {

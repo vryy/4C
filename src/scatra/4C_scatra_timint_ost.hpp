@@ -41,19 +41,19 @@ namespace ScaTra
 
     void setup() override;
 
-    void pre_solve() override{};
+    void pre_solve() override {};
 
-    void post_solve() override{};
+    void post_solve() override {};
 
     void print_time_step_info() override;
 
-    void compute_intermediate_values() override{};
+    void compute_intermediate_values() override {};
 
-    void compute_interior_values() override{};
+    void compute_interior_values() override {};
 
     void compute_time_derivative() override;
 
-    void compute_time_deriv_pot0(const bool init) override{};
+    void compute_time_deriv_pot0(const bool init) override {};
 
     void update() override;
 

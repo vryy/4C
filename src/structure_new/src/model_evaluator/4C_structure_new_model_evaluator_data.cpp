@@ -311,7 +311,7 @@ void Solid::ModelEvaluator::Data::fill_norm_type_maps()
           rtol_wrms_[*qiter] = rtol;
       }
     }  // loop over all quantity types
-  }    // if (isnox)
+  }  // if (isnox)
   else
   {
     for (qiter = qtypes.begin(); qiter != qtypes.end(); ++qiter)

@@ -98,7 +98,7 @@ namespace Discret
       int err = 0;
 
       for (std::vector<Core::FE::GaussIntegration>::const_iterator i = intpoints.begin();
-           i != intpoints.end(); ++i)
+          i != intpoints.end(); ++i)
       {
         const Core::FE::GaussIntegration intpoints_cell = *i;
         err = my::evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
@@ -121,7 +121,7 @@ namespace Discret
       int err = 0;
 
       for (std::vector<Core::FE::GaussIntegration>::const_iterator i = intpoints.begin();
-           i != intpoints.end(); ++i)
+          i != intpoints.end(); ++i)
       {
         const Core::FE::GaussIntegration gint = *i;
         err = my::integrate_shape_function(ele, discretization, lm, elevec1_epetra, gint);
@@ -214,7 +214,7 @@ namespace Discret
       //------------------------------------------------------------------
 
       for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-           ++iquad)
+          ++iquad)
       {
         // evaluate shape functions and derivatives at integration point
         my::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -893,7 +893,7 @@ namespace Discret
       // map of side-element id and Gauss points
       for (std::map<int, std::vector<Core::FE::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
-           i != bintpoints.end(); ++i)
+          i != bintpoints.end(); ++i)
       {
         //-----------------------------------------------------------------------------------
 
@@ -1025,7 +1025,7 @@ namespace Discret
         // loop boundary cells w.r.t current cut side
         //--------------------------------------------
         for (std::vector<Core::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
-             i != cutintpoints.end(); ++i)
+            i != cutintpoints.end(); ++i)
         {
           const Core::FE::GaussIntegration& gi = *i;
           Cut::BoundaryCell* bc =
@@ -1251,7 +1251,7 @@ namespace Discret
             ele_interf_norms[4] += nit_stabfac * u_err_squared_normal;
 
           }  // end loop gauss points of boundary cell
-        }    // end loop boundary cells of side
+        }  // end loop boundary cells of side
 
       }  // end loop cut sides
 
@@ -1468,7 +1468,7 @@ namespace Discret
       // find all the intersecting elements of actele
       std::set<int> begids;
       for (std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator bc = bcells.begin();
-           bc != bcells.end(); ++bc)
+          bc != bcells.end(); ++bc)
       {
         const int coup_sid = bc->first;
 
@@ -1531,7 +1531,7 @@ namespace Discret
       // map of side-element id and Gauss points
       for (std::map<int, std::vector<Core::FE::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
-           i != bintpoints.end(); ++i)
+          i != bintpoints.end(); ++i)
       {
         //-----------------------------------------------------------------------------------
 
@@ -1664,9 +1664,9 @@ namespace Discret
           if (is_ls_coupling_side)  //... for problems with cut interface defined by level-set
                                     // field, currently only one-sided
           {
-            ci[coup_sid] = Discret::Elements::XFLUID::HybridLMInterface<distype>::
-                create_hybrid_lm_coupling_x_fluid_wdbc(
-                    fldparaxfem_->is_viscous_adjoint_symmetric());
+            ci[coup_sid] = Discret::Elements::XFLUID::HybridLMInterface<
+                distype>::create_hybrid_lm_coupling_x_fluid_wdbc(fldparaxfem_
+                    ->is_viscous_adjoint_symmetric());
           }
           else if (is_mesh_coupling_side)
           {
@@ -1805,7 +1805,7 @@ namespace Discret
         // loop boundary cells w.r.t current cut side
         //--------------------------------------------
         for (std::vector<Core::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
-             i != cutintpoints.end(); ++i)
+            i != cutintpoints.end(); ++i)
         {
           const Core::FE::GaussIntegration& gi = *i;
           Cut::BoundaryCell* bc =
@@ -2056,7 +2056,7 @@ namespace Discret
                   si_nit.at(coup_sid)->apply_conv_stab_terms(ci[coup_sid], my::funct_, my::velint_,
                       normal, my::densaf_, NIT_full_stab_fac, timefacfac, ivelint_jump, cond_type);
                 }  // if coupling
-              }    // if add conv stab
+              }  // if add conv stab
 
               if (my::fldparatimint_->is_new_ost_implementation())
               {
@@ -2134,7 +2134,7 @@ namespace Discret
             ci[coup_sid]->compute_interface_force(iforce, traction, surf_fac);
 
           }  // end loop gauss points of boundary cell
-        }    // end loop boundary cells of side
+        }  // end loop boundary cells of side
 
         if (assemble_iforce)
           assemble_interface_force(*mc_fsi->i_forcecol(), *cutter_dis, cutla[0].lm_, iforce);
@@ -2295,7 +2295,7 @@ namespace Discret
               }
             }
           }  // K_uu
-        }    // end column block loop
+        }  // end column block loop
 
         if (!is_MHVS) continue;
 
@@ -2321,7 +2321,7 @@ namespace Discret
             }
           }
         }  // G_up
-      }    // end row block loop
+      }  // end row block loop
 
       if (is_MHVS)
       {
@@ -2349,7 +2349,7 @@ namespace Discret
               }
             }
           }  // G_pu
-        }    // end column block loop
+        }  // end column block loop
       }
       // element matrix complete!
 
@@ -2416,7 +2416,7 @@ namespace Discret
             elevec(velrow, 0) += brhs_up(ir, 0);
           }
         }  // rhs_up
-      }    // end row block loop
+      }  // end row block loop
 
       if (is_MHVS)
       {
@@ -2444,7 +2444,7 @@ namespace Discret
       for (typename std::map<int,
                std::shared_ptr<Discret::Elements::XFLUID::HybridLMInterface<distype>>>::iterator
                sit = ci.begin();
-           sit != ci.end(); ++sit)
+          sit != ci.end(); ++sit)
       {
         std::shared_ptr<Discret::Elements::XFLUID::HybridLMInterface<distype>> si = sit->second;
         const int coup_sid = sit->first;
@@ -2565,7 +2565,7 @@ namespace Discret
 
       for (std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::const_iterator m =
                Cuiui_coupling.begin();
-           m != Cuiui_coupling.end(); ++m)
+          m != Cuiui_coupling.end(); ++m)
       {
         const std::vector<Core::LinAlg::SerialDenseMatrix>& Cuiui_matrices = m->second;
 
@@ -2650,7 +2650,7 @@ namespace Discret
       {
         // get the standard set of gauss-points from the intersected element
         for (Core::FE::GaussIntegration::const_iterator iquad = my::intpoints_.begin();
-             iquad != my::intpoints_.end(); ++iquad)
+            iquad != my::intpoints_.end(); ++iquad)
         {
           my::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
 
@@ -2668,11 +2668,11 @@ namespace Discret
       else
       {
         for (std::vector<Core::FE::GaussIntegration>::const_iterator i = intpoints.begin();
-             i != intpoints.end(); ++i)
+            i != intpoints.end(); ++i)
         {
           const Core::FE::GaussIntegration intcell = *i;
           for (Core::FE::GaussIntegration::iterator iquad = intcell.begin(); iquad != intcell.end();
-               ++iquad)
+              ++iquad)
           {
             // evaluate shape functions and derivatives at integration point
             my::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -3265,7 +3265,7 @@ namespace Discret
 
       // loop all the intersecting sides of actele
       for (std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator bc = bcells.begin();
-           bc != bcells.end(); ++bc)
+          bc != bcells.end(); ++bc)
       {
         const int coup_sid = bc->first;
 
@@ -3333,7 +3333,7 @@ namespace Discret
       // map of side-element id and Gauss points
       for (std::map<int, std::vector<Core::FE::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
-           i != bintpoints.end(); ++i)
+          i != bintpoints.end(); ++i)
       {
         TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GaussIntegrationloop");
 
@@ -3600,7 +3600,7 @@ namespace Discret
         // loop boundary cells w.r.t current cut side
         //---------------------------------------------------------------------------------
         for (std::vector<Core::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
-             i != cutintpoints.end(); ++i)
+            i != cutintpoints.end(); ++i)
         {
           const Core::FE::GaussIntegration& gi = *i;
           Cut::BoundaryCell* bc =
@@ -3945,7 +3945,7 @@ namespace Discret
             ci->compute_interface_force(iforce, traction, surf_fac);
 
           }  // end loop gauss points of boundary cell
-        }    // end loop boundary cells of side
+        }  // end loop boundary cells of side
 
         if (assemble_iforce)
           assemble_interface_force(*mc_fsi->i_forcecol(), *cutter_dis, cutla[0].lm_, iforce);
@@ -4301,7 +4301,7 @@ namespace Discret
       int ipatchsizesbefore = 0;
       for (std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::const_iterator m =
                Cuiui_coupling.begin();
-           m != Cuiui_coupling.end(); ++m)
+          m != Cuiui_coupling.end(); ++m)
       {
         int coup_sid = m->first;
         std::vector<Core::LinAlg::SerialDenseMatrix>& Cuiui_mats = Cuiui_coupling[coup_sid];
@@ -4310,7 +4310,7 @@ namespace Discret
 
         // assemble Cuiui
         for (int ic = 0; ic < Cuiui_mats[0].numCols();
-             ++ic)  // Cuiui includes only ui,ui coupling, not (ui,p) ...
+            ++ic)  // Cuiui includes only ui,ui coupling, not (ui,p) ...
         {
           for (int ir = 0; ir < Cuiui_mats[0].numRows(); ++ir)
           {
@@ -4518,7 +4518,7 @@ namespace Discret
       //  start loop over integration points
       //------------------------------------------------------------------------
       for (Core::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
-           iquad != intpoints.end(); ++iquad)
+          iquad != intpoints.end(); ++iquad)
       {
         // evaluate shape functions and derivatives at integration point
         my::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());

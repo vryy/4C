@@ -59,7 +59,7 @@ void Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
 {
   const std::vector<Edge*> side_edges = get_side().edges();
   for (std::vector<int>::const_iterator i = touched_edges_ids.begin(); i != touched_edges_ids.end();
-       ++i)
+      ++i)
   {
     // mapping indeces to real edges
     Edge* e = side_edges[*i];
@@ -67,7 +67,7 @@ void Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
     // if this edge cuts other edge in this point, this edge cuts all sides of the edge there
     const plain_side_set& touched_edge_sides = e->sides();
     for (plain_side_set::const_iterator j = touched_edge_sides.begin();
-         j != touched_edge_sides.end(); ++j)
+        j != touched_edge_sides.end(); ++j)
     {
       Side* s = *j;
       out.insert(std::make_pair(s, &get_edge()));
@@ -96,7 +96,7 @@ void Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
   std::set<Edge*> touched_edges;
 
   for (std::vector<int>::const_iterator i = touched_edges_ids.begin(); i != touched_edges_ids.end();
-       ++i)
+      ++i)
   {
     // mapping indeces to real edges
     Edge* e = side_edges[*i];
@@ -117,7 +117,7 @@ void Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
   }
 
   for (std::set<std::pair<Side*, Edge*>>::const_iterator it = touched_cut_pairs.begin();
-       it != touched_cut_pairs.end(); ++it)
+      it != touched_cut_pairs.end(); ++it)
   {
 #if CUT_CREATION_INFO
     std::stringstream msg;
@@ -918,7 +918,7 @@ bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
 
         const std::vector<Node*>& side_nodes = get_side().nodes();
         for (std::vector<Node*>::const_iterator it = side_nodes.begin(); it != side_nodes.end();
-             ++it)
+            ++it)
         {
           (*it)->point()->dump_connectivity_info();
         }
@@ -1086,14 +1086,14 @@ bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
             err_msg << " Go two intersection points during intersection of triangulated quad4.  "
                        "This case is not supported! Global coordinates are \n";
             for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator it = final_points.begin();
-                 it != final_points.end(); ++it)
+                it != final_points.end(); ++it)
             {
               err_msg << (*it);
             }
             err_msg << "Local coordinates on the edge are \n";
             for (typename std::vector<Core::LinAlg::Matrix<dimedge, 1>>::iterator it =
                      edge_coords.begin();
-                 it != edge_coords.end(); ++it)
+                it != edge_coords.end(); ++it)
             {
               err_msg << (*it);
             }
@@ -1167,9 +1167,9 @@ bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
   {
     // we don't want to continue then, because  newton will fail
     if (parallel_res == intersection_not_possible) return false;
-      // ------------------------------------------------------------------------
-      // Try to calculate the intersection point directly with Newton
-      // ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Try to calculate the intersection point directly with Newton
+    // ------------------------------------------------------------------------
 #if (TRIANGULATED_INTERSECTION)
     return triangulated_intersection(cuts);
 #else
@@ -1482,7 +1482,7 @@ std::pair<bool, bool> Cut::Intersection<probdim, edgetype, sidetype, debug, dime
       out_of_plane->coordinates(coord.data());
 
       for (std::vector<Node*>::const_iterator it = GetSidePtr()->Nodes().begin();
-           it != GetSidePtr()->Nodes().end(); ++it)
+          it != GetSidePtr()->Nodes().end(); ++it)
       {
         Point* p = (*it)->point();
         Core::LinAlg::Matrix<3, 1> distc;

@@ -325,7 +325,7 @@ void FS3I::FS3IBase::check_f_s3_i_inputs()
     std::vector<int>* onoff_sum = new std::vector<int>(numscal, 0);
 
     for (std::map<int, std::vector<double>*>::iterator fit = fluid_PermCoeffs.begin();
-         fit != fluid_PermCoeffs.end(); ++fit)  // loop over all fluid-scatra COUPIDs
+        fit != fluid_PermCoeffs.end(); ++fit)  // loop over all fluid-scatra COUPIDs
     {
       const int ID = (*fit).first;
       std::vector<double>* fluid_permcoeffs =

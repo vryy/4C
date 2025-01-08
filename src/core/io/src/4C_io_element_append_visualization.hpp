@@ -106,7 +106,7 @@ namespace Core::IO
       // Get the position of the control points in the reference configuration.
       Core::LinAlg::Matrix<number_of_output_points * dim_output, 1, double> pos_controlpoints;
       for (unsigned int i_controlpoint = 0; i_controlpoint < (unsigned int)ele.num_node();
-           ++i_controlpoint)
+          ++i_controlpoint)
       {
         const Core::Nodes::Node* controlpoint = ele.nodes()[i_controlpoint];
         for (int i_dim = 0; i_dim < dim_output; ++i_dim)
@@ -384,7 +384,7 @@ namespace Core::IO
       for (auto i_node_nurbs = 0; i_node_nurbs < number_of_output_points; ++i_node_nurbs)
       {
         for (unsigned int component_i = 0; component_i < result_num_components_per_node;
-             ++component_i)
+            ++component_i)
         {
           result(i_node_nurbs * result_num_components_per_node + component_i) =
               ele_node_values.at(i_node_nurbs * result_num_components_per_node + component_i);

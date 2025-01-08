@@ -153,14 +153,14 @@ namespace Discret
           Core::FE::Discretization& discretization,
           Core::LinAlg::SerialDenseVector& a_volumen_strain_np,
           Core::LinAlg::SerialDenseVector& a_volumenp, std::vector<int>& lm,
-          std::shared_ptr<Core::Mat::Material> mat) override{};
+          std::shared_ptr<Core::Mat::Material> mat) override {};
 
       /*!
        \Essential functions to evaluate the coupled results
       */
       void get_coupled_values(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          std::shared_ptr<Core::Mat::Material> material) override{};
+          std::shared_ptr<Core::Mat::Material> material) override {};
 
      private:
     };

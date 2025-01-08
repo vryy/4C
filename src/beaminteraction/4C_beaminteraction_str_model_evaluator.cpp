@@ -531,7 +531,7 @@ void Solid::ModelEvaluator::BeamInteraction::extend_ghosting()
   std::map<int, std::set<int>>::const_iterator it;
   std::vector<int> binvec(27);
   for (it = ia_state_ptr_->get_bin_to_row_ele_map().begin();
-       it != ia_state_ptr_->get_bin_to_row_ele_map().end(); ++it)
+      it != ia_state_ptr_->get_bin_to_row_ele_map().end(); ++it)
   {
     // not doing the following if is only valid if you ensure that the largest element
     // in the discretization (in deformed state) is smaller than the smalles bin size
@@ -1132,7 +1132,7 @@ void Solid::ModelEvaluator::BeamInteraction::build_row_ele_to_bin_map()
   // loop over bins
   std::map<int, std::set<int>>::const_iterator biniter;
   for (biniter = ia_state_ptr_->get_bin_to_row_ele_map().begin();
-       biniter != ia_state_ptr_->get_bin_to_row_ele_map().end(); ++biniter)
+      biniter != ia_state_ptr_->get_bin_to_row_ele_map().end(); ++biniter)
   {
     // loop over ele content of this bin
     std::set<int>::const_iterator eleiter;

@@ -33,17 +33,17 @@ namespace ScaTra
     void setup() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
-    void compute_intermediate_values() override{};
+    void compute_intermediate_values() override {};
 
     /// compute values at the interior of the elements (required for hdg)
-    void compute_interior_values() override{};
+    void compute_interior_values() override {};
 
     ///  compute scalar time derivative
     void compute_time_derivative() override;
 
     ///  compute scalar time derivate parameters of the input voltage to compute double layer
     ///  current densities
-    void compute_time_deriv_pot0(const bool init) override{};
+    void compute_time_deriv_pot0(const bool init) override {};
 
     /// Update the solution after convergence of the nonlinear iteration.
     /// Current solution becomes old solution of next timestep.
@@ -97,7 +97,7 @@ namespace ScaTra
 
     //! calculate consistent initial conditions in compliance with initial scalar field
     //! this is not necessary for BDF2 time integration scheme
-    void calc_initial_time_derivative() override{};
+    void calc_initial_time_derivative() override {};
 
     /// Set the part of the righthandside belonging to the last timestep.
     void set_old_part_of_righthandside() override;

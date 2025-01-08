@@ -444,7 +444,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Element
         }  // fldparatimint_->is_new_ost_implementation()
       }
     }  // fldpara_->get_enhanced_gauss_rule_in_interface()
-  }    // fldpara_->get_include_surface_tension()
+  }  // fldpara_->get_include_surface_tension()
 
   eporo_.clear();
 
@@ -811,7 +811,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
   // for (int iquad=0; iquad<intpoints.ip().nquad; ++iquad)
 
   for (Core::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
-       iquad != intpoints.end(); ++iquad)
+      iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -4348,9 +4348,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_react
             estif_u(nsd_ * vi + idim, nsd_ * ui + jdim) +=
                 funct_(vi) * lin_resM_Du(idim * nsd_ + jdim, ui);
           }  // end for (idim)
-        }    // end for (jdim)
-      }      // end for (vi)
-    }        // end for (ui)
+        }  // end for (jdim)
+      }  // end for (vi)
+    }  // end for (ui)
   }
   else
   {
@@ -4363,8 +4363,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_react
           estif_u(nsd_ * vi + idim, nsd_ * ui + idim) +=
               funct_(vi) * lin_resM_Du(idim * nsd_ + idim, ui);
         }  // end for (idim)
-      }    // vi
-    }      // ui
+      }  // vi
+    }  // ui
   }
 
   // inertia terms on the right hand side for instationary fluids
@@ -4466,8 +4466,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::viscous_gal_part(
       {
         estif_u(nsd_ * vi + idim, nsd_ * ui + idim) += tmp_val;
       }  // end for (idim)
-    }    // ui
-  }      // vi
+    }  // ui
+  }  // vi
 
 
   const double v = visceff_ * rhsfac;
@@ -4919,10 +4919,10 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::pspg(
           {
             estif_q_u(vi, nsd_ui + jdim) += lin_resM_Du(nsd_ * idim + jdim, ui) * temp_vi_idim;
           }  // jdim
-        }    // ui
-      }      // idim
-    }        // vi
-  }          // end if (is_higher_order_ele_) or (newton_)
+        }  // ui
+      }  // idim
+    }  // vi
+  }  // end if (is_higher_order_ele_) or (newton_)
   else
   {
     for (int vi = 0; vi < nen_; ++vi)
@@ -4934,9 +4934,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::pspg(
           estif_q_u(vi, nsd_ * ui + idim) +=
               lin_resM_Du(nsd_ * idim + idim, ui) * derxy_(idim, vi) * scal_grad_q;
         }  // vi
-      }    // ui
-    }      // idim
-  }        // end if not (is_higher_order_ele_) nor (newton_)
+      }  // ui
+    }  // idim
+  }  // end if not (is_higher_order_ele_) nor (newton_)
 
 
   for (int ui = 0; ui < nen_; ++ui)
@@ -4956,7 +4956,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::pspg(
 
       ppmat(vi, ui) += timefacfacpre * scal_grad_q * sum;
     }  // vi
-  }    // ui
+  }  // ui
 
   for (int idim = 0; idim < nsd_; ++idim)
   {
@@ -5136,10 +5136,10 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supg(
             estif_u(nsd_ * vi + idim, nsd_ * ui + jdim) +=
                 lin_resM_Du(nsd_ * idim + jdim, ui) * supg_test(vi) + derxy_(jdim, vi) * w;
           }  // jdim
-        }    // vi
-      }      // ui
-    }        // idim
-  }          // end if (fldpara_->IsNewton())
+        }  // vi
+      }  // ui
+    }  // idim
+  }  // end if (fldpara_->IsNewton())
   else if (is_higher_order_ele_)
   {
     for (int vi = 0; vi < nen_; ++vi)
@@ -5170,9 +5170,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supg(
           estif_u(nsd_vi + idim, nsd_ui + idim) +=
               lin_resM_Du(nsd_ * idim + idim, ui) * supg_test(vi);
         }  // ui
-      }    // idim
-    }      // vi
-  }        // end if not (is_higher_order_ele_) nor (newton_)
+      }  // idim
+    }  // vi
+  }  // end if not (is_higher_order_ele_) nor (newton_)
 
   /* supg stabilisation: pressure part  ( L_pres_p) */
   /*
@@ -5325,10 +5325,10 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::reac_stab(
 
             estif_u(fvi_p_idim, fui_p_jdim) += v * lin_resM_Du(nsd_idim_p_jdim, ui);
           }  // jdim
-        }    // vi
-      }      // ui
-    }        // idim
-  }          // end if (is_higher_order_ele_) or (newton_)
+        }  // vi
+      }  // ui
+    }  // idim
+  }  // end if (is_higher_order_ele_) or (newton_)
   else
   {
     for (int vi = 0; vi < nen_; ++vi)
@@ -5347,9 +5347,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::reac_stab(
 
           estif_u(fvi_p_idim, fui_p_idim) += v * lin_resM_Du(nsd_idim + idim, ui);
         }  // ui
-      }    // idim
-    }      // vi
-  }        // end if not (is_higher_order_ele_) nor (newton_)
+      }  // idim
+    }  // vi
+  }  // end if not (is_higher_order_ele_) nor (newton_)
 
 
   /* reactive stabilisation, pressure part ( L_pres_p) */
@@ -5462,10 +5462,10 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::visc_stab(
             estif_u(fvi_p_idim, fui_p_jdim) += two_visc_tau * lin_resM_Du(nsd_ * kdim + jdim, ui) *
                                                viscs2_(nsd_ * idim + kdim, vi);
           }  // vi
-        }    // kdim
-      }      // idim
-    }        // ui
-  }          // jdim
+        }  // kdim
+      }  // idim
+    }  // ui
+  }  // jdim
 
 
   /* viscous stabilisation, pressure part ( L_pres_p) */
@@ -5647,9 +5647,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::cross_stress_stab(
                   crossfac * lin_resM_Du(nsd_ * kdim + jdim, ui) * vderxy_(idim, kdim) * funct_(vi);
             }
           }  // jdim
-        }    // vi
-      }      // ui
-    }        // idim
+        }  // vi
+      }  // ui
+    }  // idim
 
     /*
                     /                               \
@@ -5673,8 +5673,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::cross_stress_stab(
           }
         }
       }  // end for(idim)
-    }    // vi
-  }      // end if (cross_ == Inpar::FLUID::cross_stress_stab) and (is_newton)
+    }  // vi
+  }  // end if (cross_ == Inpar::FLUID::cross_stress_stab) and (is_newton)
 
   // Stabilization only of the rhs
   static Core::LinAlg::Matrix<nsd_, 1> temp;
@@ -5790,9 +5790,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::reynolds_stress_stab(
                 reyfac * lin_resM_Du(nsd_ * kdim + jdim, ui) * sgvelint_(idim) * derxy_(kdim, vi);
           }
         }  // jdim
-      }    // vi
-    }      // ui
-  }        // idim
+      }  // vi
+    }  // ui
+  }  // idim
 
   /*
           /                                \
@@ -5816,7 +5816,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::reynolds_stress_stab(
         }
       }
     }  // end for(idim)
-  }    // vi
+  }  // vi
 
   return;
 }
@@ -6038,7 +6038,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::integrate_shape_function(
   //------------------------------------------------------------------
 
   for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-       ++iquad)
+      ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -6083,7 +6083,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_div_op(Discret::Elem
 
   // integration loop
   for (Core::FE::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+      ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -6142,7 +6142,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::vel_gradient_projection(
   //------------------------------------------------------------------
 
   for (Core::FE::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+      ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -6216,7 +6216,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::pres_gradient_projection(
   //------------------------------------------------------------------
 
   for (Core::FE::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+      ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -6441,7 +6441,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::compute_error(Discret::El
   //------------------------------------------------------------------
 
   for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-       ++iquad)
+      ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -7440,7 +7440,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
   for (Core::FE::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+      ++iquad)
   {
     //---------------------------------------------------------------
     // evaluate shape functions and derivatives at integration point
@@ -8585,7 +8585,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_mass_matrix(
   // Integration loop
   // ---------------------------------------------------------------------------
   for (Core::FE::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+      ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -8600,10 +8600,10 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_mass_matrix(
           {
             estif_u(nsd_ * vi + idim, nsd_ * ui + jdim) += funct_(vi) * funct_(ui) * fac_ * densaf_;
           }  // end for (idim)
-        }    // end for (jdim)
-      }      // end for (vi)
-    }        // end for (ui)
-  }          // end of integration loop
+        }  // end for (jdim)
+      }  // end for (vi)
+    }  // end for (ui)
+  }  // end of integration loop
 
   // ---------------------------------------------------------------------------
   // Add velocity-velocity part to matrix
@@ -8627,9 +8627,9 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_mass_matrix(
         {
           elemat1_epetra(numdof_vi + idim, numdof_ui_jdim) += estif_u(nsd_vi + idim, nsd_ui_jdim);
         }  // end for (idim)
-      }    // end for (vi)
-    }      // end for (jdim)
-  }        // end for (ui)
+      }  // end for (vi)
+    }  // end for (jdim)
+  }  // end for (ui)
 
   // add terms associated to pressure dofs for weakly_compressible flows
   if (fldpara_->physical_type() == Inpar::FLUID::weakly_compressible)
@@ -8660,7 +8660,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_mass_matrix(
     // Integration loop
     // ---------------------------------------------------------------------------
     for (Core::FE::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-         ++iquad)
+        ++iquad)
     {
       // evaluate shape functions and derivatives at integration point
       eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -8671,8 +8671,8 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_mass_matrix(
         {
           ppmat(vi, ui) += funct_(vi) * funct_(ui) * fac_ * compr_fac;
         }  // end for (vi)
-      }    // end for (ui)
-    }      // end of integration loop
+      }  // end for (ui)
+    }  // end of integration loop
 
     // ---------------------------------------------------------------------------
     // Add pressure-pressure part to matrix
@@ -8687,7 +8687,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_mass_matrix(
 
         elemat1_epetra(numdof_vi + nsd_, numdof_ui + nsd_) += ppmat(vi, ui);
       }  // end for (vi)
-    }    // end for (ui)
+    }  // end for (ui)
   }
 
   return 0;
@@ -9112,7 +9112,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
       match = false;
 
     }  // loop over all nodes of this element
-  }    // if immersed elements are in vicinity of ele
+  }  // if immersed elements are in vicinity of ele
 
   // set ele "IsImmersed" if all nodes lie underneath the immersed dis (i.e. matched = true)
   if (matchnum == nen_) immersedele->set_is_immersed(1);
@@ -9172,7 +9172,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
       if (immersedele->is_boundary_immersed())
       {
         for (Core::FE::GaussIntegration::const_iterator iquad = intpoints_fluid_bound.begin();
-             iquad != intpoints_fluid_bound.end(); ++iquad)
+            iquad != intpoints_fluid_bound.end(); ++iquad)
         {
           std::vector<double> backgrdxi(nsd_);
           for (int i = 0; i < nsd_; i++) backgrdxi[i] = iquad.point()[i];
@@ -9213,8 +9213,8 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
           match = false;
 
         }  // loop over int points
-      }    // only if IsBoundaryImmersed
-    }      // degree_gp_fluid_bound > 0
+      }  // only if IsBoundaryImmersed
+    }  // degree_gp_fluid_bound > 0
     else
       FOUR_C_THROW(
           "In case of fluid interaction a proper value for NUM_GP_FLUID_BOUND must be set in your "
@@ -9435,7 +9435,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
       match = false;
 
     }  // end loop over all nodes
-  }    // if fluid element has immersed boundary
+  }  // if fluid element has immersed boundary
   return 0;
 
 }  // correct_immersed_bound_velocities()
@@ -9862,7 +9862,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
       inplanedirectset.erase(elenormdirect);
 
       for (std::set<int>::iterator id = inplanedirectset.begin(); id != inplanedirectset.end();
-           ++id)
+          ++id)
       {
         inplanedirect.push_back(*id);
       }
@@ -9911,7 +9911,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
 
       // start loop over integration points in layer
       for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-           ++iquad)
+          ++iquad)
       {
         // get the other gauss point coordinates
         for (int i = 0; i < 2; ++i)
@@ -10157,7 +10157,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
 
       // start loop over integration points in layer
       for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-           ++iquad)
+          ++iquad)
       {
         // get the other gauss point coordinates
         // here we assume that the element wall normal points in y direction
@@ -10383,7 +10383,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_mass_flow_periodic_h
   // ---------------------------------------------------------------------------
   double massf = 0.0;
   for (Core::FE::GaussIntegration::iterator iquad = intpoints_.begin(); iquad != intpoints_.end();
-       ++iquad)
+      ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -11936,7 +11936,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::
     {
       ppmat(vi, ui) += prefac * funct_(ui) * funct_(vi);
     }  // vi
-  }    // ui
+  }  // ui
 
   if (fldpara_->c_stab())
   {
@@ -11994,7 +11994,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::weak_comp_pressure_inert
       {
         ppmat(vi, ui) += compr_fac * funct_(ui) * funct_(vi);
       }  // vi
-    }    // ui
+    }  // ui
 
     if (fldpara_->c_stab())
     {
@@ -12194,7 +12194,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
   // for (int iquad=0; iquad<intpoints.ip().nquad; ++iquad)
 
   for (Core::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
-       iquad != intpoints.end(); ++iquad)
+      iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -13460,9 +13460,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_react
             estif_u(nsd_ * vi + idim, nsd_ * ui + jdim) +=
                 funct_(vi) * lin_resM_Du(idim * nsd_ + jdim, ui);
           }  // end for (idim)
-        }    // end for (jdim)
-      }      // end for (vi)
-    }        // end for (ui)
+        }  // end for (jdim)
+      }  // end for (vi)
+    }  // end for (ui)
   }
   else
   {
@@ -13475,8 +13475,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_react
           estif_u(nsd_ * vi + idim, nsd_ * ui + idim) +=
               funct_(vi) * lin_resM_Du(idim * nsd_ + idim, ui);
         }  // end for (idim)
-      }    // vi
-    }      // ui
+      }  // vi
+    }  // ui
   }
 
   // inertia terms on the right hand side for instationary fluids
@@ -13606,8 +13606,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::viscous_gal_part(
       {
         estif_u(nsd_ * vi + idim, nsd_ * ui + idim) += tmp_val;
       }  // end for (idim)
-    }    // ui
-  }      // vi
+    }  // ui
+  }  // vi
 
   static Core::LinAlg::Matrix<nsd_, nsd_> viscstressn;
 
@@ -13968,10 +13968,10 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::pspgost_new(
           {
             estif_q_u(vi, nsd_ * ui + jdim) += lin_resM_Du(nsd_ * idim + jdim, ui) * temp_vi_idim;
           }  // jdim
-        }    // idim
-      }      // vi
-    }        // ui
-  }          // end if (is_higher_order_ele_) or (newton_)
+        }  // idim
+      }  // vi
+    }  // ui
+  }  // end if (is_higher_order_ele_) or (newton_)
   else
   {
     for (int vi = 0; vi < nen_; ++vi)
@@ -13983,9 +13983,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::pspgost_new(
           estif_q_u(vi, nsd_ * ui + idim) +=
               lin_resM_Du(nsd_ * idim + idim, ui) * derxy_(idim, vi) * scal_grad_q;
         }  // vi
-      }    // ui
-    }      // idim
-  }        // end if not (is_higher_order_ele_) nor (newton_)
+      }  // ui
+    }  // idim
+  }  // end if not (is_higher_order_ele_) nor (newton_)
 
 
   for (int ui = 0; ui < nen_; ++ui)
@@ -14011,7 +14011,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::pspgost_new(
         ppmat(vi, ui) += fac_ * fldparatimint_->dt() * scal_grad_q * sum;
       }
     }  // vi
-  }    // ui
+  }  // ui
 
   for (int idim = 0; idim < nsd_; ++idim)
   {
@@ -14191,10 +14191,10 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supgost_new(
             estif_u(nsd_ * vi + idim, nsd_ * ui + jdim) +=
                 lin_resM_Du(nsd_ * idim + jdim, ui) * supg_test(vi) + derxy_(jdim, vi) * w;
           }  // jdim
-        }    // vi
-      }      // ui
-    }        // idim
-  }          // end if (fldpara_->IsNewton())
+        }  // vi
+      }  // ui
+    }  // idim
+  }  // end if (fldpara_->IsNewton())
   else if (is_higher_order_ele_)
   {
     for (int vi = 0; vi < nen_; ++vi)
@@ -14223,9 +14223,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supgost_new(
           estif_u(nsd_ * vi + idim, nsd_ * ui + idim) +=
               lin_resM_Du(nsd_ * idim + idim, ui) * supg_test(vi);
         }  // ui
-      }    // idim
-    }      // vi
-  }        // end if not (is_higher_order_ele_) nor (newton_)
+      }  // idim
+    }  // vi
+  }  // end if not (is_higher_order_ele_) nor (newton_)
 
   /* supg stabilisation: pressure part  ( L_pres_p) */
   /*

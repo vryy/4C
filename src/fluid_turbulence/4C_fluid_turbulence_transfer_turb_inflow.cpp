@@ -59,7 +59,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     // loop all conditions and check whether they are of master or slave
     // type
     for (std::vector<Core::Conditions::Condition*>::iterator cond = nodecloudstocouple.begin();
-         cond != nodecloudstocouple.end(); ++cond)
+        cond != nodecloudstocouple.end(); ++cond)
     {
       // get id, direction info and toggle
       int id = -1;
@@ -115,7 +115,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
           slaveidstoadd = (*cond)->get_nodes();
 
           for (std::vector<int>::const_iterator idtoadd = (*slaveidstoadd).begin();
-               idtoadd != (*slaveidstoadd).end(); ++idtoadd)
+              idtoadd != (*slaveidstoadd).end(); ++idtoadd)
           {
             // we only try to match owned nodes of each proc
             if (dis_->have_global_node(*idtoadd))
@@ -137,13 +137,13 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     (slavenodeids).clear();
 
     for (std::set<int>::iterator appendednode = masterset.begin(); appendednode != masterset.end();
-         ++appendednode)
+        ++appendednode)
     {
       masternodeids.push_back(*appendednode);
     }
 
     for (std::set<int>::iterator appendednode = slaveset.begin(); appendednode != slaveset.end();
-         ++appendednode)
+        ++appendednode)
     {
       slavenodeids.push_back(*appendednode);
     }
@@ -176,7 +176,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
         slavenodeids, dofsforpbcplane, rotangle, midtosid_);
     // sanity check
     for (std::map<int, std::vector<int>>::iterator pair = midtosid_.begin();
-         pair != midtosid_.end(); ++pair)
+        pair != midtosid_.end(); ++pair)
     {
       if (pair->second.size() != 1)
       {
@@ -233,7 +233,7 @@ void FLD::TransferTurbulentInflowCondition::transfer(
 
     // collect masters on this proc and associated velocities
     for (std::map<int, std::vector<int>>::iterator pair = midtosid_.begin();
-         pair != midtosid_.end(); ++pair)
+        pair != midtosid_.end(); ++pair)
     {
       int gid = pair->first;
 
@@ -750,7 +750,7 @@ void FLD::TransferTurbulentInflowConditionXW::transfer(
 
     // collect masters on this proc and associated velocities
     for (std::map<int, std::vector<int>>::iterator pair = midtosid_.begin();
-         pair != midtosid_.end(); ++pair)
+        pair != midtosid_.end(); ++pair)
     {
       int gid = pair->first;
 
@@ -959,7 +959,7 @@ void FLD::TransferTurbulentInflowConditionNodal::transfer(
   {
     // collect masters on this proc and associated velocities
     for (std::map<int, std::vector<int>>::iterator pair = midtosid_.begin();
-         pair != midtosid_.end(); ++pair)
+        pair != midtosid_.end(); ++pair)
     {
       int gid = pair->first;
 

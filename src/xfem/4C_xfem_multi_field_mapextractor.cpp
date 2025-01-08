@@ -152,7 +152,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
   std::set<int>::const_iterator cit_set;
 
   for (std::set<int>::const_iterator ngid = g_interface_node_gid_set().begin();
-       ngid != g_interface_node_gid_set().end(); ++ngid)
+      ngid != g_interface_node_gid_set().end(); ++ngid)
   {
     for (unsigned d = 0; d < sl_dis_vec().size(); ++d)
     {
@@ -968,7 +968,7 @@ void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
 
   // loop over all proc's
   for (unsigned p = 0; p < static_cast<unsigned>(Core::Communication::num_mpi_ranks(get_comm()));
-       ++p)
+      ++p)
   {
     int num_my_unique_row_nodes = 0;
     std::vector<int> my_unique_row_node_gid_vec(0);
@@ -983,7 +983,7 @@ void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
       for (unsigned j = 0; j < slave_discret_vec_.size(); ++j)
       {
         for (unsigned i = 0; i < static_cast<unsigned>(slave_discret_vec_[j]->num_my_row_nodes());
-             ++i)
+            ++i)
         {
           int gid = slave_discret_vec_[j]->node_row_map()->GID(i);
           // insert the gid and check if it is unique on the current processor
@@ -1036,7 +1036,7 @@ void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
      * row node set as well. */
     // ------------------------------------------------------------------------
     for (std::vector<int>::const_iterator cit = my_unique_row_node_gid_vec.begin();
-         cit != my_unique_row_node_gid_vec.end(); ++cit)
+        cit != my_unique_row_node_gid_vec.end(); ++cit)
     {
       std::pair<std::set<int>::iterator, bool> is_unique = g_unique_row_node_gid_set.insert(*cit);
       if (not is_unique.second) g_interface_node_gid_set_.insert(*cit);

@@ -80,8 +80,8 @@ namespace NOX
         void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
       };  // class LinearSystem
-    }     // namespace Cardiovascular0D
-  }       // namespace Nln
+    }  // namespace Cardiovascular0D
+  }  // namespace Nln
 }  // namespace NOX
 
 

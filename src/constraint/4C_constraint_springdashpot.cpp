@@ -278,9 +278,9 @@ void CONSTRAINTS::SpringDashpot::evaluate_robin(std::shared_ptr<Core::LinAlg::Sp
                              .evaluate(displ.data(), total_time, 0);
 
             force_disp_deriv = (Global::Problem::instance()
-                                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
-                                        (*numfuncnonlinstiff)[dof] - 1)
-                                    .evaluate_spatial_derivative(displ.data(), total_time, 0))[dof];
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
+                        (*numfuncnonlinstiff)[dof] - 1)
+                    .evaluate_spatial_derivative(displ.data(), total_time, 0))[dof];
           }
 
           // velocity related forces and derivatives
@@ -420,7 +420,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_force(Core::LinAlg::Vector<double>& fi
           break;
       }
     }  // node owned by processor
-  }    // loop over nodes
+  }  // loop over nodes
 }
 
 
@@ -568,7 +568,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_force_stiff(Core::LinAlg::SparseMatrix
           break;
       }
     }  // node owned by processor
-  }    // loop over nodes
+  }  // loop over nodes
 
   if (springtype_ == cursurfnormal) stiff.complete();  // sparsity pattern might have changed
 }
@@ -620,7 +620,7 @@ void CONSTRAINTS::SpringDashpot::reset_prestress(const Core::LinAlg::Vector<doub
         offset_prestr_.insert(std::pair<int, std::vector<double>>(node_gid, uoff));
 
       }  // node owned by processor
-    }    // loop over nodes
+    }  // loop over nodes
   }
 }
 
@@ -670,7 +670,7 @@ void CONSTRAINTS::SpringDashpot::set_restart_old(Core::LinAlg::MultiVector<doubl
       }
 
     }  // node owned by processor
-  }    // loop over nodes
+  }  // loop over nodes
 }
 
 /*----------------------------------------------------------------------*

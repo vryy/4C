@@ -786,7 +786,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
       solcontacteles_.push_back(cele);
       bt_sol_discret().add_element(cele);
-    }                 // for (fool=ele1.start(); fool != ele1.end(); ++fool)
+    }  // for (fool=ele1.start(); fool != ele1.end(); ++fool)
     ggsize += gsize;  // update global element counter
   }
   // end: determine surface elements and their nodes
@@ -864,7 +864,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
       solmeshtyingeles_.push_back(mtele);
       bt_sol_discret().add_element(mtele);
-    }                 // for (fool=ele1.start(); fool != ele1.end(); ++fool)
+    }  // for (fool=ele1.start(); fool != ele1.end(); ++fool)
     ggsize += gsize;  // update global element counter
   }
   // end: determine surface elements and their nodes
@@ -1055,8 +1055,8 @@ void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>
 
       Core::LinAlg::Matrix<3, 1> currtan(true);
       for (int i = 0; i < numnodes_;
-           i++)  // TODO for now, use number of centerline nodes numnodes_ (=2) (no matter how many
-                 // nodes the function call node->Elements()[0]->num_node() would tell you)
+          i++)  // TODO for now, use number of centerline nodes numnodes_ (=2) (no matter how many
+                // nodes the function call node->Elements()[0]->num_node() would tell you)
       {
         if (node->elements()[0]->nodes()[i]->id() == node->id() and
             node->elements()[0]->element_type() == Discret::Elements::Beam3ebType::instance())
@@ -2147,8 +2147,8 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
     FOUR_C_THROW("Contact pair specific gmsh output is not implemented in parallel so far.");
 #endif
 
-    //  if (btsol_)
-    //    FOUR_C_THROW("GmshOutput not implemented for beam-to-solid contact so far!");
+  //  if (btsol_)
+  //    FOUR_C_THROW("GmshOutput not implemented for beam-to-solid contact so far!");
 
 #ifdef OUTPUTEVERY
   if (fabs(timen_ - (outputcounter_ + 1) * OUTPUTEVERY) < 1.0e-8)
@@ -3110,7 +3110,7 @@ void CONTACT::Beam3cmanager::transform_angle_to_triad(
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       R(i, j) = identity(i, j) + spin(i, j) * (sin(theta_abs)) / theta_abs +
-                (1 - (cos(theta_abs))) / (pow(theta_abs, 2)) * spin2(i, j);
+                (1 - (cos(theta_abs))) / (pow(theta_abs, 2))*spin2(i, j);
 
   return;
 }
@@ -3291,7 +3291,7 @@ void CONTACT::Beam3cmanager::update_constr_norm()
 
   if (minallrelgap < mintotalsimrelgap_) mintotalsimrelgap_ = minallrelgap;
 
-    // Set class variable
+  // Set class variable
 #ifdef RELCONSTRTOL
   constrnorm_ = fabs(minallrelgap);
 #else

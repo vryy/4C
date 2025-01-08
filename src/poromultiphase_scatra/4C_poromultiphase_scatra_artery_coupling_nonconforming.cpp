@@ -44,13 +44,13 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
       porofluidprob_(false),
       has_varying_diam_(false),
       delete_free_hanging_eles_(Global::Problem::instance()
-                                    ->poro_fluid_multi_phase_dynamic_params()
-                                    .sublist("ARTERY COUPLING")
-                                    .get<bool>("DELETE_FREE_HANGING_ELES")),
+              ->poro_fluid_multi_phase_dynamic_params()
+              .sublist("ARTERY COUPLING")
+              .get<bool>("DELETE_FREE_HANGING_ELES")),
       delete_free_hanging_eles_threshold_(Global::Problem::instance()
-                                              ->poro_fluid_multi_phase_dynamic_params()
-                                              .sublist("ARTERY COUPLING")
-                                              .get<double>("DELETE_SMALL_FREE_HANGING_COMPS")),
+              ->poro_fluid_multi_phase_dynamic_params()
+              .sublist("ARTERY COUPLING")
+              .get<double>("DELETE_SMALL_FREE_HANGING_COMPS")),
       coupling_method_(
           Teuchos::getIntegralValue<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
               couplingparams, "ARTERY_COUPLING_METHOD")),
@@ -240,14 +240,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
   std::map<int, std::set<int>>::const_iterator nearbyeleiter;
   int numactive_pairs = 0;
   for (nearbyeleiter = nearbyelepairs_.begin(); nearbyeleiter != nearbyelepairs_.end();
-       ++nearbyeleiter)
+      ++nearbyeleiter)
     numactive_pairs += nearbyeleiter->second.size();
 
   coupl_elepairs_.resize(numactive_pairs);
 
   int mypair = 0;
   for (nearbyeleiter = nearbyelepairs_.begin(); nearbyeleiter != nearbyelepairs_.end();
-       ++nearbyeleiter)
+      ++nearbyeleiter)
   {
     const int artelegid = nearbyeleiter->first;
     std::vector<Core::Elements::Element const*> ele_ptrs(2);
@@ -255,7 +255,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
 
     std::set<int>::const_iterator secondeleiter;
     for (secondeleiter = nearbyeleiter->second.begin();
-         secondeleiter != nearbyeleiter->second.end(); ++secondeleiter)
+        secondeleiter != nearbyeleiter->second.end(); ++secondeleiter)
     {
       const int contelegid = *secondeleiter;
       ele_ptrs[1] = contdis_->g_element(contelegid);

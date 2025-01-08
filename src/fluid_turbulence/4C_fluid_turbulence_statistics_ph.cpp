@@ -92,7 +92,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
       Core::Communication::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
-           x1line != x1avcoords.end(); ++x1line)
+          x1line != x1avcoords.end(); ++x1line)
       {
         add_to_pack(data, *x1line);
       }
@@ -148,7 +148,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
     {
       Core::Communication::PackBuffer data;
       for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
-           x2line != x2avcoords.end(); ++x2line)
+          x2line != x2avcoords.end(); ++x2line)
       {
         add_to_pack(data, *x2line);
       }
@@ -204,13 +204,13 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
   //----------------------------------------------------------------------
   {
     for (std::set<double, LineSortCriterion>::iterator coord1 = x1avcoords.begin();
-         coord1 != x1avcoords.end(); ++coord1)
+        coord1 != x1avcoords.end(); ++coord1)
     {
       x1coordinates_->push_back(*coord1);
     }
 
     for (std::set<double, LineSortCriterion>::iterator coord2 = x2avcoords.begin();
-         coord2 != x2avcoords.end(); ++coord2)
+        coord2 != x2avcoords.end(); ++coord2)
     {
       x2coordinates_->push_back(*coord2);
     }
@@ -321,7 +321,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
       {
         Core::Communication::PackBuffer data;
         for (std::set<double, LineSortCriterion>::iterator x2 = x2statlocat.begin();
-             x2 != x2statlocat.end(); ++x2)
+            x2 != x2statlocat.end(); ++x2)
         {
           add_to_pack(data, *x2);
         }
@@ -372,7 +372,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
 
     int x2it = -1;
     for (std::set<double, LineSortCriterion>::iterator x2locc = x2statlocat.begin();
-         x2locc != x2statlocat.end(); ++x2locc)
+        x2locc != x2statlocat.end(); ++x2locc)
     {
       x2it += 1;
       x2statlocations_(x1stat, x2it) = *x2locc;

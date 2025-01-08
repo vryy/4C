@@ -406,7 +406,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface
         new_segment.get_projection_points();
     projection_points.resize(segment_double.get_number_of_projection_points());
     for (unsigned int i_point = 0; i_point < segment_double.get_number_of_projection_points();
-         i_point++)
+        i_point++)
     {
       // Position of the projection point within the segment.
       auto& projection_point_double = segment_double.get_projection_points()[i_point];

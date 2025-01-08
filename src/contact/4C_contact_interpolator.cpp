@@ -225,7 +225,7 @@ void NTS::Interpolator::interpolate_2d(Mortar::Node& snode, std::vector<Mortar::
         nw_t_e_2d(mynode, area, jumpval, dslipmatrix);
       }
     }  // End hit ele
-  }    // End Loop over all Master Elements
+  }  // End Loop over all Master Elements
 
   //**************************************************************
 
@@ -435,7 +435,7 @@ bool NTS::Interpolator::interpolate_3d(Mortar::Node& snode, std::vector<Mortar::
       nw_gap_3d(mynode, *meles[nummaster], mval, mderiv, dmxi, gpn);
 
     }  // End hit ele
-  }    // End Loop over all Master Elements
+  }  // End Loop over all Master Elements
 
   //**************************************************************
 
@@ -623,7 +623,7 @@ void NTS::Interpolator::interpolate_master_temp_3d(
         // interpolate master side temperatures
         nw_master_temp(*mynode, *meles[nummaster], mval, mderiv, dmxi);
       }  // End hit ele
-    }    // End Loop over all Master Elements
+    }  // End Loop over all Master Elements
   }
   //**************************************************************
 
@@ -903,11 +903,11 @@ void NTS::Interpolator::nw_wear_2d(CONTACT::Node& mynode, Mortar::Element& mele,
     // **********************************************************************
     // (1) Lin of normal for LM -- deriv normal maps from weighted gap lin.
     for (_CI p = mynode.data().get_deriv_n()[0].begin(); p != mynode.data().get_deriv_n()[0].end();
-         ++p)
+        ++p)
       dwear[p->first] += abs(jumpval) * gplm[0] * (p->second);
 
     for (_CI p = mynode.data().get_deriv_n()[1].begin(); p != mynode.data().get_deriv_n()[1].end();
-         ++p)
+        ++p)
       dwear[p->first] += abs(jumpval) * gplm[1] * (p->second);
 
     // **********************************************************************
@@ -1083,11 +1083,11 @@ void NTS::Interpolator::nw_gap_2d(CONTACT::Node& mynode, Mortar::Element& sele,
 
   //*************************************************************
   for (_CI p = mynode.data().get_deriv_n()[0].begin(); p != mynode.data().get_deriv_n()[0].end();
-       ++p)
+      ++p)
     dgapgp[p->first] += (mgpx[0] - sgpx[0]) * (p->second);
 
   for (_CI p = mynode.data().get_deriv_n()[1].begin(); p != mynode.data().get_deriv_n()[1].end();
-       ++p)
+      ++p)
     dgapgp[p->first] += (mgpx[1] - sgpx[1]) * (p->second);
 
 
@@ -1173,15 +1173,15 @@ void NTS::Interpolator::nw_gap_3d(CONTACT::Node& mynode, Mortar::Element& mele,
 
   //*************************************************************
   for (_CI p = mynode.data().get_deriv_n()[0].begin(); p != mynode.data().get_deriv_n()[0].end();
-       ++p)
+      ++p)
     dgapgp[p->first] += (mgpx[0] - sgpx[0]) * (p->second);
 
   for (_CI p = mynode.data().get_deriv_n()[1].begin(); p != mynode.data().get_deriv_n()[1].end();
-       ++p)
+      ++p)
     dgapgp[p->first] += (mgpx[1] - sgpx[1]) * (p->second);
 
   for (_CI p = mynode.data().get_deriv_n()[2].begin(); p != mynode.data().get_deriv_n()[2].end();
-       ++p)
+      ++p)
     dgapgp[p->first] += (mgpx[2] - sgpx[2]) * (p->second);
 
 
@@ -1868,7 +1868,7 @@ void NTS::MTInterpolatorCalc<distype_m>::interpolate_2d(
 
       if (abs(prod) > MORTARINTTOL) snode.add_d_value(snode.id(), prod);
     }  // End hit ele
-  }    // End Loop over all Master Elements
+  }  // End Loop over all Master Elements
 
   //**************************************************************
 
@@ -2058,7 +2058,7 @@ void NTS::MTInterpolatorCalc<distype_m>::interpolate_3d(
 
       if (abs(prod) > MORTARINTTOL) snode.add_d_value(snode.id(), prod);
     }  // End hit ele
-  }    // End Loop over all Master Elements
+  }  // End Loop over all Master Elements
   //**************************************************************
 
   return;

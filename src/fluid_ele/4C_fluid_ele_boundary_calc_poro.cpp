@@ -1242,7 +1242,7 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
                     fac * timefac *
                     survivor(
                         nnod);  // *Base::fac_ since normalderiv is referring to the test function
-              }                 // idof3
+              }  // idof3
 
               /*                              _                      _
                               I  alpha mu_f  |                        |   I  /
@@ -1617,7 +1617,7 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
                           pressint_n(0, 0) * Base::unitnormal_n_(idof2))) *
               survivor(inode) * Base::fac_;
         }
-      }                           // block structure
+      }  // block structure
       else if (block == "fluid")  // rhs of fluid evaluated on porofluidfield
       {
         /*
@@ -1642,7 +1642,7 @@ void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
                         tangentialfac) *
               rhsfac * survivor(inode);
         }
-      }                                // block fluid
+      }  // block fluid
       else if (block == "fluidfluid")  // rhs of fluid evaluated on fluidfield
       {
         /*

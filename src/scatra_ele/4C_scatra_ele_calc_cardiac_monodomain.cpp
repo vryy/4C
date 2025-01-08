@@ -296,7 +296,7 @@ void Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat
       aniso::calc_rhs_diff(erhs, k, rhsfac);
 
     }  // end loop all scalars
-  }    // end loop Gauss points
+  }  // end loop Gauss points
 
   return;
 }

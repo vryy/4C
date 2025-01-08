@@ -131,8 +131,8 @@ void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
         }
 
       }  // loop over DOFs of face
-    }    // loop over all faces
-  }      // if there are faces
+    }  // loop over all faces
+  }  // if there are faces
 
   return;
 }
@@ -367,7 +367,7 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
         if (systemvectors[2] != nullptr) (*systemvectors[2])[lid] = value[2] * elevec1(j);
 
       }  // loop over all DOFs
-    }    // loop over all faces
+    }  // loop over all faces
 
   }  // if there are faces
 

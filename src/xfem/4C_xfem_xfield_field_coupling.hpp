@@ -247,7 +247,7 @@ namespace XFEM
 
       //@}
     };  // class Coupling
-  }     // namespace XFieldField
+  }  // namespace XFieldField
 }  // namespace XFEM
 
 

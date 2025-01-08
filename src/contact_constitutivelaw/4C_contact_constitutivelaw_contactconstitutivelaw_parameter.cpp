@@ -16,7 +16,7 @@ CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
     const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container>
         coconstlawdata  ///< read and validate contactconstitutivelaw data (of 'slow' access)
     )
-    : offset_(coconstlawdata->get<double>("Offset")){};
+    : offset_(coconstlawdata->get<double>("Offset")) {};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Container::Container(

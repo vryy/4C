@@ -88,7 +88,7 @@ std::vector<double> Cut::DirectDivergenceGlobalRefplane::get_reference_plane()
       // some cases ...
       points.clear();
       for (plain_facet_set::const_iterator fit = volcell_->facets().begin();
-           fit != volcell_->facets().end(); ++fit)
+          fit != volcell_->facets().end(); ++fit)
       {
         for (std::size_t p = 0; p < (*fit)->points().size(); ++p)
         {
@@ -150,7 +150,7 @@ bool Cut::DirectDivergenceGlobalRefplane::diagonal_based_ref(
   double xnormal = 0.0;
   bool found_refplane = false;
   for (std::vector<std::vector<Point*>>::iterator itd = diagonals.begin(); itd != diagonals.end();
-       itd++)
+      itd++)
   {
     std::vector<Point*> ptl = *itd;
     std::vector<double> RefPlaneTemp = Kernel::eqn_plane_of_polygon(ptl);
@@ -312,7 +312,7 @@ bool Cut::DirectDivergenceGlobalRefplane::side_based_ref(
   bool found_refplane = false;
   for (std::multimap<double, std::pair<std::vector<double>, std::vector<Point*>>>::iterator it =
            side_data.begin();
-       it != side_data.end(); it++)
+      it != side_data.end(); it++)
   {
     std::vector<double> RefPlaneTemp = it->second.first;
 

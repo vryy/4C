@@ -600,7 +600,7 @@ void Mat::Damage::evaluate_simplified_lemaitre(const Core::LinAlg::Matrix<3, 3>*
         // load step considering damage
         damevolution = true;
       }  // (strainbar_p > strainbar_p_D)
-    }    // no damage: (strainbar_p < strainbar_p_D)
+    }  // no damage: (strainbar_p < strainbar_p_D)
 
     // ------------------------------------ threshold of trial step is exceeded
     // (strainbar_p > strainbar_p_D), i.e. damage evolves
@@ -643,7 +643,8 @@ void Mat::Damage::evaluate_simplified_lemaitre(const Core::LinAlg::Matrix<3, 3>*
       Rplast = isohardvarlast_.at(gp) + Dgamma;
 
       const int itermax = 50;  // max. number of iterations
-      auto residuumAndJacobianWithDamage = [&](double Dgamma) {
+      auto residuumAndJacobianWithDamage = [&](double Dgamma)
+      {
         return residuum_and_jacobian_with_damage(
             params_, Dgamma, Rplast, q_tilde, p_tilde, omegaold);
       };
@@ -848,7 +849,7 @@ double Mat::Damage::get_iso_hard_at_strainbarnp(
       Hiso += (sigma_y_ref[i] - sigma_y_ref[i - 1]) / (strainbar_p_ref[i] - strainbar_p_ref[i - 1]);
       break;
     }  // load is plastic, hardening can occur
-  }    // loop over samples
+  }  // loop over samples
 
   // return current isotropic hardening modulus
   return Hiso;
@@ -2113,8 +2114,8 @@ void Mat::Damage::setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, 
           // here: Nbar = s^{trial}_{n+1} / || s^{trial}_{n+1} ||
           cmat(i, k) += epfac3 * Nbar(i) * Nbar(k);
         }  // end rows, loop i
-      }    // end columns, loop k
-    }      // (q != 0.0)
+      }  // end columns, loop k
+    }  // (q != 0.0)
 
     // complete material tangent C_ep available
 
@@ -2133,7 +2134,7 @@ void Mat::Damage::setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, 
       std::cout << " cmat " << cmat << std::endl;
     }
 #endif  // #ifdef DEBUGMATERIAL
-  }     // (damevolution == false)
+  }  // (damevolution == false)
 
   // material tangent differs for case damage or not
   // if no damage: use standard tangent of purely plastic behaviour
@@ -2296,7 +2297,7 @@ void Mat::Damage::setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, 
       cmat.multiply_nt(d, id2, Nbar, 1.0);
       cmat.multiply_nt(e, id2, id2, 1.0);
 
-    }     // plastic load step
+    }  // plastic load step
     else  // elastic (un-)loading
     {
       setup_cmat(cmat);
@@ -2457,8 +2458,8 @@ void Mat::Damage::setup_cmat_elasto_plastic_full_lemaitre(
           // (- 1 / qbar_tilde) . N_tilde \otimes N_tilde
           dPhi_dsigma_tilde_square(i, k) += -1.0 / qbar_tilde * N_tilde(i) * N_tilde(k);
         }  // end rows, loop i
-      }    // end columns, loop k
-    }      // (qbar_tilde != 0.0)
+      }  // end columns, loop k
+    }  // (qbar_tilde != 0.0)
 
     // n_alg = [ omega - y . Dgamma / omega + s_N ] . 2 G . N_tilde
     //         - 3 G . (Dgamma / omega)^2 . [ C^e - (2 G)^2 . Dgamma / omega

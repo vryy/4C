@@ -110,7 +110,7 @@ void BeamInteraction::add_averaged_nodal_normals(
 
       // Loop over element nodes.
       for (int i_node = 0; i_node < face_element_iterator.second->get_element()->num_node();
-           i_node++)
+          i_node++)
       {
         for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
           xi(i_dim) = nodal_coordinates(i_dim, i_node);

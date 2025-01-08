@@ -36,17 +36,17 @@ extern "C"
 #endif
 
   void dsytrf(
-      char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
-  void dsytri(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
-  void dhgeqz(char *job, char *compq, char *compz, int *n, int *ilo, int *ihi, double *h, int *ldh,
-      double *t, int *ldt, double *alphar, double *alphai, double *beta, double *q, int *ldq,
-      double *z, int *ldz, double *work, int *lwork, int *info);
-  void dgghrd(char *compq, char *compz, int *n, int *ilo, int *ihi, double *a, int *lda, double *b,
-      int *ldb, double *q, int *ldq, double *z, int *lzd, int *info);
-  void dgeqp3(int *m, int *n, double *a, int *lda, int *jpvt, double *tau, double *work, int *lwork,
-      int *info);
-  void dggbal(const char *job, const int *n, double *A, const int *lda, double *B, const int *ldb,
-      int *ilo, int *ihi, double *lscale, double *rscale, double *work, int *info);
+      char* uplo, int* n, double* a, int* lda, int* ipiv, double* work, int* lwork, int* info);
+  void dsytri(char* uplo, int* n, double* a, int* lda, int* ipiv, double* work, int* info);
+  void dhgeqz(char* job, char* compq, char* compz, int* n, int* ilo, int* ihi, double* h, int* ldh,
+      double* t, int* ldt, double* alphar, double* alphai, double* beta, double* q, int* ldq,
+      double* z, int* ldz, double* work, int* lwork, int* info);
+  void dgghrd(char* compq, char* compz, int* n, int* ilo, int* ihi, double* a, int* lda, double* b,
+      int* ldb, double* q, int* ldq, double* z, int* lzd, int* info);
+  void dgeqp3(int* m, int* n, double* a, int* lda, int* jpvt, double* tau, double* work, int* lwork,
+      int* info);
+  void dggbal(const char* job, const int* n, double* A, const int* lda, double* B, const int* ldb,
+      int* ilo, int* ihi, double* lscale, double* rscale, double* work, int* info);
 
 #ifdef __cplusplus
 }

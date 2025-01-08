@@ -205,7 +205,7 @@ void Core::LinAlg::all_to_all_communication(
     int displacement = 0;
     sdispls.push_back(0);
     for (std::vector<std::vector<int>>::const_iterator iter = send.begin(); iter != send.end();
-         ++iter)
+        ++iter)
     {
       sendbuf.insert(sendbuf.end(), iter->begin(), iter->end());
       sendcounts.push_back(iter->size());
@@ -228,7 +228,7 @@ void Core::LinAlg::all_to_all_communication(
     displacement = 0;
     rdispls.push_back(0);
     for (std::vector<int>::const_iterator iter = recvcounts.begin(); iter != recvcounts.end();
-         ++iter)
+        ++iter)
     {
       displacement += *iter;
       rdispls.push_back(displacement);
@@ -276,7 +276,7 @@ void Core::LinAlg::all_to_all_communication(
     int displacement = 0;
     sdispls.push_back(0);
     for (std::vector<std::vector<int>>::const_iterator iter = send.begin(); iter != send.end();
-         ++iter)
+        ++iter)
     {
       sendbuf.insert(sendbuf.end(), iter->begin(), iter->end());
       sendcounts.push_back(iter->size());
@@ -299,7 +299,7 @@ void Core::LinAlg::all_to_all_communication(
     displacement = 0;
     rdispls.push_back(0);
     for (std::vector<int>::const_iterator iter = recvcounts.begin(); iter != recvcounts.end();
-         ++iter)
+        ++iter)
     {
       displacement += *iter;
       rdispls.push_back(displacement);

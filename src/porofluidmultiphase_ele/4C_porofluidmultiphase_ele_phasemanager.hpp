@@ -79,7 +79,7 @@ namespace Discret
       {
        public:
         //! constructor
-        PhaseManagerInterface(){};
+        PhaseManagerInterface() {};
 
         //! destructor
         virtual ~PhaseManagerInterface() = default;
@@ -846,7 +846,7 @@ namespace Discret
         //! constructor
         explicit PhaseManagerDecorator(
             std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager)
-            : phasemanager_(phasemanager){};
+            : phasemanager_(phasemanager) {};
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
@@ -1652,7 +1652,7 @@ namespace Discret
        * **********************************************************************
        *----------------------------------------------------------------------*/
     }  // namespace PoroFluidManager
-  }    // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 
 

@@ -100,8 +100,8 @@ namespace Core::LinAlg
     \param translate_params_to_belos  (in): translate parameters to Belos
 
     */
-    Solver(const Teuchos::ParameterList &inparams, MPI_Comm comm,
-        const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
+    Solver(const Teuchos::ParameterList& inparams, MPI_Comm comm,
+        const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
         Core::IO::Verbositylevel verbosity, bool translate_params_to_belos = true);
 
     //! @name Solve and ApplyInverse methods
@@ -118,7 +118,7 @@ namespace Core::LinAlg
     */
     void setup(std::shared_ptr<Epetra_Operator> matrix,
         std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
-        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const SolverParams &params);
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const SolverParams& params);
 
     /*!
     \brief Solve system of equations in one go
@@ -135,11 +135,11 @@ namespace Core::LinAlg
     */
     int solve_with_multi_vector(std::shared_ptr<Epetra_Operator> matrix,
         std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
-        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const SolverParams &params);
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const SolverParams& params);
 
     int solve(std::shared_ptr<Epetra_Operator> matrix,
         std::shared_ptr<Core::LinAlg::Vector<double>> x,
-        std::shared_ptr<Core::LinAlg::Vector<double>> b, const SolverParams &params);
+        std::shared_ptr<Core::LinAlg::Vector<double>> b, const SolverParams& params);
 
     /*!
     \brief Reset the solver and clear data
@@ -184,8 +184,8 @@ namespace Core::LinAlg
                           with #params_
     */
     static Teuchos::ParameterList translate_solver_parameters(
-        const Teuchos::ParameterList &inparams,
-        const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
+        const Teuchos::ParameterList& inparams,
+        const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
         Core::IO::Verbositylevel verbosity);
 
     /*!
@@ -203,8 +203,8 @@ namespace Core::LinAlg
     \date 11/08
     */
     void put_solver_params_to_sub_params(const std::string name,
-        const Teuchos::ParameterList &inparams,
-        const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
+        const Teuchos::ParameterList& inparams,
+        const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
         Core::IO::Verbositylevel verbosity)
     {
       (*params_).sublist(name) =
@@ -224,7 +224,7 @@ namespace Core::LinAlg
     \brief Get solver parameters
 
     */
-    inline Teuchos::ParameterList &params() const { return *params_; }
+    inline Teuchos::ParameterList& params() const { return *params_; }
 
     //@}
 
@@ -290,10 +290,10 @@ namespace Core::LinAlg
 
    private:
     //! don't want = operator
-    Solver operator=(const Solver &old) = delete;
+    Solver operator=(const Solver& old) = delete;
 
     //! don't want cctor
-    Solver(const Solver &old) = delete;
+    Solver(const Solver& old) = delete;
 
   };  // class Solver
 

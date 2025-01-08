@@ -232,7 +232,7 @@ namespace Core::GeometricSearch
         bool found_starting_point = false;
         unsigned int i_start = 0;
         for (unsigned int i_possible_partner = 0; i_possible_partner < my_possible_partners.size();
-             i_possible_partner++)
+            i_possible_partner++)
         {
           for (unsigned int offset = 1; offset < my_possible_partners.size(); offset++)
           {
@@ -257,7 +257,7 @@ namespace Core::GeometricSearch
         {
           const auto i_partner = get_partner_index(i_start, offset);
           for (unsigned int inner_offset = 1; inner_offset < my_possible_partners.size();
-               inner_offset++)
+              inner_offset++)
           {
             const auto intersection_result =
                 get_intersection_point(i_partner, get_partner_index(i_partner, inner_offset));

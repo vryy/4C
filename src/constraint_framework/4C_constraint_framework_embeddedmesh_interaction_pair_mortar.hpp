@@ -38,7 +38,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     /**
      * \brief Destructor.
      */
-    ~SurfaceToBackgroundCouplingPairMortar() override{};
+    ~SurfaceToBackgroundCouplingPairMortar() override {};
 
     //! @name Visualization methods
     void get_projected_gauss_rule_in_cut_element(

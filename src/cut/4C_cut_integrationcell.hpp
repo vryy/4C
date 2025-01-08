@@ -83,7 +83,7 @@ namespace Cut
    public:
     Line2IntegrationCell(Point::PointPosition position, const Core::LinAlg::SerialDenseMatrix& xyz,
         const std::vector<Point*>& points, VolumeCell* cell)
-        : IntegrationCell(position, xyz, points, cell){/* empty construction */};
+        : IntegrationCell(position, xyz, points, cell) { /* empty construction */ };
 
     unsigned n_dim() const override { return Core::FE::dim<Core::FE::CellType::line2>; };
 
@@ -100,7 +100,7 @@ namespace Cut
    public:
     Tri3IntegrationCell(Point::PointPosition position, const Core::LinAlg::SerialDenseMatrix& xyz,
         const std::vector<Point*>& points, VolumeCell* cell)
-        : IntegrationCell(position, xyz, points, cell){/* empty construction */};
+        : IntegrationCell(position, xyz, points, cell) { /* empty construction */ };
 
     unsigned n_dim() const override { return Core::FE::dim<Core::FE::CellType::tri3>; };
 
@@ -117,7 +117,7 @@ namespace Cut
    public:
     Quad4IntegrationCell(Point::PointPosition position, const Core::LinAlg::SerialDenseMatrix& xyz,
         const std::vector<Point*>& points, VolumeCell* cell)
-        : IntegrationCell(position, xyz, points, cell){/* empty construction */};
+        : IntegrationCell(position, xyz, points, cell) { /* empty construction */ };
 
     unsigned n_dim() const override { return Core::FE::dim<Core::FE::CellType::quad4>; };
 

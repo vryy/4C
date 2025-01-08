@@ -54,13 +54,13 @@ EHL::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& globalt
     : Base(comm, globaltimeparams, lubricationparams, structparams, struct_disname,
           lubrication_disname),
       solveradapttol_(Global::Problem::instance()
-                          ->elasto_hydro_dynamic_params()
-                          .sublist("MONOLITHIC")
-                          .get<bool>("ADAPTCONV")),
+              ->elasto_hydro_dynamic_params()
+              .sublist("MONOLITHIC")
+              .get<bool>("ADAPTCONV")),
       solveradaptolbetter_(Global::Problem::instance()
-                               ->elasto_hydro_dynamic_params()
-                               .sublist("MONOLITHIC")
-                               .get<double>("ADAPTCONV_BETTER")),
+              ->elasto_hydro_dynamic_params()
+              .sublist("MONOLITHIC")
+              .get<double>("ADAPTCONV_BETTER")),
       printiter_(true),  // ADD INPUT PARAMETER
       zeros_(nullptr),
       strmethodname_(

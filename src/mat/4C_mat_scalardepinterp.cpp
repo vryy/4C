@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::ScalarDepInterp::ScalarDepInterp(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
       id_lambda_zero_(matdata.parameters.get<int>("IDMATZEROSC")),
-      id_lambda_unit_(matdata.parameters.get<int>("IDMATUNITSC")){
+      id_lambda_unit_(matdata.parameters.get<int>("IDMATUNITSC")) {
 
       };
 

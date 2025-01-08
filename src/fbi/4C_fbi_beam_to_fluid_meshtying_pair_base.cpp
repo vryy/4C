@@ -154,7 +154,7 @@ void BeamInteraction::BeamToFluidMeshtyingPairBase<Beam,
 
   // Loop over segments and display information about them.
   for (unsigned int index_segment = 0; index_segment < this->line_to_3D_segments_.size();
-       index_segment++)
+      index_segment++)
   {
     out << "    segment " << index_segment << ": ";
     out << "eta in [" << this->line_to_3D_segments_[index_segment].get_eta_a() << ", "

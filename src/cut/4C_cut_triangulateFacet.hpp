@@ -32,18 +32,18 @@ namespace Cut
     /*!
     \brief Constructor for a facet without holes
      */
-    TriangulateFacet(std::vector<Point *> ptlist) : ptlist_(ptlist) {}
+    TriangulateFacet(std::vector<Point*> ptlist) : ptlist_(ptlist) {}
 
     /*!
     \brief Constructor for a facet with holes
      */
-    TriangulateFacet(std::vector<Point *> ptlist, std::vector<std::vector<Point *>> inlists)
+    TriangulateFacet(std::vector<Point*> ptlist, std::vector<std::vector<Point*>> inlists)
         : ptlist_(ptlist)
     {
       if (hasequal_ptlist_inlist(ptlist, inlists)) return;
-      for (std::vector<std::vector<Point *>>::iterator i = inlists.begin(); i != inlists.end(); ++i)
+      for (std::vector<std::vector<Point*>>::iterator i = inlists.begin(); i != inlists.end(); ++i)
       {
-        std::vector<Point *> inlist = *i;
+        std::vector<Point*> inlist = *i;
         inlists_.push_back(inlist);
       }
     }
@@ -68,24 +68,24 @@ namespace Cut
     polygon (ptlist_) and the inner polygons (inlists_) are required. Triangles will be generated
     as output, which are all combined in one vector (split_).
     */
-    void ear_clipping_with_holes(Side *parentside);
+    void ear_clipping_with_holes(Side* parentside);
 
     /*!
     \brief Returns Tri and Quad cells that are created by facet splitting
      */
-    std::vector<std::vector<Point *>> get_split_cells() { return split_; }
+    std::vector<std::vector<Point*>> get_split_cells() { return split_; }
 
    private:
     /*!
     \brief The cyles ptlist and inlists are equal
     */
     bool hasequal_ptlist_inlist(
-        std::vector<Point *> ptlist, std::vector<std::vector<Point *>> inlists);
+        std::vector<Point*> ptlist, std::vector<std::vector<Point*>> inlists);
 
     /*!
     \brief Split a concave 4 noded facet into a 2 tri
     */
-    void split4node_facet(std::vector<Point *> &poly, bool callFromSplitAnyFacet = false);
+    void split4node_facet(std::vector<Point*>& poly, bool callFromSplitAnyFacet = false);
 
     /*!
     \brief Split a convex facet or a facet with only one concave point into 1 Tri and few Quad
@@ -104,7 +104,7 @@ namespace Cut
     bool has_two_continuous_concave_pts(std::vector<int> ptConcavity);
 
     //! Restores last ear that was deleted during triangulation
-    void restore_last_ear(int ear_head_index, std::vector<int> &ptConcavity);
+    void restore_last_ear(int ear_head_index, std::vector<int>& ptConcavity);
 
     //! Goes clockwise from the the only no on-line point on the triangle and generates thin
     //! triangles
@@ -113,17 +113,17 @@ namespace Cut
     //! Find second best ear, from the ones we discarded during the first check on the first round
     //! of earclipping
     unsigned int find_second_best_ear(
-        std::vector<std::pair<std::vector<Point *>, unsigned int>> &ears,
-        const std::vector<int> &reflex);
+        std::vector<std::pair<std::vector<Point*>, unsigned int>>& ears,
+        const std::vector<int>& reflex);
 
     //! Corner points of the facet
-    std::vector<Point *> ptlist_;
+    std::vector<Point*> ptlist_;
 
     //! Points describing holes in this facet
-    std::list<std::vector<Point *>> inlists_;
+    std::list<std::vector<Point*>> inlists_;
 
     //! Holds the split Tri and Quad cells
-    std::vector<std::vector<Point *>> split_;
+    std::vector<std::vector<Point*>> split_;
   };
 }  // namespace Cut
 

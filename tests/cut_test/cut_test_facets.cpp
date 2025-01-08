@@ -98,7 +98,7 @@ void find_corner_points(const std::vector<Core::LinAlg::Matrix<3, 1>>& points,
   Core::LinAlg::Matrix<3, 1> b3;
 
   for (unsigned i = FindNextCornerPoint(points, x1, x2, x3, b1, b2, b3, 0); true;
-       i = FindNextCornerPoint(points, x1, x2, x3, b1, b2, b3, i))
+      i = FindNextCornerPoint(points, x1, x2, x3, b1, b2, b3, i))
   {
     const Core::LinAlg::Matrix<3, 1>& p = points[i];
     if (corner_points.size() > 0 and corner_points.front() == p) break;

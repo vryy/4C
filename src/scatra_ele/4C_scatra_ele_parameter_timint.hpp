@@ -56,7 +56,7 @@ namespace Discret
       double timefacrhstau_;
       double alpha_f_;
     };  // class ScaTraEleParameterTimInt
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

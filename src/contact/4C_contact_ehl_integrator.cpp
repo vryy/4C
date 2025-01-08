@@ -137,10 +137,8 @@ void CONTACT::IntegratorEhl::gp_weighted_surf_grad_and_deriv(Mortar::Element& se
     {
       for (auto p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
       {
-        Core::LinAlg::Matrix<3, 1>& tmp =
-            cnode->ehl_data()
-                .get_surf_grad_deriv()[p->first]
-                                      [dynamic_cast<CONTACT::Node*>(sele.nodes()[c])->dofs()[0]];
+        Core::LinAlg::Matrix<3, 1>& tmp = cnode->ehl_data().get_surf_grad_deriv()[p
+                ->first][dynamic_cast<CONTACT::Node*>(sele.nodes()[c])->dofs()[0]];
         for (int d = 0; d < n_dim(); ++d)
           for (int al = 0; al < n_dim() - 1; ++al)
             tmp(d) += wgt * p->second * lmval(a) * sderiv(c, al) * gxi_contra.at(al).at(d);
@@ -148,10 +146,8 @@ void CONTACT::IntegratorEhl::gp_weighted_surf_grad_and_deriv(Mortar::Element& se
       for (int e = 0; e < n_dim() - 1; ++e)
         for (auto p = dsxigp.at(e).begin(); p != dsxigp.at(e).end(); ++p)
         {
-          Core::LinAlg::Matrix<3, 1>& tmp =
-              cnode->ehl_data()
-                  .get_surf_grad_deriv()[p->first]
-                                        [dynamic_cast<CONTACT::Node*>(sele.nodes()[c])->dofs()[0]];
+          Core::LinAlg::Matrix<3, 1>& tmp = cnode->ehl_data().get_surf_grad_deriv()[p
+                  ->first][dynamic_cast<CONTACT::Node*>(sele.nodes()[c])->dofs()[0]];
           for (int d = 0; d < n_dim(); ++d)
             for (int al = 0; al < n_dim() - 1; ++al)
               tmp(d) +=
@@ -160,10 +156,8 @@ void CONTACT::IntegratorEhl::gp_weighted_surf_grad_and_deriv(Mortar::Element& se
 
       for (auto p = dualmap.begin(); p != dualmap.end(); ++p)
       {
-        Core::LinAlg::Matrix<3, 1>& tmp =
-            cnode->ehl_data()
-                .get_surf_grad_deriv()[p->first]
-                                      [dynamic_cast<CONTACT::Node*>(sele.nodes()[c])->dofs()[0]];
+        Core::LinAlg::Matrix<3, 1>& tmp = cnode->ehl_data().get_surf_grad_deriv()[p
+                ->first][dynamic_cast<CONTACT::Node*>(sele.nodes()[c])->dofs()[0]];
         for (int d = 0; d < n_dim(); ++d)
           for (int al = 0; al < n_dim() - 1; ++al)
             for (int m = 0; m < sele.num_node(); ++m)

@@ -37,7 +37,7 @@ namespace NOX
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace Inner
+    }  // namespace Inner
 
     class Problem
     {

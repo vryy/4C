@@ -23,7 +23,8 @@ Discret::Elements::ScaTraEleParameterLsReinit::instance(
 )
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
-      [](const std::string& disname) {
+      [](const std::string& disname)
+      {
         return std::unique_ptr<ScaTraEleParameterLsReinit>(new ScaTraEleParameterLsReinit(disname));
       });
 

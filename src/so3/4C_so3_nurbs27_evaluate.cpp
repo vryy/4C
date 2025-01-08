@@ -959,7 +959,7 @@ void Discret::Elements::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
           (*stiffmatrix)(3 * inod + 2, 3 * jnod + 2) += bopstrbop;
         }
       }  // end of integrate `geometric' stiffness
-    }    // if (stiffmatrix)
+    }  // if (stiffmatrix)
 
     if (massmatrix != nullptr)  // evaluate mass matrix
     {

@@ -4748,10 +4748,10 @@ void CONTACT::LagrangeStrategy::update_active_set()
               }
             }
           }  // if (ftype == Inpar::CONTACT::friction_coulomb)
-        }    // if (nz <= 0)
-      }      // if (cnode->Active()==false)
-    }        // loop over all slave nodes
-  }          // loop over all interfaces
+        }  // if (nz <= 0)
+      }  // if (cnode->Active()==false)
+    }  // loop over all slave nodes
+  }  // loop over all interfaces
 
   // broadcast convergence status among processors
   int convcheck = 0;
@@ -5382,7 +5382,7 @@ void CONTACT::LagrangeStrategy::evaluate_regularization_scaling(Core::LinAlg::Ve
                     << cnode->id() << " is: " << alpha << std::endl;
         }
       }  // loop over all slave nodes
-    }    // loop over all interfaces
+    }  // loop over all interfaces
 
     // Evaluate final scaling vetors!
     {

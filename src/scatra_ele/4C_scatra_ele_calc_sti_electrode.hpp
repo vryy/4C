@@ -186,7 +186,7 @@ namespace Discret
             // initialize internal member variables
             ocp_(0.),
             ocpderiv_(0.),
-            ocpderiv2_(0.){};
+            ocpderiv2_(0.) {};
 
 
       //! compute and store half cell open circuit potential and its first and second derivatives
@@ -237,7 +237,7 @@ namespace Discret
       //! second derivative of half cell open circuit potential w.r.t. concentration
       double ocpderiv2_;
     };  // class ScaTraEleDiffManagerSTIElchElectrode
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

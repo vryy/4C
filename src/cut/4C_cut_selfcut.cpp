@@ -33,7 +33,7 @@ Cut::SelfCut::SelfCut(MeshHandle& cut_mesh_handle, int myrank)
 {
   meshsizeparam_ = 1e200;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator sit = mesh_.sides().begin();
-       sit != mesh_.sides().end(); ++sit)
+      sit != mesh_.sides().end(); ++sit)
   {
     std::shared_ptr<BoundingBox> sbb(BoundingBox::create(*(sit->second)));
     meshsizeparam_ = std::min(meshsizeparam_, sbb->diagonal());
@@ -135,7 +135,7 @@ void Cut::SelfCut::find_cutting_sides()
   const std::map<int, Side*>& shadowsides = mesh_.shadow_sides();
 
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     Core::LinAlg::Matrix<3, 2> cutsideBV = cutside->get_bounding_volume().get_bounding_volume();
@@ -232,7 +232,7 @@ bool Cut::SelfCut::merge_coinciding_nodes(Side* keep, Side* replace)
     const Node* scnod = *noit;
 
     for (std::vector<Node*>::const_iterator cutit = cutnodes.begin(); cutit != cutnodes.end();
-         cutit++)
+        cutit++)
     {
       const Node* cutnod = *cutit;
 
@@ -301,7 +301,7 @@ void Cut::SelfCut::operations_for_node_merging(
 
   // consider each node that needs to be replaced
   for (std::vector<std::pair<const Node*, const Node*>>::iterator it = repl.begin();
-       it != repl.end(); it++)
+      it != repl.end(); it++)
   {
     std::pair<const Node*, const Node*>& pai = *it;
     Node* nod = const_cast<Node*>(pai.first);
@@ -386,13 +386,13 @@ void Cut::SelfCut::find_self_cut_points()
 {
   const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = mesh_.sides();
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     const plain_side_set& possiblecuttingsides = cutside->cutting_sides();
     plain_side_set nocuttingsides;
     for (plain_side_set::const_iterator i = possiblecuttingsides.begin();
-         i != possiblecuttingsides.end(); ++i)
+        i != possiblecuttingsides.end(); ++i)
     {
       Side* possiblecuttingside = *i;
 
@@ -428,7 +428,7 @@ void Cut::SelfCut::get_self_cut_objects()
 {
   const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = mesh_.sides();
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     std::shared_ptr<Side> cutside = i->second;
     if (cutside->cutting_sides().size() != 0)
@@ -439,13 +439,13 @@ void Cut::SelfCut::get_self_cut_objects()
   }
 
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
     get_self_cut_edges(*cutside);
   }
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
     const std::vector<Node*>& cutsidenodes = cutside->nodes();
@@ -468,7 +468,7 @@ void Cut::SelfCut::create_self_cut_nodes()
 {
   std::vector<Node*> cuttedsidesnodes;
   for (std::map<int, std::shared_ptr<Node>>::iterator i = selfcut_nodes_.begin();
-       i != selfcut_nodes_.end(); ++i)
+      i != selfcut_nodes_.end(); ++i)
   {
     Node* cuttedsidesnode = &*i->second;
     cuttedsidesnodes.push_back(cuttedsidesnode);
@@ -481,18 +481,18 @@ void Cut::SelfCut::create_self_cut_nodes()
   // side
   //   set their position as "oncutsurface"
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
     const PointSet& cutsideselfcutpoints = cutside->self_cut_points();
     for (PointSet::const_iterator i = cutsideselfcutpoints.begin(); i != cutsideselfcutpoints.end();
-         ++i)
+        ++i)
     {
       Point* cutsideselfcutpoint = *i;
       if (cutsideselfcutpoint->nodal_point(cuttedsidesnodes))
       {
         for (std::vector<Node*>::iterator i = cuttedsidesnodes.begin(); i != cuttedsidesnodes.end();
-             ++i)
+            ++i)
         {
           Node* cuttedsidesnode = *i;
           if (cuttedsidesnode->point() == cutsideselfcutpoint)
@@ -533,7 +533,7 @@ void Cut::SelfCut::create_self_cut_edges()
   // Find common nodes between a cut side and its self-cutting sides
   // create edges between these common nodes
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
     const plain_side_set& cuttingsides = cutside->cutting_sides();
@@ -593,7 +593,7 @@ void Cut::SelfCut::create_self_cut_edges()
 void Cut::SelfCut::find_self_cut_triangulation()
 {
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = i->second.get();
     const std::vector<Node*>& cutsidenodes = cutside->nodes();
@@ -680,7 +680,7 @@ void Cut::SelfCut::find_self_cut_triangulation()
       triangulatefacet.ear_clipping_with_holes(cutside);
       std::vector<std::vector<Point*>> maincycletriangles = triangulatefacet.get_split_cells();
       for (std::vector<std::vector<Point*>>::iterator i = maincycletriangles.begin();
-           i != maincycletriangles.end(); ++i)
+          i != maincycletriangles.end(); ++i)
       {
         std::vector<Point*> maincycletriangle = *i;
         if (Kernel::is_on_line(maincycletriangle[0], maincycletriangle[1], maincycletriangle[2]))
@@ -714,7 +714,7 @@ void Cut::SelfCut::find_self_cut_triangulation()
 void Cut::SelfCut::create_self_cut_sides()
 {
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
     plain_node_set allcutsidenodes = cutside->self_cut_nodes();
@@ -723,7 +723,7 @@ void Cut::SelfCut::create_self_cut_sides()
     // store all the nodes (self-cut nodes + side nodes)
     // this is used to check we really have a node at each point of triangle
     for (std::vector<Cut::Node*>::const_iterator i = cutsidenodes.begin(); i != cutsidenodes.end();
-         ++i)
+        ++i)
     {
       Node* cutsidenode = *i;
       allcutsidenodes.insert(cutsidenode);
@@ -732,13 +732,13 @@ void Cut::SelfCut::create_self_cut_sides()
     const std::vector<std::vector<Point*>>& selfcuttriangles = cutside->self_cut_triangles();
 
     for (std::vector<std::vector<Point*>>::const_iterator i = selfcuttriangles.begin();
-         i != selfcuttriangles.end(); ++i)
+        i != selfcuttriangles.end(); ++i)
     {
       std::vector<Point*> selfcuttriangle = *i;
       std::vector<int> selfcutsidenodeids;
       plain_int_set selfcutsidenodeidsset;
       for (std::vector<Cut::Point*>::iterator i = selfcuttriangle.begin();
-           i != selfcuttriangle.end(); ++i)
+          i != selfcuttriangle.end(); ++i)
       {
         Point* selfcuttrianglepoint = *i;
         for (plain_node_set::iterator i = allcutsidenodes.begin(); i != allcutsidenodes.end(); ++i)
@@ -757,7 +757,7 @@ void Cut::SelfCut::create_self_cut_sides()
         std::cout << "selfcutsidenodeidsset.size(): " << selfcutsidenodeidsset.size() << "\n";
         const std::vector<Node*>& cutsidenodes = cutside->nodes();
         for (std::vector<Node*>::const_iterator i = cutsidenodes.begin(); i != cutsidenodes.end();
-             ++i)
+            ++i)
         {
           Node* cutsidenode = *i;
           std::cout << "Ids: " << cutsidenode->id() << "\n";
@@ -800,7 +800,7 @@ void Cut::SelfCut::erase_cutted_sides()
 {
   std::vector<plain_int_set> cutsideids;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
     if (cutside->cutting_sides().size() != 0 and cutside->self_cut_triangles().size() != 1)
@@ -819,7 +819,7 @@ void Cut::SelfCut::erase_cutted_edges()
 {
   std::vector<plain_int_set> cutsideedgeids;
   for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = selfcut_edges_.begin();
-       i != selfcut_edges_.end(); ++i)
+      i != selfcut_edges_.end(); ++i)
   {
     Edge* cutsideedge = &*i->second;
     if (cutsideedge->cut_points().size() != 2 or cutsideedge->sides().size() == 0)
@@ -837,7 +837,7 @@ void Cut::SelfCut::erase_cutted_edges()
 bool Cut::SelfCut::connectedto_background(Edge* edge)
 {
   for (plain_side_set::const_iterator sit = edge->sides().begin(); sit != edge->sides().end();
-       ++sit)
+      ++sit)
   {
     if ((*sit)->id() < 0) return true;
   }
@@ -847,7 +847,7 @@ bool Cut::SelfCut::connectedto_background(Edge* edge)
 bool Cut::SelfCut::connectedto_background(Node* node)
 {
   for (plain_side_set::const_iterator sit = node->sides().begin(); sit != node->sides().end();
-       ++sit)
+      ++sit)
   {
     if ((*sit)->id() < 0) return true;
   }
@@ -861,7 +861,7 @@ bool Cut::SelfCut::connectedto_background(Node* node)
 void Cut::SelfCut::determine_self_cut_position()
 {
   for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = selfcut_edges_.begin();
-       i != selfcut_edges_.end(); ++i)
+      i != selfcut_edges_.end(); ++i)
   {
     Edge* cutsideedge = &*i->second;
     std::vector<Side*> selfcutsides;
@@ -874,7 +874,7 @@ void Cut::SelfCut::determine_self_cut_position()
         Side* cutside = *i;
         const std::vector<Node*>& cutsidenodes = cutside->nodes();
         for (std::vector<Node*>::const_iterator i = cutsidenodes.begin(); i != cutsidenodes.end();
-             ++i)
+            ++i)
         {
           Node* cutsidenode = *i;
           if (cutsidenode->self_cut_position() == Point::undecided)
@@ -893,7 +893,7 @@ void Cut::SelfCut::determine_self_cut_position()
       Node* undecidednode = nullptr;
       Node* onselfcutedgenode = nullptr;
       for (std::vector<Node*>::const_iterator i = selfcutsidenodes.begin();
-           i != selfcutsidenodes.end(); ++i)
+          i != selfcutsidenodes.end(); ++i)
       {
         Node* selfcutsidenode = *i;
         if ((selfcutsidenode->self_cut_position() == Point::oncutsurface) &&
@@ -998,7 +998,7 @@ void Cut::SelfCut::propagate_self_cut_position()
 {
   plain_side_set undecidedsides;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
     if (cutside->self_cut_position() == Point::undecided)
@@ -1006,7 +1006,7 @@ void Cut::SelfCut::propagate_self_cut_position()
       const std::vector<Edge*>& cutsideedges = cutside->edges();
       Point::PointPosition cutsideedgeposition = Point::undecided;
       for (std::vector<Edge*>::const_iterator i = cutsideedges.begin(); i != cutsideedges.end();
-           ++i)
+          ++i)
       {
         Edge* cutsideedge = *i;
         Point::PointPosition cutsideedgepos = cutsideedge->self_cut_position();
@@ -1051,13 +1051,13 @@ void Cut::SelfCut::propagate_self_cut_position()
         bool done = false;
         const std::vector<Edge*>& undecidedcutsideedges = undecidedside->edges();
         for (std::vector<Edge*>::const_iterator i = undecidedcutsideedges.begin();
-             i != undecidedcutsideedges.end(); ++i)
+            i != undecidedcutsideedges.end(); ++i)
         {
           Edge* undecidedcutsideedge = *i;
           const plain_side_set& undecidedcutsideedgesides = undecidedcutsideedge->sides();
           Side* siblingside = nullptr;
           for (plain_side_set::const_iterator i = undecidedcutsideedgesides.begin();
-               i != undecidedcutsideedgesides.end(); ++i)
+              i != undecidedcutsideedgesides.end(); ++i)
           {
             Side* undecidedcutsideedgeside = *i;
             if (undecidedcutsideedgeside->id() == undecidedside->id() and
@@ -1134,7 +1134,7 @@ void Cut::SelfCut::erase_inside_sides()
   const std::map<plain_int_set, std::shared_ptr<Side>>& cutsides = mesh_.sides();
   std::vector<plain_int_set> cutsideids;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     if (cutside->self_cut_position() == Point::inside)
@@ -1161,7 +1161,7 @@ void Cut::SelfCut::erase_inside_edges()
   const std::map<plain_int_set, std::shared_ptr<Edge>>& cutsideedges = mesh_.edges();
   std::vector<plain_int_set> cutsideedgeids;
   for (std::map<plain_int_set, std::shared_ptr<Edge>>::const_iterator i = cutsideedges.begin();
-       i != cutsideedges.end(); ++i)
+      i != cutsideedges.end(); ++i)
   {
     Edge* cutsideedge = &*i->second;
     if (cutsideedge->self_cut_position() == Point::inside)
@@ -1185,7 +1185,7 @@ void Cut::SelfCut::erase_inside_nodes()
   const std::map<int, std::shared_ptr<Node>>& cutsidenodes = mesh_.nodes();
   std::vector<int> cutsidenodeids;
   for (std::map<int, std::shared_ptr<Node>>::const_iterator i = cutsidenodes.begin();
-       i != cutsidenodes.end(); ++i)
+      i != cutsidenodes.end(); ++i)
   {
     Node* cutsidenode = &*i->second;
     if (cutsidenode->self_cut_position() == Point::inside)
@@ -1215,7 +1215,7 @@ void Cut::SelfCut::construct_connectivity()
   int count = 0;
 
   for (std::map<int, std::shared_ptr<Node>>::const_iterator i = cutsidenodes.begin();
-       i != cutsidenodes.end(); ++i)
+      i != cutsidenodes.end(); ++i)
   {
     Node* cutsidenode = &*i->second;
     remainingnodes.insert(cutsidenode);
@@ -1242,7 +1242,7 @@ void Cut::SelfCut::next_node(Node* node, plain_node_set& remainingnodes, int cou
     Edge* nodeedge = *i;
     const std::vector<Node*>& nodeedgenodes = nodeedge->nodes();
     for (std::vector<Node*>::const_iterator i = nodeedgenodes.begin(); i != nodeedgenodes.end();
-         ++i)
+        ++i)
     {
       Node* nodeedgenode = *i;
       plain_node_set::iterator remainingnodesiter = remainingnodes.find(nodeedgenode);
@@ -1266,7 +1266,7 @@ void Cut::SelfCut::find_islands()
   const std::map<plain_int_set, std::shared_ptr<Side>>& fullcut_sides = mesh_.sides();
 
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = fullcut_sides.begin();
-       i != fullcut_sides.end(); ++i)
+      i != fullcut_sides.end(); ++i)
   {
     Side* cutside = &*i->second;
     if (cutside->self_cut_position() == Point::outside) selfcutsides.insert(cutside);
@@ -1311,7 +1311,7 @@ void Cut::SelfCut::next_sides(Side* cutside, std::shared_ptr<Cut::BoundingBox>& 
     {
       const plain_side_set& cutsidenodesides = cutsideedge->sides();
       for (plain_side_set::const_iterator i = cutsidenodesides.begin(); i != cutsidenodesides.end();
-           ++i)
+          ++i)
       {
         Side* cutsidenodeside = *i;
         if (cutsidenodeside->self_cut_position() == Point::outside)
@@ -1345,7 +1345,7 @@ void Cut::SelfCut::cutted_side_status_text()
   int selfcutsidesize = selfcut_sides_.size();
   int j = 1;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
     plot_across();
@@ -1393,12 +1393,12 @@ void Cut::SelfCut::cutted_side_status_text()
     const std::vector<std::vector<Cut::Point*>>& selfcuttriangles = cutside->self_cut_triangles();
     std::cout << "\nSelfcuttriangles:\n";
     for (std::vector<std::vector<Cut::Point*>>::const_iterator i = selfcuttriangles.begin();
-         i != selfcuttriangles.end(); ++i)
+        i != selfcuttriangles.end(); ++i)
     {
       std::vector<Cut::Point*> selfcuttriangle = *i;
       point_plot_head();
       for (std::vector<Cut::Point*>::iterator i = selfcuttriangle.begin();
-           i != selfcuttriangle.end(); ++i)
+          i != selfcuttriangle.end(); ++i)
       {
         Point* selfcuttrianglepoint = *i;
         point_plot(*selfcuttrianglepoint);
@@ -1419,7 +1419,7 @@ void Cut::SelfCut::cut_mesh_status_text()
   std::cout << "\n" << selfcut_nodes_.size() << " Nodes: \n";
   node_plot_head();
   for (std::map<int, std::shared_ptr<Node>>::iterator i = selfcut_nodes_.begin();
-       i != selfcut_nodes_.end(); ++i)
+      i != selfcut_nodes_.end(); ++i)
   {
     Node* node = &*i->second;
     node_plot(*node);
@@ -1428,7 +1428,7 @@ void Cut::SelfCut::cut_mesh_status_text()
   std::cout << "\n" << selfcut_edges_.size() << " Edges: \n";
   edge_plot_head();
   for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = selfcut_edges_.begin();
-       i != selfcut_edges_.end(); ++i)
+      i != selfcut_edges_.end(); ++i)
   {
     Edge* edge = &*i->second;
     edge_plot(*edge);
@@ -1437,7 +1437,7 @@ void Cut::SelfCut::cut_mesh_status_text()
   std::cout << "\n" << selfcut_sides_.size() << " Sides: \n";
   side_plot_head();
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* side = &*i->second;
     side_plot(*side);
@@ -1499,12 +1499,12 @@ void Cut::SelfCut::error_status_text(Side& cutside)
   const std::vector<std::vector<Cut::Point*>>& selfcuttriangles = cutside.self_cut_triangles();
   std::cout << "\nSelfcuttriangles:\n";
   for (std::vector<std::vector<Cut::Point*>>::const_iterator i = selfcuttriangles.begin();
-       i != selfcuttriangles.end(); ++i)
+      i != selfcuttriangles.end(); ++i)
   {
     std::vector<Cut::Point*> selfcuttriangle = *i;
     point_plot_head();
     for (std::vector<Cut::Point*>::iterator i = selfcuttriangle.begin(); i != selfcuttriangle.end();
-         ++i)
+        ++i)
     {
       Point* selfcuttrianglepoint = *i;
       point_plot(*selfcuttrianglepoint);
@@ -1525,7 +1525,7 @@ void Cut::SelfCut::cutted_side_status_gmsh(const std::string& name)
   int cutsidessize = cutsides.size();
   file << "View \"" << cutsidessize << " Sides\" {\n";
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     file.precision(16);
@@ -1583,7 +1583,7 @@ void Cut::SelfCut::cutted_side_status_gmsh(const std::string& name)
   int cutedgessize = cutsideedges.size();
   file << "View \"" << cutedgessize << " Edges\" {\n";
   for (std::map<plain_int_set, std::shared_ptr<Edge>>::const_iterator i = cutsideedges.begin();
-       i != cutsideedges.end(); ++i)
+      i != cutsideedges.end(); ++i)
   {
     Edge* cutsideedge = &*i->second;
     file.precision(16);
@@ -1617,7 +1617,7 @@ void Cut::SelfCut::cutted_side_status_gmsh(const std::string& name)
   int cutnodessize = cutsidenodes.size();
   file << "View \"" << cutnodessize << " Nodes\" {\n";
   for (std::map<int, std::shared_ptr<Node>>::const_iterator i = cutsidenodes.begin();
-       i != cutsidenodes.end(); ++i)
+      i != cutsidenodes.end(); ++i)
   {
     Node* cutsidenode = &*i->second;
     file.precision(16);
@@ -1696,7 +1696,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
   int cutsidessize = cutsides.size();
   file << "View \"" << cutsidessize << " Sides\" {\n";
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     file.precision(16);
@@ -1751,7 +1751,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
 
   plain_edge_set cutsideedges;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     const std::vector<Edge*>& cutedges = cutside->edges();
@@ -1795,7 +1795,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
 
   plain_node_set cutsidenodes;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     const std::vector<Node*>& cutnodes = cutside->nodes();
@@ -1825,7 +1825,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
 
   plain_side_set cuttingsides;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     const plain_side_set& selfcutsides = cutside->cutting_sides();
@@ -1892,7 +1892,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
 
   plain_node_set selfcutnodes;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     const plain_node_set& selfnodes = cutside->self_cut_nodes();
@@ -1922,7 +1922,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
 
   plain_edge_set selfcutedges;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     const plain_edge_set& selfedges = cutside->self_cut_edges();
@@ -1966,12 +1966,12 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
 
   std::vector<std::vector<Point*>> selfcuttriangles;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     const std::vector<std::vector<Point*>>& selftriangles = cutside->self_cut_triangles();
     for (std::vector<std::vector<Point*>>::const_iterator i = selftriangles.begin();
-         i != selftriangles.end(); ++i)
+        i != selftriangles.end(); ++i)
     {
       std::vector<Point*> selfcuttriangle = *i;
       selfcuttriangles.push_back(selfcuttriangle);
@@ -1980,7 +1980,7 @@ void Cut::SelfCut::wall_gmsh(const std::string& name)
   int selfcuttrianglessize = selfcuttriangles.size();
   file << "View \"" << selfcuttrianglessize << " Selfcuttriangles\" {\n";
   for (std::vector<std::vector<Point*>>::iterator i = selfcuttriangles.begin();
-       i != selfcuttriangles.end(); ++i)
+      i != selfcuttriangles.end(); ++i)
   {
     std::vector<Point*> selfcuttriangle = *i;
     int selfcuttriangleposition = 0;
@@ -2082,7 +2082,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
   int cutsidessize = cutsides.size();
   file << "View \"" << cutsidessize << " Sides\" {\n";
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     file.precision(16);
@@ -2138,7 +2138,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
 
   plain_edge_set cutsideedges;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     const std::vector<Edge*>& cutedges = cutside->edges();
@@ -2182,7 +2182,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
 
   plain_node_set cutsidenodes;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = cutsides.begin();
-       i != cutsides.end(); ++i)
+      i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
     const std::vector<Node*>& cutnodes = cutside->nodes();
@@ -2215,7 +2215,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
   int selfcutsidessize = selfcut_sides_.size();
   file << "View \"" << selfcutsidessize << " Sides\" {\n";
   for (std::map<plain_int_set, std::shared_ptr<Side>>::const_iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* selfcutside = &*i->second;
     file.precision(16);
@@ -2272,7 +2272,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
   int selfcutedgessize = selfcut_edges_.size();
   file << "View \"" << selfcutedgessize << " Edges\" {\n";
   for (std::map<plain_int_set, std::shared_ptr<Edge>>::iterator i = selfcut_edges_.begin();
-       i != selfcut_edges_.end(); ++i)
+      i != selfcut_edges_.end(); ++i)
   {
     Edge* selfcutedge = &*i->second;
     file.precision(16);
@@ -2305,7 +2305,7 @@ void Cut::SelfCut::sc_objects_gmsh(const std::string& name)
   int selfcutnodessize = selfcut_nodes_.size();
   file << "View \"" << selfcutnodessize << " Nodes\" {\n";
   for (std::map<int, std::shared_ptr<Node>>::iterator i = selfcut_nodes_.begin();
-       i != selfcut_nodes_.end(); ++i)
+      i != selfcut_nodes_.end(); ++i)
   {
     Node* selfcutnode = &*i->second;
     file.precision(16);
@@ -2379,7 +2379,7 @@ void Cut::SelfCut::s_cmgm_gmsh(const std::string& name)
    }*/
   plain_side_set cutsides;
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
     cutsides.insert(cutside);
@@ -2657,7 +2657,7 @@ void Cut::SelfCut::s_cmgm_gmsh(const std::string& name)
     Side* cutside = *i;
     const std::vector<std::vector<Point*>>& selftriangles = cutside->self_cut_triangles();
     for (std::vector<std::vector<Point*>>::const_iterator i = selftriangles.begin();
-         i != selftriangles.end(); ++i)
+        i != selftriangles.end(); ++i)
     {
       std::vector<Point*> selfcuttriangle = *i;
       selfcuttriangles.push_back(selfcuttriangle);
@@ -2666,7 +2666,7 @@ void Cut::SelfCut::s_cmgm_gmsh(const std::string& name)
   int selfcuttrianglessize = selfcuttriangles.size();
   file << "View \"" << selfcuttrianglessize << " Selfcuttriangles\" {\n";
   for (std::vector<std::vector<Point*>>::iterator i = selfcuttriangles.begin();
-       i != selfcuttriangles.end(); ++i)
+      i != selfcuttriangles.end(); ++i)
   {
     std::vector<Point*> selfcuttriangle = *i;
     int selfcuttriangleposition = 0;
@@ -2713,7 +2713,7 @@ void Cut::SelfCut::s_cmgm_gmsh(const std::string& name)
 void Cut::SelfCut::all_single_gmsh(const std::string& location)
 {
   for (std::map<plain_int_set, std::shared_ptr<Side>>::iterator i = selfcut_sides_.begin();
-       i != selfcut_sides_.end(); ++i)
+      i != selfcut_sides_.end(); ++i)
   {
     Side* cutside = &*i->second;
     std::stringstream filenamegmsh;
@@ -3067,7 +3067,7 @@ void Cut::SelfCut::error_gmsh(const std::string& name, Side& cutside)
     Side* cutside = *i;
     const std::vector<std::vector<Point*>>& selftriangles = cutside->self_cut_triangles();
     for (std::vector<std::vector<Point*>>::const_iterator i = selftriangles.begin();
-         i != selftriangles.end(); ++i)
+        i != selftriangles.end(); ++i)
     {
       std::vector<Point*> selfcuttriangle = *i;
       selfcuttriangles.push_back(selfcuttriangle);
@@ -3076,7 +3076,7 @@ void Cut::SelfCut::error_gmsh(const std::string& name, Side& cutside)
   int selfcuttrianglessize = selfcuttriangles.size();
   file << "View \"" << selfcuttrianglessize << " Selfcuttriangles\" {\n";
   for (std::vector<std::vector<Point*>>::iterator i = selfcuttriangles.begin();
-       i != selfcuttriangles.end(); ++i)
+      i != selfcuttriangles.end(); ++i)
   {
     std::vector<Point*> selfcuttriangle = *i;
     int selfcuttriangleposition = 0;
@@ -3130,7 +3130,7 @@ void Cut::SelfCut::perform_self_cut(Side& cutside, Side& otherside, PointSet& se
     cutsideedge->find_cut_points_mesh_cut(
         mesh_, nullptr, cutside, otherside, &sidepairselfcutpoints);
     for (PointSet::iterator i = sidepairselfcutpoints.begin(); i != sidepairselfcutpoints.end();
-         ++i)
+        ++i)
     {
       Point* edgeselfcutpoint = *i;
       cutsideedge->add_point(edgeselfcutpoint);
@@ -3151,7 +3151,7 @@ void Cut::SelfCut::get_self_cut_edges(Side& cutside)
     plain_int_set cutsideedgenodeids;
     const std::vector<Node*>& cutsideedgenodes = cutsideedge->nodes();
     for (std::vector<Node*>::const_iterator i = cutsideedgenodes.begin();
-         i != cutsideedgenodes.end(); ++i)
+        i != cutsideedgenodes.end(); ++i)
     {
       Node* cutsideedgenode = *i;
       int cutsideedgenodeid = cutsideedgenode->id();
@@ -3247,14 +3247,14 @@ void Cut::SelfCut::erase_edge_pointer(Edge& cutsideedge)
 {
   const std::vector<Node*>& cutsideedgenodes = cutsideedge.nodes();
   for (std::vector<Node*>::const_iterator i = cutsideedgenodes.begin(); i != cutsideedgenodes.end();
-       ++i)
+      ++i)
   {
     Node* cutsideedgenode = *i;
     cutsideedgenode->erase_cut_side_edge(&cutsideedge);
   }
   const PointPositionSet& cutsideedgepoints = cutsideedge.cut_points();
   for (PointPositionSet::const_iterator i = cutsideedgepoints.begin(); i != cutsideedgepoints.end();
-       ++i)
+      ++i)
   {
     Point* cutsideedgepoint = *i;
     cutsideedgepoint->erase_cut_side_edge(&cutsideedge);
@@ -3268,7 +3268,7 @@ void Cut::SelfCut::erase_edge_pointer(Edge& cutsideedge)
 void Cut::SelfCut::erase_edge(std::vector<plain_int_set>& cutsideedgeids)
 {
   for (std::vector<plain_int_set>::iterator i = cutsideedgeids.begin(); i != cutsideedgeids.end();
-       ++i)
+      ++i)
   {
     const plain_int_set& cutsideedgeid = *i;
     selfcut_edges_.erase(cutsideedgeid);

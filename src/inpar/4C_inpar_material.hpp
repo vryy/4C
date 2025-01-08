@@ -40,7 +40,7 @@ namespace Inpar
       vp_robinson_kind_arya_crmosteel,  ///< Arya, 1992 [3]
       vp_robinson_kind_arya_narloyz,    ///< Arya, 1992 [3]
       vp_robinson_kind_butler           ///< Butler et al, 2005 [1]
-    };                                  // RobinsonType
+    };  // RobinsonType
 
     //! valid types for prescription of time-/space-dependent muscle activation
     enum ActivationType

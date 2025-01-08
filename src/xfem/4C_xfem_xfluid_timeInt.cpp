@@ -88,12 +88,12 @@ void XFEM::XFluidTimeInt::set_and_print_status(const bool screenout)
   reconstr_counts_.clear();
   for (std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>::const_iterator node_it =
            node_to_reconstr_method_.begin();
-       node_it != node_to_reconstr_method_.end(); node_it++)
+      node_it != node_to_reconstr_method_.end(); node_it++)
   {
     const std::vector<Inpar::XFEM::XFluidTimeInt>& nodesets = node_it->second;
 
     for (std::vector<Inpar::XFEM::XFluidTimeInt>::const_iterator sets = nodesets.begin();
-         sets != nodesets.end(); sets++)
+        sets != nodesets.end(); sets++)
     {
       std::map<Inpar::XFEM::XFluidTimeInt, int>::iterator it = reconstr_counts_.find(*sets);
 
@@ -119,7 +119,7 @@ void XFEM::XFluidTimeInt::set_and_print_status(const bool screenout)
 
   for (std::map<Inpar::XFEM::XFluidTimeInt, int>::iterator reconstrMethod =
            reconstr_counts_.begin();
-       reconstrMethod != reconstr_counts_.end(); reconstrMethod++)
+      reconstrMethod != reconstr_counts_.end(); reconstrMethod++)
   {
     int index = (int)(reconstrMethod->first);
     cpu_methods[index] = reconstrMethod->second;
@@ -499,7 +499,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
             newRowStateVectors, oldRowStateVectors, dbcgids);
       }
     }  // end more than one dofset
-  }    // end case B
+  }  // end case B
   else if (n_old == nullptr or unique_std_uncut_n)
   {
     if (n_new == nullptr) FOUR_C_THROW("you should call case A here");
@@ -599,7 +599,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
       // loop new dofsets
       for (std::vector<std::shared_ptr<Cut::NodalDofSet>>::const_iterator sets =
                dof_cellsets_new.begin();
-           sets != dof_cellsets_new.end(); sets++)
+          sets != dof_cellsets_new.end(); sets++)
       {
         std::shared_ptr<Cut::NodalDofSet> nodaldofset_new = *sets;
         int nds_new = sets - dof_cellsets_new.begin();
@@ -633,7 +633,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
         }
       }
     }  // more than one dofset
-  }    // end case C
+  }  // end case C
   else
   {
     if (n_new == nullptr or n_old == nullptr) FOUR_C_THROW("this case should be done before");
@@ -676,7 +676,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
     // loop new dofsets
     for (std::vector<std::shared_ptr<Cut::NodalDofSet>>::const_iterator sets =
              dof_cellsets_new.begin();
-         sets != dof_cellsets_new.end(); sets++)
+        sets != dof_cellsets_new.end(); sets++)
     {
       const Cut::NodalDofSet* cell_set = &**sets;
 
@@ -842,7 +842,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
       }  // end found set at t^n
 
     }  // loop new dofsets
-  }    // end case D (node handles at t^n and t^(n+1))
+  }  // end case D (node handles at t^n and t^(n+1))
 
   return;
 }
@@ -927,7 +927,7 @@ void XFEM::XFluidTimeInt::find_surrounding_ghost_dofsets(
 
   // loop the surrounding (sub-)elements
   for (std::set<Cut::plain_volumecell_set, Cut::Cmp>::const_iterator e_vcset = cellset.begin();
-       e_vcset != cellset.end(); e_vcset++)
+      e_vcset != cellset.end(); e_vcset++)
   {
     const Cut::plain_volumecell_set& vcs = *e_vcset;
 
@@ -1020,7 +1020,7 @@ void XFEM::XFluidTimeInt::copy_dofs(const Core::Nodes::Node* node,  /// drt node
   // copy values for all vectors
   for (std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>::const_iterator it =
            oldRowStateVectors.begin();
-       it != oldRowStateVectors.end(); it++)
+      it != oldRowStateVectors.end(); it++)
   {
     std::shared_ptr<Core::LinAlg::Vector<double>> vec_new = newRowStateVectors[vec_count];
     std::shared_ptr<const Core::LinAlg::Vector<double>> vec_old = oldRowStateVectors[vec_count];
@@ -1105,7 +1105,7 @@ void XFEM::XFluidTimeInt::mark_dofs(const Core::Nodes::Node* node,  /// drt node
     find_surrounding_ghost_dofsets(ghostDofsets, node, nds_new);
 
     for (std::map<int, std::set<int>>::iterator it = ghostDofsets.begin(); it != ghostDofsets.end();
-         it++)
+        it++)
     {
       // mark the ghost dofset in case that the node is a row node on this proc
       // otherwise mark it for export at the end of transfer_dofs_to_new_map
@@ -1139,7 +1139,7 @@ void XFEM::XFluidTimeInt::mark_dofs(const Core::Nodes::Node* node,  /// drt node
   // loop vectors
   for (std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>::const_iterator it =
            newRowStateVectors.begin();
-       it != newRowStateVectors.end(); it++)
+      it != newRowStateVectors.end(); it++)
   {
     std::shared_ptr<Core::LinAlg::Vector<double>> vec_new = *it;
 
@@ -1167,7 +1167,7 @@ void XFEM::XFluidTimeInt::mark_dofs(const Core::Nodes::Node* node,  /// drt node
         if (it != (*dbcgids).end()) (*dbcgids).erase(gid);  // remove the already set dbc
       }
     }  // dofs
-  }    // state vectors
+  }  // state vectors
 
   return;
 }
@@ -1330,7 +1330,7 @@ int XFEM::XFluidTimeInt::identify_old_sets(const Cut::Node* n_old,  /// node w.r
   // check each old dofset for identification with new dofset
   for (std::vector<std::shared_ptr<Cut::NodalDofSet>>::const_iterator old_sets =
            dof_cellsets_old.begin();
-       old_sets != dof_cellsets_old.end(); old_sets++)
+      old_sets != dof_cellsets_old.end(); old_sets++)
   {
     const int setnumber = old_sets - dof_cellsets_old.begin();
 
@@ -1375,7 +1375,7 @@ int XFEM::XFluidTimeInt::identify_old_sets(const Cut::Node* n_old,  /// node w.r
     // look again in the old sets if there was a standard dofset
     for (std::vector<std::shared_ptr<Cut::NodalDofSet>>::const_iterator old_sets =
              dof_cellsets_old.begin();
-         old_sets != dof_cellsets_old.end(); old_sets++)
+        old_sets != dof_cellsets_old.end(); old_sets++)
     {
       if ((*old_sets)->is_standard_dof_set())  // this set is a unique standard set at tn, might it
                                                // be a good choice nevertheless?
@@ -1418,7 +1418,7 @@ int XFEM::XFluidTimeInt::identify_old_sets(const Cut::Node* n_old,  /// node w.r
     bool unique_set_found = false;
 
     for (std::map<int, std::vector<int>>::iterator it = identified_old_sets.begin();
-         it != identified_old_sets.end(); it++)
+        it != identified_old_sets.end(); it++)
     {
       const int nds_old = it->first;
 
@@ -1454,13 +1454,13 @@ int XFEM::XFluidTimeInt::identify_old_sets(const Cut::Node* n_old,  /// node w.r
         continue;
       }
     }  // loop old sets
-  }    // identified_dofsets > 1
+  }  // identified_dofsets > 1
 
   //---------------------------------------
   // remove invalid sets
   //---------------------------------------
   for (std::set<int>::iterator set_it = invalid_old_sets.begin(); set_it != invalid_old_sets.end();
-       set_it++)
+      set_it++)
   {
     identified_old_sets.erase(*set_it);
   }
@@ -1597,7 +1597,7 @@ bool XFEM::XFluidTimeInt::special_check_sliding_on_surface(bool& changed_side,
 
     // loop cutsides and extract side ids
     for (Cut::plain_side_set::const_iterator side_it = cut_sides_old.begin();
-         side_it != cut_sides_old.end(); side_it++)
+        side_it != cut_sides_old.end(); side_it++)
     {
       int sid = (*side_it)->id();
       if (sid != -1) on_cut_sides_old.insert(sid);  // do not insert sides of the background element
@@ -1605,7 +1605,7 @@ bool XFEM::XFluidTimeInt::special_check_sliding_on_surface(bool& changed_side,
 
     // loop cutsides and extract side ids
     for (Cut::plain_side_set::const_iterator side_it = cut_sides_new.begin();
-         side_it != cut_sides_new.end(); side_it++)
+        side_it != cut_sides_new.end(); side_it++)
     {
       int sid = (*side_it)->id();
       if (sid != -1) on_cut_sides_new.insert(sid);  // do not insert sides of the background element
@@ -1743,7 +1743,7 @@ bool XFEM::XFluidTimeInt::special_check_interface_tips(
 
   // loop sides
   for (std::vector<int>::iterator sides = identified_sides.begin(); sides != identified_sides.end();
-       sides++)
+      sides++)
   {
     const int coup_sid = *sides;  // side id used within the cut
 
@@ -2116,7 +2116,7 @@ void XFEM::XFluidTimeInt::export_methods(
   // send data to the processor where the point lies (1. nearest higher neighbour 2. 2nd nearest
   // higher neighbour...)
   for (int dest = (myrank_ + 1) % numproc_; dest != myrank_;
-       dest = (dest + 1) % numproc_)  // dest is the target processor
+      dest = (dest + 1) % numproc_)  // dest is the target processor
   {
     // Initialization of sending
     Core::Communication::PackBuffer
@@ -2138,7 +2138,7 @@ void XFEM::XFluidTimeInt::export_methods(
     {
       Core::Communication::PackBuffer dataSend;  // data to be sent
       for (std::map<int, std::map<int, int>>::iterator node_it = dofset_marker_export_.begin();
-           node_it != dofset_marker_export_.end(); node_it++)
+          node_it != dofset_marker_export_.end(); node_it++)
       {
         add_to_pack(dataSend, node_it->first);
         add_to_pack(dataSend, node_it->second);

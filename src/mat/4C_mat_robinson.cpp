@@ -769,7 +769,7 @@ void Mat::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
         kvs(i, j) *= 2.0;
       }
     }  // rows 1--6
-  }    // inelastic
+  }  // inelastic
   //-------------------------------------------------------------------
   // ELSE IF elastic step (F <= 0.0, 1/2 (devstress . eta) < 0.0)
   //-------------------------------------------------------------------
@@ -1278,7 +1278,7 @@ void Mat::Robinson::calculate_condensed_system(
         // position in column-major vector matrix (i=1--6,j=6--12)
         kevea(i, (j + Mat::NUM_STRESS_3D)) = kva(i, j);
       }  // column: j=7--12
-    }    //  rows: i=1--6
+    }  //  rows: i=1--6
 
     // second Mat::NUM_STRESS_3D rows, i.e. (i=6--12)
     for (int i = 0; i < Mat::NUM_STRESS_3D; i++)
@@ -1301,7 +1301,7 @@ void Mat::Robinson::calculate_condensed_system(
         // tangent (i=6--12,j=6--12)
         kvvkvakavkaa(Mat::NUM_STRESS_3D + i, (j + Mat::NUM_STRESS_3D)) = kaa(i, j);
       }  // column: j=7--12
-    }    //  rows: i=6--12
+    }  //  rows: i=6--12
 
   }  // end build tangent and rhs
 

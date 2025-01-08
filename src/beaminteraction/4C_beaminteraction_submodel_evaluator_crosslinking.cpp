@@ -376,7 +376,7 @@ void BeamInteraction::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
 
           // loop over binding spots of neighboring element
           for (unsigned int nb_locbspot_i = 0;
-               nb_locbspot_i < nb_beamele->get_number_of_binding_spots(iter.first); ++nb_locbspot_i)
+              nb_locbspot_i < nb_beamele->get_number_of_binding_spots(iter.first); ++nb_locbspot_i)
           {
             // loop over different linker types and check for feasibility of link
             std::vector<int> const& matcrosslinkerpertype =

@@ -247,7 +247,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
 
       // loop over all local nodes of thermal discretisation
       for (int lnodeid = 0; lnodeid < (thermo_field()->discretization()->num_my_row_nodes());
-           lnodeid++)
+          lnodeid++)
       {
         Core::Nodes::Node* thermnode = thermo_field()->discretization()->l_row_node(lnodeid);
         std::vector<int> thermnodedofs_1 = thermo_field()->discretization()->dof(1, thermnode);
@@ -299,7 +299,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
 
       // loop over all local nodes of thermal discretisation
       for (int lnodeid = 0; lnodeid < (structure_field()->discretization()->num_my_row_nodes());
-           lnodeid++)
+          lnodeid++)
       {
         Core::Nodes::Node* structnode = structure_field()->discretization()->l_row_node(lnodeid);
         std::vector<int> structdofs = structure_field()->discretization()->dof(1, structnode);

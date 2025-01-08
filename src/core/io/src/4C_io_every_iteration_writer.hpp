@@ -36,7 +36,7 @@ namespace Core::IO
   {
    public:
     /// empty constructor
-    EveryIterationWriterInterface(){};
+    EveryIterationWriterInterface() {};
 
     /// destructor
     virtual ~EveryIterationWriterInterface() = default;

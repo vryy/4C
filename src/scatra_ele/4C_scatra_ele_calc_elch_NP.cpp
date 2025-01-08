@@ -134,7 +134,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs(
 
   // element matrix: standard Galerkin terms from governing equation for electric potential field
   switch (myelch::elchparams_
-              ->equ_pot())  // determine type of equation used for electric potential field
+          ->equ_pot())  // determine type of equation used for electric potential field
   {
     case Inpar::ElCh::equpot_enc:
     {
@@ -227,7 +227,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs(
 
   // element rhs: standard Galerkin terms from governing equation for electric potential field
   switch (myelch::elchparams_
-              ->equ_pot())  // determine type of equation used for electric potential field
+          ->equ_pot())  // determine type of equation used for electric potential field
   {
     case Inpar::ElCh::equpot_enc:
     {
@@ -285,7 +285,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs_outside_s
 
   // element matrix: standard Galerkin terms from governing equation for electric potential field
   switch (myelch::elchparams_
-              ->equ_pot())  // determine type of equation used for electric potential field
+          ->equ_pot())  // determine type of equation used for electric potential field
   {
     case Inpar::ElCh::equpot_enc:
     case Inpar::ElCh::equpot_enc_pde:
@@ -314,7 +314,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs_outside_s
 
   // element rhs: standard Galerkin terms from governing equation for electric potential field
   switch (myelch::elchparams_
-              ->equ_pot())  // determine type of equation used for electric potential field
+          ->equ_pot())  // determine type of equation used for electric potential field
   {
     case Inpar::ElCh::equpot_enc:
     case Inpar::ElCh::equpot_enc_pde:
@@ -587,7 +587,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde(
           (frt * timefacfac * myelch::diff_manager()->get_isotropic_diff(k) *
               myelch::diff_manager()->get_valence(k) * conint * laplawf);
     }  // for ui
-  }    // for vi
+  }  // for vi
 
   return;
 }
@@ -651,7 +651,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde_el
       const int pui = ui * my::numdofpernode_ + my::numscal_;
       emat(pvi, pui) += myelch::diff_manager()->get_valence(k) * matvalpot;
     }  // for ui
-  }    // for vi
+  }  // for vi
 
   return;
 }
@@ -696,7 +696,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_poisson(
       // electroneutrality condition (only derivative w.r.t. concentration c_k)
       emat(pvi, fui) -= alphaF_valence_k_fac_funct_vi * my::funct_(ui);
     }  // for ui
-  }    // for vi
+  }  // for vi
 
   return;
 }
@@ -724,7 +724,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_laplace(
 
       emat(pvi, pui) += my::scatraparatimint_->alpha_f() * fac * laplawf;
     }  // for ui
-  }    // for vi
+  }  // for vi
 
   return;
 }
@@ -987,9 +987,9 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::correction_for_flux_across
                 myelch::diff_manager()->get_valence(k) * (-val);
           }
         }  // if mydctoggle
-      }    // for k
-    }      // for vi
-  }        // if EquPot()
+      }  // for k
+    }  // for vi
+  }  // if EquPot()
 
   return;
 }

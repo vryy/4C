@@ -217,7 +217,7 @@ void Adapter::FBIConstraintenforcer::create_pairs(
   // loop over all (embedded) beam elements
   std::map<int, std::vector<int>>::const_iterator beamelementiterator;
   for (beamelementiterator = pairids->begin(); beamelementiterator != pairids->end();
-       beamelementiterator++)
+      beamelementiterator++)
   {
     // add beam elements to the element pair pointer
     ele_ptrs[0] = (structure_->discretization())->g_element(beamelementiterator->first);
@@ -234,7 +234,7 @@ void Adapter::FBIConstraintenforcer::create_pairs(
 
     // loop over all fluid elements, in which the beam element might lie
     for (std::vector<int>::const_iterator fluideleIter = beamelementiterator->second.begin();
-         fluideleIter != (beamelementiterator->second).end(); fluideleIter++)
+        fluideleIter != (beamelementiterator->second).end(); fluideleIter++)
     {
       Core::Elements::Element* fluidele = (fluid_->discretization())->g_element(*fluideleIter);
 
@@ -265,7 +265,7 @@ void Adapter::FBIConstraintenforcer::reset_all_pair_states()
   std::vector<double> fluid_dofvec = std::vector<double>();
 
   for (auto pairiterator = bridge_->get_pairs()->begin();
-       pairiterator != bridge_->get_pairs()->end(); pairiterator++)
+      pairiterator != bridge_->get_pairs()->end(); pairiterator++)
   {
     ele_ptrs[0] = (*pairiterator)->element1();
     ele_ptrs[1] = (*pairiterator)->element2();

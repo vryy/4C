@@ -483,7 +483,7 @@ namespace Cut
   class PointFactory
   {
    public:
-    PointFactory(){};
+    PointFactory() {};
 
     // non-member function to create a concrete point of desired dimension
     std::shared_ptr<Cut::Point> create_point(unsigned pid, const double* x, Edge* cut_edge,

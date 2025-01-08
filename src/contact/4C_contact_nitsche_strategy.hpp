@@ -102,17 +102,18 @@ namespace CONTACT
      to set the D.B.C. status in each CNode.
 
      \param dbcmaps (in): MapExtractor carrying global dbc map */
-    void store_dirichlet_status(std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmaps) override{
-        /* we don't care about dirichlet for now */
+    void store_dirichlet_status(
+        std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmaps) override {
+      /* we don't care about dirichlet for now */
     };
     void update(std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override;
     void evaluate_reference_state() override;
     void do_write_restart(
         std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>& restart_vectors,
-        bool forcedrestart) const override{
-        /* nothing stored in nitsche strategy that would need to be written */
+        bool forcedrestart) const override {
+      /* nothing stored in nitsche strategy that would need to be written */
     };
-    void compute_contact_stresses() final{/* nothing stress output in nitsche strategy yet */};
+    void compute_contact_stresses() final { /* nothing stress output in nitsche strategy yet */ };
     virtual void reconnect_parent_elements();
     void set_state(
         const enum Mortar::StateType& statename, const Core::LinAlg::Vector<double>& vec) override;
@@ -152,7 +153,7 @@ namespace CONTACT
     std::shared_ptr<const Epetra_Map> get_old_active_row_nodes() const override { return nullptr; };
     std::shared_ptr<const Epetra_Map> get_old_slip_row_nodes() const override { return nullptr; };
     bool is_nitsche() const override { return true; }
-    void print_active_set() const override{};
+    void print_active_set() const override {};
     bool active_set_converged() const override { return true; }
     int active_set_steps() const override { return 0; }
     void reset_active_set() override {}
@@ -183,7 +184,7 @@ namespace CONTACT
     void modify_penalty() override {}
     void update_uzawa_augmented_lagrange() override {}
     void update_constraint_norm(int uzawaiter) override {}
-    void initialize() override{};
+    void initialize() override {};
     void evaluate_contact(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
         std::shared_ptr<Core::LinAlg::Vector<double>>& feff) override
     {

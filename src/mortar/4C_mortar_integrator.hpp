@@ -46,7 +46,7 @@ namespace Mortar
   class Integrator
   {
    public:
-    Integrator(){};
+    Integrator() {};
 
     virtual ~Integrator() = default;
     //! @name Access methods
@@ -231,7 +231,7 @@ namespace Mortar
     int ngp_;                                 // number of Gauss points
     Core::LinAlg::SerialDenseMatrix coords_;  // Gauss point coordinates
     std::vector<double> weights_;             // Gauss point weights
-  };                                          // class Mortar::Integrator
+  };  // class Mortar::Integrator
 }  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE

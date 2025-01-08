@@ -122,7 +122,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     Core::Communication::PackBuffer data;
 
     for (std::set<double, LineSortCriterion>::iterator zline = zavcoords.begin();
-         zline != zavcoords.end(); ++zline)
+        zline != zavcoords.end(); ++zline)
     {
       add_to_pack(data, *zline);
     }
@@ -182,7 +182,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   zcoordinates_ = std::make_shared<std::vector<double>>();
 
   for (std::set<double, LineSortCriterion>::iterator coord1 = zavcoords.begin();
-       coord1 != zavcoords.end(); ++coord1)
+      coord1 != zavcoords.end(); ++coord1)
   {
     zcoordinates_->push_back(*coord1);
   }
@@ -237,7 +237,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     // than the desired position of the evaluation plane
     double actZ = 0;
     for (std::set<double, LineSortCriterion>::iterator temp_ptr_actZ = zavcoords.begin();
-         temp_ptr_actZ != zavcoords.end(); ++temp_ptr_actZ)
+        temp_ptr_actZ != zavcoords.end(); ++temp_ptr_actZ)
     {
       if (*temp_ptr_actZ >= pos_evaluation_[actPosEval])
       {
@@ -284,7 +284,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
       Core::Communication::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator zline = ravcoords.begin();
-           zline != ravcoords.end(); ++zline)
+          zline != ravcoords.end(); ++zline)
       {
         add_to_pack(data, *zline);
       }
@@ -349,7 +349,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     //----------------------------------------------------------------------
     int count_coord1 = 1;
     for (std::set<double, LineSortCriterion>::iterator coord1 = ravcoords.begin();
-         coord1 != ravcoords.end(); ++coord1)
+        coord1 != ravcoords.end(); ++coord1)
     {
       rcoordinates_(count_coord1, actPosEval) = *coord1;
       count_coord1++;
@@ -442,7 +442,7 @@ void FLD::TurbulenceStatisticsBfda::do_time_sample(Core::LinAlg::Vector<double>&
 
   // Big loop along z-axis
   for (std::vector<double>::iterator zline = zcoordinates_->begin(); zline != zcoordinates_->end();
-       ++zline)
+      ++zline)
   {
     znodnum++;
 
@@ -592,7 +592,7 @@ void FLD::TurbulenceStatisticsBfda::do_time_sample(Core::LinAlg::Vector<double>&
         (*rsump_)(rnodnum, actPosEval) += psm;
       }
     }  // End of big loop along radial coordinate
-  }    // End of loop through all evaluation planes
+  }  // End of loop through all evaluation planes
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
 

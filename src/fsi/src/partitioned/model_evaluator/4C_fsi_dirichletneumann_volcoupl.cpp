@@ -276,7 +276,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
 
   // loop over ale eles
   for (std::map<int, std::vector<int>>::iterator it = fluidalenodemap_.begin();
-       it != fluidalenodemap_.end(); ++it)
+      it != fluidalenodemap_.end(); ++it)
   {
     Core::Elements::Element* aleele = fluidale->ale_field()->discretization()->g_element(it->first);
 
@@ -374,7 +374,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
 
       Core::LinAlg::assemble(correction, gnode, dofs, lmowner);
     }  // end fluid volume node loop
-  }    // end ale fsi element loop
+  }  // end ale fsi element loop
 
   // do correction
   disp_fluid->Update(1.0, correction, 1.0);
@@ -501,7 +501,7 @@ void FSI::VolCorrector::setup(const int dim, std::shared_ptr<Adapter::FluidAle> 
   std::set<int> globalnodeids;
   // loop over ale eles
   for (std::map<int, std::vector<int>>::iterator it = fluidaleelemap_.begin();
-       it != fluidaleelemap_.end(); ++it)
+      it != fluidaleelemap_.end(); ++it)
   {
     Core::Elements::Element* aleele = fluidale->ale_field()->discretization()->g_element(it->first);
 

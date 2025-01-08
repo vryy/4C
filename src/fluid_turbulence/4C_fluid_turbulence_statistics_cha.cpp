@@ -315,7 +315,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
         Core::Communication::PackBuffer data;
 
         for (std::set<double, PlaneSortCriterion>::iterator plane = availablecoords.begin();
-             plane != availablecoords.end(); ++plane)
+            plane != availablecoords.end(); ++plane)
         {
           add_to_pack(data, *plane);
         }
@@ -374,7 +374,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
 
       for (std::set<double, PlaneSortCriterion>::iterator coord = availablecoords.begin();
-           coord != availablecoords.end(); ++coord)
+          coord != availablecoords.end(); ++coord)
       {
         nodeplanes_->push_back(*coord);
       }
@@ -1387,7 +1387,7 @@ void FLD::TurbulenceStatisticsCha::do_time_sample(
   // compute forces on top and bottom plate for normalization purposes
 
   for (std::vector<double>::iterator plane = planecoordinates_->begin();
-       plane != planecoordinates_->end(); ++plane)
+      plane != planecoordinates_->end(); ++plane)
   {
     // only true for top and bottom plane
     if ((*plane - 2e-9 < (*planecoordinates_)[0] && *plane + 2e-9 > (*planecoordinates_)[0]) ||
@@ -1520,7 +1520,7 @@ void FLD::TurbulenceStatisticsCha::do_loma_time_sample(const Core::LinAlg::Vecto
   // compute forces on top and bottom plate for normalization purposes
 
   for (std::vector<double>::iterator plane = planecoordinates_->begin();
-       plane != planecoordinates_->end(); ++plane)
+      plane != planecoordinates_->end(); ++plane)
   {
     // only true for bottom plane
     if (*plane - 2e-9 < (*planecoordinates_)[0] && *plane + 2e-9 > (*planecoordinates_)[0])
@@ -1678,7 +1678,7 @@ void FLD::TurbulenceStatisticsCha::do_scatra_time_sample(const Core::LinAlg::Vec
   // compute forces on top and bottom plate for normalization purposes
 
   for (std::vector<double>::iterator plane = planecoordinates_->begin();
-       plane != planecoordinates_->end(); ++plane)
+      plane != planecoordinates_->end(); ++plane)
   {
     // only true for bottom plane
     if (*plane - 2e-9 < (*planecoordinates_)[0] && *plane + 2e-9 > (*planecoordinates_)[0])
@@ -2487,7 +2487,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
   // loop planes and calculate pointwise means in each plane
 
   for (std::vector<double>::iterator plane = planecoordinates_->begin();
-       plane != planecoordinates_->end(); ++plane)
+      plane != planecoordinates_->end(); ++plane)
   {
     // toggle vectors are one in the position of a dof in this plane,
     // else 0
@@ -2546,7 +2546,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
               {
                 ++ntimesmaster;
               }  // end is slave?
-            }    // end loop this conditions
+            }  // end loop this conditions
 
             if (ntimesmaster != mypbc.size())
             {
@@ -3053,7 +3053,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
     {
       for (std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>::iterator state =
                statevecs.begin();
-           state != statevecs.end(); ++state)
+          state != statevecs.end(); ++state)
       {
         if (state->first == "velaf")
         {  // project_gradient_and_set_param decides, if we want to project something or not
@@ -3072,7 +3072,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
     // set state vectors for element call
     for (std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>::iterator state =
              statevecs.begin();
-         state != statevecs.end(); ++state)
+        state != statevecs.end(); ++state)
     {
       discret_->set_state(state->first, state->second);
     }
@@ -3117,7 +3117,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
       // set state vectors for element call
       for (std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>::iterator state =
                scatrastatevecs.begin();
-           state != scatrastatevecs.end(); ++state)
+          state != scatrastatevecs.end(); ++state)
       {
         scatradiscret_->set_state(state->first, state->second);
       }
@@ -3762,7 +3762,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
       scatraeleparams_.set<std::shared_ptr<std::vector<double>>>(
           "incr_scatra_eps_mfsrey", local_scatra_incr_eps_mfsrey);
     }  // end if scatra
-  }    // end if dissipation
+  }  // end if dissipation
 
   return;
 }  // FLD::TurbulenceStatisticsCha::EvaluateResiduals
@@ -4261,7 +4261,7 @@ void FLD::TurbulenceStatisticsCha::time_average_means_and_output_of_statistics(c
       }
       log_res->flush();
     }  // end subgrid_dissipation_
-  }    // end myrank 0
+  }  // end myrank 0
 
 
   // log was written, so increase counter for records
@@ -4645,7 +4645,7 @@ void FLD::TurbulenceStatisticsCha::dump_statistics(const int step)
       }
       log_res->flush();
     }  // end subgrid_dissipation_
-  }    // end myrank 0
+  }  // end myrank 0
 
   return;
 

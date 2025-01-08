@@ -208,7 +208,7 @@ namespace Solid
       virtual double get_alpham() const = 0;
       //! @}
     };  // class BeamParamsInterface
-  }     // namespace Elements
+  }  // namespace Elements
 
 }  // namespace Solid
 

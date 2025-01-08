@@ -29,7 +29,7 @@ void ntacal();
 /*----------------------------------------------------------------------*
  | main routine                                           m.gee 8/00    |
  *----------------------------------------------------------------------*/
-void ntam(int argc, char *argv[])
+void ntam(int argc, char* argv[])
 {
   using namespace FourC;
 

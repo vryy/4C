@@ -67,7 +67,7 @@ namespace Discret
       bool isnodalporosity_;
 
     };  // class ScaTraEleBoundaryCalcPoro
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

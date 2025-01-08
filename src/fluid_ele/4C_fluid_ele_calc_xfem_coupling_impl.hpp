@@ -285,10 +285,10 @@ namespace Discret
 
        protected:
         //! default ctor
-        SlaveElementRepresentation(){};
+        SlaveElementRepresentation() {};
 
         //! ctor
-        SlaveElementRepresentation(Core::LinAlg::SerialDenseMatrix::Base& slave_xyze){};
+        SlaveElementRepresentation(Core::LinAlg::SerialDenseMatrix::Base& slave_xyze) {};
 
         //! get nodal shape function derivatives
         void get_slave_funct_deriv(Core::LinAlg::Matrix<nsd_, slave_nen_>& slave_derxy) const
@@ -1061,7 +1061,7 @@ namespace Discret
         const double adj_visc_scale_;
       };
     }  // namespace XFLUID
-  }    // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

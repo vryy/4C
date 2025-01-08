@@ -414,8 +414,8 @@ void Discret::Elements::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
           evaluation_data.dbctog->ReplaceGlobalValues(1, &val, &gid);
         }
       }  // END of if there is no BC but the node still is at the terminal
-    }    // END of if node is available on this processor
-  }      // End of node i has a condition
+    }  // END of if node is available on this processor
+  }  // End of node i has a condition
 }
 
 FOUR_C_NAMESPACE_CLOSE

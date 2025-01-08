@@ -94,7 +94,7 @@ namespace TSI
     {
      public:
       //! constructor
-      TSIMaterialStrategy(){};
+      TSIMaterialStrategy() {};
 
       //! assignment of thermo material to structure material
       void assign_material2_to1(const Coupling::VolMortar::VolMortarCoupl* volmortar,

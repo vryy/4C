@@ -62,7 +62,7 @@ Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::instance
   {
     for (typename std::map<std::string,
              ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>*>::iterator i = instances.begin();
-         i != instances.end(); ++i)
+        i != instances.end(); ++i)
     {
       delete i->second;
       i->second = nullptr;

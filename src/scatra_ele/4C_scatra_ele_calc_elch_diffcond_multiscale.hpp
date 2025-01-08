@@ -103,7 +103,7 @@ namespace Discret
      public:
       //! constructor
       ScaTraEleDiffManagerElchDiffCondMultiScale(int numscal)
-          : ScaTraEleDiffManagerElchDiffCond(numscal){};
+          : ScaTraEleDiffManagerElchDiffCond(numscal) {};
 
       //! Output of transport parameter (to screen)
       void output_transport_params(const int numscal) override

@@ -31,7 +31,7 @@ namespace FS3I
           Core::LinAlg::Vector<double>& disp);
 
     } /* namespace Utils */
-  }   // namespace BioFilm
+  }  // namespace BioFilm
 } /* namespace FS3I */
 
 FOUR_C_NAMESPACE_CLOSE

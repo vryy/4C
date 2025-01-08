@@ -501,8 +501,8 @@ void FLD::Boxfilter::apply_box_filter(
               if (strainrate_) strainrate_val[idim][jdim] += (((*filtered_strainrate_)(ij)))[lid];
               if (alphaij_) alphaij_val[idim][jdim] += (((*filtered_alphaij_)(ij)))[lid];
             }  // end loop jdim
-          }    // end loop idim
-        }      // end loop slaves
+          }  // end loop idim
+        }  // end loop slaves
 
         // replace value by sum
         lid = noderowmap->LID(master_gid);
@@ -587,10 +587,10 @@ void FLD::Boxfilter::apply_box_filter(
                 err +=
                     ((*filtered_alphaij_)(ij)).ReplaceMyValues(1, &(alphaij_val[idim][jdim]), &lid);
             }  // end loop jdim
-          }    // end loop idim
+          }  // end loop idim
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }  // end loop slaves
-      }    // end loop masters
+      }  // end loop masters
     }
   }
 
@@ -765,13 +765,13 @@ void FLD::Boxfilter::apply_box_filter(
               }
             }
           }  // end loop jdim
-        }    // end loop idim
+        }  // end loop idim
 
         double volval = 1.0;
         err += patchvol.ReplaceMyValues(1, &volval, &lnodeid);
         if (err != 0) FOUR_C_THROW("dof/node not on proc");
       }  // is dirichlet node
-    }    // end loop all nodes
+    }  // end loop all nodes
   }
 
 
@@ -848,7 +848,7 @@ void FLD::Boxfilter::apply_box_filter(
       }  // end loop jdim
       if (err != 0) FOUR_C_THROW("dof not on proc");
     }  // end loop idim
-  }    // end loop nodes
+  }  // end loop nodes
 
   // clean up
   discret_->clear_state();
@@ -1301,7 +1301,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
 
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }  // end loop slaves
-      }    // end loop masters
+      }  // end loop masters
     }
   }
 

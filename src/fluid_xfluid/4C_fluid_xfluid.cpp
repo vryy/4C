@@ -877,7 +877,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
       int set_counter = 0;
 
       for (std::vector<Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
-           s != cell_sets.end(); s++)
+          s != cell_sets.end(); s++)
       {
         Cut::plain_volumecell_set& cells = *s;
         const std::vector<int>& nds = nds_sets[set_counter];
@@ -972,7 +972,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
         for (std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator bc =
                  element_bcells.begin();
-             bc != element_bcells.end(); ++bc)
+            bc != element_bcells.end(); ++bc)
         {
           int coup_sid =
               bc->first;  // all boundary cells within the current iterator belong to the same side
@@ -1017,7 +1017,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
             // Regist the Processor of this side on the mesh coupling object if required
             for (std::map<int, std::vector<Cut::BoundaryCell*>>::iterator bit = bcells.begin();
-                 bit != bcells.end(); ++bit)
+                bit != bcells.end(); ++bit)
             {
               std::shared_ptr<XFEM::CouplingBase> mc = condition_manager_->get_coupling_by_idx(
                   condition_manager_->get_mesh_coupling_index(bit->first));
@@ -1043,7 +1043,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
             // initialize the coupling lm vectors for each coupling side
             for (std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator bc = bcells.begin();
-                 bc != bcells.end(); ++bc)
+                bc != bcells.end(); ++bc)
             {
               int coup_sid = bc->first;  // all boundary cells within the current iterator belong to
                                          // the same side
@@ -1089,7 +1089,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
                 std::vector<int> nds_other;
 
                 for (Cut::plain_volumecell_set::const_iterator it = vcs.begin(); it != vcs.end();
-                     it++)
+                    it++)
                 {
                   if ((*it)->position() == Cut::Point::inside)  // now take the inside volume-cell
                   {
@@ -1131,8 +1131,8 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
                 couplingmatrices[0].shape(ndof_i, ndof);  // C_sf = C_uiu
                 couplingmatrices[1].shape(ndof, ndof_i);  // C_fs = C_uui
                 couplingmatrices[2].shape(ndof_i, 1);     // rhC_s = rhs_ui
-              }                                           // IsCoupling
-            }                                             // loop bcs
+              }  // IsCoupling
+            }  // loop bcs
 
             const size_t nui =
                 patchelementslm.size();  // sum over number of dofs of all coupling sides
@@ -1167,7 +1167,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
             for (std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::const_iterator sc =
                      side_coupling.begin();
-                 sc != side_coupling.end(); ++sc)
+                sc != side_coupling.end(); ++sc)
             {
               std::vector<Core::LinAlg::SerialDenseMatrix> couplingmatrices = sc->second;
               int coup_sid = sc->first;
@@ -1199,7 +1199,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
             }
 
             if (!side_coupling
-                     .empty())  // at least one side contributed to coupling for this element
+                    .empty())  // at least one side contributed to coupling for this element
             {
               // assemble C_ss_ = Cuiui
               std::vector<int> mypatchelementslmowner(patchelementslm.size(), myrank_);
@@ -1208,7 +1208,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
             }
 
           }  // bcells.size() > 0
-        }    // loop coupl index
+        }  // loop coupl index
         //------------------------------------------------------------
         // Assemble matrix and vectors
 
@@ -1233,7 +1233,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
         set_counter += 1;
 
       }  // end of loop over cellsets // end of assembly for each set of cells
-    }    // end of if(e!=nullptr) // assembly for cut elements
+    }  // end of if(e!=nullptr) // assembly for cut elements
     else
     {
       std::shared_ptr<Core::Mat::Material> mat = actele->material();
@@ -1390,7 +1390,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
       int set_counter = 0;
 
       for (std::vector<Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
-           s != cell_sets.end(); s++)
+          s != cell_sets.end(); s++)
       {
         Cut::plain_volumecell_set& cells = *s;
         const std::vector<int>& nds = nds_sets[set_counter];
@@ -1467,7 +1467,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
         set_counter += 1;
 
       }  // end of loop over cellsets // end of assembly for each set of cells
-    }    // end of if(e!=nullptr) // assembly for cut elements
+    }  // end of if(e!=nullptr) // assembly for cut elements
     else
     {
       TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 3) standard domain");
@@ -1983,7 +1983,7 @@ void FLD::XFluid::compute_error_norms(Core::LinAlg::SerialDenseVector& glob_dom_
 
       // loop over volume cells
       for (std::vector<Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
-           s != cell_sets.end(); s++)
+          s != cell_sets.end(); s++)
       {
         Cut::plain_volumecell_set& cells = *s;
         const int set_counter = s - cell_sets.begin();
@@ -2050,7 +2050,7 @@ void FLD::XFluid::compute_error_norms(Core::LinAlg::SerialDenseVector& glob_dom_
                 ele_interf_norms, bcells, bintpoints, cells, *params_);
           }
         }  // bcells
-      }    // end of loop over volume-cell sets
+      }  // end of loop over volume-cell sets
     }
     // standard (no xfem) element
     else
@@ -3614,7 +3614,7 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
 
       if (!xfluid_timeint->get_node_to_dof_map_for_reconstr(
                              Inpar::XFEM::Xf_TimeInt_by_PROJ_from_DIS)
-               .empty())
+              .empty())
         FOUR_C_THROW(
             "Even though projection failed, some nodes still demand projection. No alternatives "
             "found for e.g. %d",
@@ -3820,7 +3820,7 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
 
       if (!xfluid_timeint->get_node_to_dof_map_for_reconstr(
                              Inpar::XFEM::Xf_TimeInt_by_PROJ_from_DIS)
-               .empty())
+              .empty())
         FOUR_C_THROW(
             "Even though projection failed, some nodes still hold a projection label. No "
             "alternatives found for e.g. %d",
@@ -3982,7 +3982,7 @@ void FLD::XFluid::x_timint_corrective_transfer_vectors_between_steps(
   std::vector<int> failed_nodevec;
   failed_nodevec.reserve(reconstr_map.size());
   for (std::map<int, std::set<int>>::const_iterator in = reconstr_map.begin();
-       in != reconstr_map.end(); ++in)
+      in != reconstr_map.end(); ++in)
   {
     failed_nodevec.push_back(in->first);
   }
@@ -4101,7 +4101,7 @@ void FLD::XFluid::x_timint_ghost_penalty(std::vector<std::shared_ptr<Core::LinAl
   // perform ghost-penalty reconstruction for all vectors
   for (std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>::iterator vecs_it =
            rowVectors.begin();
-       vecs_it != rowVectors.end(); vecs_it++)
+      vecs_it != rowVectors.end(); vecs_it++)
   {
     // reconstruct values using ghost penalty approach
     x_timint_reconstruct_ghost_values(*vecs_it, *ghost_penaly_dbcmaps, screen_out);
@@ -4311,7 +4311,7 @@ void FLD::XFluid::x_timint_semi_lagrangean(
 
   for (std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>::iterator vec_it =
            oldRowStateVectors.begin();
-       vec_it != oldRowStateVectors.end(); vec_it++)
+      vec_it != oldRowStateVectors.end(); vec_it++)
   {
     std::shared_ptr<Core::LinAlg::Vector<double>> vec_col =
         std::make_shared<Core::LinAlg::Vector<double>>(*olddofcolmap, true);
@@ -4740,7 +4740,7 @@ void FLD::XFluid::set_initial_flow_field(
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }  // loop nodal dofsets
-    }    // end loop nodes lnodeid
+    }  // end loop nodes lnodeid
 
 
     // reconstruct ghost values / use the ghost penalty reconstruction technique as used within the

@@ -77,7 +77,7 @@ namespace Adapter
 
     FBIPenaltyConstraintenforcer(std::shared_ptr<Adapter::FBIConstraintBridge> bridge,
         std::shared_ptr<FBI::FBIGeometryCoupler> geometrycoupler)
-        : FBIConstraintenforcer(bridge, geometrycoupler){};
+        : FBIConstraintenforcer(bridge, geometrycoupler) {};
 
     /**
      * \brief Computes the contributions to the stiffness matrix of the structure field.

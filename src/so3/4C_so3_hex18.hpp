@@ -399,7 +399,7 @@ namespace Discret
       Core::LinAlg::Matrix<18, 3> node_param_coord();
 
       // Update the element
-      void update(){/* do nothing */};
+      void update() { /* do nothing */ };
 
       //@}
 

@@ -52,7 +52,7 @@ namespace Mat
       explicit InelasticDeformationDirection(std::vector<double> growthdirection);
 
       /// reference to matrix that determines growth direction
-      const Core::LinAlg::Matrix<3, 3> &growth_dir_mat() const { return growth_dir_mat_; }
+      const Core::LinAlg::Matrix<3, 3>& growth_dir_mat() const { return growth_dir_mat_; }
 
      private:
       /// matrix that determines growth direction
@@ -69,7 +69,7 @@ namespace Mat
     class InelasticDefgradNoGrowth : public Core::Mat::PAR::Parameter
     {
      public:
-      explicit InelasticDefgradNoGrowth(const Core::Mat::PAR::Parameter::Data &matdata);
+      explicit InelasticDefgradNoGrowth(const Core::Mat::PAR::Parameter::Data& matdata);
 
       std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; }
     };
@@ -85,7 +85,7 @@ namespace Mat
     class InelasticDefgradScalar : public Core::Mat::PAR::Parameter
     {
      public:
-      explicit InelasticDefgradScalar(const Core::Mat::PAR::Parameter::Data &matdata);
+      explicit InelasticDefgradScalar(const Core::Mat::PAR::Parameter::Data& matdata);
 
       std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; }
 
@@ -113,7 +113,7 @@ namespace Mat
     class InelasticDefgradTimeFunct : public Core::Mat::PAR::Parameter
     {
      public:
-      explicit InelasticDefgradTimeFunct(const Core::Mat::PAR::Parameter::Data &matdata);
+      explicit InelasticDefgradTimeFunct(const Core::Mat::PAR::Parameter::Data& matdata);
 
       std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; }
 
@@ -135,7 +135,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit InelasticDefgradLinScalar(const Core::Mat::PAR::Parameter::Data &matdata);
+      explicit InelasticDefgradLinScalar(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! molar factor that causes growth
       double scalar1_molar_growth_fac() { return scalar1_molar_growth_fac_; }
@@ -156,10 +156,10 @@ namespace Mat
     {
      public:
       /// standard constructor
-      explicit InelasticDefgradLinScalarAniso(const Core::Mat::PAR::Parameter::Data &matdata);
+      explicit InelasticDefgradLinScalarAniso(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// reference to matrix that determines growth direction
-      const Core::LinAlg::Matrix<3, 3> &growth_dir_mat() { return growth_dir_->growth_dir_mat(); }
+      const Core::LinAlg::Matrix<3, 3>& growth_dir_mat() { return growth_dir_->growth_dir_mat(); }
 
      private:
       /// calculation of direction of inelastic deformation
@@ -176,7 +176,7 @@ namespace Mat
     class InelasticDefgradIntercalFrac : public InelasticDefgradScalar
     {
      public:
-      explicit InelasticDefgradIntercalFrac(const Core::Mat::PAR::Parameter::Data &matdata);
+      explicit InelasticDefgradIntercalFrac(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// saturation concentration of material
       double cmax() const { return c_max_; }
@@ -200,7 +200,7 @@ namespace Mat
     class InelasticDefgradPolyIntercalFrac : public InelasticDefgradIntercalFrac
     {
      public:
-      explicit InelasticDefgradPolyIntercalFrac(const Core::Mat::PAR::Parameter::Data &matdata);
+      explicit InelasticDefgradPolyIntercalFrac(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// return value of polynomial at reference intercalation fraction
       double get_polynom_reference_value() const { return polynom_reference_value_; }
@@ -245,10 +245,10 @@ namespace Mat
      public:
       /// standard constructor
       explicit InelasticDefgradPolyIntercalFracAniso(
-          const Core::Mat::PAR::Parameter::Data &matdata);
+          const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// return reference to matrix that determines growth direction
-      const Core::LinAlg::Matrix<3, 3> &growth_dir_mat() const
+      const Core::LinAlg::Matrix<3, 3>& growth_dir_mat() const
       {
         return growth_dir_->growth_dir_mat();
       };
@@ -267,7 +267,7 @@ namespace Mat
     class InelasticDefgradLinTempIso : public Core::Mat::PAR::Parameter
     {
      public:
-      explicit InelasticDefgradLinTempIso(const Core::Mat::PAR::Parameter::Data &matdata);
+      explicit InelasticDefgradLinTempIso(const Core::Mat::PAR::Parameter::Data& matdata);
 
       std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
 
@@ -294,7 +294,7 @@ namespace Mat
     {
      public:
       explicit InelasticDefgradTransvIsotropElastViscoplast(
-          const Core::Mat::PAR::Parameter::Data &matdata);
+          const Core::Mat::PAR::Parameter::Data& matdata);
 
       std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
 
@@ -484,7 +484,7 @@ namespace Mat
     virtual ~InelasticDefgradFactors() = default;
 
     /// construct material with specific material params
-    explicit InelasticDefgradFactors(Core::Mat::PAR::Parameter *params);
+    explicit InelasticDefgradFactors(Core::Mat::PAR::Parameter* params);
 
     /*!
      * @brief create object by input parameter ID
@@ -505,8 +505,8 @@ namespace Mat
      *              (from already computed inelastic factors in the multiplicative split material)
      * @param[out] iFinM   Inverse inelastic deformation gradient
      */
-    virtual void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, Core::LinAlg::Matrix<3, 3> &iFinM) = 0;
+    virtual void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) = 0;
 
     /*!
      * @brief evaluate additional terms for the elasticity tensor
@@ -521,10 +521,10 @@ namespace Mat
      *                     deformation gradient of current inelastic contribution
      * @param[in,out] cmatadd  Additional elasticity tensor
      */
-    virtual void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, const Core::LinAlg::Matrix<3, 3> &iFinjM,
-        const Core::LinAlg::Matrix<6, 1> &iCV, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 6> &cmatadd) = 0;
+    virtual void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 6>& cmatadd) = 0;
 
     /*!
      * @brief calculate the derivative of the inelastic deformation gradient
@@ -534,7 +534,7 @@ namespace Mat
      *                         of different field
      */
     virtual void evaluate_inelastic_def_grad_derivative(
-        double detjacobian, Core::LinAlg::Matrix<9, 1> &dFindx) = 0;
+        double detjacobian, Core::LinAlg::Matrix<9, 1>& dFindx) = 0;
 
     /*!
      * @brief evaluate off-diagonal stiffness matrix for monolithic systems to get the
@@ -548,9 +548,9 @@ namespace Mat
      * @param[in,out] dstressdx Derivative of 2nd Piola Kirchhoff stresses w.r.t. primary variable
      *                          of different field
      */
-    virtual void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFinjM, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 1> &dstressdx) = 0;
+    virtual void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 1>& dstressdx) = 0;
 
     /*!
      * @brief pre-evaluation, intended to be used for stuff that has to be done only once per
@@ -560,7 +560,7 @@ namespace Mat
      * @param[in] gp      Gauss point
      * @param[in] eleGID  Element ID
      */
-    virtual void pre_evaluate(Teuchos::ParameterList &params, int gp, int eleGID) = 0;
+    virtual void pre_evaluate(Teuchos::ParameterList& params, int gp, int eleGID) = 0;
 
     /*!
      * @brief set gauss point concentration to parameter class
@@ -573,10 +573,10 @@ namespace Mat
      * relevant since the method is only called for one gauss point anyways, we set it to a dummy
      * gauss point id of 0 here
      */
-    virtual void set_concentration_gp(double concentration){};
+    virtual void set_concentration_gp(double concentration) {};
 
     /// return material parameters
-    virtual Core::Mat::PAR::Parameter *parameter() const { return params_; }
+    virtual Core::Mat::PAR::Parameter* parameter() const { return params_; }
 
     /// Get type of scalar, that leads to deformation
     virtual PAR::InelasticSource get_inelastic_source() = 0;
@@ -587,18 +587,18 @@ namespace Mat
      * @param[in] numgp Number of Gauss points
      * @param[in] container Input parameter Container
      */
-    virtual void setup(const int numgp, const Core::IO::InputParameterContainer &container) = 0;
+    virtual void setup(const int numgp, const Core::IO::InputParameterContainer& container) = 0;
 
     /// update history variables of the inelastic defgrad factors for next time step
     virtual void update() = 0;
 
-    virtual void pack_inelastic(Core::Communication::PackBuffer &data) const = 0;
+    virtual void pack_inelastic(Core::Communication::PackBuffer& data) const = 0;
 
-    virtual void unpack_inelastic(Core::Communication::UnpackBuffer &data) = 0;
+    virtual void unpack_inelastic(Core::Communication::UnpackBuffer& data) = 0;
 
    private:
     /// material parameters
-    Core::Mat::PAR::Parameter *params_;
+    Core::Mat::PAR::Parameter* params_;
   };
 
   /*--------------------------------------------------------------------*/
@@ -616,22 +616,22 @@ namespace Mat
      *
      * @param[in] params           pointer to material specific parameters
      */
-    explicit InelasticDefgradNoGrowth(Core::Mat::PAR::Parameter *params);
+    explicit InelasticDefgradNoGrowth(Core::Mat::PAR::Parameter* params);
 
-    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, const Core::LinAlg::Matrix<3, 3> &iFinjM,
-        const Core::LinAlg::Matrix<6, 1> &iCV, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 6> &cmatadd) override;
+    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 6>& cmatadd) override;
 
     void evaluate_inelastic_def_grad_derivative(
-        double detjacobian, Core::LinAlg::Matrix<9, 1> &dFindx) override;
+        double detjacobian, Core::LinAlg::Matrix<9, 1>& dFindx) override;
 
-    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, Core::LinAlg::Matrix<3, 3> &iFinM) override;
+    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
-    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFinjM, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 1> &dstressdx) override;
+    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 1>& dstressdx) override;
 
     PAR::InelasticSource get_inelastic_source() override;
 
@@ -640,15 +640,15 @@ namespace Mat
       return Core::Materials::mfi_no_growth;
     }
 
-    void pre_evaluate(Teuchos::ParameterList &params, int gp, int eleGID) override;
+    void pre_evaluate(Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    void update() override{};
+    void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer &container) override{};
+    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
 
-    void pack_inelastic(Core::Communication::PackBuffer &data) const override{};
+    void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
-    void unpack_inelastic(Core::Communication::UnpackBuffer &data) override{};
+    void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {};
 
    private:
     // identity tensor
@@ -665,22 +665,22 @@ namespace Mat
   class InelasticDefgradTimeFunct : public InelasticDefgradFactors
   {
    public:
-    explicit InelasticDefgradTimeFunct(Core::Mat::PAR::Parameter *params);
+    explicit InelasticDefgradTimeFunct(Core::Mat::PAR::Parameter* params);
 
-    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, const Core::LinAlg::Matrix<3, 3> &iFinjM,
-        const Core::LinAlg::Matrix<6, 1> &iCV, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 6> &cmatadd) override{};
+    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 6>& cmatadd) override {};
 
     void evaluate_inelastic_def_grad_derivative(
-        double detjacobian, Core::LinAlg::Matrix<9, 1> &dFindx) override{};
+        double detjacobian, Core::LinAlg::Matrix<9, 1>& dFindx) override {};
 
-    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, Core::LinAlg::Matrix<3, 3> &iFinM) override;
+    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
-    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFinjM, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 1> &dstressdx) override{};
+    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 1>& dstressdx) override {};
 
     PAR::InelasticSource get_inelastic_source() override;
 
@@ -689,21 +689,21 @@ namespace Mat
       return Core::Materials::mfi_time_funct;
     }
 
-    Mat::PAR::InelasticDefgradTimeFunct *parameter() const override
+    Mat::PAR::InelasticDefgradTimeFunct* parameter() const override
     {
-      return dynamic_cast<Mat::PAR::InelasticDefgradTimeFunct *>(
+      return dynamic_cast<Mat::PAR::InelasticDefgradTimeFunct*>(
           Mat::InelasticDefgradFactors::parameter());
     }
 
-    void pre_evaluate(Teuchos::ParameterList &params, int gp, int eleGID) override;
+    void pre_evaluate(Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    void update() override{};
+    void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer &container) override{};
+    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
 
-    void pack_inelastic(Core::Communication::PackBuffer &data) const override{};
+    void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
-    void unpack_inelastic(Core::Communication::UnpackBuffer &data) override{};
+    void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {};
 
    private:
     //! evaluated function value. Gets filled in pre_evaluate()
@@ -721,46 +721,46 @@ namespace Mat
      *
      * @param[in] params           pointer to material specific parameters
      */
-    explicit InelasticDefgradScalar(Core::Mat::PAR::Parameter *params);
+    explicit InelasticDefgradScalar(Core::Mat::PAR::Parameter* params);
 
-    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, const Core::LinAlg::Matrix<3, 3> &iFinjM,
-        const Core::LinAlg::Matrix<6, 1> &iCV, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 6> &cmatadd) override = 0;
+    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 6>& cmatadd) override = 0;
 
-    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other,
-        Core::LinAlg::Matrix<3, 3> &iFinM) override = 0;
+    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other,
+        Core::LinAlg::Matrix<3, 3>& iFinM) override = 0;
 
-    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFinjM, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 1> &dstressdx) override = 0;
+    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 1>& dstressdx) override = 0;
 
     PAR::InelasticSource get_inelastic_source() override = 0;
 
     Core::Materials::MaterialType material_type() const override = 0;
 
-    void pre_evaluate(Teuchos::ParameterList &params, int gp, int eleGID) override;
+    void pre_evaluate(Teuchos::ParameterList& params, int gp, int eleGID) override;
 
     void set_concentration_gp(double concentration) override;
 
-    Mat::PAR::InelasticDefgradScalar *parameter() const override
+    Mat::PAR::InelasticDefgradScalar* parameter() const override
     {
-      return dynamic_cast<Mat::PAR::InelasticDefgradScalar *>(
+      return dynamic_cast<Mat::PAR::InelasticDefgradScalar*>(
           Mat::InelasticDefgradFactors::parameter());
     }
 
     void update() override = 0;
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer &container) override = 0;
+    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override = 0;
 
-    void pack_inelastic(Core::Communication::PackBuffer &data) const override = 0;
+    void pack_inelastic(Core::Communication::PackBuffer& data) const override = 0;
 
-    void unpack_inelastic(Core::Communication::UnpackBuffer &data) override = 0;
+    void unpack_inelastic(Core::Communication::UnpackBuffer& data) override = 0;
 
    protected:
     //! Get vector of concentration at current Gauss point
-    [[nodiscard]] const std::vector<double> &get_concentration_gp() const
+    [[nodiscard]] const std::vector<double>& get_concentration_gp() const
     {
       FOUR_C_ASSERT_ALWAYS(concentrations_ != nullptr, "Concentrations are not set");
       return *concentrations_;
@@ -789,7 +789,7 @@ namespace Mat
      * @param[in] polynomial_growth  pointer to object that evaluates the polynomial as prescribed
      *                               in the input file
      */
-    explicit InelasticDefgradPolyIntercalFrac(Core::Mat::PAR::Parameter *params);
+    explicit InelasticDefgradPolyIntercalFrac(Core::Mat::PAR::Parameter* params);
 
     /*!
      * @brief evaluate polynomial describing growth of material with regard to intercalation
@@ -812,37 +812,37 @@ namespace Mat
 
     Core::Materials::MaterialType material_type() const override = 0;
 
-    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other,
-        Core::LinAlg::Matrix<3, 3> &iFinM) override = 0;
+    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other,
+        Core::LinAlg::Matrix<3, 3>& iFinM) override = 0;
 
-    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, const Core::LinAlg::Matrix<3, 3> &iFinjM,
-        const Core::LinAlg::Matrix<6, 1> &iCV, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 6> &cmatadd) override = 0;
+    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 6>& cmatadd) override = 0;
 
     void evaluate_inelastic_def_grad_derivative(
-        double detjacobian, Core::LinAlg::Matrix<9, 1> &dFindx) override = 0;
+        double detjacobian, Core::LinAlg::Matrix<9, 1>& dFindx) override = 0;
 
-    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFinjM, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 1> &dstressdx) override = 0;
+    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 1>& dstressdx) override = 0;
 
     Mat::PAR::InelasticSource get_inelastic_source() override;
 
-    Mat::PAR::InelasticDefgradPolyIntercalFrac *parameter() const override
+    Mat::PAR::InelasticDefgradPolyIntercalFrac* parameter() const override
     {
-      return dynamic_cast<Mat::PAR::InelasticDefgradPolyIntercalFrac *>(
+      return dynamic_cast<Mat::PAR::InelasticDefgradPolyIntercalFrac*>(
           Mat::InelasticDefgradScalar::parameter());
     }
 
     void update() override = 0;
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer &container) override = 0;
+    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override = 0;
 
-    void pack_inelastic(Core::Communication::PackBuffer &data) const override = 0;
+    void pack_inelastic(Core::Communication::PackBuffer& data) const override = 0;
 
-    void unpack_inelastic(Core::Communication::UnpackBuffer &data) override = 0;
+    void unpack_inelastic(Core::Communication::UnpackBuffer& data) override = 0;
 
    private:
     /// pointer to class that evaluates the polynomial growth law
@@ -869,43 +869,43 @@ namespace Mat
      * @param[in] linear_growth   pointer to object that evaluates the linear relation as prescribed
      *                            in the input file
      */
-    explicit InelasticDefgradLinScalarIso(Core::Mat::PAR::Parameter *params);
+    explicit InelasticDefgradLinScalarIso(Core::Mat::PAR::Parameter* params);
 
     Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::mfi_lin_scalar_iso;
     }
 
-    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, Core::LinAlg::Matrix<3, 3> &iFinM) override;
+    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
-    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, const Core::LinAlg::Matrix<3, 3> &iFinjM,
-        const Core::LinAlg::Matrix<6, 1> &iCV, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 6> &cmatadd) override;
+    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 6>& cmatadd) override;
 
     void evaluate_inelastic_def_grad_derivative(
-        double detjacobian, Core::LinAlg::Matrix<9, 1> &dFindx) override;
+        double detjacobian, Core::LinAlg::Matrix<9, 1>& dFindx) override;
 
-    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFinjM, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 1> &dstressdc) override;
+    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 1>& dstressdc) override;
 
     Mat::PAR::InelasticSource get_inelastic_source() override;
 
-    Mat::PAR::InelasticDefgradLinScalar *parameter() const override
+    Mat::PAR::InelasticDefgradLinScalar* parameter() const override
     {
-      return dynamic_cast<Mat::PAR::InelasticDefgradLinScalar *>(
+      return dynamic_cast<Mat::PAR::InelasticDefgradLinScalar*>(
           Mat::InelasticDefgradScalar::parameter());
     }
 
-    void update() override{};
+    void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer &container) override{};
+    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
 
-    void pack_inelastic(Core::Communication::PackBuffer &data) const override{};
+    void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
-    void unpack_inelastic(Core::Communication::UnpackBuffer &data) override{};
+    void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {};
 
    private:
     /// pointer to class that evaluates the linear growth law
@@ -939,43 +939,43 @@ namespace Mat
      * @param[in] linear_growth   pointer to object that evaluates the linear relation as prescribed
      *                            in the input file
      */
-    explicit InelasticDefgradLinScalarAniso(Core::Mat::PAR::Parameter *params);
+    explicit InelasticDefgradLinScalarAniso(Core::Mat::PAR::Parameter* params);
 
     Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::mfi_lin_scalar_aniso;
     }
 
-    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, Core::LinAlg::Matrix<3, 3> &iFinM) override;
+    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
-    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, const Core::LinAlg::Matrix<3, 3> &iFinjM,
-        const Core::LinAlg::Matrix<6, 1> &iCV, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 6> &cmatadd) override;
+    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 6>& cmatadd) override;
 
     void evaluate_inelastic_def_grad_derivative(
-        double detjacobian, Core::LinAlg::Matrix<9, 1> &dFindx) override;
+        double detjacobian, Core::LinAlg::Matrix<9, 1>& dFindx) override;
 
-    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFinjM, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 1> &dstressdc) override;
+    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 1>& dstressdc) override;
 
     Mat::PAR::InelasticSource get_inelastic_source() override;
 
-    Mat::PAR::InelasticDefgradLinScalarAniso *parameter() const override
+    Mat::PAR::InelasticDefgradLinScalarAniso* parameter() const override
     {
-      return dynamic_cast<Mat::PAR::InelasticDefgradLinScalarAniso *>(
+      return dynamic_cast<Mat::PAR::InelasticDefgradLinScalarAniso*>(
           Mat::InelasticDefgradScalar::parameter());
     }
 
-    void update() override{};
+    void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer &container) override{};
+    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
 
-    void pack_inelastic(Core::Communication::PackBuffer &data) const override{};
+    void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
-    void unpack_inelastic(Core::Communication::UnpackBuffer &data) override{};
+    void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {};
 
    private:
     /// store pointer to class that evaluates the linear growth law
@@ -1004,41 +1004,41 @@ namespace Mat
      * @param[in] polynomial_growth  pointer to object that evaluates the polynomial as prescribed
      *                               in the input file
      */
-    explicit InelasticDefgradPolyIntercalFracIso(Core::Mat::PAR::Parameter *params);
+    explicit InelasticDefgradPolyIntercalFracIso(Core::Mat::PAR::Parameter* params);
 
     Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::mfi_poly_intercal_frac_iso;
     }
 
-    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, Core::LinAlg::Matrix<3, 3> &iFinM) override;
+    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
-    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, const Core::LinAlg::Matrix<3, 3> &iFinjM,
-        const Core::LinAlg::Matrix<6, 1> &iCV, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 6> &cmatadd) override;
+    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 6>& cmatadd) override;
 
     void evaluate_inelastic_def_grad_derivative(
-        double detjacobian, Core::LinAlg::Matrix<9, 1> &dFindx) override;
+        double detjacobian, Core::LinAlg::Matrix<9, 1>& dFindx) override;
 
-    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFinjM, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 1> &dstressdc) override;
+    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 1>& dstressdc) override;
 
-    Mat::PAR::InelasticDefgradPolyIntercalFrac *parameter() const override
+    Mat::PAR::InelasticDefgradPolyIntercalFrac* parameter() const override
     {
-      return dynamic_cast<Mat::PAR::InelasticDefgradPolyIntercalFrac *>(
+      return dynamic_cast<Mat::PAR::InelasticDefgradPolyIntercalFrac*>(
           Mat::InelasticDefgradPolyIntercalFrac::parameter());
     }
 
-    void update() override{};
+    void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer &container) override{};
+    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
 
-    void pack_inelastic(Core::Communication::PackBuffer &data) const override{};
+    void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
-    void unpack_inelastic(Core::Communication::UnpackBuffer &data) override{};
+    void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {};
   };
 
   /*----------------------------------------------------------------------*/
@@ -1068,41 +1068,41 @@ namespace Mat
      * @param[in] polynomial_growth  pointer to object that evaluates the polynomial as prescribed
      *                               in the input file
      */
-    explicit InelasticDefgradPolyIntercalFracAniso(Core::Mat::PAR::Parameter *params);
+    explicit InelasticDefgradPolyIntercalFracAniso(Core::Mat::PAR::Parameter* params);
 
     Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::mfi_poly_intercal_frac_aniso;
     }
 
-    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, Core::LinAlg::Matrix<3, 3> &iFinM) override;
+    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
-    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, const Core::LinAlg::Matrix<3, 3> &iFinjM,
-        const Core::LinAlg::Matrix<6, 1> &iCV, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 6> &cmatadd) override;
+    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 6>& cmatadd) override;
 
     void evaluate_inelastic_def_grad_derivative(
-        double detjacobian, Core::LinAlg::Matrix<9, 1> &dFindx) override;
+        double detjacobian, Core::LinAlg::Matrix<9, 1>& dFindx) override;
 
-    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFinjM, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 1> &dstressdc) override;
+    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 1>& dstressdc) override;
 
-    Mat::PAR::InelasticDefgradPolyIntercalFracAniso *parameter() const override
+    Mat::PAR::InelasticDefgradPolyIntercalFracAniso* parameter() const override
     {
-      return dynamic_cast<Mat::PAR::InelasticDefgradPolyIntercalFracAniso *>(
+      return dynamic_cast<Mat::PAR::InelasticDefgradPolyIntercalFracAniso*>(
           Mat::InelasticDefgradPolyIntercalFrac::parameter());
     }
 
-    void update() override{};
+    void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer &container) override{};
+    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
 
-    void pack_inelastic(Core::Communication::PackBuffer &data) const override{};
+    void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
-    void unpack_inelastic(Core::Communication::UnpackBuffer &data) override{};
+    void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {};
   };
 
   /*----------------------------------------------------------------------*/
@@ -1116,22 +1116,22 @@ namespace Mat
   class InelasticDefgradLinTempIso : public InelasticDefgradFactors
   {
    public:
-    explicit InelasticDefgradLinTempIso(Core::Mat::PAR::Parameter *params);
+    explicit InelasticDefgradLinTempIso(Core::Mat::PAR::Parameter* params);
 
-    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, const Core::LinAlg::Matrix<3, 3> &iFinjM,
-        const Core::LinAlg::Matrix<6, 1> &iCV, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 6> &cmatadd) override;
+    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 6>& cmatadd) override;
 
     void evaluate_inelastic_def_grad_derivative(
-        double detjacobian, Core::LinAlg::Matrix<9, 1> &dFindx) override;
+        double detjacobian, Core::LinAlg::Matrix<9, 1>& dFindx) override;
 
-    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, Core::LinAlg::Matrix<3, 3> &iFinM) override;
+    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
-    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFinjM, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 1> &dstressdT) override;
+    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 1>& dstressdT) override;
 
     Mat::PAR::InelasticSource get_inelastic_source() override;
 
@@ -1140,21 +1140,21 @@ namespace Mat
       return Core::Materials::mfi_lin_temp_iso;
     };
 
-    Mat::PAR::InelasticDefgradLinTempIso *parameter() const override
+    Mat::PAR::InelasticDefgradLinTempIso* parameter() const override
     {
-      return dynamic_cast<Mat::PAR::InelasticDefgradLinTempIso *>(
+      return dynamic_cast<Mat::PAR::InelasticDefgradLinTempIso*>(
           Mat::InelasticDefgradFactors::parameter());
     }
 
-    void pre_evaluate(Teuchos::ParameterList &params, int gp, int eleGID) override;
+    void pre_evaluate(Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    void update() override{};
+    void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer &container) override{};
+    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
 
-    void pack_inelastic(Core::Communication::PackBuffer &data) const override{};
+    void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
-    void unpack_inelastic(Core::Communication::UnpackBuffer &data) override{};
+    void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {};
 
    private:
     /// temperature at the gauss point
@@ -1317,7 +1317,7 @@ namespace Mat
      * isotropic)
      */
 
-    explicit InelasticDefgradTransvIsotropElastViscoplast(Core::Mat::PAR::Parameter *params,
+    explicit InelasticDefgradTransvIsotropElastViscoplast(Core::Mat::PAR::Parameter* params,
         std::shared_ptr<Mat::Viscoplastic::Law> viscoplastic_law,
         Mat::Elastic::CoupTransverselyIsotropic fiber_reader,
         std::vector<std::shared_ptr<Mat::Elastic::Summand>> pot_sum_el,
@@ -1329,38 +1329,38 @@ namespace Mat
       return Core::Materials::mfi_transv_isotrop_elast_viscoplast;
     }
 
-    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, const Core::LinAlg::Matrix<3, 3> &iFinjM,
-        const Core::LinAlg::Matrix<6, 1> &iCV, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 6> &cmatadd) override;
+    void evaluate_additional_cmat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 6>& cmatadd) override;
 
     void evaluate_inelastic_def_grad_derivative(
-        double detjacobian, Core::LinAlg::Matrix<9, 1> &dFindx) override{};
+        double detjacobian, Core::LinAlg::Matrix<9, 1>& dFindx) override {};
 
-    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFin_other, Core::LinAlg::Matrix<3, 3> &iFinM) override;
+    void evaluate_inverse_inelastic_def_grad(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
-    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3> *defgrad,
-        const Core::LinAlg::Matrix<3, 3> &iFinjM, const Core::LinAlg::Matrix<6, 9> &dSdiFinj,
-        Core::LinAlg::Matrix<6, 1> &dstressdT) override{};
+    void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        Core::LinAlg::Matrix<6, 1>& dstressdT) override {};
 
     Mat::PAR::InelasticSource get_inelastic_source() override { return PAR::InelasticSource::none; }
 
-    Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast *parameter() const override
+    Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast* parameter() const override
     {
-      return dynamic_cast<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast *>(
+      return dynamic_cast<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast*>(
           Mat::InelasticDefgradFactors::parameter());
     }
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer &container) override;
+    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override;
 
-    void pre_evaluate(Teuchos::ParameterList &params, int gp, int eleGID) override;
+    void pre_evaluate(Teuchos::ParameterList& params, int gp, int eleGID) override;
 
     void update() override;
 
-    void pack_inelastic(Core::Communication::PackBuffer &data) const override;
+    void pack_inelastic(Core::Communication::PackBuffer& data) const override;
 
-    void unpack_inelastic(Core::Communication::UnpackBuffer &buffer) override;
+    void unpack_inelastic(Core::Communication::UnpackBuffer& buffer) override;
 
     /*! @brief Evaluate the current state variables based on a given right Cauchy-Green deformation
      * tensor, given inverse plastic deformation gradient and given equivalent plastic strain
@@ -1373,9 +1373,9 @@ namespace Mat
      * @param[in] int_dt time step (or substep) length used for time integration
      * @param[in] check_dt time step (or substep) length used for overflow checking
      */
-    StateQuantities evaluate_state_quantities(const Core::LinAlg::Matrix<3, 3> &CM,
-        const Core::LinAlg::Matrix<3, 3> &iFinM, const double plastic_strain,
-        Mat::ViscoplastErrorType &err_status, const double int_dt, const double check_dt);
+    StateQuantities evaluate_state_quantities(const Core::LinAlg::Matrix<3, 3>& CM,
+        const Core::LinAlg::Matrix<3, 3>& iFinM, const double plastic_strain,
+        Mat::ViscoplastErrorType& err_status, const double int_dt, const double check_dt);
 
     /*! @brief Evaluate the current state variable derivatives with respect to the right
      * Cauchy-Green deformation tensor, the inverse plastic deformation gradient and the equivalent
@@ -1393,8 +1393,8 @@ namespace Mat
      *                       or is this already available from the current state variables (false)
      */
     StateQuantityDerivatives evaluate_state_quantity_derivatives(
-        const Core::LinAlg::Matrix<3, 3> &CM, const Core::LinAlg::Matrix<3, 3> &iFinM,
-        const double plastic_strain, Mat::ViscoplastErrorType &err_status, const double int_dt,
+        const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<3, 3>& iFinM,
+        const double plastic_strain, Mat::ViscoplastErrorType& err_status, const double int_dt,
         const double check_dt, const bool eval_state = false);
 
     //! return the fiber direction of transverse isotropy for the considered element
@@ -1426,7 +1426,7 @@ namespace Mat
       Core::LinAlg::Matrix<6, 6> id_dyad_mm_;
 
       //! set tensors for a given fiber direction \f$ \boldsymbol{m} \f$
-      void set_material_const_tensors(const Core::LinAlg::Matrix<3, 1> &m);
+      void set_material_const_tensors(const Core::LinAlg::Matrix<3, 1>& m);
     };
     ConstMatTensors const_mat_tensors_;
 
@@ -1551,8 +1551,8 @@ namespace Mat
      * @param[out] delta constitutive tensor factors for the isotropic elasticity case, as derived
      *                   in Holzapfel - Nonlinear Solid Mechanics(2000)
      */
-    void calculate_gamma_delta(const Core::LinAlg::Matrix<3, 3> &CeM,
-        Core::LinAlg::Matrix<3, 1> &gamma, Core::LinAlg::Matrix<8, 1> &delta);
+    void calculate_gamma_delta(const Core::LinAlg::Matrix<3, 3>& CeM,
+        Core::LinAlg::Matrix<3, 1>& gamma, Core::LinAlg::Matrix<8, 1>& delta);
 
     /*!
      * @brief Check if the elastic predictor provides the solution for the current time step, i.e.,
@@ -1566,9 +1566,9 @@ namespace Mat
      * @param[out] err_status error status
      * @return boolean value: true (predictor = solution), or false (predictor != solution)
      */
-    bool check_predictor(const Core::LinAlg::Matrix<3, 3> &CM,
-        const Core::LinAlg::Matrix<3, 3> &iFinM_pred, const double plastic_strain_pred,
-        Mat::ViscoplastErrorType &err_status);
+    bool check_predictor(const Core::LinAlg::Matrix<3, 3>& CM,
+        const Core::LinAlg::Matrix<3, 3>& iFinM_pred, const double plastic_strain_pred,
+        Mat::ViscoplastErrorType& err_status);
 
     /*!
      * @brief Calculate the residual for the Local Newton Loop (LNL)
@@ -1586,9 +1586,9 @@ namespace Mat
      * @return  residual of the LNL equations
      */
     Core::LinAlg::Matrix<10, 1> calculate_local_newton_loop_residual(
-        const Core::LinAlg::Matrix<3, 3> &CM, const Core::LinAlg::Matrix<10, 1> &x,
-        const Core::LinAlg::Matrix<3, 3> &last_iFinM, const double last_plastic_strain,
-        const double int_dt, const double check_dt, Mat::ViscoplastErrorType &err_status);
+        const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<10, 1>& x,
+        const Core::LinAlg::Matrix<3, 3>& last_iFinM, const double last_plastic_strain,
+        const double int_dt, const double check_dt, Mat::ViscoplastErrorType& err_status);
 
 
     /*!
@@ -1609,10 +1609,10 @@ namespace Mat
      * @return 10x10 jacobian matrix of the Local Newton Loop and of the linearization
      *         \f$ \boldsymbol{J} \f$
      */
-    Core::LinAlg::Matrix<10, 10> calculate_jacobian(const Core::LinAlg::Matrix<3, 3> &CM,
-        const Core::LinAlg::Matrix<10, 1> &x, const Core::LinAlg::Matrix<3, 3> &last_iFinM,
+    Core::LinAlg::Matrix<10, 10> calculate_jacobian(const Core::LinAlg::Matrix<3, 3>& CM,
+        const Core::LinAlg::Matrix<10, 1>& x, const Core::LinAlg::Matrix<3, 3>& last_iFinM,
         const double last_plastic_strain, const double int_dt, const double check_dt,
-        Mat::ViscoplastErrorType &err_status);
+        Mat::ViscoplastErrorType& err_status);
 
 
     /*!
@@ -1626,8 +1626,8 @@ namespace Mat
      * @param[out] err_status error status
      * @return solution vector of the Local Newton Loop, structured analogously to the predictor x
      */
-    Core::LinAlg::Matrix<10, 1> local_newton_loop(const Core::LinAlg::Matrix<3, 3> &defgrad,
-        const Core::LinAlg::Matrix<10, 1> &x, Mat::ViscoplastErrorType &err_status);
+    Core::LinAlg::Matrix<10, 1> local_newton_loop(const Core::LinAlg::Matrix<3, 3>& defgrad,
+        const Core::LinAlg::Matrix<10, 1>& x, Mat::ViscoplastErrorType& err_status);
 
 
     /*!
@@ -1643,8 +1643,8 @@ namespace Mat
      * step too many times)
      *
      */
-    bool prepare_new_substep(SubstepParams &substep_params, Core::LinAlg::Matrix<10, 1> &sol,
-        Core::LinAlg::Matrix<3, 3> &curr_CM);
+    bool prepare_new_substep(SubstepParams& substep_params, Core::LinAlg::Matrix<10, 1>& sol,
+        Core::LinAlg::Matrix<3, 3>& curr_CM);
 
     /*!
      * @brief Evaluate the additional cmat stiffness tensor using a perturbation-based approach, if
@@ -1665,9 +1665,9 @@ namespace Mat
      *                     deformation gradient of current inelastic contribution
      *
      */
-    void evaluate_additional_cmat_perturb_based(const Core::LinAlg::Matrix<3, 3> &FredM,
-        Core::LinAlg::Matrix<6, 6> &cmatadd, const Core::LinAlg::Matrix<3, 3> &iFin_other,
-        const Core::LinAlg::Matrix<6, 9> &dSdiFinj);
+    void evaluate_additional_cmat_perturb_based(const Core::LinAlg::Matrix<3, 3>& FredM,
+        Core::LinAlg::Matrix<6, 6>& cmatadd, const Core::LinAlg::Matrix<3, 3>& iFin_other,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj);
   };
 }  // namespace Mat
 

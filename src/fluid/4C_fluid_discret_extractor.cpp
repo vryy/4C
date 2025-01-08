@@ -169,7 +169,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
 
     // all separation row nodes are now contained in the child discetization
     for (std::set<int>::iterator id = sepcondelenodes_row.begin(); id != sepcondelenodes_row.end();
-         ++id)
+        ++id)
     {
       Core::Nodes::Node* actnode = parentdiscret_->g_node(*id);
 
@@ -229,7 +229,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
 
       // all row nodes with separation condition are now contained in the child discretization
       for (std::set<int>::iterator id = sepcondelenodes_row.begin();
-           id != sepcondelenodes_row.end(); ++id)
+          id != sepcondelenodes_row.end(); ++id)
       {
         rownodes.push_back(*id);
       }
@@ -241,7 +241,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
       std::vector<int> colnodes;
 
       for (std::set<int>::iterator id = sepcondelenodes_col.begin();
-           id != sepcondelenodes_col.end(); ++id)
+          id != sepcondelenodes_col.end(); ++id)
       {
         colnodes.push_back(*id);
       }

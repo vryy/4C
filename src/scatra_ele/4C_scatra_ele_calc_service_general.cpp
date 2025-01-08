@@ -1058,7 +1058,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_initial_time_deriv
       // The contribution from the time discretization has to be removed before solving the system:
       correct_rhs_from_calc_rhs_lin_mass(erhs, k, fac, densnp[k], phiint);
     }  // loop over each scalar k
-  }    // integration loop
+  }  // integration loop
 
   // scale element matrix appropriately to be consistent with scaling of global residual vector
   // computed by assemble_mat_and_rhs() routine (see calc_initial_time_derivative() routine on time
@@ -1212,7 +1212,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calculate_flux(
       {
         flux(idim, vi) += fac * funct_(vi) * q(idim);
       }  // idim
-    }    // vi
+    }  // vi
 
   }  // integration loop
 
@@ -1970,7 +1970,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_an
         calc_rhs_react(erhs, k, rhsfac, rhstaufac, rea_phi, densnp[k], scatrares);
 
     }  // end loop all scalars
-  }    // end loop Gauss points
+  }  // end loop Gauss points
 }
 
 /*----------------------------------------------------------------------*

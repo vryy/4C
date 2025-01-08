@@ -250,7 +250,7 @@ namespace NOX
       /// instance of the Eigenvalue container
       Eigenvalues ev_;
     };  // class Group
-  }     // namespace Nln
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

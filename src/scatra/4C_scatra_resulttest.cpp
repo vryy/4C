@@ -364,12 +364,11 @@ double ScaTra::ScaTraResultTest::result_special(
       else
       {
         if (!quantity.compare(0, 7, "L2error"))
-          result =
-              (*scatratimint_
-                      ->rel_errors())[domain * scatratimint_->num_dof_per_node() * 2 + species * 2];
+          result = (*scatratimint_
+                  ->rel_errors())[domain * scatratimint_->num_dof_per_node() * 2 + species * 2];
         else
-          result = (*scatratimint_->rel_errors())[domain * scatratimint_->num_dof_per_node() * 2 +
-                                                  species * 2 + 1];
+          result = (*scatratimint_
+                  ->rel_errors())[domain * scatratimint_->num_dof_per_node() * 2 + species * 2 + 1];
       }
     }
   }

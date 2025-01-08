@@ -33,7 +33,7 @@ namespace Cut
   class FacetIntegration
   {
    public:
-    FacetIntegration(Facet *face1, Element *element1, const Cut::Point::PointPosition posi,
+    FacetIntegration(Facet* face1, Element* element1, const Cut::Point::PointPosition posi,
         bool bcellInt, bool global)
         : face1_(face1),             // facet under consideration
           elem1_(element1),          // the element for which the facet is a part of
@@ -56,7 +56,7 @@ namespace Cut
     /*!
     \brief Computes the equation of the plane that contains this facet
     */
-    std::vector<double> equation_plane(const std::vector<std::vector<double>> &cornersLocal);
+    std::vector<double> equation_plane(const std::vector<std::vector<double>>& cornersLocal);
 
     /*!
     \brief Returns the equation of plane that contains this facet
@@ -72,26 +72,26 @@ namespace Cut
     \brief Generate Gaussian points over the considered facet by triangulating it. This is used
     when DirectDivergence option is used for Gauss point generation
     */
-    void divergence_integration_rule(Mesh &mesh, Core::FE::CollectedGaussPoints &cgp);
+    void divergence_integration_rule(Mesh& mesh, Core::FE::CollectedGaussPoints& cgp);
 
     /*!
     \brief Generate Gaussian points over the considered facet by triangulating it. This is used
     when DirectDivergence option is used for Gauss point generation
     */
-    void divergence_integration_rule_new(Mesh &mesh, Core::FE::CollectedGaussPoints &cgp);
+    void divergence_integration_rule_new(Mesh& mesh, Core::FE::CollectedGaussPoints& cgp);
 
    private:
     /*!
     \brief Check whether the vertices numbering of the facet is clockwise
     */
     void is_clockwise(
-        const std::vector<double> &eqn_plane, const std::vector<std::vector<double>> &cornersLocal);
+        const std::vector<double>& eqn_plane, const std::vector<std::vector<double>>& cornersLocal);
 
     /*
     \brief Compute the function which replaces "x" when projecting the facet into coordinate plane
     */
     std::vector<double> compute_alpha(
-        std::vector<double> &eqn_plane, Cut::ProjectionDirection intType);
+        std::vector<double>& eqn_plane, Cut::ProjectionDirection intType);
 
     /*!
     \brief Get normal of the considered facet in a particular coordinate direction defined by
@@ -102,40 +102,40 @@ namespace Cut
     /*!
     \brief Perform integration of base functions over boundarycells
     */
-    void boundary_facet_integration(const std::vector<std::vector<double>> &cornersLocal,
-        double &facet_integ, Cut::ProjectionDirection intType);
+    void boundary_facet_integration(const std::vector<std::vector<double>>& cornersLocal,
+        double& facet_integ, Cut::ProjectionDirection intType);
 
     /*!
     \brief Generate boundary cells for the considered facet. May need to perform triangulatio
     */
     void generate_divergence_cells(
-        bool divergenceRule, Mesh &mesh, std::list<std::shared_ptr<BoundaryCell>> &divCells);
+        bool divergenceRule, Mesh& mesh, std::list<std::shared_ptr<BoundaryCell>>& divCells);
 
     /*!
     \brief Generate boundary cells for the considered facet. May need to perform triangulatio
     */
-    void generate_divergence_cells_new(bool divergenceRule, Mesh &mesh,
-        std::list<std::shared_ptr<BoundaryCell>> &divCells,
-        const std::vector<Point *> &cornersGlobal);
+    void generate_divergence_cells_new(bool divergenceRule, Mesh& mesh,
+        std::list<std::shared_ptr<BoundaryCell>>& divCells,
+        const std::vector<Point*>& cornersGlobal);
 
 
     /*!
     \brief Temporarily create Tri3 cell. This is not stored in Mesh
     */
     void temporary_tri3(
-        const std::vector<Point *> &corners, std::list<std::shared_ptr<BoundaryCell>> &divCells);
+        const std::vector<Point*>& corners, std::list<std::shared_ptr<BoundaryCell>>& divCells);
 
     /*!
     \brief Temporarily create Quad4 cell. This is not stored in Mesh
     */
     void temporary_quad4(
-        const std::vector<Point *> &corners, std::list<std::shared_ptr<BoundaryCell>> &divCells);
+        const std::vector<Point*>& corners, std::list<std::shared_ptr<BoundaryCell>>& divCells);
 
     //! considered facet
-    Facet *face1_;
+    Facet* face1_;
 
     //! background element which was cut to produce this facet
-    Element *elem1_;
+    Element* elem1_;
 
     //! position of the facet
     const Cut::Point::PointPosition position_;

@@ -52,7 +52,7 @@ namespace Mat
           return nullptr;
         };
       };  // class IsoTestMaterial
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Isochoric Material to test the elasthyper-Toolbox

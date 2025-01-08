@@ -35,7 +35,7 @@ namespace Mat
       std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class Maxwell_0d_acinus_Exponential
-  }     // namespace PAR
+  }  // namespace PAR
 
 
   class Maxwell0dAcinusExponentialType : public Maxwell0dAcinusType

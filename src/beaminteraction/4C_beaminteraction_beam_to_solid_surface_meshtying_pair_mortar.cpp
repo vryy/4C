@@ -150,7 +150,7 @@ void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
       for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
         for (unsigned int i_mortar_val = 0; i_mortar_val < Mortar::n_val_; i_mortar_val++)
           for (unsigned int i_surface_node = 0; i_surface_node < Surface::n_nodes_;
-               i_surface_node++)
+              i_surface_node++)
             for (unsigned int i_surface_val = 0; i_surface_val < Surface::n_val_; i_surface_val++)
               for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
                 local_M(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,

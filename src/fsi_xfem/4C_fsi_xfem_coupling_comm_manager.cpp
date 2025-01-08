@@ -176,24 +176,21 @@ bool XFEM::CouplingCommManager::insert_matrix(int transform_id, int idxA,
     case CouplingCommManager::col:
     {
       return get_transform(transform_id)
-          ->
-          operator()(matA, matA.range_map(), matA.domain_map(), scale, nullptr,
+          ->operator()(matA, matA.range_map(), matA.domain_map(), scale, nullptr,
               get_coupling_converter(idxA, idxB).get(), matB, exactmatch, addmatrix);
       break;
     }
     case CouplingCommManager::row:
     {
       return get_transform(transform_id)
-          ->
-          operator()(matA, matA.range_map(), matA.domain_map(), scale,
+          ->operator()(matA, matA.range_map(), matA.domain_map(), scale,
               get_coupling_converter(idxA, idxB).get(), nullptr, matB, true, addmatrix);
       break;
     }
     case CouplingCommManager::row_and_col:
     {
       return get_transform(transform_id)
-          ->
-          operator()(matA, matA.range_map(), matA.domain_map(), scale,
+          ->operator()(matA, matA.range_map(), matA.domain_map(), scale,
               get_coupling_converter(idxA, idxB).get(), get_coupling_converter(idxA, idxB).get(),
               matB, exactmatch, addmatrix);
       break;
@@ -232,7 +229,7 @@ void XFEM::CouplingCommManager::setup_multi_map_extractors(
     std::map<int, std::shared_ptr<const Core::FE::Discretization>> dis)
 {
   for (std::map<int, std::shared_ptr<const Core::FE::Discretization>>::iterator dit = dis.begin();
-       dit != dis.end(); ++dit)
+      dit != dis.end(); ++dit)
   {
     Core::Conditions::MultiConditionSelector mcs;
     mme_[dit->first] = std::make_shared<Core::LinAlg::MultiMapExtractor>();
@@ -255,7 +252,7 @@ void XFEM::CouplingCommManager::setup_full_map_extractors(
         "<==> Fluid vel&pres)");
 
   for (std::map<int, std::shared_ptr<const Core::FE::Discretization>>::iterator dit = dis.begin();
-       dit != dis.end(); ++dit)
+      dit != dis.end(); ++dit)
   {
     std::shared_ptr<Core::LinAlg::MapExtractor> me = std::make_shared<Core::LinAlg::MapExtractor>();
     if (static_cast<std::size_t>(dit->first) < dis.size() - 1)
@@ -285,11 +282,11 @@ void XFEM::CouplingCommManager::setup_couplings(
 
   for (std::map<int, std::shared_ptr<Core::LinAlg::MultiMapExtractor>>::iterator mmealpha =
            mme_.begin();
-       mmealpha != mme_.end(); ++mmealpha)
+      mmealpha != mme_.end(); ++mmealpha)
   {
     for (std::map<int, std::shared_ptr<Core::LinAlg::MultiMapExtractor>>::iterator mmebeta =
              mme_.begin();
-         mmebeta != mme_.end(); ++mmebeta)
+        mmebeta != mme_.end(); ++mmebeta)
     {
       if ((*mmealpha).first >= (*mmebeta).first)
         continue;  // we  create couplings just for idxa < idxb
@@ -357,7 +354,7 @@ void XFEM::CouplingCommManager::setup_full_extractor(
 
   std::vector<std::shared_ptr<const Epetra_Map>> maps;
   for (std::map<int, std::shared_ptr<const Core::FE::Discretization>>::iterator dit = dis.begin();
-       dit != dis.end(); ++dit)
+      dit != dis.end(); ++dit)
   {
     maps.push_back(std::make_shared<Epetra_Map>(*(*dit).second->dof_row_map()));
   }

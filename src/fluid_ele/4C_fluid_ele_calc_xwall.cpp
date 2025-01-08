@@ -120,7 +120,7 @@ int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::evaluate_service(
       int row1 = 0;
       // assembly back into the old vector
       for (std::vector<int>::const_iterator i = assembletoggle.begin(); i != assembletoggle.end();
-           ++i)
+          ++i)
       {
         if (*i == 0) elevec1[row1] = 0.0;
         ++row1;
@@ -236,11 +236,11 @@ int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::evaluate(Discret::El
     int col1 = 0;
     // assembly back into the old matrix
     for (std::vector<int>::const_iterator i = assembletoggle.begin(); i != assembletoggle.end();
-         ++i)
+        ++i)
     {
       row1 = 0;
       for (std::vector<int>::const_iterator j = assembletoggle.begin(); j != assembletoggle.end();
-           ++j)
+          ++j)
       {
         if (*i == 0 && *j == 0 && row1 == col1)
           elemat1_epetra[col1][row1] = 1.0;
@@ -254,7 +254,7 @@ int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::evaluate(Discret::El
     row1 = 0;
     // assembly back into the old matrix
     for (std::vector<int>::const_iterator i = assembletoggle.begin(); i != assembletoggle.end();
-         ++i)
+        ++i)
     {
       if (*i == 0) elevec1_epetra[row1] = 0.0;
       ++row1;
@@ -963,7 +963,7 @@ double Discret::Elements::FluidEleCalcXWall<distype, enrtype>::calc_mk()
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
   for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
-       ++iquad)
+      ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -1116,7 +1116,7 @@ int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
   for (Core::FE::GaussIntegration::iterator iquad = my::intpoints_.begin();
-       iquad != my::intpoints_.end(); ++iquad)
+      iquad != my::intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
@@ -1172,8 +1172,8 @@ int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
           estif_u(nsd_nodevi + idim, nsd_nodeui + idim) +=
               newfunct(vi) * lin_resM_Du(idim_nsd_p_idim[idim], nodeui);
         }  // end for (idim)
-      }    // vi
-    }      // ui
+      }  // vi
+    }  // ui
 
     // add velocity-velocity part to matrix
     for (int ui = 0; ui < enren_; ++ui)
@@ -1228,8 +1228,8 @@ int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
           estif_u(nsd_nodevi + idim, nsd_nodeui + idim) +=
               newfunct(vi) * lin_resM_Du(idim_nsd_p_idim[idim], nodeui);
         }  // end for (idim)
-      }    // vi
-    }      // ui
+      }  // vi
+    }  // ui
 
     // veln
     // add velocity-velocity part to rhs
@@ -1401,11 +1401,11 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
       Core::FE::GaussIntegration intpointsplane(Core::FE::CellType::quad8, 2 * numgpnorm_ - 1);
       // start loop over integration points in layer
       for (Core::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
-           iquadplane != intpointsplane.end(); ++iquadplane)
+          iquadplane != intpointsplane.end(); ++iquadplane)
       {
         // start loop over integration points in layer
         for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
-             iquadnorm != intpointsnormal.end(); ++iquadnorm)
+            iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
           cgp_->append(iquadnorm.point()[0], iquadplane.point()[0], iquadplane.point()[1],
               iquadplane.weight() * iquadnorm.weight());
@@ -1416,11 +1416,11 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
     {
       // start loop over integration points in layer
       for (Core::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
-           iquadplane != intpointsplane.end(); ++iquadplane)
+          iquadplane != intpointsplane.end(); ++iquadplane)
       {
         // start loop over integration points in layer
         for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
-             iquadnorm != intpointsnormal.end(); ++iquadnorm)
+            iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
           cgp_->append(iquadnorm.point()[0], iquadplane.point()[0], iquadplane.point()[1],
               iquadplane.weight() * iquadnorm.weight());
@@ -1431,11 +1431,11 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
     {
       // start loop over integration points in layer
       for (Core::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
-           iquadplane != intpointsplane.end(); ++iquadplane)
+          iquadplane != intpointsplane.end(); ++iquadplane)
       {
         // start loop over integration points in layer
         for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
-             iquadnorm != intpointsnormal.end(); ++iquadnorm)
+            iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
           cgp_->append(iquadplane.point()[0], iquadnorm.point()[0], iquadplane.point()[1],
               iquadplane.weight() * iquadnorm.weight());
@@ -1446,11 +1446,11 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
     {
       // start loop over integration points in layer
       for (Core::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
-           iquadplane != intpointsplane.end(); ++iquadplane)
+          iquadplane != intpointsplane.end(); ++iquadplane)
       {
         // start loop over integration points in layer
         for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
-             iquadnorm != intpointsnormal.end(); ++iquadnorm)
+            iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
           cgp_->append(iquadplane.point()[0], iquadplane.point()[1], iquadnorm.point()[0],
               iquadplane.weight() * iquadnorm.weight());

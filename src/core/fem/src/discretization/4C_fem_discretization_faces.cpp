@@ -26,7 +26,7 @@ Core::FE::DiscretizationFaces::DiscretizationFaces(
     const std::string name, MPI_Comm comm, const unsigned int n_dim)
     : Discretization(name, comm, n_dim),  // use base class constructor
       extension_filled_(false),
-      doboundaryfaces_(false){};
+      doboundaryfaces_(false) {};
 
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                          schott 03/12|
@@ -461,7 +461,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
                 // check which node fulfills above conditions
                 int actslaveid = -999;
                 for (std::size_t islave = 0;
-                     islave < ((*col_pbcmapmastertoslave)[mymasternodeids[rr]]).size(); islave++)
+                    islave < ((*col_pbcmapmastertoslave)[mymasternodeids[rr]]).size(); islave++)
                 {
                   // get id
                   actslaveid = ((*col_pbcmapmastertoslave)[mymasternodeids[rr]])[islave];
@@ -551,7 +551,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
                 // then, check whether node id (i.e. actnodeid) is contained in slave list
                 std::map<int, std::vector<int>>::iterator master_it;
                 for (master_it = col_pbcmapmastertoslave->begin();
-                     master_it != col_pbcmapmastertoslave->end(); master_it++)
+                    master_it != col_pbcmapmastertoslave->end(); master_it++)
                 {
                   if ((master_it->second).size() > 1)
                   {
@@ -923,7 +923,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
   assign_global_i_ds(get_comm(), faces, finalFaces);
   for (std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator faceit =
            finalFaces.begin();
-       faceit != finalFaces.end(); ++faceit)
+      faceit != finalFaces.end(); ++faceit)
     faces_[faceit->first] = std::dynamic_pointer_cast<Core::Elements::FaceElement>(faceit->second);
 
   if (verbose and Core::Communication::my_mpi_rank(comm_) == 0)

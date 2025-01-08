@@ -349,7 +349,7 @@ void Cut::CutWizard::add_mesh_cutting_side()
 {
   // loop all mesh coupling objects
   for (std::map<int, std::shared_ptr<CutterMesh>>::iterator it = cutter_meshes_.begin();
-       it != cutter_meshes_.end(); it++)
+      it != cutter_meshes_.end(); it++)
   {
     std::shared_ptr<CutterMesh> cutter_mesh = it->second;
 
@@ -399,7 +399,7 @@ void evaluate_position_on_nurbs9(Core::Elements::Element* element,
   Core::LinAlg::Matrix<num_nodes * prob_dim, 1, double> displacement_controlpoints;
 
   for (unsigned int i_controlpoint = 0; i_controlpoint < (unsigned int)element->num_node();
-       ++i_controlpoint)
+      ++i_controlpoint)
   {
     const Core::Nodes::Node* controlpoint = element->nodes()[i_controlpoint];
 

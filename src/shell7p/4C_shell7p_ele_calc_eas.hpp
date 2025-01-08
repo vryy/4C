@@ -127,7 +127,7 @@ namespace Discret
       std::vector<double> cur_thickness_;
 
     };  // class Shell7pEleCalcEas
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

@@ -409,7 +409,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
       else
         continue;
     }  // beles
-  }    // end gp loop
+  }  // end gp loop
   return;
 }
 
@@ -1344,7 +1344,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
 
       break;
     }  // beles
-  }    // end gp loop
+  }  // end gp loop
 
   return;
 }
@@ -1469,7 +1469,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
 
       break;
     }  // beles
-  }    // end gp loop
+  }  // end gp loop
 
   return;
 }

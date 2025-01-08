@@ -82,7 +82,7 @@ namespace Discret
           const int k                                                  //! species number
       ) const override;
     };  // class ScaTraEleBoundaryCalcElchNP
-  }     // namespace Elements
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

@@ -341,7 +341,7 @@ class FsiFluidMonWriter : public FluidMonWriter
   }
 
  protected:
-  void check_infield_type(std::string& infieldtype) override{};
+  void check_infield_type(std::string& infieldtype) override {};
 
   PostField* get_field_ptr(PostProblem& problem) override;
 
@@ -370,7 +370,7 @@ class FsiStructMonWriter : public StructMonWriter
   }
 
  protected:
-  void check_infield_type(std::string& infieldtype) override{};
+  void check_infield_type(std::string& infieldtype) override {};
 
   PostField* get_field_ptr(PostProblem& problem) override;
 
@@ -399,7 +399,7 @@ class FsiAleMonWriter : public AleMonWriter
   }
 
  protected:
-  void check_infield_type(std::string& infieldtype) override{};
+  void check_infield_type(std::string& infieldtype) override {};
 
   PostField* get_field_ptr(PostProblem& problem) override;
 
@@ -423,7 +423,7 @@ class TsiStructMonWriter : public StructMonWriter
   }
 
  protected:
-  void check_infield_type(std::string& infieldtype) override{};
+  void check_infield_type(std::string& infieldtype) override {};
 
   PostField* get_field_ptr(PostProblem& problem) override;
 
@@ -446,7 +446,7 @@ class TsiThermoMonWriter : public ThermoMonWriter
   }
 
  protected:
-  void check_infield_type(std::string& infieldtype) override{};
+  void check_infield_type(std::string& infieldtype) override {};
 
   PostField* get_field_ptr(PostProblem& problem) override;
 

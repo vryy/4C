@@ -326,10 +326,9 @@ double Mat::ScatraReactionMat::reac_coeff(const std::vector<std::pair<std::strin
     gpcoord[1] = constants[size - 2].second;
     gpcoord[2] = constants[size - 1].second;
 
-    reaccoeff *=
-        (Global::Problem::instance()
-                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(dis_funct_reac_coeff_id() - 1)
-                .evaluate(gpcoord, time, 0));
+    reaccoeff *= (Global::Problem::instance()
+            ->function_by_id<Core::Utils::FunctionOfSpaceTime>(dis_funct_reac_coeff_id() - 1)
+            .evaluate(gpcoord, time, 0));
   }
 
   return reaccoeff;

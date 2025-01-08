@@ -55,7 +55,7 @@ void Mat::compute_structural_tensors(
 
   structural_tensor.resize(fibers.size());
   for (std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>::size_type gp = 0; gp < fibers.size();
-       ++gp)
+      ++gp)
   {
     for (std::vector<Core::LinAlg::Matrix<3, 1>>::size_type i = 0; i < numfib; ++i)
     {

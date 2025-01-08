@@ -41,7 +41,7 @@ namespace BeamInteraction
        */
       BeamContactAssemblyManagerInDirect(
           const std::shared_ptr<BeamInteraction::BeamToSolidMortarManager>& mortar_manager)
-          : BeamContactAssemblyManager(), mortar_manager_(mortar_manager){};
+          : BeamContactAssemblyManager(), mortar_manager_(mortar_manager) {};
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.

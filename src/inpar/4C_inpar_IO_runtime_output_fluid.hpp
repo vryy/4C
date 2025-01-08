@@ -30,7 +30,7 @@ namespace Inpar
       void set_valid_parameters(Teuchos::ParameterList& list);
 
     }  // namespace FLUID
-  }    // namespace IORuntimeOutput
+  }  // namespace IORuntimeOutput
 }  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE

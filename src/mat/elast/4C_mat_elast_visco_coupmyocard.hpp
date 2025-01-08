@@ -51,7 +51,7 @@ namespace Mat
           return nullptr;
         };
       };  // class CoupMyocard
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Isochoric coupled viscous material with pseudo-potential

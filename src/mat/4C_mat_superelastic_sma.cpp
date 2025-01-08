@@ -956,7 +956,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
             fac = ((dev_KH(a) + pressure) * lambda_trial_square(b) -
                       (dev_KH(b) + pressure) * lambda_trial_square(a)) /
                   (lambda_trial_square(a) - lambda_trial_square(b));
-          }     // end if lambda_a != lambda_b
+          }  // end if lambda_a != lambda_b
           else  // lambda_a = lambda_b
           {
             // 1/2 [(d^2 Psi)/(d ln lambda_b * d ln lambda_b) - (d^2 Psi)/(d ln lambda_a * d ln
@@ -974,8 +974,8 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
               *cmat, fac, tmp1, tmp2, 1.0);  // N_{abba}
 
         }  // end if (a!=b)
-      }    // end loop b
-    }      // end loop a
+      }  // end loop b
+    }  // end loop a
   }
 
 

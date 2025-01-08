@@ -35,7 +35,7 @@ namespace NOX
       {
        public:
         //! Constructor.
-        Jacobian(){};
+        Jacobian() {};
 
         /*! \brief Compute RHS and Jacobian at once.
          *
@@ -57,7 +57,7 @@ namespace NOX
         calc_jacobian_contributions_from_element_level_for_ptc() = 0;
       };
     }  // end namespace Interface
-  }    // end namespace Nln
+  }  // end namespace Nln
 }  // end namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE
