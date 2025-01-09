@@ -23,8 +23,6 @@
         ".lnm_cluster"
       ],
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpic++",
-        "CMAKE_C_COMPILER": "/cluster/mpi/gcc/openmpi/4.1.5/bin/mpicc",
         "FOUR_C_BOOST_ROOT": "/cluster/lib/gcc/9.1.0/boost_1_86_0",
         "Python3_ROOT_DIR": "/lnm/miniconda3/envs/python_3_12_env/bin"
       }
@@ -35,11 +33,7 @@
       "description": "Build release version of 4C on thought at LNM",
       "inherits": [
         ".lnm_cluster"
-      ],
-      "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpic++",
-        "CMAKE_C_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpicc"
-      }
+      ]
     }
   ]
 }
