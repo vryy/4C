@@ -257,9 +257,7 @@ namespace Input
      * may use additional @p context containing information such as the name of the input file.
      */
     std::optional<Core::IO::InputParameterContainer> read(
-        std::istream& stream, const ReadContext& context = {});
-
-    [[nodiscard]] const Core::IO::InputParameterContainer& container() const;
+        std::istream& stream, const ReadContext& context = {}) const;
 
     //@}
 

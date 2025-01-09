@@ -154,24 +154,21 @@ void Core::Utils::FunctionManager::read_input(Core::IO::InputFile& input)
         {
           for (auto& [possible_lines, function_factory] : attached_function_data_)
           {
-            auto [parsed_lines, unparsed_lines] =
+            auto [parsed_parameters, unparsed_lines] =
                 Core::IO::InputFileUtils::read_matching_lines_in_section(
                     input, "FUNCT" + std::to_string(funct_suffix), possible_lines);
 
             // A convoluted way of saying that there are no lines in the section, thus, stop
             // parsing. This can only be refactored if the reading mechanism is overhauled in
             // general.
-            if (parsed_lines.size() + unparsed_lines.size() == 0)
+            if (parsed_parameters.size() + unparsed_lines.size() == 0)
             {
               return true;
             }
 
-            if (parsed_lines.size() > 0 && unparsed_lines.size() == 0)
+            if (parsed_parameters.size() > 0 && unparsed_lines.size() == 0)
             {
-              std::vector<Core::IO::InputParameterContainer> parsed_lines_data(parsed_lines.size());
-              std::ranges::transform(parsed_lines, parsed_lines_data.begin(),
-                  [](const auto& line) { return line.container(); });
-              functions_.emplace_back(function_factory(parsed_lines_data));
+              functions_.emplace_back(function_factory(parsed_parameters));
               return false;
             }
           }

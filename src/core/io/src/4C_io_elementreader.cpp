@@ -206,8 +206,9 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
         {
           std::istringstream element_specific_remainder{
               std::string(parser.get_unparsed_remainder())};
+          auto data = linedef->read(element_specific_remainder);
 
-          if (not linedef->read(element_specific_remainder))
+          if (!data.has_value())
           {
             std::cout << "\n" << elenumber << " " << eletype << " ";
             linedef->print(std::cout);
@@ -217,8 +218,8 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
                 "failed to read element %d %s %s", elenumber, eletype.c_str(), distype.c_str());
           }
 
-          ele->set_node_ids(distype, linedef->container());
-          ele->read_element(eletype, distype, linedef->container());
+          ele->set_node_ids(distype, *data);
+          ele->read_element(eletype, distype, *data);
         }
         else
         {

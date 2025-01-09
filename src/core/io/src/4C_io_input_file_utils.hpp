@@ -66,8 +66,9 @@ namespace Core::IO::InputFileUtils
    *
    * @see read_matching_lines_in_section()
    */
-  std::vector<Input::LineDefinition> read_all_lines_in_section(Core::IO::InputFile& input,
-      const std::string& section, const std::vector<Input::LineDefinition>& possible_lines);
+  std::vector<Core::IO::InputParameterContainer> read_all_lines_in_section(
+      Core::IO::InputFile& input, const std::string& section,
+      const std::vector<Input::LineDefinition>& possible_lines);
 
 
   /**
@@ -78,7 +79,7 @@ namespace Core::IO::InputFileUtils
    *
    * @see read_all_lines_in_section()
    */
-  std::pair<std::vector<Input::LineDefinition>, std::vector<std::string>>
+  std::pair<std::vector<Core::IO::InputParameterContainer>, std::vector<std::string>>
   read_matching_lines_in_section(Core::IO::InputFile& input, const std::string& section,
       const std::vector<Input::LineDefinition>& possible_lines);
 

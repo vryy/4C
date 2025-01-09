@@ -130,7 +130,7 @@ namespace Core::Utils
     void test_all(MPI_Comm comm);
 
     /// Store the parsed @p results.
-    void set_parsed_lines(std::vector<Input::LineDefinition> results);
+    void set_parsed_lines(std::vector<Core::IO::InputParameterContainer> results);
 
     /// Store the node set
     void set_node_set(const std::vector<std::vector<std::vector<int>>>& nodeset);
@@ -146,7 +146,7 @@ namespace Core::Utils
     std::vector<std::shared_ptr<ResultTest>> fieldtest_;
 
     /// expected results
-    std::vector<Input::LineDefinition> results_;
+    std::vector<Core::IO::InputParameterContainer> results_;
 
     /// node set for values extraction
     std::vector<std::vector<std::vector<int>>> nodeset_;
