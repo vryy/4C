@@ -9,7 +9,6 @@
 #define FOUR_C_CREATE_RTDFILES_UTILS_HPP
 #include "4C_config.hpp"
 
-#include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
 #include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_mat_materialdefinition.hpp"
@@ -221,23 +220,12 @@ namespace RTD
       std::ostream& stream, Core::Conditions::ConditionDefinition& condition);
 
   /*!
-   *  write a single contact law including explanations (if available) to a .rst file for
-   * ReadTheDocs
-   *
-   *  @param[in] stream restructuredText file for prescribed contact law.
-   *  @param[in] coconstlaw Single contact law to be written to that file
-   */
-  void write_single_contact_law_read_the_docs(std::ostream& stream,
-      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> contactlaw);
-
-  /*!
    *  write all known contact laws including explanations (if available) to a .rst file for
    * ReadTheDocs
    *
    *  @param[in] stream restructuredText file for prescribed contact law.
    */
-  void write_contact_law_reference(std::ostream& stream,
-      const std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist);
+  void write_contact_law_reference(std::ostream& stream, const Core::IO::InputSpec& specs);
   /*!
    *  write various other parameters including explanations (if available) to a .rst file for
    * ReadTheDocs

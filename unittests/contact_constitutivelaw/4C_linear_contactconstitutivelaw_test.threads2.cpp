@@ -19,19 +19,15 @@ namespace
    public:
     LinearConstitutiveLawTest()
     {
-      // initialize container for material parameters
-      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> container =
-          std::make_shared<CONTACT::CONSTITUTIVELAW::Container>(
-              1, Inpar::CONTACT::ConstitutiveLawType::colaw_linear, "Linear Constitutivelaw");
-
+      Core::IO::InputParameterContainer container;
       // add parameters to container
-      container->add("A", 1.5);
-      container->add("B", 0.0);
-      container->add("Offset", 0.5);
+      container.add("A", 1.5);
+      container.add("B", 0.0);
+      container.add("Offset", 0.5);
 
-      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> linearcoconstlaw =
-          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(container);
-      coconstlaw_ = linearcoconstlaw;
+      CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams params(container);
+
+      coconstlaw_ = std::make_unique<CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw>(params);
     }
 
     std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;

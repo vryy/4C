@@ -9,7 +9,7 @@
 
 #include "4C_comm_utils.hpp"
 #include "4C_contact_constitutivelaw_bundle.hpp"
-#include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
+#include "4C_contact_constitutivelaw_valid_laws.hpp"
 #include "4C_fem_condition_definition.hpp"
 #include "4C_fem_discretization_hdg.hpp"
 #include "4C_fem_dofset_independent.hpp"
@@ -17,7 +17,6 @@
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_validconditions.hpp"
-#include "4C_inpar_validcontactconstitutivelaw.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_io.hpp"
 #include "4C_io_elementreader.hpp"
@@ -2097,49 +2096,18 @@ void Global::read_materials(Global::Problem& problem, Core::IO::InputFile& input
 /*----------------------------------------------------------------------*/
 void Global::read_contact_constitutive_laws(Global::Problem& problem, Core::IO::InputFile& input)
 {
-  // create list of known contact constitutive laws
-  std::shared_ptr<std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
-      Input::valid_contact_constitutive_laws();
-  std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist = *vm;
+  auto valid_law_spec = CONTACT::CONSTITUTIVELAW::valid_contact_constitutive_laws();
 
-  // test for each contact constitutive law definition (input file --CONTACT CONSTITUTIVE LAWS
-  // section) and store it
-  for (auto& m : coconstlawlist)
-  {
-    // read contact constitutive law from DAT file of type
-    m->read(problem, input, *problem.contact_constitutive_laws());
-  }
-
-  // check if every contact constitutive law was identified
   const std::string contact_const_laws = "CONTACT CONSTITUTIVE LAWS";
   for (const auto& section_i : input.lines_in_section(contact_const_laws))
   {
-    std::stringstream condline{std::string{section_i}};
+    Core::IO::ValueParser parser(
+        section_i, {.user_scope_message = "While reading 'CONTACT CONSTITUTIVE LAWS' section: "});
 
-    std::string coconstlaw;
-    std::string number;
-    std::string name;
-    (condline) >> coconstlaw >> number >> name;
-    if ((not(condline)) or (coconstlaw != "LAW"))
-      FOUR_C_THROW("invalid contact constitutive law line in '%s'", name.c_str());
-
-    // extract contact constitutive law ID
-    int coconstlawid = -1;
-    {
-      char* ptr;
-      coconstlawid = static_cast<int>(strtol(number.c_str(), &ptr, 10));
-      if (ptr == number.c_str())
-        FOUR_C_THROW("failed to read contact constitutive law object number '%s'", number.c_str());
-    }
-
-    // processed?
-    if (problem.contact_constitutive_laws()->find(coconstlawid) == -1)
-      FOUR_C_THROW("Contact constitutive law 'LAW %d' with name '%s' could not be identified",
-          coconstlawid, name.c_str());
+    Core::IO::InputParameterContainer container;
+    Core::IO::fully_parse(parser, valid_law_spec, container);
+    CONTACT::CONSTITUTIVELAW::create_contact_constitutive_law_from_input(container);
   }
-
-  // make fast access parameters
-  problem.contact_constitutive_laws()->make_parameters();
 }
 
 /*----------------------------------------------------------------------*/

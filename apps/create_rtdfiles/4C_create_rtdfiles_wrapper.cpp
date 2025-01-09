@@ -10,12 +10,12 @@
 #include "4C_create_rtdfiles_wrapper.hpp"
 
 #include "4C_comm_utils.hpp"
+#include "4C_contact_constitutivelaw_valid_laws.hpp"
 #include "4C_create_rtdfiles_utils.hpp"
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validconditions.hpp"
-#include "4C_inpar_validcontactconstitutivelaw.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -100,7 +100,7 @@ namespace RTD
     write_conditions_reference(conditiondocumentationfile, *Input::valid_conditions());
 
     write_contact_law_reference(
-        conditiondocumentationfile, *Input::valid_contact_constitutive_laws());
+        conditiondocumentationfile, CONTACT::CONSTITUTIVELAW::valid_contact_constitutive_laws());
   }
 
   /*----------------------------------------------------------------------*/

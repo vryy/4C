@@ -364,16 +364,19 @@ namespace
 
   TEST(InputSpecTest, OneOfTopLevel)
   {
-    auto line = one_of({
-        group({
-            entry<int>("a"),
-            entry<double>("b"),
-        }),
-        group({
-            entry<std::string>("c"),
-            entry<double>("d"),
-        }),
-    });
+    auto line = one_of(
+        {
+            group({
+                entry<int>("a"),
+                entry<double>("b"),
+            }),
+            group({
+                entry<std::string>("c"),
+                entry<double>("d"),
+            }),
+        },
+        // Additionally store the index of the parsed group but map it to a different value.
+        store_index_as<int>("index", /*reindex*/ {1, 10}));
 
     {
       InputParameterContainer container;
@@ -382,6 +385,7 @@ namespace
       fully_parse(parser, line, container);
       EXPECT_EQ(container.get<int>("a"), 1);
       EXPECT_EQ(container.get<double>("b"), 2);
+      EXPECT_EQ(container.get<int>("index"), 1);
     }
 
     {
@@ -391,6 +395,7 @@ namespace
       fully_parse(parser, line, container);
       EXPECT_EQ(container.get<std::string>("c"), "string");
       EXPECT_EQ(container.get<double>("d"), 2);
+      EXPECT_EQ(container.get<int>("index"), 10);
     }
 
     {

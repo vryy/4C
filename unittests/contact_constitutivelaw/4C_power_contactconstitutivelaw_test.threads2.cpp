@@ -20,18 +20,14 @@ namespace
     PowerConstitutiveLawTest()
     {
       /// initialize container for material parameters
-      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> container =
-          std::make_shared<CONTACT::CONSTITUTIVELAW::Container>(
-              1, Inpar::CONTACT::ConstitutiveLawType::colaw_power, "Power Constitutivelaw");
-
+      Core::IO::InputParameterContainer container;
       // add parameters to container
-      container->add("A", 3.0);
-      container->add("B", 3.0);
-      container->add("Offset", 0.5);
+      container.add("A", 3.0);
+      container.add("B", 3.0);
+      container.add("Offset", 0.5);
 
-      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> powercoconstlaw =
-          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(container);
-      coconstlaw_ = powercoconstlaw;
+      CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams params(container);
+      coconstlaw_ = std::make_shared<CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw>(params);
     }
 
     std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;

@@ -18,26 +18,20 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams::CubicConstitutiveLawParams(
-    const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container)
+    const Core::IO::InputParameterContainer& container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
-      a_(container->get<double>("A")),
-      b_(container->get<double>("B")),
-      c_(container->get<double>("C")),
-      d_(container->get<double>("D"))
+      a_(container.get<double>("A")),
+      b_(container.get<double>("B")),
+      c_(container.get<double>("C")),
+      d_(container.get<double>("D"))
 {
 }
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
-CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams::create_constitutive_law()
-{
-  return std::make_shared<CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw>(this);
-}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::CubicConstitutiveLaw(
-    CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams* params)
-    : params_(params)
+    CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams params)
+    : params_(std::move(params))
 {
 }
 /*----------------------------------------------------------------------*
@@ -45,17 +39,17 @@ CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::CubicConstitutiveLaw(
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->get_offset() > 0)
+  if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   double result = 1.0;
   gap = -gap;
   result = -1.0;
-  result *= params_->getdata() * (gap - params_->get_offset()) * (gap - params_->get_offset()) *
-                (gap - params_->get_offset()) +
-            params_->get_b() * (gap - params_->get_offset()) * (gap - params_->get_offset()) +
-            params_->get_c() * (gap - params_->get_offset()) + params_->get_d();
+  result *= params_.getdata() * (gap - params_.get_offset()) * (gap - params_.get_offset()) *
+                (gap - params_.get_offset()) +
+            params_.get_b() * (gap - params_.get_offset()) * (gap - params_.get_offset()) +
+            params_.get_c() * (gap - params_.get_offset()) + params_.get_d();
   if (result > 0)
     FOUR_C_THROW(
         "The constitutive function you are using seems to be positive, even though the gap is "
@@ -68,13 +62,13 @@ double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate(double gap, CONT
 double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate_deriv(
     double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->get_offset() > 0)
+  if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   gap = -gap;
-  return 3 * params_->getdata() * (gap - params_->get_offset()) * (gap - params_->get_offset()) +
-         2 * params_->get_b() * (gap - params_->get_offset()) + params_->get_c();
+  return 3 * params_.getdata() * (gap - params_.get_offset()) * (gap - params_.get_offset()) +
+         2 * params_.get_b() * (gap - params_.get_offset()) + params_.get_c();
 }
 
 FOUR_C_NAMESPACE_CLOSE

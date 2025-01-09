@@ -12,6 +12,8 @@
 /* headers */
 #include "4C_config.hpp"
 
+#include "4C_io_input_parameter_container.hpp"
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -22,7 +24,6 @@ namespace CONTACT
 {
   namespace CONSTITUTIVELAW
   {
-    class Container;
     class Parameter;
     /*----------------------------------------------------------------------*/
     /**
@@ -41,7 +42,7 @@ namespace CONTACT
        * \param[in] id ID od the contact constitutive law in the input file
        * \law[in] container holding the law parameter read from the input file
        */
-      void insert(int id, std::shared_ptr<Container> mat);
+      void insert(int id, Core::IO::InputParameterContainer container);
 
       /** \brief check if a contact constitutive law exists for provided ID
        *
@@ -60,14 +61,14 @@ namespace CONTACT
        *
        * \param[in] id ID of the contact constitutive law given in the input file
        */
-      std::shared_ptr<Container> by_id(const int id) const;
+      Core::IO::InputParameterContainer& by_id(const int id);
 
       /// return problem index to read from
       int get_read_from_problem() const { return readfromproblem_; }
 
      private:
       /// the map linking contact constitutive law IDs to input constitutive laws
-      std::map<int, std::shared_ptr<Container>> map_;
+      std::map<int, Core::IO::InputParameterContainer> map_;
 
       /// the index of problem instance of which contact constitutive law read-in shall be performed
       int readfromproblem_;

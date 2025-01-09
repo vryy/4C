@@ -19,24 +19,18 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams::LinearConstitutiveLawParams(
-    const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container)
+    const Core::IO::InputParameterContainer& container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
-      a_(container->get<double>("A")),
-      b_(container->get<double>("B"))
+      a_(container.get<double>("A")),
+      b_(container.get<double>("B"))
 {
 }
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
-CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams::create_constitutive_law()
-{
-  return std::make_shared<CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw>(this);
-}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::LinearConstitutiveLaw(
-    CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams* params)
-    : params_(params)
+    CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams params)
+    : params_(std::move(params))
 {
 }
 /*----------------------------------------------------------------------*
@@ -44,11 +38,11 @@ CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::LinearConstitutiveLaw(
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->get_offset() > 0)
+  if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
-  return params_->getdata() * (gap + params_->get_offset()) + params_->get_b();
+  return params_.getdata() * (gap + params_.get_offset()) + params_.get_b();
 }  // end of linear_coconstlaw evaluate
 /*----------------------------------------------------------------------*
  |  Calculate the derivative of the contact constitutive law|
@@ -56,11 +50,11 @@ double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate(double gap, CON
 double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate_deriv(
     double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->get_offset() > 0)
+  if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes.");
   }
-  return params_->getdata();
+  return params_.getdata();
 }
 
 FOUR_C_NAMESPACE_CLOSE

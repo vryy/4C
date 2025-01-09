@@ -31,12 +31,7 @@ namespace CONTACT
     {
      public:
       /// standard constructor
-      CubicConstitutiveLawParams(
-          const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container);
-
-
-      /// create ConstitutiveLaw instance of matching type with my parameters
-      std::shared_ptr<ConstitutiveLaw> create_constitutive_law() override;
+      CubicConstitutiveLawParams(const Core::IO::InputParameterContainer& container);
 
       /// @name get-functions for the parameters of a cubic polynomial
       double getdata() { return a_; }
@@ -64,7 +59,7 @@ namespace CONTACT
     {
      public:
       /// construct the ConstitutiveLaw object given a set of parameters
-      explicit CubicConstitutiveLaw(CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams* params);
+      explicit CubicConstitutiveLaw(CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams params);
 
       //! @name Access methods
 
@@ -74,13 +69,13 @@ namespace CONTACT
         return Inpar::CONTACT::ConstitutiveLawType::colaw_cubic;
       }
 
-      double getdata() { return params_->getdata(); }
-      double get_b() { return params_->get_b(); }
-      double get_c() { return params_->get_c(); }
-      double get_d() { return params_->get_d(); }
+      double getdata() { return params_.getdata(); }
+      double get_b() { return params_.get_b(); }
+      double get_c() { return params_.get_c(); }
+      double get_d() { return params_.get_d(); }
 
       /// Return quick accessible constitutive law parameter data
-      CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return params_; }
+      const CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return &params_; }
 
       //@}
 
@@ -94,7 +89,7 @@ namespace CONTACT
 
      private:
       /// my material parameters
-      CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams* params_;
+      CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams params_;
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT

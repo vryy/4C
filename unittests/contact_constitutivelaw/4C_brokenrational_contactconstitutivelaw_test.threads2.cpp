@@ -19,21 +19,16 @@ namespace
    public:
     BrokenrationalConstitutiveLawTest()
     {
-      // initialize container for material parameters
-      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> container =
-          std::make_shared<CONTACT::CONSTITUTIVELAW::Container>(1,
-              Inpar::CONTACT::ConstitutiveLawType::colaw_brokenrational,
-              "Brokenrational Constitutivelaw");
-
+      Core::IO::InputParameterContainer container;
       // add parameters to container
-      container->add("A", -2.);
-      container->add("B", 4.);
-      container->add("C", -0.5);
-      container->add("Offset", 0.5);
+      container.add("A", -2.);
+      container.add("B", 4.);
+      container.add("C", -0.5);
+      container.add("Offset", 0.5);
 
-      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> brokenrationalcoconstlaw =
-          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(container);
-      coconstlaw_ = brokenrationalcoconstlaw;
+      CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams params(container);
+      coconstlaw_ =
+          std::make_shared<CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw>(params);
     }
 
     std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;

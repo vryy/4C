@@ -705,16 +705,17 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
       auto coconstlaw = Global::Problem::instance(probinst)->contact_constitutive_laws()->by_id(
           contactconstitutivelaw_id);
       // Set the variables if MIRCO contact constitutive law is found
-      if (coconstlaw->name() == "CoConstLaw_mirco")
+      if (coconstlaw.get<Inpar::CONTACT::ConstitutiveLawType>("LAW_TYPE") ==
+          Inpar::CONTACT::ConstitutiveLawType::colaw_mirco)
       {
         mircolaw = true;
-        resolution = coconstlaw->get<int>("Resolution");
-        randomtopologyflag = coconstlaw->get<bool>("RandomTopologyFlag");
-        randomseedflag = coconstlaw->get<bool>("RandomSeedFlag");
-        randomgeneratorseed = coconstlaw->get<int>("RandomGeneratorSeed");
-        hurstexponentfunction = coconstlaw->get<int>("HurstExponentFunct");
+        resolution = coconstlaw.get<int>("Resolution");
+        randomtopologyflag = coconstlaw.get<bool>("RandomTopologyFlag");
+        randomseedflag = coconstlaw.get<bool>("RandomSeedFlag");
+        randomgeneratorseed = coconstlaw.get<int>("RandomGeneratorSeed");
+        hurstexponentfunction = coconstlaw.get<int>("HurstExponentFunct");
         initialtopologystddeviationfunction =
-            coconstlaw->get<int>("InitialTopologyStdDeviationFunct");
+            coconstlaw.get<int>("InitialTopologyStdDeviationFunct");
       }
     }
 

@@ -21,24 +21,18 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams::PowerConstitutiveLawParams(
-    const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container)
+    const Core::IO::InputParameterContainer& container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
-      a_(container->get<double>("A")),
-      b_(container->get<double>("B"))
+      a_(container.get<double>("A")),
+      b_(container.get<double>("B"))
 {
 }
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
-CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams::create_constitutive_law()
-{
-  return std::make_shared<CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw>(this);
-}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::PowerConstitutiveLaw(
-    CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams* params)
-    : params_(params)
+    CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams params)
+    : params_(std::move(params))
 {
 }
 /*----------------------------------------------------------------------*
@@ -46,14 +40,14 @@ CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::PowerConstitutiveLaw(
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->get_offset() > 0)
+  if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   double result = 1;
   gap *= -1;
   result = -1;
-  result *= (params_->getdata() * pow(gap - params_->get_offset(), params_->get_b()));
+  result *= (params_.getdata() * pow(gap - params_.get_offset(), params_.get_b()));
   if (result > 0)
     FOUR_C_THROW(
         "The constitutive function you are using seems to be positive, even though the gap is "
@@ -66,13 +60,12 @@ double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate(double gap, CONT
 double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate_deriv(
     double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->get_offset() > 0.0)
+  if (gap + params_.get_offset() > 0.0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   gap = -gap;
-  return params_->getdata() * params_->get_b() *
-         pow(gap - params_->get_offset(), params_->get_b() - 1);
+  return params_.getdata() * params_.get_b() * pow(gap - params_.get_offset(), params_.get_b() - 1);
 }
 
 FOUR_C_NAMESPACE_CLOSE

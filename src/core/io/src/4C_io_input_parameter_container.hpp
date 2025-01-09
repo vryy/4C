@@ -15,7 +15,9 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <any>
+#include <functional>
 #include <map>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -24,28 +26,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
-  namespace Internal
-  {
-    template <typename T>
-    const T* try_get_any_data(const std::string& name, const std::any& data)
-    {
-      if (typeid(T) == data.type())
-      {
-        const T* any_ptr = std::any_cast<T>(&data);
-        FOUR_C_ASSERT(any_ptr != nullptr, "Implementation error.");
-        return any_ptr;
-      }
-      else
-      {
-        FOUR_C_THROW(
-            "You tried to get the data named %s from the container as type '%s'.\n"
-            "Actually, it has type '%s'.",
-            name.c_str(), Core::Utils::get_type_name<T>().c_str(),
-            Core::Utils::try_demangle(data.type().name()).c_str());
-      }
-    }
-  }  // namespace Internal
-
   /**
    * A container to store dynamic input parameters. The container can store arbitrary types of
    * parameters. Parameters can be grouped in sub-containers.
@@ -56,47 +36,13 @@ namespace Core::IO
   class InputParameterContainer
   {
    public:
-    /*!
-     * \brief Default constructor.
-     */
-    InputParameterContainer() = default;
-
-    /*!
-     * \brief Destructor.
-     */
-    virtual ~InputParameterContainer() = default;
-
-    /*!
-     * \brief Print this container.
-     */
-    virtual void print(std::ostream& os) const;
-
-
-    /*!
+    /**
      * \brief Add @data to the container at the given key @name.
      *
-     * If a record with name name already exists, it will be overwritten.
+     * If an entry with given @p name already exists, it will be overwritten.
      */
     template <typename T>
-    void add(const std::string& name, const T& data)
-    {
-      if constexpr (std::is_same_v<T, int>)
-        intdata_[name] = data;
-      else if constexpr (std::is_same_v<T, double>)
-        doubledata_[name] = data;
-      else if constexpr (std::is_same_v<T, bool>)
-        booldata_[name] = data;
-      else if constexpr (std::is_same_v<T, std::vector<int>>)
-        vecintdata_[name] = data;
-      else if constexpr (std::is_same_v<T, std::vector<double>>)
-        vecdoubledata_[name] = data;
-      else if constexpr (std::is_same_v<T, std::map<int, std::vector<double>>>)
-        mapdata_[name] = data;
-      else if constexpr (std::is_same_v<T, std::string>)
-        stringdata_[name] = data;
-      else
-        anydata_[name] = data;
-    }
+    void add(const std::string& name, const T& data);
 
     /**
      * Access group @p name. If the group does not exist, it will be created.
@@ -108,9 +54,14 @@ namespace Core::IO
      */
     [[nodiscard]] const InputParameterContainer& group(const std::string& name) const;
 
+    /**
+     * Check if a group with the name @p name exists.
+     */
+    [[nodiscard]] bool has_group(const std::string& name) const;
 
     /**
-     * Combine the data from another container with this one. Conflicting data will throw an error.
+     * Combine the data from another container with this one. Conflicting data will throw an
+     * error.
      */
     void merge(const InputParameterContainer& other);
 
@@ -119,118 +70,166 @@ namespace Core::IO
      * is thrown in case no value of specified type is stored under @p name in the container.
      */
     template <typename T>
-    const T& get(const std::string& name) const
-    {
-      if (const T* p = get_if<T>(name))
-        return *p;
-      else
-        FOUR_C_THROW("Key %s cannot be found in the container's map!", name.c_str());
-    }
+    const T& get(const std::string& name) const;
 
     /*!
-     * Get the data stored at the key @p name from the container. Return the @p default_value if no
-     * value of specified type is stored under @p name in the container.
+     * Get the data stored at the key @p name from the container. Return the @p default_value if
+     * no value of specified type is stored under @p name in the container.
      *
      * @note This function returns the value as a copy.
      */
     template <typename T>
-    T get_or(const std::string& name, T default_value) const
-    {
-      if (const T* p = get_if<T>(name))
-        return *p;
-      else
-        return default_value;
-    }
+    T get_or(const std::string& name, T default_value) const;
 
     /*!
      * Get the const pointer to the data stored at the key @p name from the container. Return a
      * `nullptr` if no value of specified type is stored under @p name in the container.
      */
     template <typename T>
-    const T* get_if(const std::string& name) const
-    {
-      // access function for known types
-      [[maybe_unused]] const auto access = [](const auto& map, const std::string& name) -> const T*
-      {
-        const auto it = map.find(name);
-        if (it != map.end())
-        {
-          return std::addressof(it->second);
-        }
-        else
-        {
-          return nullptr;
-        }
-      };
+    const T* get_if(const std::string& name) const;
 
-      // access function for any type
-      [[maybe_unused]] const auto access_any = [](const auto& map,
-                                                   const std::string& name) -> const T*
-      {
-        const auto it = map.find(name);
-        if (it != map.end())
-        {
-          return Internal::try_get_any_data<T>(name, it->second);
-        }
-        else
-        {
-          return nullptr;
-        }
-      };
-
-      // get data from the container
-      if constexpr (std::is_same_v<T, int>)
-        return access(intdata_, name);
-      else if constexpr (std::is_same_v<T, double>)
-        return access(doubledata_, name);
-      else if constexpr (std::is_same_v<T, bool>)
-        return access(booldata_, name);
-      else if constexpr (std::is_same_v<T, std::vector<int>>)
-        return access(vecintdata_, name);
-      else if constexpr (std::is_same_v<T, std::vector<double>>)
-        return access(vecdoubledata_, name);
-      else if constexpr (std::is_same_v<T, std::map<int, std::vector<double>>>)
-        return access(mapdata_, name);
-      else if constexpr (std::is_same_v<T, std::string>)
-        return access(stringdata_, name);
-      else
-        return access_any(anydata_, name);
-    }
-
+    /**
+     * Print the data in the container to the output stream @p os.
+     */
+    void print(std::ostream& os) const;
 
    private:
-    //! a map to store integer data in
-    std::map<std::string, int> intdata_;
+    //! Entry stored in the container.
+    struct Entry
+    {
+      //! The actual data.
+      std::any data;
 
-    //! a map to store double data in
-    std::map<std::string, double> doubledata_;
+      //! A function to print the data.
+      std::function<void(std::ostream&, const std::any&)> print;
+    };
 
-    //! a map to store bool data in
-    std::map<std::string, bool> booldata_;
-
-    //! a map to store vector integer data in
-    std::map<std::string, std::vector<int>> vecintdata_;
-
-    //! a map to store vector double data in
-    std::map<std::string, std::vector<double>> vecdoubledata_;
-
-    //! a map to store maps of stl vector data
-    std::map<std::string, std::map<int, std::vector<double>>> mapdata_;
-
-    //! a map to store string data in
-    std::map<std::string, std::string> stringdata_;
-
-    //! a map to store anything
-    std::map<std::string, std::any> anydata_;
+    //! Data stored in this container.
+    std::map<std::string, Entry> entries_;
 
     //! Groups present in this container. Groups are InputParameterContainers themselves.
     std::map<std::string, InputParameterContainer> groups_;
   };  // class InputParameterContainer
+
 }  // namespace Core::IO
 
-// << operator
-std::ostream& operator<<(std::ostream& os, const Core::IO::InputParameterContainer& cont);
 
+// --- template and inline functions ---//
+
+
+namespace Core::IO::Internal::InputParameterContainerImplementation
+{
+  template <typename T>
+  const T* try_get_any_data(const std::string& name, const std::any& data)
+  {
+    if (typeid(T) == data.type())
+    {
+      const T* any_ptr = std::any_cast<T>(&data);
+      FOUR_C_ASSERT(any_ptr != nullptr, "Implementation error.");
+      return any_ptr;
+    }
+    else
+    {
+      FOUR_C_THROW(
+          "You tried to get the data named %s from the container as type '%s'.\n"
+          "Actually, it has type '%s'.",
+          name.c_str(), Core::Utils::get_type_name<T>().c_str(),
+          Core::Utils::try_demangle(data.type().name()).c_str());
+    }
+  }
+
+  // Default printer if not printable.
+  template <typename T>
+  struct PrintHelper
+  {
+    void operator()(std::ostream& os, const std::any& data) { os << "<not printable> "; }
+  };
+
+  template <typename T>
+  concept StreamInsertable = requires(std::ostream& os, const T& t) { os << t; };
+
+  // Specialization for stream insert.
+  template <StreamInsertable T>
+  struct PrintHelper<T>
+  {
+    void operator()(std::ostream& os, const std::any& data) { os << std::any_cast<T>(data) << " "; }
+  };
+
+  // Specialization for vectors.
+  template <typename T>
+  struct PrintHelper<std::vector<T>>
+  {
+    void operator()(std::ostream& os, const std::any& data)
+    {
+      FOUR_C_ASSERT(typeid(std::vector<T>) == data.type(), "Implementation error.");
+      const auto& vec = std::any_cast<std::vector<T>>(data);
+      for (const auto& v : vec)
+      {
+        PrintHelper<T>{}(os, v);
+      }
+    }
+  };
+
+  // Specialization for maps.
+  template <typename Key, typename Value>
+  struct PrintHelper<std::map<Key, Value>>
+  {
+    void operator()(std::ostream& os, const std::any& data)
+    {
+      FOUR_C_ASSERT(typeid(std::map<Key, Value>) == data.type(), "Implementation error.");
+      const auto& map = std::any_cast<std::map<Key, Value>>(data);
+      for (const auto& [key, value] : map)
+      {
+        os << key << " : ";
+        PrintHelper<Value>{}(os, value);
+      }
+    }
+  };
+
+}  // namespace Core::IO::Internal::InputParameterContainerImplementation
+
+
+template <typename T>
+void Core::IO::InputParameterContainer::add(const std::string& name, const T& data)
+{
+  entries_[name] = {
+      .data = std::any{data},
+      .print = Internal::InputParameterContainerImplementation::PrintHelper<T>{},
+  };
+}
+
+template <typename T>
+const T& Core::IO::InputParameterContainer::get(const std::string& name) const
+{
+  if (const T* p = get_if<T>(name))
+    return *p;
+  else
+    FOUR_C_THROW("Key '%s' cannot be found in the container.", name.c_str());
+}
+
+template <typename T>
+T Core::IO::InputParameterContainer::get_or(const std::string& name, T default_value) const
+{
+  if (const T* p = get_if<T>(name))
+    return *p;
+  else
+    return default_value;
+}
+
+template <typename T>
+const T* Core::IO::InputParameterContainer::get_if(const std::string& name) const
+{
+  const auto it = entries_.find(name);
+  if (it != entries_.end())
+  {
+    return Internal::InputParameterContainerImplementation::try_get_any_data<T>(
+        name, it->second.data);
+  }
+  else
+  {
+    return nullptr;
+  }
+}
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -19,26 +19,19 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams::BrokenRationalConstitutiveLawParams(
-    const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container)
+    const Core::IO::InputParameterContainer& container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
-      a_(container->get<double>("A")),
-      b_(container->get<double>("B")),
-      c_(container->get<double>("C"))
+      a_(container.get<double>("A")),
+      b_(container.get<double>("B")),
+      c_(container.get<double>("C"))
 {
-}
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
-CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams::create_constitutive_law()
-{
-  return std::make_shared<CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw>(this);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::BrokenRationalConstitutiveLaw(
-    CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams* params)
-    : params_(params)
+    CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams params)
+    : params_(std::move(params))
 {
 }
 /*----------------------------------------------------------------------*
@@ -47,14 +40,14 @@ CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::BrokenRationalConstitut
 double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate(
     double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->get_offset() > 0)
+  if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   double result = -1.0;
   gap = -gap;
-  result *= (params_->getdata() * 1. / (gap - params_->get_offset() - params_->get_b()) +
-             params_->get_c());
+  result *=
+      (params_.getdata() * 1. / (gap - params_.get_offset() - params_.get_b()) + params_.get_c());
   if (result > 0)
     FOUR_C_THROW(
         "The constitutive function you are using seems to be positive, even though the gap is "
@@ -67,14 +60,14 @@ double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate(
 double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate_deriv(
     double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->get_offset() > 0)
+  if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   gap = -gap;
-  return (-params_->getdata() * 1. /
-          ((gap - params_->get_offset() - params_->get_b()) *
-              (gap - params_->get_offset() - params_->get_b())));
+  return (-params_.getdata() * 1. /
+          ((gap - params_.get_offset() - params_.get_b()) *
+              (gap - params_.get_offset() - params_.get_b())));
 }
 
 FOUR_C_NAMESPACE_CLOSE

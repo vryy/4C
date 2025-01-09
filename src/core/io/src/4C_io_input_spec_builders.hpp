@@ -750,7 +750,8 @@ namespace Core::IO
      * of the specs. The index of the parsed spec inside the @p specs vector is passed as an
      * argument. An exemplary use case is to map the index to an enum value and store it in the
      * container. This let's you perform a switch on the enum value to easily obtain the correct
-     * parsed data from the container.
+     * parsed data from the container. The store_index_as() function can be used to create such a
+     * callback.
      *
      * @note The one_of() function is not intended to be used for selecting from a fixed set of
      * different values of the same type. Use the selection() function for this purpose.
@@ -758,6 +759,46 @@ namespace Core::IO
     [[nodiscard]] InputSpec one_of(std::vector<InputSpec> specs,
         std::function<void(ValueParser& parser, InputParameterContainer& container,
             std::size_t index)> on_parse_callback = nullptr);
+
+    /**
+     * This function may be used to produce the optional argument of the one_of() function. It
+     * returns a callback that stores the index of the parsed spec in the container under @p name.
+     * The index is stored on the same level as the parsed spec from the one_of() function.
+     * Example:
+     *
+     * @code
+     * enum class TimeIntegrationMethod
+     * {
+     *   OneStepTheta,
+     *   GenAlpha,
+     * };
+     *
+     * one_of({
+     *  group("OneStepTheta",
+     *  {
+     *    entry<double>("theta"),
+     *  }),
+     *  group("GenAlpha",
+     *  {
+     *    entry<double>("alpha_f"),
+     *    entry<double>("alpha_m"),
+     *    entry<double>("gamma"),
+     *  }),
+     *  },
+     *  store_index_as<TimeIntegrationMethod>("index",
+     *    {TimeIntegrationMethod::OneStepTheta,
+     *     TimeIntegrationMethod::GenAlpha})
+     * );
+     * @endcode
+     *
+     * Additionally, you can provide a reindexing vector to map the indices to other values. This is
+     * especially useful if you map the often arbitrarily ordered indices to enum constants that
+     * document the meaning of the index. This is demonstrated in the example above. If the
+     * @p reindexing vector is not provided, the index is stored as is.
+     *
+     */
+    template <typename T>
+    auto store_index_as(std::string name, std::vector<T> reindexing = {});
   }  // namespace InputSpecBuilders
 }  // namespace Core::IO
 
@@ -908,6 +949,24 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::selection(
           stream << ")";
         }
       });
+}
+
+template <typename T>
+auto Core::IO::InputSpecBuilders::store_index_as(std::string name, std::vector<T> reindexing)
+{
+  return
+      [name, reindexing](ValueParser& parser, InputParameterContainer& container, std::size_t index)
+  {
+    if (reindexing.empty())
+    {
+      container.add(name, static_cast<T>(index));
+    }
+    else
+    {
+      FOUR_C_ASSERT(index < reindexing.size(), "Index out of bounds.");
+      container.add(name, reindexing[index]);
+    }
+  };
 }
 
 FOUR_C_NAMESPACE_CLOSE
