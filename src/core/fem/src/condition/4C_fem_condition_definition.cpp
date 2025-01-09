@@ -122,6 +122,24 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::InputFile& input,
       condline = j->read(section_name(), condline, condition->parameters());
     }
 
+    // Deal with remaining content of condition line
+    std::string remainder = condline->str();
+    Core::IO::ValueParser check_remainder(remainder,
+        {.user_scope_message =
+                "While reading remainder of condition section '" + sectionname_ + "': "});
+
+    // Consume a potential trailing comment
+    {
+      const auto next = check_remainder.peek();
+      if (next == "//") check_remainder.consume_comment("//");
+    }
+
+    if (!check_remainder.at_end())
+    {
+      FOUR_C_THROW("Unexpected content in condition section '%s': '%s'", sectionname_.c_str(),
+          check_remainder.get_unparsed_remainder().data());
+    }
+
     //------------------------------- put condition in map of conditions
     cmap.insert(std::pair<int, std::shared_ptr<Core::Conditions::Condition>>(dobjid, condition));
   }
