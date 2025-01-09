@@ -271,9 +271,9 @@ E 3 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
 //                              fluid_interface
-E 5 - 1 fluid conforming fsi_real
+E 5 - 1
 //                              struct_interface
-E 6 - 1 structure conforming fsi_real
+E 6 - 1
 --------------------------------------DESIGN SCATRA COUPLING SURF CONDITIONS
 DSURF                           2
 //                              fluid_interface
@@ -283,9 +283,9 @@ E 6 - NUMSCAL 1 ONOFF 1 COUPID 1 PERMCOEF 6.6 CONDUCT 0.0 FILTR 0.0 WSSONOFF 0 W
 ------------------------------DESIGN BIOFILM GROWTH COUPLING SURF CONDITIONS
 DSURF                           2
 //                              fluid_interface
-E 5 - 1 fluid conforming fsi_real
+E 5 - 1
 //                              struct_interface
-E 6 - 1 structure conforming fsi_real
+E 6 - 1
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           2
 //                              fluid_interface

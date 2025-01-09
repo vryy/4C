@@ -154,13 +154,13 @@ E 5 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF 2
 // fsi2
-E 1 - 1 fluid
+E 1 - 1
 // base_nodes24
-E 7 - 1 structure
+E 7 - 1
 -----------------------------DESIGN FSI COUPLING CENTER DISP SURF CONDITIONS
 DSURF 1
 // base_nodes24
-E 7 - 1 structure
+E 7 -
 --------------------------------------------------------DESIGN VOL STC LAYER
 DVOL 2
 // exth3

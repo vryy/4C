@@ -224,12 +224,12 @@ DVOL 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
 DSURF 6
-E 7 - 1 structure conforming
-E 8 - 1 structure conforming
-E 9 - 1 structure conforming
-E 10 - 1 structure conforming
-E 11 - 1 structure conforming
-E 12 - 1 structure conforming
+E 7 - 1
+E 8 - 1
+E 9 - 1
+E 10 - 1
+E 11 - 1
+E 12 - 1
 ---------------------------------DESIGN XFEM FSI PARTITIONED SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF 6

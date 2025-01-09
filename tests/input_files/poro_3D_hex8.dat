@@ -226,7 +226,7 @@ E 6 -
 E 4 -
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           0
-//E 6 - 1 fluid conforming fsi_real
+//E 6 - 1
 ----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 E 1 -

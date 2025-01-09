@@ -199,9 +199,9 @@ E 1 -
 ------------------------------DESIGN FPSI COUPLING LINE CONDITIONS
 DLINE  2
 // fpsi_line_poro
-E 1 - 1 structure conforming fsi_real
+E 1 - 1
 // fpsi_line_fluid
-E 2 - 1 fluid conforming fsi_real
+E 2 - 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    442 DNODE 1
 NODE    445 DNODE 1

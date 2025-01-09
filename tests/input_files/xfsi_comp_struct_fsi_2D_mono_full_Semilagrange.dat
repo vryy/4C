@@ -208,7 +208,7 @@ E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF 1
 // FSI
-E 6 - 1 structure conforming
+E 6 - 1
 ----------------------------------DESIGN XFEM FSI MONOLITHIC SURF CONDITIONS
 DSURF 1
 // FSI

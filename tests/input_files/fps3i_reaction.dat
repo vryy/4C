@@ -335,9 +335,9 @@ E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -------------------------------DESIGN FPSI COUPLING SURF CONDITIONS
 DSURF  2
 // whole_channel_interface
-E 18 - 1 fluid conforming fsi_real
+E 18 - 1
 // whole_obstacle_interface
-E 17 - 1 structure conforming fsi_real
+E 17 - 1
 
 -----------------------------DESIGN SURFACE PORO PRESSURE INTEGRATION
 DSURF                           1
@@ -399,7 +399,6 @@ E 17 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 0.135463498 CONDUCT 100.0 FILTR 0.9
 DSURF  1
 // interface_lumen
 E 18 -
-
 -----------------------------------------------DNODE-NODE TOPOLOGY
 //NODE   292 DNODE 1
 -----------------------------------------------DLINE-NODE TOPOLOGY

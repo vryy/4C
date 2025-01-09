@@ -266,9 +266,9 @@ E 13 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
 // structure coupling surface
-E 5 - 0 structure
+E 5 - 0
 // fluid coupling surface
-E 10 - 0 fluid
+E 10 - 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 126 DNODE 1
 NODE 125 DNODE 2

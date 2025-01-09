@@ -91,8 +91,8 @@ E 4 - ID 2 MASTER_OR_SLAVE Slave PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 ------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
 // DOBJECT Id
 DSURF                           2
-E 5 - standard
-E 6 - standard
+E 5 -
+E 6 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 52 DNODE 2
