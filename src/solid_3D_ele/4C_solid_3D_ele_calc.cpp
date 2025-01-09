@@ -532,12 +532,12 @@ template <Core::FE::CellType... celltypes>
 struct VerifyPackable
 {
   static constexpr bool are_all_packable =
-      (Core::Communication::is_packable<Discret::Elements::SolidEleCalc<celltypes,
+      (Core::Communication::Packable<Discret::Elements::SolidEleCalc<celltypes,
               Discret::Elements::DisplacementBasedFormulation<celltypes>>> &&
           ...);
 
   static constexpr bool are_all_unpackable =
-      (Core::Communication::is_unpackable<Discret::Elements::SolidEleCalc<celltypes,
+      (Core::Communication::Unpackable<Discret::Elements::SolidEleCalc<celltypes,
               Discret::Elements::DisplacementBasedFormulation<celltypes>>> &&
           ...);
 

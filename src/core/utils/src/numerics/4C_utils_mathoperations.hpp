@@ -22,7 +22,7 @@ namespace Core
    * implementations are within the specializations for the different @p NumberType.
    * @tparam Enable This template parameter exists to allow SFINAE
    */
-  template <typename NumberType, typename Enable = void>
+  template <typename NumberType>
   struct MathOperations
   {
     // Defer evaluation of static_assert until user tries an instantiation.
@@ -38,7 +38,8 @@ namespace Core
   };
 
   template <typename T>
-  struct MathOperations<T, std::enable_if_t<std::is_arithmetic_v<T>>>
+    requires std::is_arithmetic_v<T>
+  struct MathOperations<T>
   {
     static constexpr T abs(T t) { return std::abs(t); }
     static constexpr T sqrt(T t) { return std::sqrt(t); }

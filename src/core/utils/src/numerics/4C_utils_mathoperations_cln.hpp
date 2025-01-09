@@ -21,7 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core
 {
   template <typename T>
-  struct MathOperations<T, std::enable_if_t<std::is_same_v<std::decay_t<T>, Core::CLN::ClnWrapper>>>
+    requires std::is_same_v<std::decay_t<T>, Core::CLN::ClnWrapper>
+  struct MathOperations<T>
   {
     static constexpr T abs(const T& t) { return cln::abs(t.Value()); }
     static constexpr T sqrt(const T& t) { return cln::sqrt(t.Value()); }

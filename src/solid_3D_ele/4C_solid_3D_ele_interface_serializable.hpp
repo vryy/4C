@@ -29,30 +29,28 @@ namespace Discret::Elements
 
     /*!
      * @brief This struct should be used to serialize an item within a sum type (e.g.
-     *std::variant).
+     * std::variant).
      *
      * The pack(Core::Communication::PackBuffer&) is called for those types that provide the method.
-     *Nothing is done for types that don't provide a Pack-method.
+     * Nothing is done for types that don't provide a Pack-method.
      *
      * @note If you have a type that needs to be serialized during execution, you could verify that
      * the Pack-member function is correct by asserting it with
-     *static_assert(Core::Communication::is_packable<T>); in your cpp file
+     * static_assert(Core::Communication::Packable<T>); in your cpp file
      */
     struct PackAction
     {
       PackAction(Core::Communication::PackBuffer& buffer) : data(buffer) {}
 
-      template <typename T,
-          std::enable_if_t<Core::Communication::is_packable<const VariantItemInternalType<T>>,
-              bool> = true>
+      template <typename T>
+        requires(Core::Communication::Packable<const VariantItemInternalType<T>>)
       void operator()(const T& packable)
       {
         packable->pack(data);
       }
 
-      template <typename T,
-          std::enable_if_t<!Core::Communication::is_packable<const VariantItemInternalType<T>>,
-              bool> = true>
+      template <typename T>
+        requires(!Core::Communication::Packable<const VariantItemInternalType<T>>)
       void operator()(const T& other)
       {
         // do nothing if it is not packable
@@ -76,17 +74,15 @@ namespace Discret::Elements
     {
       UnpackAction(Core::Communication::UnpackBuffer& buffer) : buffer_(buffer) {}
 
-      template <typename T,
-          std::enable_if_t<Core::Communication::is_unpackable<VariantItemInternalType<T>>, bool> =
-              true>
+      template <typename T>
+        requires(Core::Communication::Unpackable<VariantItemInternalType<T>>)
       void operator()(T& unpackable)
       {
         unpackable->unpack(buffer_);
       }
 
-      template <typename T,
-          std::enable_if_t<!Core::Communication::is_unpackable<VariantItemInternalType<T>>, bool> =
-              true>
+      template <typename T>
+        requires(!Core::Communication::Unpackable<VariantItemInternalType<T>>)
       void operator()(T& other)
       {
         // do nothing if it is not unpackable

@@ -129,8 +129,9 @@ namespace Core::Utils
      * @param [in] creator  Function (object) that can create the singleton instance and return a
      * unique_ptr to it. The function's signature must be `std::unique_ptr<T>(creation_args_...)`.
      */
-    template <typename Fn, typename E = std::enable_if_t<!std::is_same_v<Fn, SingletonOwner>, Fn>>
-    SingletonOwner(Fn&& creator);
+    template <typename Fn>
+    SingletonOwner(Fn&& creator)
+      requires std::is_invocable_r_v<std::unique_ptr<T>, Fn, CreationArgs...>;
 
     //! Deleted copy constructor. Only one object can own the singleton.
     SingletonOwner(const SingletonOwner& other) = delete;
@@ -199,8 +200,9 @@ namespace Core::Utils
      * @param [in] creator  Function (object) that can create the singleton instance and return a
      * unique_ptr to it. The function's signature must be `std::unique_ptr<T>(creation_args_...)`.
      */
-    template <typename Fn, typename E = std::enable_if_t<!std::is_same_v<Fn, SingletonMap>, Fn>>
-    SingletonMap(Fn&& creator);
+    template <typename Fn>
+    SingletonMap(Fn&& creator)
+      requires std::is_invocable_r_v<std::unique_ptr<T>, Fn, CreationArgs...>;
 
     /**
      * Return a SingletonOwner for the given @p key. If it does not exist, one is created the first
@@ -278,8 +280,9 @@ namespace Core::Utils
 
 
   template <typename T, typename... CreationArgs>
-  template <typename Fn, typename E>
+  template <typename Fn>
   SingletonOwner<T, CreationArgs...>::SingletonOwner(Fn&& creator)
+    requires std::is_invocable_r_v<std::unique_ptr<T>, Fn, CreationArgs...>
       : creator_(std::forward<Fn>(creator))
   {
     SingletonOwnerRegistry::register_deleter(this, [this]() { destroy_instance(); });
@@ -315,8 +318,9 @@ namespace Core::Utils
 
 
   template <typename Key, typename T, typename... CreationArgs>
-  template <typename Fn, typename E>
+  template <typename Fn>
   SingletonMap<Key, T, CreationArgs...>::SingletonMap(Fn&& creator)
+    requires std::is_invocable_r_v<std::unique_ptr<T>, Fn, CreationArgs...>
       : creator_(std::forward<Fn>(creator))
   {
   }

@@ -13,6 +13,7 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <cstring>
+#include <type_traits>
 #include <typeinfo>
 #include <vector>
 
@@ -41,7 +42,8 @@ namespace Core::Communication
     const std::vector<char>& operator()() const { return buf_; }
 
     /// Add a trivially copyable object, i.e., an object of a type that can be copied with memcpy.
-    template <typename T, typename = std::enable_if_t<std::is_trivially_copyable_v<T>>>
+    template <typename T>
+      requires std::is_trivially_copyable_v<T>
     void add_to_pack(const T& stuff)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -57,7 +59,8 @@ namespace Core::Communication
 
     /// Add an array of trivially copyable objects, i.e., objects of a type that can be copied with
     /// memcpy.
-    template <typename T, typename = std::enable_if_t<std::is_trivially_copyable_v<T>>>
+    template <typename T>
+      requires std::is_trivially_copyable_v<T>
     void add_to_pack(const T* stuff, std::size_t stuff_size)
     {
       FOUR_C_ASSERT(stuff_size % sizeof(T) == 0, "Size of stuff must be a multiple of sizeof(T).");
@@ -102,7 +105,8 @@ namespace Core::Communication
      * type T.
      */
     template <typename T>
-    std::enable_if_t<std::is_trivially_copyable_v<T>, void> extract_from_pack(T& stuff)
+      requires std::is_trivially_copyable_v<T>
+    void extract_from_pack(T& stuff)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // Check that the type matches the type that was packed.
@@ -123,6 +127,7 @@ namespace Core::Communication
      * Same as the other method but extracts @p stuff_size entries into the array @p stuff.
      */
     template <typename T>
+      requires std::is_trivially_copyable_v<T>
     void extract_from_pack(T* stuff, const std::size_t stuff_size)
     {
       FOUR_C_ASSERT(stuff_size % sizeof(T) == 0, "Size of stuff must be a multiple of sizeof(T).");
@@ -145,7 +150,8 @@ namespace Core::Communication
      * Get @p stuff but also leave it in the buffer for the next extraction.
      */
     template <typename T>
-    std::enable_if_t<std::is_trivially_copyable_v<T>, void> peek(T& stuff) const
+      requires std::is_trivially_copyable_v<T>
+    void peek(T& stuff) const
     {
       std::size_t position = position_;
 
