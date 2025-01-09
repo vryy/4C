@@ -92,13 +92,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::init()
   artcontfieldcoup_->setup_condition_coupling(*contdis_, contfieldex_->Map(1), *arterydis_,
       artex_->Map(1), condname_, coupleddofs_cont_, coupleddofs_art_);
 
-  // full map of continous field and uncoupled dofs of artery
+  // full map of continuous field and uncoupled dofs of artery
   std::vector<std::shared_ptr<const Epetra_Map>> maps;
   maps.push_back(contfieldex_->full_map());
   maps.push_back(artex_->Map(0));
 
   fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
-  /// dof row map of coupled problem splitted in (field) blocks
+  /// dof row map of coupled problem split in (field) blocks
   globalex_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
   globalex_->setup(*fullmap_, maps);
 
@@ -201,7 +201,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_vector(
   std::shared_ptr<Core::LinAlg::Vector<double>> temp =
       contfieldex_->insert_vector(*artcontfieldcoup_->slave_to_master(*vec2_coupled), 1);
 
-  // add to continous vec
+  // add to continuous vec
   temp->Update(1.0, *vec_cont, 1.0);
 
   // set up global vector

@@ -53,7 +53,7 @@ void Lubrication::LubricationBaseAlgorithm::setup(
   // create a solver
   // -------------------------------------------------------------------
   // TODO: TAW use of solverparams??? change input parameter to solver number instead of parameter
-  // list? -> no default paramter possible any more
+  // list? -> no default parameter possible any more
   std::shared_ptr<Core::LinAlg::Solver> solver = std::make_shared<Core::LinAlg::Solver>(
       solverparams, actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -77,9 +77,9 @@ void Lubrication::LubricationBaseAlgorithm::setup(
   // maximum number of timesteps
   lubricationtimeparams->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   // restart
-  lubricationtimeparams->set("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
+  lubricationtimeparams->set("RESTARTEVERY", prbdyn.get<int>("RESTARTEVERY"));
   // solution output
-  lubricationtimeparams->set("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
+  lubricationtimeparams->set("RESULTSEVERY", prbdyn.get<int>("RESULTSEVERY"));
 
   // -------------------------------------------------------------------
   // list for extra parameters

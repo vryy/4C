@@ -51,7 +51,7 @@ namespace Adapter
                      ///< x_{n}^{converged}+ stepinc \f$
         ) override;
 
-    /*! \brief Relax ALE after some deformation has occured
+    /*! \brief Relax ALE after some deformation has occurred
      *
      *  At the beginning of the fluid-fluid-fsi step the xfem-dofs are
      *  dirichlet values so that they can not change in the next

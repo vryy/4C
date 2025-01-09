@@ -27,8 +27,8 @@ CONSTRAINT_VIOLATION                  yes
 MAXTIME                               0.002
 TIMESTEP                              0.001
 NUMSTEP                               2
-RESULTSEVRY                           1
-RESTARTEVRY                           1
+RESULTSEVERY                           1
+RESTARTEVERY                           1
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                               1.0E-08
 ITEMAX                                50
@@ -89,7 +89,7 @@ PHYSICAL_TYPE                         Incompressible
 PREDICTOR                             steady_state
 THETA                                 1.0
 TIMEINTEGR                            One_Step_Theta
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 LINEAR_SOLVER                         2
 --------------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES                          1.e-08

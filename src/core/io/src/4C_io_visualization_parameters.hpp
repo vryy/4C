@@ -77,7 +77,7 @@ namespace Core::IO
    * @brief Create a container containing all visualization output parameters
    */
   [[nodiscard]] VisualizationParameters visualization_parameters_factory(
-      const Teuchos::ParameterList& visualization_ouput_parameter_list,
+      const Teuchos::ParameterList& visualization_output_parameter_list,
       const Core::IO::OutputControl& output_control, double restart_time);
 
   /**

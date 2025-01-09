@@ -26,7 +26,7 @@ void Mortar::MultiFieldCoupling::push_back_coupling(
     const Core::FE::ShapeFunctionType shape_function_type, const int ndim)
 {
   if (!dis->get_condition("MortarMulti"))
-    FOUR_C_THROW("this discretization does not have a Mortar-Muti condition");
+    FOUR_C_THROW("this discretization does not have a Mortar-Multi condition");
 
   std::shared_ptr<Coupling::Adapter::CouplingMortar> adaptermeshtying =
       std::make_shared<Coupling::Adapter::CouplingMortar>(

@@ -39,7 +39,7 @@ Solid::TimAdaZienXie::TimAdaZienXie(
 
 /*----------------------------------------------------------------------*/
 /* Provide local discretisation error */
-void Solid::TimAdaZienXie::integrate_step_auxiliar()
+void Solid::TimAdaZienXie::integrate_step_auxiliary()
 {
   // get state vectors of marching integrator
   const std::shared_ptr<Core::LinAlg::Vector<double>> dis = sti_->dis();       // D_{n}^{A2}

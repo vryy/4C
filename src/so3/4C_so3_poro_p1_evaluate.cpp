@@ -578,7 +578,7 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1(
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> C_inv(false);
     C_inv.invert(cauchygreen);
 
-    //------linearization of material gradient of jacobi determinant GradJ  w.r.t. strucuture
+    //------linearization of material gradient of jacobi determinant GradJ  w.r.t. structure
     // displacement d(GradJ)/d(us)
     //---------------------d(GradJ)/dus =  dJ/dus * F^-T . : dF/dX + J * dF^-T/dus : dF/dX + J *
     // F^-T : N_X_X
@@ -610,7 +610,8 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1(
     double dW_dp = 0.0;
     double W = 0.0;
 
-    if (init_porosity_ == nullptr) FOUR_C_THROW("Failed to create vector of nodal intial porosity");
+    if (init_porosity_ == nullptr)
+      FOUR_C_THROW("Failed to create vector of nodal initial porosity");
     double init_porosity = shapefct.dot(*init_porosity_);
     Base::struct_mat_->constitutive_derivatives(params, press, volchange, porosity, init_porosity,
         &dW_dp,  // dW_dp not needed
@@ -773,8 +774,8 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1_od(
   // in case of prestressing, build defgrd wrt to last stored configuration
   // CAUTION: defgrd(true): filled with zeros!
   Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> defgrd(
-      true);  //  deformation gradiant evaluated at gauss point
-  Core::LinAlg::Matrix<Base::numnod_, 1> shapefct;  //  shape functions evalulated at gauss point
+      true);  //  deformation gradient evaluated at gauss point
+  Core::LinAlg::Matrix<Base::numnod_, 1> shapefct;  //  shape functions evaluated at gauss point
   Core::LinAlg::Matrix<Base::numdim_, Base::numnod_> deriv(
       true);  //  first derivatives at gausspoint w.r.t. r,s,t
 
@@ -834,7 +835,7 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1_od(
     Core::LinAlg::Matrix<Base::numdim_, 1> velint;
     velint.multiply(nodalvel, shapefct);
 
-    //**************************************************+auxilary variables for computing the
+    //**************************************************+auxiliary variables for computing the
     // porosity and linearization
     double dphi_dp = 0.0;
     double porosity = 0.0;

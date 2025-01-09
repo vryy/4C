@@ -88,7 +88,7 @@ namespace SSI
     virtual void set_scalar_field(Core::FE::Discretization& dis,
         std::shared_ptr<const Core::LinAlg::Vector<double>> phi, unsigned nds) = 0;
 
-    //! \brief set micro soultion of scatra field other field
+    //! \brief set micro solution of scatra field other field
     //!
     //! \param dis     discretization to write micro scatra solution on
     //! \param phi     micro scatra solution

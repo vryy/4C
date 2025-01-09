@@ -336,7 +336,7 @@ namespace BeamInteraction
           std::map<int, std::vector<std::map<int, std::set<int>>>>& intendedbeambonds,
           bool checklinkingprop) const;
 
-      // check if identical bond alread exists
+      // check if identical bond already exists
       bool return_false_if_identical_bond_already_exists(
           CrossLinking::CrosslinkerNode const* const crosslinker_i,
           BeamInteraction::Data::CrosslinkerData* cldata_i,
@@ -423,7 +423,7 @@ namespace BeamInteraction
       /// unbind crosslinker if criteria are met
       int un_bind_crosslinker();
 
-      /// calclulate force dependent unbind probability for double bonded crosslinker
+      /// calculate force dependent unbind probability for double bonded crosslinker
       /// according to Bell's equation (Howard, eq 5.10, p.89)
       void calc_bells_force_dependent_unbind_probability(CrossLinking::CrosslinkerNode* linker,
           BeamInteraction::BeamLink& elepairptr, std::vector<double>& punlinkforcedependent) const;
@@ -472,7 +472,7 @@ namespace BeamInteraction
           std::map<int, std::vector<std::shared_ptr<T>>> const& datasenttorank,
           std::vector<int>& summedtargets) const;
 
-      /// recieve "receivesize" number of T and store in vector recv
+      /// receive "receivesize" number of T and store in vector recv
       template <typename T>
       void recv_any(Core::Communication::Exporter& exporter, int receivesize,
           std::vector<std::shared_ptr<T>>& recv) const;

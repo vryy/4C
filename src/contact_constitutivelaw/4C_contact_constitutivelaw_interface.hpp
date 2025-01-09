@@ -27,7 +27,7 @@ namespace CONTACT
     /*!
     \brief Standard constructor creating empty contact interface
 
-    This initializes the employed shape function set for lagrangian mutlipliers
+    This initializes the employed shape function set for lagrangian multipliers
     to a specific setting. Throughout the evaluation process, this set will be employed
     for the field of lagrangian multipliers.
 
@@ -55,7 +55,7 @@ namespace CONTACT
      * matrix right there.
      *
      * As a result, the function notifies the calling routine if any negative gap was detected
-     * and thus wether the interface is in contact or not. In consequence, after calling this
+     * and thus whether the interface is in contact or not. In consequence, after calling this
      * routine from within the penalty strategy object, the contact status is known at a global
      * level.
      *

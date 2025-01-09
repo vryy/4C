@@ -71,7 +71,7 @@ namespace Core::Elements
                                       //!< within porous medium problem
     struct_poro_calc_prescoupling,    //!< calculate stiffness matrix related to pressure coupling
                                       //!< within porous medium problem
-    struct_calc_addjacPTC,            //!< calculate elment based PTC contributions
+    struct_calc_addjacPTC,            //!< calculate element based PTC contributions
     struct_create_backup,        //!< create a backup state of the internally store state quantities
                                  //!< (e.g. EAS, material history, etc.)
     struct_recover_from_backup,  //!< recover from previously stored backup state

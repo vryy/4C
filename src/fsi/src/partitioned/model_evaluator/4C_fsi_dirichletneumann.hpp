@@ -55,7 +55,7 @@ namespace FSI
      */
     explicit DirichletNeumann(MPI_Comm comm);
 
-    /// Creates the appropriate DirichletNeumann algortihm
+    /// Creates the appropriate DirichletNeumann algorithm
     //    std::shared_ptr<DirichletNeumann> FSI::DirichletNeumann::Factory(_PROBLEM_TYPE type);
     //    \FIXME
 

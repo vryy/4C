@@ -175,7 +175,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
 
       /*!
@@ -231,10 +231,10 @@ namespace Discret
       \param params (in/out): ParameterList for communication between control routine
                               and elements
       \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element

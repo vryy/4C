@@ -32,7 +32,7 @@ MAXTIME                         10
 NONLINITER                      Newton
 NUMSTASTEPS                     1
 NUMSTEP                         1
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 STARTFUNCNO                     2
 STEADYSTEP                      -1
 THETA                           0.5
@@ -52,10 +52,10 @@ ALE_TYPE                        springs_spatial
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         100000
 NUMSTEP                         1
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 SECONDORDER                     Yes
 TIMESTEP                        0.2
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 AZCONV                          AZ_r0

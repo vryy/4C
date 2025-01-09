@@ -67,8 +67,8 @@ INITFUNCNO                      1
 FSSUGRDIFF                      No
 -------------------------------------------------------SSI CONTROL
 DIFFTIMESTEPSIZE                yes
-RESULTSEVRY                     1
-RESTARTEVRY                     40
+RESULTSEVERY                     1
+RESTARTEVERY                     40
 NUMSTEP                         50
 MAXTIME                         5
 TIMESTEP                        0.1

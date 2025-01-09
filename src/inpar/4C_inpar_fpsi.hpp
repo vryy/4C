@@ -56,7 +56,7 @@ namespace Inpar
       bop_or
     };
 
-    enum FluidFieldHierachy
+    enum FluidFieldHierarchy
     {
       fluid,
       porofluid

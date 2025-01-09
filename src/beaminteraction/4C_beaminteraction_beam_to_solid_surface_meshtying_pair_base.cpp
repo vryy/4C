@@ -226,7 +226,7 @@ BeamInteraction::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>:
     case BeamToSolidSurfaceCoupling::displacement:
     case BeamToSolidSurfaceCoupling::displacement_fad:
     {
-      // In this case we have to substract the reference position from the DOF vectors.
+      // In this case we have to subtract the reference position from the DOF vectors.
       auto beam_dof = this->ele1pos_;
       auto surface_dof = this->face_element_->get_face_element_data();
 

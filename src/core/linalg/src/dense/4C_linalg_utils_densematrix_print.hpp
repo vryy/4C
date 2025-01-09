@@ -23,7 +23,8 @@ namespace Core::LinAlg
 
   @param[in] filename Name of output file
   @param[in] A Matrix to be printed
-  @param[in] newfile Flage to force printing to a new file (instead of appeding to an existing file)
+  @param[in] newfile Flag to force printing to a new file (instead of appending to an existing
+  file)
   */
   void print_serial_dense_matrix_in_matlab_format(
       std::string filename, const Core::LinAlg::SerialDenseMatrix& A, const bool newfile = true);

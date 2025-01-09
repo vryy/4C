@@ -19,7 +19,7 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 WRITE_TO_SCREEN                 yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
@@ -38,7 +38,7 @@ MAXITER                         10
 TOLRES                          1.0e-8
 TOLDISP                         1.0e-8
 DIVERCONT                       stop
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 NUMSTEP                         50
 TIMESTEP                        0.01
 MAXTIME                         1

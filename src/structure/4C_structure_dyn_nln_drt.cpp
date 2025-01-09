@@ -125,7 +125,7 @@ void dyn_nlnstructural_drt()
   {
     structadapter->read_restart(restart);
   }
-  // write output at beginnning of calc
+  // write output at beginning of calc
   else
   {
     if (write_initial_state)

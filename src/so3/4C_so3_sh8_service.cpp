@@ -77,7 +77,7 @@ Discret::Elements::SoSh8::ThicknessDirection Discret::Elements::SoSh8::sosh8_fin
       // FOUR_C_THROW("Solid-Shell element geometry has not a shell aspect ratio");
       return undefined;
     }
-    thickdir = autor;
+    thickdir = author;
     thick_index = 0;
   }
   else if (s_stretch > r_stretch and s_stretch >= t_stretch)
@@ -247,7 +247,7 @@ Discret::Elements::SoSh8::ThicknessDirection Discret::Elements::SoSh8::sosh8_enf
   ThicknessDirection thickdir = none;  // of actual element
   if (thick_index == 0)
   {
-    thickdir = autor;
+    thickdir = author;
   }
   else if (thick_index == 1)
   {

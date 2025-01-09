@@ -293,7 +293,7 @@ namespace FLD
     bool inflow_;
 
     //! mean values of velocity and pressure, independent of special flow
-    //! averaging takes place in time, if hom. directions have been specified
+    //! averaging takes place in time, if home. directions have been specified
     //! additionally along these lines
     bool out_mean_;
 

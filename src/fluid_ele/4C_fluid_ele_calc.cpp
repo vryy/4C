@@ -1607,7 +1607,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::add_surface_tension_forc
     static Core::LinAlg::Matrix<nen_, 1> ecurvaturen(true);
 
     // Extract values from gradient and curvature vectors (who been compressed to not use too many
-    // unneccessary variables)
+    // unnecessary variables)
     //==================================================
     for (int i = 0; i < nen_; i++)
     {
@@ -2501,7 +2501,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
            finite element method for the advective-reactive-diffusive
            equation, Comput. Methods Appl. Mech. Engrg. 190 (2000) 1785-1800.
         2) G.R. Barrenechea, F. Valentin, An unusual stabilized finite
-           element method for a generalized Stokes problem, Numer. Math.
+           element method for a generalized Stokes problem, Number. Math.
            92 (2002) 652-677.
 
 
@@ -2823,7 +2823,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
          *  1) T.J.R. Hughes, L.P. Franca, and M. Balestra, A new finite element
          *     formulation for computational fluid dynamics: V. circumventing the
          *     Babuska-Brezzi condition: a stable Petrov-Galerkin formulation of
-         *     the Stokes problem accomodating equal-order interpolations,
+         *     the Stokes problem accommodating equal-order interpolations,
          *     Comput. Methods Appl. Mech. Engrg. 59 (1986) 85-99.
          *
          *  2) J. Donea and A. Huerta, Finite element methods for flow problems.
@@ -2899,7 +2899,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
            Institute, Troy, NY, USA, 1999.
         2) C.H. Whiting, K.E. Jansen, A stabilized finite element method for
            the incompressible Navier-Stokes equations using a hierarchical
-           basis, Int. J. Numer. Meth. Fluids 35 (2001) 93-116.
+           basis, Int. J. Number. Meth. Fluids 35 (2001) 93-116.
 
                                       1.0
                         tau  = ------------------
@@ -2963,7 +2963,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
         1) L.P. Franca, S.L. Frey, Stabilized finite element methods:
            II. The incompressible Navier-Stokes equations, Comput. Methods
            Appl. Mech. Engrg. 99 (1992) 209-293.
-        2) W.A. Wall, Fluid-Struktur-Interaktion mit stabilisierten Finiten
+        2) W.A. Wall, Fluid-Struktur-Interaction mit stabilisierten Finiten
            Elementen, Dissertation, Universitaet Stuttgart, 1999.
 
                      xi_tau_c ^
@@ -3059,7 +3059,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
          *  1) T.J.R. Hughes, L.P. Franca, and M. Balestra, A new finite element
          *     formulation for computational fluid dynamics: V. circumventing the
          *     Babuska-Brezzi condition: a stable Petrov-Galerkin formulation of
-         *     the Stokes problem accomodating equal-order interpolations,
+         *     the Stokes problem accommodating equal-order interpolations,
          *     Comput. Methods Appl. Mech. Engrg. 59 (1986) 85-99.
          *
          *  2) J. Donea and A. Huerta, Finite element methods for flow problems.
@@ -3265,7 +3265,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
         //
         //    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
         //    Finite Element Method for the Advective-Reactive-Diffusive
-        //    Equation. Computer Methods in Applied Mechanics and Enginnering,
+        //    Equation. Computer Methods in Applied Mechanics and Engineering,
         //    Vol. 190, pp. 1785-1800, 2000.
         //    http://www.lncc.br/~valentin/publication.htm                   */
         //
@@ -3429,7 +3429,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
     // c) cubic/square root of element volume/area or element length (3- and 2-D)
     case Inpar::FLUID::root_of_volume_u:
     {
-      // cast dimension to a double varibale -> pow()
+      // cast dimension to a double variable -> pow()
       const double dim = double(nsd_);
       h_u = std::pow(vol, 1.0 / dim);
     }
@@ -3488,7 +3488,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
     // c) cubic/square root of element volume/area or element length (3- and 2-D)
     case Inpar::FLUID::root_of_volume_pc:
     {
-      // cast dimension to a double varibale -> pow()
+      // cast dimension to a double variable -> pow()
       const double dim = double(nsd_);
       h_p = std::pow(vol, 1 / dim);
     }
@@ -6628,19 +6628,19 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
     case Inpar::FLUID::shear_flow:
     {
       const double maxvel = 1.0;
-      const double hight = 1.0;
+      const double height = 1.0;
 
       // y=0 is located in the middle of the domain
       if (nsd_ == 2)
       {
         p = 1.0;
-        u(0) = xyzint(1) * maxvel + hight / 2 * maxvel;
+        u(0) = xyzint(1) * maxvel + height / 2 * maxvel;
         u(1) = 0.0;
       }
       if (nsd_ == 3)
       {
         p = 0.0;
-        u(0) = xyzint(1) * maxvel + hight / 2 * maxvel;
+        u(0) = xyzint(1) * maxvel + height / 2 * maxvel;
         u(1) = 0.0;
         u(2) = 0.0;
       }
@@ -6649,20 +6649,20 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
     case Inpar::FLUID::gravitation:
     {
       const double gravity = 10.0;
-      const double hight = 1.0;
+      const double height = 1.0;
 
       // 2D: rectangle 1.0x1.0
       // 3D: cube 1.0x1.0x1.0
       // y=0 is located in the middle of the domain
       if (nsd_ == 2)
       {
-        p = -xyzint(1) * gravity + hight / 2 * gravity;
+        p = -xyzint(1) * gravity + height / 2 * gravity;
         u(0) = 0.0;
         u(1) = 0.0;
       }
       if (nsd_ == 3)
       {
-        p = -xyzint(1) * gravity + hight / 2 * gravity;
+        p = -xyzint(1) * gravity + height / 2 * gravity;
         u(0) = 0.0;
         u(1) = 0.0;
         u(2) = 0.0;
@@ -6815,7 +6815,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
     case Inpar::FLUID::fsi_fluid_pusher:
     {
       /* Since the fluid pusher solution depends only on time, but not on spatial
-       * cooordinates x,y,z, we only compute the L2-error and no H1-error.
+       * coordinates x,y,z, we only compute the L2-error and no H1-error.
        */
 
       // get pointer to material in order to access density
@@ -7080,7 +7080,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
 
 
 /*!
- * \brief fill elment matrix and vectors with the global values
+ * \brief fill element matrix and vectors with the global values
  */
 template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
 void Discret::Elements::FluidEleCalc<distype, enrtype>::extract_values_from_global_vector(
@@ -8462,7 +8462,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::f_dcheck(
       //                 copy_Cs_delta_sq,
       //                 copy_l_tau);
 
-      // compare the difference between linaer approximation and
+      // compare the difference between linear approximation and
       // (nonlinear) right hand side evaluation
 
       // note that it makes more sense to compare these quantities
@@ -8859,7 +8859,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::interpolate_velocity_grad
 
   //                                         _              _
   //                                        | u1,1 u1,2 u1,3 |
-  // dudxi = u_i,alhpa = N_A,alpha u^A_i =  | u2,1 u2,2 u2,3 |
+  // dudxi = u_i,alpha = N_A,alpha u^A_i =  | u2,1 u2,2 u2,3 |
   //                                        |_u3,1 u3,2 u3,3_|
   //
   dudxi.multiply_nt(evelnp, pderiv_loc);
@@ -9006,7 +9006,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
   std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct =
       params.get<std::map<int, Core::LinAlg::Matrix<3, 1>>*>("currpositions_struct");
 
-  // subset of strucutral elements immersed near the current fluid element
+  // subset of structural elements immersed near the current fluid element
   std::map<int, std::set<int>> curr_subset_of_structdis;
 
   {
@@ -9670,7 +9670,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
   // the vector planes contains the coordinates of the homogeneous planes (in
   // wall normal direction)
   std::shared_ptr<std::vector<double>> planes =
-      params.get<std::shared_ptr<std::vector<double>>>("coordinate vector for hom. planes");
+      params.get<std::shared_ptr<std::vector<double>>>("coordinate vector for home. planes");
 
   // get the pointers to the solution vectors
   std::shared_ptr<std::vector<double>> sumarea =
@@ -14612,7 +14612,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const double vol, double& Cs_delta_sq,
     double& Ci_delta_sq)
 {
-  // cast dimension to a double varibale -> pow()
+  // cast dimension to a double variable -> pow()
   const double dim = double(nsd_);
   //
   // SMAGORINSKY MODEL
@@ -14914,7 +14914,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_fine_scale_subgr_vi
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& fsevelaf, const double vol)
 {
-  // cast dimension to a double varibale -> pow()
+  // cast dimension to a double variable -> pow()
   const double dim = double(nsd_);
 
   //     // get characteristic element length for Smagorinsky model for 2D and 3D

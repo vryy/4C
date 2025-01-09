@@ -667,7 +667,7 @@ void FS3I::FS3IBase::setup_coupled_scatra_matrix()
 
   if (infperm_)
   {
-    // Uncomplete system matrix to be able to deal with slightly defective
+    // Incomplete system matrix to be able to deal with slightly defective
     // interface meshes.
     scatra1->un_complete();
 

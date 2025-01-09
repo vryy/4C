@@ -206,7 +206,7 @@ void Mat::SuperElasticSMA::unpack(Core::Communication::UnpackBuffer& buffer)
   int histsize;
   extract_from_pack(buffer, histsize);
 
-  // if system is not yet initialized, the history vectors have to be intialized
+  // if system is not yet initialized, the history vectors have to be initialized
   if (histsize == 0) isinit_ = false;
   druckerpragerloadinglast_ = std::make_shared<std::vector<double>>();
   druckerpragerloadingcurr_ = std::make_shared<std::vector<double>>();
@@ -926,7 +926,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       lambda_trial_square(i) = cauchy_green_eigenvalues(i);
     }
 
-    // express coefficents of tangent in Kirchhoff stresses
+    // express coefficients of tangent in Kirchhoff stresses
     cmat->clear();
     for (int a = 0; a < 3; a++)
     {

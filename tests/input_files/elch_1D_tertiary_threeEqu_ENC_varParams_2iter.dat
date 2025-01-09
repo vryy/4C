@@ -11,7 +11,7 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MAXTIME                         10
 NUMSTEP                         25
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01

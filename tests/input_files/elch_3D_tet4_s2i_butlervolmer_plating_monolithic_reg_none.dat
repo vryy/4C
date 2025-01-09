@@ -21,8 +21,8 @@ OUTPUT_DATA_FORMAT              ascii
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
 NUMSTEP                         35
-RESULTSEVRY                     25
-RESTARTEVRY                     25
+RESULTSEVERY                     25
+RESTARTEVERY                     25
 TIMESTEP                        1.0
 THETA                           0.5
 INITIALFIELD                    field_by_condition

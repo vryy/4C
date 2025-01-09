@@ -60,7 +60,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     virtual void runtime_output_step_state(std::pair<double, int> output_time_and_step) {};
 
    private:
-    //! Colum Map
+    //! Column Map
     std::shared_ptr<Epetra_Map> n_condition_map_;
 
     //! Penalty parameter

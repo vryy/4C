@@ -105,7 +105,7 @@ namespace FLD
     //! pointer to vel/pres^2 field (space allocated in constructor)
     std::shared_ptr<Core::LinAlg::Vector<double>> squaredvelnp_;
 
-    //! toogle vectors: sums are computed by scalarproducts
+    //! toggle vectors: sums are computed by scalarproducts
     std::shared_ptr<Core::LinAlg::Vector<double>> toggleu_;
     std::shared_ptr<Core::LinAlg::Vector<double>> togglev_;
     std::shared_ptr<Core::LinAlg::Vector<double>> togglew_;

@@ -89,7 +89,7 @@ PoroElast::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& t
   const Teuchos::ParameterList& sdynparams =
       Global::Problem::instance()->structural_dynamic_params();
 
-  // some solver paramaters are red form the structure dynamic list (this is not the best way to do
+  // some solver parameters are red form the structure dynamic list (this is not the best way to do
   // it ...)
   solveradapttol_ = (sdynparams.get<bool>("ADAPTCONV"));
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
@@ -110,10 +110,10 @@ PoroElast::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& t
     {
       if (structure_field()->meshtying_contact_bridge()->have_contact())
       {
-        auto* poro_lagrange_strat = dynamic_cast<CONTACT::LagrangeStrategyPoro*>(
+        auto* poro_lagrange_strategy = dynamic_cast<CONTACT::LagrangeStrategyPoro*>(
             &structure_field()->meshtying_contact_bridge()->contact_manager()->get_strategy());
-        if (poro_lagrange_strat)
-          no_penetration_ = poro_lagrange_strat->has_poro_no_penetration();
+        if (poro_lagrange_strategy)
+          no_penetration_ = poro_lagrange_strategy->has_poro_no_penetration();
         else
         {
           auto* co_nitsche_strategy = dynamic_cast<CONTACT::NitscheStrategyPoro*>(
@@ -278,7 +278,7 @@ void PoroElast::Monolithic::update_state_incrementally(
   // apply current velocity and pressures to structure
   set_fluid_solution();
 
-  // apply current velocity of fluid to ContactMangager if contact problem
+  // apply current velocity of fluid to ContactManager if contact problem
   if (no_penetration_)
     set_poro_contact_states();  // ATM svel is set in structure evaluate as the vel of the structure
                                 // is evaluated there ...
@@ -695,7 +695,7 @@ void PoroElast::Monolithic::initial_guess(std::shared_ptr<Core::LinAlg::Vector<d
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::Monolithic::initial_guess");
 
-  // InitalGuess() is called of the single fields and results are put in
+  // InitialGuess() is called of the single fields and results are put in
   // increment vector ig
   setup_vector(*ig,
       // returns residual displacements \f$\Delta D_{n+1}^{<k>}\f$ - disi_
@@ -988,7 +988,7 @@ void PoroElast::Monolithic::apply_str_coupl_matrix(
     std::shared_ptr<Core::Elements::ParamsMinimal> params =
         std::make_shared<Core::Elements::ParamsMinimal>();
 
-    // set parameters needed for element evalutation
+    // set parameters needed for element evaluation
     params->set_action_type(Core::Elements::struct_poro_calc_fluidcoupling);
     params->set_total_time(time());
     params->set_delta_time(dt());
@@ -1402,7 +1402,7 @@ void PoroElast::Monolithic::evaluate_condition(
   if (coupltype == PoroElast::fluidfluid)  // fluid fluid part
   {
     ConstraintMatrix->complete();
-    nopen_handle_->buid_no_penetration_map(
+    nopen_handle_->build_no_penetration_map(
         fluid_field()->discretization()->get_comm(), fluid_field()->dof_row_map());
   }
   else  // fluid structure part
@@ -1843,7 +1843,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
         {
           CONTACT::LagrangeStrategyPoro& costrategy = static_cast<CONTACT::LagrangeStrategyPoro&>(
               structure_field()->meshtying_contact_bridge()->contact_manager()->get_strategy());
-          //---Modifiy coupling matrix k_sf
+          //---Modify coupling matrix k_sf
 
           // Get matrix block!
           std::shared_ptr<Core::LinAlg::SparseOperator> k_ss =
@@ -1917,7 +1917,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
             structure_field()->meshtying_contact_bridge()->mt_manager()->get_strategy());
 
 
-        //---Modifiy coupling matrix k_sf
+        //---Modify coupling matrix k_sf
 
         // Get matrix block!
         std::shared_ptr<Core::LinAlg::SparseMatrix> k_sf =
@@ -1951,7 +1951,7 @@ void PoroElast::Monolithic::read_restart(const int step)
   PoroElast::PoroBase::read_restart(step);
 
   // set states for porous contact
-  // apply current velocity of fluid to ContactMangager if contact problem
+  // apply current velocity of fluid to ContactManager if contact problem
   if (no_penetration_) set_poro_contact_states();
 }
 

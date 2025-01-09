@@ -19,7 +19,7 @@ DIM           3
 -------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
-STDOUTEVRY                      0
+STDOUTEVERY                      0
 STRUCT_STRESS                   Cauchy
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      OneStepTheta
@@ -53,8 +53,8 @@ MAXTIME                         1800000
 TIMESTEP                        10000.0
 COUPALGO                        ssi_Monolithic
 SCATRATIMINTTYPE                Elch
-RESULTSEVRY                     2
-RESTARTEVRY                     2
+RESULTSEVERY                     2
+RESTARTEVERY                     2
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse

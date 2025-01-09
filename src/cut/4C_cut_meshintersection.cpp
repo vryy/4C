@@ -33,7 +33,7 @@ Cut::ElementHandle* Cut::MeshIntersection::add_element(int eid, const std::vecto
       int numnode = nids.size();
       if (numnode != xyz.numCols())
       {
-        FOUR_C_THROW("node coordiante number mismatch");
+        FOUR_C_THROW("node coordinate number mismatch");
       }
 
       // make sure all nodes are there
@@ -75,7 +75,7 @@ Cut::SideHandle* Cut::MeshIntersection::add_cut_side(int sid, const std::vector<
   int numnode = nids.size();
   if (numnode != xyz.numCols())
   {
-    FOUR_C_THROW("node coordiante number mismatch");
+    FOUR_C_THROW("node coordinate number mismatch");
   }
 
   //   PointSet nodalpoints;

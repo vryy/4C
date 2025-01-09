@@ -32,7 +32,7 @@ PaSI::PasiPartTwoWayCoup::PasiPartTwoWayCoup(MPI_Comm comm, const Teuchos::Param
       convtolrelativeforce_(params.get<double>("CONVTOLRELATIVEFORCE")),
       convtolscaledforce_(params.get<double>("CONVTOLSCALEDFORCE")),
       ignoreconvcheck_(params.get<bool>("IGNORE_CONV_CHECK")),
-      writerestartevery_(params.get<int>("RESTARTEVRY"))
+      writerestartevery_(params.get<int>("RESTARTEVERY"))
 {
   // empty constructor
 }
@@ -123,8 +123,8 @@ void PaSI::PasiPartTwoWayCoup::outerloop()
   int itnum = 0;
   bool stopnonliniter = false;
 
-  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-      (step() % print_screen_evry() == 0))
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+      (step() % print_screen_every() == 0))
   {
     // clang-format off
     printf("+------------------------------------------------------------------------------+\n");
@@ -211,7 +211,7 @@ void PaSI::PasiPartTwoWayCoup::set_interface_forces(
   structurefield_->apply_interface_force(intfforcenp);
 
   // print norm of interface force to the screen
-  if (print_screen_evry() and (step() % print_screen_evry() == 0))
+  if (print_screen_every() and (step() % print_screen_every() == 0))
   {
     double normintfforce(0.0);
     intfforcenp->Norm2(&normintfforce);
@@ -348,8 +348,8 @@ bool PaSI::PasiPartTwoWayCoup::convergence_check(int itnum)
   double relative_force_inc = intfforceincnorm_L2 / intfforcenorm_L2;
 
   // print the incremental based convergence check to the screen
-  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-      (step() % print_screen_evry() == 0))
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+      (step() % print_screen_every() == 0))
   {
     // clang-format off
     printf("+----------+-----------------+--------------+------------------+---------------+\n");
@@ -378,8 +378,8 @@ bool PaSI::PasiPartTwoWayCoup::convergence_check(int itnum)
   {
     stopnonliniter = true;
 
-    if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-        (step() % print_screen_evry() == 0))
+    if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+        (step() % print_screen_every() == 0))
     {
       // clang-format off
       printf("|  Outer iteration loop converged after iteration %3d/%3d !                    |\n", itnum, itmax_);
@@ -396,8 +396,8 @@ bool PaSI::PasiPartTwoWayCoup::convergence_check(int itnum)
     // ignore convergence check and proceed simulation
     if (ignoreconvcheck_)
     {
-      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-          (step() % print_screen_evry() == 0))
+      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+          (step() % print_screen_every() == 0))
       {
         // clang-format off
         printf("|  ATTENTION: Outer iteration loop not converged in itemax = %3d steps!        |\n", itmax_);
@@ -408,8 +408,8 @@ bool PaSI::PasiPartTwoWayCoup::convergence_check(int itnum)
     // abort the simulation
     else
     {
-      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-          (step() % print_screen_evry() == 0))
+      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+          (step() % print_screen_every() == 0))
       {
         // clang-format off
         printf("|  STOP: Outer iteration loop not converged in itemax = %3d steps              |\n", itmax_);
@@ -497,8 +497,8 @@ void PaSI::PasiPartTwoWayCoupDispRelax::outerloop()
   int itnum = 0;
   bool stopnonliniter = false;
 
-  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-      (step() % print_screen_evry() == 0))
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+      (step() % print_screen_every() == 0))
   {
     // clang-format off
     printf("+------------------------------------------------------------------------------+\n");
@@ -565,8 +565,8 @@ void PaSI::PasiPartTwoWayCoupDispRelax::outerloop()
 void PaSI::PasiPartTwoWayCoupDispRelax::calc_omega(double& omega, const int itnum)
 {
   // output constant relaxation parameter
-  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-      (step() % print_screen_evry() == 0))
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+      (step() % print_screen_every() == 0))
     std::cout << "Fixed relaxation parameter: " << omega << std::endl;
 }
 
@@ -647,8 +647,8 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::calc_omega(double& omega, const in
 
   if (dispincnpdiffnorm <= 1e-06)
   {
-    if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-        (step() % print_screen_evry() == 0))
+    if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+        (step() % print_screen_every() == 0))
       std::cout << "Warning: The norm of displacement increment is to small to use it for Aitken "
                    "relaxation. Reuse previous Aitken relaxation parameter instead!"
                 << std::endl;
@@ -666,8 +666,8 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::calc_omega(double& omega, const in
     // allowed range for Aitken relaxation parameter
     if (omega < minomega_)
     {
-      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-          (step() % print_screen_evry() == 0))
+      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+          (step() % print_screen_every() == 0))
         std::cout << "Warning: The calculation of the relaxation parameter via Aitken did lead to "
                      "a value smaller than MINOMEGA!"
                   << std::endl;
@@ -675,8 +675,8 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::calc_omega(double& omega, const in
     }
     if (omega > maxomega_)
     {
-      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-          (step() % print_screen_evry() == 0))
+      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+          (step() % print_screen_every() == 0))
         std::cout << "Warning: The calculation of the relaxation parameter via Aitken did lead to "
                      "a value bigger than MAXOMEGA!"
                   << std::endl;
@@ -685,8 +685,8 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::calc_omega(double& omega, const in
   }
 
   // output Aitken relaxation parameter
-  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-      (step() % print_screen_evry() == 0))
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+      (step() % print_screen_every() == 0))
     std::cout << "Aitken relaxation parameter: " << omega << std::endl;
 
   // store current interface displacement increment for next iteration

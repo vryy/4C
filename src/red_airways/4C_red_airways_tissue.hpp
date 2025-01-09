@@ -122,10 +122,10 @@ namespace Airway
     /// defined normal direction
     double normal_;
 
-    /// fixed relaxation paramater
+    /// fixed relaxation parameter
     double omega_;
 
-    /// fixed relaxation paramater
+    /// fixed relaxation parameter
     Inpar::ArteryNetwork::Relaxtype3D0D relaxtype_;
   };
 }  // namespace Airway

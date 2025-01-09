@@ -418,14 +418,14 @@ namespace FLD
       return;
     }
 
-    void get_alpha2(Core::LinAlg::Vector<double>& alph2)
+    void get_alpha2(Core::LinAlg::Vector<double>& alpha2)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         {
           double val = (*col_filtered_alpha2_)[nid];
-          int err = alph2.ReplaceMyValues(1, &val, &nid);
+          int err = alpha2.ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }

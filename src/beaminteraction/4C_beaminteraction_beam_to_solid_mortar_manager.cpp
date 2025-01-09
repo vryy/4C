@@ -578,14 +578,14 @@ void BeamInteraction::BeamToSolidMortarManager::add_global_force_stiffness_penal
   if (is_stiff)
   {
     // Penalty regularization linearized w.r.t. the constraint equations
-    Core::LinAlg::SparseMatrix penalty_regularization_lin_constaint(
+    Core::LinAlg::SparseMatrix penalty_regularization_lin_constraint(
         *std::get<1>(penalty_regularization));
-    penalty_regularization_lin_constaint.complete();
+    penalty_regularization_lin_constraint.complete();
     auto regularized_constraint_lin_beam =
-        Core::LinAlg::matrix_multiply(penalty_regularization_lin_constaint, false,
+        Core::LinAlg::matrix_multiply(penalty_regularization_lin_constraint, false,
             *constraint_lin_beam_, false, false, false, true);
     auto regularized_constraint_lin_solid =
-        Core::LinAlg::matrix_multiply(penalty_regularization_lin_constaint, false,
+        Core::LinAlg::matrix_multiply(penalty_regularization_lin_constraint, false,
             *constraint_lin_solid_, false, false, false, true);
 
     // Penalty regularization linearized w.r.t. the scaling vector
@@ -603,24 +603,24 @@ void BeamInteraction::BeamToSolidMortarManager::add_global_force_stiffness_penal
     }
 
     // Calculate the needed submatrices
-    const auto force_beam_lin_lambda_times_constaint_lin_beam =
+    const auto force_beam_lin_lambda_times_constraint_lin_beam =
         Core::LinAlg::matrix_multiply(*force_beam_lin_lambda_, false,
             *regularized_constraint_lin_beam, false, false, false, true);
-    const auto force_beam_lin_lambda_times_constaint_lin_solid =
+    const auto force_beam_lin_lambda_times_constraint_lin_solid =
         Core::LinAlg::matrix_multiply(*force_beam_lin_lambda_, false,
             *regularized_constraint_lin_solid, false, false, false, true);
-    const auto force_solid_lin_lambda_times_constaint_lin_beam =
+    const auto force_solid_lin_lambda_times_constraint_lin_beam =
         Core::LinAlg::matrix_multiply(*force_solid_lin_lambda_, false,
             *regularized_constraint_lin_beam, false, false, false, true);
-    const auto force_solid_lin_lambda_times_constaint_lin_solid =
+    const auto force_solid_lin_lambda_times_constraint_lin_solid =
         Core::LinAlg::matrix_multiply(*force_solid_lin_lambda_, false,
             *regularized_constraint_lin_solid, false, false, false, true);
 
     // Add contributions to the global stiffness matrix
-    stiff->add(*force_beam_lin_lambda_times_constaint_lin_beam, false, 1.0, 1.0);
-    stiff->add(*force_beam_lin_lambda_times_constaint_lin_solid, false, 1.0, 1.0);
-    stiff->add(*force_solid_lin_lambda_times_constaint_lin_beam, false, 1.0, 1.0);
-    stiff->add(*force_solid_lin_lambda_times_constaint_lin_solid, false, 1.0, 1.0);
+    stiff->add(*force_beam_lin_lambda_times_constraint_lin_beam, false, 1.0, 1.0);
+    stiff->add(*force_beam_lin_lambda_times_constraint_lin_solid, false, 1.0, 1.0);
+    stiff->add(*force_solid_lin_lambda_times_constraint_lin_beam, false, 1.0, 1.0);
+    stiff->add(*force_solid_lin_lambda_times_constraint_lin_solid, false, 1.0, 1.0);
   }
 
   if (force != nullptr)

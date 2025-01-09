@@ -453,7 +453,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
     std::shared_ptr<Mortar::Interface> interface = interfaces[(int)interfaces.size() - 1];
 
     // note that the nodal ids are unique because they come from
-    // one global problem discretization conatining all nodes of the
+    // one global problem discretization containing all nodes of the
     // contact interface
     // We rely on this fact, therefore it is not possible to
     // do meshtying between two distinct discretizations here
@@ -533,7 +533,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
       // but ids are not unique among 2 distinct conditions
       // due to the way elements in conditions are build.
       // We therefore have to give the second, third,... set of elements
-      // different ids. ids do not have to be continous, we just add a large
+      // different ids. ids do not have to be continuous, we just add a large
       // enough number ggsize to all elements of cond2, cond3,... so they are
       // different from those in cond1!!!
       // note that elements in ele1/ele2 already are in column (overlapping) map
@@ -579,7 +579,7 @@ std::shared_ptr<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_
     const int& dof_offset, std::vector<std::shared_ptr<Mortar::Interface>>& interfaces) const
 {
   const auto stype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY");
-  std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr = nullptr;
+  std::shared_ptr<CONTACT::AbstractStrategyDataContainer> data_ptr = nullptr;
 
   return build_strategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
       discret().dof_row_map(), discret().node_row_map(), n_dim(), get_comm(), *data_ptr);
@@ -592,7 +592,7 @@ std::shared_ptr<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
     std::vector<std::shared_ptr<Mortar::Interface>>& interfaces, const Epetra_Map* dof_row_map,
     const Epetra_Map* node_row_map, const int dim, const MPI_Comm& comm_ptr,
-    Mortar::StratDataContainer& data_ptr)
+    Mortar::StrategyDataContainer& data_ptr)
 {
   std::shared_ptr<CONTACT::MtAbstractStrategy> strategy_ptr = nullptr;
 
@@ -606,7 +606,7 @@ std::shared_ptr<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_
   }
 
   // Set dummy parameter. The correct parameter will be read directly from time integrator. We still
-  // need to pass an argument as long as we want to support the same strategy contructor as the old
+  // need to pass an argument as long as we want to support the same strategy constructor as the old
   // time integration.
   const double dummy = -1.0;
 

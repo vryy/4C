@@ -118,12 +118,12 @@ Mat::PAR::MuscleCombo::MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdat
   // active material parameters
   if (Popt_ < 0.0)
   {
-    FOUR_C_THROW("Material parameter POPT must be postive or zero");
+    FOUR_C_THROW("Material parameter POPT must be positive or zero");
   }
 
   // stretch dependent parameters
-  if (lambdaMin_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAMIN must be postive");
-  if (lambdaOpt_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAOPT must be postive");
+  if (lambdaMin_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAMIN must be positive");
+  if (lambdaOpt_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAOPT must be positive");
 
   // density
   if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
@@ -422,14 +422,14 @@ void Mat::MuscleCombo::evaluate_active_nominal_stress(Teuchos::ParameterList& pa
       lambdaM, lambdaMin, lambdaOpt);
   double fxi =
       Mat::Utils::Muscle::evaluate_force_stretch_dependency_ehret(lambdaM, lambdaMin, lambdaOpt);
-  double dFxidLamdaM = Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
+  double dFxidLambdaM = Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
       lambdaM, lambdaMin, lambdaOpt);
 
   // compute active nominal stress Pa, its integral in the boundaries lambdaMin to lambdaM,
   // and its derivative w.r.t. lambdaM
   intPa = Poptft * intFxi;
   Pa = Poptft * fxi;
-  derivPa = Poptft * dFxidLamdaM;
+  derivPa = Poptft * dFxidLambdaM;
 }
 
 void Mat::MuscleCombo::evaluate_activation_level(const double lambdaM, const double intPa,

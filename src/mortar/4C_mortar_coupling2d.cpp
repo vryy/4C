@@ -1086,7 +1086,7 @@ bool Mortar::Coupling2dManager::evaluate_coupling(
 void Mortar::Coupling2dManager::consistent_dual_shape()
 {
   // For standard shape functions no modification is necessary
-  // A switch erlier in the process improves computational efficiency
+  // A switch earlier in the process improves computational efficiency
   auto consistent =
       Teuchos::getIntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
   if (shape_fcn() == Inpar::Mortar::shape_standard || consistent == Inpar::Mortar::consistent_none)
@@ -1100,7 +1100,7 @@ void Mortar::Coupling2dManager::consistent_dual_shape()
 
   // not implemented for nurbs yet
   if (slave_element().shape() == Core::FE::CellType::nurbs3)
-    FOUR_C_THROW("Consistent dual shape functions not yet implmented for nurbs");
+    FOUR_C_THROW("Consistent dual shape functions not yet implemented for nurbs");
 
   // do nothing if there are no coupling pairs
   if (coupling().size() == 0) return;

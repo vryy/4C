@@ -234,7 +234,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::redistribute(Epetra_CrsGraph& nodegraph
   // let the base class do the basic redistribution and transfer of the base class members
   LevelSetAlgorithm::redistribute(nodegraph);
 
-  // now do all the ost specfic steps
+  // now do all the ost specific steps
   const Epetra_Map* newdofrowmap = discret_->dof_row_map();
   std::shared_ptr<Core::LinAlg::Vector<double>> old;
 

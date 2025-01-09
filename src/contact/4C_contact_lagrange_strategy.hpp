@@ -41,7 +41,7 @@ namespace CONTACT
     \param[in] alphaf Mid-point for Generalized-alpha time integration
     \param[in] maxdof Highest DOF number in global problem
     */
-    LagrangeStrategy(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    LagrangeStrategy(const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim,
         MPI_Comm comm, const double alphaf, const int maxdof);

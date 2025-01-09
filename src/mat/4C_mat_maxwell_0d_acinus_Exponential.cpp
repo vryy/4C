@@ -173,7 +173,7 @@ void Mat::Maxwell0dAcinusExponential::evaluate(Core::LinAlg::SerialDenseVector& 
   double kq_np = viscosity1() * viscosity2() / (stiffness2() * dt) + (viscosity2() + viscosity1());
   double kq_n = -viscosity1() * viscosity2() / (stiffness2() * dt);
 
-  // Get the terms assosciated with the nonlinear behavior of E1
+  // Get the terms associated with the nonlinear behavior of E1
   double term_nonlin = 0.0;
   double pnpi = 0.0;
   double pnpi2 = 0.0;

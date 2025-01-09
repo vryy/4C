@@ -81,7 +81,7 @@ namespace CONTACT
         const Core::LinAlg::SerialDenseMatrix& master_shape_deriv,
         const Core::LinAlg::Matrix<dim, 1>& master_normal,
         const std::vector<Core::Gen::Pairedvector<int, double>>& d_master_xi_dd,
-        bool& slave_is_electrode, ElementDataBundle<dim>& electrode_quantitites,
+        bool& slave_is_electrode, ElementDataBundle<dim>& electrode_quantities,
         ElementDataBundle<dim>& electrolyte_quantities);
 
     /*!

@@ -174,7 +174,7 @@ namespace PoroElast
     //! evaluate fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void evaluate_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> iterinc);
 
-    //! evaluate fields seperately at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+    //! evaluate fields separately at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void evaluate_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> s_iterinc,
         std::shared_ptr<const Core::LinAlg::Vector<double>> f_iterinc);
 
@@ -278,7 +278,7 @@ namespace PoroElast
     //!@{
 
     bool solveradapttol_;                           //!< adapt solver tolerance
-    double solveradaptolbetter_;                    //!< tolerance to which is adpated ????
+    double solveradaptolbetter_;                    //!< tolerance to which is adapted ????
     std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     //!@}
@@ -312,10 +312,10 @@ namespace PoroElast
 
     //!@}
 
-    //! dof row map (not splitted)
+    //! dof row map (not split)
     std::shared_ptr<Epetra_Map> fullmap_;
 
-    //! dof row map splitted in (field) blocks
+    //! dof row map split in (field) blocks
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! dirichlet map of monolithic system
@@ -336,7 +336,7 @@ namespace PoroElast
 
     //! @name poro-contact
 
-    //! apply current velocity of fluid  to ContactMangager if contact problem
+    //! apply current velocity of fluid  to ContactManager if contact problem
     void set_poro_contact_states();
 
     //! assemble relevant matrixes for porocontact and meshtying

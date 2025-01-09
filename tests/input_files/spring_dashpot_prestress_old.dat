@@ -30,9 +30,9 @@ INT_STRATEGY                    Old
 DYNAMICTYPE                      Statics
 PRESTRESS                       Mulf
 PRESTRESSTIME                   3.0001
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     1
 TIMESTEP                        0.1
 NUMSTEP                         70
 MAXTIME                         7

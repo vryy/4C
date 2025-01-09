@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Adapter::AlgorithmBase::AlgorithmBase(MPI_Comm comm, const Teuchos::ParameterList& timeparams)
-    : comm_(comm), printscreen_(Global::Problem::instance()->io_params().get<int>("STDOUTEVRY"))
+    : comm_(comm), printscreen_(Global::Problem::instance()->io_params().get<int>("STDOUTEVERY"))
 {
   step_ = 0;
   time_ = 0.;

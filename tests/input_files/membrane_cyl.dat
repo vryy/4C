@@ -6,8 +6,8 @@ DIM           3
 PROBLEMTYPE                      Structure
 -------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.1
 NUMSTEP                         10
 MAXTIME                         5

@@ -365,7 +365,7 @@ namespace Core::IO
      * overwritten
      * @param result (in) Data to be set
      * @param n_dim (in) Number of dimensions of the data, i.e., the
-     * number of entires in the result vector has to be a multiplicity of n_dim
+     * number of entries in the result vector has to be a multiplicity of n_dim
      */
     template <typename T>
     void set_point_data_vector(
@@ -381,7 +381,7 @@ namespace Core::IO
      * overwritten
      * @param result (in) Data to be set
      * @param n_dim (in) Number of dimensions of the data, i.e., the
-     * number of entires in the result vector has to be a multiplicity of n_dim
+     * number of entries in the result vector has to be a multiplicity of n_dim
      */
     template <typename T>
     void set_cell_data_vector(

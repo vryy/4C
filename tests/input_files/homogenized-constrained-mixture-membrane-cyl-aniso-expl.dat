@@ -5,8 +5,8 @@ PROBLEMTYPE                      Structure
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Old
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     2
-RESTARTEVRY                     2
+RESULTSEVERY                     2
+RESTARTEVERY                     2
 TIMESTEP                        10.0
 NUMSTEP                         4
 MAXTIME                         560000

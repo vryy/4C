@@ -1417,7 +1417,7 @@ namespace CONTACT
      *
      *  \note Splitting into close/non-close elements/nodes can be suppressed via the input file. If
      *  done so, then all elements/nodes are considered to be far nodes. The list of close
-     *  element/nodes is left emtpy.
+     *  element/nodes is left empty.
      *
      *  \param closeele (out)     (slave) interface element GIDs of the close set
      *  \param noncloseele (out)  (slave) interface element GIDs of the far set

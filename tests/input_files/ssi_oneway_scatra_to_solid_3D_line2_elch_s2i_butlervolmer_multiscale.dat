@@ -58,7 +58,7 @@ CYCLING_TIMESTEP                0.25e3
 NUMSTEP                         1000
 TIMESTEP                        1.0e3
 MAXTIME                         100000.0e3
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 COUPALGO                        ssi_OneWay_ScatraToSolid
 SCATRATIMINTTYPE                Elch
 ADAPTIVE_TIMESTEPPING           Yes

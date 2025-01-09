@@ -307,7 +307,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       std::vector<char> sblock;
       std::vector<char> rblock;
 
-      // create an exporter for point to point comunication
+      // create an exporter for point to point communication
       Core::Communication::Exporter exporter(discret_->get_comm());
 
       for (int np = 0; np < numprocs; ++np)
@@ -409,7 +409,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // by the knotvector size
     if (dim_ != 1)
     {
-      FOUR_C_THROW("For the nurbs stuff, we require that xz is the hom. plane\n");
+      FOUR_C_THROW("For the nurbs stuff, we require that xz is the home. plane\n");
     }
 
     // get nurbs dis' knotvector sizes
@@ -463,7 +463,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       std::vector<Core::LinAlg::SerialDenseVector> knots(3);
       (*((*nurbsdis).get_knot_vector())).get_ele_knots(knots, actele->id());
 
-      // aquire weights from nodes
+      // acquire weights from nodes
       Core::LinAlg::SerialDenseVector weights(numnp);
 
       for (int inode = 0; inode < numnp; ++inode)
@@ -1834,7 +1834,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
 
   // set parameter list
   eleparams.set("normal direction to homogeneous plane", dim_);
-  eleparams.set("coordinate vector for hom. planes", planecoordinates_);
+  eleparams.set("coordinate vector for home. planes", planecoordinates_);
 
   // in case of simultaneous assembly with inflow channel we have to decide on element level,
   // if this element is taken into account or not
@@ -2045,7 +2045,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_loma_integral_mean_values_in_planes(
 
   // set parameter list
   eleparams.set("normal direction to homogeneous plane", dim_);
-  eleparams.set("coordinate vector for hom. planes", planecoordinates_);
+  eleparams.set("coordinate vector for home. planes", planecoordinates_);
 
   // set size of vectors
   int size = sumu_->size();
@@ -2284,7 +2284,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_scatra_integral_mean_values_in_plane
 
   // set parameter list
   eleparams.set("normal direction to homogeneous plane", dim_);
-  eleparams.set("coordinate vector for hom. planes", planecoordinates_);
+  eleparams.set("coordinate vector for home. planes", planecoordinates_);
 
   // set size of vectors
   int size = sumu_->size();
@@ -5220,7 +5220,7 @@ void FLD::TurbulenceStatisticsCha::dump_scatra_statistics(const int step)
       s.append(".flow_statistics");
 
     log = std::make_shared<std::ofstream>(s.c_str(), std::ios::out);
-    (*log) << "# Statistics for turbulent passiv scalar transport in channel (first- and "
+    (*log) << "# Statistics for turbulent passive scalar transport in channel (first- and "
               "second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
@@ -5582,7 +5582,7 @@ void FLD::TurbulenceStatisticsCha::dump_scatra_statistics(const int step)
 
       log_mf = std::make_shared<std::ofstream>(s_mf.c_str(), std::ios::out);
 
-      (*log_mf) << "# Statistics for turbulent passiv scalar transport in channel (multifractal "
+      (*log_mf) << "# Statistics for turbulent passive scalar transport in channel (multifractal "
                    "subgrid-scales parameters)";
       (*log_mf) << "\n\n\n";
       (*log_mf) << "# Statistics record ";

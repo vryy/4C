@@ -59,8 +59,8 @@ STRUCT_STRESS                   cauchy
 ------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      OneStepTheta
-RESULTSEVRY                     1
-RESTARTEVRY                     0
+RESULTSEVERY                     1
+RESTARTEVERY                     0
 TIMESTEP                        0.1
 NUMSTEP                         10
 MAXTIME                         1.0

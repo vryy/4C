@@ -213,7 +213,7 @@ namespace Solid
       //! return reference to map containing the model evaluators
       std::map<enum Solid::ModelEvaluator::MultiphysicType,
           std::shared_ptr<Solid::ModelEvaluator::Generic>>&
-      get_model_evalutaor_map()
+      get_model_evaluator_map()
       {
         return me_map_;
       };

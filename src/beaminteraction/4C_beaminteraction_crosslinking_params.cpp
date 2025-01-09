@@ -48,7 +48,7 @@ void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // thermal energy
   kt_ = crosslinking_params_list.get<double>("KT");
 
-  // time step for stochastic events concering crosslinking
+  // time step for stochastic events concerning crosslinking
   deltatime_ = crosslinking_params_list.get<double>("TIMESTEP");
 
   init_box_.put_scalar(1.0e12);

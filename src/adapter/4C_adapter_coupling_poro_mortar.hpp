@@ -91,7 +91,7 @@ namespace Adapter
         std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements) override;
 
     /*!
-    \brief Add Mortar Elments
+    \brief Add Mortar Elements
 
     */
     void add_mortar_elements(std::shared_ptr<Core::FE::Discretization> masterdis,

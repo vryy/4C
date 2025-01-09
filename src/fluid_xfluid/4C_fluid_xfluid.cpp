@@ -1015,7 +1015,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
           {
             TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 2) interface");
 
-            // Regist the Processor of this side on the mesh coupling object if required
+            // Register the Processor of this side on the mesh coupling object if required
             for (std::map<int, std::vector<Cut::BoundaryCell*>>::iterator bit = bcells.begin();
                 bit != bcells.end(); ++bit)
             {
@@ -1128,7 +1128,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
                 // no coupling for pressure in stress based method, but the coupling matrices
                 // include entries for pressure coupling
-                couplingmatrices[0].shape(ndof_i, ndof);  // C_sf = C_uiu
+                couplingmatrices[0].shape(ndof_i, ndof);  // C_sf = C_you
                 couplingmatrices[1].shape(ndof, ndof_i);  // C_fs = C_uui
                 couplingmatrices[2].shape(ndof_i, 1);     // rhC_s = rhs_ui
               }  // IsCoupling
@@ -2106,7 +2106,8 @@ void FLD::XFluid::check_x_fluid_params() const
       !(Teuchos::getIntegralValue<Cut::NodalDofSetStrategy>(params_xfem, "NODAL_DOFSET_STRATEGY") ==
           Cut::NDS_Strategy_OneDofset_PerNodeAndPosition))
     FOUR_C_THROW(
-        "The option GHOST_PENALTY_ADD_INNER_FACES is only availabe if you use max 1 nodal dofset!");
+        "The option GHOST_PENALTY_ADD_INNER_FACES is only available if you use max 1 nodal "
+        "dofset!");
 
   return;
 }
@@ -3161,7 +3162,7 @@ void FLD::XFluid::time_update()
     // create the parameters for the discretization
     Teuchos::ParameterList eleparams;
 
-    // update time paramters
+    // update time parameters
     set_gamma(eleparams);
 
 
@@ -3318,7 +3319,7 @@ void FLD::XFluid::cut_and_set_state_vectors()
   //   convergence is not guaranteed at all!
   // TODO: what to do then?
 
-  bool increment_tranfer_success =
+  bool increment_transfer_success =
       x_timint_do_increment_step_transfer(screen_out, firstcall_in_timestep);
 
 
@@ -3328,7 +3329,7 @@ void FLD::XFluid::cut_and_set_state_vectors()
   //      set initial start vectors for new time step (steady-state predictor)
   //------------------------------------------------------------------------------------
 
-  if (!increment_tranfer_success)
+  if (!increment_transfer_success)
   {
     // velocity as start value for first Newton step
     state_->velnp_->Update(1.0, *state_->veln_, 0.0);  // use old velocity as start value
@@ -3520,7 +3521,7 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
   std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> oldRowStateVectors;
   std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> newRowStateVectors;
 
-  // reconstruction map for nodes and its dofsets - how do we have to reconstruct the sinlge dofs
+  // reconstruction map for nodes and its dofsets - how do we have to reconstruct the single dofs
   std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>> node_to_reconstr_method;
   std::map<Inpar::XFEM::XFluidTimeInt, std::map<int, std::set<int>>> reconstr_method_to_node;
   // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
@@ -3691,7 +3692,7 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
  | Transfer vectors at current time-step t^(n+1) w.r.t dofset and       |
  | interface position from last iteration i to vectors w.r.t            |
  | current dofset and interface position (i+1)                          |
- | return, if increment step tranfer was successful!       schott 08/14 |
+ | return, if increment step transfer was successful!       schott 08/14 |
  *----------------------------------------------------------------------*/
 bool FLD::XFluid::x_timint_do_increment_step_transfer(
     const bool screen_out, const bool firstcall_in_timestep)
@@ -3734,7 +3735,7 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
   std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> rowStateVectors_npi;
   std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> rowStateVectors_npip;
 
-  // reconstruction map for nodes and its dofsets - how do we have to reconstruct the sinlge dofs
+  // reconstruction map for nodes and its dofsets - how do we have to reconstruct the single dofs
   std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>> node_to_reconstr_method;
   std::map<Inpar::XFEM::XFluidTimeInt, std::map<int, std::set<int>>> reconstr_method_to_node;
 
@@ -4279,10 +4280,10 @@ void FLD::XFluid::x_timint_semi_lagrangean(
                              ///< in newRowStateVectors)
     std::shared_ptr<Core::LinAlg::Vector<double>>
         dispn,  ///< displacement initial col - vector timestep n
-                ///< //set to nullptr if no ale displacments
+                ///< //set to nullptr if no ale displacements
     std::shared_ptr<Core::LinAlg::Vector<double>>
         dispnp,                      ///< displacement initial col - vector timestep n+1
-                                     ///< //if nullptr ... --> no ale displacments
+                                     ///< //if nullptr ... --> no ale displacements
     const Epetra_Map* olddofcolmap,  ///< dofcolmap at time and interface position t^n
     std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>&
         node_to_reconstr_method,  ///< reconstruction map for nodes and its dofsets
@@ -4336,7 +4337,7 @@ void FLD::XFluid::x_timint_semi_lagrangean(
         state_->wizard(), dofset_Intn_, state_->dof_set(), oldColStateVectorsn, dispn, dispnp,
         *dofcolmap_Intn_, *newdofrowmap, nullptr);
 
-    // Safty check (both displacements have to exist or not --> based on that ale fluid is
+    // Safety check (both displacements have to exist or not --> based on that ale fluid is
     // activated)
     if ((dispn != nullptr and dispnp == nullptr) or (dispn == nullptr and dispnp != nullptr))
       FOUR_C_THROW("FLD::XFluid::x_timint_semi_lagrangean: dispn or dispnp indicate ale fluid!");
@@ -5120,7 +5121,8 @@ void FLD::XFluid::read_restart(int step)
     Core::IO::cout
         << "Warning: For Restart we Cut the configuration of the last time step with the final (in "
            "best case converged)"
-        << " solution, without restart the configuration used would be one newton step ealier! --> "
+        << " solution, without restart the configuration used would be one newton step earlier! "
+           "--> "
            "This might lead to problems if the solution is no "
         << " converged an therefore the dofset coming from restart and during simulation differ!"
         << Core::IO::endl;

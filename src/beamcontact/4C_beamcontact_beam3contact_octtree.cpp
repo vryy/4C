@@ -276,7 +276,7 @@ bool Beam3ContactOctTree::intersect_b_boxes_with(
   // retrieve octants in which the bounding box with ID thisBBoxID is located
   std::vector<std::vector<int>> octants;
   octants.clear();
-  // get the octants for two bounding boxe (element) GIDs adjacent to each given node LID
+  // get the octants for two bounding boxes (element) GIDs adjacent to each given node LID
   for (int i = 0; i < nodeLID.numRows(); i++)
     octants.push_back(
         in_which_octant_lies(searchdis_.l_col_node((int)nodeLID(i, 0))->elements()[0]->id()));

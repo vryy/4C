@@ -16,7 +16,7 @@ FLUID_WALL_SHEAR_STRESS         No
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
 PREFIX_GROUP_ID                 No
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_STRAIN                   gl
@@ -61,9 +61,9 @@ PREDICT                         ConstDis
 PRESTRESS                       None
 PRESTRESSTIME                   0.101
 PTCDT                           0.1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     1
+RESULTSEVERY                     1
 STC_LAYER                       1
 TIMESTEP                        0.1
 TOLCONSTR                       1e-08

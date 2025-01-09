@@ -1387,7 +1387,7 @@ namespace Core::FE
 
     This routine is mainly useful for input read on proc 0
 
-    \param target (in): desired distirbution of elements
+    \param target (in): desired distribution of elements
     \param gidlist (in): list of element gids to be distributed
 
     */
@@ -1399,7 +1399,7 @@ namespace Core::FE
 
     This routine is mainly useful for input read on proc 0
 
-    \param target (in): desired distirbution of elements
+    \param target (in): desired distribution of elements
 
     */
     void proc_zero_distribute_nodes_to_all(Epetra_Map& target);
@@ -1462,9 +1462,9 @@ namespace Core::FE
     The graph has a row map of NodeRowMap().<br>
     The graph is build from elements stored on each proc, nodes are
     not referenced.<br>
-    If a proc stores the appropiate ghosted elements the resulting graph
+    If a proc stores the appropriate ghosted elements the resulting graph
     will be the complete graph of the distributed discretization.<br>
-    If procs do not store appropiate ghosted elements, the resulting
+    If procs do not store appropriate ghosted elements, the resulting
     graph is decoupled or partially decoupled among procs.<br>
     This might also lead to an unsymmetric graph.
 
@@ -1646,7 +1646,7 @@ namespace Core::FE
     controlled by the params parameter.<br>
     Parameters that control element behavior are:<br>
     \code
-    params.set("action","<element_action>"); // <element_action> somthing that elements understand
+    params.set("action","<element_action>"); // <element_action> something that elements understand
     \endcode
     Other parameters eventually recognized by the elements:<br>
     \code
@@ -1657,7 +1657,7 @@ namespace Core::FE
 
     \param params (in): Parameter list past to the elements containing
                         commands and parameters for the elements and
-                        containing assembly intructions
+                        containing assembly instructions
     \param systemmatrix1 (out)   : Sparse matrix that may be filled by
                                    assembly of element contributions.
                                    May be nullptr on entry.
@@ -1716,7 +1716,7 @@ namespace Core::FE
 
       \param params (in): Parameter list past to the elements containing
                           commands and parameters for the elements and
-                          containing assembly intructions
+                          containing assembly instructions
       \param systemmatrix (out) : Sparse matrix that may be filled by
                                   assembly of element contributions.
                                   May not be nullptr.
@@ -1756,7 +1756,7 @@ namespace Core::FE
     This method considers all conditions in condition_ with the names
     "PointNeumann", LineNeumann", "SurfaceNeumann" and "VolumeNeumann".
     It takes a current time from the parameter list params named "total time"
-    and evaluates the appropiate time curves at that time for each
+    and evaluates the appropriate time curves at that time for each
     Neumann condition separately. If "total time" is not included
     in the parameters, no time curves are used.
     Parameters recognized by this method:
@@ -1779,7 +1779,7 @@ namespace Core::FE
     This method considers all conditions in condition_ with the names
     "PointDirichlet", "LineDirichlet", "SurfaceDirichlet" and "VolumeDirichlet".
     It takes a current time from the parameter list params named "total time"
-    and evaluates the appropiate time curves at that time for each
+    and evaluates the appropriate time curves at that time for each
     Dirichlet condition separately. If "total time" is not included
     in the parameters, no time curves are used.
 
@@ -1955,7 +1955,7 @@ namespace Core::FE
     /*!
     \brief Evaluate a specified initial field (scalar or vector field)
 
-    Loop all intial field conditions attached to the discretization and
+    Loop all initial field conditions attached to the discretization and
     evaluate them if their names match the user-provided string fieldstring.
     Information on which local DOFs ids are addressed by the condition
     MUST be pre-defined and is represented by the locids vector.
@@ -2023,7 +2023,7 @@ namespace Core::FE
     /*!
     \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
 
-    Assign nodes and elements their no. of degrees of freedom as aquired
+    Assign nodes and elements their no. of degrees of freedom as acquired
     by Element::NumDofPerNode and Element::num_dof_per_element.
     Number degrees of freedom (dofs) ascending according to global node numbers
     followed by global element numbers

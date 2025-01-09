@@ -69,14 +69,14 @@ namespace XFEM
       fullpres_ = pres;
     }
 
-    void initialize_struc_pres_map(const Epetra_Map& pfmap, const Epetra_Map& psmap)
+    void initialize_struct_pres_map(const Epetra_Map& pfmap, const Epetra_Map& psmap)
     {
       // We need to identify cutter dis dofs and pressure dofs on all processors for the whole
       // cutter_dis, as long as we don't have another ghosting strategy for the cutter_dis ...
 
       if (pfmap.NumMyElements() != psmap.NumMyElements())
         FOUR_C_THROW(
-            "initialize_struc_pres_map: (pfmap->NumGlobalElements() != "
+            "initialize_struct_pres_map: (pfmap->NumGlobalElements() != "
             "psmap->NumGlobalElements())!");
 
       std::shared_ptr<Epetra_Map> fullpfmap = Core::LinAlg::allreduce_e_map(pfmap);
@@ -84,7 +84,7 @@ namespace XFEM
 
       if (fullpfmap->NumMyElements() != fullpsmap->NumMyElements())
         FOUR_C_THROW(
-            "initialize_struc_pres_map: (fullpfmap->NumGlobalElements() != "
+            "initialize_struct_pres_map: (fullpfmap->NumGlobalElements() != "
             "fullpsmap->NumGlobalElements())!");
 
       for (int lid = 0; lid < fullpfmap->NumMyElements(); ++lid)
@@ -126,7 +126,7 @@ namespace XFEM
     // for assembly of fluid interface forces
     std::shared_ptr<Core::LinAlg::Vector<double>> i_forcecol() { return iforcecol_; }
 
-    //! Caluculate the Porosity for this FaceElement Gausspoint
+    //! Calculate the Porosity for this FaceElement Gausspoint
     double calc_porosity(
         Core::Elements::Element* ele, Core::LinAlg::Matrix<3, 1>& rst_slave, double& J);
 
@@ -219,7 +219,7 @@ namespace XFEM
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
-    //! Caluculate the Porosity for J,porosity pair on this FaceElement
+    //! Calculate the Porosity for J,porosity pair on this FaceElement
     double calctr_permeability(Core::Elements::Element* ele, double& porosity, double& J);
 
     //! Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint

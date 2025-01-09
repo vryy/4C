@@ -99,7 +99,7 @@ int Discret::Elements::RedAcinus::evaluate(Teuchos::ParameterList& params,
     }
     break;
     default:
-      FOUR_C_THROW("Unkown type of action for reduced dimensional acinuss");
+      FOUR_C_THROW("Unknown type of action for reduced dimensional acinuss");
   }  // end of switch(act)
 
   return 0;

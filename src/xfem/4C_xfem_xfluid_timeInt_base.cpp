@@ -42,7 +42,7 @@ XFEM::XfluidTimeintBase::XfluidTimeintBase(
     std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>
         oldVectors,  /// vector of col-vectors w.r.t. old interface position
     std::shared_ptr<Core::LinAlg::Vector<double>> dispn,   /// old col displacement vector
-    std::shared_ptr<Core::LinAlg::Vector<double>> dispnp,  /// col displacment n +1
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispnp,  /// col displacement n +1
     const Epetra_Map& olddofcolmap,  /// dofcolmap w.r.t. old interface position
     const Epetra_Map& newdofrowmap,  /// dofcolmap w.r.t. new interface position
     const std::shared_ptr<std::map<int, std::vector<int>>>
@@ -573,7 +573,7 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
     Core::LinAlg::Matrix<3, 3>& xji,             /// inverse of jacobian
     Core::LinAlg::Matrix<numnode, 1>& shapeFcn,  /// shape functions at point
     Core::LinAlg::Matrix<3, numnode>&
-        shapeFcnDerivXY,  /// derivatives of shape function w.r.t global coordiantes xyz
+        shapeFcnDerivXY,  /// derivatives of shape function w.r.t global coordinates xyz
     bool compute_deriv    /// shall derivatives and jacobian be computed
 ) const
 {
@@ -1017,7 +1017,7 @@ void XFEM::XfluidStd::compute(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidStd::element_search(
     Core::Elements::Element*& ele,   /// pointer to element if point lies in a found element
-    Core::LinAlg::Matrix<3, 1>& x,   /// global coordiantes of point
+    Core::LinAlg::Matrix<3, 1>& x,   /// global coordinates of point
     Core::LinAlg::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
     bool& found                      /// is element found?
 ) const
@@ -3009,12 +3009,12 @@ bool XFEM::XfluidStd::project_on_line(
 
     double line_length = line_dir.norm2();  // || (x2-x1) ||
 
-    if (line_length < 1e-12) FOUR_C_THROW("line has lenght smaller than 1e-12");
+    if (line_length < 1e-12) FOUR_C_THROW("line has length smaller than 1e-12");
 
     // 2.0/|| (x2-x1) ||^2 * < x-0.5(x1+x2),x2-x1 >
     xi_line = 2.0 / (line_length * line_length) * line_dir.dot(dir_tmp);
 
-    // check if projection within line segement between x1 and x2
+    // check if projection within line segment between x1 and x2
     Core::LinAlg::Matrix<3, 1> xsi(true);
     xsi(0) = xi_line;
     xsi(1) = 0;

@@ -87,7 +87,7 @@ namespace Cut
     floattype_none
   };
 
-  //! Specifiy which Referenceplanes are used in DirectDivergence
+  //! Specify which Referenceplanes are used in DirectDivergence
   enum CutDirectDivergenceRefplane
   {
     DirDiv_refplane_all,            ///< use all strategies for Referenceplane

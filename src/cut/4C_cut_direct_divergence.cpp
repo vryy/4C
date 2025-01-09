@@ -167,7 +167,7 @@ void Cut::DirectDivergence::list_facets(std::vector<plain_facet_set::const_itera
     const int index = std::distance(facete.begin(), i);
     eqnAllFacets[index] = RefPlaneTemp;
 
-    // consider only facet whose x-direction normal componenet is non-zero
+    // consider only facet whose x-direction normal component is non-zero
     if (fabs(RefPlaneTemp[0]) > TOL_EQN_PLANE)  // This could give issues with non-planar facets?
     {
       TEUCHOS_FUNC_TIME_MONITOR("Cut::DirectDivergence::list_facets-tmp1");
@@ -194,7 +194,7 @@ void Cut::DirectDivergence::list_facets(std::vector<plain_facet_set::const_itera
         continue;
       }
       // as far as possible, take cut side as reference
-      // because it it possible to delet one or more from facetList
+      // because it it possible to delete one or more from facetList
       if (RefOnCutSide == false && fe->OnCutSide() && fabs(RefPlaneTemp[0]) > REF_PLANE_DIRDIV)
       {
         bool addRef = false;
@@ -237,7 +237,7 @@ void Cut::DirectDivergence::list_facets(std::vector<plain_facet_set::const_itera
         }
       }
 #endif
-      facetIterator.push_back(i);  // if not a referece side, push this to facet consideration
+      facetIterator.push_back(i);  // if not a reference side, push this to facet consideration
     }
   }
 

@@ -15,8 +15,8 @@ STRUCT_DISP                           Yes
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                         1
 DYNAMICTYPE                            Statics
-RESULTSEVRY                           1
-RESTARTEVRY                           1
+RESULTSEVERY                           1
+RESTARTEVERY                           1
 NLNSOL                                fullnewton
 TIMESTEP                              1
 NUMSTEP                               1

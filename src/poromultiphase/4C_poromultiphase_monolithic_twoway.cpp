@@ -545,7 +545,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::apply_str_coupl_matrix(
     std::shared_ptr<Core::Elements::ParamsMinimal> params =
         std::make_shared<Core::Elements::ParamsMinimal>();
 
-    // set parameters needed for element evalutation
+    // set parameters needed for element evaluation
     params->set_action_type(Core::Elements::struct_poro_calc_fluidcoupling);
     params->set_total_time(time());
     params->set_delta_time(dt());
@@ -994,7 +994,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_field_vectors(
   fx = extractor()->extract_vector(*x, 1);
 }
 /*----------------------------------------------------------------------*
- | extract 3D field vecotrs (structure and fluid)    kremheller 10/20   |
+ | extract 3D field vectors (structure and fluid)    kremheller 10/20   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_structure_and_fluid_vectors(
     std::shared_ptr<const Core::LinAlg::Vector<double>> x,
@@ -1125,7 +1125,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
         //           << std::endl;
 
         // std::cout << "value(" << zeilennr << "," << spaltenr << "): " << value << std::endl;
-        std::cout << "\n******************" << zeilennr + 1 << ". Zeile Ende!!***************"
+        std::cout << "\n******************" << zeilennr + 1 << ". Zeile End!!***************"
                   << std::endl;
       }
     }
@@ -1137,7 +1137,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
     if (i != dofs - 1) iterinc->ReplaceGlobalValue(i + 1, 0, delta);
 
     if (i == spaltenr)
-      std::cout << "\n******************" << spaltenr + 1 << ". Spalte Ende!!***************"
+      std::cout << "\n******************" << spaltenr + 1 << ". Spalte End!!***************"
                 << std::endl;
   }
 

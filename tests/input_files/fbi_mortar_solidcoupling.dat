@@ -22,8 +22,8 @@ MORTAR_SHAPE_FUNCTION                  line3
 MAXTIME                               0.05
 TIMESTEP                              0.01
 NUMSTEP                               2
-RESULTSEVRY                           1
-RESTARTEVRY                           1
+RESULTSEVERY                           1
+RESTARTEVERY                           1
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                               1.0E-08
 ITEMAX                                50

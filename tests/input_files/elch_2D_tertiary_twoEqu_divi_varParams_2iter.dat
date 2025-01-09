@@ -12,12 +12,12 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MAXTIME                         10
 NUMSTEP                         25
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 THETA                           0.66
 TIMEINTEGR                      Gen_Alpha
 TIMESTEP                        0.01
 VELOCITYFIELD                   zero
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 MATID                           1
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10

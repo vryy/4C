@@ -23,11 +23,11 @@ LINEAR_SOLVER                   1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 ---------------------------------------------POROMULTIPHASE DYNAMIC
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 NUMSTEP                         5
 MAXTIME                         2.0
 TIMESTEP                        0.1
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 ITEMAX                          10
 COUPALGO                        twoway_monolithic
 ----------------------------------POROMULTIPHASE DYNAMIC/MONOLITHIC

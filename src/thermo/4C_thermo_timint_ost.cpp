@@ -249,7 +249,7 @@ double Thermo::TimIntOneStepTheta::calc_ref_norm_force()
  *----------------------------------------------------------------------*/
 void Thermo::TimIntOneStepTheta::update_iter_incrementally()
 {
-  // Auxiliar vector holding new temperature rates
+  // Auxiliary vector holding new temperature rates
   // by extrapolation/scheme on __all__ DOFs. This includes
   // the Dirichlet DOFs as well. Thus we need to protect those
   // DOFs of overwriting; they already hold the

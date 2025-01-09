@@ -31,9 +31,9 @@ NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         20
 PREDICT                         ConstDis
-RESEVRYERGY                     0
-RESTARTEVRY                     15
-RESULTSEVRY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     15
+RESULTSEVERY                     1
 STC_LAYER                       1
 STC_SCALING                     no
 TIMESTEP                        0.01

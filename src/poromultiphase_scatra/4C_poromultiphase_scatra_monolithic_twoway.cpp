@@ -472,7 +472,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
   apply_poro_fluid_scatra_coupl_matrix(k_pfs);
 
   // apply DBC's also on off-diagonal fluid-scatra coupling block (main-diagonal blocks have already
-  // been set, either in poromultielast_monolithic.cpp or in the respective evalute calls)
+  // been set, either in poromultielast_monolithic.cpp or in the respective evaluate calls)
   k_pfs->apply_dirichlet(*poro_field()->fluid_field()->get_dbc_map_extractor()->cond_map(), false);
 
   // uncomplete matrix block (appears to be required in certain cases)
@@ -495,7 +495,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
   apply_scatra_struct_coupl_matrix(k_sps);
 
   // apply DBC's also on off-diagonal scatra-structure coupling block (main-diagonal blocks have
-  // already been set, either in poromultielast_monolithic.cpp or in the respective evalute calls)
+  // already been set, either in poromultielast_monolithic.cpp or in the respective evaluate calls)
   k_sps->apply_dirichlet(*scatra_algo()->scatra_field()->dirich_maps()->cond_map(), false);
 
   // create empty matrix
@@ -505,7 +505,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system_ma
   apply_scatra_poro_fluid_coupl_matrix(k_spf);
 
   // apply DBC's also on off-diagonal scatra-fluid coupling block (main-diagonal blocks have already
-  // been set, either in poromultielast_monolithic.cpp or in the respective evalute calls)
+  // been set, either in poromultielast_monolithic.cpp or in the respective evaluate calls)
   k_spf->apply_dirichlet(*scatra_algo()->scatra_field()->dirich_maps()->cond_map(), false);
 
   // uncomplete matrix block (appears to be required in certain cases (locsys+iterative solver))
@@ -1157,7 +1157,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_multi_phas
         //          << std::endl;
 
         // std::cout << "value(" << zeilennr << "," << spaltenr << "): " << value << std::endl;
-        std::cout << "\n******************" << zeilennr + 1 << ". Zeile Ende!!***************"
+        std::cout << "\n******************" << zeilennr + 1 << ". Zeile End!!***************"
                   << std::endl;
       }
     }
@@ -1169,7 +1169,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_multi_phas
     if (i != dofs - 1) iterinc->ReplaceGlobalValue(i + 1, 0, delta);
 
     if (i == spaltenr)
-      std::cout << "\n******************" << spaltenr + 1 << ". Spalte Ende!!***************"
+      std::cout << "\n******************" << spaltenr + 1 << ". Spalte End!!***************"
                 << std::endl;
   }
 
@@ -1499,7 +1499,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
     apply_artery_scatra_artery_coupl_matrix(k_asa);
 
     // apply DBC's also on off-diagonal scatra-fluid coupling block (main-diagonal blocks have
-    // already been set, either in poromultielast_monolithic.cpp or in the respective evalute calls)
+    // already been set, either in poromultielast_monolithic.cpp or in the respective evaluate
+    // calls)
     k_asa->apply_dirichlet(*scatramsht_->art_scatra_field()->dirich_maps()->cond_map(), false);
 
     // arteryscatra-scatra part

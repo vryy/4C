@@ -132,7 +132,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
   base_class::setup(discret, face_elements);
 
   // We need to get a UID for the surface element. If the surface is a face element (at the moment
-  // the only suported case), we simply take the GID of the parent element.
+  // the only supported case), we simply take the GID of the parent element.
   const auto face_element =
       std::dynamic_pointer_cast<const Core::Elements::FaceElement>(this->core_element_);
   if (face_element == nullptr)

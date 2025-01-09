@@ -89,17 +89,17 @@ namespace Mat
       void add_coefficients_visco_modified(
           const Core::LinAlg::Matrix<3, 1>&
               modinv,                         ///< modified invariants of right Cauchy-Green tensor
-          Core::LinAlg::Matrix<8, 1>& modmu,  ///< necassary coefficients for piola-kirchhoff-stress
-          Core::LinAlg::Matrix<33, 1>& modxi,  ///< necassary coefficients for viscosity tensor
+          Core::LinAlg::Matrix<8, 1>& modmu,  ///< necessary coefficients for piola-kirchhoff-stress
+          Core::LinAlg::Matrix<33, 1>& modxi,  ///< necessary coefficients for viscosity tensor
           Core::LinAlg::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, int gp,
           int eleGID) override;
 
       /// Indicator for formulation
       void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
-          bool& isomod,       ///< global indicator for isotropic splitted formulation
+          bool& isomod,       ///< global indicator for isotropic split formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
-          bool& anisomod,     ///< global indicator for anisotropic splitted formulation
+          bool& anisomod,     ///< global indicator for anisotropic split formulation
           bool& viscogeneral  ///< general indicator, if one viscoelastic formulation is used
           ) override
       {
@@ -110,7 +110,7 @@ namespace Mat
 
       /// Indicator for the chosen viscoelastic formulations
       void specify_visco_formulation(
-          bool& isovisco,     ///< global indicator for isotropic, splitted and viscous formulation
+          bool& isovisco,     ///< global indicator for isotropic, split and viscous formulation
           bool& viscogenmax,  ///< global indicator for viscous contribution according the SLS-Model
           bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution
                                          ///< according to the generalized Maxwell Model

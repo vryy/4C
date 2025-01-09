@@ -117,7 +117,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::struct_o
   }
 
   structure_field()->solve();
-  structure_field()->write_gmsh_struc_output_step();
+  structure_field()->write_gmsh_struct_output_step();
 
   if (fbi.get<int>("STARTSTEP") < step())
   {
@@ -199,7 +199,7 @@ void FSI::DirichletNeumannVel::timeloop(
           Core::IO::visualization_parameters_factory(
               Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
               *Global::Problem::instance()->output_control_file(), time()),
-          constraint_manager_->get_bridge()->get_params()->get_visualization_ouput_params_ptr());
+          constraint_manager_->get_bridge()->get_params()->get_visualization_output_params_ptr());
   constraint_manager_->evaluate();
   if (get_kinematic_coupling()) struct_to_fluid(nullptr);
 

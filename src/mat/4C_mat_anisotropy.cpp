@@ -162,7 +162,7 @@ void Mat::Anisotropy::set_gauss_point_fibers(
         fibers.size());
   }
 
-  // Check whether every second vector have the same lenghts
+  // Check whether every second vector have the same lengths
   unsigned num_fibs = 1;
   unsigned i = 0;
   for (const auto& gpfibers : fibers)
@@ -175,7 +175,7 @@ void Mat::Anisotropy::set_gauss_point_fibers(
     {
       FOUR_C_THROW(
           "The size of the Gauss point do not match! At every Gauss point, the same amount of "
-          "fibers are necessary. Error occured at Gauss point %d. Expected %d fibers, but got %d.",
+          "fibers are necessary. Error occurred at Gauss point %d. Expected %d fibers, but got %d.",
           i, num_fibs, gpfibers.size());
     }
   }

@@ -1075,10 +1075,10 @@ void Discret::Elements::TemperImpl<distype>::linear_disp_contribution(
     std::cout << "kappa = " << kappa << std::endl;
     std::cout << "strainvel = " << strainvel << std::endl;
     // critical parameter for reactive dominated problem
-    double K_thr = sigma / (kappa * (h * h));
-    std::cout << "K_thr abs = " << abs(K_thr) << std::endl;
-    if (abs(K_thr) > 1.0)
-      std::cout << "stability problems can occur: abs(K_thr) = " << abs(K_thr) << std::endl;
+    double K_thermo = sigma / (kappa * (h * h));
+    std::cout << "K_thermo abs = " << abs(K_thermo) << std::endl;
+    if (abs(K_thermo) > 1.0)
+      std::cout << "stability problems can occur: abs(K_thermo) = " << abs(K_thermo) << std::endl;
     // -------------------------------------- end reactive term check
 #endif  // CALCSTABILOFREACTTERM
 
@@ -1101,7 +1101,7 @@ void Discret::Elements::TemperImpl<distype>::linear_disp_contribution(
         std::cout << "CouplFint\n" << std::endl;
         std::cout << "ele Id= " << ele->Id() << std::endl;
         std::cout << "boplin\n" << boplin << std::endl;
-        std::cout << "etemp_ Ende linear_disp_contribution\n" << etempn_ << std::endl;
+        std::cout << "etemp_ End linear_disp_contribution\n" << etempn_ << std::endl;
         std::cout << "ctemp_\n" << ctemp << std::endl;
         std::cout << "ncBv\n" << ncBv << std::endl;
       }
@@ -1220,7 +1220,7 @@ void Discret::Elements::TemperImpl<distype>::linear_coupled_tang(
     case Inpar::Thermo::dyna_undefined:
     default:
     {
-      FOUR_C_THROW("Add correct temporal coefficent here!");
+      FOUR_C_THROW("Add correct temporal coefficient here!");
       break;
     }
   }  // end of switch(timint)
@@ -1278,7 +1278,7 @@ void Discret::Elements::TemperImpl<distype>::linear_coupled_tang(
       std::cout << "Coupl Cond\n" << std::endl;
       std::cout << "ele Id= " << ele->Id() << std::endl;
       std::cout << "boplin \n" << boplin << std::endl;
-      std::cout << "etemp_ Ende linear_coupled_tang\n" << etempn_ << std::endl;
+      std::cout << "etemp_ End linear_coupled_tang\n" << etempn_ << std::endl;
       std::cout << "ctemp_\n" << ctemp << std::endl;
       std::cout << "NNTC\n" << NNTC << std::endl;
     }
@@ -1558,7 +1558,7 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
     }  // (econd != nullptr)
 
     // --------------------------------------- capacity matrix m_capa
-    // capacity matrix is idependent of deformation
+    // capacity matrix is independent of deformation
     // m_capa corresponds to the mass matrix of the structural field
     if (ecapa != nullptr)
     {
@@ -1664,7 +1664,7 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_coupled_tang(
     case Inpar::Thermo::dyna_undefined:
     default:
     {
-      FOUR_C_THROW("Add correct temporal coefficent here!");
+      FOUR_C_THROW("Add correct temporal coefficient here!");
       break;
     }
   }  // end of switch(timint)
@@ -2099,7 +2099,7 @@ void Discret::Elements::TemperImpl<distype>::linear_dissipation_fint(
     {
       std::cout << "CouplDissipationFint\n" << std::endl;
       std::cout << "boplin\n" << boplin << std::endl;
-      std::cout << "etemp_ Ende InternalDiss\n" << etempn_ << std::endl;
+      std::cout << "etemp_ End InternalDiss\n" << etempn_ << std::endl;
     }
 #endif  // TSIMONOLITHASOUTPUT
 
@@ -2166,7 +2166,7 @@ void Discret::Elements::TemperImpl<distype>::linear_dissipation_coupled_tang(
     case Inpar::Thermo::dyna_undefined:
     default:
     {
-      FOUR_C_THROW("Add correct temporal coefficent here!");
+      FOUR_C_THROW("Add correct temporal coefficient here!");
       break;
     }
   }  // end of switch(timint)
@@ -2344,7 +2344,7 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_dissipation_fint_tang(
 
     if (econd != nullptr)
     {
-      // Contribution of dissipation to cond matirx
+      // Contribution of dissipation to cond matrix
       // econd += - N_T^T . dDmech_dT/Dt . N_T
       econd->multiply_nt(
           (-fac_ * thermoplhyperelast->mech_diss_k_tt(iquad) / stepsize), funct_, funct_, 1.0);
@@ -2355,7 +2355,7 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_dissipation_fint_tang(
     {
       std::cout << "CouplFint\n" << std::endl;
       std::cout << "boplin\n" << boplin << std::endl;
-      std::cout << "etemp_ Ende InternalDiss\n" << etempn_ << std::endl;
+      std::cout << "etemp_ End InternalDiss\n" << etempn_ << std::endl;
     }
 
     // output of mechanical dissipation to fint
@@ -2444,7 +2444,7 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_dissipation_coupled_tang(
     case Inpar::Thermo::dyna_undefined:
     default:
     {
-      FOUR_C_THROW("Add correct temporal coefficent here!");
+      FOUR_C_THROW("Add correct temporal coefficient here!");
       break;
     }
   }  // end of switch(timint)
@@ -3024,7 +3024,7 @@ double Discret::Elements::TemperImpl<distype>::calculate_char_ele_length() const
 
   // as shown in calc_char_ele_length() in ScaTraImpl
   // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
-  // cast dimension to a double varible -> pow()
+  // cast dimension to a double variable -> pow()
 
   // get characteristic element length as cubic root of element volume
   // (2D: square root of element area, 1D: element length)
@@ -3517,7 +3517,7 @@ void Discret::Elements::TemperImpl<distype>::fd_check_capalin(
 #endif
 
 
-  // no scaling with time step size, since it occurrs in all terms
+  // no scaling with time step size, since it occurs in all terms
 
   // tangent only of capacity terms!
   Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapatang(false);
@@ -3703,10 +3703,10 @@ void Discret::Elements::TemperImpl<distype>::calculate_reactive_term(
   std::cout << "kappa = " << kappa << std::endl;
   std::cout << "strainvel = " << strainvel << std::endl;
   // critical parameter for reactive dominated problem
-  double K_thr = sigma / (kappa * (h * h));
-  std::cout << "K_thr abs = " << abs(K_thr) << std::endl;
-  if (abs(K_thr) > 1.0)
-    std::cout << "stability problems can occur: abs(K_thr) = " << abs(K_thr) << std::endl;
+  double K_thermo = sigma / (kappa * (h * h));
+  std::cout << "K_thermo abs = " << abs(K_thermo) << std::endl;
+  if (abs(K_thermo) > 1.0)
+    std::cout << "stability problems can occur: abs(K_thermo) = " << abs(K_thermo) << std::endl;
   // -------------------------------------- end reactive term check
 }
 #endif  // CALCSTABILOFREACTTERM

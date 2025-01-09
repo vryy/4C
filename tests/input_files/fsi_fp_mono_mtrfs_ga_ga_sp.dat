@@ -33,11 +33,11 @@ TIMEINTEGR                      Np_Gen_Alpha
 COUPALGO                        iter_mortar_monolithicfluidsplit_saddlepoint
 MAXTIME                         1.0
 NUMSTEP                         10
-RESTARTEVRY                     2
+RESTARTEVERY                     2
 SECONDORDER                     no
 SLIDEALEPROJ                    None
 TIMESTEP                        0.1
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06

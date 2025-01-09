@@ -88,7 +88,7 @@ bool Mortar::Coupling3d::evaluate_coupling()
 
   // within polygon clipping we may have performed a second rough check
   // if the two elements are really "near" (NOTE: this has only been done
-  // if problems occured within polygon clipping, i.e. the projected master
+  // if problems occurred within polygon clipping, i.e. the projected master
   // element being non-convex. In the standard case, bool clip is simply true)
   // --> this way, robustness of coupling is further increased!
   if (!do_clip) return false;
@@ -114,9 +114,9 @@ bool Mortar::Coupling3d::evaluate_coupling()
  *----------------------------------------------------------------------*/
 bool Mortar::Coupling3d::rough_check_centers()
 {
-  const double sme = slave_int_element().max_edge_size();
+  const double some = slave_int_element().max_edge_size();
   const double mme = master_int_element().max_edge_size();
-  const double near = 2.0 * std::max(sme, mme);
+  const double near = 2.0 * std::max(some, mme);
 
   double loccs[2] = {0.0, 0.0};
   Core::FE::CellType dts = slave_int_element().shape();
@@ -159,9 +159,9 @@ bool Mortar::Coupling3d::rough_check_nodes()
 
   // prepare check
   bool near = false;
-  const double sme = slave_int_element().max_edge_size();
+  const double some = slave_int_element().max_edge_size();
   const double mme = master_int_element().max_edge_size();
-  const double limit = 0.3 * std::max(sme, mme);
+  const double limit = 0.3 * std::max(some, mme);
 
   for (int i = 0; i < nnodes; ++i)
   {
@@ -405,7 +405,7 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
   if ((int)poly1.size() < 3 || (int)poly2.size() < 3)
     FOUR_C_THROW("Input Polygons must consist of min. 3 vertices each");
 
-  // check for rotation of polygon1 (slave) and polgon 2 (master)
+  // check for rotation of polygon1 (slave) and polygon 2 (master)
   // note that we implicitly already rely on convexity here!
   // first get geometric centers of polygon1 and polygon2
   std::array<double, 3> center1 = {0.0, 0.0, 0.0};
@@ -543,12 +543,12 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
   // print final input polygons to screen
   if (out)
   {
-    std::cout << "\nInput Poylgon 1:";
+    std::cout << "\nInput Polygon 1:";
     for (int i = 0; i < (int)poly1.size(); ++i)
       std::cout << "\nVertex " << i << ":\t" << std::scientific << poly1[i].coord()[0] << "\t"
                 << poly1[i].coord()[1] << "\t" << poly1[i].coord()[2];
 
-    std::cout << "\nInput Poylgon 2:";
+    std::cout << "\nInput Polygon 2:";
     for (int i = 0; i < (int)poly2.size(); ++i)
       std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].coord()[0] << "\t"
                 << poly2[i].coord()[1] << "\t" << poly2[i].coord()[2];
@@ -1323,7 +1323,7 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     if (out)
     {
       // print final input polygons to screen
-      std::cout << "\nResult Poylgon:";
+      std::cout << "\nResult Polygon:";
       for (int i = 0; i < (int)respoly.size(); ++i)
         std::cout << "\nVertex " << i << ":\t" << respoly[i].coord()[0] << "\t"
                   << respoly[i].coord()[1] << "\t" << respoly[i].coord()[2];
@@ -1511,7 +1511,7 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
   if ((int)poly1.size() < 3 || (int)poly2.size() < 3)
     FOUR_C_THROW("Input Polygons must consist of min. 3 vertices each");
 
-  // check for rotation of polygon1 (slave) and polgon 2 (master)
+  // check for rotation of polygon1 (slave) and polygon 2 (master)
   // note that we implicitly already rely on convexity here!
   // first get geometric centers of polygon1 and polygon2
   std::array<double, 3> center1 = {0.0, 0.0, 0.0};
@@ -1823,12 +1823,12 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
   // print final input polygons to screen
   if (out)
   {
-    std::cout << "\nInput Poylgon 1:";
+    std::cout << "\nInput Polygon 1:";
     for (int i = 0; i < (int)poly1.size(); ++i)
       std::cout << "\nVertex " << i << ":\t" << std::scientific << poly1[i].coord()[0] << "\t"
                 << poly1[i].coord()[1] << "\t" << poly1[i].coord()[2];
 
-    std::cout << "\nInput Poylgon 2:";
+    std::cout << "\nInput Polygon 2:";
     for (int i = 0; i < (int)poly2.size(); ++i)
       std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].coord()[0] << "\t"
                 << poly2[i].coord()[1] << "\t" << poly2[i].coord()[2];
@@ -4199,7 +4199,7 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
 void Mortar::Coupling3dManager::consist_dual_shape()
 {
   // For standard shape functions no modification is necessary
-  // A switch erlier in the process improves computational efficiency
+  // A switch earlier in the process improves computational efficiency
   if (shape_fcn() == Inpar::Mortar::shape_standard ||
       lmdualconsistent_ == Inpar::Mortar::consistent_none)
     return;

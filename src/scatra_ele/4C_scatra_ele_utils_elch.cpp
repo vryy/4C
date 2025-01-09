@@ -326,7 +326,7 @@ void Discret::Elements::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
     // linear law:  i_n = frt*i_0*((alphaa+alpha_c)*(V_M - phi)) -> changed 10/13
     // previously implemented: i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
     //                         -> linearization in respect to anodic branch!!
-    //                         this is not the classical verion of a linear electrode kinetics law
+    //                         this is not the classical version of a linear electrode kinetics law
     case Inpar::ElCh::linear:
     {
       // read model-specific parameter
@@ -432,7 +432,7 @@ void Discret::Elements::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
 
       for (int ii = 0; ii < numscal_; ii++)
       {
-        // according to the convention: anodic reactant is positiv
+        // according to the convention: anodic reactant is positive
         if (stoich[ii] > 0)
         {
           q[ii] = 0;
@@ -459,9 +459,9 @@ void Discret::Elements::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
       double pow_conint_p(1.0);  // product over i (c_i)^(p_i)
       double pow_conint_q(1.0);  // product over i (c_i)^(q_i)
       std::vector<double> pow_conint_p_derivative(
-          numscal_, 1.0);  // pow_conint_p derivated after conint[nspec]
+          numscal_, 1.0);  // pow_conint_p derived after conint[nspec]
       std::vector<double> pow_conint_q_derivative(
-          numscal_, 1.0);  // pow_conint_q derivated after conint[nspec]
+          numscal_, 1.0);  // pow_conint_q derived after conint[nspec]
 
       // concentration term (product of cathodic and anodic species)
       for (int kk = 0; kk < numscal_; ++kk)
@@ -578,7 +578,7 @@ void Discret::Elements::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
       // overpotential based on equilibrium potential
       const double eta_equilpot = epd - equilpot;
 
-      // negative sign: we look at electon flow
+      // negative sign: we look at electron flow
       const double i0 = k0 * pow(c_c0, 1 - beta) * pow(c_a0, beta) * nume * faraday;
 
       // reactant or product not a species in the electrolyte
@@ -998,7 +998,7 @@ void Discret::Elements::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
 
       for (int kk = 0; kk < numscal_; kk++)
       {
-        // according to the convention: anodic reactant is positiv
+        // according to the convention: anodic reactant is positive
         if (stoich[kk] > 0)
         {
           q[kk] = 0;

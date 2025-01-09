@@ -28,7 +28,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  None
 THERM_TEMPGRAD                  None
 FILESTEPS                       1000
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
@@ -53,8 +53,8 @@ CALCERROR                       no
 INFNORMSCALING                  no
 GMSH_OUTPUT                     Yes
 COMPUTE_DIVU                    No
-RESULTSEVRY                           1
-RESTARTEVRY                     20
+RESULTSEVERY                           1
+RESTARTEVERY                     20
 NUMSTEP                         1
 STEADYSTEP                      -1
 NUMSTASTEPS                     0

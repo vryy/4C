@@ -56,7 +56,7 @@ namespace FLD
     // the vector planes contains the coordinates of the homogeneous planes (in
     // wall normal direction)
     std::shared_ptr<std::vector<double>> planes =
-        params.get<std::shared_ptr<std::vector<double>>>("coordinate vector for hom. planes");
+        params.get<std::shared_ptr<std::vector<double>>>("coordinate vector for home. planes");
 
     // get the pointers to the solution vectors
     std::shared_ptr<std::vector<double>> sumarea =
@@ -465,7 +465,7 @@ namespace FLD
     // the vector planes contains the coordinates of the homogeneous planes (in
     // wall normal direction)
     std::shared_ptr<std::vector<double>> planes =
-        params.get<std::shared_ptr<std::vector<double>>>("coordinate vector for hom. planes");
+        params.get<std::shared_ptr<std::vector<double>>>("coordinate vector for home. planes");
 
     // get the pointers to the solution vectors
     std::shared_ptr<std::vector<double>> sumarea =
@@ -2211,7 +2211,7 @@ namespace FLD
         }
         case Inpar::FLUID::cube_edge:
         {
-          // c) qubic element length
+          // c) cubic element length
           hk = std::pow(vol, (1.0 / (double(nsd))));
           break;
         }
@@ -3040,7 +3040,7 @@ namespace FLD
 
 
   //-----------------------------------------------------------------------
-  // free-suface flows
+  // free-surface flows
   //-----------------------------------------------------------------------
 
 

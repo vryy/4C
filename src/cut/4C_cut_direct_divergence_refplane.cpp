@@ -84,7 +84,7 @@ std::vector<double> Cut::DirectDivergenceGlobalRefplane::get_reference_plane()
       // We couldn't find a reference plane where gauss points from the whole element are inside.
       // But anyway this is not required, since we are just integrating a vc here --> therefore
       // project all points from the vc to check if it is a good reference plane --> this is more
-      // expensive depending on the number of points describing the vc but will just be neccesary in
+      // expensive depending on the number of points describing the vc but will just be necessary in
       // some cases ...
       points.clear();
       for (plain_facet_set::const_iterator fit = volcell_->facets().begin();
@@ -250,7 +250,7 @@ bool Cut::DirectDivergenceGlobalRefplane::facet_based_ref(
   }
 
   //---
-  // Basically using a diagonal reference plane should be enought, otherwise we have to look into
+  // Basically using a diagonal reference plane should be enough, otherwise we have to look into
   // that again!
   return found_refplane;
 }
@@ -343,7 +343,7 @@ bool Cut::DirectDivergenceGlobalRefplane::side_based_ref(
   }
 
   //---
-  // Basically using a diagonal reference plane should be enought, otherwise we have to look into
+  // Basically using a diagonal reference plane should be enough, otherwise we have to look into
   // that again!
   return found_refplane;
 }

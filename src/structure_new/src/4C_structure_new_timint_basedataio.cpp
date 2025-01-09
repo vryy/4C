@@ -80,21 +80,21 @@ void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
   // ---------------------------------------------------------------------------
   {
     output_ = output;
-    printscreen_ = ioparams.get<int>("STDOUTEVRY");
+    printscreen_ = ioparams.get<int>("STDOUTEVERY");
     printlogo_ = printscreen_ > 0;
     gmsh_out_ = ioparams.get<bool>("OUTPUT_GMSH");
     printiter_ = true;
     p_io_every_iteration_ =
         std::make_shared<Teuchos::ParameterList>(ioparams.sublist("EVERY ITERATION"));
     outputeveryiter_ = p_io_every_iteration_->get<bool>("OUTPUT_EVERY_ITER");
-    writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
+    writerestartevery_ = sdynparams.get<int>("RESTARTEVERY");
     writetimestepoffset_ = sdynparams.get<int>("OUTPUT_STEP_OFFSET");
     writestate_ = ioparams.get<bool>("STRUCT_DISP");
     writevelacc_ = ioparams.get<bool>("STRUCT_VEL_ACC");
     writejac2matlab_ = ioparams.get<bool>("STRUCT_JACOBIAN_MATLAB");
     conditionnumbertype_ = ioparams.get<Inpar::Solid::ConditionNumber>("STRUCT_CONDITION_NUMBER");
     firstoutputofrun_ = true;
-    writeresultsevery_ = sdynparams.get<int>("RESULTSEVRY");
+    writeresultsevery_ = sdynparams.get<int>("RESULTSEVERY");
     writecurrentelevolume_ = ioparams.get<bool>("STRUCT_CURRENT_VOLUME");
     writestress_ = Teuchos::getIntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_STRESS");
     writecouplstress_ =
@@ -102,7 +102,7 @@ void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     writestrain_ = Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_STRAIN");
     writeplstrain_ =
         Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
-    writeenergyevery_ = sdynparams.get<int>("RESEVRYERGY");
+    writeenergyevery_ = sdynparams.get<int>("RESEVERYERGY");
     writesurfactant_ = ioparams.get<bool>("STRUCT_SURFACTANT");
     writeoptquantity_ = ioparams.get<Inpar::Solid::OptQuantityType>("STRUCT_OPTIONAL_QUANTITY");
 

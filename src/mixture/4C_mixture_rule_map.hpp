@@ -49,7 +49,7 @@ namespace Mixture
 
   /*!
    * \brief Mixture rule to be used in homogenized constrained mixture models. It scales the mass
-   * fractions of the individual constitutents by elementwise defined discrete values, that are
+   * fractions of the individual constituents by elementwise defined discrete values, that are
    * passed via an external '*.pattern' file.
    */
   class MapMixtureRule : public Mixture::MixtureRule

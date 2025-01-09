@@ -79,7 +79,7 @@ int Discret::Elements::Torsion3::evaluate(Teuchos::ParameterList& params,
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero
-     dispalcement and residual values*/
+     displacement and residual values*/
     case Core::Elements::struct_calc_linstiff:
     {
       // only nonlinear case implemented!
@@ -206,7 +206,7 @@ int Discret::Elements::Torsion3::evaluate(Teuchos::ParameterList& params,
             stiff_relerr(line,col)= fabs( ( pow(elemat1(line,col),2) - pow(stiff_approx(line,col),2)
       )/ ( (elemat1(line,col) + stiff_approx(line,col)) * elemat1(line,col) ));
 
-            //suppressing small entries whose effect is only confusing and NaN entires (which arise
+            //suppressing small entries whose effect is only confusing and NaN entries (which arise
       due to zero entries) if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan(
       stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
               stiff_relerr(line,col) = 0;
@@ -219,7 +219,7 @@ int Discret::Elements::Torsion3::evaluate(Teuchos::ParameterList& params,
 
         if(outputflag ==1)
         {
-          std::cout<<"\n\n acutally calculated stiffness matrix in Element "<<Id()<<": "<< elemat1;
+          std::cout<<"\n\n actually calculated stiffness matrix in Element "<<Id()<<": "<< elemat1;
           std::cout<<"\n\n approximated stiffness matrix in Element "<<Id()<<": "<< stiff_approx;
           std::cout<<"\n\n rel error stiffness matrix in Element "<<Id()<<": "<< stiff_relerr;
         }
@@ -393,7 +393,7 @@ void Discret::Elements::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
   Core::LinAlg::Matrix<9, 1> grtheta;
 
   for (int j = 0; j < 3; ++j)
-  {  // virual displacement of node 1 and 3
+  {  // virtual displacement of node 1 and 3
     grtheta(j) = -aux(3 + j) / lcurr(0) / lcurr(1) + dotprod * aux(j) / pow(lcurr(0), 3) / lcurr(1);
     grtheta(6 + j) =
         aux(j) / lcurr(0) / lcurr(1) - dotprod * aux(3 + j) / lcurr(0) / pow(lcurr(1), 3);
@@ -537,7 +537,7 @@ void Discret::Elements::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
 
     }  // else (theta NOT almost zero)
 
-  }  // bending potetial quadratic
+  }  // bending potential quadratic
 
   else
     // bending potential cosine

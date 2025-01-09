@@ -901,7 +901,7 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
 
   //------------------------
   // local coordinates of the face nodes w.r.t slave side
-  Core::LinAlg::Matrix<facensd_, iel> local_slave_coordiantes_trafo(true);
+  Core::LinAlg::Matrix<facensd_, iel> local_slave_coordinates_trafo(true);
 
   const std::vector<int>& localtrafomap = intface->get_local_trafo_map();
 
@@ -917,14 +917,14 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
         case Core::FE::CellType::line2:
         case Core::FE::CellType::line3:
         {
-          local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
+          local_slave_coordinates_trafo(isd, localtrafomap_idx) =
               Core::FE::eleNodeNumbering_line3_nodes_reference[i][isd];
           break;
         }
         case Core::FE::CellType::tri3:
         case Core::FE::CellType::tri6:
         {
-          local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
+          local_slave_coordinates_trafo(isd, localtrafomap_idx) =
               Core::FE::eleNodeNumbering_tri6_nodes_reference[i][isd];
           break;
         }
@@ -932,7 +932,7 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
         case Core::FE::CellType::quad8:
         case Core::FE::CellType::quad9:
         {
-          local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
+          local_slave_coordinates_trafo(isd, localtrafomap_idx) =
               Core::FE::eleNodeNumbering_quad9_nodes_reference[i][isd];
           break;
         }
@@ -964,7 +964,7 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     // face to the local coordinate system of the face w.r.t slave face
     Core::FE::shape_function<distype>(face_xi_points_master_linalg, funct_);
 
-    face_xi_points_slave_linalg.multiply(local_slave_coordiantes_trafo, funct_);
+    face_xi_points_slave_linalg.multiply(local_slave_coordinates_trafo, funct_);
 
     for (int idim = 0; idim < facensd_; idim++)
     {
@@ -3383,7 +3383,7 @@ double Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
   // combination of hex-wedge or tet-wedge is not reasonable with this element length computation
   if (pdistype != ndistype)
     FOUR_C_THROW(
-        "this type of element lenght is not reasonable for different types of neighboring "
+        "this type of element length is not reasonable for different types of neighboring "
         "elements");
 
   int numnode_intface = intface->num_node();

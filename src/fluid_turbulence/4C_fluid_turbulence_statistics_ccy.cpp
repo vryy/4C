@@ -51,7 +51,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   if (withscatra_)
   {
     meanscanp_ = Core::LinAlg::create_vector(*dofrowmap, true);
-    // meanfullphinp_ is initalized in ApplyScatraResults()
+    // meanfullphinp_ is initialized in ApplyScatraResults()
   }
 
   //----------------------------------------------------------------------

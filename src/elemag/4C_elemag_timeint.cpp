@@ -45,8 +45,8 @@ EleMag::ElemagTimeInt::ElemagTimeInt(const std::shared_ptr<Core::FE::Discretizat
       restart_(params_->get<int>("restart")),
       maxtime_(params_->get<double>("MAXTIME")),
       stepmax_(params_->get<int>("NUMSTEP")),
-      uprestart_(params_->get<int>("RESTARTEVRY", -1)),
-      upres_(params_->get<int>("RESULTSEVRY", -1)),
+      uprestart_(params_->get<int>("RESTARTEVERY", -1)),
+      upres_(params_->get<int>("RESULTSEVERY", -1)),
       numdim_(Global::Problem::instance()->n_dim()),
       dtp_(params_->get<double>("TIMESTEP")),
       tau_(params_->get<double>("TAU")),
@@ -826,7 +826,7 @@ void EleMag::ElemagTimeInt::output_to_screen()
 namespace
 {
   /*----------------------------------------------------------------------*
-  |  Interpolate discontinous values to nodal values     berardocco 03/18 |
+  |  Interpolate discontinuous values to nodal values     berardocco 03/18 |
   *----------------------------------------------------------------------*/
   // internal helper function for output
   void get_node_vectors_hdg(Core::FE::Discretization& dis,
@@ -890,8 +890,8 @@ namespace
       ele->evaluate(params, dis, la[0].lm_, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
       // Sum values on nodes into vectors and record the touch count (build average of values)
-      // This average is to get a continous inteface out of the discontinous
-      // intefaces due to the DG method.
+      // This average is to get a continuous interface out of the discontinuous
+      // interfaces due to the DG method.
       // Cycling through all the nodes
       for (int i = 0; i < ele->num_node(); ++i)
       {

@@ -164,7 +164,7 @@ std::shared_ptr<Adapter::PoroFluidMultiphase> POROFLUIDMULTIPHASE::Utils::create
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
     std::shared_ptr<Core::IO::DiscretizationWriter> output)
 {
-  // Creation of Coupled Problem algortihm.
+  // Creation of Coupled Problem algorithm.
   std::shared_ptr<Adapter::PoroFluidMultiphase> algo = nullptr;
 
   // -------------------------------------------------------------------
@@ -552,7 +552,7 @@ void POROFLUIDMULTIPHASE::print_logo()
   std::cout << "" << std::endl;
   std::cout << "              +----------+" << std::endl;
   std::cout << "              |  Krebs-  |" << std::endl;
-  std::cout << "              |  Modell  |" << std::endl;
+  std::cout << "              |  Model  |" << std::endl;
   std::cout << "              +----------+" << std::endl;
   std::cout << "              |          |" << std::endl;
   std::cout << "              |          |" << std::endl;

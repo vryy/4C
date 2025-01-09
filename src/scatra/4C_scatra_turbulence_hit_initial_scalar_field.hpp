@@ -27,13 +27,13 @@ namespace ScaTra
   // forward declarations
   class ScaTraTimIntImpl;
 
-  // inital condition for homogeneous isotropic turbulence
+  // initial condition for homogeneous isotropic turbulence
   // based on the Comte-Bellot - Corrsion experiment
-  class HomIsoTurbInitialScalarField
+  class HomoIsoTurbInitialScalarField
   {
    public:
     //! constructor
-    HomIsoTurbInitialScalarField(
+    HomoIsoTurbInitialScalarField(
         ScaTraTimIntImpl& timeint, const Inpar::ScaTra::InitialField initfield);
 
     //! calculate initial field

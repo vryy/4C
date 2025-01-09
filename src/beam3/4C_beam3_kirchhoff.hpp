@@ -425,7 +425,7 @@ namespace Discret
 
       An element derived from this class uses the Evaluate method to receive commands
       and parameters from some control routine in params and evaluates element matrices and
-      vectors accoring to the command in params.
+      vectors according to the command in params.
 
       \note This class implements a dummy of this method that prints a warning and
             returns false.
@@ -493,7 +493,7 @@ namespace Discret
       void set_up_reference_geometry(
           const std::vector<Core::LinAlg::Matrix<3, 1>>& xrefe, const bool secondinit = false);
 
-      //! computes the artifical damping contributions for element based PTC
+      //! computes the artificial damping contributions for element based PTC
       void calc_stiff_contributions_ptc(Core::LinAlg::SerialDenseMatrix& elemat1);
 
       /*!
@@ -633,7 +633,7 @@ namespace Discret
      private:
       // Functions
 
-      //! @name methods for initilization of the element
+      //! @name methods for initialization of the element
 
       //! sets up from current nodal position all geometric parameters (considering current position
       //! as reference configuration) in case of a Weak Kirchhoff Constraint
@@ -1204,7 +1204,7 @@ namespace Discret
 
       //! Transform stiffness matrix in order to solve for multiplicative rotation vector increments
       template <unsigned int nnodecl, typename T>
-      void transform_stiff_matrix_multipl(Core::LinAlg::SerialDenseMatrix* stiffmatrix,
+      void transform_stiff_matrix_multiplicative(Core::LinAlg::SerialDenseMatrix* stiffmatrix,
           const Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag)
           const;
 
@@ -1628,26 +1628,26 @@ namespace Discret
 
       //******************************Begin: Class variables required for time
       // integration**************************************************//
-      //! triads at Gauss points for exact integration in quaternion at the end of the preceeding
+      //! triads at Gauss points for exact integration in quaternion at the end of the preceding
       //! time step (required for computation of angular velocity)
       std::vector<Core::LinAlg::Matrix<4, 1>> qconvmass_;
       //! current triads at Gauss points for exact integration in quaternion (required for
       //! computation of angular velocity)
       std::vector<Core::LinAlg::Matrix<4, 1>> qnewmass_;
       //! spatial angular velocity vector at Gauss points for exact integration at the end of the
-      //! preceeding time step (required for computation of inertia terms)
+      //! preceding time step (required for computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> wconvmass_;
       //! current spatial angular velocity vector at Gauss points for exact integration (required
       //! for computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> wnewmass_;
       //! spatial angular acceleration vector at Gauss points for exact integration at the end of
-      //! the preceeding time step (required for computation of inertia terms)
+      //! the preceding time step (required for computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> aconvmass_;
       //! current spatial angular acceleration vector at Gauss points for exact integration
       //! (required for computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> anewmass_;
       //! modified spatial angular acceleration vector (according to gen-alpha time integration) at
-      //! Gauss points for exact integration at the end of the preceeding time step (required for
+      //! Gauss points for exact integration at the end of the preceding time step (required for
       //! computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> amodconvmass_;
       //! current modified spatial angular acceleration vector (according to gen-alpha time
@@ -1655,25 +1655,25 @@ namespace Discret
       //! terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> amodnewmass_;
       //! translational acceleration vector at Gauss points for exact integration at the end of the
-      //! preceeding time step (required for computation of inertia terms)
+      //! preceding time step (required for computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> rttconvmass_;
       //! current translational acceleration vector at Gauss points for exact integration (required
       //! for computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> rttnewmass_;
       //! modified translational acceleration vector at Gauss points for exact integration at the
-      //! end of the preceeding time step (required for computation of inertia terms)
+      //! end of the preceding time step (required for computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> rttmodconvmass_;
       //! modified current translational acceleration vector at Gauss points for exact integration
       //! (required for computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> rttmodnewmass_;
       //! translational velocity vector at Gauss points for exact integration at the end of the
-      //! preceeding time step (required for computation of inertia terms)
+      //! preceding time step (required for computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> rtconvmass_;
       //! current translational velocity vector at Gauss points for exact integration (required for
       //! computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> rtnewmass_;
       //! translational displacement vector at Gauss points for exact integration at the end of the
-      //! preceeding time step (required for computation of inertia terms)
+      //! preceding time step (required for computation of inertia terms)
       std::vector<Core::LinAlg::Matrix<3, 1>> rconvmass_;
       //! current translational displacement vector at Gauss points for exact integration (required
       //! for computation of inertia terms)

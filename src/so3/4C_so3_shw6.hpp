@@ -62,7 +62,7 @@ namespace Discret
 
     This element adopts the ANS approach to improve shear and curvature-thickness
     (trapezoidal) locking. However, being triangular inplane, the ANS evaluation
-    points of the shear strains are choosen just on two of three surfaces (See
+    points of the shear strains are chosen just on two of three surfaces (See
     also Discret::Elements::So_shw6::soshw6_anssetup).
     Thus, the element becomes mesh dependent (where in material space lies my
     parameter space), but this is in favour of less pronounced shear locking
@@ -137,7 +137,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
       /*!
        \brief Does this element use EAS?
@@ -220,10 +220,10 @@ namespace Discret
       \param discretization : pointer to discretization for de-assembly
       \param lm (in)        : location matrix for de-assembly
       \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If nullptr on input,
-                              the controling method does not expect the element to fill
+                              the controlling method does not expect the element to fill
                               this matrix.
       \param elemat2 (out)  : (mass-)matrix to be filled by element. If nullptr on input,
-                              the controling method does not expect the element to fill
+                              the controlling method does not expect the element to fill
                               this matrix.
       \param elevec1 (out)  : (internal force-)vector to be filled by element. If nullptr on input,
                               the controlling method does not expect the element

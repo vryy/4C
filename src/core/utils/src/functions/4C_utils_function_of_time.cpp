@@ -216,7 +216,8 @@ std::shared_ptr<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of
             std::size_t numtimes = times.size();
             std::size_t numdescriptions = description_vec.size();
             if (numtimes != numdescriptions + 1)
-              FOUR_C_THROW("the number of TIMES and the number of DESCRIPTIONs must be consistent");
+              FOUR_C_THROW(
+                  "the number of TIMES and the number of DESCRIPTIONNs must be consistent");
 
             return std::make_shared<MultiFunctionVariable>(
                 varname, times, description_vec, periodicdata);

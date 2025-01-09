@@ -569,7 +569,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// p
       {
         if (!continue_for_changing_side(data, ele, nds_curr)) break;
       }
-      else  // point did not change the sie
+      else  // point did not change the side
       {
         // this set is a valid fluid set on the right side of the interface
         data->last_valid_nds_ = nds_curr;
@@ -737,7 +737,7 @@ void XFEM::XfluidSemiLagrange::newton_iter(
 
   for (int i = 0; i < nsd; i++) sysmat(i, i) += 1.0;  // I + dt*velDerivXY
 
-  // invers system Matrix built
+  // inverse system Matrix built
   sysmat.invert();
 
 
@@ -1282,7 +1282,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
 
   Core::LinAlg::Matrix<numnode, 1> shapeFcn(true);       // shape function
   Core::LinAlg::Matrix<3, numnode> shapeFcnDeriv(true);  // shape function derivatives w.r.t xyz
-  Core::LinAlg::Matrix<nsd, nsd> xji(true);              // invers of jacobian
+  Core::LinAlg::Matrix<nsd, nsd> xji(true);              // inverse of jacobian
 
   double deltaT = 0;  // pseudo time-step size, used when the initial point is used instead of the
                       // computed lagrangean startpoint
@@ -1697,7 +1697,7 @@ void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
     Core::Nodes::Node* node,  ///< node at which we reconstruct the gradients
     std::vector<Core::Elements::Element*>&
         eles,                                ///< elements around node used for the reconstruction
-    std::vector<std::vector<int>>& ele_nds,  ///< corresonding elements nodal dofset information
+    std::vector<std::vector<int>>& ele_nds,  ///< corresponding elements nodal dofset information
     XFEM::XFEMDofSet& dofset,                ///< XFEM dofset
     std::vector<Core::LinAlg::Matrix<3, 3>>&
         velDeriv_avg,  ///< velocity/acc component derivatives for several vectors

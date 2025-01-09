@@ -705,14 +705,14 @@ Core::LinearSolver::AMGNxN::IfpackWrapper::IfpackWrapper(
   if (list_.isParameter("relaxation: zero starting solution"))
   {
     std::cout << "WARNING!!!!!: don't use the parameter 'relaxation: zero starting solution' this "
-                 "is handled in 4C appropiately"
+                 "is handled in 4C appropriately"
               << std::endl;
   }
 
   if (list_.isParameter("chebyshev: zero starting solution"))
   {
     std::cout << "WARNING!!!!!: don't use the parameter 'chebyshev: zero starting solution' this "
-                 "is handled in 4C appropiately"
+                 "is handled in 4C appropriately"
               << std::endl;
   }
 
@@ -1363,7 +1363,7 @@ Core::LinearSolver::AMGNxN::MueluAMGWrapperFactory::create()
   // TODO or
   //
   // <ParameterList name="parameters">
-  //  ... ... list defining the muelue hierarcy (i.e.) the contents of the xml file
+  //  ... ... list defining the muelue hierarchy (i.e.) the contents of the xml file
   // </ParameterList>
   //
   //

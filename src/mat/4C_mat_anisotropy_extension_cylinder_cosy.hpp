@@ -69,7 +69,7 @@ namespace Mat
     void on_global_data_initialized() override;
 
     /*!
-     * \brief Retrns the cylinder coordinate system for a specific Gausspoint.
+     * \brief Returns the cylinder coordinate system for a specific Gausspoint.
      *
      *
      * \note If the coordinate system is only given on the element, then this is returned.

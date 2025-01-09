@@ -29,13 +29,13 @@ MAXTIME                         0.5
 NONLINITER                      Newton
 NUMSTEP                         8
 PREDICTOR                       steady_state
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 STARTFUNCNO                     -1
 START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-RESULTSEVRY                     8
+RESULTSEVERY                     8
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
@@ -59,8 +59,8 @@ EVALUATION_TAU                  integration_point
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 MAXTIME                         1000.0
 NUMSTEP                         8
 TIMESTEP                        0.05

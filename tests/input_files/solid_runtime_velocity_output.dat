@@ -21,8 +21,8 @@ STRUCT_DISP                           no
 ---------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                         1
 INT_STRATEGY                          Standard
-RESULTSEVRY                           1
-RESTARTEVRY                           5
+RESULTSEVERY                           1
+RESTARTEVERY                           5
 NLNSOL                                fullnewton
 TIMESTEP                              0.1
 NUMSTEP                               10

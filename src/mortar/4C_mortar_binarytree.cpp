@@ -308,7 +308,7 @@ void Mortar::BinaryTreeNode::divide_tree_node()
     // if parent treenode is slave
     if (type_ == SLAVE_INNER)
     {
-      // if map of treenodes does not have enogh rows-->resize!
+      // if map of treenodes does not have enough rows-->resize!
       if ((int)(streenodesmap_.size()) <= (get_layer() + 1))
         streenodesmap_.resize((get_layer() + 2));
 
@@ -320,7 +320,7 @@ void Mortar::BinaryTreeNode::divide_tree_node()
     // if parent treenode is master
     if (type_ == MASTER_INNER)
     {
-      // if map of treenodes does not have enogh rows-->resize!
+      // if map of treenodes does not have enough rows-->resize!
       if ((int)(mtreenodesmap_.size()) <= (get_layer() + 1))
         mtreenodesmap_.resize((get_layer() + 2));
 
@@ -331,7 +331,7 @@ void Mortar::BinaryTreeNode::divide_tree_node()
   }
 
   else
-    FOUR_C_THROW("Only 1 or 0 elements in map-->TreeNode cannot be devided!!");
+    FOUR_C_THROW("Only 1 or 0 elements in map-->TreeNode cannot be divided!!");
 
   return;
 }

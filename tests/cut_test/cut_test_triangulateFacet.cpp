@@ -47,7 +47,7 @@ void check7noded2concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
 void problem_split_any_facet1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void inside_chcek1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void inside_check1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
 void check15node5concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
@@ -96,7 +96,7 @@ void test_facet_split()
   check7noded2concave(mesh, e, s);
   problem_split_any_facet1(mesh, e, s);
 
-  inside_chcek1(mesh, e, s);
+  inside_check1(mesh, e, s);
   check15node5concave(mesh, e, s);
   check8node_quad_inside_pt(mesh, e, s);
 
@@ -2364,9 +2364,9 @@ void problem_split_any_facet1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 /*---------------------------------------------------------------------------------------*
  *     A 7 noded facet that make sure that inside checking of points is necessary        *
  *---------------------------------------------------------------------------------------*/
-void inside_chcek1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void inside_check1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
-  std::cout << "InsideChcek1...\n";
+  std::cout << "InsideCheck1...\n";
   std::vector<Cut::Point*> ptlist(7);
   double x[3];
   x[2] = 0.0;
@@ -2438,11 +2438,11 @@ void inside_chcek1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
   std::vector<Cut::Point*> cell2 = split[1];
   std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6 || cell1[3] != p7)
-    FOUR_C_THROW("triangulation failed for InsideChcek1");
+    FOUR_C_THROW("triangulation failed for InsideCheck1");
   if (cell2[0] != p3 || cell2[1] != p4 || cell2[2] != p7 || cell2[3] != p1)
-    FOUR_C_THROW("triangulation failed for InsideChcek1");
+    FOUR_C_THROW("triangulation failed for InsideCheck1");
   if (cell3[0] != p3 || cell3[1] != p1 || cell3[2] != p2)
-    FOUR_C_THROW("triangulation failed for InsideChcek1");
+    FOUR_C_THROW("triangulation failed for InsideCheck1");
 }
 
 /*---------------------------------------------------------------------------------------*

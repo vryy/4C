@@ -36,7 +36,7 @@ namespace Cut
   class CombIntersection : public LevelSetIntersection, public MeshIntersection
   {
    public:
-    /// constructur for LevelSetIntersecton class
+    /// constructor for LevelSetIntersection class
     CombIntersection(int myrank);
 
     void cut(bool screenoutput);

@@ -257,7 +257,7 @@ namespace EHL
     //@{
 
     bool solveradapttol_;                           //!< adapt solver tolerance
-    double solveradaptolbetter_;                    //!< tolerance to which is adpated ????
+    double solveradaptolbetter_;                    //!< tolerance to which is adapted ????
     std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     //@}
@@ -280,7 +280,7 @@ namespace EHL
     const Teuchos::ParameterList& ehldyn_;      //!< EHL dynamic parameter list
     const Teuchos::ParameterList& ehldynmono_;  //!< monolithic EHL dynamic parameter list
 
-    //! dofrowmap splitted in (field) blocks
+    //! dofrowmap split in (field) blocks
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector

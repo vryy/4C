@@ -34,9 +34,9 @@ KINETIC_ENERGY_ELEMENT          Yes
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      GenAlphaLieGroup
-RESULTSEVRY                     1
-RESEVRYERGY                     1
-RESTARTEVRY                     50
+RESULTSEVERY                     1
+RESEVERYERGY                     1
+RESTARTEVERY                     50
 NLNSOL                          fullnewton
 TIMESTEP                        0.01
 NUMSTEP                         200

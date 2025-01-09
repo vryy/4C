@@ -242,7 +242,7 @@ namespace Mixture
      * for the linearization.
      *
      * @note S_stress and the linearization are specific quantities. They have to be multiplied with
-     * the density of the constituent to obtain the real stress oder linearization.
+     * the density of the constituent to obtain the real stress or linearization.
      *
      * @param F Total deformation gradient
      * @param iF_in inverse inelastic part of the deformation
@@ -261,7 +261,7 @@ namespace Mixture
      * of the displacements. Will be called for each Gauss point
      *
      * @note S_stress and the linearization are specific quantities. They have to be multiplied with
-     * the density of the constituent to obtain the real stress oder linearization.
+     * the density of the constituent to obtain the real stress or linearization.
      *
      * @param F (in) : Deformation gradient
      * @param E_strain (in) : Green-Lagrange strain in strain-like Voigt notation

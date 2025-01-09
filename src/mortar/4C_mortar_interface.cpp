@@ -1583,7 +1583,7 @@ void Mortar::Interface::create_search_tree()
     // create fully overlapping map of all master elements
     // for non-redundant storage (RRloop) we handle the master elements
     // like the slave elements --> melecolmap_
-    auto strat = Teuchos::getIntegralValue<Inpar::Mortar::ExtendGhosting>(
+    auto strategy = Teuchos::getIntegralValue<Inpar::Mortar::ExtendGhosting>(
         interface_params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
     // get update type of binary tree
@@ -1591,7 +1591,7 @@ void Mortar::Interface::create_search_tree()
         interface_params(), "BINARYTREE_UPDATETYPE");
 
     std::shared_ptr<Epetra_Map> melefullmap = nullptr;
-    switch (strat)
+    switch (strategy)
     {
       case Inpar::Mortar::ExtendGhosting::roundrobin:
       case Inpar::Mortar::ExtendGhosting::binning:
@@ -2802,11 +2802,11 @@ void Mortar::Interface::evaluate_search_brute_force(const double& eps)
   // create fully overlapping map of all master elements
   // for non-redundant storage (RRloop) we handle the master elements
   // like the slave elements --> melecolmap_
-  auto strat = Teuchos::getIntegralValue<Inpar::Mortar::ExtendGhosting>(
+  auto strategy = Teuchos::getIntegralValue<Inpar::Mortar::ExtendGhosting>(
       interface_params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
   std::shared_ptr<Epetra_Map> melefullmap = nullptr;
 
-  switch (strat)
+  switch (strategy)
   {
     case Inpar::Mortar::ExtendGhosting::redundant_all:
     case Inpar::Mortar::ExtendGhosting::redundant_master:

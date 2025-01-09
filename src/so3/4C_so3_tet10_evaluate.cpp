@@ -694,7 +694,7 @@ int Discret::Elements::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
   {
     if ((*onoff)[checkdof] != 0)
       FOUR_C_THROW(
-          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+          "Number of Dimensions in Neumann_Evaluation is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS
@@ -1166,7 +1166,7 @@ void Discret::Elements::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
       if (solid_material()->varying_density())
       {
         /*
-         If the density, i.e. the mass matrix, is not constant, a linearization is neccessary.
+         If the density, i.e. the mass matrix, is not constant, a linearization is necessary.
          In general, the mass matrix can be dependent on the displacements, the velocities and the
          accelerations. We write all the additional terms into the mass matrix, hence, conversion
          from accelerations to velocities and displacements are needed. As those conversions depend
@@ -1567,7 +1567,7 @@ void Discret::Elements::SoTet10::update_element(
 {
   if (solid_material()->uses_extended_update())
   {
-    // in a first step ommit everything with prestress and EAS!!
+    // in a first step omit everything with prestress and EAS!!
     /* ============================================================================*
     ** CONST DERIVATIVES of shape functions for TET_10 with 4 GAUSS POINTS*
     ** ============================================================================*/

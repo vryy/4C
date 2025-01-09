@@ -600,7 +600,7 @@ might become invalid after a redistribution of the discretization.
 
     Note: If the element has only ghost nodes, the element will not be allowed
           to assemble in any global vectors or matrixes, and, hence, can be
-          skiped during evaluate(). The only reason why it is ghosted on this
+          skipped during evaluate(). The only reason why it is ghosted on this
           proc is to provide access to its data. This might be necessary for volumetric
           coupling of non conforming meshes.
 
@@ -809,11 +809,11 @@ might become invalid after a redistribution of the discretization.
     Core::FE::Discretization.
 
     The case of multiple set of dofs occurs in xfem without enrichments. E.g. a
-    node of a cutted fluid element might own two or more velocity-pressure
+    node of a cut fluid element might own two or more velocity-pressure
     pairs. In that case we need to choose one set of physical dofs for each
     node. The nds array gives the dof set number of each node.
 
-    \note The degrees of freedom returned are not neccessarily only nodal dofs.
+    \note The degrees of freedom returned are not necessarily only nodal dofs.
           Depending on the element implementation, output might also include
           element dofs.
 
@@ -829,7 +829,7 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Return the location vector of this element
 
-    The method computes degrees of freedom this element adresses.
+    The method computes degrees of freedom this element addresses.
     Degree of freedom ordering is as follows:<br>
     First all degrees of freedom of adjacent nodes are numbered in
     local nodal order, then the element internal degrees of freedom are
@@ -841,7 +841,7 @@ might become invalid after a redistribution of the discretization.
     Length of the output vector matches number of degrees of freedom
     exactly.<br>
 
-    \note The degrees of freedom returned are not neccessarily only nodal dofs.
+    \note The degrees of freedom returned are not necessarily only nodal dofs.
           Depending on the element implementation, output might also include
           element dofs.
 
@@ -857,7 +857,7 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Return the location vector of this element
 
-    The method computes degrees of freedom this element adresses.
+    The method computes degrees of freedom this element addresses.
     Degree of freedom ordering is as follows:<br>
     First all degrees of freedom of adjacent nodes are numbered in
     local nodal order, then the element internal degrees of freedom are
@@ -871,11 +871,11 @@ might become invalid after a redistribution of the discretization.
     This version is intended to fill the LocationArray with the dofs
     the element will assemble into. In the standard case these dofs are
     the dofs of the element itself. For some special conditions (e.g.
-    the weak dirichlet boundary condtion) a surface element will assemble
+    the weak dirichlet boundary condition) a surface element will assemble
     into the dofs of a volume element. These elements need to overwrite this
     method.<br>
 
-    \note The degrees of freedom returned are not neccessarily only nodal dofs.
+    \note The degrees of freedom returned are not necessarily only nodal dofs.
           Depending on the element implementation, output might also include
           element dofs.
 
@@ -891,7 +891,7 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Return the location vector of this element
 
-    The method computes degrees of freedom this element adresses.
+    The method computes degrees of freedom this element addresses.
     Degree of freedom ordering is as follows:<br>
     First all degrees of freedom of adjacent nodes are numbered in
     local nodal order, then the element internal degrees of freedom are
@@ -903,12 +903,12 @@ might become invalid after a redistribution of the discretization.
     Length of the output vector matches number of degrees of freedom
     exactly.<br>
 
-    \note The degrees of freedom returned are not neccessarily only nodal dofs.
+    \note The degrees of freedom returned are not necessarily only nodal dofs.
           Depending on the element implementation, output might also include
           element dofs.
 
     \param dis (in)      : the discretization this element belongs to
-    \param lm (out)      : vector of degrees of freedom adressed by this element
+    \param lm (out)      : vector of degrees of freedom addressed by this element
     \param lmowner (out) : vector of proc numbers indicating which dofs are owned
                            by which procs in a dof row map. Ordering
                            matches dofs in lm.
@@ -922,7 +922,7 @@ might become invalid after a redistribution of the discretization.
 
     An element derived from this class uses the Evaluate method to receive commands
     and parameters from some control routine in params and evaluates element matrices and
-    vectors accoring to the command in params.
+    vectors according to the command in params.
 
     \note This class implements a dummy of this method that prints a warning and
           returns false.
@@ -953,7 +953,7 @@ might become invalid after a redistribution of the discretization.
 
     An element derived from this class uses the Evaluate method to receive commands
     and parameters from some control routine in params and evaluates element matrices and
-    vectors accoring to the command in params.
+    vectors according to the command in params.
 
     \note This class implements a dummy of this method that prints a warning and
           returns false.
@@ -1292,7 +1292,7 @@ might become invalid after a redistribution of the discretization.
     }
 
     /*!
-    \brief return a tranformation for the face's nodes between the local coordinate systems of the
+    \brief return a transformation for the face's nodes between the local coordinate systems of the
            face w.r.t the master parent element's face's coordinate system and the slave element's
            face's coordinate system
 

@@ -36,7 +36,7 @@ namespace Core::LinearSolver
    *
    * In 4C equilibration and reordering is also available, but not for everything yet. An
    * experimental approach on permuting the system matrix to obtain better conditioning and
-   * faster solution times is given by the permuation strategy.
+   * faster solution times is given by the permutation strategy.
    *
    */
 

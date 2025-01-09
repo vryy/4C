@@ -120,7 +120,7 @@ Core::IO::InputSpec CONTACT::CONSTITUTIVELAW::valid_contact_constitutive_laws()
             entry<double>(
                 "Offset", {.description = "offset for contact to start", .default_value = 0.0}),
             entry<double>("FiniteDifferenceFraction",
-                {.description = "Fraction of pertubation difference compared to the actual gap",
+                {.description = "Fraction of perturbation difference compared to the actual gap",
                     .default_value = 0.001}),
             entry<double>("ActiveGapTolerance",
                 {.description = "Minimum gap to consider a node as active", .default_value = 1e-6}),

@@ -26,7 +26,7 @@ namespace Arteries
   namespace Utils
   {
     //--------------------------------------------------------------------
-    // Wrapper class (to be called from outside) for outputing
+    // Wrapper class (to be called from outside) for outputting
     //--------------------------------------------------------------------
 
     /*!

@@ -394,7 +394,7 @@ void Discret::Elements::Transport::set_material(
             "The material MAT_matlist_reaction only supports MAT_scatra_reaction and "
             "MAT_scatra_reaction_poro as valid reaction Material");
 
-      // some safty check for the MAT_scatra_reaction materials
+      // some safety check for the MAT_scatra_reaction materials
       const std::shared_ptr<const Mat::ScatraReactionMat>& reacmat =
           std::static_pointer_cast<const Mat::ScatraReactionMat>(
               actmat->material_by_id(actmat->reac_id(jj)));
@@ -433,7 +433,7 @@ void Discret::Elements::Transport::set_material(
             "The material MAT_matlist_chemotaxis only supports MAT_scatra_chemotaxis as valid "
             "reaction Material");
 
-      // some safty check for the MAT_scatra_chemotaxis materials
+      // some safety check for the MAT_scatra_chemotaxis materials
       const std::shared_ptr<const Mat::ScatraChemotaxisMat>& reacmat =
           std::static_pointer_cast<const Mat::ScatraChemotaxisMat>(
               actmat->material_by_id(actmat->pair_id(jj)));
@@ -473,7 +473,7 @@ void Discret::Elements::Transport::set_material(
             "The material MAT_matlist_reaction only supports MAT_scatra_reaction as valid reaction "
             "Material");
 
-      // some safty check for the MAT_scatra_reaction materials
+      // some safety check for the MAT_scatra_reaction materials
       const std::shared_ptr<const Mat::ScatraReactionMat>& reacmat =
           std::static_pointer_cast<const Mat::ScatraReactionMat>(
               actmat->material_by_id(actmat->reac_id(jj)));
@@ -496,7 +496,7 @@ void Discret::Elements::Transport::set_material(
             "The material MAT_matlist_chemotaxis only supports MAT_scatra_chemotaxis as valid "
             "reaction Material");
 
-      // some safty check for the MAT_scatra_chemotaxis materials
+      // some safety check for the MAT_scatra_chemotaxis materials
       const std::shared_ptr<const Mat::ScatraChemotaxisMat>& reacmat =
           std::static_pointer_cast<const Mat::ScatraChemotaxisMat>(
               actmat->material_by_id(actmat->pair_id(jj)));

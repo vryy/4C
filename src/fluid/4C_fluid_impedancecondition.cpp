@@ -203,7 +203,7 @@ FLD::Utils::FluidImpedanceBc::FluidImpedanceBc(
   p_np_ = 0.0;
   q_np_ = 0.0;
 
-  // NOTE: one could think of using non-zero inital conditions...
+  // NOTE: one could think of using non-zero initial conditions...
   p_n_ = 0.0;
   q_n_ = 0.0;
 
@@ -395,8 +395,8 @@ void FLD::Utils::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   // ---------------------------------------------------------------------//
   // ---------------------------------------------------------------------//
 
-  // NOTE: this can not be done in the constructure since maybe use_block_matrix
-  // is called afterwards and hence its contenten is reseted :(
+  // NOTE: this can not be done in the constructor since maybe use_block_matrix
+  // is called afterwards and hence its contenten is reset :(
   if (not impedancetbcsysmat_->filled())
   {
     // calculate dQ/du = ( \phi o n )_Gamma
@@ -459,7 +459,7 @@ void FLD::Utils::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   // Apply traction vector to fluid residual
   residual.Update(1.0, *impedancetbc_, 1.0);
 
-  // Add linerisation to fluid sysmat
+  // Add linearisation to fluid sysmat
   sysmat.add(*impedancetbcsysmat_, false, Q_np_fac, 1.0);
 
   return;

@@ -226,7 +226,7 @@ void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   // and first existent system vector to apply DBC to
   unsigned deg = 0;  // highest degree of requested time derivative
   std::shared_ptr<Core::LinAlg::Vector<double>> systemvectoraux =
-      nullptr;  // auxiliar system vector
+      nullptr;  // auxiliary system vector
   if (systemvectors[0] != nullptr)
   {
     deg = 0;
@@ -544,7 +544,7 @@ void Core::FE::Utils::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
     }
   }
 
-  // aquire weights from nodes
+  // acquire weights from nodes
   Core::LinAlg::SerialDenseVector weights(nen);
 
   for (int inode = 0; inode < nen; ++inode)
@@ -685,7 +685,7 @@ void Core::FE::Utils::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
     }
   }
 
-  // aquire weights from nodes
+  // acquire weights from nodes
   Core::LinAlg::SerialDenseVector weights(nen);
 
   for (int inode = 0; inode < nen; ++inode)

@@ -140,7 +140,7 @@ namespace Discret
       int nds_thermo_;
 
       //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
-      int nds_two_tensor_quantitiy_;
+      int nds_two_tensor_quantity_;
 
       //! number of dofset associated with velocity related dofs
       int nds_vel_;

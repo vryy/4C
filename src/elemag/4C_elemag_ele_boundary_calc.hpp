@@ -53,7 +53,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseMatrix* elemat1) = 0;
 
-      /// Evaluate routine for boundary elements inteface
+      /// Evaluate routine for boundary elements interface
       virtual int evaluate(Discret::Elements::ElemagBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,

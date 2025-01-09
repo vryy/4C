@@ -35,7 +35,7 @@ void Solid::TimeInt::ParamsMonitorDBC::init(
   // We have to call setup() after init()
   issetup_ = false;
 
-  // output intervall in steps
+  // output interval in steps
   output_interval_steps_ = IO_monitor_dbc_structure_paramslist.get<int>("INTERVAL_STEPS");
 
   // file precision

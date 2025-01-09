@@ -1212,7 +1212,7 @@ namespace Coupling::VolMortar
       {
         // *********************************************************************
         // 2D dual linear shape functions (tri3)
-        // (used for interpolation of Lagrange mutliplier field)
+        // (used for interpolation of Lagrange multiplier field)
         // *********************************************************************
         case Core::FE::CellType::tri3:
         {

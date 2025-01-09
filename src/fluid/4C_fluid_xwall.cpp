@@ -1120,7 +1120,8 @@ void FLD::XWall::calc_tau_w(
 
   if (meansp < 2.0e-9)
     FOUR_C_THROW(
-        "Average wall shear stress is zero. You probably forgot to specify approprite DESIGN FLUID "
+        "Average wall shear stress is zero. You probably forgot to specify appropriate DESIGN "
+        "FLUID "
         "STRESS CALC SURF CONDITIONS where the stress should be calculated.");
 
   if (myrank_ == 0) std::cout << "tauw mean:  " << meansp;

@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::StructureTimeAdaZienXie::integrate_step_auxiliar()
+void Adapter::StructureTimeAdaZienXie::integrate_step_auxiliary()
 {
   const Solid::TimeInt::Base& stm = *stm_;
   const Solid::TimeInt::BaseDataGlobalState& gstate = stm.data_global_state();
@@ -34,7 +34,7 @@ void Adapter::StructureTimeAdaZienXie::integrate_step_auxiliar()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::StructureTimeAdaZienXie::update_auxiliar()
+void Adapter::StructureTimeAdaZienXie::update_auxiliary()
 {
   // NOTHING TO UPDATE
 }

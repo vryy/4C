@@ -17,14 +17,14 @@ ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 TIMESTEP                        0.0005
 VELOCITYFIELD                   zero
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 MATID                           1
 CALCFLUX_BOUNDARY               total
 OUTPUTSCALARS                   entire_domain
 SKIPINITDER                     Yes
 MAXTIME                         0.02
 NUMSTEP                         20
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
 ABSTOLRES                       1e-20

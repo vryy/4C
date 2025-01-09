@@ -88,7 +88,7 @@ namespace Core::Conditions
      * \brief Standard Constructor
      *
      * \param discret (in): A discretization containing locsys boundary conditions
-     * \param transformleftonly (in): Only a tranformation from the left is going
+     * \param transformleftonly (in): Only a transformation from the left is going
      *                                to be applied on sysmatrix, if true
      *
      */

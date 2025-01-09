@@ -135,14 +135,14 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system()
   // create combined map
   create_combined_dof_row_map();
 
-  // Use normal matrix for fluid equations but build (splitted) mesh movement
+  // Use normal matrix for fluid equations but build (split) mesh movement
   // linearization (if requested in the input file)
   fluid_field()->use_block_matrix(false);
 
-  // Use splitted structure matrix
+  // Use split structure matrix
   structure_field()->use_block_matrix();
 
-  // build ale system matrix in splitted system
+  // build ale system matrix in split system
   ale_field()->create_system_matrix(ale_field()->interface());
 
   /*----------------------------------------------------------------------*/
@@ -359,7 +359,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here.
 
-  // Uncomplete fluid matrix to be able to deal with slightly defective
+  // Incomplete fluid matrix to be able to deal with slightly defective
   // interface meshes.
   f->un_complete();
 
@@ -706,8 +706,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::output()
         structure_field()->interface()->insert_fsi_cond_vector(*lambda_);
 
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-    const int uprestart = fsidyn.get<int>("RESTARTEVRY");
-    const int upres = fsidyn.get<int>("RESULTSEVRY");
+    const int uprestart = fsidyn.get<int>("RESTARTEVERY");
+    const int upres = fsidyn.get<int>("RESULTSEVERY");
     if ((uprestart != 0 && fluid_field()->step() % uprestart == 0) ||
         fluid_field()->step() % upres == 0)
       structure_field()->disc_writer()->write_vector("fsilambda", lambdafull);
@@ -770,7 +770,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::create_combined_dof_row_map()
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::build_convergence_norms()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "FSI::FluidFluidMonolithicStructureSplitNoNOX::build_covergence_norms()");
+      "FSI::FluidFluidMonolithicStructureSplitNoNOX::build_convergence_norms()");
   //----------------------------
   // build residual norms
   rhs_->Norm2(&normrhs_);

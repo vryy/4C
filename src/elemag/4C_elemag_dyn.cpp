@@ -251,9 +251,9 @@ void electromagnetics_drt()
             scatraparams->set("TIMEINTEGR", "Stationary");
             scatraparams->set("NUMSTEP", 1);
             // This way we avoid writing results and restart
-            scatraparams->set("RESULTSEVRY", 1000);
-            scatraparams->set("RESTARTEVRY", 1000);
-            // This has to be changed accordingly to the intial time
+            scatraparams->set("RESULTSEVERY", 1000);
+            scatraparams->set("RESTARTEVERY", 1000);
+            // This has to be changed accordingly to the initial time
             // As of now elemag simulation can only start at 0.
 
             // The solver type still has to be fixed as the problem is linear but the steady state

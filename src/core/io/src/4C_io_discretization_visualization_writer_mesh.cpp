@@ -484,7 +484,7 @@ namespace Core::IO
       VisualizationManager& visualization_manager,
       const std::function<bool(const Core::Elements::Element* ele)>& element_predicate)
   {
-    // Set up a multivector which will be populated with all ghosting informations.
+    // Set up a multivector which will be populated with all ghosting information.
     MPI_Comm comm =
         Core::Communication::unpack_epetra_comm(discretization.element_col_map()->Comm());
     const int n_proc = Core::Communication::num_mpi_ranks(comm);

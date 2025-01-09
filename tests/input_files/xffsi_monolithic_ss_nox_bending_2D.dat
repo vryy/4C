@@ -13,7 +13,7 @@ RESTART                         0
 MAXTIME                         8
 TIMESTEP                        0.003
 NUMSTEP                         4
-RESTARTEVRY                     2
+RESTARTEVERY                     2
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit
 SECONDORDER                     no
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
@@ -34,7 +34,7 @@ MAXTIME                         3
 NONLINITER                      Newton
 NUMSTASTEPS                     1
 NUMSTEP                         1
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 STARTFUNCNO                     2
 STEADYSTEP                      -1
 THETA                           1.0

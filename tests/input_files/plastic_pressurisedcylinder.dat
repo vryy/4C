@@ -52,9 +52,9 @@ NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         20000
 PREDICT                         ConstDis
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     1
+RESULTSEVERY                     1
 STC_LAYER                       1
 STC_SCALING                     no
 TIMESTEP                        0.05
@@ -76,7 +76,7 @@ THETA                           0.5
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-//MAT 1 MAT_Struct_ThrPlasticLinElast YOUNG 2.1e8 NUE 0.3 DENS 0.0 THEXPANS 0.0 INITTEMP 273.15 YIELD 2.4e5 KINHARD 0.0 TOL 1.0e-6
+//MAT 1 MAT_Struct_ThermoPlasticLinElast YOUNG 2.1e8 NUE 0.3 DENS 0.0 THEXPANS 0.0 INITTEMP 273.15 YIELD 2.4e5 KINHARD 0.0 TOL 1.0e-6
 MAT 1 MAT_Struct_PlasticLinElast YOUNG 2.1e8 NUE 0.3 DENS 0.0 YIELD 2.4e5 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-06
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a

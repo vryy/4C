@@ -25,8 +25,8 @@ void Inpar::FS3I::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::double_parameter("TIMESTEP", 0.1, "Time increment dt", &fs3idyn);
   Core::Utils::int_parameter("NUMSTEP", 20, "Total number of time steps", &fs3idyn);
   Core::Utils::double_parameter("MAXTIME", 1000.0, "Total simulation time", &fs3idyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &fs3idyn);
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &fs3idyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "Increment for writing solution", &fs3idyn);
+  Core::Utils::int_parameter("RESTARTEVERY", 1, "Increment for writing restart", &fs3idyn);
   setStringToIntegralParameter<Inpar::ScaTra::SolverType>("SCATRA_SOLVERTYPE", "nonlinear",
       "type of scalar transport solver", tuple<std::string>("linear", "nonlinear"),
       tuple<Inpar::ScaTra::SolverType>(
@@ -92,8 +92,8 @@ void Inpar::FS3I::set_valid_parameters(Teuchos::ParameterList& list)
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned FS3I */
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& fs3idynpart = fs3idyn.sublist(
-      "PARTITIONED", false, "partioned fluid-structure-scalar-scalar interaction control section");
+  Teuchos::ParameterList& fs3idynpart = fs3idyn.sublist("PARTITIONED", false,
+      "partitioned fluid-structure-scalar-scalar interaction control section");
 
   // Coupling strategy for partitioned FS3I
   setStringToIntegralParameter<SolutionSchemeOverFields>("COUPALGO", "fs3i_IterStagg",

@@ -151,13 +151,13 @@ namespace Discret
           case Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID:
           {
             // funct_s
-            std::shared_ptr<SlaveElementRepresentation<distype, slave_distype, slave_numdof>> ser =
+            std::shared_ptr<SlaveElementRepresentation<distype, slave_distype, slave_numdof>> set =
                 std::dynamic_pointer_cast<
                     SlaveElementRepresentation<distype, slave_distype, slave_numdof>>(slave_ele);
-            if (ser == nullptr)
+            if (set == nullptr)
               FOUR_C_THROW("Failed to cast slave_ele to SlaveElementRepresentation!");
             Core::LinAlg::Matrix<slave_nen_, 1> funct_s;
-            ser->get_slave_funct(funct_s);
+            set->get_slave_funct(funct_s);
 
             // funct_s * timefac * fac * funct_s * kappa_s (dyadic product)
             funct_s_s_dyad_.multiply_nt(funct_s_, funct_s);
@@ -438,7 +438,7 @@ namespace Discret
         }
 
         if (configmap.at(Inpar::XFEM::F_Con_n_Col)
-                .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
+                .first)  //(COMMENT: evaluating this separately seems to be more efficient for our
                          // cases)
         {
           nit_p_consistency_master_terms(pres_m, funct_m, normal_pres_timefacfac_,
@@ -489,7 +489,7 @@ namespace Discret
         }
 
         if (configmap.at(Inpar::XFEM::F_Adj_n_Row)
-                .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
+                .first)  //(COMMENT: evaluating this separately seems to be more efficient for our
                          // cases)
         {
           //-----------------------------------------------------------------
@@ -579,7 +579,7 @@ namespace Discret
           }
 
           if (configmap.at(Inpar::XFEM::XF_Con_n_Col)
-                  .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
+                  .first)  //(COMMENT: evaluating this separately seems to be more efficient for our
                            // cases)
           {
             nit_p_consistency_slave_terms(pres_s, funct_m, normal_pres_timefacfac_,
@@ -597,7 +597,7 @@ namespace Discret
                 configmap.at(Inpar::XFEM::F_Adj_Col), configmap.at(Inpar::XFEM::X_Adj_Col));
           }
           if (configmap.at(Inpar::XFEM::XF_Adj_n_Row)
-                  .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
+                  .first)  //(COMMENT: evaluating this separately seems to be more efficient for our
                            // cases)
           {
             nit_p_adjoint_consistency_slave_terms(normal_pres_timefacfac_,
@@ -1219,7 +1219,7 @@ namespace Discret
           }
 
           if (configmap.at(Inpar::XFEM::F_Con_n_Col)
-                  .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
+                  .first)  //(COMMENT: evaluating this separately seems to be more efficient for our
                            // cases)
           {
             nit_p_consistency_master_terms(pres_m, funct_m, normal_pres_timefacfac_,
@@ -1265,7 +1265,7 @@ namespace Discret
             }
 
             if (configmap.at(Inpar::XFEM::F_Adj_n_Row)
-                    .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for
+                    .first)  //(COMMENT: evaluating this separately seems to be more efficient for
                              // our cases)
             {
               //-----------------------------------------------------------------
@@ -1329,7 +1329,7 @@ namespace Discret
               }
 
               if (configmap.at(Inpar::XFEM::XF_Con_n_Col)
-                      .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for
+                      .first)  //(COMMENT: evaluating this separately seems to be more efficient for
                                // our cases)
               {
                 nit_p_consistency_slave_terms(presn_s, funct_m, normal_pres_timefacfac_,
@@ -1381,7 +1381,7 @@ namespace Discret
                     true);
               }
               if (configmap.at(Inpar::XFEM::XF_Adj_n_Row)
-                      .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for
+                      .first)  //(COMMENT: evaluating this separately seems to be more efficient for
                                // our cases)
               {
                 nit_p_adjoint_consistency_slave_terms(normal_pres_timefacfac_,
@@ -1800,7 +1800,7 @@ namespace Discret
         proj_norm_timefacfac.multiply(proj_normal_, normal_timefacfac);
 #endif
         //-----------------------------------------------
-        //    - (qm*n, km *(Dum))
+        //    - (qm*n, km *(Dumb))
         //-----------------------------------------------
         const double facmm = m_row.second * m_col.second;
         for (unsigned ic = 0; ic < nen_; ++ic)
@@ -1813,7 +1813,7 @@ namespace Discret
 
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              // - (qm*n, km *(Dum))
+              // - (qm*n, km *(Dumb))
 #ifndef PROJECT_VEL_FOR_PRESSURE_ADJOINT
               C_umum_(row, m_index(ic, ivel)) -= tmp * normal_timefacfac(ivel);
               //        C_umum_(row, m_index(ic,ivel)) += tmp*normal_timefacfac_km(ivel); //TESTING!
@@ -1892,7 +1892,7 @@ namespace Discret
         if (only_rhs) return;
 
         //-----------------------------------------------
-        //    - (qs*n, ks *(Dum))
+        //    - (qs*n, ks *(Dumb))
         //-----------------------------------------------
         const double facsm = s_row.second * m_col.second;
         for (unsigned ic = 0; ic < nen_; ++ic)
@@ -1905,7 +1905,7 @@ namespace Discret
 
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              // -(qs*n, ks* Dum)
+              // -(qs*n, ks* Dumb)
 #ifndef PROJECT_VEL_FOR_PRESSURE_ADJOINT
               C_usum_(row, m_index(ic, ivel)) -= tmp * normal_timefacfac(ivel);
               //        C_usum_(row,m_index(ic,ivel)) += tmp*normal_timefacfac_ks(ivel); //TESTING!
@@ -1971,7 +1971,7 @@ namespace Discret
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             //-----------------------------------------------
-            //    - (vm, (2*km*mum) *eps(Dum)*n)
+            //    - (vm, (2*km*mum) *eps(Dumb)*n)
             //-----------------------------------------------
             rh_c_um_(m_index(ir, ivel), 0) +=
                 tmp_val * vderxy_m_normal_transposed_viscm_timefacfac_km_(ivel);
@@ -1988,7 +1988,7 @@ namespace Discret
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               //-----------------------------------------------
-              //    + (vs, (2*km*mum) *eps(Dum)*n)
+              //    + (vs, (2*km*mum) *eps(Dumb)*n)
               //-----------------------------------------------
 
               // rhs
@@ -2124,7 +2124,7 @@ namespace Discret
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             //-----------------------------------------------
-            //    - (vm, (2*km*mum) *eps(Dum)*n)
+            //    - (vm, (2*km*mum) *eps(Dumb)*n)
             //-----------------------------------------------
             rh_c_um_(m_index(ir, ivel), 0) +=
                 tmp_val * vderxy_x_normal_transposed_viscx_timefacfac_kx_pmatrix_(ivel);
@@ -2142,7 +2142,7 @@ namespace Discret
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             //-----------------------------------------------
-            //    + (vs, (2*km*mum) *eps(Dum)*n)
+            //    + (vs, (2*km*mum) *eps(Dumb)*n)
             //-----------------------------------------------
 
             // rhs

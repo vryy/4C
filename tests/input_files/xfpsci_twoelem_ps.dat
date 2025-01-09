@@ -22,8 +22,8 @@ OUTPUT_BIN                      yes
 -------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      OneStepTheta
 DAMPING                         Material
-RESULTSEVRY                     1
-RESTARTEVRY                     10
+RESULTSEVERY                     1
+RESTARTEVERY                     10
 NUMSTEP                         7
 MAXTIME                         5
 NLNSOL                          fullnewton
@@ -54,7 +54,7 @@ THETA                           1
 ---------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 NUMSTEP                         7
 MAXTIME                         5
 TIMESTEP                        0.5
@@ -68,9 +68,9 @@ LINEAR_SOLVER                   3
 TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 PREDICTOR                       steady_state
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 TIMESTEP                        0.5
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 NUMSTEP                         7
 THETA                           1
 START_THETA                     1
@@ -79,8 +79,8 @@ GEOMETRY                        box
 MAXTIME                         5
 TIMESTEP                        0.5
 NUMSTEP                         7
-RESULTSEVRY                     1
-RESTARTEVRY                     10
+RESULTSEVERY                     1
+RESTARTEVERY                     10
 COUPALGO                        iter_xfem_monolithic
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER

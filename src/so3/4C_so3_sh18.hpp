@@ -131,7 +131,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
       /*!
        \brief Does this element use EAS?

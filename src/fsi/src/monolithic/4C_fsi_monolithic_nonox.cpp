@@ -36,7 +36,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(MPI_Comm comm, const Teuchos::ParameterLis
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
-  // use taylored fluid- and ALE-wrappers
+  // use tailored fluid- and ALE-wrappers
   fluid_ = std::dynamic_pointer_cast<Adapter::FluidFluidFSI>(MonolithicBase::fluid_field());
   ale_ = std::dynamic_pointer_cast<Adapter::AleXFFsiWrapper>(MonolithicBase::ale_field());
 
@@ -349,7 +349,7 @@ void FSI::MonolithicNoNOX::evaluate(const Core::LinAlg::Vector<double>& step_inc
     }
   }
 
-  // Call all fileds evaluate method and assemble rhs and matrices
+  // Call all fields evaluate method and assemble rhs and matrices
 
   {
     structure_field()->evaluate(sx);
@@ -627,7 +627,7 @@ void FSI::MonolithicNoNOX::prepare_time_step()
     return;
 
   // recreate the combined dof-map and create a new block system matrix
-  // as we have to deal with a new map extrator
+  // as we have to deal with a new map extractor
   create_combined_dof_row_map();
   systemmatrix_ =
       std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(

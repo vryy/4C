@@ -48,7 +48,7 @@ namespace Core::LinAlg
 namespace BeamInteraction
 {
   /**
-   * \brief Manage Lagrange mulitplier DOFs for BeamToFluid mortar coupling
+   * \brief Manage Lagrange multiplier DOFs for BeamToFluid mortar coupling
    *
    * In beam to fluid interactions with mortar contact discretization, we need to create a
    * map with the Lagrange multiplier DOFs (in contrast to solid meshtying / mortar we do not create
@@ -176,7 +176,7 @@ namespace BeamInteraction
         const Core::LinAlg::Vector<double>& vel) const;
 
     /**
-     * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
+     * \brief Get the global vector of Lagrange multipliers, with the maps being the column maps of
      * the Lagrange GID. on the ranks where they are used.
      * @param vel (in) Global velocity vector.
      * @return Global vector of Lagrange multipliers.

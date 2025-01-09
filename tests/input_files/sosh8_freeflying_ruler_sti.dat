@@ -39,8 +39,8 @@ NLNSOL                          fullnewton
 //NUMSTEP                       2000
 NUMSTEP                         10
 PREDICT                         ConstAcc
-RESULTSEVRY                     1
-RESTARTEVRY                     100
+RESULTSEVERY                     1
+RESTARTEVERY                     100
 TIMESTEP                        50E-6
 TOLCONSTR                       1e-6
 TOLDISP                         1e-6

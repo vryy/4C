@@ -365,7 +365,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_turbulence_appr
 
     // when no averaging was done, we just keep the calculated (clipped) value
     if (turbparams_->cs_av())
-      get_mean_prt_of_homogenous_direction(params.sublist("TURBULENCE MODEL"), nlayer);
+      get_mean_prt_of_homogeneous_direction(params.sublist("TURBULENCE MODEL"), nlayer);
   }
 
   // get fine-scale values

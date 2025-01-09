@@ -268,7 +268,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
       // but ids are not unique among 2 distinct conditions
       // due to the way elements in conditions are build.
       // We therefore have to give the second, third,... set of elements
-      // different ids. ids do not have to be continous, we just add a large
+      // different ids. ids do not have to be continuous, we just add a large
       // enough number ggsize to all elements of cond2, cond3,... so they are
       // different from those in cond1!!!
       // note that elements in ele1/ele2 already are in column (overlapping) map

@@ -26,14 +26,14 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MAXTIME                         1000
 NUMSTEP                         10
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 THETA                           0.5
 TIMEINTEGR                      BDF2
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
 CALCFLUX_DOMAIN                 total
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 CALCERROR                       No
 MESHTYING                       Condensed_Bmat_merged
 OUTPUTSCALARS                   entire_domain

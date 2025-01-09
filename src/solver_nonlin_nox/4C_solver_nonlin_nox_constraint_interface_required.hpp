@@ -41,7 +41,7 @@ namespace NOX
           //! Constructor
           Required() {};
 
-          //! Destrcutor
+          //! Destructor
           virtual ~Required() = default;
 
           /*! @name Merit function support functions

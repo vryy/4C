@@ -688,7 +688,7 @@ void XFEM::CouplingBase::get_viscosity_master(Core::Elements::Element* xfele,  /
 }
 
 /*--------------------------------------------------------------------------*
- * get weighting paramters
+ * get weighting parameters
  *--------------------------------------------------------------------------*/
 void XFEM::CouplingBase::get_average_weights(Core::Elements::Element* xfele,  ///< xfluid ele
     Core::Elements::Element* coup_ele,                                        ///< coup_ele ele

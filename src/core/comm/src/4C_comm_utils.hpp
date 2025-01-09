@@ -42,7 +42,7 @@ namespace Core::Communication
    *
    * You can add Core::Communication::AreDistributedVectorsIdentical in your code which will lead to
    * a comparison of the given vector for different executables and/or configurations. Command for
-   * using this feature: \n mpirun -np 1 ./4C -nptype=diffgroup0 input.dat xxx_ser : -np 3
+   * using this feature: \n mpirun -np 1 ./4C -nptype=diffgroup0 input.dat xxx_set : -np 3
    * ./other-4C -nptype=diffgroup1 other-input.dat xxx_par \n Do not forget to include the header
    * (#include "4C_comm_utils.hpp"), otherwise it won't compile.
    *
@@ -66,7 +66,7 @@ namespace Core::Communication
    * You can add Core::Communication::AreDistributedSparseMatricesIdentical in your code which will
    * lead to a comparison of the given sparse matrices for different executables and/or
    * configurations. Command for using this feature: \n mpirun -np 1 ./4C -nptype=diffgroup0
-   * input.dat xxx_ser : -np 3 ./other-4C -nptype=diffgroup1 other-input.dat xxx_par \n Do not
+   * input.dat xxx_set : -np 3 ./other-4C -nptype=diffgroup1 other-input.dat xxx_par \n Do not
    * forget to include the header (#include "4C_comm_utils.hpp"), otherwise it won't compile.
    *
    * A further nice option is to compare results from different executables used for

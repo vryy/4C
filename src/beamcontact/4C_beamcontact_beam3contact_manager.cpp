@@ -449,7 +449,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
     t_end = Teuchos::Time::wallTime() - t_start;
     Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
     if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()) &&
-        ioparams.get<int>("STDOUTEVRY", 0))
+        ioparams.get<int>("STDOUTEVERY", 0))
       Core::IO::cout(Core::IO::standard)
           << "      OctTree Search (Contact): " << t_end << " seconds" << Core::IO::endl;
   }
@@ -464,7 +464,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
     t_end = Teuchos::Time::wallTime() - t_start;
     Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
     if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()) &&
-        ioparams.get<int>("STDOUTEVRY", 0))
+        ioparams.get<int>("STDOUTEVERY", 0))
       Core::IO::cout(Core::IO::standard)
           << "      Brute Force Search (Contact): " << t_end << " seconds" << Core::IO::endl;
   }
@@ -487,7 +487,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
       double t_end = Teuchos::Time::wallTime() - t_start;
       Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
       if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()) &&
-          ioparams.get<int>("STDOUTEVRY", 0))
+          ioparams.get<int>("STDOUTEVERY", 0))
         Core::IO::cout(Core::IO::standard)
             << "      OctTree Search (Potential): " << t_end << " seconds" << Core::IO::endl;
     }
@@ -503,7 +503,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
       double t_end = Teuchos::Time::wallTime() - t_start;
       Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
       if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()) &&
-          ioparams.get<int>("STDOUTEVRY", 0))
+          ioparams.get<int>("STDOUTEVERY", 0))
         Core::IO::cout(Core::IO::standard)
             << "      Brute Force Search (Potential): " << t_end << " seconds" << Core::IO::endl;
     }
@@ -738,7 +738,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
       // note that we do not have to worry about double entries
       // as the add_node function can deal with this case!
-      // the only problem would have occured for the initial active nodes,
+      // the only problem would have occurred for the initial active nodes,
       // as their status could have been overwritten, but is prevented
       // by the "foundinitialactive" block above!
       solcontactnodes_.push_back(cnode);
@@ -758,7 +758,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     // but ids are not unique among 2 distinct conditions
     // due to the way elements in conditions are build.
     // We therefore have to give the second, third,... set of elements
-    // different ids. ids do not have to be continous, we just add a large
+    // different ids. ids do not have to be continuous, we just add a large
     // enough number ggsize to all elements of cond2, cond3,... so they are
     // different from those in cond1!!!
     // note that elements in ele1/ele2 already are in column (overlapping) map
@@ -816,7 +816,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
       // note that we do not have to worry about double entries
       // as the add_node function can deal with this case!
-      // the only problem would have occured for the initial active nodes,
+      // the only problem would have occurred for the initial active nodes,
       // as their status could have been overwritten, but is prevented
       // by the "foundinitialactive" block above!
       solmeshtyingnodes_.push_back(mtnode);
@@ -836,7 +836,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     // but ids are not unique among 2 distinct conditions
     // due to the way elements in conditions are build.
     // We therefore have to give the second, third,... set of elements
-    // different ids. ids do not have to be continous, we just add a large
+    // different ids. ids do not have to be continuous, we just add a large
     // enough number ggsize to all elements of cond2, cond3,... so they are
     // different from those in cond1!!!
     // note that elements in ele1/ele2 already are in column (overlapping) map
@@ -1027,7 +1027,7 @@ void CONTACT::Beam3cmanager::set_current_positions(
 void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const Core::LinAlg::Vector<double>& disccol)
 {
-  // map to store the nodal tangent vectors (necessary for Kirchhoff type beams) and adress it with
+  // map to store the nodal tangent vectors (necessary for Kirchhoff type beams) and address it with
   // the node ID
   std::map<int, Core::LinAlg::Matrix<3, 1>> currenttangents;
   currenttangents.clear();
@@ -1226,7 +1226,7 @@ void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintparams)
 {
-  // Begin: Determine maximal curvature occuring in complete beam discretization
+  // Begin: Determine maximal curvature occurring in complete beam discretization
   double kappa_max = 0.0;
   global_kappa_max_ = 0.0;
 
@@ -1261,7 +1261,7 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
   Core::Communication::max_all(&kappa_max, &global_kappa_max_, 1, get_comm());
   //  std::cout << "global_kappa_max_: " << global_kappa_max_ << std::endl;
   timeintparams.set("kappa_max", global_kappa_max_);
-  // End: Determine maximal curvature occuring in complete beam discretization
+  // End: Determine maximal curvature occurring in complete beam discretization
 
   // Loop over all BTB contact pairs
   for (int i = 0; i < (int)pairs_.size(); ++i)
@@ -1830,7 +1830,7 @@ std::vector<std::vector<Core::Elements::Element*>> CONTACT::Beam3cmanager::brute
         // if NOT neighbouring and NOT found before
         // create new beam3contact object and store it into pairs_
 
-        // Here we additonally apply the method close_midpoint_distance which sorts out all pairs
+        // Here we additionally apply the method close_midpoint_distance which sorts out all pairs
         // with a midpoint distance larger than sphericalsearchradius. Thus with this additional
         // method the search is based on spherical bounding boxes and node on node distances any
         // longer. The radius of these spheres is sphericalsearchradius/2.0, the center of such a
@@ -1886,7 +1886,7 @@ void CONTACT::Beam3cmanager::compute_search_radius()
   searchradius_ = nodalsearchfac * (2.0 * searchboxinc_ + globalcharactlength);
 
   // In a second step spherical search boxes are applied which consider
-  // the midpoint-to-midpiont distance. In the first (nodal-based) search step
+  // the midpoint-to-midpoint distance. In the first (nodal-based) search step
   // it has to be ensured that all pairs relevant for this second search step will
   // be found. The most critical case (i.e. the case, where the midpoints are as close as
   // possible but the node distances are as large as possible) is the case where to (straight)
@@ -2033,7 +2033,7 @@ void CONTACT::Beam3cmanager::update(
     totalmaxdeltadisp_ = maxdeltadisp_;
 
   // If the original gap function definition is applied, the displacement per time is not allowed
-  // to be larger than the smalles beam cross section radius occurring in the discretization!
+  // to be larger than the smallest beam cross section radius occurring in the discretization!
   bool newgapfunction = beam_contact_parameters().get<bool>("BEAMS_NEWGAP");
   if (!newgapfunction)
   {
@@ -2076,7 +2076,7 @@ void CONTACT::Beam3cmanager::update(
         pairs_[i]->invert_normal();
         Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
         if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()) &&
-            ioparams.get<int>("STDOUTEVRY", 0))
+            ioparams.get<int>("STDOUTEVERY", 0))
           std::cout << "      Warning: Penetration to large, choose higher penalty parameter!"
                     << std::endl;
       }
@@ -2100,7 +2100,7 @@ void CONTACT::Beam3cmanager::update(
   // print some data to screen
   console_output();
   // store pairs_ in oldpairs_ to be available in next time step
-  // this is needed for the new gapfunction defintion and also for the output at the end of an time
+  // this is needed for the new gapfunction definition and also for the output at the end of an time
   // step
   oldpairs_.clear();
   oldpairs_.resize(0);
@@ -2903,7 +2903,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
       gmshfilecontent << "T2(" << std::scientific << xpos << "," << (ypos += yspace) << ","
                       << textsize << ")";
       gmshfilecontent << "{\""
-                      << "Number of Gauss points in contact intervall: " << numgp << "\"};"
+                      << "Number of Gauss points in contact interval: " << numgp << "\"};"
                       << std::endl;
 
       gmshfilecontent << "T2(" << std::scientific << xpos << "," << (ypos += yspace) << ","
@@ -3304,7 +3304,7 @@ void CONTACT::Beam3cmanager::update_constr_norm()
 
   // print results to screen
   Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
-  if (Core::Communication::my_mpi_rank(get_comm()) == 0 && ioparams.get<int>("STDOUTEVRY", 0))
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0 && ioparams.get<int>("STDOUTEVERY", 0))
   {
     Core::IO::cout(Core::IO::debug)
         << Core::IO::endl
@@ -3360,7 +3360,7 @@ void CONTACT::Beam3cmanager::update_all_pairs()
 void CONTACT::Beam3cmanager::console_output()
 {
   Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
-  if (ioparams.get<int>("STDOUTEVRY", 0))
+  if (ioparams.get<int>("STDOUTEVERY", 0))
   {
     // begin output
     if (Core::Communication::my_mpi_rank(get_comm()) == 0)
@@ -3615,7 +3615,7 @@ void CONTACT::Beam3cmanager::console_output()
 
     // print results to screen
     Teuchos::ParameterList ioparams = Global::Problem::instance()->io_params();
-    if (Core::Communication::my_mpi_rank(get_comm()) == 0 && ioparams.get<int>("STDOUTEVRY", 0))
+    if (Core::Communication::my_mpi_rank(get_comm()) == 0 && ioparams.get<int>("STDOUTEVERY", 0))
     {
       Core::IO::cout(Core::IO::standard)
           << "\n    Number of Point-to-Point Contact Pairs: " << sumpro_numperpc << Core::IO::endl;
@@ -3708,7 +3708,7 @@ void CONTACT::Beam3cmanager::gmsh_2_noded(const int& n,
     int id2 = (pairs_[i]->Element2())->Id();
     bool active = pairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
+    // if element is member of an active contact pair, choose different color
     if ((thisele->Id() == id1 || thisele->Id() == id2) && active) color = 0.5;
   }
   for (int i = 0; i < (int)btsphpairs_.size(); ++i)
@@ -3718,7 +3718,7 @@ void CONTACT::Beam3cmanager::gmsh_2_noded(const int& n,
     int id2 = (btsphpairs_[i]->Element2())->Id();
     bool active = btsphpairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
+    // if element is member of an active contact pair, choose different color
     if ((thisele->Id() == id1 || thisele->Id() == id2) && active) color = 0.5;
   }
 #endif
@@ -3728,13 +3728,13 @@ void CONTACT::Beam3cmanager::gmsh_2_noded(const int& n,
   double norm_axis = Core::LinAlg::norm2(axis);
   for (int j = 0; j < axis.length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
-  // Compute rotation matirx R
+  // Compute rotation matrix R
   transform_angle_to_triad(theta, R);
 
   // Now the first prism will be computed via two radiusvectors, that point from each of
   // the nodes to two points on the beam surface. Further prisms will be computed via a
   // for-loop, where the second node of the previous prism is used as the first node of the
-  // next prism, whereas the central points (=nodes) stay  identic for each prism. The
+  // next prism, whereas the central points (=nodes) stay  identical for each prism. The
   // second node will be computed by a rotation matrix and a radiusvector.
 
   // compute radius vector for first surface node of first prims
@@ -3866,7 +3866,7 @@ void CONTACT::Beam3cmanager::gmsh_3_noded(const int& n,
     int id2 = (pairs_[i]->Element2())->Id();
     bool active = pairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
+    // if element is member of an active contact pair, choose different color
     if ((thisele->Id() == id1 || thisele->Id() == id2) && active) color = 0.0;
   }
   for (int i = 0; i < (int)btsphpairs_.size(); ++i)
@@ -3876,7 +3876,7 @@ void CONTACT::Beam3cmanager::gmsh_3_noded(const int& n,
     int id2 = (btsphpairs_[i]->Element2())->Id();
     bool active = btsphpairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
+    // if element is member of an active contact pair, choose different color
     if ((thisele->Id() == id1 || thisele->Id() == id2) && active) color = 0.875;
   }
 #endif
@@ -3917,7 +3917,7 @@ void CONTACT::Beam3cmanager::gmsh_3_noded(const int& n,
     // Now the first prism will be computed via two radiusvectors, that point from each of
     // the nodes to two points on the beam surface. Further prisms will be computed via a
     // for-loop, where the second node of the previous prism is used as the first node of the
-    // next prism, whereas the central points (=nodes) stay  identic for each prism. The
+    // next prism, whereas the central points (=nodes) stay  identical for each prism. The
     // second node will be computed by a rotation matrix and a radiusvector.
 
     // compute radius vector for first surface node of first prims
@@ -4059,7 +4059,7 @@ void CONTACT::Beam3cmanager::gmsh_4_noded(const int& n,
     int id2 = (pairs_[i]->Element2())->Id();
     bool active = pairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
+    // if element is member of an active contact pair, choose different color
     if ((thisele->Id() == id1 || thisele->Id() == id2) && active) color = 0.0;
   }
   for (int i = 0; i < (int)btsphpairs_.size(); ++i)
@@ -4069,7 +4069,7 @@ void CONTACT::Beam3cmanager::gmsh_4_noded(const int& n,
     int id2 = (btsphpairs_[i]->Element2())->Id();
     bool active = btsphpairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
+    // if element is member of an active contact pair, choose different color
     if ((thisele->Id() == id1 || thisele->Id() == id2) && active) color = 0.875;
   }
 #endif
@@ -4120,7 +4120,7 @@ void CONTACT::Beam3cmanager::gmsh_4_noded(const int& n,
     // Now the first prism will be computed via two radiusvectors, that point from each of
     // the nodes to two points on the beam surface. Further prisms will be computed via a
     // for-loop, where the second node of the previous prism is used as the first node of the
-    // next prism, whereas the central points (=nodes) stay  identic for each prism. The
+    // next prism, whereas the central points (=nodes) stay  identical for each prism. The
     // second node will be computed by a rotation matrix and a radiusvector.
 
     // compute radius vector for first surface node of first prims
@@ -4263,7 +4263,7 @@ void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
     int id2 = (pairs_[i]->Element2())->Id();
     bool active = pairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
+    // if element is member of an active contact pair, choose different color
     if ((thisele->Id() == id1 || thisele->Id() == id2) && active) color = 1.0;
   }
   for (int i = 0; i < (int)btsphpairs_.size(); ++i)
@@ -4273,7 +4273,7 @@ void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
     int id2 = (btsphpairs_[i]->Element2())->Id();
     bool active = btsphpairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
+    // if element is member of an active contact pair, choose different color
     if ((thisele->Id() == id1 || thisele->Id() == id2) && active) color = 0.875;
   }
   for (int i_pair = 0; i_pair < (int)btsolpairs_.size(); ++i_pair)
@@ -4281,7 +4281,7 @@ void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
     // Id of beam element
     int id1 = (btsolpairs_[i_pair]->Element1())->Id();
 
-    // If beam element is memeber of an active beam to solid contact pair, choose different color
+    // If beam element is member of an active beam to solid contact pair, choose different color
     if (thisele->Id() == id1)
     {
       if (btsolpairs_[i_pair]->GetContactFlag())
@@ -4333,7 +4333,7 @@ void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
     // Now the first prism will be computed via two radiusvectors, that point from each of
     // the nodes to two points on the beam surface. Further prisms will be computed via a
     // for-loop, where the second node of the previous prism is used as the first node of the
-    // next prism, whereas the central points (=nodes) stay  identic for each prism. The
+    // next prism, whereas the central points (=nodes) stay  identical for each prism. The
     // second node will be computed by a rotation matrix and a radiusvector.
 
     // compute radius vector for first surface node of first prims
@@ -4457,7 +4457,7 @@ void CONTACT::Beam3cmanager::gmsh_n_noded_line(const int& n, const int& n_axial,
     int id2 = (pairs_[i]->Element2())->Id();
     bool active = pairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
+    // if element is member of an active contact pair, choose different color
     if ((thisele->Id() == id1 || thisele->Id() == id2) && active) color = 0.0;
   }
   for (int i = 0; i < (int)btsphpairs_.size(); ++i)
@@ -4467,7 +4467,7 @@ void CONTACT::Beam3cmanager::gmsh_n_noded_line(const int& n, const int& n_axial,
     int id2 = (btsphpairs_[i]->Element2())->Id();
     bool active = btsphpairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
+    // if element is member of an active contact pair, choose different color
     if ((thisele->Id() == id1 || thisele->Id() == id2) && active) color = 0.875;
   }
 #endif
@@ -4972,7 +4972,7 @@ void CONTACT::Beam3cmanager::gmsh_sq(
       gmshfilecontent << coords[i_dim][i_node];
       if (i_dim < 2)
       {
-        // Coordinate x, y, z seperator
+        // Coordinate x, y, z separator
         gmshfilecontent << ",";
       }
     }
@@ -5009,7 +5009,7 @@ void CONTACT::Beam3cmanager::gmsh_st(
       gmshfilecontent << coords[i_dim][i_node];
       if (i_dim < 2)
       {
-        // Coordinate x, y, z seperator
+        // Coordinate x, y, z separator
         gmshfilecontent << ",";
       }
     }

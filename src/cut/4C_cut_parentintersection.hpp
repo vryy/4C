@@ -97,7 +97,7 @@ namespace Cut
     };  // end class DofSetData
 
 
-    /// constructur for ParentIntersecton class
+    /// constructor for ParentIntersection class
     ParentIntersection(int myrank = -1)
         : pp_(std::make_shared<PointPool>()),
           mesh_(options_, 1, pp_, false, myrank),
@@ -190,7 +190,7 @@ namespace Cut
 
     /// find cell sets around each node (especially for quadratic elements)
     void find_nodal_cell_sets(bool include_inner, std::set<int>& eids,
-        std::vector<int>& sourrounding_elements,
+        std::vector<int>& surrounding_elements,
         std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets_inside,
         std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets_outside,
         std::vector<plain_volumecell_set>& cell_sets_inside,

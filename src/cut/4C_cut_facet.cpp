@@ -186,7 +186,7 @@ void Cut::Facet::add_hole(Facet* hole)
     {
       std::reverse(hole->corner_points_.begin(), hole->corner_points_.end());
       std::reverse(hole->points_.begin(), hole->points_.end());
-      std::cout << "WARNING:: Facet::AddHole: points_ and hole->points_ are not alighned correct "
+      std::cout << "WARNING:: Facet::AddHole: points_ and hole->points_ are not aligned correct "
                    "(other direction)! "
                 << std::endl;
     }
@@ -727,7 +727,7 @@ bool Cut::Facet::touches(Facet* f)
  * If this Facet has a CommonEdge with another facet, based on this edge the point ordering is
  *checked ager 08/15
  *----------------------------------------------------------------------------------------------------*/
-bool Cut::Facet::have_consistant_normal(Facet* f, bool& result)
+bool Cut::Facet::have_consistent_normal(Facet* f, bool& result)
 {
   // 1// create map which stores references to all points cycles, which should be matched!
   //(this function uses the fact, that ordering of the points in holes is opposite to the ordering

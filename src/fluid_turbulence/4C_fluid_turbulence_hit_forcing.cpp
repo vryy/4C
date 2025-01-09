@@ -27,7 +27,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-#define USE_TRAGET_SPECTRUM
+#define USE_TARGET_SPECTRUM
 // #define TIME_UPDATE_FORCING_SPECTRUM
 
 namespace FLD
@@ -35,7 +35,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  HomIsoTurbForcing::HomIsoTurbForcing(FluidImplicitTimeInt& timeint)
+  HomoIsoTurbForcing::HomoIsoTurbForcing(FluidImplicitTimeInt& timeint)
       : ForcingInterface(),
         forcing_type_(Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(
             timeint.params_->sublist("TURBULENCE MODEL"), "FORCING_TYPE")),
@@ -238,11 +238,11 @@ namespace FLD
   /*--------------------------------------------------------------*
    | initialize energy spectrum by initial field  rasthofer 05/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcing::set_initial_spectrum(Inpar::FLUID::InitialField init_field_type)
+  void HomoIsoTurbForcing::set_initial_spectrum(Inpar::FLUID::InitialField init_field_type)
   {
     if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
     {
-#ifdef USE_TRAGET_SPECTRUM
+#ifdef USE_TARGET_SPECTRUM
       if (init_field_type == Inpar::FLUID::initfield_forced_hit_simple_algebraic_spectrum)
       {
         for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
@@ -397,7 +397,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | activate calculation of forcing              rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcing::activate_forcing(const bool activate)
+  void HomoIsoTurbForcing::activate_forcing(const bool activate)
   {
     activate_ = activate;
     return;
@@ -407,7 +407,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | calculate volume force                       rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcing::calculate_forcing(const int step)
+  void HomoIsoTurbForcing::calculate_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     // check if forcing is selected
@@ -835,7 +835,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | get forcing                                   rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcing::update_forcing(const int step)
+  void HomoIsoTurbForcing::update_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     // check if forcing is selected
@@ -1097,7 +1097,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | time update of energy spectrum               rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcing::time_update_forcing()
+  void HomoIsoTurbForcing::time_update_forcing()
   {
 #ifdef TIME_UPDATE_FORCING_SPECTRUM
     if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
@@ -1128,8 +1128,8 @@ namespace FLD
   /*--------------------------------------------------------------*
    | constructor                                         bk 03/15 |
    *--------------------------------------------------------------*/
-  HomIsoTurbForcingHDG::HomIsoTurbForcingHDG(FluidImplicitTimeInt& timeint)
-      : HomIsoTurbForcing(timeint)
+  HomoIsoTurbForcingHDG::HomoIsoTurbForcingHDG(FluidImplicitTimeInt& timeint)
+      : HomoIsoTurbForcing(timeint)
   {
     // here we are using the interior velocity
     TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*>(&timeint);
@@ -1205,10 +1205,10 @@ namespace FLD
   /*--------------------------------------------------------------*
    | initialize energy spectrum by initial field         bk 04/15 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcingHDG::set_initial_spectrum(Inpar::FLUID::InitialField init_field_type)
+  void HomoIsoTurbForcingHDG::set_initial_spectrum(Inpar::FLUID::InitialField init_field_type)
   {
-#ifdef USE_TRAGET_SPECTRUM
-    HomIsoTurbForcing::set_initial_spectrum(init_field_type);
+#ifdef USE_TARGET_SPECTRUM
+    HomoIsoTurbForcing::set_initial_spectrum(init_field_type);
 #else
     FOUR_C_THROW("only USE_TARGET_SPECTRUM implemented for HDG");
 #endif
@@ -1218,7 +1218,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | calculate volume force                              bk 03/15 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcingHDG::calculate_forcing(const int step)
+  void HomoIsoTurbForcingHDG::calculate_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     // check if forcing is selected
@@ -1660,7 +1660,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | get forcing                                         bk 03/15 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcingHDG::update_forcing(const int step)
+  void HomoIsoTurbForcingHDG::update_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     // check if forcing is selected
@@ -2055,7 +2055,7 @@ namespace FLD
 
     double newforce = 0.0;
 
-    // the inital value does not have any meaning, so assume 0 for first step
+    // the initial value does not have any meaning, so assume 0 for first step
     if (step_ < 2) dm = 0.0;
 
     // new estimated force

@@ -474,7 +474,7 @@ void XFEM::MeshProjector::communicate_nodes(
   // information how many processors work at all
   std::vector<int> allproc(numproc);
 
-  // create an exporter for point to point comunication
+  // create an exporter for point to point communication
   Core::Communication::Exporter exporter(sourcedis_->get_comm());
 
   // necessary variables

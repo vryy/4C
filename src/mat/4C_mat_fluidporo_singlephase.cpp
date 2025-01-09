@@ -123,7 +123,7 @@ Mat::FluidPoroSinglePhase::FluidPoroSinglePhase(Mat::PAR::FluidPoroSinglePhase* 
 }
 
 /*----------------------------------------------------------------------*
- * pack material for commuication                           vuong 08/16 |
+ * pack material for communication                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 void Mat::FluidPoroSinglePhase::pack(Core::Communication::PackBuffer& data) const
 {
@@ -344,7 +344,7 @@ Mat::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Mat::PAR::FluidPoroSingleVol
 }
 
 /*----------------------------------------------------------------------*
- * pack material for commuication                      kremheller 10/17 |
+ * pack material for communication                      kremheller 10/17 |
  *----------------------------------------------------------------------*/
 void Mat::FluidPoroSingleVolFrac::pack(Core::Communication::PackBuffer& data) const
 {
@@ -465,7 +465,7 @@ Mat::FluidPoroVolFracPressure::FluidPoroVolFracPressure(Mat::PAR::FluidPoroVolFr
 }
 
 /*----------------------------------------------------------------------*
- * pack material for commuication                      kremheller 02/18 |
+ * pack material for communication                      kremheller 02/18 |
  *----------------------------------------------------------------------*/
 void Mat::FluidPoroVolFracPressure::pack(Core::Communication::PackBuffer& data) const
 {

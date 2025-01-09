@@ -7,7 +7,7 @@
 
 #ifndef FOUR_C_FLUID_TIMINT_STAT_HDG_HPP
 #define FOUR_C_FLUID_TIMINT_STAT_HDG_HPP
-// TODO als fix
+// TODO also fix
 // fluid_timint_stat_hdg
 // because it is not working
 

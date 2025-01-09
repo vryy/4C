@@ -123,7 +123,7 @@ namespace Solid
       /*! \brief Time integration coefficients container
        *
        * \note For bounds on the individual parameters, please consult the
-       * original publication by Chung and Hulbert (1993). In practive however,
+       * original publication by Chung and Hulbert (1993). In practice however,
        * it is advised to choose the spectral radius as \f$\rho_\infty \in [0.5,1]\f$.
        */
       struct Coefficients
@@ -376,7 +376,7 @@ namespace Solid
    * use the input to calculate GenAlpha parameters: alphaf, alpham, beta and gamma
    * if the user provides spectral radius RHO_INF with in [0,1], the optimal set of the four
    * parameters will be calculated and passed to following process
-   * If the user provides the four parameters dirctly, he is asked to set RHO_INF as -1.0
+   * If the user provides the four parameters directly, he is asked to set RHO_INF as -1.0
    * this function also makes sure each parameter is in their correct range.
    \note just an internal function to reduce redundancy in structure and structure_new
    *

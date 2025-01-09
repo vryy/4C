@@ -456,7 +456,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           //
           // it is based on the fact that the letters x, y and z are
           // consecutive in the ASCII table --- 'x' is the ASCII
-          // calue of x ....
+          // value of x ....
 
           if (*thisplane == "xyz")
           {
@@ -832,7 +832,7 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
           int from = -1;
           exporter.receive_any(from, tag, rdata, length);
           if (tag != 1337 or from != fromrank)
-            FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
+            FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) is(%i -> %i)", fromrank,
                 myrank, from, myrank);
 
           // ---- unpack ----
@@ -1414,7 +1414,7 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
 
     // standard part without master<->slave coupling
     // Note:
-    // if a proc stores the appropiate ghosted elements, the resulting
+    // if a proc stores the appropriate ghosted elements, the resulting
     // graph will be the correct and complete graph of the distributed
     // discretization even if nodes are not ghosted.
 

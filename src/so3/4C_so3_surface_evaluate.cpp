@@ -267,7 +267,7 @@ int Discret::Elements::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
         {
           if ((*onoff)[checkdof] != 0)
             FOUR_C_THROW(
-                "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not "
+                "Number of Dimensions in Neumann_Evaluation is 3. Further DoFs are not "
                 "considered.");
         }
 
@@ -1084,13 +1084,13 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     // compute stochastical forces due to Brownian Motion
     case calc_brownian_motion:
     {
-      FOUR_C_THROW("not commited");
+      FOUR_C_THROW("not committed");
     }
     break;
     // compute damping matrix due to Brownian Motion
     case calc_brownian_motion_damping:
     {
-      FOUR_C_THROW("not yet comitted");
+      FOUR_C_THROW("not yet committed");
     }
     break;
     // compute the area (e.g. for initialization)
@@ -1309,7 +1309,7 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
       // InterpolateToImmersedIntPoint(...)
       //
       // which is a generally applicable method for this purpose returning
-      // the desired quantitiy from another field interpolated to the current
+      // the desired quantity from another field interpolated to the current
       // integration point belonging to THIS field.
       //
       // fluiddis  = backgrddis

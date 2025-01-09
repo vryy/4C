@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------*
- * constructur for Combined intersection class (Levelset and Mesh intersection in one class)
+ * constructor for Combined intersection class (Levelset and Mesh intersection in one class)
  *-----------------------------------------------------------------------------------------*/
 
 Cut::CombIntersection::CombIntersection(int myrank)

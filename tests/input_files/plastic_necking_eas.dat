@@ -28,8 +28,8 @@ STRUCT_STRESS                   2PK
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.175
 NUMSTEP                         30
 MAXTIME                         7.0

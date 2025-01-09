@@ -112,7 +112,7 @@ namespace ParticleRigidBody
      * \brief rotate vector with given quaternion
      *
      * Note that the three dimensional vectors v and w are considered as quaternions with a real
-     * coordinate equal to zero and that the inverse of a quaterion q = [q1 q2 q3 q4] evaluates to
+     * coordinate equal to zero and that the inverse of a quaternion q = [q1 q2 q3 q4] evaluates to
      * q^-1 = [-q1 -q2 -q3 q4]
      *
      * [w 0] = q * [v 0] * q^-1

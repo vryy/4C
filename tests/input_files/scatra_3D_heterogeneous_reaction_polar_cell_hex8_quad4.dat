@@ -21,8 +21,8 @@ VELOCITYFIELD                   zero
 TIMESTEP                        0.01
 NUMSTEP                         20
 MAXTIME                         0.2
-RESTARTEVRY                     5
-RESULTSEVRY                     1
+RESTARTEVERY                     5
+RESULTSEVERY                     1
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-14
 CONVTOL                         1e-10

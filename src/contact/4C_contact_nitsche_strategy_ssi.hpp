@@ -38,7 +38,7 @@ namespace CONTACT
     }
 
     //! Shared data constructor
-    NitscheStrategySsi(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategySsi(const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
         const Epetra_Map* dofRowMap, const Epetra_Map* nodeRowMap,
         const Teuchos::ParameterList& params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, const MPI_Comm& comm,

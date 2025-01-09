@@ -72,7 +72,7 @@ void Inpar::FPSI::set_valid_parameters(Teuchos::ParameterList& list)
   setStringToIntegralParameter<Inpar::FPSI::ConvergenceNorm>("NORM_INC", "Abs",
       "Type of norm for primary variables convergence check.  \n"
       "Abs: absolute values, Abs_sys_split: absolute values with correction of systemsize for "
-      "every field seperate, Rel_sys: relative values with correction of systemsize.",
+      "every field separate, Rel_sys: relative values with correction of systemsize.",
       tuple<std::string>("Abs", "Abs_sys_split", "Rel_sys"),
       tuple<Inpar::FPSI::ConvergenceNorm>(
           absoluteconvergencenorm, absoluteconvergencenorm_sys_split, relativconvergencenorm_sys),
@@ -81,7 +81,7 @@ void Inpar::FPSI::set_valid_parameters(Teuchos::ParameterList& list)
   setStringToIntegralParameter<Inpar::FPSI::ConvergenceNorm>("NORM_RESF", "Abs",
       "Type of norm for primary variables convergence check. \n"
       "Abs: absolute values, Abs_sys_split: absolute values with correction of systemsize for "
-      "every field seperate, Rel_sys: relative values with correction of systemsize.",
+      "every field separate, Rel_sys: relative values with correction of systemsize.",
       tuple<std::string>("Abs", "Abs_sys_split", "Rel_sys"),
       tuple<Inpar::FPSI::ConvergenceNorm>(
           absoluteconvergencenorm, absoluteconvergencenorm_sys_split, relativconvergencenorm_sys),
@@ -106,8 +106,8 @@ void Inpar::FPSI::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::int_parameter("ITEMIN", 1, "minimal number of iterations over fields", &fpsidyn);
   Core::Utils::int_parameter("NUMSTEP", 200, "Total number of Timesteps", &fpsidyn);
   Core::Utils::int_parameter("ITEMAX", 100, "Maximum number of iterations over fields", &fpsidyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &fpsidyn);
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &fpsidyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "Increment for writing solution", &fpsidyn);
+  Core::Utils::int_parameter("RESTARTEVERY", 1, "Increment for writing restart", &fpsidyn);
 
   Core::Utils::int_parameter("FDCheck_row", 0, "print row value during fd_check", &fpsidyn);
   Core::Utils::int_parameter("FDCheck_column", 0, "print column value during fd_check", &fpsidyn);

@@ -117,7 +117,7 @@ ScaTra::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       has_capacitive_contributions_(false),
       kinetics_conditions_meshtying_slaveside_(),
       slaveonly_(parameters.sublist("S2I COUPLING").get<bool>("SLAVEONLY")),
-      indepedent_setup_of_conditions_(
+      independent_setup_of_conditions_(
           parameters.sublist("S2I COUPLING").get<bool>("MESHTYING_CONDITIONS_INDEPENDENT_SETUP"))
 {
   // empty constructor
@@ -2040,7 +2040,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
       int num_dof_per_condition = -1;
 
       // initialize int vectors for global ids of slave and master interface nodes
-      if (indepedent_setup_of_conditions_)
+      if (independent_setup_of_conditions_)
       {
         std::vector<std::vector<int>> islavenodegidvec_cond;
         std::vector<std::vector<int>> imasternodegidvec_cond;

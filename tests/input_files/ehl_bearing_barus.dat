@@ -33,14 +33,14 @@ ABSTOLRES                       1.0e-7
 CONVTOL                         1.0e-4
 PENALTY_CAVITATION              1e8
 -----------------------------------------------ELASTO HYDRO DYNAMIC
-RESTARTEVRYTIME                 0
-RESTARTEVRY                     1
+RESTARTEVERYTIME                 0
+RESTARTEVERY                     1
 NUMSTEP                         2
 MAXTIME                         400
 TIMESTEP                        0.0001
 DIFFTIMESTEPSIZE                No
-RESULTSEVRYTIME                 0
-RESULTSEVRY                     1
+RESULTSEVERYTIME                 0
+RESULTSEVERY                     1
 ITEMAX                          500
 FIELDCOUPLING                   none
 UNPROJ_ZERO_DBC                 yes

@@ -474,7 +474,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
  | calculate mean turbulent Prandtl number                           rasthofer 08/12|
  *----------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_mean_prt_of_homogenous_direction(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_mean_prt_of_homogeneous_direction(
     Teuchos::ParameterList& turbmodelparams, int& nlayer)
 {
   // NOTE: we calculate the inverse of the turbulent Prandtl number here (i.e., (Cs*h)^2 / Pr_t)
@@ -618,7 +618,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_mean_prt_of_homogen
   }
 
   return;
-}  // ScaTraEleCalc::GetMeanOfHomogenousDirection
+}  // ScaTraEleCalc::GetMeanOfHomogeneousDirection
 
 
 /*----------------------------------------------------------------------*
@@ -753,7 +753,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_subgr_diff(
 
 
       // remark: Cs corresponds to Dt, calculated in the vreman class
-      //        The vreman constant Cv is not required here, since it cancelles out with the
+      //        The vreman constant Cv is not required here, since it cancels out with the
       //        vreman constant omitted during the calculation of D_t
       if (turbparams_->cs() <= 1.0E-12)
         sgdiff = 0.0;
@@ -1444,7 +1444,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     int dummy = 0;
     // when no averaging was done, we just keep the calculated (clipped) value
     if (turbparams_->cs_av())
-      get_mean_prt_of_homogenous_direction(params.sublist("TURBULENCE MODEL"), dummy);
+      get_mean_prt_of_homogeneous_direction(params.sublist("TURBULENCE MODEL"), dummy);
   }
 
   //----------------------------------------------------------------------

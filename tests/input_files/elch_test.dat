@@ -21,14 +21,14 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MAXTIME                         1000
 NUMSTEP                         1
-RESTARTEVRY                     1000
+RESTARTEVERY                     1000
 THETA                           0.66
 TIMEINTEGR                      Stationary
 TIMESTEP                        1.0
 VELOCITYFIELD                   zero
 CALCFLUX_DOMAIN                 total
 OUTPUTSCALARS                   entire_domain
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 MATID                           4
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-15

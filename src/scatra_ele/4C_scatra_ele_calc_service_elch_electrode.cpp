@@ -95,7 +95,7 @@ void Discret::Elements::ScaTraEleCalcElchElectrode<distype, probdim>::get_conduc
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_current(
     Core::LinAlg::Matrix<nsd_, 1>& q,        //!< flux of species k
-    const Inpar::ScaTra::FluxType fluxtype,  //!< type fo flux
+    const Inpar::ScaTra::FluxType fluxtype,  //!< type of flux
     const double fac                         //!< integration factor
 )
 {
@@ -264,7 +264,7 @@ void Discret::Elements::ScaTraEleCalcElchElectrode<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_flux(
     Core::LinAlg::Matrix<nsd_, 1>& q,        //!< flux of species k
-    const Inpar::ScaTra::FluxType fluxtype,  //!< type fo flux
+    const Inpar::ScaTra::FluxType fluxtype,  //!< type of flux
     const int k                              //!< index of current scalar
 )
 {

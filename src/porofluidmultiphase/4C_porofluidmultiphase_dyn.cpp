@@ -29,7 +29,7 @@ void porofluidmultiphase_dyn(int restart)
 {
   // define the discretization names
   const std::string fluid_disname = "porofluid";
-  const std::string stuct_disname = "structure";
+  const std::string struct_disname = "structure";
   const std::string artery_disname = "artery";
 
   // access the communicator
@@ -140,7 +140,7 @@ void porofluidmultiphase_dyn(int restart)
   // assign poro material for evaluation of porosity
   // note: to be done after potential restart, as in read_restart()
   //       the secondary material is destroyed
-  POROFLUIDMULTIPHASE::Utils::setup_material(comm, stuct_disname, fluid_disname);
+  POROFLUIDMULTIPHASE::Utils::setup_material(comm, struct_disname, fluid_disname);
 
   // 4.- Run of the actual problem.
   algo->time_loop();

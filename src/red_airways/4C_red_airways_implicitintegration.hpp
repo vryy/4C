@@ -203,7 +203,7 @@ namespace Airway
     //! @name access methods for composite algorithms
     /// Return nodal values
     std::shared_ptr<Core::LinAlg::Vector<double>> pnp() { return pnp_; }
-    std::shared_ptr<Core::LinAlg::Vector<double>> pn() { return pn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> on() { return on_; }
     std::shared_ptr<Core::LinAlg::Vector<double>> pnm() { return pnm_; }
     std::shared_ptr<Core::LinAlg::Vector<double>> qin_np() { return qin_np_; }
     std::shared_ptr<Core::LinAlg::Vector<double>> qout_np() { return qout_np_; }
@@ -313,7 +313,7 @@ namespace Airway
 
     //! @name pressures at time n+1, n and n-1
     std::shared_ptr<Core::LinAlg::Vector<double>> pnp_;
-    std::shared_ptr<Core::LinAlg::Vector<double>> pn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> on_;
     std::shared_ptr<Core::LinAlg::Vector<double>> pnm_;
     std::shared_ptr<Core::LinAlg::Vector<double>> p_nonlin_;
 
@@ -343,7 +343,7 @@ namespace Airway
     std::shared_ptr<Core::LinAlg::Vector<double>> p_extn_;
     // p vector in colmap format for computing p_extnp_ and p_extn_
     std::shared_ptr<Core::LinAlg::Vector<double>> pnp_colmap_;
-    std::shared_ptr<Core::LinAlg::Vector<double>> pn_colmap_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> on_colmap_;
 
     //! @name outlet volumetric flow rates at time n+1, n and n-1
     std::shared_ptr<Core::LinAlg::Vector<double>> qout_np_;
@@ -407,7 +407,7 @@ namespace Airway
 
     // saving vector for pressure
     std::shared_ptr<Core::LinAlg::Vector<double>> saved_pnm_;
-    std::shared_ptr<Core::LinAlg::Vector<double>> saved_pn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_on_;
     std::shared_ptr<Core::LinAlg::Vector<double>> saved_pnp_;
 
     // saving vector for inflow rate

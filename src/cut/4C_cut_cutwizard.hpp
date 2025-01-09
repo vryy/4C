@@ -274,7 +274,7 @@ namespace Cut
     //! Get the main intersection
     std::shared_ptr<Cut::CombIntersection> get_intersection();
 
-    //! Check if the construction of the coupling pairs can be perfomed
+    //! Check if the construction of the coupling pairs can be performed
     void check_if_mesh_intersection_and_cut();
 
    protected:
@@ -425,7 +425,7 @@ namespace Cut
     bool is_cut_prepare_performed_;
 
     //! @name Flag to check that the cut operation was done
-    bool is_cut_perfomed_;
+    bool is_cut_performed_;
     //@}
 
   };  // class CutWizard

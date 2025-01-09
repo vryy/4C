@@ -241,7 +241,7 @@ void Mat::DefaultAnisotropyExtension<numfib>::do_external_fiber_initialization()
 }
 
 
-// explicit instatiations of template classes
+// explicit instantiations of template classes
 template class Mat::DefaultAnisotropyExtension<1u>;
 template class Mat::DefaultAnisotropyExtension<2u>;
 FOUR_C_NAMESPACE_CLOSE

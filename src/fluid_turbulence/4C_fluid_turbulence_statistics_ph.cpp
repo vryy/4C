@@ -304,7 +304,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
     }
 
     //////////////////////////////////////////////
-    //  communication of x2-ccordinates
+    //  communication of x2-coordinates
     //////////////////////////////////////////////
     {
       int myrank = Core::Communication::my_mpi_rank(discret_->get_comm());

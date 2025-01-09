@@ -1502,7 +1502,7 @@ void FLD::Meshtying::analyze_matrix(Core::LinAlg::SparseMatrix& sparsematrix)
 }  // end AnalyzeMatrix()
 
 // -------------------------------------------------------------------
-// check absolut velinc norm                           ehrl   11/2011
+// check absolute velinc norm                           ehrl   11/2011
 // -------------------------------------------------------------------
 /*
 void FLD::FluidImplicitTimeInt::PrintAbsoluteL2Norm(std::shared_ptr<Core::LinAlg::Vector<double>>&

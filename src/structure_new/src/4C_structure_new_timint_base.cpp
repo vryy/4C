@@ -475,7 +475,7 @@ void Solid::TimeInt::Base::output(bool forced_writerestart)
   check_init_setup();
   output_step(forced_writerestart);
   // write Gmsh output
-  write_gmsh_struc_output_step();
+  write_gmsh_struct_output_step();
   int_ptr_->post_output();
 }
 
@@ -875,7 +875,7 @@ void Solid::TimeInt::Base::add_restart_to_output_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Base::write_gmsh_struc_output_step()
+void Solid::TimeInt::Base::write_gmsh_struct_output_step()
 {
   check_init_setup();
   if (!dataio_->is_gmsh()) return;

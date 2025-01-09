@@ -82,7 +82,7 @@ void BeamInteraction::BeamInteractionConditions::set_beam_interaction_conditions
   {
     if (interaction_type == Inpar::BeamInteraction::BeamInteractionConditions::beam_to_beam_contact)
     {
-      // Add all beam-to-beam contitions.
+      // Add all beam-to-beam conditions.
       std::vector<std::shared_ptr<BeamInteractionConditionBase>>& interaction_vector =
           condition_map_[interaction_type];
 

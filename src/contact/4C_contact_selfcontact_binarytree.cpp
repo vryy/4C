@@ -165,7 +165,7 @@ void CONTACT::SelfBinaryTreeNode::update_endnodes()
   // reset endnodes
   endnodes_.clear();
 
-  // find out which nodes the children have in commen, save others as endnodes
+  // find out which nodes the children have in common, save others as endnodes
   if (leftchild_->endnodes_[0] == rightchild_->endnodes_[0] &&
       leftchild_->endnodes_[1] != rightchild_->endnodes_[1])
   {
@@ -664,9 +664,9 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
       // in 2D one common node implies adjacency
       if (n_dim() == 2)
       {
-        // get second node from leafs map
+        // get second node from leaves map
         std::shared_ptr<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
-        if (node2 == nullptr) FOUR_C_THROW("adjacent leaf tree node not found in leafs map!!");
+        if (node2 == nullptr) FOUR_C_THROW("adjacent leaf tree node not found in leaves map!!");
 
         // get the finite element nodes of the element equal to tree node 2 and save them as end
         // nodes of the tree node
@@ -686,7 +686,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
       // in 3D adjacency is more complicated
       else
       {
-        // get second node from leafs map
+        // get second node from leaves map
         std::shared_ptr<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
         adjtreenodes.push_back(node2);
         possadjids.push_back(eleID);
@@ -700,9 +700,9 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
       // in 2D one common node implies adjacency
       if (n_dim() == 2)
       {
-        // get second node from leafs map
+        // get second node from leaves map
         std::shared_ptr<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
-        if (node2 == nullptr) FOUR_C_THROW("adjacent tree node not found in leafs map!!");
+        if (node2 == nullptr) FOUR_C_THROW("adjacent tree node not found in leaves map!!");
 
         // get the finite element nodes of the element equal to tree node 2 and save them as end
         // nodes of the tree node
@@ -721,7 +721,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
       // in 3D adjacency is more complicated (adjacent elements have at least 2 common nodes)
       else
       {
-        // get second node from leafs map
+        // get second node from leaves map
         std::shared_ptr<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
 
         for (unsigned l = 0; l < possadjids.size(); ++l)
@@ -731,7 +731,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
           if (eleID == possadjids[l])
           {
             saved = true;
-            if (node2 == nullptr) FOUR_C_THROW("adjacent tree node not found in leafs map!!");
+            if (node2 == nullptr) FOUR_C_THROW("adjacent tree node not found in leaves map!!");
 
             // create edge and add it to the list
             std::shared_ptr<SelfDualEdge> edge =
@@ -985,7 +985,7 @@ void CONTACT::SelfBinaryTree::add_tree_nodes_to_contact_pairs(
 void CONTACT::SelfBinaryTree::calculate_adjacent_leaves()
 {
   // get the adjacent treenodes of each treenode in the lowest layer
-  // and save the adjacent leafs which are in the same layer
+  // and save the adjacent leaves which are in the same layer
   int maxlayer = treenodes_.size() - 1;
   std::map<int, std::shared_ptr<SelfBinaryTreeNode>>::iterator leafiter = leafsmap_.begin();
   std::map<int, std::shared_ptr<SelfBinaryTreeNode>>::iterator leafiter_end = leafsmap_.end();
@@ -1855,7 +1855,7 @@ void CONTACT::SelfBinaryTree::plot_adjacency_matrix() const
   std::map<int, std::vector<std::shared_ptr<SelfBinaryTreeNode>>>::const_iterator iter2_end =
       adjacencymatrix_.end();
 
-  std::cout << "\n" << leafsmap_.size() << " elements in leafs map\n";
+  std::cout << "\n" << leafsmap_.size() << " elements in leaves map\n";
   std::cout << adjacencymatrix_.size() << " elements in adjacency matrix\n";
 
   while (iter2 != iter2_end)

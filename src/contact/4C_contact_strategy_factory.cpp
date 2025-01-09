@@ -732,7 +732,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
       }
     }
 
-    // find out which sides are initialized as In/Active and other initalization data
+    // find out which sides are initialized as In/Active and other initialization data
     std::vector<bool> isactive(currentgroup.size());
     bool Two_half_pass(false);
     bool Check_nonsmooth_selfcontactsurface(false);
@@ -833,7 +833,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
      * We rely on this fact, therefore it is not possible to
      * do contact between two distinct discretizations here. */
 
-    // collect all intial active nodes
+    // collect all initial active nodes
     std::vector<int> initialactive_nodeids;
 
     //-------------------------------------------------- process nodes
@@ -1144,9 +1144,9 @@ void CONTACT::STRATEGY::Factory::fully_overlapping_interfaces(
     const Epetra_Map& srownodes_i = *interface.slave_row_nodes();
     const Epetra_Map& mrownodes_i = *interface.master_row_nodes();
 
-    for (auto iit = (it + 1); iit != interfaces.end(); ++iit)
+    for (auto it2 = (it + 1); it2 != interfaces.end(); ++it2)
     {
-      Interface& iinterface = **iit;
+      Interface& iinterface = **it2;
 
       const Epetra_Map& srownodes_ii = *iinterface.slave_row_nodes();
       const Epetra_Map& mrownodes_ii = *iinterface.master_row_nodes();
@@ -1187,11 +1187,11 @@ void CONTACT::STRATEGY::Factory::fully_overlapping_interfaces(
   {
     if ((*it)->has_ma_sharing_ref_interface())
     {
-      for (auto iit = it + 1; iit != interfaces.end(); ++iit)
+      for (auto it2 = it + 1; it2 != interfaces.end(); ++it2)
       {
-        if (not(*iit)->has_ma_sharing_ref_interface())
+        if (not(*it2)->has_ma_sharing_ref_interface())
         {
-          std::swap(*it, *iit);
+          std::swap(*it, *it2);
           break;
         }
       }
@@ -1513,7 +1513,7 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
 {
   const auto stype =
       Teuchos::getIntegralValue<enum Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY");
-  std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr = nullptr;
+  std::shared_ptr<CONTACT::AbstractStrategyDataContainer> data_ptr = nullptr;
 
   return build_strategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
       discret().dof_row_map(), discret().node_row_map(), n_dim(), get_comm(), data_ptr,
@@ -1527,7 +1527,7 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
     std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces, const Epetra_Map* dof_row_map,
     const Epetra_Map* node_row_map, const int dim, const MPI_Comm& comm_ptr,
-    std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr,
+    std::shared_ptr<CONTACT::AbstractStrategyDataContainer> data_ptr,
     CONTACT::ParamsInterface* cparams_interface)
 {
   if (Core::Communication::my_mpi_rank(comm_ptr) == 0)
@@ -1543,7 +1543,7 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
   auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(params, "ALGORITHM");
 
   // Set dummy parameter. The correct parameter will be read directly from time integrator. We still
-  // need to pass an argument as long as we want to support the same strategy contructor as the old
+  // need to pass an argument as long as we want to support the same strategy constructor as the old
   // time integration.
   double dummy = -1.0;
 
@@ -1551,7 +1551,7 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
   if (stype == Inpar::CONTACT::solution_lagmult && wlaw != Inpar::Wear::wear_none &&
       (wtype == Inpar::Wear::wear_intstate || wtype == Inpar::Wear::wear_primvar))
   {
-    data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+    data_ptr = std::make_shared<CONTACT::AbstractStrategyDataContainer>();
     strategy_ptr = std::make_shared<Wear::LagrangeStrategyWear>(
         data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset);
   }
@@ -1574,13 +1574,13 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
     }
     else if (params.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
     {
-      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+      data_ptr = std::make_shared<CONTACT::AbstractStrategyDataContainer>();
       strategy_ptr = std::make_shared<LagrangeStrategyTsi>(data_ptr, dof_row_map, node_row_map,
           params, interfaces, dim, comm_ptr, dummy, dof_offset);
     }
     else
     {
-      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+      data_ptr = std::make_shared<CONTACT::AbstractStrategyDataContainer>();
       strategy_ptr = std::make_shared<LagrangeStrategy>(data_ptr, dof_row_map, node_row_map, params,
           interfaces, dim, comm_ptr, dummy, dof_offset);
     }
@@ -1610,19 +1610,19 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
   {
     if (params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi)
     {
-      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+      data_ptr = std::make_shared<CONTACT::AbstractStrategyDataContainer>();
       strategy_ptr = std::make_shared<NitscheStrategySsi>(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
     }
     else if (params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi_elch)
     {
-      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+      data_ptr = std::make_shared<CONTACT::AbstractStrategyDataContainer>();
       strategy_ptr = std::make_shared<NitscheStrategySsiElch>(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
     }
     else
     {
-      data_ptr = std::make_shared<CONTACT::AbstractStratDataContainer>();
+      data_ptr = std::make_shared<CONTACT::AbstractStrategyDataContainer>();
       strategy_ptr = std::make_shared<NitscheStrategy>(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
     }
@@ -1633,7 +1633,7 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
         "Unrecognized strategy: \"%s\"", Inpar::CONTACT::solving_strategy_to_string(stype).c_str());
   }
 
-  // setup the stategy object
+  // setup the strategy object
   strategy_ptr->setup(false, true);
 
   if (Core::Communication::my_mpi_rank(comm_ptr) == 0) std::cout << "done!" << std::endl;

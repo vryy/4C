@@ -20,8 +20,8 @@ TIMEINTEGR                      Af_Gen_Alpha
 NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     100
+RESULTSEVERY                           1
+RESTARTEVERY                     100
 NUMSTEP                         10
 NUMSTASTEPS                     0
 MAXTIME                         100000.0

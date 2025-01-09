@@ -262,7 +262,8 @@ void Core::IO::InputSpecBuilders::Internal::OneOfSpec::parse(
   }
 
   // If we reach this point, none of the specs could be parsed.
-  FOUR_C_THROW("None of the specs fit the input. Expected %s", data.description.c_str());
+  FOUR_C_THROW("While parsing '%s'.\nNone of the specs fit the input. Expected %s",
+      parser.get_unparsed_remainder().data(), data.description.c_str());
 }
 
 

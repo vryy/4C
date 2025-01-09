@@ -847,7 +847,7 @@ double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::evaluate(
 
   double Pb = 0.0;
   double CaO2 = oxy_mass_frac_nv * parameter_.rho_bl / parameter_.rho_oxy;
-  // safety check --> should not be larger than CaO2_max, which already correponds to partial
+  // safety check --> should not be larger than CaO2_max, which already corresponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
   PoroMultiPhaseScaTra::Utils::get_oxy_partial_pressure_from_concentration<double>(
@@ -900,7 +900,7 @@ PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::evaluate_derivati
 
   FAD Pb = 0.0;
   FAD CaO2 = oxy_mass_frac_nv * parameter_.rho_bl / parameter_.rho_oxy;
-  // safety check --> should not be larger than CaO2_max, which already correponds to partial
+  // safety check --> should not be larger than CaO2_max, which already corresponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
   PoroMultiPhaseScaTra::Utils::get_oxy_partial_pressure_from_concentration<FAD>(
@@ -989,7 +989,7 @@ double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::evaluate(
 
   double Pb = 0.0;
   double CaO2 = oxy_mass_frac_nv * parameter_.rho_bl / parameter_.rho_oxy;
-  // safety check --> should not be larger than CaO2_max, which already correponds to partial
+  // safety check --> should not be larger than CaO2_max, which already corresponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
   PoroMultiPhaseScaTra::Utils::get_oxy_partial_pressure_from_concentration<double>(
@@ -1028,7 +1028,7 @@ PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::evaluate_derivati
 
   FAD Pb = 0.0;
   FAD CaO2 = oxy_mass_frac_nv * parameter_.rho_bl / parameter_.rho_oxy;
-  // safety check --> should not be larger than CaO2_max, which already correponds to partial
+  // safety check --> should not be larger than CaO2_max, which already corresponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
   PoroMultiPhaseScaTra::Utils::get_oxy_partial_pressure_from_concentration<FAD>(

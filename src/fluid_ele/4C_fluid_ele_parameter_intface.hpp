@@ -239,8 +239,8 @@ namespace Discret
 
 
       /*----------------------------------------------------*/
-      //! @name general edge-based/face-oriented fluid stabilization parameters (not indiviually set
-      //! for each face, see below)
+      //! @name general edge-based/face-oriented fluid stabilization parameters (not individually
+      //! set for each face, see below)
       /*----------------------------------------------------*/
 
       //! which EOS pressure stabilization
@@ -269,7 +269,7 @@ namespace Discret
 
 
       /*----------------------------------------------------*/
-      //! @name general XFEM ghost penalty stabilization parameters (not indiviually set for each
+      //! @name general XFEM ghost penalty stabilization parameters (not individually set for each
       //! face, see below)
       /*----------------------------------------------------*/
 

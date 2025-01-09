@@ -386,7 +386,7 @@ void XFEM::Utils::get_navier_slip_stabilization_parameters(
  * compute transformation factor for surface integration, normal, local and global gp coordinates
  *--------------------------------------------------------------------------------*/
 void XFEM::Utils::compute_surface_transformation(double& drs,  ///< surface transformation factor
-    Core::LinAlg::Matrix<3, 1>& x_gp_lin,  ///< global coordiantes of gaussian point
+    Core::LinAlg::Matrix<3, 1>& x_gp_lin,  ///< global coordinates of gaussian point
     Core::LinAlg::Matrix<3, 1>& normal,    ///< normal vector on boundary cell
     Cut::BoundaryCell* bc,                 ///< boundary cell
     const Core::LinAlg::Matrix<2, 1>&
@@ -468,7 +468,7 @@ double XFEM::Utils::compute_meas_cut_surf(
 
         Core::LinAlg::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
-        // compute transformation factor, normal vector and global Gauss point coordiantes
+        // compute transformation factor, normal vector and global Gauss point coordinates
         if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
         {
           XFEM::Utils::compute_surface_transformation(drs, x_gp_lin, normal, bc, eta);
@@ -521,7 +521,7 @@ double XFEM::Utils::compute_meas_face(Core::Elements::Element* ele,  ///< fluid 
     for (int idim = 0; idim < nsd; ++idim) xyze_face(idim, n) = ele_xyze(idim, node_lid);
   }
 
-  // the metric tensor and the area of an infintesimal surface element
+  // the metric tensor and the area of an infinitesimal surface element
   Core::LinAlg::SerialDenseMatrix metrictensor(nsd - 1, nsd - 1);
   double drs = 0.0;
 
@@ -883,7 +883,7 @@ void XFEM::Utils::nit_compute_full_penalty_stabfac(
    *          (3) transient contribution
    *
    * see Schott and Rasthofer, 'A face-oriented stabilized Nitsche-type extended variational
-   * multiscale method for incompressible two-phase flow', Int. J. Numer. Meth. Engng, 2014
+   * multiscale method for incompressible two-phase flow', Int. J. Number. Meth. Engng, 2014
    *
    *
    * If Inpar::XFEM::MassConservationScaling_only_visc is set, we choose only (1),
@@ -1043,7 +1043,7 @@ double XFEM::Utils::evaluate_full_traction(const double& intraction, const doubl
   return intraction + traction.dot(elenormal);
 }
 
-void XFEM::Utils::evalute_stateat_gp(const Core::Elements::Element* sele,
+void XFEM::Utils::evaluate_stateat_gp(const Core::Elements::Element* sele,
     const Core::LinAlg::Matrix<3, 1>& selexsi, const Core::FE::Discretization& discret,
     const std::string& state, Core::LinAlg::Matrix<3, 1>& vel_s)
 {

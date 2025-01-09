@@ -315,7 +315,7 @@ Core::LinearSolver::AmGnxnOperator::AmGnxnOperator(
   //   TODO or
   //
   //   <ParameterList name="myMueluX">
-  //    ... ... list defining the muelue hierarcy (i.e.) the contents of the xml file
+  //    ... ... list defining the muelue hierarchy (i.e.) the contents of the xml file
   //   </ParameterList>
   //
   //
@@ -381,7 +381,7 @@ void Core::LinearSolver::AmGnxnOperator::setup()
   if (NumBlocks != a_->cols()) FOUR_C_THROW("We spect a square matrix here");
 
   // Extract the blockedMatrix
-  Teuchos::RCP<AMGNxN::BlockedMatrix> Abl =
+  Teuchos::RCP<AMGNxN::BlockedMatrix> Able =
       Teuchos::make_rcp<AMGNxN::BlockedMatrix>(NumBlocks, NumBlocks);
   for (int i = 0; i < NumBlocks; i++)
   {
@@ -389,12 +389,12 @@ void Core::LinearSolver::AmGnxnOperator::setup()
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Aij =
           Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(a_->matrix(i, j), Core::LinAlg::View);
-      Abl->set_matrix(Aij, i, j);
+      Able->set_matrix(Aij, i, j);
     }
   }
 
 
-  v_ = std::make_shared<AMGNxN::CoupledAmg>(Abl, num_pdes_, null_spaces_dim_, null_spaces_data_,
+  v_ = std::make_shared<AMGNxN::CoupledAmg>(Able, num_pdes_, null_spaces_dim_, null_spaces_data_,
       amgnxn_params_, smoothers_params_, muelu_params_);
 
 
@@ -522,7 +522,7 @@ void Core::LinearSolver::BlockSmootherOperator::setup()
     AMGNxN::NullSpaceInfo myNS(num_pdes_[i], null_spaces_dim_[i], null_spaces_data_[i]);
     null_space_blocks.push_back(myNS);
   }
-  Teuchos::RCP<AMGNxN::BlockedMatrix> Abl =
+  Teuchos::RCP<AMGNxN::BlockedMatrix> Able =
       Teuchos::make_rcp<AMGNxN::BlockedMatrix>(NumBlocks, NumBlocks);
   for (int i = 0; i < NumBlocks; i++)
   {
@@ -530,13 +530,13 @@ void Core::LinearSolver::BlockSmootherOperator::setup()
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Aij =
           Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(a_->matrix(i, j), Core::LinAlg::View);
-      Abl->set_matrix(Aij, i, j);
+      Able->set_matrix(Aij, i, j);
     }
   }
 
   // smoother factory
   AMGNxN::SmootherFactory mySmootherCreator;
-  mySmootherCreator.set_operator(Abl);
+  mySmootherCreator.set_operator(Able);
   mySmootherCreator.set_params_smoother(smoothers_params_);
   mySmootherCreator.set_level(0);
   mySmootherCreator.set_blocks(blocks);

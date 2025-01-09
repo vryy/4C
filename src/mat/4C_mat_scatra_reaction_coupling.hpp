@@ -38,7 +38,7 @@ namespace Mat
        public:
         /// factory method
         static std::shared_ptr<ReactionInterface> create_reaction(
-            Mat::PAR::ReactionCoupling couplingtype,  //!< coupling type definig reaction
+            Mat::PAR::ReactionCoupling couplingtype,  //!< coupling type defining reaction
             bool isreacstart,                         //!< flag for reaction start feature
             const std::vector<double>& reacstart      //!< reaction start vector
         );

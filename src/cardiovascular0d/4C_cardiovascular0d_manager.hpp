@@ -128,9 +128,9 @@ namespace Utils
     void check_periodic();
 
 
-    bool is_realtive_equal_to(const double A, const double B, const double Ref);
+    bool is_relative_equal_to(const double A, const double B, const double Ref);
 
-    bool modulo_is_realtive_zero(const double value, const double modulo, const double Ref);
+    bool modulo_is_relative_zero(const double value, const double modulo, const double Ref);
 
     /*!
          \brief Update cardiovascular0d dofs
@@ -369,13 +369,13 @@ namespace Utils
     std::shared_ptr<Core::LinAlg::Vector<double>>
         cardvasc0d_res_m_;  ///< Cardiovascular0D full rhs vector, at t_{n+theta}
     std::shared_ptr<Core::LinAlg::Vector<double>>
-        cardvasc0d_df_n_;  ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n}
+        cardvasc0d_df_n_;  ///< Cardiovascular0D rhs part associated with time derivatives, at t_{n}
     std::shared_ptr<Core::LinAlg::Vector<double>>
         cardvasc0d_df_np_;  ///< Cardiovascular0D rhs part associated
-                            ///< with time derivaties, at t_{n+1}
+                            ///< with time derivatives, at t_{n+1}
     std::shared_ptr<Core::LinAlg::Vector<double>>
         cardvasc0d_df_m_;  ///< Cardiovascular0D rhs part associated
-                           ///< with time derivaties, at t_{n+theta}
+                           ///< with time derivatives, at t_{n+theta}
     std::shared_ptr<Core::LinAlg::Vector<double>>
         cardvasc0d_f_n_;  ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n}
     std::shared_ptr<Core::LinAlg::Vector<double>>
@@ -412,7 +412,7 @@ namespace Utils
     double tolres_cardvasc0d_;  ///< tolerace for cardiovascular0d residual
     Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo algochoice_;
     std::shared_ptr<Core::LinAlg::Vector<double>>
-        dirichtoggle_;                                     ///< \b only for compatability: dirichlet
+        dirichtoggle_;                                     ///< \b only for compatibility: dirichlet
                                                            ///< toggle -- monitor its target change!
     std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;  ///< a zero vector of full length
     const double theta_;                 ///< time-integration factor for One Step Theta scheme

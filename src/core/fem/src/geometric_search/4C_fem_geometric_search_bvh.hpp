@@ -34,7 +34,7 @@ namespace Core::GeometricSearch
    * @param primitives Bounding volumes to search for intersections
    * @param predicates Bounding volumes to intersect with
    * @param comm Communicator object of the discretization
-   * @param verbosity Enabeling printout of the geometric search information
+   * @param verbosity Enabling printout of the geometric search information
    * @return {indices, offsets} stores indices of the objects that satisfy the predicates and
    *          offsets stores the locations in the indices view that start a predicate
    */

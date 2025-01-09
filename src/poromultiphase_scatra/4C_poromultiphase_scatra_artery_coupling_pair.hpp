@@ -359,14 +359,14 @@ namespace PoroMultiPhaseScaTra
     void evaluate_dm_kappa(const double& w_gp, const Core::LinAlg::Matrix<1, numnodesart_>& N1,
         const Core::LinAlg::Matrix<1, numnodescont_>& N2, const double& jacobi);
 
-    //! evalute GPTS
+    //! evaluate GPTS
     void evaluate_gpts(const std::vector<double>& eta, const std::vector<std::vector<double>>& xi,
         const std::vector<double>& segmentlengths, Core::LinAlg::SerialDenseVector* forcevec1,
         Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
         Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
         Core::LinAlg::SerialDenseMatrix* stiffmat22);
 
-    //! evalute NTP
+    //! evaluate NTP
     void evaluate_ntp(const std::vector<double>& eta, const std::vector<std::vector<double>>& xi,
         Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
         Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
@@ -515,7 +515,7 @@ namespace PoroMultiPhaseScaTra
     bool diam_funct_active_;
 
     //! so far, it is assumed that artery elements always follow the deformation of the
-    //! underlying porous medium hence, we actually have to evalute them in current
+    //! underlying porous medium hence, we actually have to evaluate them in current
     //! configuration if this flag is set to true, artery elements will not move and are
     //! evaluated in reference configuration
     bool evaluate_in_ref_config_;
@@ -602,7 +602,7 @@ namespace PoroMultiPhaseScaTra
 
     //! Gausspoints in arteries
     std::vector<double> eta_;
-    //! Gausspoint weigths in arteries
+    //! Gausspoint weights in arteries
     std::vector<double> wgp_;
 
     //! eta_s

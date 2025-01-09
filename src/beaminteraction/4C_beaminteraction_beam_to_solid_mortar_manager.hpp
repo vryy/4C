@@ -165,7 +165,7 @@ namespace BeamInteraction
     [[nodiscard]] virtual std::shared_ptr<Core::LinAlg::Vector<double>> get_global_lambda() const;
 
     /**
-     * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
+     * \brief Get the global vector of Lagrange multipliers, with the maps being the column maps of
      * the Lagrange GID. on the ranks where they are used.
      * @return Global vector of Lagrange multipliers.
      */

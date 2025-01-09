@@ -559,7 +559,7 @@ int Discret::Elements::SoHex27::evaluate_neumann(Teuchos::ParameterList& params,
   {
     if ((*onoff)[checkdof] != 0)
       FOUR_C_THROW(
-          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+          "Number of Dimensions in Neumann_Evaluation is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS
@@ -1400,7 +1400,7 @@ void Discret::Elements::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
       if (solid_material()->varying_density())
       {
         /*
-        If the density, i.e. the mass matrix, is not constant, a linearization is neccessary.
+        If the density, i.e. the mass matrix, is not constant, a linearization is necessary.
         In general, the mass matrix can be dependent on the displacements, the velocities and the
         accelerations. We write all the additional terms into the mass matrix, hence, conversion
         from accelerations to velocities and displacements are needed. As those conversions depend
@@ -1575,9 +1575,9 @@ void Discret::Elements::SoHex27::soh27_shapederiv(
 
   if (fdf_eval == true)  // if true f,df already evaluated
   {
-    *shapefct = &f;             // return adress of static object to target of pointer
-    *deriv = &df;               // return adress of static object to target of pointer
-    *weights = &weightfactors;  // return adress of static object to target of pointer
+    *shapefct = &f;             // return address of static object to target of pointer
+    *deriv = &df;               // return address of static object to target of pointer
+    *weights = &weightfactors;  // return address of static object to target of pointer
     return;
   }
   else
@@ -1606,10 +1606,10 @@ void Discret::Elements::SoHex27::soh27_shapederiv(
         weightfactors(igp) = intpoints.qwgt[igp];
       }
     }
-    // return adresses of just evaluated matrices
-    *shapefct = &f;             // return adress of static object to target of pointer
-    *deriv = &df;               // return adress of static object to target of pointer
-    *weights = &weightfactors;  // return adress of static object to target of pointer
+    // return addresses of just evaluated matrices
+    *shapefct = &f;             // return address of static object to target of pointer
+    *deriv = &df;               // return address of static object to target of pointer
+    *weights = &weightfactors;  // return address of static object to target of pointer
     fdf_eval = true;            // now all arrays are filled statically
   }
   return;

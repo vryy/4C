@@ -160,7 +160,7 @@ namespace Core::LinAlg
 
     /// Set transpose
     /*!
-      Set whether the matrix should be used tranposed.
+      Set whether the matrix should be used transposed.
 
       \param b
         new value for transpose_

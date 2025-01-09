@@ -175,7 +175,7 @@ void PoroElast::Utils::set_material_pointers_matching_grid(
 void PoroElast::Utils::create_volume_ghosting(Core::FE::Discretization& idiscret)
 {
   //**********************************************************************
-  // Prerequisites of this funtion:
+  // Prerequisites of this function:
   // All Contact Elements need a set parent_id_ (member of faceelement!) before
   // calling CreateInterfaceGhosting as this id will be communicated to all
   // processors! Otherwise any information which connects face and volume

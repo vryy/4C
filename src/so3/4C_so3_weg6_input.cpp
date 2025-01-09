@@ -34,7 +34,7 @@ bool Discret::Elements::SoWeg6::read_element(const std::string& eletype, const s
     kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   else
-    FOUR_C_THROW("Reading SO_WEG6 element failed KINEM unknwon");
+    FOUR_C_THROW("Reading SO_WEG6 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
   solid_material()->valid_kinematics(kintype_);

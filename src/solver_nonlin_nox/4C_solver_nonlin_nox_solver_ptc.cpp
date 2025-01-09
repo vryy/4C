@@ -526,7 +526,7 @@ void NOX::Nln::Solver::PseudoTransient::update_pseudo_time_step()
         // ---------------------------------------------------------------
         // switched evolution relaxation
         // ---------------------------------------------------------------
-        case tsc_ser:
+        case tsc_set:
         {
           if (normType_ == ::NOX::Abstract::Vector::TwoNorm)
             delta_ =
@@ -756,7 +756,7 @@ void NOX::Nln::Solver::PseudoTransient::throw_error(
   if (utilsPtr->isPrintType(::NOX::Utils::Error))
   {
     std::ostringstream msg;
-    msg << "ERROR - NOX::Nln::Sovler::PseudoTransient::" << functionName << " - " << errorMsg
+    msg << "ERROR - NOX::Nln::Solver::PseudoTransient::" << functionName << " - " << errorMsg
         << std::endl;
     FOUR_C_THROW(msg.str());
   }
@@ -816,7 +816,7 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::run_post_compute_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::run_post_compute_fand_jacobian(
+void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::run_post_compute_f_and_jacobian(
     Core::LinAlg::Vector<double>& rhs, Core::LinAlg::SparseOperator& jac,
     const Core::LinAlg::Vector<double>& x, const NOX::Nln::LinearSystem& linsys)
 {

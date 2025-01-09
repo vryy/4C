@@ -213,12 +213,12 @@ void ParticleInteraction::DEMAdhesionLawVdWDMT::calculate_intersection_gap(
   else
   {
     q = -q;
-    double dum1 = Utils::pow<3>(q);
-    dum1 = std::acos(r / std::sqrt(dum1));
+    double dummy = Utils::pow<3>(q);
+    dummy = std::acos(r / std::sqrt(dummy));
     r13 = 2.0 * std::sqrt(q);
-    x1 = -term1 + r13 * std::cos(dum1 / 3.0);
-    x2 = -term1 + r13 * std::cos((dum1 + 2.0 * M_PI) / 3.0);
-    x3 = -term1 + r13 * std::cos((dum1 + 4.0 * M_PI) / 3.0);
+    x1 = -term1 + r13 * std::cos(dummy / 3.0);
+    x2 = -term1 + r13 * std::cos((dummy + 2.0 * M_PI) / 3.0);
+    x3 = -term1 + r13 * std::cos((dummy + 4.0 * M_PI) / 3.0);
 
     if (x1 > x2)
     {

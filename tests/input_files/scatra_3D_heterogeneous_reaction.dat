@@ -18,8 +18,8 @@ OUTPUT_BIN                      Yes
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                     1
-RESTARTEVRY                     20
+RESULTSEVERY                     1
+RESTARTEVERY                     20
 NUMSTEP                         50
 MAXTIME                         20.0
 TIMESTEP                        0.1

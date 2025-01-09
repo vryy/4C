@@ -96,7 +96,7 @@ namespace BeamInteraction
     inline bool get_couple_restart_state() const { return couple_restart_state_; }
 
    private:
-    //! Number of integration points along the circumferencial direction in the cross section
+    //! Number of integration points along the circumferential direction in the cross section
     //! projection.
     unsigned int integration_points_circumference_;
 

@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 /************************************************************************/
 // #define COUPLEINITTEMPERATURE  /* flag for Thermo: constant temperature T_0 in couple term  */
 // #define TSIPARALLEL            /* flag for parallel TSI */
-// #define MonTSIwithoutTHR       /* flag to comment out all coupling terms in STR field */
-// #define MonTSIwithoutSTR       /* flag to comment out all coupling terms in Thermo field */
+// #define MonTSWithoutTHERMO       /* flag to comment out all coupling terms in STR field */
+// #define MonTSWithoutSTR       /* flag to comment out all coupling terms in Thermo field */
 // #define TFSI                   /* flag to reduce the output to screen */
 // #define TSI_DEBUG              /* output to screen information */
 

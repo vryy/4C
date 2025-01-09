@@ -243,7 +243,7 @@ namespace Cut
     /// get the dofset number of the Volumecell w.r.t this node
     int dof_set_number_new(const plain_volumecell_set& cells);
 
-    /// return the sets of volumecells (old unsed version)
+    /// return the sets of volumecells (old unused version)
     const std::vector<plain_volumecell_set>& dof_sets() const { return dofsets_; }
 
 

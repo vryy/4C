@@ -201,7 +201,7 @@ std::shared_ptr<const Teuchos::ParameterList> Input::valid_parameters()
 
   Core::Utils::int_parameter("DIM", 3, "2d or 3d problem", &size);
 
-  // deactivate all the follwing (unused) parameters one day
+  // deactivate all the following (unused) parameters one day
   // they are nice as general info in the input file but should not
   // read into a parameter list. Misuse is possible
   Core::Utils::int_parameter("ELEMENTS", 0, "Total number of elements", &size);

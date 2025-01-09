@@ -72,7 +72,7 @@ namespace Adapter
     /** \brief You will have to use the Adapter::ConstraintEnforcerFactory
      *
      * \param[in] bridge an object managing the pair contributins
-     * \param[in] geometrycoupler an object managing the search, parallel communication, ect.
+     * \param[in] geometrycoupler an object managing the search, parallel communication, etc.
      */
 
     FBIPenaltyConstraintenforcer(std::shared_ptr<Adapter::FBIConstraintBridge> bridge,

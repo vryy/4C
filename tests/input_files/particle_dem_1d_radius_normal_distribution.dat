@@ -2,7 +2,7 @@
 PROBLEMTYPE                      Particle
 RANDSEED                        1
 --------------------------------------------------------------------------IO
-STDOUTEVRY                      200
+STDOUTEVERY                      200
 VERBOSITY                       standard
 ------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND            0.025
@@ -10,8 +10,8 @@ DOMAINBOUNDINGBOX               -0.05 -0.01 -0.01 0.05 0.01 0.01
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYPE                      VelocityVerlet
 INTERACTION                     DEM
-RESULTSEVRY                     0
-RESTARTEVRY                     0
+RESULTSEVERY                     0
+RESTARTEVERY                     0
 TIMESTEP                        0.001
 NUMSTEP                         1
 MAXTIME                         1

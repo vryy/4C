@@ -533,9 +533,9 @@ void Mortar::IntElement::node_linearization(
       }
 
       // loop over all pseudo-nodes
-      for (int pn = 0; pn < num_node(); ++pn)
+      for (int on = 0; on < num_node(); ++on)
       {
-        double xi[2] = {pseudo_nodes_param_coords[pn][0], pseudo_nodes_param_coords[pn][1]};
+        double xi[2] = {pseudo_nodes_param_coords[on][0], pseudo_nodes_param_coords[on][1]};
 
         // evaluate shape functions at pseudo node param coords
         Core::LinAlg::SerialDenseVector sval(9);
@@ -548,7 +548,7 @@ void Mortar::IntElement::node_linearization(
           Mortar::Node* mrtrcp = dynamic_cast<Mortar::Node*>(parele_->nodes()[cp]);
 
           // loop over all dimensions
-          for (int dim = 0; dim < 3; ++dim) nodelin.at(pn).at(dim)[mrtrcp->dofs()[dim]] += sval(cp);
+          for (int dim = 0; dim < 3; ++dim) nodelin.at(on).at(dim)[mrtrcp->dofs()[dim]] += sval(cp);
         }
       }
       break;

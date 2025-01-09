@@ -932,7 +932,7 @@ void Core::IO::DiscretizationWriter::write_multi_vector(
                               << "        columns = " << vec.NumVectors() << "\n"
                               << "        values = \"" << valuename.c_str() << "\"\n"
                               << "        ids = \"" << idname.c_str()
-                              << "\"\n\n"  // different names + other informations?
+                              << "\"\n\n"  // different names + other information?
                               << std::flush;
     }
     const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
@@ -1046,7 +1046,7 @@ void Core::IO::DiscretizationWriter::write_vector(const std::string name,
                               << "        columns = 1\n"
                               << "        values = \"" << valuename << "\"\n"
                               << "        ids = \"" << idname
-                              << "\"\n\n"  // different names + other informations?
+                              << "\"\n\n"  // different names + other information?
                               << std::flush;
     }
     const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
@@ -1114,7 +1114,7 @@ void Core::IO::DiscretizationWriter::write_mesh(const int step, const double tim
 
     int max_nodeid = dis_->node_row_map()->MaxAllGID();
 
-    // ... write other mesh informations
+    // ... write other mesh information
     if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       output_->control_file() << "field:\n"
@@ -1165,7 +1165,7 @@ void Core::IO::DiscretizationWriter::write_mesh(
 {
   if (binio_)
   {
-    // ... write other mesh informations
+    // ... write other mesh information
     if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       output_->control_file() << "field:\n"
@@ -1250,7 +1250,7 @@ void Core::IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_cont
      * located at the origin and are waiting for activation */
     int max_nodeid = dis_->node_row_map()->MaxAllGID();
 
-    // ... write other mesh informations
+    // ... write other mesh information
     if (Core::Communication::my_mpi_rank(get_comm()) == 0)
     {
       /* number of nodes and elements is set to zero to suppress reading of
@@ -1328,7 +1328,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
         std::all_of(names.begin(), names.end(), [](const auto& pair) { return pair.second >= 1; }),
         "Dimension of all data must be at least 1");
 
-    // loop all names aquired form the elements and fill data vectors
+    // loop all names acquired form the elements and fill data vectors
     for (const auto& [name, dimension] : names)
     {
       std::vector<double> eledata(dimension);
@@ -1391,7 +1391,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
     for (fool = names.begin(); fool != names.end(); ++fool)
       if (fool->second < 1) FOUR_C_THROW("Dimension of data must be at least 1");
 
-    // loop all names aquired form the nodes and fill data vectors
+    // loop all names acquired form the nodes and fill data vectors
     for (fool = names.begin(); fool != names.end(); ++fool)
     {
       const int dimension = fool->second;
@@ -1484,7 +1484,7 @@ void Core::IO::DiscretizationWriter::write_char_data(
         FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
 
-    // ... write other mesh informations
+    // ... write other mesh information
     if (Core::Communication::my_mpi_rank(dis_->get_comm()) == 0)
     {
       // do I need the following naming stuff?

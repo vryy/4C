@@ -187,7 +187,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
       /*!
       \brief Return the material of this element
@@ -666,7 +666,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
       /*!
       \brief Get shape type of element

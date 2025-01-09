@@ -375,7 +375,7 @@ void CONTACT::Coupling2dManager::integrate_coupling(
 void CONTACT::Coupling2dManager::consistent_dual_shape()
 {
   // For standard shape functions no modification is necessary
-  // A switch erlier in the process improves computational efficiency
+  // A switch earlier in the process improves computational efficiency
   auto consistent =
       Teuchos::getIntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
   if (shape_fcn() == Inpar::Mortar::shape_standard || consistent == Inpar::Mortar::consistent_none)
@@ -521,7 +521,7 @@ void CONTACT::Coupling2dManager::consistent_dual_shape()
     dynamic_cast<CONTACT::Element&>(slave_element()).d_jac_d_xi(djacdxi, sxi, ssecderiv);
     double dxdsxidsxi = djacdxi[0];  // only 2D here
 
-    // evalute the GP slave coordinate derivatives
+    // evaluate the GP slave coordinate derivatives
     Core::Gen::Pairedvector<int, double> dsxigp(linsize + ndof * mnodes);
     for (_CI p = dximin.begin(); p != dximin.end(); ++p)
       dsxigp[p->first] += 0.5 * (1 - eta[0]) * (p->second);

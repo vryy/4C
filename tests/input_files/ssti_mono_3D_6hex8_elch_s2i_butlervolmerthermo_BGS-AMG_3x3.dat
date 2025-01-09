@@ -21,7 +21,7 @@ DIM           3
 -------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Structure_Scalar_Thermo_Interaction
 ----------------------------------------------------------------IO
-STDOUTEVRY                      0
+STDOUTEVERY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      GenAlpha
 LINEAR_SOLVER                   2
@@ -52,7 +52,7 @@ NUMSTEP                         30
 TIMESTEP                        0.05
 COUPALGO                        ssti_Monolithic
 SCATRATIMINTTYPE                Elch
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 -------------------------------------------SSTI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      block

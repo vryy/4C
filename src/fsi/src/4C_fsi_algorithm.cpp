@@ -109,9 +109,9 @@ void FSI::Algorithm::setup()
   else
     FOUR_C_THROW(
         "Unknown time integration requested!\n"
-        "Set parameter INT_STRATEGY to Standard in ---STRUCUTRAL DYNAMIC section!\n"
+        "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!\n"
         "If you want to use yet unsupported elements or you want to do crack simulation,\n"
-        "set INT_STRATEGY to Old in ---STRUCUTRAL DYNAMIC section!");
+        "set INT_STRATEGY to Old in ---STRUCTURAL DYNAMIC section!");
 
   Adapter::FluidMovingBoundaryBaseAlgorithm MBFluidbase(
       Global::Problem::instance()->fsi_dynamic_params(), "FSICoupling");

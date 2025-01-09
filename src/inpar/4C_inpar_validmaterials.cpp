@@ -675,8 +675,8 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
         entry<double>("DIFF2", {.description = "conductivity perpendicular to fiber direction"}));
     m->add_component(
         entry<double>("DIFF3", {.description = "conductivity perpendicular to fiber direction"}));
-    m->add_component(entry<double>("PERTUBATION_DERIV",
-        {.description = "pertubation for calculation of reaction coefficient derivative"}));
+    m->add_component(entry<double>("PERTURBATION_DERIV",
+        {.description = "perturbation for calculation of reaction coefficient derivative"}));
     m->add_component(entry<std::string>(
         "MODEL", {.description = "Model type: MV (default), FHN, TNNP, SAN or INADA",
                      .default_value = "MV"}));
@@ -1177,7 +1177,7 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
   /*--------------------------------------------------------------------*/
   // St.Venant--Kirchhoff with temperature
   {
-    auto m = std::make_shared<Mat::MaterialDefinition>("MAT_Struct_ThrStVenantK",
+    auto m = std::make_shared<Mat::MaterialDefinition>("MAT_Struct_ThermoStVenantK",
         "Thermo St.Venant--Kirchhoff material", Core::Materials::m_thermostvenant);
 
     m->add_component(
@@ -1216,7 +1216,7 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
     m->add_component(entry<std::string>("TANG",
         {.description = "Method to compute the material tangent", .default_value = "consistent"}));
     m->add_component(entry<int>("MAXITER",
-        {.description = "Maximum Iterations for local Neuton Raphson", .default_value = 50}));
+        {.description = "Maximum Iterations for local Neutron Raphson", .default_value = 50}));
 
     Mat::append_material_definition(matlist, m);
   }
@@ -1224,7 +1224,7 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
   /*----------------------------------------------------------------------*/
   // Linear thermo-elastic St.Venant Kirchhoff / plastic von Mises
   {
-    auto m = std::make_shared<Mat::MaterialDefinition>("MAT_Struct_ThrPlasticLinElast",
+    auto m = std::make_shared<Mat::MaterialDefinition>("MAT_Struct_ThermoPlasticLinElast",
         "Thermo-elastic St.Venant Kirchhoff / plastic von Mises material",
         Core::Materials::m_thermopllinelast);
 
@@ -1266,7 +1266,7 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
         {.description = "Function number for isotropic hardening", .default_value = 0}));
     m->add_component(entry<double>("TOL", {.description = "Local Newton iteration tolerance"}));
     m->add_component(entry<int>(
-        "MAXITER", {.description = "Maximum Neuton Raphson Iterations", .default_value = 50}));
+        "MAXITER", {.description = "Maximum Neutron Raphson Iterations", .default_value = 50}));
     m->add_component(entry<double>("K1", {.description = "GTN Constant k1"}));
     m->add_component(entry<double>("K2", {.description = "GTN Constant k2"}));
     m->add_component(entry<double>("K3", {.description = "GTN constant k3"}));
@@ -1344,7 +1344,7 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
   /*----------------------------------------------------------------------*/
   // Thermo-hyperelasticity / finite strain von-Mises plasticity
   {
-    auto m = std::make_shared<Mat::MaterialDefinition>("MAT_Struct_ThrPlasticHyperElast",
+    auto m = std::make_shared<Mat::MaterialDefinition>("MAT_Struct_ThermoPlasticHyperElast",
         "Thermo-hyperelastic / finite strain plastic von Mises material "
         "with linear and exponential isotropic hardening",
         Core::Materials::m_thermoplhyperelast);
@@ -1515,8 +1515,9 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
         "EPSBAR_P", {.description = "accumulated plastic strain corresponding to SIGMA_Y",
                         .size = from_parameter<int>("SAMPLENUM")}));
     m->add_component(
-        entry<double>("DAMDEN", {.description = "denominator of damage evoluation law"}));
-    m->add_component(entry<double>("DAMEXP", {.description = "exponent of damage evoluation law"}));
+        entry<double>("DAMDEN", {.description = "denominator of damage evaluations law"}));
+    m->add_component(
+        entry<double>("DAMEXP", {.description = "exponent of damage evaluations law"}));
     m->add_component(entry<double>("DAMTHRESHOLD", {.description = "damage threshold"}));
     m->add_component(entry<double>(
         "KINHARD", {.description = "kinematic hardening modulus, stress-like variable"}));
@@ -1571,7 +1572,7 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
     m->add_component(entry<double>("DENS", {.description = "Density"}));
     m->add_component(entry<double>("K1", {.description = "Parameter for linear fiber stiffness"}));
     m->add_component(
-        entry<double>("K2", {.description = "Parameter for exponetial fiber stiffness"}));
+        entry<double>("K2", {.description = "Parameter for exponential fiber stiffness"}));
     m->add_component(entry<double>("GAMMA", {.description = "angle between fibers"}));
     m->add_component(entry<double>(
         "BETA_ISO", {.description = "ratio between elasticities in generalized Maxweel body"}));
@@ -3074,7 +3075,7 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
     m->add_component(
         entry<double>("BULKMODULUS", {.description = "bulk modulus of porous medium"}));
     m->add_component(
-        entry<double>("PENALTYPARAMETER", {.description = "penalty paramter of porous medium"}));
+        entry<double>("PENALTYPARAMETER", {.description = "penalty parameter of porous medium"}));
 
     Mat::append_material_definition(matlist, m);
   }

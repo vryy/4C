@@ -57,7 +57,7 @@ void Mixture::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // We evaluate the stress in the reference configuration with a prestretch. Hence, the
-  // deformation gradient is the identity matrix and the inverse inelastic deformation gradient ist
+  // deformation gradient is the identity matrix and the inverse inelastic deformation gradient is
   // the prestretch. This results that the 2. Piola-Kirchhoff stress tensor is the same as the
   // Cauchy-stress tensor.
 
@@ -69,7 +69,7 @@ void Mixture::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
   if (elhyper.summands().size() != 2)
   {
     FOUR_C_THROW(
-        "Currrently, the prestressing technique is only implemented for an ElastHyper constituent "
+        "Currently, the prestressing technique is only implemented for an ElastHyper constituent "
         "using an IsoNeoHooke summand with Sussman-Bathe penalty (Hence, exactly 2 summands are "
         "needed)");
   }

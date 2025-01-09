@@ -666,7 +666,7 @@ int Discret::Elements::Wall1Line::evaluate(Teuchos::ParameterList& params,
 }
 
 /*----------------------------------------------------------------------*
- * Evaluate method on mutliple dofsets                       vuong 11/12*
+ * Evaluate method on multiple dofsets                       vuong 11/12*
  * ---------------------------------------------------------------------*/
 int Discret::Elements::Wall1Line::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,

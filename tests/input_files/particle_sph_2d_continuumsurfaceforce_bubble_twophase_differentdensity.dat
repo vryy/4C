@@ -1,7 +1,7 @@
 -----------------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Particle
 -----------------------------------------------------------------IO
-STDOUTEVRY                      100
+STDOUTEVERY                      100
 VERBOSITY                       standard
 ------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND            0.06
@@ -10,8 +10,8 @@ DOMAINBOUNDINGBOX               -0.5 -0.5 -0.03 0.5 0.5 0.03
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYPE                      VelocityVerlet
 INTERACTION                     SPH
-RESULTSEVRY                     100
-RESTARTEVRY                     400
+RESULTSEVERY                     100
+RESTARTEVERY                     400
 TIMESTEP                        1e-4
 NUMSTEP                         500
 MAXTIME                         1.0

@@ -77,8 +77,8 @@ NODAL_DOFSET_STRATEGY           OneDofset_PerNodeAndPosition
 ------------------------------------------------------------------CUT GENERAL
 KERNEL_INTERSECTION_FLOATTYPE        double
 KERNEL_DISTANCE_FLOATTYPE            double
-GENERAL_POSITON_DISTANCE_FLOATTYPE   double
-GENERAL_POSITON_POSITION_FLOATTYPE   double
+GENERAL_POSITION_DISTANCE_FLOATTYPE   double
+GENERAL_POSITION_POSITION_FLOATTYPE   double
 DO_SELFCUT                           no
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche

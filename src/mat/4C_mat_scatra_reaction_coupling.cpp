@@ -95,7 +95,7 @@ double Mat::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::calc_rea_body_force_t
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
 )
 {
-  // modify the phinp vector if neccessary (e.g. for reference concentrations)
+  // modify the phinp vector if necessary (e.g. for reference concentrations)
   std::vector<double> phinp_mod(modify_phi(phinp, scale_phi));
 
   // call the real evaluation

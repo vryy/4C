@@ -299,7 +299,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
   TEUCHOS_FUNC_TIME_MONITOR("ComputeCs");
 
   // for special flows, LijMij and MijMij averaged in each
-  // hom. direction
+  // home. direction
   int numlayers = 0;
 
   std::shared_ptr<std::vector<double>> averaged_LijMij = std::make_shared<std::vector<double>>();
@@ -689,7 +689,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       else
         FOUR_C_THROW("More than two homogeneous directions not supported!");
     }
-  }  // end if hom dir
+  }  // end if home dir
 
 
   return;
@@ -710,7 +710,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   Core::LinAlg::Vector<double> Prt(*elerowmap, true);
 
   // for special flows, LijMij and MijMij averaged in each
-  // hom. direction
+  // home. direction
   int numlayers = 0;
 
   std::shared_ptr<std::vector<double>> averaged_LkMk = std::make_shared<std::vector<double>>();

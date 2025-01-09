@@ -134,7 +134,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
       /*!
       \brief Print this element
@@ -216,7 +216,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
       /*!
       \brief Print this element
@@ -241,7 +241,7 @@ namespace Discret
       /*!
       \brief Return the location vector of this element
 
-      The method computes degrees of freedom this element adresses.
+      The method computes degrees of freedom this element addresses.
       Degree of freedom ordering is as follows:<br>
       First all degrees of freedom of adjacent nodes are numbered in
       local nodal order, then the element internal degrees of freedom are
@@ -255,7 +255,7 @@ namespace Discret
       This version is intended to fill the LocationArray with the dofs
       the element will assemble into. In the standard case these dofs are
       the dofs of the element itself. For some special conditions (e.g.
-      the weak dirichlet boundary condtion) a surface element will assemble
+      the weak dirichlet boundary condition) a surface element will assemble
       into the dofs of a volume element.<br>
 
       \note The degrees of freedom returned are not necessarily only nodal dofs.

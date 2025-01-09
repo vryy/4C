@@ -24,7 +24,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  None
 THERM_TEMPGRAD                  None
 FILESTEPS                       1000
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
@@ -40,7 +40,7 @@ TIMEINTEGR                      BDF2
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 NUMSTEP                         10
 NUMSTASTEPS                     10
 MAXTIME                         0.05

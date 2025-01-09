@@ -22,8 +22,8 @@ PROBLEMTYPE                      Structure
 ------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      OneStepTheta
-RESULTSEVRY                     1
-RESTARTEVRY                     200
+RESULTSEVERY                     1
+RESTARTEVERY                     200
 TIMESTEP                        0.05
 NUMSTEP                         100
 MAXTIME                         5.0

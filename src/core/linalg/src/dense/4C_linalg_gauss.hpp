@@ -21,7 +21,7 @@ namespace Core::LinAlg
 
     \tparam do_piv   (in)    : do_piv = true does pivoting, do_piv = false does not do pivoting
     \tparam dim      (in)    : dimension of the matrix
-    \tparam valtype  (in)    : type of values in the matrix - standart floating point or long
+    \tparam valtype  (in)    : type of values in the matrix - standard floating point or long
     precision
     \return determinant of system matrix
   */

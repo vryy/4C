@@ -75,7 +75,7 @@ Arteries::Utils::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
     for (unsigned int i = 0; i < myConditions.size(); i++)
     {
       // ---------------------------------------------------------------
-      // Read in the artery number and the nodes assosiated with the
+      // Read in the artery number and the nodes associated with the
       // condition
       // ---------------------------------------------------------------
       const int Artery_Number = myConditions[i]->parameters().get<int>("ArteryNumber");

@@ -34,8 +34,8 @@ M_DAMP                          0.5
 NLNSOL                          singlestep
 NUMSTEP                         30
 PREDICT                         ConstDisVelAcc
-RESULTSEVRY                     1
-RESTARTEVRY                     100
+RESULTSEVERY                     1
+RESTARTEVERY                     100
 TIMESTEP                        50E-8
 TOLCONSTR                       1e-6
 TOLDISP                         1e-6

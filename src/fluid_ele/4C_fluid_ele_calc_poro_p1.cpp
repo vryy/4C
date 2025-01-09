@@ -655,7 +655,7 @@ void Discret::Elements::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
         eprenp, epren, epressnp_timederiv, epressam_timederiv, epressn_timederiv, eaccam, edispnp,
         edispn, egridv, egridvn, escaaf, emhist, echist, eporositynp);
 
-    //************************************************auxilary variables for computing the porosity
+    //************************************************auxiliary variables for computing the porosity
 
     double dphi_dp = 0.0;
     double dphi_dJ = 0.0;
@@ -712,7 +712,7 @@ void Discret::Elements::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
     // parameters at integration point
     //----------------------------------------------------------------------
     // get material parameters at integration point
-    Base::get_material_paramters(material);
+    Base::get_material_parameters(material);
 
     // set viscous term from previous iteration to zero (required for
     // using routine for evaluation of momentum rhs/residual as given)

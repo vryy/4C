@@ -368,7 +368,7 @@ void TSI::Partitioned::time_loop_sequ_stagg()
     do_structure_step();
 
     // extract the velocities of the current solution
-    // quasistatic to exlude oszillation, use displacements to compute velocities
+    // quasistatic to exclude oszillation, use displacements to compute velocities
     if (quasistatic_) vel_ = calc_velocity(*disp_);
     // else vel_ = WriteAccessVelnp_
 
@@ -418,8 +418,8 @@ void TSI::Partitioned::outer_iteration_loop()
   bool stopnonliniter = false;
 
   // outer iteration loop starts
-  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-      (step() % print_screen_evry() == 0))
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+      (step() % print_screen_every() == 0))
   {
     std::cout << "\n";
     std::cout << "**************************************************************\n";
@@ -553,7 +553,7 @@ void TSI::Partitioned::outer_iteration_loop()
 
         // extract the velocities of the current solution
 
-        // quasistatic to exlude oszillation, use displacements to compute velocities
+        // quasistatic to exclude oszillation, use displacements to compute velocities
         if (quasistatic_) vel_ = calc_velocity(*disp_);
         // else use Velnp()
 
@@ -657,7 +657,7 @@ void TSI::Partitioned::outer_iteration_loop()
         // n: time indices, i: Newton iteration
         // calculate increment Delta T^{i+1}_{n+1}
         // 1. iteration step (i=0): Delta T^{n+1}_{1} = T^{n},
-        //                          so far no solving has occured: T^{n+1} = T^{n}
+        //                          so far no solving has occurred: T^{n+1} = T^{n}
         // i+1. iteration step:     Inc T^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
         //                     fill Inc T^{i+1}_{n+1} = T^{i}_{n+1}
         tempincnp_->Update(1.0, *thermo_field()->tempnp(), 0.0);
@@ -873,7 +873,7 @@ void TSI::Partitioned::outer_iteration_loop()
         // n: time indices, i: Newton iteration
         // calculate increment Delta T^{i+1}_{n+1}
         // 1. iteration step (i=0): Delta T^{n+1}_{1} = T^{n},
-        //                          so far no solving has occured: T^{n+1} = T^{n}
+        //                          so far no solving has occurred: T^{n+1} = T^{n}
         // i+1. iteration step:     Inc T^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
         //                     fill Inc T^{i+1}_{n+1} = T^{i}_{n+1}
         tempincnp_->Update(1.0, *thermo_field()->tempnp(), 0.0);
@@ -1150,8 +1150,8 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
     {
       // print the incremental based convergence check to the screen
       // test here increment
-      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-          (step() % print_screen_evry() == 0))
+      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+          (step() % print_screen_every() == 0))
       {
         std::cout << "\n";
         std::cout << "*****************************************************************************"
@@ -1178,9 +1178,9 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
       // norm of the increment with respect to the norm of the variables itself: use the last
       // converged solution
       stopnonliniter = ((tempincnorm_L2 <= ittol) and (dispincnorm_L2 <= ittol));
-      if ((stopnonliniter == true) and print_screen_evry() and
+      if ((stopnonliniter == true) and print_screen_every() and
           (Core::Communication::my_mpi_rank(get_comm()) == 0) and
-          (step() % print_screen_evry() == 0))
+          (step() % print_screen_every() == 0))
       {
         printf("\n");
         printf(
@@ -1196,8 +1196,8 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
       if ((itnum == itmax) and ((tempincnorm_L2 > ittol) or (dispincnorm_L2 > ittol)))
       {
         stopnonliniter = true;
-        if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-            (step() % print_screen_evry() == 0))
+        if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+            (step() % print_screen_every() == 0))
         {
           printf(
               "|     >>>>>> not converged in itemax steps!                                       "
@@ -1216,8 +1216,8 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
     {
       // print the incremental based convergence check to the screen
       // test here increment/variable
-      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-          (step() % print_screen_evry() == 0))
+      if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+          (step() % print_screen_every() == 0))
       {
         std::cout << "\n";
         std::cout << "*****************************************************************************"
@@ -1242,7 +1242,7 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
       stopnonliniter =
           ((tempincnorm_L2 / tempnorm_L2 <= ittol) and (dispincnorm_L2 / dispnorm_L2 <= ittol));
       if ((stopnonliniter == true) and (Core::Communication::my_mpi_rank(get_comm()) == 0) and
-          print_screen_evry() and (step() % print_screen_evry() == 0))
+          print_screen_every() and (step() % print_screen_every() == 0))
       {
         printf("\n");
         printf(
@@ -1259,8 +1259,8 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
           ((tempincnorm_L2 / tempnorm_L2 > ittol) or (dispincnorm_L2 / dispnorm_L2 > ittol)))
       {
         stopnonliniter = true;
-        if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-            (step() % print_screen_evry() == 0))
+        if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+            (step() % print_screen_every() == 0))
         {
           printf(
               "|     >>>>>> not converged in itemax steps!                                       "

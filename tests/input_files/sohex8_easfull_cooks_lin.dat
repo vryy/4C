@@ -29,8 +29,8 @@ RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     200
+RESULTSEVERY                     1
+RESTARTEVERY                     200
 NLNSOL                          fullnewton
 TIMESTEP                        100.0
 NUMSTEP                         1

@@ -172,7 +172,7 @@ void Core::LinearSolver::AMGNxN::Vcycle::do_vcycle(
 void Core::LinearSolver::AMGNxN::Vcycle::solve(
     const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero) const
 {
-  // Check if everithing is set up
+  // Check if everything is set up
   if (!flag_set_up_a_) FOUR_C_THROW("Operators missing");
   if (!flag_set_up_p_) FOUR_C_THROW("Projectors missing");
   if (!flag_set_up_r_) FOUR_C_THROW("Restrictors missing");
@@ -338,7 +338,7 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::do_vcycle(const Core::LinAlg::Mul
 void Core::LinearSolver::AMGNxN::VcycleSingle::apply(const Core::LinAlg::MultiVector<double>& X,
     Core::LinAlg::MultiVector<double>& Y, bool InitialGuessIsZero) const
 {
-  // Check if everithing is set up
+  // Check if everything is set up
   if (!flag_set_up_a_) FOUR_C_THROW("Operators missing");
   if (!flag_set_up_p_) FOUR_C_THROW("Projectors missing");
   if (!flag_set_up_r_) FOUR_C_THROW("Restrictors missing");

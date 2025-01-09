@@ -484,7 +484,7 @@ void Discret::Elements::Beam3k::calc_internal_and_inertia_forces_and_stiff(
       }
 
       if (rotvec_ == true)
-        transform_stiff_matrix_multipl<nnodecl, double>(stiffmatrix, disp_totlag);
+        transform_stiff_matrix_multiplicative<nnodecl, double>(stiffmatrix, disp_totlag);
     }
 
 
@@ -516,7 +516,7 @@ void Discret::Elements::Beam3k::calc_internal_and_inertia_forces_and_stiff(
             (*massmatrix)(i, j) = inertia_force_FAD(i).dx(j);
 
         if (rotvec_ == true)
-          transform_stiff_matrix_multipl<nnodecl, double>(massmatrix, disp_totlag);
+          transform_stiff_matrix_multiplicative<nnodecl, double>(massmatrix, disp_totlag);
       }
     }
   }
@@ -1218,9 +1218,9 @@ void Discret::Elements::Beam3k::calculate_internal_forces_and_stiff_sk(
   Core::LinAlg::Matrix<3, 1, FAD> kappacl(true);     // centerline (cl) curvature vector
   FAD abs_r_s = 0.0;                                 // ||r'||
   FAD rsTrss = 0.0;                                  // r'^Tr''
-  Core::LinAlg::Matrix<3, 3, FAD> auxmatrix1(true);  // auxilliary matrix
+  Core::LinAlg::Matrix<3, 3, FAD> auxmatrix1(true);  // auxiliary matrix
   Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, FAD> auxmatrix2(
-      true);  // auxilliary matrix
+      true);  // auxiliary matrix
 
 #ifdef CONSISTENTSPINSK
   Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, FAD> v_thetapard_s(true);
@@ -1361,7 +1361,7 @@ void Discret::Elements::Beam3k::calculate_internal_forces_and_stiff_sk(
     Core::FE::shape_function_hermite_1d_deriv2(N_i_xixi, xi, length_, Core::FE::CellType::line2);
     assemble_shapefunctions_nss(N_i_xi, N_i_xixi, jacobi_[numgp], jacobi2_[numgp], N_ss);
 
-    // Calculate collocation piont interpolations
+    // Calculate collocation point interpolations
     v_epsilon.clear();
     epsilon = 0.0;
     phi = 0.0;
@@ -1386,7 +1386,7 @@ void Discret::Elements::Beam3k::calculate_internal_forces_and_stiff_sk(
     //************************Begin: Determine "v"-vectors representing the discrete strain
     // variations*****************************
     //*****************************************************************************************************************************
-    // Auxilliary quantities
+    // Auxiliary quantities
     abs_r_s = 0.0;
     rsTrss = 0.0;
     abs_r_s = Core::FADUtils::norm<FAD>(r_s);
@@ -1874,7 +1874,7 @@ void Discret::Elements::Beam3k::calculate_inertia_forces_and_mass_matrix(
     amodnewmass.multiply(triad_mat_gp[numgp], Amodnewmass);
 
 
-    // compute quaterion of current material triad at gp
+    // compute quaternion of current material triad at gp
     Core::LinAlg::Matrix<4, 1, T> Qnewmass(true);
     Core::LargeRotations::triadtoquaternion(triad_mat_gp[numgp], Qnewmass);
 
@@ -2526,7 +2526,7 @@ void Discret::Elements::Beam3k::evaluate_line_neumann(Core::LinAlg::SerialDenseV
         }
       }
 
-      transform_stiff_matrix_multipl<nnodecl, FAD>(stiffmat, disp_totlag_FAD);
+      transform_stiff_matrix_multiplicative<nnodecl, FAD>(stiffmat, disp_totlag_FAD);
     }
   }
 }
@@ -2571,7 +2571,7 @@ void Discret::Elements::Beam3k::evaluate_line_neumann_forces(
 
     // position vector at the gauss point at reference configuration needed for function evaluation
     std::vector<double> X_ref(3, 0.0);
-    // calculate coordinates of corresponding Guass point in reference configuration
+    // calculate coordinates of corresponding Gauss point in reference configuration
     for (unsigned int node = 0; node < 2; ++node)
     {
       for (unsigned int dof = 0; dof < 3; ++dof)
@@ -3226,7 +3226,7 @@ void Discret::Elements::Beam3k::evaluate_rotational_damping(
     // compute material triad at gp
     triad_mat.clear();
 
-    // compute quaterion of material triad at gp
+    // compute quaternion of material triad at gp
     Core::LinAlg::Matrix<4, 1, T> Qnewmass(true);
 
     triad_interpolation_scheme_ptr->get_interpolated_local_rotation_vector(theta, L_i);
@@ -3687,7 +3687,7 @@ void Discret::Elements::Beam3k::apply_rot_vec_trafo(
  01/16|
  *-----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, typename T>
-void Discret::Elements::Beam3k::transform_stiff_matrix_multipl(
+void Discret::Elements::Beam3k::transform_stiff_matrix_multiplicative(
     Core::LinAlg::SerialDenseMatrix* stiffmatrix,
     const Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag) const
 {
@@ -3811,7 +3811,7 @@ void Discret::Elements::Beam3k::calc_stiff_contributions_ptc(
 //            else
 //              stiff_relerr(line,col)=1000.0;
 //
-//            //suppressing small entries whose effect is only confusing and NaN entires (which
+//            //suppressing small entries whose effect is only confusing and NaN entries (which
 //            arise due to zero entries) if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan(
 //            stiff_relerr(line,col))) //isnan = is not a number
 //              stiff_relerr(line,col) = 0;
@@ -3825,7 +3825,7 @@ void Discret::Elements::Beam3k::calc_stiff_contributions_ptc(
 //        if(outputflag ==1)
 //        {
 //
-//          std::cout<<"\n\n acutally calculated stiffness matrix\n";
+//          std::cout<<"\n\n actually calculated stiffness matrix\n";
 //          for(int line=0; line<6*2+BEAM3K_COLLOCATION_POINTS; line++)
 //          {
 //            for(int col=0; col<6*2+BEAM3K_COLLOCATION_POINTS; col++)
@@ -4074,11 +4074,11 @@ template void Discret::Elements::Beam3k::apply_rot_vec_trafo<2, Sacado::Fad::DFa
     const Core::LinAlg::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&,
     Core::LinAlg::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&) const;
 
-template void Discret::Elements::Beam3k::transform_stiff_matrix_multipl<2, double>(
+template void Discret::Elements::Beam3k::transform_stiff_matrix_multiplicative<2, double>(
     Core::LinAlg::SerialDenseMatrix*,
     const Core::LinAlg::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&) const;
 template void
-Discret::Elements::Beam3k::transform_stiff_matrix_multipl<2, Sacado::Fad::DFad<double>>(
+Discret::Elements::Beam3k::transform_stiff_matrix_multiplicative<2, Sacado::Fad::DFad<double>>(
     Core::LinAlg::SerialDenseMatrix*,
     const Core::LinAlg::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&)
     const;

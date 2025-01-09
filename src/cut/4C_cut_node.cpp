@@ -14,7 +14,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*
-Functions to catch implementation erros in debug mode
+Functions to catch implementation errors in debug mode
 */
 namespace
 {
@@ -832,7 +832,8 @@ bool Cut::NodalDofSetCmp::operator()(
   // - arbitrary number of ghost dofsets per position (phase)
   //==============================================
   // nds-order starting from 0: STD(outside)/STD(inside) // GHOST(outside)_1 / GHOST(outside)_2 ...
-  // GHOST(outside)_nout // GHOST(inside)_1 / GHOST(inside)_2 ... GHOST(inside)_nin where GHOST(*)_1
+  // GHOST(outside)_nout // GHOST(inside)_1 / GHOST(inside)_2 ... GHOST(inside)_n_in where
+  // GHOST(*)_1
   // ... GHOST(*)_n are sorted by PointIds of contained volumecells
   //==============================================
 

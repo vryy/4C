@@ -23,7 +23,7 @@ STRUCT_STRAIN                   No
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
 FILESTEPS                       1000
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
@@ -77,13 +77,13 @@ TOLLAGR                         1e-06
 --------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 NUMSTEP                         10
 MAXTIME                         1000
 TIMESTEP                        0.05
 ITEMAX                          50
 ITEMIN                          1
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
 NORM_INC                        AbsGlobal

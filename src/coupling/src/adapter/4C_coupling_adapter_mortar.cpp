@@ -828,10 +828,10 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
     // except for the owner processor of the current node)
     Core::Communication::sum_all(Xnew.data(), Xnewglobal.data(), 3, comm);
 
-    // const_cast to force modifed X() into mtnode
-    // const_cast to force modifed xspatial() into mtnode
-    // const_cast to force modifed X() into pnode
-    // const_cast to force modifed X() into alenode if fluid=slave
+    // const_cast to force modified X() into mtnode
+    // const_cast to force modified xspatial() into mtnode
+    // const_cast to force modified X() into pnode
+    // const_cast to force modified X() into alenode if fluid=slave
     // (remark: this is REALLY BAD coding)
     if (Teuchos::getIntegralValue<Inpar::Mortar::MeshRelocation>(
             mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_initial)

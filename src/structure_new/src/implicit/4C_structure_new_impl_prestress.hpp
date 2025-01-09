@@ -35,7 +35,7 @@ namespace Solid
       void update_step_element() override;
 
       /*!
-       * \brief During MULF and material iterative prestressing, the displacements resetted after
+       * \brief During MULF and material iterative prestressing, the displacements reset after
        * each timestep, which is done here.
        */
       void post_update() override;

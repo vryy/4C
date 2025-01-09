@@ -70,7 +70,7 @@ namespace Core::GeometricSearch
   struct BoundingVolume
   {
 #ifndef FOUR_C_WITH_ARBORX
-    /*! \brief This class can not be used without ArborX, add empy methods and a controlled error.
+    /*! \brief This class can not be used without ArborX, add empty methods and a controlled error.
      */
     BoundingVolume()
     {

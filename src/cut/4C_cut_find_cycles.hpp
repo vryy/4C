@@ -180,11 +180,11 @@ namespace Cut
 
 #ifdef CUT_USE_SORTED_VECTOR
     typedef SortedVector<cycle_t*> plain_cycle_set;
-    typedef SortedVector<vertex_t> plain_vertix_set;
+    typedef SortedVector<vertex_t> plain_vertex_set;
     typedef SortedVector<std::pair<vertex_t, vertex_t>> plain_graph_edge_set;
 #else
     typedef std::set<cycle_t*> plain_cycle_set;
-    typedef std::set<vertex_t> plain_vertix_set;
+    typedef std::set<vertex_t> plain_vertex_set;
     typedef std::set<std::pair<vertex_t, vertex_t>> plain_graph_edge_set;
 #endif
 

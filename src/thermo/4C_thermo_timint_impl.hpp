@@ -246,7 +246,7 @@ namespace Thermo
     //! @name Output
     //@{
 
-    //! Print to screen predictor informations about residual norm etc.
+    //! Print to screen predictor information about residual norm etc.
     //! \author lw (originally) \date 12/07
     void print_predictor();
 

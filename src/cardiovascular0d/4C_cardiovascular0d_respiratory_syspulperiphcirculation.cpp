@@ -5349,7 +5349,7 @@ void Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate_respira
                             dcb_c_o2_dpp_o2(ppCO2_arespl_sys_np, ppO2_arespl_sys_np)));
 
 
-    //////// systemic muscluar arteries CO2
+    //////// systemic muscular arteries CO2
     // w.r.t. mech. pressure
     wkstiff(64, 6) =
         theta *

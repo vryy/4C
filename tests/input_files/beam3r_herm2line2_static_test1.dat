@@ -38,8 +38,8 @@ REF_LENGTH                      Yes
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     100
-RESTARTEVRY                     100
+RESULTSEVERY                     100
+RESTARTEVERY                     100
 NLNSOL                          fullnewton
 TIMESTEP                        0.1
 NUMSTEP                         10

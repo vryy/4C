@@ -21,8 +21,8 @@ ELEMENT_GHOSTING                      yes
 INT_STRATEGY                          Standard
 LINEAR_SOLVER                         1
 DYNAMICTYPE                            Statics
-RESULTSEVRY                           1
-RESTARTEVRY                           1
+RESULTSEVERY                           1
+RESTARTEVERY                           1
 NLNSOL                                fullnewton
 TIMESTEP                              1
 NUMSTEP                               1
@@ -47,8 +47,8 @@ VOLUME_GAUSS_POINTS_BY                Tessellation
 ---------------------------------------------------------------------CUT GENERAL
 KERNEL_INTERSECTION_FLOATTYPE         double
 KERNEL_DISTANCE_FLOATTYPE             double
-GENERAL_POSITON_DISTANCE_FLOATTYPE    double
-GENERAL_POSITON_POSITION_FLOATTYPE    double
+GENERAL_POSITION_DISTANCE_FLOATTYPE    double
+GENERAL_POSITION_POSITION_FLOATTYPE    double
 DO_SELFCUT                            no
 BOUNDARYCELL_CUBATURDEGREE            4
 INTEGRATE_INSIDE_CELLS                No

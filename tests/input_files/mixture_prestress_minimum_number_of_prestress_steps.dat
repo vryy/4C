@@ -30,8 +30,8 @@ PRESTRESS                       material_iterative
 PRESTRESSTIME                   100
 PRESTRESSTOLDISP                1e-7
 PRESTRESSMINLOADSTEPS           50
-RESULTSEVRY                     100
-RESTARTEVRY                     100
+RESULTSEVERY                     100
+RESTARTEVERY                     100
 TIMESTEP                        0.1
 NUMSTEP                         1000
 MAXTIME                         100

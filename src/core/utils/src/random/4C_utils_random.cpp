@@ -45,15 +45,15 @@ void Core::Utils::Random::set_rand_seed(const unsigned int seed) { rand_engine_.
 /// set the range for the uniform rng
 void Core::Utils::Random::set_rand_range(const double lower, const double upper)
 {
-  std::uniform_real_distribution<double>::param_type parm(lower, upper);
-  uni_dist_.param(parm);
+  std::uniform_real_distribution<double>::param_type parameters(lower, upper);
+  uni_dist_.param(parameters);
 }
 
 /// set the mean and variance for the normal rng
 void Core::Utils::Random::set_mean_variance(const double mean, const double var)
 {
-  std::normal_distribution<double>::param_type parm(mean, var);
-  norm_dist_.param(parm);
+  std::normal_distribution<double>::param_type parameters(mean, var);
+  norm_dist_.param(parameters);
 }
 
 

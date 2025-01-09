@@ -40,13 +40,13 @@ NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         25
 PREDICTOR                       steady_state
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 STARTFUNCNO                     2
 START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 MESHTYING                       Condensed_Smat
 CALCERROR                       shear_flow
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES

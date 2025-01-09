@@ -153,12 +153,12 @@ namespace Inpar
           "PRESTRESSMINLOADSTEPS", 0, "Minimum number of load steps during prestressing", &sdyn);
 
       // Output type
+      Core::Utils::int_parameter("RESULTSEVERY", 1,
+          "save displacements and contact forces every RESULTSEVERY steps", &sdyn);
       Core::Utils::int_parameter(
-          "RESULTSEVRY", 1, "save displacements and contact forces every RESULTSEVRY steps", &sdyn);
+          "RESEVERYERGY", 0, "write system energies every requested step", &sdyn);
       Core::Utils::int_parameter(
-          "RESEVRYERGY", 0, "write system energies every requested step", &sdyn);
-      Core::Utils::int_parameter(
-          "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &sdyn);
+          "RESTARTEVERY", 1, "write restart possibility every RESTARTEVERY steps", &sdyn);
       Core::Utils::bool_parameter("CALC_ACC_ON_RESTART", "No",
           "Compute the initial state for a restart dynamics analysis", &sdyn);
       Core::Utils::int_parameter("OUTPUT_STEP_OFFSET", 0,

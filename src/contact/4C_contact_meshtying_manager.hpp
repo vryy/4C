@@ -103,7 +103,7 @@ namespace CONTACT
     \brief Read restart information for contact
 
     This method has the inverse functionality of write_restart, as
-    it reads the restart Lagrange mulitplier vectors. Moreover,
+    it reads the restart Lagrange multiplier vectors. Moreover,
     all mortar coupling quantities (e.g. D and M) have to be
     re-computed upon restart..
 

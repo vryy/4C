@@ -766,7 +766,7 @@ namespace Discret::Elements
    * @param integration_fac (in) : Integration factor (Gauss point weight times the determinant of
    * the jacobian)
    * @param viscosity (in) : viscosity of fluid phase
-   * @param dporosity_dpressure (in) : Derivitive of porosity w.r.t. fluid pressure
+   * @param dporosity_dpressure (in) : Derivative of porosity w.r.t. fluid pressure
    * @param shapefunctions (in) : Shape functions
    * @param jacobian_mapping (in): An object holding quantities of the jacobian mapping
    * (inverse Jacobian, determinant, derivatives of the shape functions w.r.t. XYZ)
@@ -891,7 +891,7 @@ namespace Discret::Elements
    * mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient)
    * @param porosity (in) : porosity
-   * @param dPorosity_dPressure (in) : Derivitive of porosity w.r.t. fluid pressure
+   * @param dPorosity_dPressure (in) : Derivative of porosity w.r.t. fluid pressure
    * @param bopCinv (in) :B^T . C^-1
    * @param Finvgradp (in) : F^-T * grad p
    * @param FinvNXYZ (in) :  F^-T * N_XYZ   * @param porofluidmat (in) : porofluid material

@@ -558,7 +558,7 @@ void EHL::Monolithic::setup_system_matrix()
   k_sl_->add(*slaveiforce_derivp, false, -(1.0 - alphaf), 1.0);
   k_sl_->add(*masteriforce_derivp, false, -(1.0 - alphaf), 1.0);
 
-  k_sl_->complete(*(extractor()->Map(1)),  // pressue dof map
+  k_sl_->complete(*(extractor()->Map(1)),  // pressure dof map
       *(extractor()->Map(0))               // displacement dof map
   );
 
@@ -654,7 +654,7 @@ void EHL::Monolithic::setup_system_matrix()
 
 
   k_ls_->complete(*(extractor()->Map(0)),  // displacement dof map
-      *(extractor()->Map(1))               // pressue dof map
+      *(extractor()->Map(1))               // pressure dof map
   );
 
   // Apply Dirichet to k_ls
@@ -873,13 +873,13 @@ bool EHL::Monolithic::converged()
     conv = convinc and convrhs;
   else if (combincrhs_ == Inpar::EHL::bop_or)
     conv = convinc or convrhs;
-  else if (combincrhs_ == Inpar::EHL::bop_coupl_and_singl)
+  else if (combincrhs_ == Inpar::EHL::bop_coupl_and_single)
     conv = convinc and convrhs and convdisp and convstrrhs and convpre and convlubricationrhs;
-  else if (combincrhs_ == Inpar::EHL::bop_coupl_or_singl)
+  else if (combincrhs_ == Inpar::EHL::bop_coupl_or_single)
     conv = (convinc and convrhs) or (convdisp and convstrrhs and convpre and convlubricationrhs);
-  else if (combincrhs_ == Inpar::EHL::bop_and_singl)
+  else if (combincrhs_ == Inpar::EHL::bop_and_single)
     conv = convdisp and convstrrhs and convpre and convlubricationrhs;
-  else if (combincrhs_ == Inpar::EHL::bop_or_singl)
+  else if (combincrhs_ == Inpar::EHL::bop_or_single)
     conv = (convdisp or convstrrhs or convpre or convlubricationrhs);
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -898,8 +898,8 @@ void EHL::Monolithic::print_newton_iter()
 {
   // print to standard out
   // replace myrank_ here general by Core::Communication::my_mpi_rank(Comm())
-  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_evry() and
-      (step() % print_screen_evry() == 0) and printiter_)
+  if ((Core::Communication::my_mpi_rank(get_comm()) == 0) and print_screen_every() and
+      (step() % print_screen_every() == 0) and printiter_)
   {
     if (iter_ == 1) print_newton_iter_header(stdout);
     print_newton_iter_text(stdout);
@@ -1205,7 +1205,7 @@ void EHL::Monolithic::print_newton_iter_text(FILE* ofile)
 
 /*----------------------------------------------------------------------*
  | print statistics of converged NRI                        wirtz 01/16 |
- | orignially by bborn 08/09                                            |
+ | originally by bborn 08/09                                            |
  *----------------------------------------------------------------------*/
 void EHL::Monolithic::print_newton_conv()
 {
@@ -1469,28 +1469,28 @@ void EHL::Monolithic::set_default_parameters()
         std::cout << "Convergence test of EHL:\n res, inc with 'OR'." << std::endl;
       break;
     }
-    case Inpar::EHL::bop_coupl_and_singl:
+    case Inpar::EHL::bop_coupl_and_single:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of EHL:\n res, inc, str-res, lub-res, dis, pre with 'AND'."
                   << std::endl;
       break;
     }
-    case Inpar::EHL::bop_coupl_or_singl:
+    case Inpar::EHL::bop_coupl_or_single:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of EHL:\n (res, inc) or (str-res, lub-res, dis, pre)."
                   << std::endl;
       break;
     }
-    case Inpar::EHL::bop_and_singl:
+    case Inpar::EHL::bop_and_single:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of EHL:\n str-res, lub-res, dis, pre with 'AND'."
                   << std::endl;
       break;
     }
-    case Inpar::EHL::bop_or_singl:
+    case Inpar::EHL::bop_or_single:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of EHL:\n str-res, lub-res, dis, pre with 'OR'."
@@ -1551,8 +1551,8 @@ void EHL::Monolithic::set_default_parameters()
 
   // if scaled L1-norm is wished to be used
   if ((iternorm_ == Inpar::EHL::norm_l1_scaled) and
-      ((combincrhs_ == Inpar::EHL::bop_coupl_and_singl) or
-          (combincrhs_ == Inpar::EHL::bop_coupl_or_singl)))
+      ((combincrhs_ == Inpar::EHL::bop_coupl_and_single) or
+          (combincrhs_ == Inpar::EHL::bop_coupl_or_single)))
   {
     iternormstr_ = Inpar::EHL::norm_l1_scaled;
     iternormlubrication_ = Inpar::EHL::norm_l1_scaled;

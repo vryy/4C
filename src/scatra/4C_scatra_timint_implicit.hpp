@@ -92,7 +92,7 @@ namespace CONTACT
 
 namespace ScaTra
 {
-  class HomIsoTurbScalarForcing;
+  class HomoIsoTurbScalarForcing;
   class MeshtyingStrategyBase;
   class ScalarHandler;
   class OutputScalarsStrategyBase;
@@ -106,8 +106,8 @@ namespace ScaTra
 
   class ScaTraTimIntImpl : public Adapter::ScatraInterface
   {
-    friend class HomIsoTurbInitialScalarField;
-    friend class HomIsoTurbScalarForcing;
+    friend class HomoIsoTurbInitialScalarField;
+    friend class HomoIsoTurbScalarForcing;
     friend class OutputScalarsStrategyBase;
     friend class OutputScalarsStrategyDomain;
     friend class OutputScalarsStrategyCondition;
@@ -319,11 +319,10 @@ namespace ScaTra
     }
 
     //! set number of dofset to write two-tensor quantities on, e.g. stresses, strains
-    void set_number_of_dof_set_two_tensor_quantity(int nds_two_tensor_quantitiy)
+    void set_number_of_dof_set_two_tensor_quantity(int nds_two_tensor_quantity)
     {
-      FOUR_C_ASSERT(
-          nds_two_tensor_quantitiy_ == -1, "Don't set 'nds_two_tensor_quantitiy_' twice!");
-      nds_two_tensor_quantitiy_ = nds_two_tensor_quantitiy;
+      FOUR_C_ASSERT(nds_two_tensor_quantity_ == -1, "Don't set 'nds_two_tensor_quantity_' twice!");
+      nds_two_tensor_quantity_ = nds_two_tensor_quantity;
     }
 
     //! set number of dofset to write velocity values on
@@ -525,7 +524,7 @@ namespace ScaTra
     int nds_thermo() const { return nds_thermo_; }
 
     //! return number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
-    int nds_two_tensor_quantity() const { return nds_two_tensor_quantitiy_; }
+    int nds_two_tensor_quantity() const { return nds_two_tensor_quantity_; }
 
     //! return number of dofset associated with velocity dofs
     int nds_vel() const { return nds_vel_; }
@@ -1026,7 +1025,7 @@ namespace ScaTra
     //! potential residual scaling and potential addition of Neumann terms
     void scaling_and_neumann();
 
-    //! add actual Neumann loads multipl. with time factor to the residual
+    //! add actual Neumann loads multiplied with time factor to the residual
     virtual void add_neumann_to_residual() = 0;
 
     //! evaluate Neumann boundary conditions
@@ -1338,7 +1337,7 @@ namespace ScaTra
     //! boolean to write Gmsh postprocessing files (input parameter)
     const bool outputgmsh_;
 
-    //! boolean to write state vectore to matlab file (input parameter)
+    //! boolean to write state vector to matlab file (input parameter)
     const bool output_state_matlab_;
 
     //! flag for finite difference check
@@ -1398,10 +1397,10 @@ namespace ScaTra
     //! number of space dimensions
     int nsd_;
 
-    //! scalar mangager
+    //! scalar manager
     std::shared_ptr<ScalarHandler> scalarhandler_;
 
-    //! scalar mangager
+    //! scalar manager
     std::shared_ptr<OutputScalarsStrategyBase> outputscalarstrategy_;
 
     //! domain integral manager
@@ -1449,7 +1448,7 @@ namespace ScaTra
     //! mean in time at the interface concentration
     std::shared_ptr<const Core::LinAlg::Vector<double>> mean_conc_;
 
-    //! Membrane concentration in interface bewteen a scatracoupling (needed for instance for type
+    //! Membrane concentration in interface between a scatracoupling (needed for instance for type
     //! fps3i)
     std::shared_ptr<const Core::LinAlg::Vector<double>> membrane_conc_;
 
@@ -1476,7 +1475,7 @@ namespace ScaTra
     int nds_thermo_;
 
     //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
-    int nds_two_tensor_quantitiy_;
+    int nds_two_tensor_quantity_;
 
     //! number of dofset associated with velocity related dofs
     int nds_vel_;
@@ -1586,7 +1585,7 @@ namespace ScaTra
     std::shared_ptr<Core::LinAlg::Vector<double>> forcing_;
 
     //! forcing for homogeneous isotropic turbulence
-    std::shared_ptr<ScaTra::HomIsoTurbScalarForcing> homisoturb_forcing_;
+    std::shared_ptr<ScaTra::HomoIsoTurbScalarForcing> homisoturb_forcing_;
 
     /*========================================================================*/
     //! @name variables for orthogonal space projection aka Krylov projection
@@ -1794,7 +1793,7 @@ namespace ScaTra
     //! init objects that are specific for output strategy
     virtual void init_strategy_specific(const ScaTraTimIntImpl* const scatratimint) = 0;
 
-    //! evluate csv data and return it in a map
+    //! evaluate csv data and return it in a map
     virtual std::map<std::string, std::vector<double>> prepare_csv_output() = 0;
 
     //! fill parameter list and set variables in discretization for evaluation of mean scalars

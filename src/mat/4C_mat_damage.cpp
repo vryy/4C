@@ -309,7 +309,7 @@ void Mat::Damage::evaluate_simplified_lemaitre(const Core::LinAlg::Matrix<3, 3>*
   // newton tolerance
   double newton_tolerance = params_->abstol_;
 
-  // calculate some more paramters
+  // calculate some more parameters
   // lame constant / shear modulus parameter mu == G
   double G = young / (2.0 * (1.0 + nu));
   // bulk modulus bulk = E /( 3 ( 1 - 2 nu) )= lambda + 2/3 * mu
@@ -940,7 +940,7 @@ std::pair<double, double> Mat::Damage::residuum_and_jacobian_with_damage(
   const double Ytan = -dy_d_dgamma * y_d / (3.0 * G);
   // omega_{n+1} = 3G / (q_tilde - sigma_y) * Dgamma = 1 - D_{n+1}
   const double omega = std::max(0.0, 3.0 * G / (q_tilde - y_d) * Dgamma);
-  // damage energy release rate only implicitely depending on Dgamma (12.47)
+  // damage energy release rate only implicitly depending on Dgamma (12.47)
   const double energyrelrate = -(y_d * y_d) / (6.0 * G) - p_tilde * p_tilde / (2.0 * bulk);
 
   // compute residual function (12.48)
@@ -1003,7 +1003,7 @@ void Mat::Damage::evaluate_full_lemaitre(const Core::LinAlg::Matrix<3, 3>* defgr
   // scalar-value variable describing recovery, also defined as Hkin_rec = k_2 = b
   double Hkin_rec = params_->kinhard_rec_;
 
-  // calculate some more paramters
+  // calculate some more parameters
   // lame constant / shear modulus parameter mu == G
   double G = young / (2.0 * (1.0 + nu));
   // bulk modulus bulk = E /( 3 ( 1 - 2 nu) ) = lambda + 2/3 * mu
@@ -1014,7 +1014,7 @@ void Mat::Damage::evaluate_full_lemaitre(const Core::LinAlg::Matrix<3, 3>* defgr
   for (int i = 0; i < 3; i++) id2(i) = 1.0;
 
   // linstrain (in): independent variable passed from the element
-  //  strain^p: evolution is determined by the flow rule, history varible
+  //  strain^p: evolution is determined by the flow rule, history variable
   //  strain^e: definition of additive decomposition:
   //  strain^e = strain - strain^p
   // REMARK: stress-like 6-Voigt vector
@@ -1772,9 +1772,9 @@ void Mat::Damage::evaluate_full_lemaitre(const Core::LinAlg::Matrix<3, 3>* defgr
 #ifdef DEBUGMATERIAL
       if (gp == 0)
       {
-        std::cout << "Ende local Newton damage = " << damage << std::endl;
-        std::cout << "Ende local Newton strainbar_p = " << strainbar_p << std::endl;
-        std::cout << "Ende local Newton Rplast = " << Rplast << std::endl;
+        std::cout << "End local Newton damage = " << damage << std::endl;
+        std::cout << "End local Newton strainbar_p = " << strainbar_p << std::endl;
+        std::cout << "End local Newton Rplast = " << Rplast << std::endl;
 
         std::cout << "am 1.GP: local Newton: Res " << Res << std::endl;
         std::cout << "local Newton: ResTan " << ResTan << std::endl;
@@ -2122,7 +2122,7 @@ void Mat::Damage::setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, 
 #ifdef DEBUGMATERIAL
     if (Dgamma != 0)
     {
-      std::cout << "Ende SetupCmatElastPlast" << std::endl;
+      std::cout << "End SetupCmatElastPlast" << std::endl;
       std::cout << "Cep\n"
                 << " Dgamma " << Dgamma << std::endl;
       std::cout << " G " << G << std::endl;
@@ -2225,7 +2225,7 @@ void Mat::Damage::setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, 
       // domega/dq_tilde . dq_tilde/dDgamma
       double DomegaDq_tilde = -omega / PhiT;
 
-      // derviative of residual function dF/dDgamma
+      // derivative of residual function dF/dDgamma
       double ResTan = Domega - Hiso / (3.0 * G) * std::pow(aux, damexp) -
                       auxb * damexp * Ytan / damden * std::pow(aux, (damexp - 1));
       // derivative of residual function dF/dp_tilde . dp_tilde/dDgamma
@@ -2308,7 +2308,7 @@ void Mat::Damage::setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, 
 #ifdef DEBUGMATERIAL
     if (Dgamma != 0)
     {
-      std::cout << "Ende SetupCmatElastPlast" << std::endl;
+      std::cout << "End SetupCmatElastPlast" << std::endl;
       std::cout << "Cep\n"
                 << " Dgamma " << Dgamma << std::endl;
       std::cout << " G " << G << std::endl;
@@ -2399,7 +2399,7 @@ void Mat::Damage::setup_cmat_elasto_plastic_full_lemaitre(
   {
     // ------------------------------------------ damaged elastoplastic tangent
 
-    // consistent/algorithmic damamged elastoplastic tangent operator (70)
+    // consistent/algorithmic damaged elastoplastic tangent operator (70)
     // C^{ep} = omega . C_tilde^{ep} - stress_tilde \otimes .
     //          . { Dgamma / omega . C_tilde^{ep} : dy/dsigma_tilde
     //              + 2/3 . y . N_tilde

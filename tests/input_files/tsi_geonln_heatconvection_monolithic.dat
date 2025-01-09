@@ -52,9 +52,9 @@ NORM_DISP                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
 PREDICT                         ConstDis
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     1
+RESULTSEVERY                     1
 TIMESTEP                        0.05
 TOLDISP                         1e-10
 TOLRES                          2e-06
@@ -76,8 +76,8 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
 PREDICT                         ConstTemp
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.05
 TOLRES                          1e-08
 TOLTEMP                         1e-10
@@ -90,15 +90,15 @@ ITEMIN                          1
 MAXTIME                         4.0
 NORM_INC                        Abs
 NUMSTEP                         10
-RESTARTEVRY                     2
+RESTARTEVERY                     2
 TIMESTEP                        0.1
-RESULTSEVRY                           2
+RESULTSEVERY                           2
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06
 TOLINC                          1e-06
 ITERNORM                        Rms
 LINEAR_SOLVER                   2
-NORMCOMBI_RESFINC               Coupl_And_Singl
+NORMCOMBI_RESFINC               Coupl_And_Single
 NORM_RESF                       Rel
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
@@ -110,7 +110,7 @@ AZPREC                          Teko
 TEKO_XML_FILE                   xml/block_preconditioner/thermo_solid.xml
 AZREUSE                         10
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e08 NUE 0.3 DENS 7.85e-06 THEXPANS 1.1e-05 CAPA 6.445 CONDUCT 1031.2 INITTEMP 273.15
+MAT 1 MAT_Struct_ThermoStVenantK YOUNGNUM 1 YOUNG 2.1e08 NUE 0.3 DENS 7.85e-06 THEXPANS 1.1e-05 CAPA 6.445 CONDUCT 1031.2 INITTEMP 273.15
 MAT 2 THERM_FourierIso CAPA 6.445 CONDUCT 1031.2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2

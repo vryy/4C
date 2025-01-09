@@ -33,7 +33,7 @@ namespace
         Core::Exception);
   }
 
-  TEST(PstreamTest, NonexistantProc)
+  TEST(PstreamTest, NonexistentProc)
   {
     using namespace FourC;
     Core::IO::Pstream ps;

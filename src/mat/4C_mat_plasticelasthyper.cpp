@@ -959,7 +959,7 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
       visc_rate() * visc() * (1. - visc_soft() * dT) / dt;
 
   // safety check: due to thermal softening, we might get a negative yield stress
-  // in that case, no viable solution to the plasticity probleme exists, since we
+  // in that case, no viable solution to the plasticity problem exists, since we
   // need abs(dev(Sigma)) - Y = 0 --> abs(dev(Sigma))=Y, but abs(dev(Sigma))>0, Y<0 --> error
   if (ypl <= 0.)
     FOUR_C_THROW(
@@ -1225,7 +1225,7 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
       if (dNCPdT != nullptr) dNCPdT->update(-dYpldT / absetatr_H, etatr_v, 0.);
     }
 
-    // not active but needs condensation due to acitivity in last iteration
+    // not active but needs condensation due to activity in last iteration
     else if (dDpHeta > 0.)
     {
       // this is an elastic gp, but the flag "elast" is reserved for those
@@ -1605,7 +1605,7 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
       NCP_red.update(-ypl / absetatr_H, etatr_v, 1.);
     }
 
-    // not active but needs condensation due to acitivity in last iteration
+    // not active but needs condensation due to activity in last iteration
     else if (dDpHeta > 0.)
     {
       // this is an elastic gp, but the flag "elast" is reserved for those

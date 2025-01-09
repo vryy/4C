@@ -85,7 +85,7 @@ const std::shared_ptr<PoroElast::Monolithic>& Adapter::StructurePoroWrapper::por
     return poro_;
   else
     FOUR_C_THROW("StructurePoroWrapper - Field not a poro_field!");
-  return poro_;  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
+  return poro_;  // do not remove FOUR_C_THROW!!! - return just to make compiler happy :-)
 }
 
 const std::shared_ptr<Adapter::FSIStructureWrapper>&
@@ -95,7 +95,7 @@ Adapter::StructurePoroWrapper::structure_field()
     return structure_;
   else
     FOUR_C_THROW("StructurePoroWrapper - Field not Structural- or Poro-Field!");
-  return structure_;  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
+  return structure_;  // do not remove FOUR_C_THROW!!! - return just to make compiler happy :-)
 }
 
 //! return poro fluid_field
@@ -106,7 +106,7 @@ const std::shared_ptr<Adapter::FluidPoro>& Adapter::StructurePoroWrapper::fluid_
   else
     FOUR_C_THROW("StructurePoroWrapper - Field not poro_field (no poro fluid field!");
   return poro_
-      ->fluid_field();  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
+      ->fluid_field();  // do not remove FOUR_C_THROW!!! - return just to make compiler happy :-)
 }
 
 //! Insert FSI Condition Vector

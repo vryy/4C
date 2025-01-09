@@ -64,7 +64,7 @@ namespace Adapter
    * fluid-beam interaction
    *
    * Depending on the constraint enforcement technique used to couple embedded meshes, e.g. through
-   * the penalty method, Lagrange multiplier method, Nitsche method, ect., very different
+   * the penalty method, Lagrange multiplier method, Nitsche method, etc., very different
    * information have to be passed to the participating fields.
    * This class is designed to decouple the decision of which information to pass from the actual
    * (partitioned) algorithm.
@@ -164,7 +164,7 @@ namespace Adapter
     /** \brief You will have to use the Adapter::ConstraintEnforcerFactory
      *
      * \param[in] bridge an object managing the pair contributins
-     * \param[in] geometrycoupler an object managing the search, parallel communication, ect.
+     * \param[in] geometrycoupler an object managing the search, parallel communication, etc.
      */
     FBIConstraintenforcer(std::shared_ptr<Adapter::FBIConstraintBridge> bridge,
         std::shared_ptr<FBI::FBIGeometryCoupler> geometrycoupler);

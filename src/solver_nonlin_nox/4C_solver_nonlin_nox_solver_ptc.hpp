@@ -49,13 +49,13 @@ namespace NOX
        * See also:
        *
        * [1] C. T. Kelley, D. E. Keyes, "Convergence analysis of pseudo-transient continuation",
-       *     SIAM J. Numer. Anal., Vol. 35, No. 2, pp. 508-523, 1998.
+       *     SIAM J. Number. Anal., Vol. 35, No. 2, pp. 508-523, 1998.
        *
        * [2] M. W. Gee, C. T. Kelley, R. B. Lehoucq, "Pseudo-transient continuation for nonlinear
-       * transient elasticity", Int. J. Numer. Meth. Engng., Vol. 78, pp. 1209-1219, 2009.
+       * transient elasticity", Int. J. Number. Meth. Engng., Vol. 78, pp. 1209-1219, 2009.
        *
        * [3] M. Ceze, K. J. Fidkowski, "Constrained pseudo-transient continuation",
-       *     Int. J. Numer. Meth. Engng., Vol. 102, pp. 1683-1703, 2015.
+       *     Int. J. Number. Meth. Engng., Vol. 102, pp. 1683-1703, 2015.
        *
        * \author Michael Hiermeier */
       class PseudoTransient : public NOX::Nln::Solver::LineSearchBased
@@ -64,7 +64,7 @@ namespace NOX
         //! Different pseudo time step control types
         enum TSCType
         {
-          tsc_ser,  //!< switched evolution relaxation
+          tsc_set,  //!< switched evolution relaxation
           tsc_tte,  //!< temporal truncation error
           tsc_mrr   //!< model reduction ratio
         };
@@ -72,9 +72,9 @@ namespace NOX
         //! Map pseudo time step control type stl_string to enum
         inline enum TSCType string_to_tsc_type(const std::string& name)
         {
-          TSCType type = tsc_ser;
+          TSCType type = tsc_set;
           if (name == "SER" || name == "Switched Evolution Relaxation")
-            type = tsc_ser;
+            type = tsc_set;
           else if (name == "TTE" || name == "Temporal Truncation Error")
             type = tsc_tte;
           else if (name == "MRR" || name == "Model Reduction Ratio")
@@ -388,7 +388,7 @@ namespace NOX
           void run_post_compute_jacobian(Core::LinAlg::SparseOperator& jac,
               const Core::LinAlg::Vector<double>& x, const NOX::Nln::LinearSystem& linsys) override;
 
-          void run_post_compute_fand_jacobian(Core::LinAlg::Vector<double>& rhs,
+          void run_post_compute_f_and_jacobian(Core::LinAlg::Vector<double>& rhs,
               Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector<double>& x,
               const NOX::Nln::LinearSystem& linsys) override;
 

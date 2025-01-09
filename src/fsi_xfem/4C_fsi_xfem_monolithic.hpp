@@ -136,7 +136,7 @@ namespace FSI
     const Core::LinAlg::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
 
     //! extractor to communicate between full monolithic map and block maps of single fields
-    //! this extractor considere poro as one field
+    //! this extractor considers poro as one field
     const Core::LinAlg::MultiMapExtractor& extractor_merged_poro() const
     {
       return blockrowdofmap_mergedporo_;
@@ -214,7 +214,7 @@ namespace FSI
     bool evaluate();
 
     //! compute all norms used for convergence check
-    void build_covergence_norms();
+    void build_convergence_norms();
 
     //! check convergence of Newton iteration
     bool converged();

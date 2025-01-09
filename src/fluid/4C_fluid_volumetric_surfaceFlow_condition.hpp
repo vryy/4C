@@ -372,7 +372,7 @@ namespace FLD
       //! center of mass coordinates
       std::shared_ptr<std::vector<double>> cmass_;
 
-      //! avarage normal of the surface
+      //! average normal of the surface
       std::shared_ptr<std::vector<double>> normal_;
 
       //! direction normal of the velocity
@@ -402,7 +402,7 @@ namespace FLD
       //! A map of only condition velocites
       std::shared_ptr<Core::LinAlg::Vector<double>> cond_traction_vel_;
 
-      //! initial area of the codition surface
+      //! initial area of the condition surface
       double area_;
 
       //! Number of modes

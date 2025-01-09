@@ -1055,7 +1055,7 @@ static void init_parser_data(ParserData* data, const char* filename, MPI_Comm co
 
   /* We need to have the information on all processes. That's why we
    * read the file on process 0 and broadcast it. The other way would
-   * be to use MPI IO, but then we'd have to implement a separat
+   * be to use MPI IO, but then we'd have to implement a separate
    * sequential version. */
   if (myrank == 0)
   {

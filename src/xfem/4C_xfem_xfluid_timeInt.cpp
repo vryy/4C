@@ -154,7 +154,7 @@ void XFEM::XFluidTimeInt::set_and_print_status(const bool screenout)
 std::string XFEM::XFluidTimeInt::map_method_enum_to_string(
     const enum Inpar::XFEM::XFluidTimeInt term)
 {
-  // length of return std::string is 14 due to usage in formated screen output
+  // length of return std::string is 14 due to usage in formatted screen output
   switch (term)
   {
     case Inpar::XFEM::Xf_TimeInt_STD_by_SL:
@@ -430,7 +430,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
               node, nds_new, newRowStateVectors, Inpar::XFEM::Xf_TimeInt_by_PROJ_from_DIS, dbcgids);
         }
         else
-          FOUR_C_THROW("unknwon Inpar::XFEM::Xf_TimIntScheme");
+          FOUR_C_THROW("unknown Inpar::XFEM::Xf_TimIntScheme");
       }
     }  // some elements cut
     else if (numDofSets_old == 0)
@@ -456,7 +456,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
             node, nds_new, newRowStateVectors, Inpar::XFEM::Xf_TimeInt_by_PROJ_from_DIS, dbcgids);
       }
       else
-        FOUR_C_THROW("unknwon Inpar::XFEM::Xf_TimIntScheme");
+        FOUR_C_THROW("unknown Inpar::XFEM::Xf_TimIntScheme");
     }
     else
     {
@@ -490,7 +490,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
               node, nds_new, newRowStateVectors, Inpar::XFEM::Xf_TimeInt_by_PROJ_from_DIS, dbcgids);
         }
         else
-          FOUR_C_THROW("unknwon Inpar::XFEM::Xf_TimIntScheme");
+          FOUR_C_THROW("unknown Inpar::XFEM::Xf_TimIntScheme");
       }
       else
       {
@@ -734,7 +734,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
                 dbcgids);
           }
           else
-            FOUR_C_THROW("unknwon Inpar::XFEM::Xf_TimIntScheme");
+            FOUR_C_THROW("unknown Inpar::XFEM::Xf_TimIntScheme");
         }
         else  // ghost at t^(n+1)
         {
@@ -773,7 +773,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
                 node, nds_new, newRowStateVectors, Inpar::XFEM::Xf_TimeInt_STD_by_SL, dbcgids);
           }
           else
-            FOUR_C_THROW("unknwon Inpar::XFEM::Xf_TimIntScheme");
+            FOUR_C_THROW("unknown Inpar::XFEM::Xf_TimIntScheme");
         }
         else if (is_std_set_np and !is_std_set_n)  // ghost at t^n and std at t^(n+1)
         {
@@ -812,7 +812,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
                   dbcgids);
             }
             else
-              FOUR_C_THROW("unknwon Inpar::XFEM::Xf_TimIntScheme");
+              FOUR_C_THROW("unknown Inpar::XFEM::Xf_TimIntScheme");
           }
           else
           {
@@ -897,7 +897,7 @@ bool XFEM::XFluidTimeInt::non_intersected_elements(Core::Nodes::Node* n, Cut::Cu
 void XFEM::XFluidTimeInt::find_surrounding_ghost_dofsets(
     std::map<int, std::set<int>>&
         ghostDofsets,  /// surrounding ghost dofsets to be filled, map of ghost nodes and
-                       /// correponding ghost nds index w.r.t given std nodal dofset
+                       /// corresponding ghost nds index w.r.t given std nodal dofset
     const Core::Nodes::Node* node,  /// node
     const int nds_new               /// dofset of node used for finding the surrounding ghost dofs
 )
@@ -1798,7 +1798,7 @@ bool XFEM::XFluidTimeInt::special_check_interface_tips_levelset(
 bool XFEM::XFluidTimeInt::special_check_interface_tips_space_time(
     bool& changed_side,  /// did the node change the side ?
     Core::Elements::Element* side, const int coup_sid,
-    const Core::LinAlg::Matrix<3, 1>& n_coord  /// node coodinates
+    const Core::LinAlg::Matrix<3, 1>& n_coord  /// node coordinates
 )
 {
   bool node_within_Space_Time_Side = false;
@@ -1856,7 +1856,7 @@ template <Core::FE::CellType side_distype,
 bool XFEM::XFluidTimeInt::within_space_time_side(
     bool& within_space_time_side,  /// within the space time side
     Core::Elements::Element* side, const int coup_sid,
-    const Core::LinAlg::Matrix<3, 1>& n_coord  /// node coodinates
+    const Core::LinAlg::Matrix<3, 1>& n_coord  /// node coordinates
 )
 {
   // get the right cutter discretization for the given side

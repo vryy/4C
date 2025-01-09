@@ -202,7 +202,7 @@ namespace PoroElastScaTra
     //! @name General purpose algorithm members
     //@{
     std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
-    double solveradaptolbetter_;                    //!< tolerance to which is adpated ?
+    double solveradaptolbetter_;                    //!< tolerance to which is adapted ?
     bool solveradapttol_;                           //!< adapt solver tolerance
     //@}
 
@@ -283,7 +283,7 @@ namespace PoroElastScaTra
     //! scatra-fluid coupling matrix
     std::shared_ptr<Core::LinAlg::SparseMatrix> k_spf_;
 
-    //! dof row map splitted in (field) blocks
+    //! dof row map split in (field) blocks
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! scatra row map as map extractor (used to build coupling matrixes)

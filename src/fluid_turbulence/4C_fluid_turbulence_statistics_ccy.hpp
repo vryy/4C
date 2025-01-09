@@ -136,7 +136,7 @@ namespace FLD
     };
 
    private:
-    //! direction normal to homogenous plane
+    //! direction normal to homogeneous plane
     int dim_;
 
     //! number of samples taken

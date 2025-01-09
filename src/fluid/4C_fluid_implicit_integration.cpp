@@ -382,7 +382,7 @@ void FLD::FluidImplicitTimeInt::create_faces_extension()
   // and create_internal_faces_extension() can be called once
   // in the constructor of the fluid time integration
   // since we want to keep the standard discretization as clean as
-  // possible, we create interal faces via an enhanced discretization
+  // possible, we create internal faces via an enhanced discretization
   // including the faces between elements
   facediscret_ = std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(discret_);
   facediscret_->create_internal_faces_extension(true);
@@ -645,11 +645,11 @@ void FLD::FluidImplicitTimeInt::setup_locsys_dirichlet_bc(double time)
           FOUR_C_THROW("Locsys: Node Normal for type 'ale', only 3D case is implemented.");
         else
           nodeNormalParams.set<Discret::Elements::Ale3::ActionType>(
-              "action", Discret::Elements::Ale3::ba_calc_ale_node_normal);
+              "action", Discret::Elements::Ale3::boundary_calc_ale_node_normal);
       }
       else
       {
-        nodeNormalParams.set<FLD::BoundaryAction>("action", FLD::ba_calc_node_normal);
+        nodeNormalParams.set<FLD::BoundaryAction>("action", FLD::boundary_calc_node_normal);
       }
       discret_->evaluate_condition(nodeNormalParams, loc_sys_node_normals[i], "Locsys", i);
     }
@@ -1961,7 +1961,7 @@ void FLD::FluidImplicitTimeInt::evaluate_fluid_edge_based(
         FOUR_C_THROW(" not the same material for master and slave parent element");
 #endif
 
-      // call the egde-based assemble and evaluate routine
+      // call the edge-based assemble and evaluate routine
       Discret::Elements::FluidIntFaceImplInterface::impl(ele)
           ->assemble_internal_faces_using_neighbor_data(ele, material, nds_master, nds_slave,
               Inpar::XFEM::face_type_std, edgebasedparams, *facediscret_, sysmat_linalg,
@@ -2455,7 +2455,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
     FOUR_C_THROW("AleUpdate: So far, only FREESURFCoupling and ALEUPDATECoupling are supported.");
   }
 
-  // Sort Ale update conditons, such that line conditions overwrite surface
+  // Sort Ale update conditions, such that line conditions overwrite surface
   // conditions overwrite volume conditions
   // **************************************************************************
   // Get (unsorted) Ale update conditions
@@ -2575,7 +2575,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
       {  // Obtain node normals from element (mass-consistent node normal)
         // Define corresponding parameter list
         Teuchos::ParameterList eleparams;
-        eleparams.set<FLD::BoundaryAction>("action", FLD::ba_calc_node_normal);
+        eleparams.set<FLD::BoundaryAction>("action", FLD::boundary_calc_node_normal);
 
         // Initialize global node normals vector
         std::shared_ptr<Core::LinAlg::Vector<double>> globalNodeNormals =
@@ -3837,7 +3837,7 @@ void FLD::FluidImplicitTimeInt::read_restart(int step)
   }
 
   // read the previously written elements including the history data
-  // only avalaible+required for time-dependent subgrid scales!
+  // only available+required for time-dependent subgrid scales!
   if (Teuchos::getIntegralValue<Inpar::FLUID::SubscalesTD>(
           params_->sublist("RESIDUAL-BASED STABILIZATION"), "TDS") !=
       Inpar::FLUID::SubscalesTD::subscales_quasistatic)
@@ -4495,7 +4495,7 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
            initfield == Inpar::FLUID::initfield_passive_hit_const_input)
   {
     // initialize calculation of initial field based on fast Fourier transformation
-    HomIsoTurbInitialField HitInitialField(*this, initfield);
+    HomoIsoTurbInitialField HitInitialField(*this, initfield);
     // calculate initial field
     HitInitialField.calculate_initial_field();
 
@@ -4510,7 +4510,7 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
     FOUR_C_THROW(
         "Only initial fields such as a zero field, initial fields by (un-)disturbed functions, "
         "three special initial fields (counter-rotating vortices, Beltrami flow) "
-        "as well as initial fields for homegeneous isotropic turbulence are available up to now!");
+        "as well as initial fields for homogeneous isotropic turbulence are available up to now!");
   }
 
 }  // end SetInitialFlowField
@@ -4811,7 +4811,7 @@ FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
             std::cout << "H1 velocity scaling  " << sqrt((*errors)[5]) << std::endl;
         }
 
-        // print last error in a seperate file
+        // print last error in a separate file
 
         // append error of the last time step to the error file
         if ((step_ == stepmax_) or (time_ == maxtime_))  // write results to file
@@ -5818,7 +5818,7 @@ void FLD::FluidImplicitTimeInt::print_stabilization_details() const
 }
 
 // -------------------------------------------------------------------
-// print informations about turbulence model         rasthofer 04/2011
+// print information about turbulence model         rasthofer 04/2011
 // -------------------------------------------------------------------
 void FLD::FluidImplicitTimeInt::print_turbulence_model()
 {
@@ -5952,7 +5952,7 @@ void FLD::FluidImplicitTimeInt::apply_scale_separation_for_les()
         // get fine-scale part of velocity at time n+alpha_F or n+1
         Sep_->multiply(false, *evaluation_vel(), *fsvelaf_);
 
-        // set fine-scale velocity for parallel nigthly tests
+        // set fine-scale velocity for parallel nightly tests
         // separation matrix depends on the number of proc here
         if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and
             (params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<bool>("SET_FINE_SCALE_VEL")))
@@ -6673,7 +6673,7 @@ void FLD::FluidImplicitTimeInt::explicit_predictor()
  * Add vector to external loads being applied to rhs before solve  rauch 12/14 |
  *                                                                             |
  * external_loads_ may have been built before by method ApplyExternalForces()  |
- * Be carefull here, because the external loads are not reset after a timestep!|
+ * Be careful here, because the external loads are not reset after a timestep!|
  *----------------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::add_contribution_to_external_loads(
     const std::shared_ptr<const Core::LinAlg::Vector<double>> contributing_vector)
@@ -6750,7 +6750,7 @@ void FLD::FluidImplicitTimeInt::assemble_coupling_contributions()
   }
 }
 /*----------------------------------------------------------------------*
- | Initialize forcing for HIT and peridic hill                  bk 04/15|
+ | Initialize forcing for HIT and periodic hill                  bk 04/15|
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::init_forcing()
 {
@@ -6768,7 +6768,7 @@ void FLD::FluidImplicitTimeInt::init_forcing()
         special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
         special_flow_ == "decaying_homogeneous_isotropic_turbulence")
     {
-      forcing_interface_ = std::make_shared<FLD::HomIsoTurbForcing>(*this);
+      forcing_interface_ = std::make_shared<FLD::HomoIsoTurbForcing>(*this);
     }
     else if (special_flow_ == "periodic_hill")
       forcing_interface_ = std::make_shared<FLD::PeriodicHillForcing>(*this);

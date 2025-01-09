@@ -5,7 +5,7 @@ DIM           3
 -------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Structure
 ----------------------------------------------------------------IO
-STDOUTEVRY                      0
+STDOUTEVERY                      0
 STRUCT_STRESS                   Cauchy
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      Statics

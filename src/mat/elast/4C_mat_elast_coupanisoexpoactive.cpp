@@ -80,7 +80,7 @@ void Mat::Elastic::CoupAnisoExpoActive::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
-  // rigth Cauchy Green in strain like Voigt notation
+  // right Cauchy Green in strain like Voigt notation
   Core::LinAlg::Matrix<6, 1> rcg(true);
 
   for (int i = 0; i < 3; ++i) rcg(i) = 2.0 * glstrain(i) + 1.0;

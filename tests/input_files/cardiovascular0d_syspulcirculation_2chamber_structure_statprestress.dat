@@ -39,9 +39,9 @@ PREDICT                         ConstDis
 PRESTRESS                       Mulf
 PRESTRESSTIME                   1.001
 PTCDT                           0.3
-RESEVRYERGY                     0
-RESTARTEVRY                     10
-RESULTSEVRY                     10
+RESEVERYERGY                     0
+RESTARTEVERY                     10
+RESULTSEVERY                     10
 STC_LAYER                       1
 TIMESTEP                        0.1
 TOLCONSTR                       1e-08

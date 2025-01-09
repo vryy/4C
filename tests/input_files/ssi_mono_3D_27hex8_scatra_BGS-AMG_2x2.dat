@@ -12,7 +12,7 @@ DIM           3
 -------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
-STDOUTEVRY                      0
+STDOUTEVERY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      OneStepTheta
 LINEAR_SOLVER                   2

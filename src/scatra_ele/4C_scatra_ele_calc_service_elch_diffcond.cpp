@@ -45,7 +45,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_
       const int phaseid = actmat->phase_id(iphase);
       std::shared_ptr<const Core::Mat::Material> singlephase = actmat->phase_by_id(phaseid);
 
-      // dynmic cast: get access to mat_phase
+      // dynamic cast: get access to mat_phase
       const std::shared_ptr<const Mat::ElchPhase>& actphase =
           std::dynamic_pointer_cast<const Mat::ElchPhase>(singlephase);
 

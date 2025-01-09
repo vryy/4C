@@ -481,7 +481,7 @@ namespace Core::FE
        * We use nested std::vectors to represent the data:
        * - The outer-most std::vector refers to the patches
        * - The second outer-most std::vector refers to the directions n,m,l
-       * - The inner data strucutre holds the actual values
+       * - The inner data structure holds the actual values
        */
       //! @{
 

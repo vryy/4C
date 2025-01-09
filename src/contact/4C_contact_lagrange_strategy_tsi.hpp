@@ -55,7 +55,7 @@ namespace CONTACT
       \brief Standard Constructor
 
      */
-    LagrangeStrategyTsi(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    LagrangeStrategyTsi(const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, MPI_Comm comm,
         double alphaf, int maxdof);
@@ -174,7 +174,7 @@ namespace CONTACT
     // residual and increment norms
     double mech_contact_res_;
     double mech_contact_incr_;
-    double thr_contact_incr_;
+    double thermo_contact_incr_;
 
    protected:
     // don't want = operator and cctor
@@ -192,9 +192,9 @@ namespace CONTACT
         ftcnp_;  // thermal   contact forces of this time step (needed for time integration)
 
     std::shared_ptr<Core::LinAlg::Vector<double>>
-        z_thr_;  // current vector of Thermo-Lagrange multipliers at t_n+1
-    std::shared_ptr<Epetra_Map> thr_act_dofs_;  // active thermo dofs
-    std::shared_ptr<Epetra_Map> thr_s_dofs_;    // slave thermo dofs
+        z_thermo_;  // current vector of Thermo-Lagrange multipliers at t_n+1
+    std::shared_ptr<Epetra_Map> thermo_act_dofs_;  // active thermo dofs
+    std::shared_ptr<Epetra_Map> thermo_s_dofs_;    // slave thermo dofs
 
     std::shared_ptr<Core::LinAlg::SparseMatrix>
         dinvA_;  // dinv on active displacement dofs (for recovery)

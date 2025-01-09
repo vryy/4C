@@ -112,7 +112,7 @@ namespace Core::LinAlg
     \param matrix    (in/out): system of equations
     \param x         (in/out): initial guess on input, solution on output
     \param b         (in/out): right hand side vector
-                               if project!=false it might be modified if not orthognal
+                               if project!=false it might be modified if not orthogonal
                                to matrix kernel.
     \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
@@ -129,7 +129,7 @@ namespace Core::LinAlg
     \param matrix    (in/out): system of equations
     \param x         (in/out): initial guess on input, solution on output
     \param b         (in/out): right hand side vector
-                               if project!=false it might be modified if not orthognal
+                               if project!=false it might be modified if not orthogonal
                                to matrix kernel.
     \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */

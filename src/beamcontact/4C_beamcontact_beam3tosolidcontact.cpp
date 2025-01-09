@@ -101,7 +101,7 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
   // Find contact interval borders
   // -----------------------------------------------------------------
 
-  // Vector for contact interval border parameter sets (xi1, xi2, eta and index of fixed paramater)
+  // Vector for contact interval border parameter sets (xi1, xi2, eta and index of fixed parameter)
   std::vector<std::pair<Core::LinAlg::Matrix<3, 1, TYPEBTS>, int>> parsets;
 
   // Find contact interval borders
@@ -490,7 +490,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
     BeamContact::SetFADParCoordDofs<numnodessol, numnodes, numnodalvalues>(xi1, xi2, eta_a, eta_b);
     BeamContact::SetFADDispDofs<numnodessol, numnodes, numnodalvalues>(ele1pos_, ele2pos_, 4);
 
-    // Calculate eta again depending on eta_a and eta_b, because at this point all FAD paramater
+    // Calculate eta again depending on eta_a and eta_b, because at this point all FAD parameter
     // coordinates are known
     eta = 0.5 * (eta_b - eta_a) * x_gp + 0.5 * (eta_a + eta_b);
 #endif
@@ -666,7 +666,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
       dfp = -pp;
     }
   }
-  else if (ARBITPENALTY == 3)  // Quadratic regularization for positiv gaps
+  else if (ARBITPENALTY == 3)  // Quadratic regularization for positive gaps
   {
     double f0 = g0 * pp / 2.0;
     double factor_a = pp / g0 - f0 / (g0 * g0);
@@ -686,7 +686,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
       dfp = -pp;
     }
   }
-  else if (ARBITPENALTY == 4)  // Double quadratic regularization for positiv gaps
+  else if (ARBITPENALTY == 4)  // Double quadratic regularization for positive gaps
   {
     double f0 = 0.25;
     double g1 = 1.8 * f0 / pp;
@@ -716,7 +716,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
       dfp = -pp;
     }
   }
-  else if (ARBITPENALTY == 5)  // Exponential regularization for positiv gaps
+  else if (ARBITPENALTY == 5)  // Exponential regularization for positive gaps
   {
     double f0 = 0.25;
 
@@ -1115,7 +1115,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
   Core::LinAlg::Matrix<2, dim1 + dim2, TYPEBTS> B(true);
   Core::LinAlg::Matrix<2, dim1 + dim2, TYPEBTS> D(true);
 
-  // Compute Lpar for all parametes
+  // Compute Lpar for all parameters
   Lpar(0, 0) = -Core::FADUtils::scalar_product(x2_xi1, x2_xi1) +
                Core::FADUtils::scalar_product(rD, x2_xi1xi1);
   Lpar(1, 0) = -Core::FADUtils::scalar_product(x2_xi1, x2_xi2) +
@@ -1566,7 +1566,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   parsets.clear();
   parsets.resize(0);
 
-  // Temporary vector containg parsets and flags for allowed or not allowed projections
+  // Temporary vector containing parsets and flags for allowed or not allowed projections
   // TODO: May this can be done in a more beautiful way without using the temporary vector
   // parsetstmp
   std::vector<std::pair<Core::LinAlg::Matrix<3, 1, TYPEBTS>, Core::LinAlg::Matrix<2, 1, int>>>
@@ -2145,7 +2145,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::projec
       }
 
       // If there is no a change of the direction of the normal vector, the projection is not
-      // allowed and the found parameters are not treated in the later caluclation
+      // allowed and the found parameters are not treated in the later calculation
       if (!normaldir_changed)
       {
         proj_allowed = false;
@@ -3471,14 +3471,14 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::fd_che
   std::vector<std::pair<TYPEBTS, Core::LinAlg::Matrix<3, 1, TYPEBTS>>> normalsets = normalsets_;
 #endif
 
-  // Intialize matrices for contact stiffness
+  // Initialize matrices for contact stiffness
   Core::LinAlg::Matrix<dim1, dim1 + dim2, TYPEBTS> stiffc1_FD(true);
   Core::LinAlg::Matrix<dim2, dim1 + dim2, TYPEBTS> stiffc2_FD(true);
 
-  // Loop over all coloums, size of displacement vector d = [d1, d2]^T
+  // Loop over all columns, size of displacement vector d = [d1, d2]^T
   for (int col = 0; col < dim1 + dim2; col++)
   {
-    // Initialize temporary varaibles
+    // Initialize temporary variables
     TYPEBTS ele1pos_col = 0.0;
     TYPEBTS ele2pos_col = 0.0;
 
@@ -3501,7 +3501,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::fd_che
     // -----------------------------------------------------------------
 
     // Vector for contact interval border parameter sets (xi1, xi2, eta and index of fixed
-    // paramater)
+    // parameter)
     std::vector<std::pair<Core::LinAlg::Matrix<3, 1, TYPEBTS>, int>> parsets;
 
     // Find contact interval borders

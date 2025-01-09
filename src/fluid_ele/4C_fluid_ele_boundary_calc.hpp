@@ -252,7 +252,7 @@ namespace Discret
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
       \param elemat1 (out)      : matrix to be filled by element. If nullptr on input,
-                                  the controling method does not epxect the element to fill
+                                  the controlling method does not epxect the element to fill
                                   this matrix.                          and elements
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 

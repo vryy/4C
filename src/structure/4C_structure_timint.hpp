@@ -408,7 +408,7 @@ namespace Solid
     bool has_final_state_been_written() const override;
 
     //! Write output for every Newton or line search iteration
-    //! The step numbers are formated in the following manner:
+    //! The step numbers are formatted in the following manner:
     //!  n    5               4 2                     1 0
     //!  00..00               000                     00
     //! |__ ___|             |_ _|                   |_ |
@@ -419,7 +419,7 @@ namespace Solid
     void output_every_iter(bool nw = false, bool ls = false);
 
     //! write output of step to the Gmsh format
-    void write_gmsh_struc_output_step() override;
+    void write_gmsh_struct_output_step() override;
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
@@ -490,7 +490,7 @@ namespace Solid
      *  based on the current solution state.
      *
      *  On the level of Solid::TimInt, we only deal with forces. There are no
-     *  stiffnesses since thay are not needed in a general time integration
+     *  stiffnesses since they are not needed in a general time integration
      *  scheme, but only in an implicit one.
      *
      *  For the application of forces AND

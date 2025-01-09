@@ -32,11 +32,11 @@ THETA                           1.0
 INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 --------------------------------------------------------POROMULTIPHASE DYNAMIC
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 NUMSTEP                         25
 MAXTIME                         2.5
 TIMESTEP                        0.1
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 ITEMAX                          100
 COUPALGO                        twoway_monolithic
 ---------------------------------------------POROMULTIPHASE DYNAMIC/MONOLITHIC

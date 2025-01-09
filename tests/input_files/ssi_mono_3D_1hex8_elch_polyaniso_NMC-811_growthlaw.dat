@@ -14,7 +14,7 @@ simple, academic test case for monolithic scalar-structure interaction:
 -------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
-STDOUTEVRY                      0
+STDOUTEVERY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYPE                      GenAlpha
 LINEAR_SOLVER                   1

@@ -312,7 +312,7 @@ double Thermo::TimIntGenAlpha::calc_ref_norm_force()
   double freactnorm = 0.0;
   freactnorm = Thermo::Aux::calculate_vector_norm(iternorm_, *freact_);
 
-  // determine worst value ==> charactersitic norm
+  // determine worst value ==> characteristic norm
   return std::max(fcapnorm, std::max(fintnorm, std::max(fextnorm, freactnorm)));
 
 }  // calc_ref_norm_force()

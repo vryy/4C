@@ -21,8 +21,8 @@ RESTART                         0
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     0
+RESULTSEVERY                     1
+RESTARTEVERY                     0
 NLNSOL                          noxnln
 TIMESTEP                        12.5
 NUMSTEP                         8

@@ -18,8 +18,8 @@ SOLVESCATRA                     yes
 NUMSTEP                         10
 TIMESTEP                        0.1
 MAXTIME                         1.0
-RESTARTEVRY                     2
-RESULTSEVRY                     2
+RESTARTEVERY                     2
+RESULTSEVERY                     2
 INITIALFIELD                    zero_field
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1

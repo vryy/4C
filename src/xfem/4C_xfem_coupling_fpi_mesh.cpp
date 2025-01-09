@@ -94,7 +94,7 @@ void XFEM::MeshCouplingFPI::do_condition_specific_setup()
 {
   // We do ghosting just for the first fpi coupling object, which is PS_PS, then this is done an we
   // just reconnect to the parent pointers for every cutter_dis_ Actually this reconnecting step
-  // should be done in an setup routine, to guarantee, that it is done late enought (no ghosting
+  // should be done in an setup routine, to guarantee, that it is done late enough (no ghosting
   // afterwards...)
   if (coupled_field_ == MeshCouplingFPI::ps_ps)
     PoroElast::Utils::create_volume_ghosting(*cutter_dis_);
@@ -409,7 +409,7 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
       "update_configuration_map_gp_contact but no Xfluid Contact Communicator assigned!");
 #endif
 
-  // constant not really ment to be changed
+  // constant not really meant to be changed
   static const double MAX_sliplength = 1e40;  // large number for slip case
   static const int MAX_h =
       1;  // distance from contact zone at which classical BJ or BJS is prescribed
@@ -816,7 +816,7 @@ void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
 
   if (contact_ && sub_tang_)
     FOUR_C_THROW(
-        "XFEM::MeshCouplingFPI: Combination Contact with Substituion for BJ/BJS not tested!");
+        "XFEM::MeshCouplingFPI: Combination Contact with Substitution for BJ/BJS not tested!");
 }
 
 //----------------------------------------------------------------------
@@ -882,7 +882,7 @@ void XFEM::MeshCouplingFPI::lift_drag(const int step, const double time) const
 }
 
 // ------------------------------------------------------------------------
-// Caluculate the normalized trace of permeability matrix
+// Calculate the normalized trace of permeability matrix
 //        for J,porosity pair on this FaceElement               ager 12/17
 // ------------------------------------------------------------------------
 double XFEM::MeshCouplingFPI::calctr_permeability(
@@ -908,7 +908,7 @@ double XFEM::MeshCouplingFPI::calctr_permeability(
 }
 
 // --------------------------------------------------------------------
-// Caluculate the Porosity for this FaceElement Gausspoint   ager 12/16
+// Calculate the Porosity for this FaceElement Gausspoint   ager 12/16
 // --------------------------------------------------------------------
 double XFEM::MeshCouplingFPI::calc_porosity(
     Core::Elements::Element* ele, Core::LinAlg::Matrix<3, 1>& rst_slave, double& J)

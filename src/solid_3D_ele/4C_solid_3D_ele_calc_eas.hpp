@@ -93,13 +93,13 @@ namespace Discret::Elements
         const PreparationData& centeroid_transformation,
         const EASHistoryData<celltype, eastype>& eas_data, Evaluator evaluator)
     {
-      const EASKinematics<celltype, eastype> kinematic_quantitites =
+      const EASKinematics<celltype, eastype> kinematic_quantities =
           evaluate_eas_kinematics<celltype, eastype, kinematic_type>(element_nodes,
               centeroid_transformation, xi, jacobian_mapping, eas_data.eas_iteration_data);
 
 
-      return evaluator(kinematic_quantitites.enhanced_deformation_gradient,
-          kinematic_quantitites.enhanced_gl, kinematic_quantitites);
+      return evaluator(kinematic_quantities.enhanced_deformation_gradient,
+          kinematic_quantities.enhanced_gl, kinematic_quantities);
     }
 
     static inline Core::LinAlg::Matrix<9, Core::FE::dim<celltype>>

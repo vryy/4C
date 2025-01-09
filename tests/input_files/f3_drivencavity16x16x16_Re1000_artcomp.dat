@@ -25,8 +25,8 @@ MAXTIME                         1000.0
 NONLINITER                      fixed_point_like
 NUMSTEP                         3
 PREDICTOR                       steady_state
-RESTARTEVRY                     200
-RESULTSEVRY                           50
+RESTARTEVERY                     200
+RESULTSEVERY                           50
 INCONSISTENT_RESIDUAL           yes
 --------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1e-06

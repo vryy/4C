@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 void Core::IO::Gmsh::scalar_field_to_gmsh(Core::FE::Discretization& discret,
     const std::shared_ptr<const Core::LinAlg::Vector<double>> scalarfield_row, std::ostream& s)
 {
-  // tranform solution vector from dof_row_map to DofColMap
+  // transform solution vector from dof_row_map to DofColMap
   const std::shared_ptr<const Core::LinAlg::Vector<double>> scalarfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, scalarfield_row);
 
@@ -75,7 +75,7 @@ void Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(Core::FE::Discretization& di
     const std::shared_ptr<const Core::LinAlg::Vector<double>> scalarfield_row, const int nds,
     std::ostream& s)
 {
-  // tranform solution vector from dof_row_map to DofColMap
+  // transform solution vector from dof_row_map to DofColMap
   const std::shared_ptr<const Core::LinAlg::Vector<double>> scalarfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, scalarfield_row, nds);
 
@@ -196,7 +196,7 @@ void Core::IO::Gmsh::vector_field_dof_based_to_gmsh(Core::FE::Discretization& di
     const std::shared_ptr<const Core::LinAlg::Vector<double>> vectorfield_row, std::ostream& s,
     const int nds, bool displacenodes)
 {
-  // tranform solution vector from dof_row_map to DofColMap
+  // transform solution vector from dof_row_map to DofColMap
   const std::shared_ptr<const Core::LinAlg::Vector<double>> vectorfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row, nds);
 
@@ -260,7 +260,7 @@ void Core::IO::Gmsh::vector_field_multi_vector_dof_based_to_gmsh(
 {
   // TODO: Remove dependence on size of Epetra_Multivector!!!
 
-  // tranform solution vector from dof_row_map to DofColMap
+  // transform solution vector from dof_row_map to DofColMap
   Core::LinAlg::MultiVector<double> vectorfield(*discret.dof_col_map(nds), 3, true);
   Core::LinAlg::export_to(vectorfield_row, vectorfield);
 
@@ -321,7 +321,7 @@ void Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(Core::FE::Discretiza
     std::map<int, Core::LinAlg::Matrix<3, 1>>& currpos, std::ostream& s, const int nsd,
     const int numdofpernode)
 {
-  // tranform solution vector from dof_row_map to DofColMap
+  // transform solution vector from dof_row_map to DofColMap
   const std::shared_ptr<const Core::LinAlg::Vector<double>> vectorfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row);
 
@@ -381,7 +381,7 @@ void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(Core::FE::Discret
     const std::shared_ptr<const Core::LinAlg::Vector<double>> vectorfield_row,
     const std::string field, std::ostream& s, const int nds)
 {
-  // tranform solution vector from dof_row_map to DofColMap
+  // transform solution vector from dof_row_map to DofColMap
   const std::shared_ptr<const Core::LinAlg::Vector<double>> vectorfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row, nds);
 
@@ -458,7 +458,7 @@ void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(Core::FE::Discret
       }
     }
     else
-      FOUR_C_THROW("The choosen field does not exist (wrong writting, ...)");
+      FOUR_C_THROW("The chosen field does not exist (wrong writing, ...)");
 
     s << "\n";
   }
@@ -470,7 +470,7 @@ void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(Core::FE::Discret
 void Core::IO::Gmsh::vector_field_node_based_to_gmsh(const Core::FE::Discretization& discret,
     const Core::LinAlg::MultiVector<double>& vectorfield_row, std::ostream& s)
 {
-  // tranform solution vector from NodeRowMap to NodeColMap
+  // transform solution vector from NodeRowMap to NodeColMap
   // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for
   // Core::LinAlg::Vectors on dof_row_map
   Core::LinAlg::MultiVector<double> vectorfield(*discret.node_col_map(), 3, true);
@@ -516,7 +516,7 @@ void Core::IO::Gmsh::vector_field_node_based_to_gmsh(const Core::FE::Discretizat
 void Core::IO::Gmsh::scalar_field_node_based_to_gmsh(const Core::FE::Discretization& discret,
     const Core::LinAlg::Vector<double>& scalarfield_row, std::ostream& s)
 {
-  // tranform solution vector from NodeRowMap to NodeColMap
+  // transform solution vector from NodeRowMap to NodeColMap
   // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for
   // Core::LinAlg::Vectors on dof_row_map
   //         something similar is done in COMBUST::FlameFront::ProcessFlameFront, although not for

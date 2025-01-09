@@ -19,8 +19,8 @@ NONLINITER       fixed_point_like
 ITEMAX           10
 CONVCHECK        L_2_norm
 GRIDVEL          BDF2
-RESULTSEVRY            1
-RESTARTEVRY      2000
+RESULTSEVERY            1
+RESTARTEVERY      2000
 NUMSTEP          150
 NUMSTASTEPS      0
 MAXTIME          3.0
@@ -67,7 +67,7 @@ PREDICT                         ConstDis
 MAXITER                         50
 MINITER                         0
 ITERNORM                        L2
-RESTARTEVRY                     1200
+RESTARTEVERY                     1200
 DAMPING                         No
 K_DAMP                          0.5
 LOADLIN                         no
@@ -80,8 +80,8 @@ NORM_DISP                       Abs
 NORM_INCO                       Abs
 NORM_PRES                       Abs
 NORM_RESF                       Abs
-RESEVRYERGY                     0
-RESULTSEVRY                     1
+RESEVERYERGY                     0
+RESULTSEVERY                     1
 STC_LAYER                       1
 STC_SCALING                     no
 TOLCONSTR                       1e-06
@@ -113,11 +113,11 @@ COUPALGO                        iter_mortar_monolithicfluidsplit
 MAXTIME                         3.0
 TIMESTEP                        0.02
 NUMSTEP                         2
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 DEBUGOUTPUT                     No
 SECONDORDER                     Yes
 SLIDEALEPROJ                    None
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    1e-03
 BASETOL                         1e-05
@@ -153,7 +153,7 @@ ALE_TYPE                        solid
 MAXTIME                         3.0
 NUMSTEP                         150
 NUM_INITSTEP                    0
-RESULTSEVRY                     1200
+RESULTSEVERY                     1200
 TIMESTEP                        0.02
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Superlu

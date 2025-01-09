@@ -39,10 +39,10 @@ VSTAB                           no_vstab
 COUPALGO                        iter_mortar_monolithicstructuresplit
 MAXTIME                         100
 NUMSTEP                         4
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 SECONDORDER                     Yes
 TIMESTEP                        0.05
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0
 BASETOL                         1.0e-8

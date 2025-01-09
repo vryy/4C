@@ -26,7 +26,7 @@ Mat::PAR::Scl::Scl(const Core::Mat::PAR::Parameter::Data& matdata)
       transnrparanum_(matdata.parameters.get<int>("TRANS_PARA_NUM")),
       transnr_(matdata.parameters.get<std::vector<double>>("TRANS_PARA")),
       cmax_(matdata.parameters.get<double>("MAX_CONC")),
-      extrapolation_diffussion_coeff_strategy_(matdata.parameters.get<int>("EXTRAPOL_DIFF")),
+      extrapolation_diffusion_coeff_strategy_(matdata.parameters.get<int>("EXTRAPOL_DIFF")),
       clim_(matdata.parameters.get<double>("LIM_CONC")),
       cbulk_(matdata.parameters.get<double>("BULK_CONC")),
       susceptibility_(matdata.parameters.get<double>("SUSCEPT")),
@@ -161,7 +161,7 @@ double Mat::Scl::compute_diffusion_coefficient(
   // instabilities and obtain a well converged solution for a wide scope of discretizations in time
   // and space. The model for the diffusion coefficient is based on derivations of Steinberger K. et
   // al. (2021).
-  switch (params_->extrapolation_diffussion_coeff_strategy_)
+  switch (params_->extrapolation_diffusion_coeff_strategy_)
   {
     case -1:
       // no extrapolation
@@ -215,7 +215,7 @@ double Mat::Scl::compute_concentration_derivative_of_diffusion_coefficient(
   const double c_max = params_->cmax_;
   double diff_coeff_der = 0.0;
 
-  switch (params_->extrapolation_diffussion_coeff_strategy_)
+  switch (params_->extrapolation_diffusion_coeff_strategy_)
   {
     case -1:
       // no extrapolation

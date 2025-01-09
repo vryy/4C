@@ -156,7 +156,7 @@ void NOX::Nln::GlobalData::check_input() const
  *----------------------------------------------------------------------------*/
 void NOX::Nln::GlobalData::setup()
 {
-  // set the nonlinear optimzation problem type
+  // set the nonlinear optimization problem type
   nlnparams_->set("Optimization Problem Type", opt_type_);
 
   // set printing parameters

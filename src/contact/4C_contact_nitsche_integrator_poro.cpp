@@ -282,7 +282,7 @@ void CONTACT::IntegratorNitschePoro::integrate_poro_no_out_flow(const double fac
 
   if (!ele.mo_data().parent_pf_dof().size()) return;
 
-  // weighting for poro pressure depenent if two or onesided porocontact
+  // weighting for poro pressure dependent if two or onesided porocontact
   double sweight = 1;
   double oweight = 0;
 
@@ -450,7 +450,7 @@ bool CONTACT::IntegratorNitschePoro::get_poro_pressure(Mortar::Element& ele,
   else if (otherele.mo_data().parent_pf_dof().size())
     w1 = 0.0;
   else
-    FOUR_C_THROW("Thats not exptected...!");
+    FOUR_C_THROW("Thats not expected...!");
   double w2 = 1.0 - w1;
 
   poropressure = 0.0;

@@ -54,7 +54,7 @@ namespace Mat
      *
      * \param adapt_angle flag whether the angle is subject to growth and remodeling
      *
-     * \param stucturalTensorStrategy Reference to the sturctural tensor strategy
+     * \param stucturalTensorStrategy Reference to the structural tensor strategy
      * \param fiber_ids List of ids of the fibers
      */
     DefaultAnisotropyExtension(int init_mode, double gamma, bool adapt_angle,

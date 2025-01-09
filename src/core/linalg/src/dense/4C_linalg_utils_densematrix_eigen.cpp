@@ -262,7 +262,7 @@ double Core::LinAlg::generalized_eigen(
       &LDZ, work.data(), &lwork, &info);
 
   if (info < 0)
-    std::cout << "Lapack algorithm dhgeqz: The " << info << "-th argument haa an illegal value!"
+    std::cout << "Lapack algorithm dhgeqz: The " << info << "-th argument has an illegal value!"
               << std::endl;
   else if (info > N)
     std::cout << "Lapack algorithm dhgeqz: The QZ iteration did not converge. (H,T) is not in "

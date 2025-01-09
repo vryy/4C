@@ -54,7 +54,7 @@ namespace Core::FE
         // check if degrees of freedom are zero
         if (localLength == 0) continue;
 
-        // check if dof is exisiting as index
+        // check if dof is existing as index
         if (dofmap.LID(dofs[0]) == -1) continue;
 
         // check size of degrees of freedom

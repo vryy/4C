@@ -161,7 +161,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   Core::LinAlg::Matrix<6, 1> modCMsumMmodCv(false);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(modCMsumMmodC, modCMsumMmodCv);
 
-  // ficticious 2nd Piola-Kirchhoff stress tensor modS
+  // fictitious 2nd Piola-Kirchhoff stress tensor modS
   Core::LinAlg::Matrix<3, 3> modS(true);
   modS.update(gamma1, Id3, 1.0);            // + gamma1*I
   modS.update(gamma4, M, 1.0);              // + gamma4*M
@@ -169,7 +169,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   Core::LinAlg::Matrix<6, 1> modSv(false);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(modS, modSv);
 
-  // isometirc 2nd Piola-Kirchhoff tensor S_iso from ficticious 2nd PK stress
+  // isometirc 2nd Piola-Kirchhoff tensor S_iso from fictitious 2nd PK stress
   double traceCmodS = modSv(0) * rcg(0) + modSv(1) * rcg(1) + modSv(2) * rcg(2) +
                       (modSv(3) * rcg(3) + modSv(4) * rcg(4) + modSv(5) * rcg(5));
   Core::LinAlg::Matrix<6, 1> S_isov(modSv);
@@ -221,7 +221,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   MdI5sumdI5M.multiply_nt(Mv, modCMsumMmodCv);
   MdI5sumdI5M.multiply_nt(1.0, modCMsumMmodCv, Mv, 1.0);  // summand11 = dyad(M,dI5) + dyad(dI5,M)
 
-  // ficticious elasticiy tensor
+  // fictitious elasticiy tensor
   Core::LinAlg::Matrix<6, 6> modcmat(false);
   modcmat.update(delta1, IdId);
   modcmat.update(delta5, IdMsumMId, 1.0);
@@ -256,7 +256,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
       Core::LinAlg::Voigt::NotationType::stress>(PT);
   PT.multiply_nt(-1.0 / 3.0, rcg_stress, icg, 1.0);
 
-  // compute isochoric cmat from ficticious elasticiy tensor
+  // compute isochoric cmat from fictitious elasticiy tensor
   Core::LinAlg::Matrix<6, 6> cmatiso(false);
   cmatiso.multiply_nn(P, modcmat);
   cmatiso.multiply_nn(1.0, modcmat, PT, 1.0);

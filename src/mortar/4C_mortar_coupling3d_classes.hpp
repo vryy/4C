@@ -145,7 +145,7 @@ namespace Mortar
   /*!
   \brief A class representing one Integration Cell after triangulation
          of the clip polygon of slave and master element from the Coupling
-         class. This class provides some basic funcitonality a Mortar::Element would
+         class. This class provides some basic functionality a Mortar::Element would
          also provide (coords, shape functions and derivatives, Jacobian, ...).
          Note that an IntCell can EITHER live in physical space (this is the
          case when an auxiliary plane is used for 3D coupling) or in the slave
@@ -461,7 +461,7 @@ namespace Mortar
     /*!
     \brief Return entry / exit status of this vertex
     True if vertex is an entry intersection point, false if
-    vertex is an exit intesection point with respect to the
+    vertex is an exit intersection point with respect to the
     respective other polygon. Irrelevant if intersect_==false.
 
     */

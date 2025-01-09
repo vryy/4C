@@ -35,13 +35,13 @@ MAXTIME                         0.5
 NONLINITER Newton
 NUMSTEP                         8
 PREDICTOR                       steady_state
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 STARTFUNCNO                     -1
 NUMSTASTEPS                     0
 THETA                           0.66
 TIMEINTEGR                      Af_Gen_Alpha
 TIMESTEP                        0.05
-RESULTSEVRY                           8
+RESULTSEVERY                           8
 MESHTYING                       no
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1e-06

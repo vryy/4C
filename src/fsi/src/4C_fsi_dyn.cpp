@@ -897,9 +897,8 @@ void xfpsi_drt()
       // read the restart information, set vectors and variables ---
 
       // be careful, dofmaps might be changed here in a redistribute() call
-      const int restart =
-          Global::Problem::instance()
-              ->restart();  // not adapated at the moment .... Todo check it .. ChrAg
+      const int restart = Global::Problem::instance()
+                              ->restart();  // not adapted at the moment .... Todo check it .. ChrAg
       if (restart)
       {
         fsi.read_restart(restart);
@@ -909,7 +908,7 @@ void xfpsi_drt()
 
 
       // 3.2.- redistribute the FPSI interface
-      // Todo .... fsi->redistribute_interface(); // this is required for paralles fpi-condition
+      // Todo .... fsi->redistribute_interface(); // this is required for parallels fpi-condition
       // (not included in this commit)
 
       // here we go...

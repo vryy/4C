@@ -107,13 +107,13 @@ namespace SSI
     //! condition ID of kinetics condition
     int kinetics_condition_id() const { return kinetics_condition_id_; }
 
-    //! Map exctractor for dofs in this manifold condition
+    //! Map extractor for dofs in this manifold condition
     std::shared_ptr<Core::LinAlg::MapExtractor> manifold_map_extractor() const
     {
       return manifold_map_extractor_;
     }
 
-    //! Map exctractor for dofs in this kinetics condition
+    //! Map extractor for dofs in this kinetics condition
     std::shared_ptr<Core::LinAlg::MapExtractor> scatra_map_extractor() const
     {
       return scatra_map_extractor_;
@@ -138,13 +138,13 @@ namespace SSI
     //! condition ID of kinetics condition
     const int kinetics_condition_id_;
 
-    //! Map exctractor for dofs in this manifold condition
+    //! Map extractor for dofs in this manifold condition
     std::shared_ptr<Core::LinAlg::MapExtractor> manifold_map_extractor_;
 
     //! Master converter for scatra - manifold coupling
     std::shared_ptr<Coupling::Adapter::CouplingMasterConverter> master_converter_;
 
-    //! Map exctractor for dofs in this kinetics condition
+    //! Map extractor for dofs in this kinetics condition
     std::shared_ptr<Core::LinAlg::MapExtractor> scatra_map_extractor_;
 
     //! map with the size of the graph of each matrix
@@ -367,7 +367,7 @@ namespace SSI
         std::shared_ptr<const Core::LinAlg::SparseOperator> scatra_manifold_matrix,
         bool do_uncomplete) = 0;
 
-    //! coupling adpaters, maps, and extractors for mesh tying
+    //! coupling adapters, maps, and extractors for mesh tying
     std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_mesh_tying() const
     {
       return ssi_meshtying_;
@@ -384,7 +384,7 @@ namespace SSI
     std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps_;
 
    private:
-    //! coupling adpaters, maps, and extractors for mesh tying
+    //! coupling adapters, maps, and extractors for mesh tying
     std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_meshtying_;
   };
 
@@ -448,7 +448,7 @@ namespace SSI
 
    private:
     //! intersects @p block_map with @p intersecting_map. Extracts also dofs from @p perm_map if the
-    //! corresponding dof in @p intersecting map intersects wirh @p block_map. Returns both in a
+    //! corresponding dof in @p intersecting map intersects with @p block_map. Returns both in a
     //! tuple.
     std::tuple<std::shared_ptr<const Epetra_Map>, std::shared_ptr<const Epetra_Map>>
     intersect_coupling_maps_block_map(const Epetra_Map& block_map,

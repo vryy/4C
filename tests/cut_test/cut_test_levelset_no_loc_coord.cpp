@@ -365,7 +365,7 @@ void test_ls_hex8_magnus1()
   std::cout << "Precision 16" << std::endl;
 
   // qhull with QdB fails this one?!
-  // should prolly not be qhull at fault... Something else is fundamentaly wrong..
+  // should prolly not be qhull at fault... Something else is fundamentally wrong..
 
   // eleID=47018 (precision 16)
   xyze(0, 0) = 0.45;

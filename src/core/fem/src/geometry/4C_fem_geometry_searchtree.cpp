@@ -479,7 +479,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(
 
 
 /*----------------------------------------------------------------------*
- | classifiy AABB in node                                  u.may   07/08|
+ | classify AABB in node                                  u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> Core::Geo::SearchTree::TreeNode::classify_xaabb(
     const Core::LinAlg::Matrix<3, 2>& AABB) const
@@ -564,7 +564,7 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_xaabb(
 }
 
 /*----------------------------------------------------------------------*
- | classifiy AABB in node                                  u.may   07/08|
+ | classify AABB in node                                  u.may   07/08|
  *----------------------------------------------------------------------*/
 void Core::Geo::SearchTree::TreeNode::classify_xaabb(
     const Core::LinAlg::Matrix<3, 2>& AABB, std::vector<int>& octants) const
@@ -648,7 +648,7 @@ void Core::Geo::SearchTree::TreeNode::classify_xaabb(
 }
 
 /*----------------------------------------------------------------------*
- | classifiy AABB in node                                  u.may   02/09|
+ | classify AABB in node                                  u.may   02/09|
  *----------------------------------------------------------------------*/
 void Core::Geo::SearchTree::TreeNode::classify_kdop(
     const Core::LinAlg::Matrix<9, 2>& KDOP, std::vector<int>& octants) const
@@ -712,7 +712,7 @@ void Core::Geo::SearchTree::TreeNode::classify_kdop(
 }
 
 /*----------------------------------------------------------------------*
- | classifiy AABB in node                                  u.may   07/08|
+ | classify AABB in node                                  u.may   07/08|
  *----------------------------------------------------------------------*/
 bool Core::Geo::SearchTree::TreeNode::classify_xaabb(
     int& index, const Core::LinAlg::Matrix<3, 2>& AABB) const
@@ -898,7 +898,7 @@ bool Core::Geo::SearchTree::TreeNode::classify_xaabb(
 }
 
 /*----------------------------------------------------------------------*
- | classifiy KDOP in node                                  u.may   02/09|
+ | classify KDOP in node                                  u.may   02/09|
  *----------------------------------------------------------------------*/
 bool Core::Geo::SearchTree::TreeNode::classify_kdop(
     int& index, const Core::LinAlg::Matrix<9, 2>& KDOP) const
@@ -1083,7 +1083,7 @@ bool Core::Geo::SearchTree::TreeNode::classify_kdop(
 }
 
 /*----------------------------------------------------------------------*
- | classifiy element in node                               peder   07/08|
+ | classify element in node                               peder   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
     const Core::Elements::Element* element,
@@ -1099,7 +1099,7 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
 }
 
 /*----------------------------------------------------------------------*
- | classifiy element in tree node                           u.may   07/08|
+ | classify element in tree node                           u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
     const std::shared_ptr<Core::Elements::Element> element,
@@ -1115,7 +1115,7 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
 }
 
 /*----------------------------------------------------------------------*
- | classifiy element in tree node                          u.may   07/08|
+ | classify element in tree node                          u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
     const Core::Elements::Element* element,
@@ -1129,7 +1129,7 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
 }
 
 /*----------------------------------------------------------------------*
- | classifiy element in node                               u.may   08/08|
+ | classify element in node                               u.may   08/08|
  *----------------------------------------------------------------------*/
 std::vector<int> Core::Geo::SearchTree::TreeNode::classify_radius(
     const double radius, const Core::LinAlg::Matrix<3, 1>& point) const
@@ -1150,7 +1150,7 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_radius(
     radiusXAABB(2, 1) = 0.0;
   }
 
-  // return indices of childs which overlap with given axis-aligned boundary box of edge length
+  // return indices of children which overlap with given axis-aligned boundary box of edge length
   // 2*radius around point
   return classify_xaabb(radiusXAABB);
 }
@@ -1281,7 +1281,7 @@ void Core::Geo::SearchTree::TreeNode::search_collisions(
         return;
       }
       // dynamically grow tree otherwise, create children and set label for empty children
-      // search in apropriate child node
+      // search in appropriate child node
       create_children(currentBVs);
       std::vector<int> elementClassification;
       classify_xaabb(queryBV, elementClassification);
@@ -1327,7 +1327,7 @@ void Core::Geo::SearchTree::TreeNode::search_collisions(
         return;
       }
       // dynamically grow tree otherwise, create children and set label for empty children
-      // search in apropriate child node
+      // search in appropriate child node
       create_children(currentBVs);
       std::vector<int> elementClassification;
       classify_kdop(queryBV, elementClassification);

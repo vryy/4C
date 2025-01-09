@@ -30,7 +30,7 @@ MAXTIME                         10
 NONLINITER                      Newton
 NUMSTASTEPS                     1
 NUMSTEP                         1
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 STARTFUNCNO                     2
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
@@ -49,10 +49,10 @@ ALE_TYPE                        springs_spatial
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         2.4
 NUMSTEP                         8
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 SECONDORDER                     Yes
 TIMESTEP                        0.3
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2

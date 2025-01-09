@@ -5192,7 +5192,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
             const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradscalarnp =
                 *variablemanager.grad_scalarnp();
 
-            // corrrectly scale difftensor
+            // correctly scale difftensor
             // d diff / d omega = D_0*(-1.0)*w_half/(w_half+w)^2
             //                    value from above * (-1.0)/(w_half+w)
             difftensoraddflux.scale(

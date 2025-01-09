@@ -89,10 +89,10 @@ namespace Discret
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
       \param elemat1 (out)      : matrix to be filled by element. If nullptr on input,
-                                  the controling method does not epxect the element to fill
+                                  the controlling method does not epxect the element to fill
                                   this matrix.
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
-                                  the controling method does not epxect the element to fill
+                                  the controlling method does not epxect the element to fill
                                   this matrix.
       */
       void poro_boundary(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
@@ -115,10 +115,10 @@ namespace Discret
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
       \param elemat1 (out)      : matrix to be filled by element. If nullptr on input,
-                                  the controling method does not epxect the element to fill
+                                  the controlling method does not epxect the element to fill
                                   this matrix.
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
-                                  the controling method does not epxect the element to fill
+                                  the controlling method does not epxect the element to fill
                                   this matrix.
       */
       void pressure_coupling(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
@@ -133,10 +133,10 @@ namespace Discret
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
       \param elemat1 (out)      : matrix to be filled by element. If nullptr on input,
-                                  the controling method does not epxect the element to fill
+                                  the controlling method does not epxect the element to fill
                                   this matrix.
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
-                                  the controling method does not epxect the element to fill
+                                  the controlling method does not epxect the element to fill
                                   this matrix.
       */
       void fpsi_coupling(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
@@ -351,9 +351,9 @@ namespace Discret
       };
 
       /*!
-      \brief compute the porosity at guass point
+      \brief compute the porosity at gauss point
 
-      This class will access the poro structure material and evalute the porosity.
+      This class will access the poro structure material and evaluate the porosity.
       reimplemented in FluidEleBoundaryCalcPoroP1 class.
 
       \param params (in)         : ParameterList for communication between control routine

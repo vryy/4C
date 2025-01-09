@@ -14,7 +14,7 @@ MAXTIME                         5
 NLNSOL                          fullnewton
 NUMSTEP                         1
 PREDICT                         ConstDis
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 TIMESTEP                        0.5
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10

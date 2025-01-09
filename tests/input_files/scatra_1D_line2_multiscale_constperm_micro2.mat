@@ -18,8 +18,8 @@ PROBLEMTYPE                     Scalar_Transport
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
 NUMSTEP                         250
-RESULTSEVRY                     50
-RESTARTEVRY                     50
+RESULTSEVERY                     50
+RESTARTEVERY                     50
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 SPHERICALCOORDS                 Yes

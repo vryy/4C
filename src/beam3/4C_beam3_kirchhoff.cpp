@@ -467,7 +467,7 @@ void Discret::Elements::Beam3k::set_up_initial_rotations(const std::vector<doubl
  | sets up geometric data from current nodal position as reference
  | position; this method can be used by the register class or when ever
  | a new beam element is generated for which some reference configuration
- | has to be stored; prerequesite for applying this method is that the
+ | has to be stored; prerequisite for applying this method is that the
  | element nodes are already known (public)                   meier 01/16|
  *----------------------------------------------------------------------*/
 void Discret::Elements::Beam3k::set_up_reference_geometry(
@@ -485,13 +485,14 @@ void Discret::Elements::Beam3k::set_up_reference_geometry(
 void Discret::Elements::Beam3k::set_up_reference_geometry_wk(
     const std::vector<Core::LinAlg::Matrix<3, 1>>& xrefe, const bool secondinit)
 {
-  /*this method initializes geometric variables of the element; the initilization can usually be
-   *applied to elements only once; therefore after the first initilization the flag isinit is set to
-   *true and from then on this method does not take any action when called again unless it is called
-   *on purpose with the additional parameter secondinit. If this parameter is passed into the method
-   *and is true the element is initialized another time with respective xrefe and rotrefe; note: the
-   *isinit_ flag is important for avoiding reinitialization upon restart. However, it should be
-   *possible to conduct a second initilization in principle (e.g. for periodic boundary conditions*/
+  /*this method initializes geometric variables of the element; the initialization can usually be
+   *applied to elements only once; therefore after the first initialization the flag isinit is set
+   *to true and from then on this method does not take any action when called again unless it is
+   *called on purpose with the additional parameter secondinit. If this parameter is passed into the
+   *method and is true the element is initialized another time with respective xrefe and rotrefe;
+   *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it
+   *should be possible to conduct a second initialization in principle (e.g. for periodic boundary
+   *conditions*/
 
   // TODO: It turned out that the approximation of initially curved centerlines via third order
   // Hermite polynomials by simply setting the nodal positions and tangents at the boundary nodes to
@@ -695,13 +696,14 @@ void Discret::Elements::Beam3k::set_up_reference_geometry_wk(
 void Discret::Elements::Beam3k::set_up_reference_geometry_sk(
     const std::vector<Core::LinAlg::Matrix<3, 1>>& xrefe, const bool secondinit)
 {
-  /*this method initializes geometric variables of the element; the initilization can usually be
-   *applied to elements only once; therefore after the first initilization the flag isinit is set to
-   *true and from then on this method does not take any action when called again unless it is called
-   *on purpose with the additional parameter secondinit. If this parameter is passed into the method
-   *and is true the element is initialized another time with respective xrefe and rotrefe; note: the
-   *isinit_ flag is important for avoiding reinitialization upon restart. However, it should be
-   *possible to conduct a second initilization in principle (e.g. for periodic boundary conditions*/
+  /*this method initializes geometric variables of the element; the initialization can usually be
+   *applied to elements only once; therefore after the first initialization the flag isinit is set
+   *to true and from then on this method does not take any action when called again unless it is
+   *called on purpose with the additional parameter secondinit. If this parameter is passed into the
+   *method and is true the element is initialized another time with respective xrefe and rotrefe;
+   *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it
+   *should be possible to conduct a second initialization in principle (e.g. for periodic boundary
+   *conditions*/
 
   // TODO: It turned out that the approximation of initially curved centerlines via third order
   // Hermite polynomials by simply setting the nodal positions and tangents at the boundary nodes to

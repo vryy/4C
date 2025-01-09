@@ -28,7 +28,7 @@ namespace Cut
   class Mesh;
 
 
-  /// a partial volume of a cutted element of any shape
+  /// a partial volume of a cut element of any shape
   /*!
     \brief Volume cell is a partial (or whole) element that is defined by its
     facets.
@@ -98,7 +98,7 @@ namespace Cut
     \brief Project the integration rule generated w.r to the global coordinates of the element to
     its local coordinate system
      */
-    void project_gauss_points_to_local_coodinates();
+    void project_gauss_points_to_local_coordinates();
 
     /*!
     \brief Generate boundarycells for the cut facets. This is used when volumecells are treated by
@@ -298,19 +298,19 @@ namespace Cut
     bool set_position_cut_side_based();
 
     /*!
-    \brief Chcek whether this point is inside, outside or on boundary of this this volumecell.
+    \brief Check whether this point is inside, outside or on boundary of this this volumecell.
     The output std::string will be either "outside", "inside" or "onBoundary"
      */
     std::string is_this_point_inside(Point* pt);
 
     /*!
-    \brief Chcek whether this Global coordinate point is inside, outside or on boundary of this
+    \brief Check whether this Global coordinate point is inside, outside or on boundary of this
     this volumecell. The output std::string will be either "outside", "inside" or "onBoundary"
      */
     std::string is_this_point_inside(Core::LinAlg::Matrix<3, 1>& x);
 
     /*!
-    \brief Integrate specific predifined functions over the volumecell by integrating over each of
+    \brief Integrate specific predefined functions over the volumecell by integrating over each of
     the integration cells resulting from Tessellation. For MomentFitting and DIrectDivergence this
     can't be used
      */
@@ -388,7 +388,7 @@ namespace Cut
     /// store the Gauss point weights and location for volumecells when moment fitting equations
     /// are used to arrive at them
     Core::LinAlg::SerialDenseVector weights_;
-    std::vector<std::vector<double>> gaus_pts_;
+    std::vector<std::vector<double>> gauss_pts_;
 
     /// store the Gauss point weights and location for boundarycells when moment fitting equations
     /// are used to arrive at them

@@ -349,9 +349,9 @@ namespace Discret
         derivative of deformation gradient w.r.t. current coordinates xyz \param F_X            (i)
         derivative of deformation gradient w.r.t. material coordinates XYZ \param gradJ          (i)
         spatial gradient of jacobian determinant \param dJ_dus         (o) derivative of jacobian
-        determinant w.r.t. structure displacments \param dphi_dus       (o) derivative of porosity
-        determinant w.r.t. structure displacments \param dgradphi_dus   (o) derivate of spatial
-        gradient of porosity w.r.t. structure displacments
+        determinant w.r.t. structure displacements \param dphi_dus       (o) derivative of porosity
+        determinant w.r.t. structure displacements \param dgradphi_dus   (o) derivate of spatial
+        gradient of porosity w.r.t. structure displacements
        */
       void compute_linearization_od(const double& dphi_dJ, const double& dphi_dJJ,
           const double& dphi_dJp, const Core::LinAlg::Matrix<nsd_, nsd_>& defgrd_inv,

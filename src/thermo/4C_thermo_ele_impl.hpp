@@ -159,7 +159,7 @@ namespace Discret
 
       //! calculate complete internal force, tangent matrix k_TT and capacity matrix
       //!
-      //! builds quantitites from linear/nonlinear and thermo/TSI specific routines
+      //! builds quantities from linear/nonlinear and thermo/TSI specific routines
       void evaluate_tang_capa_fint(const Core::Elements::Element* ele, const double time,
           const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
@@ -398,7 +398,7 @@ namespace Discret
       //! Compute the error compared to an analytical solution from input file
       virtual void compute_error(
           const Core::Elements::Element* ele,  //!< current element whose terms are calculated
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>& elevec1,  //!< element vectorr
+          Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>& elevec1,  //!< element vector
           Teuchos::ParameterList& params  //!< parameter list, containing analytical solution
       );
 

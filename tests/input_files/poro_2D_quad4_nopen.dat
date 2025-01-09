@@ -31,7 +31,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  None
 THERM_TEMPGRAD                  None
 FILESTEPS                       1000
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
@@ -46,13 +46,13 @@ THETA                           1.0
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithicnopenetrationsplit
 PHYSICAL_TYPE                   Poro
-RESTARTEVRY                     15
+RESTARTEVERY                     15
 NUMSTEP                         30
 MAXTIME                         500
 TIMESTEP                        0.01
 ITEMAX                          500
 ITEMIN                          1
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 SECONDORDER                     Yes
 CONTIPARTINT                    yes
 LINEAR_SOLVER                   1

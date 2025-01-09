@@ -396,7 +396,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_v
     //        std::abs(my::ephinp_[0](6,0)-my::ephinp_[0](7,0))>1.0e-10)
     //    {
     //        std::cout << my::ephinp_[0] << std::endl;
-    //        FOUR_C_THROW("ENDE");
+    //        FOUR_C_THROW("END");
     //    }
 
     // get velocity at element center

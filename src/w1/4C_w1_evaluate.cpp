@@ -636,7 +636,7 @@ int Discret::Elements::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
   const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
   // shape functions
   Core::LinAlg::SerialDenseVector shapefcts(iel);
-  // natural derivatives of shape funcions
+  // natural derivatives of shape functions
   Core::LinAlg::SerialDenseMatrix deriv(numdim_, iel);
 
   // reference co-ordinates of element nodes
@@ -876,7 +876,7 @@ void Discret::Elements::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   double density = 0.0;
   if (massmatrix) density = material->density();
 
-  /*------- get integraton data ---------------------------------------- */
+  /*------- get integration data ---------------------------------------- */
   const Core::FE::CellType distype = shape();
 
   // gaussian points
@@ -1231,7 +1231,7 @@ void Discret::Elements::Wall1::w1_linstiffmass(const std::vector<int>& lm,
   double density = 0.0;
   if (massmatrix) density = material->density();
 
-  /*------- get integraton data ---------------------------------------- */
+  /*------- get integration data ---------------------------------------- */
   const Core::FE::CellType distype = shape();
 
   // gaussian points
@@ -1404,14 +1404,14 @@ void Discret::Elements::Wall1::w1_boplin(Core::LinAlg::SerialDenseMatrix& boplin
     Core::LinAlg::SerialDenseMatrix& deriv, Core::LinAlg::SerialDenseMatrix& xjm, double& det,
     const int iel)
 {
-  double dum;
+  double inv_det;
   double xji[2][2];
   /*---------------------------------------------- inverse of jacobian ---*/
-  dum = 1.0 / det;
-  xji[0][0] = xjm(1, 1) * dum;
-  xji[0][1] = -xjm(0, 1) * dum;
-  xji[1][0] = -xjm(1, 0) * dum;
-  xji[1][1] = xjm(0, 0) * dum;
+  inv_det = 1.0 / det;
+  xji[0][0] = xjm(1, 1) * inv_det;
+  xji[0][1] = -xjm(0, 1) * inv_det;
+  xji[1][0] = -xjm(1, 0) * inv_det;
+  xji[1][1] = xjm(0, 0) * inv_det;
   /*----------------------------- get operator boplin of global derivatives -*/
   /*-------------- some comments, so that even fluid people are able to
    understand this quickly :-)
@@ -1653,7 +1653,7 @@ void Discret::Elements::Wall1::energy(Teuchos::ParameterList& params, const std:
     std::shared_ptr<const Core::Mat::Material> material)
 {
   // constants
-  // element porperties
+  // element properties
   const int numnode = num_node();
   const int edof = numnode * Wall1::noddof_;
   const Core::FE::CellType distype = shape();

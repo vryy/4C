@@ -182,7 +182,7 @@ void Cut::Impl::SimplePointGraph2D::Graph::split_main_cycles_into_line_cycles()
   // store the previously generated surface main cycles
   surface_main_cycles_ = main_cycles_;
 
-  // replace the main cycles by the splitted line main cycles
+  // replace the main cycles by the split line main cycles
   main_cycles_ = line_main_cycles;
 }
 

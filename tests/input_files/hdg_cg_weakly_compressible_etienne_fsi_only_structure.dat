@@ -14,7 +14,7 @@ NUMSTRUCDIS      1
 NUMALEDIS        0
 ------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY     Standard
-RESTARTEVRY      0
+RESTARTEVERY      0
 NLNSOL           fullnewton
 MAXITER          10
 ITERNORM         Inf
@@ -39,9 +39,9 @@ SOLVER           Superlu
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.49 DENS 1.0
 ------------------------------------------------------------FUNCT1
-WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE MAT_STRUC 1
+WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE MAT_STRUCT 1
 ------------------------------------------------------------FUNCT2
-WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE MAT_STRUC 1
+WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE MAT_STRUCT 1
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE -1.09440884788606405e-01 TOLERANCE 1.000e-10
 STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE -1.32657186966952323e-16 TOLERANCE 1.000e-10

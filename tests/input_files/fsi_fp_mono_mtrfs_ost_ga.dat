@@ -32,10 +32,10 @@ TIMEINTEGR                      One_Step_Theta
 COUPALGO                        iter_mortar_monolithicfluidsplit
 MAXTIME                         1
 NUMSTEP                         10
-RESTARTEVRY                     2
+RESTARTEVERY                     2
 SECONDORDER                     no
 TIMESTEP                        0.1
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06
@@ -69,7 +69,7 @@ FILESTEPS                       1000
 FLUID_STRESS                    No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_STRAIN                   No

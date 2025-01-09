@@ -32,12 +32,12 @@ void PaSI::Utils::change_time_parameter(MPI_Comm comm, const Teuchos::ParameterL
   struct_params.set<double>("MAXTIME", pasi_params.get<double>("MAXTIME"));
 
   // solution output
-  particle_params.set<int>("RESULTSEVRY", pasi_params.get<int>("RESULTSEVRY"));
-  struct_params.set<int>("RESULTSEVRY", pasi_params.get<int>("RESULTSEVRY"));
+  particle_params.set<int>("RESULTSEVERY", pasi_params.get<int>("RESULTSEVERY"));
+  struct_params.set<int>("RESULTSEVERY", pasi_params.get<int>("RESULTSEVERY"));
 
   // restart
-  particle_params.set<int>("RESTARTEVRY", pasi_params.get<int>("RESTARTEVRY"));
-  struct_params.set<int>("RESTARTEVRY", pasi_params.get<int>("RESTARTEVRY"));
+  particle_params.set<int>("RESTARTEVERY", pasi_params.get<int>("RESTARTEVERY"));
+  struct_params.set<int>("RESTARTEVERY", pasi_params.get<int>("RESTARTEVERY"));
 
   if (Core::Communication::my_mpi_rank(comm) == 0)
   {
@@ -62,10 +62,10 @@ void PaSI::Utils::change_time_parameter(MPI_Comm comm, const Teuchos::ParameterL
               << struct_params.get<double>("MAXTIME") << std::endl;
     // Result every step
     std::cout << std::setw(20) << "Result every step:" << std::setw(15)
-              << pasi_params.get<int>("RESULTSEVRY") << std::endl;
+              << pasi_params.get<int>("RESULTSEVERY") << std::endl;
     // Restart every step
     std::cout << std::setw(20) << "Restart every step:" << std::setw(15)
-              << pasi_params.get<int>("RESTARTEVRY") << std::endl;
+              << pasi_params.get<int>("RESTARTEVERY") << std::endl;
     std::cout << "======= currently equal for both structure and particle field ========"
               << std::endl;
   }

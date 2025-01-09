@@ -17,7 +17,7 @@ OUTPUTSCALARS                   entire_domain
 SKIPINITDER                     Yes
 MAXTIME                         0.02
 NUMSTEP                         20
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
 ABSTOLRES                       1e-20

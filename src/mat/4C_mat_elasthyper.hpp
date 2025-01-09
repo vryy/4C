@@ -316,10 +316,10 @@ namespace Mat
     /// setup patient-specific AAA stuff
     virtual void setup_aaa(Teuchos::ParameterList& params, int eleGID);
 
-    /// return if anisotropic not splitted formulation
+    /// return if anisotropic not split formulation
     virtual bool anisotropic_principal() const { return summandProperties_.anisoprinc; }
 
-    /// return if anisotropic and splitted formulation
+    /// return if anisotropic and split formulation
     virtual bool anisotropic_modified() const { return summandProperties_.anisomod; }
 
     /// get fiber vectors

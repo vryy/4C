@@ -56,8 +56,8 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       "ALPHA_F", 0.5, "Generalized-alpha time integration factor", &scatradyn);
   Core::Utils::double_parameter(
       "GAMMA", 0.5, "Generalized-alpha time integration factor", &scatradyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &scatradyn);
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &scatradyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "Increment for writing solution", &scatradyn);
+  Core::Utils::int_parameter("RESTARTEVERY", 1, "Increment for writing restart", &scatradyn);
   Core::Utils::int_parameter("MATID", -1, "Material ID for automatic mesh generation", &scatradyn);
 
   setStringToIntegralParameter<Inpar::ScaTra::VelocityField>("VELOCITYFIELD", "zero",

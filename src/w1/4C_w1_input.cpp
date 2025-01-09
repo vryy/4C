@@ -99,7 +99,7 @@ bool Discret::Elements::Wall1::read_element(const std::string& eletype, const st
           Wall1::neas_, 1);  // if you change '4' here, then do it for alphao as well
       Core::LinAlg::SerialDenseMatrix alphao(Wall1::neas_, 1);
 
-      // EAS portion of internal forces, also called enhacement vector s or Rtilde
+      // EAS portion of internal forces, also called enhancement vector s or Rtilde
       Core::LinAlg::SerialDenseVector feas(Wall1::neas_);
       // EAS matrix K_{alpha alpha}, also called Dtilde
       Core::LinAlg::SerialDenseMatrix invKaa(Wall1::neas_, Wall1::neas_);

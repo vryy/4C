@@ -60,9 +60,9 @@ NORM_RESF                       AbsGlobal
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
 NUMSTEP                         10
-RESTARTEVRY                     100
+RESTARTEVERY                     100
 TIMESTEP                        0.01
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 LINEAR_SOLVER                   1
 SECONDORDER                     yes
 CONTIPARTINT                    yes

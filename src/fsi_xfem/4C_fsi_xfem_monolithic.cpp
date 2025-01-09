@@ -181,7 +181,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(MPI_Comm comm, const Teuchos::ParameterList&
   //-------------------------------------------------------------------------
   setup_coupling_objects();
 
-  // build ale system matrix in splitted system
+  // build ale system matrix in split system
   if (have_ale()) ale_field()->create_system_matrix(ale_field()->interface());
 
 
@@ -491,7 +491,7 @@ void FSI::MonolithicXFEM::setup_system_matrix()
     // extract Jacobian matrices and put them into composite system
     std::shared_ptr<Core::LinAlg::SparseMatrix> s = structure_poro()->system_matrix();
 
-    // Uncomplete structure matrix to be able to deal with slightly defective interface meshes.
+    // Incomplete structure matrix to be able to deal with slightly defective interface meshes.
     //
     // The additional coupling block C_ss can contain additional non-zero entries,
     // e.g. from DBCs which are already applied to s in the structural evaluate, however, not
@@ -768,8 +768,6 @@ void FSI::MonolithicXFEM::timeloop()
     // calls inner Newton-Raphson iterations within each outer iteration
     solve();
 
-    // TODO: check this function
-    // TODO: erst update und dann prepare output? oder anders rum?
     // calculate stresses, strains, energies
     constexpr bool force_prepare = false;
     prepare_output(force_prepare);
@@ -927,10 +925,10 @@ void FSI::MonolithicXFEM::output()
   // consisting of fluid forces and the Nitsche penalty term contribution)
   //--------------------------------
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-  const int uprestart = fsidyn.get<int>("RESTARTEVRY");
-  const int upres = fsidyn.get<int>("RESULTSEVRY");
+  const int uprestart = fsidyn.get<int>("RESTARTEVERY");
+  const int upres = fsidyn.get<int>("RESULTSEVERY");
   if ((uprestart != 0 && fluid_field()->step() % uprestart == 0) ||
-      fluid_field()->step() % upres == 0)  // Fluid desides about restart, write output
+      fluid_field()->step() % upres == 0)  // Fluid decides about restart, write output
   {
     for (auto coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
       coupit->second->output(*structure_poro()->structure_field()->disc_writer());
@@ -1256,7 +1254,7 @@ bool FSI::MonolithicXFEM::newton()
     //-------------------
     // Build residual and incremental norms, count the DOFs!
     //-------------------
-    build_covergence_norms();
+    build_convergence_norms();
 
 
     //-------------------
@@ -1323,9 +1321,9 @@ bool FSI::MonolithicXFEM::newton()
 /*----------------------------------------------------------------------*/
 // compute all norms used for convergence check
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::build_covergence_norms()
+void FSI::MonolithicXFEM::build_convergence_norms()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::build_covergence_norms()");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::build_convergence_norms()");
 
   // build map extractors for velocity and pressure dofs
   std::vector<std::shared_ptr<const Epetra_Map>> fluidvelpres;
@@ -1537,7 +1535,7 @@ bool FSI::MonolithicXFEM::evaluate()
   // update fluid field increments
   fluid_field()->update_by_increments(fx_permuted);
 
-  // StructurePoro()->structure_field()->writeGmshStrucOutputStep();
+  // StructurePoro()->structure_field()->writeGmshStructOutputStep();
 
   // ------------------------------------------------------------------
   // set the current interface displacement to the fluid field to be used in the cut
@@ -1841,8 +1839,8 @@ void FSI::MonolithicXFEM::build_fluid_permutation()
   //      c         <<---P^(-1)---       a
   //      d                              c
   //
-  // old gids ---> permuation_map ---> new gids ( forward  permutation )
-  // new gids <--- permuation_map <--- new gids ( backward permutation )
+  // old gids ---> permutation_map ---> new gids ( forward  permutation )
+  // new gids <--- permutation_map <--- new gids ( backward permutation )
 
   // build permutation cycles from the permutation map
   // in the permutation map one-to-one relations between gids are stored (key = old gid, value = new
@@ -1914,7 +1912,7 @@ void FSI::MonolithicXFEM::permute_fluid_dofs_forward(Core::LinAlg::Vector<double
     //      c                              a
     //      d                              c
     //
-    // old gids ---> permuation_map ---> new gids ( forward  permutation )
+    // old gids ---> permutation_map ---> new gids ( forward  permutation )
 
     std::vector<int>& p_cycle = *i;
 
@@ -1967,7 +1965,7 @@ void FSI::MonolithicXFEM::permute_fluid_dofs_backward(Core::LinAlg::Vector<doubl
     //      c         <<---P^(-1)---       a
     //      d                              c
     //
-    // new gids <--- permuation_map <--- new gids ( backward permutation )
+    // new gids <--- permutation_map <--- new gids ( backward permutation )
 
     std::vector<int>& p_cycle = *i;
 
@@ -2129,7 +2127,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
     {
       solver_ = std::make_shared<Core::LinAlg::Solver>(xfsisolverparams,
-          // ggfs. explizit Comm von STR wie lungscatra
+          // ggfs. explicit Comm von STR wie lungscatra
           get_comm(), Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
@@ -2192,7 +2190,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
     {
       // This should be the default case (well-tested and used)
       solver_ = std::make_shared<Core::LinAlg::Solver>(xfsisolverparams,
-          // ggfs. explizit Comm von STR wie lungscatra
+          // ggfs. explicit Comm von STR wie lungscatra
           get_comm(), Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));

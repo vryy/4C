@@ -30,9 +30,9 @@ STRAINS_GAUSSPOINT              Yes
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      GenAlpha
-RESULTSEVRY                     1
-RESEVRYERGY                     2
-RESTARTEVRY                     50
+RESULTSEVERY                     1
+RESEVERYERGY                     2
+RESTARTEVERY                     50
 NLNSOL                          fullnewton
 TIMESTEP                        0.01
 NUMSTEP                         200

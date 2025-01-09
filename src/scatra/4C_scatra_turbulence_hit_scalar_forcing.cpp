@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-#define USE_TRAGET_SPECTRUM
+#define USE_TARGET_SPECTRUM
 // #define TIME_UPDATE_FORCING_SPECTRUM
 
 namespace ScaTra
@@ -30,7 +30,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  HomIsoTurbScalarForcing::HomIsoTurbScalarForcing(ScaTraTimIntImpl* timeint)
+  HomoIsoTurbScalarForcing::HomoIsoTurbScalarForcing(ScaTraTimIntImpl* timeint)
       : forcing_type_(Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(
             timeint->extraparams_->sublist("TURBULENCE MODEL"), "FORCING_TYPE")),
         discret_(timeint->discret_),
@@ -226,9 +226,9 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | initialize energy spectrum by initial field  rasthofer 05/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbScalarForcing::set_initial_spectrum(Inpar::ScaTra::InitialField init_field_type)
+  void HomoIsoTurbScalarForcing::set_initial_spectrum(Inpar::ScaTra::InitialField init_field_type)
   {
-#ifdef USE_TRAGET_SPECTRUM
+#ifdef USE_TARGET_SPECTRUM
     (*scalarvariancespectrum_n_)[0] = 0.0;
     for (std::size_t rr = 1; rr < wavenumbers_->size(); rr++)
     {
@@ -262,7 +262,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | activate calculation of forcing              rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbScalarForcing::activate_forcing(const bool activate)
+  void HomoIsoTurbScalarForcing::activate_forcing(const bool activate)
   {
     activate_ = activate;
     return;
@@ -272,7 +272,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | calculate volume force                       rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbScalarForcing::calculate_forcing(const int step)
+  void HomoIsoTurbScalarForcing::calculate_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     //-------------------------------------------------------------------------------
@@ -606,7 +606,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | get forcing                                   rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbScalarForcing::update_forcing(const int step)
+  void HomoIsoTurbScalarForcing::update_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     // check if forcing is selected
@@ -804,7 +804,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | time update of energy spectrum               rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbScalarForcing::time_update_forcing()
+  void HomoIsoTurbScalarForcing::time_update_forcing()
   {
 #ifdef TIME_UPDATE_FORCING_SPECTRUM
     // update energy spectrum

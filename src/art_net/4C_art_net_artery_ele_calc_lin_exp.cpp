@@ -182,7 +182,7 @@ int Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_service(Artery* el
     }
     break;
     default:
-      FOUR_C_THROW("Unkown type of action %d for Artery (LinExp formulation)", action);
+      FOUR_C_THROW("Unknown type of action %d for Artery (LinExp formulation)", action);
   }  // end of switch(act)
 
   return 0;
@@ -469,7 +469,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
     // Read in artery's external forces at node 1
     pext2 = actmat->pext(1);
 
-    // Set up all the needed vectors for furthur calculations
+    // Set up all the needed vectors for further calculations
     area0_(0, 0) = Ao1;
     area0_(1, 0) = Ao2;
     th_(0, 0) = t1;
@@ -966,7 +966,7 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
     // Read in artery's external forces at node 1
     pext2 = actmat->pext(1);
 
-    // Set up all the needed vectors for furthur calculations
+    // Set up all the needed vectors for further calculations
     area0_(0, 0) = Ao1;
     area0_(1, 0) = Ao2;
     th_(0, 0) = t1;
@@ -1213,7 +1213,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
     // Read in artery's external forces at node 1
     pext2 = actmat->pext(1);
 
-    // Set up all the needed vectors for furthur calculations
+    // Set up all the needed vectors for further calculations
     area0_(0, 0) = Ao1;
     area0_(1, 0) = Ao2;
     th_(0, 0) = t1;
@@ -1553,7 +1553,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
   //  std::shared_ptr<const Core::LinAlg::Vector<double>> Wfnp  = discretization.GetState("Wfnp");
   //  std::shared_ptr<const Core::LinAlg::Vector<double>> Wbnp  = discretization.GetState("Wbnp");
 
-  std::shared_ptr<Core::LinAlg::Vector<double>> pn =
+  std::shared_ptr<Core::LinAlg::Vector<double>> on =
       params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("pressure");
   std::shared_ptr<Core::LinAlg::Vector<double>> qn =
       params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("flow");
@@ -1606,7 +1606,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
     // Read in artery's external forces at node 1
     pext2 = actmat->pext(1);
 
-    // Set up all the needed vectors for furthur calculations
+    // Set up all the needed vectors for further calculations
     area0_(0, 0) = Ao1;
     area0_(1, 0) = Ao2;
     th_(0, 0) = t1;
@@ -1675,7 +1675,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
 
       gid = ele->nodes()[i]->id();
       val = pressure;
-      pn->ReplaceGlobalValues(1, &val, &gid);
+      on->ReplaceGlobalValues(1, &val, &gid);
 
       // calculating Q at node i
       val = qn_(i);
@@ -1773,7 +1773,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_wf_and_wb(Artery*
     // Read in artery's external forces at node 1
     pext2 = actmat->pext(1);
 
-    // Set up all the needed vectors for furthur calculations
+    // Set up all the needed vectors for further calculations
     area0_(0, 0) = Ao1;
     area0_(1, 0) = Ao2;
     th_(0, 0) = t1;

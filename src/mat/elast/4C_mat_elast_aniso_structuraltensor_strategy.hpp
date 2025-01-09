@@ -147,7 +147,7 @@ namespace Mat
      * @brief Class for computing the standard structural tensor for anisotropic materials via
      * adyadic product of the current fiber direction.
      *
-     * <h3>Definiton of Structural Tensor H</h3>
+     * <h3>Definition of Structural Tensor H</h3>
      * H = M x M
      *
      * By H we denote the structural tensor. M is the direction of the fiber.
@@ -165,7 +165,7 @@ namespace Mat
        *
        * Simplest variant assuming perfect alignment of fiber with a given fiber direction M.
        *
-       * <h3>Definiton of Structural Tensor H</h3>
+       * <h3>Definition of Structural Tensor H</h3>
        * H = M x M (x denotes the dyadic product)
        *
        * @param fiber_vector (in) : direction of fiber 'M'
@@ -180,7 +180,7 @@ namespace Mat
        *
        * Simplest variant assuming perfect alignment of fiber with a given fiber direction M.
        *
-       * <h3>Definiton of Structural Tensor H</h3>
+       * <h3>Definition of Structural Tensor H</h3>
        * H = M x M (x denotes the dyadic product)
        *
        * @param fiber_vector (in) : direction of fiber 'M'
@@ -203,7 +203,7 @@ namespace Mat
      * 10.1098/rsif.2005.0073.
      *
      *
-     * <h3>Definiton of Structural Tensor H</h3>
+     * <h3>Definition of Structural Tensor H</h3>
      *
      * H = \frac{1}{4\pi}\int \rho(Theta,Phi) [m x m] sin(Theta) dTheta dPhi
      * with
@@ -309,7 +309,7 @@ namespace Mat
      * with distributed collagen fibre orientations. J. R. Soc. Interface, 3:15-35, 2006.
      * doi:10.1098/rsif.2005.0073.
      *
-     * <h3>Definiton of Structural Tensor H</h3>
+     * <h3>Definition of Structural Tensor H</h3>
      * H = c1*I + (1-3*c1)MxM
      * I = Identity matrix
      * MxM = dyadic product with fiber orientation M

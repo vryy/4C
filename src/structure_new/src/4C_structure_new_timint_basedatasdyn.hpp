@@ -164,7 +164,7 @@ namespace Solid
         return loadlin_;
       }
 
-      // Return time until the prestressing algorthm should be applied
+      // Return time until the prestressing algorithm should be applied
       double get_pre_stress_time() const
       {
         check_init_setup();
@@ -236,14 +236,14 @@ namespace Solid
         return *noxparams_;
       }
 
-      /// Returns loca parameters
-      const Teuchos::ParameterList& get_loca_params() const
+      /// Returns local parameters
+      const Teuchos::ParameterList& get_local_params() const
       {
         check_init_setup();
         return *locaparams_;
       }
 
-      /// Returns the inital pseudo time step for the PTC method
+      /// Returns the initial pseudo time step for the PTC method
       double get_initial_ptc_pseudo_time_step() const { return ptc_delta_init_; }
       ///@}
 
@@ -540,8 +540,8 @@ namespace Solid
         return noxparams_;
       }
 
-      /// Returns loca parameters
-      Teuchos::ParameterList& get_loca_params()
+      /// Returns local parameters
+      Teuchos::ParameterList& get_local_params()
       {
         check_init_setup();
         return *locaparams_;
@@ -800,7 +800,7 @@ namespace Solid
       /// nox parameters list
       std::shared_ptr<Teuchos::ParameterList> noxparams_;
 
-      /// loca parameter list
+      /// local parameter list
       std::shared_ptr<Teuchos::ParameterList> locaparams_;
 
       /// initial pseudo time step for the pseudo transient continuation (PTC) method
@@ -985,7 +985,7 @@ namespace Solid
     class GenAlphaDataSDyn : public BaseDataSDyn
     {
      public:
-      //! contructor
+      //! constructor
       GenAlphaDataSDyn();
 
       //! Setup function [derived]
@@ -1049,7 +1049,7 @@ namespace Solid
       //! Time integration parameter \f$\gamma \in (0,1]\f$
       double gamma_;
 
-      //! Time integation parameter \f$\alpha_f \in [0,1)\f$
+      //! Time integration parameter \f$\alpha_f \in [0,1)\f$
       double alphaf_;
 
       //! Time integration parameter \f$\alpha_m \in [-1,1)\f$
@@ -1068,7 +1068,7 @@ namespace Solid
     class OneStepThetaDataSDyn : public BaseDataSDyn
     {
      public:
-      //! contructor
+      //! constructor
       OneStepThetaDataSDyn();
 
       //! Setup function [derived]
@@ -1101,7 +1101,7 @@ namespace Solid
     class ExplEulerDataSDyn : public BaseDataSDyn
     {
      public:
-      //! contructor
+      //! constructor
       ExplEulerDataSDyn();
 
       //! Setup function [derived]

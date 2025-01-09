@@ -37,7 +37,7 @@ namespace Core::Utils
   class FunctionVariable
   {
    public:
-    /// Base constructor takign the @p name of the FunctionVariable.
+    /// Base constructor taking the @p name of the FunctionVariable.
     FunctionVariable(std::string name);
 
     /// Virtual destructor.

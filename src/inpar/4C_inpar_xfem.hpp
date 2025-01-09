@@ -50,7 +50,7 @@ namespace Inpar
     enum InterfaceLaw
     {
       noslip,             /// no slip in tangential direction
-      noslip_splitpen,    /// no slip in tangential direction with splitted normal and tangential
+      noslip_splitpen,    /// no slip in tangential direction with split normal and tangential
                           /// penalty
       slip,               /// full slip in tangential direction
       navierslip,         /// general navier boundary condition

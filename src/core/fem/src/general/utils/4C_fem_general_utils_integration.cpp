@@ -6089,7 +6089,7 @@ Core::FE::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule) : 
       FOUR_C_THROW("unknown 3D integration rule");
       break;
   }
-  FOUR_C_ASSERT(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
+  FOUR_C_ASSERT(max_nquad >= nquad, "increase size of double array in IntegrationPoints class");
 }
 
 
@@ -6882,7 +6882,7 @@ Core::FE::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D intrule) : 
       FOUR_C_THROW("unknown 2D integration rule, GaussRule2D: %d", intrule);
       break;
   }
-  FOUR_C_ASSERT(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
+  FOUR_C_ASSERT(max_nquad >= nquad, "increase size of double array in IntegrationPoints class");
 }
 
 
@@ -7573,7 +7573,7 @@ Core::FE::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D intrule) : 
       FOUR_C_THROW("unknown 1D integration rule");
       break;
   }
-  FOUR_C_ASSERT(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
+  FOUR_C_ASSERT(max_nquad >= nquad, "increase size of double array in IntegrationPoints class");
 }
 
 FOUR_C_NAMESPACE_CLOSE

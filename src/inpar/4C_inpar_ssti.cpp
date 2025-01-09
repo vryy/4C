@@ -24,17 +24,17 @@ void Inpar::SSTI::set_valid_parameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
 
   Teuchos::ParameterList& sstidyn = list.sublist(
-      "SSTI CONTROL", false, "Control paramters for scatra structure thermo interaction");
+      "SSTI CONTROL", false, "Control parameters for scatra structure thermo interaction");
 
   Core::Utils::double_parameter(
-      "RESTARTEVRYTIME", 0, "write restart possibility every RESTARTEVRY steps", &sstidyn);
+      "RESTARTEVERYTIME", 0, "write restart possibility every RESTARTEVERY steps", &sstidyn);
   Core::Utils::int_parameter(
-      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &sstidyn);
+      "RESTARTEVERY", 1, "write restart possibility every RESTARTEVERY steps", &sstidyn);
   Core::Utils::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &sstidyn);
   Core::Utils::double_parameter("MAXTIME", 1000.0, "total simulation time", &sstidyn);
   Core::Utils::double_parameter("TIMESTEP", -1, "time step size dt", &sstidyn);
-  Core::Utils::double_parameter("RESULTSEVRYTIME", 0, "increment for writing solution", &sstidyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "increment for writing solution", &sstidyn);
+  Core::Utils::double_parameter("RESULTSEVERYTIME", 0, "increment for writing solution", &sstidyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "increment for writing solution", &sstidyn);
   Core::Utils::int_parameter("ITEMAX", 10, "maximum number of iterations over fields", &sstidyn);
   Core::Utils::bool_parameter("SCATRA_FROM_RESTART_FILE", "No",
       "read scatra result from restart files (use option 'restartfromfile' during execution of "

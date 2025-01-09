@@ -120,7 +120,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
       /*!
       \brief Get shape type of element

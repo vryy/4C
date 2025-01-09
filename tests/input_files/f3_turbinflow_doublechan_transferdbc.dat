@@ -35,11 +35,11 @@ NUMSTASTEPS                     0
 NUMSTEP                         3
 TIMESTEP                        0.2
 PHYSICAL_TYPE                   Incompressible
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 STARTFUNCNO                     1
 START_THETA                     1
 STEADYSTEP                      -1
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1e-10
 TOL_VEL_INC	  1e-10

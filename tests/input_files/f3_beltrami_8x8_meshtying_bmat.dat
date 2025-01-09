@@ -23,7 +23,7 @@ MAXTIME                         0.05
 NONLINITER                      fixed_point_like
 NUMSTEP                         5
 PREDICTOR                       steady_state
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 THETA                           0.5
 TIMEINTEGR                      Af_Gen_Alpha
 NUMSTASTEPS                     1
@@ -32,7 +32,7 @@ ALPHA_F                         1.00
 ALPHA_M                         1.50
 GAMMA                           1.00
 TIMESTEP       0.01
-RESULTSEVRY                           5
+RESULTSEVERY                           5
 MESHTYING  Condensed_Bmat
 INITIALFIELD   BELTRAMI-FLOW
 CALCERROR      beltrami_flow

@@ -55,10 +55,10 @@ ALE_TYPE                        solid
 COUPALGO                        iter_monolithicfluidsplit
 MAXTIME                         1.0
 NUMSTEP                         15
-RESTARTEVRY                     2
+RESTARTEVERY                     2
 SECONDORDER                     yes
 TIMESTEP                        0.002
-RESULTSEVRY                           2
+RESULTSEVERY                           2
 --------------------------------------------------FSI DYNAMIC/TIMEADAPTIVITY
 ADAPTSTEPMAX                    5
 AUXINTEGRATORFLUID              AB2

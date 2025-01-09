@@ -437,7 +437,7 @@ void Mat::ViscoElastHyper::update()
       // if maximal size of history-vector is reached
       if (histfractartstresslastall_->at(gp).size() > max_hist)
       {
-        // Hint: If you want to use this functionaltiy, reimplement it with a pointer (abirzle
+        // Hint: If you want to use this functionality, reimplement it with a pointer (abirzle
         // 12/17)
 
         // save current history data in tmp_vec, but skip the first data
@@ -687,9 +687,9 @@ void Mat::ViscoElastHyper::evaluate_kin_quant_vis(Core::LinAlg::Matrix<6, 1>& rc
                 .5 * modrcgrate(4) * modrcgrate(4) + .5 * modrcgrate(5) * modrcgrate(5));
 
 
-  // For further extension of material law (not necassary at the moment)
+  // For further extension of material law (not necessary at the moment)
   /*
-  // necassary transfer variable: Core::LinAlg::Matrix<6,1>& modicgrate
+  // necessary transfer variable: Core::LinAlg::Matrix<6,1>& modicgrate
   // \overline{J}_3 = determinant of modified rate of right Cauchy-Green-Tensor
   modrateinv(2) = modrcgrate(0)*modrcgrate(1)*modrcgrate(2)
       + 0.25 * modrcgrate(3)*modrcgrate(4)*modrcgrate(5)

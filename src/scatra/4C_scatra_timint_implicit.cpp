@@ -145,7 +145,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(std::shared_ptr<Core::FE::Discretizat
       nds_pres_(-1),
       nds_scatra_(-1),
       nds_thermo_(-1),
-      nds_two_tensor_quantitiy_(-1),
+      nds_two_tensor_quantity_(-1),
       nds_vel_(-1),
       nds_wss_(-1),
       densific_(0, 0.0),
@@ -182,8 +182,8 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(std::shared_ptr<Core::FE::Discretizat
       updateprojection_(false),
       projector_(nullptr),
       // Initialization of
-      upres_(params->get<int>("RESULTSEVRY")),
-      uprestart_(params->get<int>("RESTARTEVRY")),
+      upres_(params->get<int>("RESULTSEVERY")),
+      uprestart_(params->get<int>("RESTARTEVERY")),
       neumanninflow_(params->get<bool>("NEUMANNINFLOW")),
       convheatrans_(params->get<bool>("CONV_HEAT_TRANS")),
       phinp_macro_(0, 0.),
@@ -834,7 +834,7 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
     {
       turbmodel_ = Inpar::FLUID::multifractal_subgrid_scales;
 
-      // initalize matrix used to build the scale separation operator
+      // initialize matrix used to build the scale separation operator
       sysmat_sd_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 27);
 
       Teuchos::ParameterList* mfsparams = &(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"));
@@ -2309,7 +2309,7 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
     case Inpar::ScaTra::initialfield_forced_hit_low_Sc:
     {
       // initialize calculation of initial field based on fast Fourier transformation
-      HomIsoTurbInitialScalarField HitInitialScalarField(*this, init);
+      HomoIsoTurbInitialScalarField HitInitialScalarField(*this, init);
       // calculate initial field
       HitInitialScalarField.calculate_initial_field();
 
@@ -2340,9 +2340,9 @@ void ScaTra::ScaTraTimIntImpl::setup_krylov_space_projection(Core::Conditions::C
   // previously, scatra was able to define actual modes that formed a
   // nullspace. factors when assigned to scalars in the dat file. it could
   // take several scatra Krylov conditions each forming one mode like:
-  // 3.0*c_1 + 2.0*c_2 = const
+  // 4.0*c_1 + 2.0*c_2 = const
   // since this was never used, not even in ELCH-problems, and for the sake of
-  // consistency, now only a singel scatra Krylov condition can be given, with
+  // consistency, now only a single scatra Krylov condition can be given, with
   // flags that triggers the scalars that are to be levelled by a projection
   // (like the pressure in a pure Dirichlet fluid problem).
   // furthermore, this is a step towards the ability to have projection on
@@ -2680,7 +2680,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_solution_depending_conditions(
 int ScaTra::ScaTraTimIntImpl::get_max_dof_set_number() const
 {
   return std::max({nds_disp_, nds_growth_, nds_micro_, nds_pres_, nds_scatra_, nds_thermo_,
-      nds_two_tensor_quantitiy_, nds_vel_, nds_wss_});
+      nds_two_tensor_quantity_, nds_vel_, nds_wss_});
 }
 
 /*----------------------------------------------------------------------------*
@@ -3129,7 +3129,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_micro_scale_solve()
 std::string ScaTra::ScaTraTimIntImpl::map_tim_int_enum_to_string(
     const enum Inpar::ScaTra::TimeIntegrationScheme term)
 {
-  // length of return std::string is 14 due to usage in formated screen output
+  // length of return std::string is 14 due to usage in formatted screen output
   switch (term)
   {
     case Inpar::ScaTra::timeint_one_step_theta:

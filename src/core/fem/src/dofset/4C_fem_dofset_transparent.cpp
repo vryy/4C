@@ -162,7 +162,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   }
 
   {
-    // create an exporter for point to point comunication
+    // create an exporter for point to point communication
     Core::Communication::Exporter exporter(sourcedis.get_comm());
 
     // necessary variables
@@ -362,7 +362,7 @@ void Core::DOFSets::TransparentDofSet::set_source_dofs_available_on_this_proc(
       {
         FOUR_C_THROW(
             "I have a one-processor problem but the node is not on the proc. "
-            "sourcedis_->NodeRowMap() is probably currupted.");
+            "sourcedis_->NodeRowMap() is probably corrupted.");
       }
     }
   }

@@ -272,7 +272,7 @@ namespace Mat
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>*
             glstrain,                    //!< input Green-Lagrange strain (redundant with defo
                                          //   but used for neo-hooke evaluation; maybe remove
-        Teuchos::ParameterList& params,  //!< input paramter list (e.g. Young's, ...)
+        Teuchos::ParameterList& params,  //!< input parameter list (e.g. Young's, ...)
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>*
             stress,  //!< output (mandatory) second Piola-Kirchhoff stress
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>*

@@ -353,7 +353,7 @@ namespace POROFLUIDMULTIPHASE
     //! potential residual scaling and potential addition of Neumann terms
     void scaling_and_neumann();
 
-    //! add actual Neumann loads multipl. with time factor to the residual
+    //! add actual Neumann loads multiplied with time factor to the residual
     virtual void add_neumann_to_residual() = 0;
 
     //! Apply Neumann boundary conditions

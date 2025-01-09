@@ -220,7 +220,7 @@ namespace FPSI
     std::shared_ptr<Core::LinAlg::MapExtractor> porofluid_extractor_;
     // extractor for fpsi condition from (poro) structure
     std::shared_ptr<Core::LinAlg::MapExtractor> porostruct_extractor_;
-    //! dof row map splitted in inner structure (0), struct interface (1)
+    //! dof row map split in inner structure (0), struct interface (1)
     //! inner porofluid (2) and porofluidinterface (3)
     std::shared_ptr<Core::LinAlg::MultiMapExtractor> poro_extractor_;
     std::shared_ptr<FPSI::Utils::MapExtractor> fluid_fsifpsi_extractor_;

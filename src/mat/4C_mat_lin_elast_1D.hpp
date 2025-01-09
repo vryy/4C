@@ -54,7 +54,7 @@ namespace Mat
       /// parameters of polynomial for inelastic growth
       const std::vector<double> poly_params_;
 
-      /// growth proportional to amount of substance (true) or porportional to concentration (false)
+      /// growth proportional to amount of substance (true) or proportional to concentration (false)
       const bool amount_prop_growth_;
       //@}
 

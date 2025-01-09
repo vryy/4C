@@ -108,7 +108,7 @@ namespace EleMag
     virtual void print_sysmat() { std::cout << sysmat_ << std::endl; };
 
     /*!
-    \brief Iterates in time untill either the max number of steps or the final time has been
+    \brief Iterates in time until either the max number of steps or the final time has been
     reached.
     */
     virtual void integrate();
@@ -165,7 +165,7 @@ namespace EleMag
     // void assemble_mat_and_rhs();
 
     /*!
-    \brief Updates the local solution and updates the RHS wioth the new values.
+    \brief Updates the local solution and updates the RHS with the new values.
 
     Once the solution of the global system has been carried on it is necessary to solve for the
     local problems and update the residual.
@@ -174,7 +174,7 @@ namespace EleMag
     // void update_interior_variables_and_assemble_rhs();
 
     /*!
-    \brief Apply Dirichlet boudnary conditions to system.
+    \brief Apply Dirichlet boundary conditions to system.
 
     \param[in]  resonly Boolean indicating if it is only necessary to recompute the RHS (true) or if
     it necessary to compute the matrices AND the RHS (false).
@@ -343,7 +343,7 @@ namespace EleMag
     //  The fomulation relies on the variables:
     //  o   E (electri field)
     //  o   H (magnetic field field)
-    //  o   \Lambda (hybrid varible)
+    //  o   \Lambda (hybrid variable)
 
     /// Trace vector to be solved at every iteration
     std::shared_ptr<Core::LinAlg::Vector<double>> trace_;

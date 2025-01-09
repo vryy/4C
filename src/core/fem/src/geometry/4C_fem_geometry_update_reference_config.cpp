@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 void Core::Geo::update_reference_config_with_disp(
     const Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& disp)
 {
-  // Export row-displacments to col-displacements
+  // Export row-displacements to col-displacements
   Core::LinAlg::Vector<double> coldisp(*dis.dof_col_map());
   Core::LinAlg::export_to(disp, coldisp);
 

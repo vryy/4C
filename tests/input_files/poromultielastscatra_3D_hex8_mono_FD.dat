@@ -10,8 +10,8 @@ DIM           3
 PROBLEMTYPE                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
-RESULTSEVRY                     10
-RESTARTEVRY                     10
+RESULTSEVERY                     10
+RESTARTEVERY                     10
 NUMSTEP                         20
 MAXTIME                         0.2
 TIMESTEP                        0.01

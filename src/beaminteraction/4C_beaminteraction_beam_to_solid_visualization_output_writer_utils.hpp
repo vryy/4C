@@ -44,7 +44,7 @@ namespace BeamInteraction
 {
   /**
    * \brief Add the nodal forces of beams and solid discretization to the output writer.
-   * @param visualization (in/out) Output writer containting the visualization.
+   * @param visualization (in/out) Output writer containing the visualization.
    * @param discret_ptr (in) Pointer to the discretization.
    * @param displacement (in) Global displacement vector.
    * @param force (in) Global force vector.
@@ -58,7 +58,7 @@ namespace BeamInteraction
 
   /**
    * \brief Add the averaged normal fields to the output writer.
-   * @param output_writer_base_ptr (in/out) Output writer containting the visualization.
+   * @param output_writer_base_ptr (in/out) Output writer containing the visualization.
    * @param face_elements (in) Map with all face elements that should be written to the output
    * writer.
    * @param condition_coupling_id (in) Id of the coupling condition that this normal filed is part

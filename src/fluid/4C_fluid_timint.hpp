@@ -368,7 +368,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 12/2013
      */
-    void time_step_auxiliar() override
+    void time_step_auxiliary() override
     {
       FOUR_C_THROW(
           "We do this in the Adapter until time adaptivity is available in the fluid field.");

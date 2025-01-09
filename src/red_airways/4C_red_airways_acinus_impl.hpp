@@ -129,7 +129,7 @@ namespace Discret
           std::shared_ptr<const Core::Mat::Material> material) override;
 
       /*!
-        \Essential functions to compute the results of essentail matrices
+        \Essential functions to compute the results of essential matrices
       */
       void calc_flow_rates(RedAcinus* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,

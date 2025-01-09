@@ -20,8 +20,8 @@ TIMEINTEGR                      Np_Gen_Alpha
 NONLINITER Newton
 ITEMAX                          3
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           2
-RESTARTEVRY                     1
+RESULTSEVERY                           2
+RESTARTEVERY                     1
 NUMSTEP                         4
 NUMSTASTEPS                     0
 MAXTIME                         100000.0

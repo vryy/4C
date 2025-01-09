@@ -47,7 +47,7 @@ namespace CONTACT
     }
 
     //! Shared data constructor
-    NitscheStrategyFpi(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategyFpi(const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, MPI_Comm comm,
         double alphaf, int maxdof)
@@ -66,7 +66,7 @@ namespace CONTACT
         const enum Mortar::StateType& statename, const Core::LinAlg::Vector<double>& vec) override;
 
     //! The the contact state at local coord of Element cele and compare to the fsi_traction,
-    //! return true if contact is evaluated, reture false if FSI is evaluated
+    //! return true if contact is evaluated, return false if FSI is evaluated
     bool check_nitsche_contact_state(CONTACT::Element* cele,
         const Core::LinAlg::Matrix<2, 1>& xsi,  // local coord on the ele element
         const double& full_fsi_traction,        // stressfluid + penalty

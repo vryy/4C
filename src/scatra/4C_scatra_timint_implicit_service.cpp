@@ -2099,7 +2099,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
       {
         const int errorfunctnumber = params_->get<int>("CALCERRORNO");
         if (errorfunctnumber < 1)
-          FOUR_C_THROW("invalid value of paramter CALCERRORNO for error function evaluation!");
+          FOUR_C_THROW("invalid value of parameter CALCERRORNO for error function evaluation!");
 
         eleparams.set<int>("error function number", errorfunctnumber);
       }
@@ -3093,7 +3093,7 @@ int ScaTra::ScalarHandler::num_dof_per_node() const
  *-----------------------------------------------------------------------------*/
 void ScaTra::ScalarHandler::check_is_setup() const
 {
-  if (not issetup_) FOUR_C_THROW("ScalarHanlder is not set up. Call setup() first.");
+  if (not issetup_) FOUR_C_THROW("ScalarHandler is not set up. Call setup() first.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

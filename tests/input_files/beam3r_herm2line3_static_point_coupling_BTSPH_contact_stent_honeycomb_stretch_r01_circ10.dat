@@ -37,8 +37,8 @@ VERBOSITY              standard
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     20
+RESULTSEVERY                     1
+RESTARTEVERY                     20
 NLNSOL                          fullnewton
 TIMESTEP                        0.025
 NUMSTEP                         40

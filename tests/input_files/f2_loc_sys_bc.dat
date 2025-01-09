@@ -24,7 +24,7 @@ NONLINEARBC                     yes
 NUMSTEP                         45
 ITEMAX                          10
 TIMESTEP                        0.05
-RESULTSEVRY                     5
+RESULTSEVERY                     5
 THETA                           0.50
 ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666

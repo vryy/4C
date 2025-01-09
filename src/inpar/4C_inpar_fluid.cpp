@@ -56,7 +56,7 @@ void Inpar::FLUID::set_valid_parameters(Teuchos::ParameterList& list)
           "calculate 'normal' wss", "calculate aggregated wss", "calculate mean wss"),
       tuple<Inpar::FLUID::WSSType>(wss_standard, wss_aggregation, wss_mean), &fdyn);
 
-  // Set ML-solver number for smooting of residual-based calculated wallshearstress via plain
+  // Set ML-solver number for smoothing of residual-based calculated wallshearstress via plain
   // aggregation.
   Core::Utils::int_parameter("WSS_ML_AGR_SOLVER", -1,
       "Set ML-solver number for smoothing of residual-based calculated wallshearstress via plain "
@@ -263,8 +263,8 @@ void Inpar::FLUID::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::bool_parameter("NEW_OST", "No",
       "Solve the Navier-Stokes equation with the new One Step Theta algorithm",
       &fdyn);  // TODO: To be removed.
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &fdyn);
-  Core::Utils::int_parameter("RESTARTEVRY", 20, "Increment for writing restart", &fdyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "Increment for writing solution", &fdyn);
+  Core::Utils::int_parameter("RESTARTEVERY", 20, "Increment for writing restart", &fdyn);
   Core::Utils::int_parameter("NUMSTEP", 1, "Total number of Timesteps", &fdyn);
   Core::Utils::int_parameter("STEADYSTEP", -1, "steady state check every step", &fdyn);
   Core::Utils::int_parameter("NUMSTASTEPS", 0, "Number of Steps for Starting Scheme", &fdyn);
@@ -646,7 +646,7 @@ void Inpar::FLUID::set_valid_parameters(Teuchos::ParameterList& list)
           "take the maximal (nsd-1)D face diameter of all faces for both parent elements",
           "maximal nD diameter of the neighboring elements",
           "maximal (n-1)D diameter of the internal face/edge",
-          "take the maximal volume eqivalent diameter of adjecent elements"),
+          "take the maximal volume equivalent diameter of adjacent elements"),
       tuple<EosElementLength>(EOS_he_max_diameter_to_opp_surf, EOS_he_max_dist_to_opp_surf,
           EOS_he_surf_with_max_diameter, EOS_hk_max_diameter, EOS_he_surf_diameter,
           EOS_he_vol_eq_diameter),
@@ -911,7 +911,7 @@ void Inpar::FLUID::set_valid_parameters(Teuchos::ParameterList& list)
         "time_averaging: The flow is not further specified, but time averaging of velocity and "
         "pressure field is performed\n"
         "channel_flow_of_height_2: For this flow, all statistical data could be averaged in the "
-        "homogenous planes - it is essentially a statistically one dimensional flow.\n"
+        "homogeneous planes - it is essentially a statistically one dimensional flow.\n"
         "lid_driven_cavity: For this flow, all statistical data are evaluated on the center lines "
         "of the xy-midplane, averaged only over time.\n"
         "backward_facing_step: For this flow, statistical data are evaluated on various lines, "
@@ -919,13 +919,13 @@ void Inpar::FLUID::set_valid_parameters(Teuchos::ParameterList& list)
         "square_cylinder: For this flow, statistical data are evaluated on various lines of the "
         "xy-midplane, averaged only over time.\n"
         "square_cylinder_nurbs: For this flow, statistical data are evaluated on various lines of "
-        "the xy-midplane, averaged over time and eventually in one hom.direction.\n"
+        "the xy-midplane, averaged over time and eventually in one home.direction.\n"
         "rotating_circular_cylinder_nurbs: For this flow, statistical data is computed in "
-        "concentric surfaces and averaged. in time and in one hom. direction\n"
+        "concentric surfaces and averaged. in time and in one home. direction\n"
         "rotating_circular_cylinder_nurbs_scatra: For this flow with mass transport, statistical "
-        "data is computed in concentric surfaces and averaged. in time and in one hom. direction\n"
+        "data is computed in concentric surfaces and averaged. in time and in one home. direction\n"
         "loma_channel_flow_of_height_2: For this low-Mach-number flow, all statistical data could "
-        "be averaged in the homogenous planes - it is essentially a statistically one dimensional "
+        "be averaged in the homogeneous planes - it is essentially a statistically one dimensional "
         "flow.\n"
         "loma_lid_driven_cavity: For this low-Mach-number flow, all statistical data are evaluated "
         "on the center lines of the xy-midplane, averaged only over time.\n"
@@ -935,7 +935,7 @@ void Inpar::FLUID::set_valid_parameters(Teuchos::ParameterList& list)
         "bubbly_channel_flow: Turbulent two-phase flow: bubbly channel flow, statistical data are "
         "averaged in homogeneous planes and over time.\n"
         "scatra_channel_flow_of_height_2: For this flow, all statistical data could be averaged in "
-        "the homogenous planes - it is essentially a statistically one dimensional flow.\n"
+        "the homogeneous planes - it is essentially a statistically one dimensional flow.\n"
         "decaying_homogeneous_isotropic_turbulence: For this flow, all statistical data could be "
         "averaged in the in all homogeneous directions  - it is essentially a statistically zero "
         "dimensional flow.\n"
@@ -959,7 +959,7 @@ void Inpar::FLUID::set_valid_parameters(Teuchos::ParameterList& list)
   std::vector<std::string> homdir_valid_input = {
       "not_specified", "x", "y", "z", "xy", "xz", "yz", "xyz"};
   std::string homdir_doc =
-      "Specify the homogenous direction(s) of a flow.\n"
+      "Specify the homogeneous direction(s) of a flow.\n"
       "not_specified: no homogeneous directions available, averaging is restricted to time "
       "averaging\n"
       "x: average along x-direction\n"
@@ -990,7 +990,7 @@ void Inpar::FLUID::set_valid_parameters(Teuchos::ParameterList& list)
       &fdyn_turbu);
 
   Core::Utils::int_parameter(
-      "CHA_NUMSUBDIVISIONS", 5, "Number of homogenious sampling planes in element", &fdyn_turbu);
+      "CHA_NUMSUBDIVISIONS", 5, "Number of homogeneous sampling planes in element", &fdyn_turbu);
 
   // HIT
   //--------------
@@ -1272,12 +1272,12 @@ void Inpar::FLUID::set_valid_parameters(Teuchos::ParameterList& list)
       "time_averaging: The flow is not further specified, but time averaging of velocity and "
       "pressure field is performed.\n"
       "channel_flow_of_height_2: For this flow, all statistical data could be averaged in \nthe "
-      "homogenous planes --- it is essentially a statistically one dimensional flow.\n"
+      "homogeneous planes --- it is essentially a statistically one dimensional flow.\n"
       "loma_channel_flow_of_height_2: For this low-Mach-number flow, all statistical data could be "
-      "averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional "
+      "averaged in \nthe homogeneous planes --- it is essentially a statistically one dimensional "
       "flow.\n"
       "scatra_channel_flow_of_height_2: For this flow, all statistical data could be averaged in "
-      "\nthe homogenous planes --- it is essentially a statistically one dimensional flow.\n";
+      "\nthe homogeneous planes --- it is essentially a statistically one dimensional flow.\n";
   Core::Utils::string_parameter(
       "CANONICAL_INFLOW", "no", canonical_inflow_doc, &fdyn_turbinf, canonical_inflow_valid_input);
 
@@ -1288,7 +1288,7 @@ void Inpar::FLUID::set_valid_parameters(Teuchos::ParameterList& list)
   std::vector<std::string> inflow_homdir_valid_input = {
       "not_specified", "x", "y", "z", "xy", "xz", "yz"};
   std::string inflow_homdir_doc =
-      "Specify the homogenous direction(s) of a flow\n"
+      "Specify the homogeneous direction(s) of a flow\n"
       "not_specified: no homogeneous directions available, averaging is restricted to time "
       "averaging.\n"
       "x: average along x-direction.\n"
@@ -1350,8 +1350,8 @@ void Inpar::LowMach::set_valid_parameters(Teuchos::ParameterList& list)
       "Maximum number of outer iterations before sampling (for turbulent flows only)",
       &lomacontrol);
   Core::Utils::double_parameter("CONVTOL", 1e-6, "Tolerance for convergence check", &lomacontrol);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &lomacontrol);
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &lomacontrol);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "Increment for writing solution", &lomacontrol);
+  Core::Utils::int_parameter("RESTARTEVERY", 1, "Increment for writing restart", &lomacontrol);
 
   std::vector<std::string> constthermpress_valid_input = {"No_energy", "No_mass", "Yes"};
   Core::Utils::string_parameter("CONSTHERMPRESS", "Yes",

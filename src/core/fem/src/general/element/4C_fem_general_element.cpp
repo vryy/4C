@@ -646,7 +646,7 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
   /* This method is intended to fill the LocationArray with the dofs
    * the element will assemble into. In the standard case implemented here
    * these dofs are the dofs of the element itself. For some special conditions (e.g.
-   * the weak dirichlet boundary condtion) a surface element will assemble
+   * the weak dirichlet boundary condition) a surface element will assemble
    * into the dofs of a volume element. These elements need to overwrite this
    * method.
    */
@@ -945,7 +945,7 @@ void Core::Elements::FaceElement::pack(Core::Communication::PackBuffer& data) co
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
-  // add base class Discret::Elememt
+  // add base class Discret::Element
   Core::Elements::Element::pack(data);
   // add lface_master_
   add_to_pack(data, lface_master_);

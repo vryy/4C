@@ -102,16 +102,16 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   tolfres_ = sdyn_micro.get<double>("TOLRES");
   toldisi_ = sdyn_micro.get<double>("TOLDISP");
-  printscreen_ = (ioflags.get<int>("STDOUTEVRY"));
+  printscreen_ = (ioflags.get<int>("STDOUTEVERY"));
 
 
   restart_ = Global::Problem::instance()->restart();
-  restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
+  restartevry_ = sdyn_macro.get<int>("RESTARTEVERY");
   iodisp_ = ioflags.get<bool>("STRUCT_DISP");
-  resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");
+  resevrydisp_ = sdyn_micro.get<int>("RESULTSEVERY");
   auto iostress = Teuchos::getIntegralValue<Inpar::Solid::StressType>(ioflags, "STRUCT_STRESS");
   iostress_ = iostress;
-  resevrystrs_ = sdyn_micro.get<int>("RESULTSEVRY");
+  resevrystrs_ = sdyn_micro.get<int>("RESULTSEVERY");
   auto iostrain = Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioflags, "STRUCT_STRAIN");
   iostrain_ = iostrain;
   auto ioplstrain =
@@ -921,7 +921,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     bool& build_stiff)
 {
   // determine macroscopic parameters via averaging (homogenization) of
-  // microscopic features accoring to Kouznetsova, Miehe etc.
+  // microscopic features according to Kouznetsova, Miehe etc.
   // this was implemented against the background of serial usage
   // -> if a parallel version of microscale simulations is EVER wanted,
   // carefully check if/what/where things have to change

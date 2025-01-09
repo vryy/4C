@@ -24,7 +24,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*
-Functions to catch implementation erros in debug mode
+Functions to catch implementation errors in debug mode
 */
 namespace
 {
@@ -1229,7 +1229,7 @@ void Cut::Mesh::find_facet_positions()
             {
               case Point::undecided:
                 if (undecided.count(nc) == 0)
-                  FOUR_C_THROW("uncomplete set of undecided volume cells");
+                  FOUR_C_THROW("incomplete set of undecided volume cells");
                 break;
               case Point::oncutsurface:
                 FOUR_C_THROW("illegal volume position");

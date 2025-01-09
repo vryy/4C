@@ -156,7 +156,7 @@ void Inpar::Cardiovascular0D::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::double_parameter(
       "L_ven_pul", 0.0, "pulmonary venous inertance", &cardvasc0dsyspulcirc);
 
-  // intital conditions
+  // initial conditions
   Core::Utils::double_parameter(
       "q_vin_l_0", 0.0, "initial left ventricular in-flux", &cardvasc0dsyspulcirc);
   Core::Utils::double_parameter(

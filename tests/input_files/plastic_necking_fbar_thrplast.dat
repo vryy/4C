@@ -27,8 +27,8 @@ FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        0.5
 NUMSTEP                         200000
 MAXTIME                         7.0
@@ -53,7 +53,7 @@ TOLDELTALP                      1.e-8
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 1.0 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93 TOL 1.0e-06
+MAT 1 MAT_Struct_ThermoPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 1.0 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93 TOL 1.0e-06
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ------------------------------------DESIGN POINT DIRICH CONDITIONS

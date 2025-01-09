@@ -469,7 +469,7 @@ namespace FSI
      *  As a consequence, slave vectors are only allowed to contain inner DOFs. Only the master
      * vector is allowed to contain interface DOFs.
      *
-     *  The user needs to indicate in the function call, wheter the input vectors have already been
+     *  The user needs to indicate in the function call, whether the input vectors have already been
      * stripped off the condensed DOFs or if this has to happen internally.
      *
      *  All vectors are put together.
@@ -479,7 +479,7 @@ namespace FSI
      *  @param [in] sv Structural DOFs
      *  @param [in] fv Fluid DOFs
      *  @param [in] av ALE DOfs
-     *  @param [in] slave_vectors_contain_interface_dofs  Flag to indicate wheter all vectors
+     *  @param [in] slave_vectors_contain_interface_dofs  Flag to indicate whether all vectors
      * contain all DOFs (true) or slave vectors contain only inner DOFs (false)
      */
     virtual void combine_field_vectors(Core::LinAlg::Vector<double>& v,
@@ -746,7 +746,7 @@ namespace FSI
     //@{
 
     //! do the auxiliary step needed for error estimation
-    virtual void time_step_auxiliar();
+    virtual void time_step_auxiliary();
 
     //! method to adapt time step size
     void adapt_time_step_size();
@@ -940,7 +940,7 @@ namespace FSI
 
     //@}
 
-    /// dof row map splitted in (field) blocks
+    /// dof row map split in (field) blocks
     Core::LinAlg::MultiMapExtractor blockrowdofmap_;
 
     //! @name Some NOX related stuff

@@ -219,7 +219,7 @@ namespace Solid
        *
        * To scale the old state of the previous time step, see update_step_state.
        *
-       * \return Boolean to indicate sucess (true) or error (false)
+       * \return Boolean to indicate success (true) or error (false)
        *
        * \date 07/2016
        * \author hiermeier
@@ -233,7 +233,7 @@ namespace Solid
        * \param[in] timefac_np Time factor of the underlying structural time integrator for the new
        *                        state at \f$t_{n+1}\f$.
        *
-       * \return Boolean to indicate sucess (true) or error (false)
+       * \return Boolean to indicate success (true) or error (false)
        */
       virtual bool assemble_jacobian(
           Core::LinAlg::SparseOperator& jac, const double& timefac_np) const = 0;

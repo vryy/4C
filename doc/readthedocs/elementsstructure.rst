@@ -11,12 +11,12 @@ The following materials are used in combination with Structure elements in the i
 - MAT_ViscoElastHyper
 - MAT_BeamReissnerElastHyper
 - MAT_LinElast1D
-- MAT_Struct_ThrStVenantK
+- MAT_Struct_ThermoStVenantK
 - MAT_MultiplicativeSplitDefgradElastHyper
 - MAT_Membrane_ElastHyper
 - MAT_PlasticElastHyper
 - MAT_Struct_AAANeoHooke
-- MAT_Struct_ThrPlasticLinElast
+- MAT_Struct_ThermoPlasticLinElast
 - MAT_BeamKirchhoffTorsionFreeElastHyper
 - MAT_ConstraintMixture
 - MAT_Struct_Multiscale
@@ -30,7 +30,7 @@ The following materials are used in combination with Structure elements in the i
 - MAT_ScDepInterp
 - MAT_VISCOANISO
 - MAT_Struct_PlasticLinElast
-- MAT_Struct_ThrPlasticHyperElast
+- MAT_Struct_ThermoPlasticHyperElast
 - MAT_Struct_Spring
 - MAT_Muscle_Weickenmeier
 - MAT_Struct_AAAGasser

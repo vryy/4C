@@ -14,8 +14,8 @@ LINEAR_SOLVER                   1
 DYNAMICTYPE                      Stationary
 NUMSTEP                         10
 TIMESTEP                        0.1
-RESTARTEVRY                     2
-RESULTSEVRY                     2
+RESTARTEVERY                     2
+RESULTSEVERY                     2
 SOLVESCATRA                     no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Arterial_Network_Solver

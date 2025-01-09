@@ -47,8 +47,8 @@ STARTFUNCNO                     3
 NONLINITER                      Newton
 ITEMAX                          5
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     20
+RESULTSEVERY                           1
+RESTARTEVERY                     20
 NUMSTEP                         3
 NUMSTASTEPS                     0
 MAXTIME                         1000.0

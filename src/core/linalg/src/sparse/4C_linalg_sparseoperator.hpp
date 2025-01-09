@@ -109,7 +109,7 @@ namespace Core::LinAlg
     /*!
 
     This is an individual call.  Will only assemble locally and will never
-    do any commmunication.  All values that cannot be assembled locally will
+    do any communication.  All values that cannot be assembled locally will
     be ignored.  Will use the communicator and rowmap from matrix to
     determine ownerships.  Local matrix Aele has to be square.
 
@@ -162,7 +162,7 @@ namespace Core::LinAlg
       the matrix around and assemble into the Filled() matrix.
 
       \note The user must provide an \b additional input vector 'lmcol'
-      containing the column gids for assembly seperately!
+      containing the column gids for assembly separately!
 
       The first parameter \p eid is purely for performance enhancements. Plain
       sparse matrices do not know about finite elements and do not use the

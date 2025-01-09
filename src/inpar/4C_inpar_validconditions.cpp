@@ -648,7 +648,7 @@ Input::valid_conditions()
   volumeconstraint->add_component(std::make_shared<IntComponent>("ConditionID"));
   volumeconstraint->add_component(
       std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  volumeconstraint->add_component(std::make_shared<RealComponent>("activTime"));
+  volumeconstraint->add_component(std::make_shared<RealComponent>("activeTime"));
   volumeconstraint->add_component(std::make_shared<SelectionComponent>("projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true));
@@ -667,7 +667,7 @@ Input::valid_conditions()
   volumeconstraintpen->add_component(std::make_shared<IntComponent>("ConditionID"));
   volumeconstraintpen->add_component(
       std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  volumeconstraintpen->add_component(std::make_shared<RealComponent>("activTime"));
+  volumeconstraintpen->add_component(std::make_shared<RealComponent>("activeTime"));
   volumeconstraintpen->add_component(std::make_shared<RealComponent>("penalty"));
   volumeconstraintpen->add_component(std::make_shared<RealComponent>("rho"));
   volumeconstraintpen->add_component(std::make_shared<SelectionComponent>("projection", "none",
@@ -687,7 +687,7 @@ Input::valid_conditions()
   areaconstraint->add_component(std::make_shared<IntComponent>("ConditionID"));
   areaconstraint->add_component(
       std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  areaconstraint->add_component(std::make_shared<RealComponent>("activTime"));
+  areaconstraint->add_component(std::make_shared<RealComponent>("activeTime"));
 
   condlist.push_back(areaconstraint);
 
@@ -730,7 +730,7 @@ Input::valid_conditions()
   areaconstraint2D->add_component(std::make_shared<IntComponent>("ConditionID"));
   areaconstraint2D->add_component(
       std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  areaconstraint2D->add_component(std::make_shared<RealComponent>("activTime"));
+  areaconstraint2D->add_component(std::make_shared<RealComponent>("activeTime"));
   condlist.push_back(areaconstraint2D);
 
   /*--------------------------------------------------------------------*/
@@ -756,7 +756,7 @@ Input::valid_conditions()
   nodeonplaneconst3D->add_component(std::make_shared<RealComponent>("amplitude"));
   nodeonplaneconst3D->add_component(
       std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  nodeonplaneconst3D->add_component(std::make_shared<RealComponent>("activTime"));
+  nodeonplaneconst3D->add_component(std::make_shared<RealComponent>("activeTime"));
   nodeonplaneconst3D->add_component(std::make_shared<IntVectorComponent>("planeNodes", 3));
   nodeonplaneconst3D->add_component(std::make_shared<SelectionComponent>("control", "rel",
       Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"), true));
@@ -775,7 +775,7 @@ Input::valid_conditions()
   nodemasterconst3D->add_component(std::make_shared<RealComponent>("amplitude"));
   nodemasterconst3D->add_component(
       std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  nodemasterconst3D->add_component(std::make_shared<RealComponent>("activTime"));
+  nodemasterconst3D->add_component(std::make_shared<RealComponent>("activeTime"));
   nodemasterconst3D->add_component(std::make_shared<IntComponent>("masterNode"));
   nodemasterconst3D->add_component(std::make_shared<RealVectorComponent>("direction", 3));
   nodemasterconst3D->add_component(std::make_shared<SelectionComponent>("value", "disp",
@@ -797,7 +797,7 @@ Input::valid_conditions()
   nodemasterconst3Dpen->add_component(std::make_shared<RealComponent>("amplitude"));
   nodemasterconst3Dpen->add_component(
       std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  nodemasterconst3Dpen->add_component(std::make_shared<RealComponent>("activTime"));
+  nodemasterconst3Dpen->add_component(std::make_shared<RealComponent>("activeTime"));
   nodemasterconst3Dpen->add_component(std::make_shared<RealComponent>("penalty"));
   nodemasterconst3Dpen->add_component(std::make_shared<IntComponent>("masterNode"));
   nodemasterconst3Dpen->add_component(std::make_shared<RealVectorComponent>("direction", 3));
@@ -823,7 +823,7 @@ Input::valid_conditions()
   nodeonlineconst2D->add_component(std::make_shared<SelectionComponent>("control value", "dist",
       Teuchos::tuple<std::string>("dist", "angle"), Teuchos::tuple<std::string>("dist", "angle"),
       true));
-  nodeonlineconst2D->add_component(std::make_shared<RealComponent>("activTime"));
+  nodeonlineconst2D->add_component(std::make_shared<RealComponent>("activeTime"));
   condlist.push_back(nodeonlineconst2D);
 
   /*--------------------------------------------------------------------*/

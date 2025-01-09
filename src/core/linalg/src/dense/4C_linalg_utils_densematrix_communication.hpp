@@ -27,7 +27,7 @@ namespace Core::LinAlg
 
    This template gathers information provided in sdata on a subset of
    processors tprocs, where the length of the array tprocs is ntargetprocs.
-   The redistributed data is returned in rdata which has appropiate size
+   The redistributed data is returned in rdata which has appropriate size
    on output (size of rdata on input is arbitrary). ntargetprocs can be
    one to reduce data to one proc, it also can be equal to the total number
    of processors to make sdata redundant on all procs.
@@ -103,7 +103,7 @@ namespace Core::LinAlg
 
    This template gathers information provided in sdata on a subset of
    processors tprocs, where the length of the array tprocs is ntargetprocs.
-   The redistributed data is returned in rdata which has appropiate size
+   The redistributed data is returned in rdata which has appropriate size
    on output (size of rdata on input is arbitrary). ntargetprocs can be
    one to reduce data to one proc, it also can be equal to the total number
    of processors to make sdata redundant on all procs.
@@ -179,7 +179,7 @@ namespace Core::LinAlg
 
    This template gathers information provided in sdata on a subset of
    processors tprocs, where the length of the array tprocs is ntargetprocs.
-   The redistributed data is returned in rdata which has appropiate size
+   The redistributed data is returned in rdata which has appropriate size
    on output (size of rdata on input is arbitrary). ntargetprocs can be
    one to reduce data to one proc, it also can be equal to the total number
    of processors to make sdata redundant on all procs.
@@ -255,7 +255,7 @@ namespace Core::LinAlg
 
    This template gathers information provided in sdata on a subset of
    processors tprocs, where the length of the array tprocs is ntargetprocs.
-   The redistributed data is returned in rdata which has appropiate size
+   The redistributed data is returned in rdata which has appropriate size
    on output (size of rdata on input is arbitrary). ntargetprocs can be
    one to reduce data to one proc, it also can be equal to the total number
    of processors to make sdata redundant on all procs.
@@ -336,7 +336,7 @@ namespace Core::LinAlg
 
    This template gathers information provided in sdata on a subset of
    processors tprocs, where the length of the array tprocs is ntargetprocs.
-   The redistributed data is returned in rdata which has appropiate size
+   The redistributed data is returned in rdata which has appropriate size
    on output (size of rdata on input is arbitrary). ntargetprocs can be
    one to reduce data to one proc, it also can be equal to the total number
    of processors to make sdata redundant on all procs.

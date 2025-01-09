@@ -16,8 +16,8 @@ TIMEINTEGR                      Af_Gen_Alpha
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
-RESULTSEVRY                     1
-RESTARTEVRY                     5
+RESULTSEVERY                     1
+RESTARTEVERY                     5
 NUMSTEP                         7
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
@@ -66,14 +66,14 @@ INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 MAXTIME                         1000
 NUMSTEP                         7
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 THETA                           0.66
 TIMEINTEGR Gen_Alpha
 TIMESTEP                        1.0
 VELOCITYFIELD                   Navier_Stokes
 CALCFLUX_DOMAIN                 total
 OUTPUTSCALARS                   entire_domain
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 MATID                           5
 ALPHA_F                         1.0
 ALPHA_M                         1.0

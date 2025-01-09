@@ -169,7 +169,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void run_pre_compute_fand_jacobian(Core::LinAlg::Vector<double>& rhs,
+        virtual void run_pre_compute_f_and_jacobian(Core::LinAlg::Vector<double>& rhs,
             Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector<double>& x,
             const NOX::Nln::LinearSystem& linsys)
         {
@@ -183,7 +183,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void run_post_compute_fand_jacobian(Core::LinAlg::Vector<double>& rhs,
+        virtual void run_post_compute_f_and_jacobian(Core::LinAlg::Vector<double>& rhs,
             Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector<double>& x,
             const NOX::Nln::LinearSystem& linsys)
         {

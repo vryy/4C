@@ -79,7 +79,7 @@ namespace Adapter
   FSI is quite demanding when it comes to knowledge about the internal details
   of a fluid algorithm. Furthermore there are different coupling versions, all
   of them requiring a slightly different view. Yet these views have a lot in
-  common, so a common adapter clas seems appropriate.
+  common, so a common adapter class seems appropriate.
 
   We use this adapter interface instead of deriving from the fluid algorithm
   class. The good thing is that this way we keep control over the exported
@@ -363,7 +363,7 @@ namespace Adapter
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual void time_step_auxiliar() = 0;
+    virtual void time_step_auxiliary() = 0;
 
     /*! Indicate norms of local discretization error
      *

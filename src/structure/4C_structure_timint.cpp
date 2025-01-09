@@ -87,16 +87,16 @@ Solid::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       divconnumfinestep_(0),
       sdynparams_(sdynparams),
       output_(output),
-      printscreen_(ioparams.get<int>("STDOUTEVRY")),
+      printscreen_(ioparams.get<int>("STDOUTEVERY")),
       printlogo_(bool(printscreen_)),  // no std out no logo
       printiter_(true),                // ADD INPUT PARAMETER
       outputeveryiter_(ioparams.get<bool>("OUTPUT_EVERY_ITER")),
       oei_filecounter_(ioparams.get<int>("OEI_FILE_COUNTER")),
-      writerestartevery_(timeparams.get<int>("RESTARTEVRY")),
+      writerestartevery_(timeparams.get<int>("RESTARTEVERY")),
       writeele_(ioparams.get<bool>("STRUCT_ELE")),
       writestate_(ioparams.get<bool>("STRUCT_DISP")),
       writevelacc_(ioparams.get<bool>("STRUCT_VEL_ACC")),
-      writeresultsevery_(timeparams.get<int>("RESULTSEVRY")),
+      writeresultsevery_(timeparams.get<int>("RESULTSEVERY")),
       writestress_(Teuchos::getIntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_STRESS")),
       writecouplstress_(
           Teuchos::getIntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_COUPLING_STRESS")),
@@ -105,7 +105,7 @@ Solid::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
           Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN")),
       writeoptquantity_(Teuchos::getIntegralValue<Inpar::Solid::OptQuantityType>(
           ioparams, "STRUCT_OPTIONAL_QUANTITY")),
-      writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
+      writeenergyevery_(sdynparams.get<int>("RESEVERYERGY")),
       writesurfactant_(ioparams.get<bool>("STRUCT_SURFACTANT")),
       writerotation_(ioparams.get<bool>("OUTPUT_ROT")),
       energyfile_(nullptr),
@@ -383,7 +383,7 @@ void Solid::TimInt::create_fields()
 }
 
 /*----------------------------------------------------------------------*/
-/* Set intitial fields in structure (e.g. initial velocities */
+/* Set initial fields in structure (e.g. initial velocities */
 void Solid::TimInt::set_initial_fields()
 {
   //***************************************************
@@ -904,7 +904,7 @@ void Solid::TimInt::apply_mesh_initialization(
   {
     int gid = allreduceslavemap->GID(index);
 
-    // only do someting for nodes in my column map
+    // only do something for nodes in my column map
     int ilid = discret_->node_col_map()->LID(gid);
     if (ilid < 0) continue;
 
@@ -1132,7 +1132,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
 void Solid::TimInt::determine_mass()
 {
   FOUR_C_THROW(
-      "(Re-)Evaluation of only the mass matrix and intertial forces is "
+      "(Re-)Evaluation of only the mass matrix and inertial forces is "
       "not implemented in the base class.\n Set 'MASSLIN' to 'No' in "
       "--STRUCTURAL DYNAMIC if you want to use the chosen timint scheme.");
 }
@@ -1414,7 +1414,7 @@ void Solid::TimInt::update_step_contact_vum()
       BN->multiply(true, *btemp1, *btemp2);
       Core::LinAlg::export_to(*btemp2, *b);
 
-      // operatior c
+      // operator c
       std::shared_ptr<Core::LinAlg::Vector<double>> ctemp =
           Core::LinAlg::create_vector(*slavenodemap, true);
       std::shared_ptr<Core::LinAlg::Vector<double>> c =
@@ -2029,7 +2029,7 @@ void Solid::TimInt::output_step(const bool forced_writerestart)
 /*-----------------------------------------------------------------------------*
  * write GMSH output of displacement field
  *-----------------------------------------------------------------------------*/
-void Solid::TimInt::write_gmsh_struc_output_step()
+void Solid::TimInt::write_gmsh_struct_output_step()
 {
   if (not gmsh_out_) return;
 
@@ -2662,9 +2662,9 @@ void Solid::TimInt::output_contact()
     inten = (*energies)(0);
 
     //-------------------------Calculation of total external energy
-    double exten = 0.0;
+    double extent = 0.0;
     // WARNING: This will only work with dead loads!!!
-    // fext_->Dot(*dis_, &exten);
+    // fext_->Dot(*dis_, &extent);
 
     //----------------------------------------Print results to file
     if (emtype == Inpar::CONTACT::output_file || emtype == Inpar::CONTACT::output_both)
@@ -2707,7 +2707,7 @@ void Solid::TimInt::output_contact()
           fprintf(MyFile, "% e\t", timen);
           for (int i = 0; i < 3; i++) fprintf(MyFile, "% e\t", linmom[i]);
           for (int i = 0; i < 3; i++) fprintf(MyFile, "% e\t", angmom[i]);
-          fprintf(MyFile, "% e\t% e\t% e\t% e\n", kinen, inten, exten, kinen + inten - exten);
+          fprintf(MyFile, "% e\t% e\t% e\t% e\n", kinen, inten, extent, kinen + inten - extent);
           fclose(MyFile);
         }
         else
@@ -2727,9 +2727,9 @@ void Solid::TimInt::output_contact()
         printf("\nMECHANICAL ENERGIES:");
         printf("\nE_kinetic \t %e", kinen);
         printf("\nE_internal \t %e", inten);
-        printf("\nE_external \t %e", exten);
+        printf("\nE_external \t %e", extent);
         printf("\n------------------------------");
-        printf("\nE_total \t %e", kinen + inten - exten);
+        printf("\nE_total \t %e", kinen + inten - extent);
         printf("\n******************************");
 
         printf("\n\n********************************************");

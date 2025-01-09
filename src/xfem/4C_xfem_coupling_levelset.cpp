@@ -710,7 +710,7 @@ double XFEM::LevelSetCoupling::funct_implementation(
         std::cout << "armijo: " << armijo << std::endl;
 
         FOUR_C_THROW(
-            "did not converge properly, intial guess not good enough - increase helixal height "
+            "did not converge properly, initial guess not good enough - increase helixal height "
             "alpha!");
       }
     }

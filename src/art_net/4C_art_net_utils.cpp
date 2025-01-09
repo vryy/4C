@@ -26,7 +26,7 @@ std::shared_ptr<Adapter::ArtNet> Arteries::Utils::create_algorithm(
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
     Core::IO::DiscretizationWriter& output)
 {
-  // Creation of Coupled Problem algortihm.
+  // Creation of Coupled Problem algorithm.
   std::shared_ptr<Adapter::ArtNet> algo = nullptr;
 
   // -------------------------------------------------------------------

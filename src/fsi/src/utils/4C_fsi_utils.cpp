@@ -96,7 +96,7 @@ FSI::Utils::SlideAleUtils::SlideAleUtils(std::shared_ptr<Core::FE::Discretizatio
   std::map<int, std::map<int, Core::Nodes::Node*>> dummy2;  // dummy map
   std::map<int, Core::Nodes::Node*> structmnodes;  // partial map of sticking structure nodes
   std::map<int, Core::Nodes::Node*> structdnodes;  // partial map of centerdisp structure nodes
-  std::map<int, std::map<int, Core::Nodes::Node*>> structgnodes;  // complete map of strucutre nodes
+  std::map<int, std::map<int, Core::Nodes::Node*>> structgnodes;  // complete map of structure nodes
 
   // initialize struct objects in interface
   Core::Conditions::find_condition_objects(
@@ -111,14 +111,14 @@ FSI::Utils::SlideAleUtils::SlideAleUtils(std::shared_ptr<Core::FE::Discretizatio
 
   std::vector<int> slideeleidvector;
 
-  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator eit;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator it;
   std::map<int, std::map<int, std::shared_ptr<Core::Elements::Element>>>::iterator meit;
 
-  for (eit = structmelements.begin(); eit != structmelements.end(); eit++)
+  for (it = structmelements.begin(); it != structmelements.end(); it++)
   {
     int err = 0;
     for (meit = istructslideles_.begin(); meit != istructslideles_.end(); meit++)
-      err += meit->second.erase((*eit).first);
+      err += meit->second.erase((*it).first);
     if (!err) FOUR_C_THROW("Non sliding interface has to be a subset of FSI-interface or empty");
   }
 
@@ -149,11 +149,11 @@ FSI::Utils::SlideAleUtils::SlideAleUtils(std::shared_ptr<Core::FE::Discretizatio
   ifluidslidnodes_ = fluidnodes;
   ifluidslideles_ = fluidelements;
 
-  for (eit = fluidmelements.begin(); eit != fluidmelements.end(); eit++)
+  for (it = fluidmelements.begin(); it != fluidmelements.end(); it++)
   {
     int err = 0;
     for (meit = ifluidslideles_.begin(); meit != ifluidslideles_.end(); meit++)
-      err += meit->second.erase((*eit).first);
+      err += meit->second.erase((*it).first);
     if (!err) FOUR_C_THROW("Non sliding interface has to be a subset of FSI-interface or empty");
   }
 
@@ -605,7 +605,7 @@ void FSI::Utils::SlideAleUtils::redundant_elements(
 
   std::map<int, std::map<int, std::shared_ptr<Core::Elements::Element>>>::iterator mapit;
   // build redundant version istructslideles_;
-  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator eit;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator it;
   int dim = Global::Problem::instance()->n_dim();
 
   for (int i = 0; i <= maxid_; ++i)
@@ -613,10 +613,10 @@ void FSI::Utils::SlideAleUtils::redundant_elements(
     std::vector<int> vstruslideleids;  // vector for ele ids
     if (istructslideles_.find(i) != istructslideles_.end())
     {
-      for (eit = istructslideles_[i].begin(); eit != istructslideles_[i].end(); eit++)
+      for (it = istructslideles_[i].begin(); it != istructslideles_[i].end(); it++)
       {
-        if (Core::Communication::my_mpi_rank(interfacedis.get_comm()) == (*eit).second->owner())
-          vstruslideleids.push_back(eit->first);
+        if (Core::Communication::my_mpi_rank(interfacedis.get_comm()) == (*it).second->owner())
+          vstruslideleids.push_back(it->first);
       }
     }
     int globsum = 0;
@@ -651,9 +651,9 @@ void FSI::Utils::SlideAleUtils::redundant_elements(
 
     if (ifluidslideles_.find(i) != ifluidslideles_.end())
     {
-      for (eit = ifluidslideles_[i].begin(); eit != ifluidslideles_[i].end(); eit++)
+      for (it = ifluidslideles_[i].begin(); it != ifluidslideles_[i].end(); it++)
       {
-        Core::Elements::Element* tmpele = interfacedis.g_element(eit->first + foffset);
+        Core::Elements::Element* tmpele = interfacedis.g_element(it->first + foffset);
         if (dim == 3)
         {
           ifluidslidstructeles_[i][tmpele->id()] =

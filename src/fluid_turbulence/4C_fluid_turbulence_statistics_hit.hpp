@@ -150,7 +150,7 @@ namespace FLD
     //! output steps for energy spectrum of decaying case
     std::shared_ptr<std::vector<int>> outsteps_;
 
-    //! toogle vectors: sums are computed by scalarproducts
+    //! toggle vectors: sums are computed by scalarproducts
     std::shared_ptr<Core::LinAlg::Vector<double>> toggleu_;
     std::shared_ptr<Core::LinAlg::Vector<double>> togglev_;
     std::shared_ptr<Core::LinAlg::Vector<double>> togglew_;

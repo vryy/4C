@@ -72,7 +72,7 @@ Mat::MatListChemotaxis::MatListChemotaxis() : MatList(), paramschemo_(nullptr) {
 
 
 /*----------------------------------------------------------------------*
- | construct the material object given material paramete     thon 06/15 |
+ | construct the material object given material parameter     thon 06/15 |
  *----------------------------------------------------------------------*/
 Mat::MatListChemotaxis::MatListChemotaxis(Mat::PAR::MatListChemotaxis* params)
     : MatList(params), paramschemo_(params)

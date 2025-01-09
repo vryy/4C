@@ -33,10 +33,10 @@ namespace Mat
       const int diffusion_coefficient_temperature_scaling_funct_num_;
 
       //! number of parameters for diffusion coefficient
-      const int number_diffusion_coefficent_params_;
+      const int number_diffusion_coefficient_params_;
 
       //! parameters for diffusion coefficient
-      const std::vector<double> diffusion_coefficent_params_;
+      const std::vector<double> diffusion_coefficient_params_;
 
       //! number of parameters for scaling function describing temperature dependence of diffusion
       //! coefficient
@@ -206,7 +206,7 @@ namespace Mat
     //! return parameters for diffusion coefficient
     const std::vector<double>& diffusion_coefficient_params() const
     {
-      return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())->diffusion_coefficent_params_;
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())->diffusion_coefficient_params_;
     };
 
     //! return parameters for temperature scaling function for diffusion coefficient

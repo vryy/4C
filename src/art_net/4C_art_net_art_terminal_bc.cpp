@@ -196,7 +196,7 @@ void Arteries::Utils::solve_prescribed_terminal_bc(Core::FE::Discretization& act
     }
     else
     {
-      FOUR_C_THROW("%s, is an unimplimented type of coupling", Type.c_str());
+      FOUR_C_THROW("%s, is an unimplemented type of coupling", Type.c_str());
       exit(1);
     }
   }
@@ -273,7 +273,7 @@ void Arteries::Utils::solve_prescribed_terminal_bc(Core::FE::Discretization& act
         Wfnp = Wfnp - f / dfdw;
         // step 4
         f = pow(2.0 * dens * Ao / beta, 2) * pow((Wfnp - Wb) / 8.0, 4) * (Wfnp + Wb) / 2.0 - BCin;
-        // an escape routine to prevent infinit loop
+        // an escape routine to prevent infinite loop
         itrs++;
         if (itrs >= 100)
         {
@@ -377,7 +377,7 @@ void Arteries::Utils::solve_prescribed_terminal_bc(Core::FE::Discretization& act
         // step 4
         f = pow(2.0 * dens * Ao / beta, 2) * pow((Wf - Wbnp) / 8.0, 4) * (Wf + Wbnp) / 2.0 - BCin;
 
-        // a small routine to prevent infinit loop
+        // a small routine to prevent infinite loop
         itrs++;
         if (itrs >= 30)
         {
@@ -488,7 +488,7 @@ void Arteries::Utils::solve_prescribed_terminal_bc(Core::FE::Discretization& act
     else
     {
       std::string str = (condition->parameters().get<std::string>("ReturnedVariable"));
-      FOUR_C_THROW("%s, is an unimplimented type of coupling", str.c_str());
+      FOUR_C_THROW("%s, is an unimplemented type of coupling", str.c_str());
       exit(1);
     }
     std::stringstream returnedBCwithId;
@@ -651,7 +651,7 @@ void Arteries::Utils::solve_expl_windkessel_bc(Core::FE::Discretization& actdis,
     // -----------------------------------------------------------------
     if (wk_type == "R")  // a resister with a peripheral Pressure (Pout)
     {
-      FOUR_C_THROW("So far, only the 3 element windkessel model is implimented\n");
+      FOUR_C_THROW("So far, only the 3 element windkessel model is implemented\n");
       exit(1);
       // ---------------------------------------------------------------
       // Read in the wind kessel parameters
@@ -713,7 +713,7 @@ void Arteries::Utils::solve_expl_windkessel_bc(Core::FE::Discretization& actdis,
         count++;
         if (count > 40)
         {
-          FOUR_C_THROW("1 windkessel elemenet (resistive) boundary condition didn't converge!");
+          FOUR_C_THROW("1 windkessel element (resistive) boundary condition didn't converge!");
           exit(1);
         }
       }
@@ -724,7 +724,7 @@ void Arteries::Utils::solve_expl_windkessel_bc(Core::FE::Discretization& actdis,
     }  // if(wk_type == "R")
     else if (wk_type == "RC")  // an RC circuit with a peripheral Pressure (Pout)
     {
-      FOUR_C_THROW("So far, only the 3 element windkessel model is implimented\n");
+      FOUR_C_THROW("So far, only the 3 element windkessel model is implemented\n");
       exit(1);
 
       // ---------------------------------------------------------------
@@ -874,7 +874,7 @@ void Arteries::Utils::solve_expl_windkessel_bc(Core::FE::Discretization& actdis,
       // Calculate Wb (backward characteristic wave speed)
       // ---------------------------------------------------------------
 
-      // define inportant valriable
+      // define important valriable
       double Pc = 0.0;
       double Qout = 0.0;
       double F = 0.0;
@@ -918,7 +918,7 @@ void Arteries::Utils::solve_expl_windkessel_bc(Core::FE::Discretization& actdis,
     }  // if (wk_type == "RCR")
     else if (wk_type == "RCRL")  // four element windkessel model
     {
-      FOUR_C_THROW("So far, only the 3 element windkessel model is implimented\n");
+      FOUR_C_THROW("So far, only the 3 element windkessel model is implemented\n");
       exit(1);
       // ---------------------------------------------------------------
       // Read in the wind kessel parameters
@@ -1002,7 +1002,7 @@ void Arteries::Utils::solve_expl_windkessel_bc(Core::FE::Discretization& actdis,
     }  // if (wk_type == "RCRL")
     else if (wk_type == "none")
     {
-      FOUR_C_THROW("So far, only the 3 element windkessel model is implimented\n");
+      FOUR_C_THROW("So far, only the 3 element windkessel model is implemented\n");
       exit(1);
     }
     else

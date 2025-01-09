@@ -63,7 +63,7 @@ namespace FLD
 
     /*!
     \brief Store scatra discretization for passive scalar transport
-    to caculate mean values of multifractal subgrid-scales modeling
+    to calculate mean values of multifractal subgrid-scales modeling
     parameters
     */
     void store_scatra_discret_and_params(std::shared_ptr<Core::FE::Discretization> scatradis,
@@ -220,7 +220,7 @@ namespace FLD
 
     /*!
     \brief Compute a time average of the mean values for turbulent
-    passive scalar transprt over all steps of the sampling period so far.
+    passive scalar transport over all steps of the sampling period so far.
     Dump the result to file.
 
     */
@@ -261,7 +261,7 @@ namespace FLD
     };
 
    private:
-    //! direction normal to homogenous plane
+    //! direction normal to homogeneous plane
     int dim_;
 
     //! number of elements in sample plane
@@ -336,7 +336,7 @@ namespace FLD
     //! pointer to vel/pres^2 field (space allocated in constructor)
     std::shared_ptr<Core::LinAlg::Vector<double>> squaredvelnp_;
 
-    //! toogle vectors --- sums are computed by scalarproducts
+    //! toggle vectors --- sums are computed by scalarproducts
     //  with these toggle vectors
     std::shared_ptr<Core::LinAlg::Vector<double>> toggleu_;
     std::shared_ptr<Core::LinAlg::Vector<double>> togglev_;

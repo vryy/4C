@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#define BASICTOL 1e-14  // basic tolerance for the cut, limited by double precicion!
+#define BASICTOL 1e-14  // basic tolerance for the cut, limited by double precision!
 
 // derived tolerances
 //--> do not change the relation of these tolerances from the basictolerance, if there isn't a
@@ -19,7 +19,7 @@
 // to check l2-norm of vector with 3-entries of magnitude 1.0!
 #define LINSOLVETOL (BASICTOL / sqrt(3) * 10.0)
 // sqrt(3) because of l2 norm with 3 values in vector
-// 10 because scaled with norminf(x) || if norminf(x)=1.0 --> for double precicion 1.(15 digits)
+// 10 because scaled with norminf(x) || if norminf(x)=1.0 --> for double precision 1.(15 digits)
 // REMARK: using this tolerance for increments in reference coordinate system norminf(x)=1!!!
 
 // to define general tolerance for position represented by a vector of doubles!
@@ -27,7 +27,7 @@
 
 
 #define REFERENCETOL \
-  (BASICTOL * 10.0)  // tolerance to check coordinates in the relative coordinate system (assumtion
+  (BASICTOL * 10.0)  // tolerance to check coordinates in the relative coordinate system (assumption
                      // is that abs(max(value)) = 1.0)!
 
 // Not in use anymore.
@@ -56,12 +56,12 @@
 // whether any of the four coefficients are zero
 #define TOL_EQN_PLANE 1e-12
 
-// For moment fitting, during line integration of base functions, if normal componenet of
+// For moment fitting, during line integration of base functions, if normal component of
 // lines of less than this, they are considered zero
 #define TOL_LINE_NORMAL 1e-12
 
 // Obtaining  internal Gauss points in directdivergence involves division by
-// coefficent 'a' in equation of plane. A facet whose 'a' is more than this tolerance is
+// coefficient 'a' in equation of plane. A facet whose 'a' is more than this tolerance is
 // chosen as reference plane to avoid a large number (and hence large error)
 #define REF_PLANE_DIRDIV 1e-3
 
@@ -94,7 +94,7 @@
 // #define QUADCOMP
 
 // if we want to use cln outside of cut kernel (e.g. for calculation of local position of point on
-// edge or arc length in the pointgraph). Should be ajusted for memory containter in order to be
+// edge or arc length in the pointgraph). Should be adjusted for memory container in order to be
 // usable
 // #define CLN_CALC_OUTSIDE_KERNEL
 
@@ -114,19 +114,19 @@
 // global tolerance for detecting sides near the point in the cut_kernel
 #define INSIDE_OUTSIDE_TOLERANCE 0.0
 
-// new general mergin tolerance
+// new general merging tolerance
 #define MERGING_TOLERANCE 1e-14
 
 // tolerance for merging non-topologically connected points
 #define NON_TOPOLOGICAL_TOLERANCE 1e-14
 
-// tolerance for mergin topologically connected points
+// tolerance for merging topologically connected points
 #define TOPOLOGICAL_TOLERANCE 1e-14
 
 // tolerance for detection if the edges are close enough to each other
 #define EDGE_EDGE_TOLERANCE 1e-14
 
-// minimum vaue to set up, when error of double calculation is equal 0.0
+// minimum value to set up, when error of double calculation is equal 0.0
 #define MINIMUM_DOUBLE_ERROR 1e-16
 
 // scale of the tolerance, during initial loading of the mesh
@@ -145,7 +145,7 @@
 #define VOLUME_ERROR_TOL 1e-2
 
 // distance with with to shift local position of the end points on the edge if it is equal to the
-// othe cut_point local position
+// other cut_point local position
 #define END_NODE_SHIFT_DISTANCE 1e-15
 
 // cln memory manager
@@ -156,13 +156,13 @@
 
 // define flags for effective cut development
 
-// version for development, settign this to true will set all the needed constants also
+// version for development, setting this to true will set all the needed constants also
 #define CUT_DEVELOP false
 
 #if CUT_DEVELOP
 // all the basicl, useful cut output output, that is needed for development
 #define EXTENDED_CUT_DEBUG_OUTPUT true
-// whether to record information about how this point was created, its topology infromation,etc
+// whether to record information about how this point was created, its topology information,etc
 #define CUT_CREATION_INFO true
 #else
 #define EXTENDED_CUT_DEBUG_OUTPUT false

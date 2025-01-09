@@ -45,7 +45,7 @@ namespace Thermo
    *--------------------------------------------------------------------------*/
   enum BoundaryAction
   {
-    ba_none,
+    boundary_none,
     calc_thermo_fextconvection,
     calc_thermo_fextconvection_coupltang,
   };
@@ -90,8 +90,8 @@ namespace Thermo
   {
     switch (baction)
     {
-      case ba_none:
-        return "ba_none";
+      case boundary_none:
+        return "boundary_none";
       case calc_thermo_fextconvection:
         return "calc_thermo_fextconvection";
       case calc_thermo_fextconvection_coupltang:

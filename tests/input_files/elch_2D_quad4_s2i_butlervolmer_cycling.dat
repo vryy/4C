@@ -26,8 +26,8 @@ THETA                           0.5
 INITIALFIELD                    field_by_condition
 CALCFLUX_BOUNDARY               total
 LINEAR_SOLVER                   1
-RESULTSEVRY                     100
-RESTARTEVRY                     100
+RESULTSEVERY                     100
+RESTARTEVERY                     100
 COMPUTEINTEGRALS                repeated
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       0.0

@@ -35,7 +35,7 @@ CONTACT::PenaltyStrategy::PenaltyStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim,
     const MPI_Comm& comm, const double alphaf, const int maxdof)
-    : AbstractStrategy(std::make_shared<CONTACT::AbstractStratDataContainer>(), dof_row_map,
+    : AbstractStrategy(std::make_shared<CONTACT::AbstractStrategyDataContainer>(), dof_row_map,
           NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
@@ -49,7 +49,7 @@ CONTACT::PenaltyStrategy::PenaltyStrategy(const Epetra_Map* dof_row_map,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::PenaltyStrategy::PenaltyStrategy(
-    const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim,
     const MPI_Comm& comm, const double alphaf, const int maxdof)
@@ -423,7 +423,7 @@ void CONTACT::PenaltyStrategy::evaluate_friction(
 }
 
 /*----------------------------------------------------------------------*
- | reset penalty parameter to intial value                    popp 08/09|
+ | reset penalty parameter to initial value                    popp 08/09|
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::reset_penalty()
 {
@@ -442,7 +442,7 @@ void CONTACT::PenaltyStrategy::reset_penalty()
 }
 
 /*----------------------------------------------------------------------*
- | modify penalty parameter to intial value                    mhv 03/16|
+ | modify penalty parameter to initial value                    mhv 03/16|
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::modify_penalty()
 {
@@ -465,7 +465,7 @@ void CONTACT::PenaltyStrategy::modify_penalty()
 }
 
 /*----------------------------------------------------------------------*
- | intialize second, third,... Uzawa step                     popp 01/10|
+ | initialize second, third,... Uzawa step                     popp 01/10|
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::initialize_uzawa(
     std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,

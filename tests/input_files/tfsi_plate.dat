@@ -22,26 +22,26 @@ STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
 FLUID_STRESS                    No
 FLUID_WALL_SHEAR_STRESS         No
-FLUID_ELEDATA_EVRY_STEP         No
+FLUID_ELEDATA_EVERY_STEP         No
 FLUID_NODEDATA_FIRST_STEP       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  None
 THERM_TEMPGRAD                  None
 FILESTEPS                       1000
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 VERBOSITY                       verbose
 RESTARTWALLTIMEINTERVAL         -1
-RESTARTEVRY                     -1
+RESTARTEVERY                     -1
 ----------------------------------------------------------------FS3I DYNAMIC
 MAXTIME                         800
 TIMESTEP                        0.15
 NUMSTEP                         5
-RESTARTEVRY                     2000
-RESULTSEVRY                     1
+RESTARTEVERY                     2000
+RESULTSEVERY                     1
 INF_PERM                        Yes
 SCATRA_SOLVERTYPE               nonlinear
 COUPLED_LINEAR_SOLVER           2
@@ -97,8 +97,8 @@ GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No
 COMPUTE_EKIN                    No
 NEW_OST                         No
-RESULTSEVRY                     1
-RESTARTEVRY                     2000
+RESULTSEVERY                     1
+RESTARTEVERY                     2000
 NUMSTEP                         5
 STEADYSTEP                      -1
 NUMSTASTEPS                     0
@@ -155,11 +155,11 @@ COUPALGO                        iter_monolithicfluidsplit
 MAXTIME                         800
 TIMESTEP                        0.15
 NUMSTEP                         5
-RESTARTEVRY                     2000
+RESTARTEVERY                     2000
 DEBUGOUTPUT                     No
 SECONDORDER                     No
 SLIDEALEPROJ                    None
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 -----------------------------------------------FSI DYNAMIC/TIMEADAPTIVITY
 TIMEADAPTON                     No
 DIVERCONT                       continue
@@ -195,7 +195,7 @@ SIMPLEITER                      2
 --------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 ALE_TYPE                        solid
-RESULTSEVRY                     1200
+RESULTSEVERY                     1200
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      linear_incremental
 TIMEINTEGR                      Gen_Alpha
@@ -206,8 +206,8 @@ THETA                           1.0
 ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
-RESULTSEVRY                     10
-RESTARTEVRY                     2000
+RESULTSEVERY                     10
+RESTARTEVERY                     2000
 MATID                           -1
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
@@ -272,7 +272,7 @@ AZTOL                           1.0E-07
 AZCONV                          AZ_r0
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_sutherland   REFVISC 1.0 REFTEMP 293 SUTHTEMP 110.4 SHC 100.0 PRANUM 100 THERMPRESS 1681820.0 GASCON 287.0
-MAT 2   MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1e7 NUE 0.3 DENS 1000.0 THEXPANS 6e-5 CAPA 1000.0 CONDUCT 100.0 INITTEMP 293.0
+MAT 2   MAT_Struct_ThermoStVenantK YOUNGNUM 1 YOUNG 1e7 NUE 0.3 DENS 1000.0 THEXPANS 6e-5 CAPA 1000.0 CONDUCT 100.0 INITTEMP 293.0
 MAT 3   MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0
 -----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra1 TAR_MAT 1

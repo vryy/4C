@@ -65,7 +65,7 @@ namespace Adapter
 
    protected:
     /// setup of the auxiliary time integrator
-    void setup_auxiliar() override {}
+    void setup_auxiliary() override {}
 
    private:
     /*! \brief Make one step with auxiliary scheme
@@ -75,11 +75,11 @@ namespace Adapter
      *  - \f$D_{n+1}^{AUX}\f$ in #locdiserrn_
      *  - \f$V_{n+1}^{AUX}\f$ in #locvelerrn_
      */
-    void integrate_step_auxiliar() override;
+    void integrate_step_auxiliary() override;
 
-    /*! \brief Update the auxiliar integrator
+    /*! \brief Update the auxiliary integrator
      */
-    void update_auxiliar() override;
+    void update_auxiliary() override;
   };
 
 }  // namespace Adapter

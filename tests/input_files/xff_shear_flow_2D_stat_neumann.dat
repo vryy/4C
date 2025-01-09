@@ -31,12 +31,12 @@ MAXTIME                         1000
 NONLINITER                      Newton
 NUMSTASTEPS                     0
 NUMSTEP                         1
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 STARTFUNCNO                     2
 THETA                           1.00
 TIMEINTEGR                      Stationary
 TIMESTEP                        1.0
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 LINEAR_SOLVER                   1
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1e-04

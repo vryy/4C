@@ -387,7 +387,7 @@ Mat::FluidPoroSingleReaction::FluidPoroSingleReaction(Mat::PAR::FluidPoroSingleR
 }
 
 /*----------------------------------------------------------------------*
- * pack material for commuication                           vuong 08/16 |
+ * pack material for communication                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 void Mat::FluidPoroSingleReaction::pack(Core::Communication::PackBuffer& data) const
 {

@@ -48,7 +48,7 @@ void Inpar::Immersed::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<Inpar::Immersed::ImmersedNlnsolver>(nlnsolver_stop, nlnsolver_continue),
       &immersedmethod);
 
-  Core::Utils::bool_parameter("OUTPUT_EVRY_NLNITER", "no",
+  Core::Utils::bool_parameter("OUTPUT_EVERY_NLNITER", "no",
       "write output after every solution step of the nonlin. part. iter. scheme", &immersedmethod);
 
   Core::Utils::bool_parameter("CORRECT_BOUNDARY_VELOCITIES", "no",

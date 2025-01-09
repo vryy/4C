@@ -17,8 +17,8 @@ DIM           2
 PROBLEMTYPE                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
-RESULTSEVRY                     1
-RESTARTEVRY                     48
+RESULTSEVERY                     1
+RESTARTEVERY                     48
 NUMSTEP                         10
 MAXTIME                         90000
 TIMESTEP                        1800

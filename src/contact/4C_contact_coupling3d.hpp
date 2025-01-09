@@ -93,7 +93,7 @@ namespace CONTACT
      clip polygon vertices. We distinguish three possible cases here,
      namely the vertex being a slave node, a projected master node in
      slave element parameter space or a line-clipping intersection in
-     slave element paramater space. NOT implemented for AuxPlane case!
+     slave element parameter space. NOT implemented for AuxPlane case!
 
      */
     bool vertex_linearization(

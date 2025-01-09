@@ -401,7 +401,7 @@ namespace Cut
 
     if (static_cast<unsigned>(normalvec1.m()) < probdim or
         (normalvec2 and static_cast<unsigned>(normalvec2->m()) < probdim))
-      FOUR_C_THROW("The normal vectors have the wrong dimenison!");
+      FOUR_C_THROW("The normal vectors have the wrong dimension!");
 
     Core::LinAlg::Matrix<probdim, 1> normalvec1_linalg(normalvec1.data(), true);
 

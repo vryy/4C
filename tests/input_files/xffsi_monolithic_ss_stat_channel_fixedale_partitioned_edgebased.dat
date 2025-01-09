@@ -30,7 +30,7 @@ LIFTDRAG                        No
 MAXTIME                         50
 NONLINITER                      Newton
 NUMSTEP                         1
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 STARTFUNCNO                     2
 START_THETA                     1
 STEADYSTEP                      -1
@@ -102,7 +102,7 @@ LINEAR_SOLVER                   1
 MAXTIME                         1000.0
 TIMESTEP                        1
 NUMSTEP                         1
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nonox
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

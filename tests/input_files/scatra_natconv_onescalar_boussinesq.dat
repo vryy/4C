@@ -21,8 +21,8 @@ TIMEINTEGR                      Af_Gen_Alpha
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
-RESTARTEVRY                     10
+RESULTSEVERY                           1
+RESTARTEVERY                     10
 NUMSTEP                         10
 NUMSTASTEPS                     1
 MAXTIME                         1000.0
@@ -61,7 +61,7 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MAXTIME                         1000
 NUMSTEP                         7
-RESTARTEVRY                     2
+RESTARTEVERY                     2
 TIMEINTEGR                      Gen_Alpha
 ALPHA_F                         1.0
 ALPHA_M                         1.5
@@ -71,7 +71,7 @@ VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 CALCFLUX_BOUNDARY               total
 OUTPUTSCALARS                   entire_domain
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 MATID                           2
 CONVFORM                        conservative
 NATURAL_CONVECTION              Yes

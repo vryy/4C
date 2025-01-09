@@ -975,8 +975,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::LubricationEleCalc<distype, probdim>::calc_rhs_sqz(
     Core::LinAlg::SerialDenseVector& erhs, const double rhsfac, const double heightdot)
 {
-  if (!lubricationpara_->add_sqz())
-    FOUR_C_THROW("You chosed NOT to add the squeeze term! WATCHOUT");
+  if (!lubricationpara_->add_sqz()) FOUR_C_THROW("You chose NOT to add the squeeze term! WATCHOUT");
   // Squeeze rhs term
   const double fac_rhs_sqz = rhsfac * heightdot;
 

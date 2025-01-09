@@ -76,8 +76,8 @@ namespace Discret
         \param elevec1_epetra   (o) element vector to calculate
         \param elevec2_epetra   (o) element vector to calculate
         \param elevec3_epetra   (o) element vector to calculate
-        \param offdiag          (i) flag indicating wether diagonal or off diagonal blocks are to be
-        calculated
+        \param offdiag          (i) flag indicating whether diagonal or off diagonal blocks are to
+        be calculated
 
        */
       int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
@@ -572,10 +572,10 @@ namespace Discret
         \param F_X            (i) derivative of deformation gradient w.r.t. material coordinates
                                   XYZ
         \param gradJ          (i) spatial gradient of jacobian determinant
-        \param dJ_dus         (o) derivative of jacobian determinant w.r.t. structure displacments
-        \param dphi_dus       (o) derivative of porosity determinant w.r.t. structure displacments
+        \param dJ_dus         (o) derivative of jacobian determinant w.r.t. structure displacements
+        \param dphi_dus       (o) derivative of porosity determinant w.r.t. structure displacements
         \param dgradphi_dus   (o) derivate of spatial gradient of porosity w.r.t. structure
-                                  displacments
+                                  displacements
        */
       virtual void compute_linearization_od(const double& dphi_dJ, const double& dphi_dJJ,
           const double& dphi_dJp, const Core::LinAlg::Matrix<nsd_, nsd_>& defgrd_inv,
@@ -917,7 +917,7 @@ namespace Discret
       void get_struct_material(Discret::Elements::Fluid* ele);
 
       //! get material parameters of poro fluid element
-      void get_material_paramters(std::shared_ptr<const Core::Mat::Material> material);
+      void get_material_parameters(std::shared_ptr<const Core::Mat::Material> material);
 
       //! compute spatial reactive term (darcy term)
       void compute_spatial_reaction_terms(
@@ -941,7 +941,7 @@ namespace Discret
       //! get compute RHS of momentum equation of time step n and subgrid-scale velocity
       void compute_old_rhs_and_subgrid_scale_velocity();
 
-      //! get stabilization paramters
+      //! get stabilization parameters
       void compute_stabilization_parameters(const double& vol);
 
       //! get compute RHS of contiuity equation of time step n
@@ -953,7 +953,7 @@ namespace Discret
           const Core::LinAlg::Matrix<nsd_, nen_>& edispn,
           const Core::LinAlg::Matrix<nsd_ * nsd_, nsd_>& F_X, int gp, bool computeLinOD);
 
-      virtual int compute_volume(Teuchos::ParameterList& params,  //!< paramters
+      virtual int compute_volume(Teuchos::ParameterList& params,  //!< parameters
           Discret::Elements::Fluid* ele,                          //!< current fluid element
           Core::FE::Discretization& discretization,               //!< fluid discretization
           std::vector<int>& lm,                     //!< location vector for DOF management
@@ -1034,7 +1034,7 @@ namespace Discret
       double press_;
       //! fluid pressure time derivative at gauss point (time step n+1 or n+\alpha_M)
       double press_dot_;
-      //! fluid pressure gradient w.r.t to paramter space coordinates at gauss point
+      //! fluid pressure gradient w.r.t to parameter space coordinates at gauss point
       Core::LinAlg::Matrix<nsd_, 1> refgrad_press_;
 
       //! material reactive tensor

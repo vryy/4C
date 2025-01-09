@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
  | ctor (public)                                              ager 02/15|
  *----------------------------------------------------------------------*/
 CONTACT::MonoCoupledLagrangeStrategy::MonoCoupledLagrangeStrategy(
-    const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, MPI_Comm comm,
     double alphaf, int maxdof)
@@ -194,7 +194,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     //----------------------------------------------------------- THIRD LINE
     //------------------- FOR 3D QUADRATIC CASE ----------------------------
 
-    //--- For using non diagonal D-Matrix, it should be checked if this assumtion isn't anywhere
+    //--- For using non diagonal D-Matrix, it should be checked if this assumption isn't anywhere
     // else!!!
 
     // kin: subtract T(dhat)*kan --
@@ -313,7 +313,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
     // condensation has been performed for active LM only,
     // thus we construct a modified invd matrix here which
     // only contains the active diagonal block
-    // (this automatically renders the incative LM to be zero)
+    // (this automatically renders the inactive LM to be zero)
     std::shared_ptr<Core::LinAlg::SparseMatrix> invda;
     std::shared_ptr<Epetra_Map> tempmap;
     std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;

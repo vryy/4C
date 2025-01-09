@@ -27,10 +27,10 @@
 // limiting maximum cln precision
 #define CLN_LIMIT_PREC 50
 
-// limiting number of increasing precison in the cut_kernel.H
+// limiting number of increasing precision in the cut_kernel.H
 #define CLN_LIMIT_ITER 7
 
-// maximum achievable CLN precison value, error is computed with respect to it
+// maximum achievable CLN precision value, error is computed with respect to it
 #define CLN_REFERENCE_PREC (CLN_START_PRECISION + CLN_LIMIT_ITER * CLN_INCREMENT_STEP)
 
 FOUR_C_NAMESPACE_OPEN
@@ -48,7 +48,7 @@ namespace Core::CLN
     ClnWrapper() : value_(cached_convert(0.0, precision_)) {}
     /// initialization from the string.
     /// E.g 0.271828182845904523536028747135266249775724709369996e+1_40
-    /// to construct 'e' with precision fo 40 decimal points
+    /// to construct 'e' with precision of 40 decimal points
     ClnWrapper(const char* istring) : value_(istring) {}
     /// Initialization from the constant double
     ClnWrapper(double a) : value_(cached_convert(a, precision_)) {};
@@ -105,27 +105,27 @@ namespace Core::CLN
     }
     inline ClnWrapper& operator=(double& other)
     {
-      FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");
+      FOUR_C_THROW("Unexpected conversion between not-constant double and cln::cl_F");
       return *this;
     }
     inline ClnWrapper& operator+=(double& other)
     {
-      FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");
+      FOUR_C_THROW("Unexpected conversion between not-constant double and cln::cl_F");
       return *this;
     }
     inline ClnWrapper& operator-=(double& other)
     {
-      FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");
+      FOUR_C_THROW("Unexpected conversion between not-constant double and cln::cl_F");
       return *this;
     }
     inline ClnWrapper& operator/=(double& other)
     {
-      FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");
+      FOUR_C_THROW("Unexpected conversion between not-constant double and cln::cl_F");
       return *this;
     }
     inline ClnWrapper& operator*=(double& other)
     {
-      FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");
+      FOUR_C_THROW("Unexpected conversion between not-constant double and cln::cl_F");
       return *this;
     }
     inline ClnWrapper operator-() const { return (-value_); }
@@ -181,7 +181,7 @@ namespace Core::CLN
       }
       else
       {
-        // check if this happenning during the const memory container, otherwise it will be never
+        // check if this happening during the const memory container, otherwise it will be never
         // freed (until destruction of static variables, in the end of the program ), but probably
         // that is fine
         cln::cl_F newval;
@@ -223,7 +223,7 @@ namespace Core::CLN
   }                                                                                      \
   inline _ret_type operator _operator(const ClnWrapper& first, double& second)           \
   {                                                                                      \
-    FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");     \
+    FOUR_C_THROW("Unexpected conversion between not-constant double and cln::cl_F");     \
     return first.Value() _operator ClnWrapper::cached_convert(second, first.Value());    \
   }                                                                                      \
   inline _ret_type operator _operator(const ClnWrapper& first, double second)            \
@@ -236,7 +236,7 @@ namespace Core::CLN
   }                                                                                      \
   inline _ret_type operator _operator(double& first, const ClnWrapper& second)           \
   {                                                                                      \
-    FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");     \
+    FOUR_C_THROW("Unexpected conversion between not-constant double and cln::cl_F");     \
     return ClnWrapper::cached_convert(first, second.Value()) _operator second.Value();   \
   }
 

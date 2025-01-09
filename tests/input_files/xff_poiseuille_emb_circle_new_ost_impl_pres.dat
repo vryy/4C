@@ -27,12 +27,12 @@ MAXTIME                         0.8
 NONLINITER                      Newton
 NUMSTASTEPS                     1
 NUMSTEP                         8
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 STARTFUNCNO                     1
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
 NEW_OST                         yes
@@ -63,9 +63,9 @@ EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         0.8
 NUMSTEP                         8
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 TIMESTEP                        0.1
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION

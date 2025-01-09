@@ -79,7 +79,7 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::setup(
       if (gamma < 0.0 || gamma > 180.0 || abs(theta) > 180.0)
       {
         FOUR_C_THROW(
-            "Wrong choice of sherical coodinates. Correct domain is gamma in [0,180], theta in "
+            "Wrong choice of sherical coordinates. Correct domain is gamma in [0,180], theta in "
             "[-180, 180]");
       }
       // conversion to radian measure

@@ -98,7 +98,7 @@ namespace Cut
         }
       }
 
-      cycle_t* substract(cycle_t* path, const plain_cycle_set& partial)
+      cycle_t* subtract(cycle_t* path, const plain_cycle_set& partial)
       {
         plain_graph_edge_set edges;
 
@@ -110,7 +110,7 @@ namespace Cut
           add_edges(*c, edges);
         }
 
-        plain_vertix_set vertices;
+        plain_vertex_set vertices;
         for (plain_graph_edge_set::iterator i = edges.begin(); i != edges.end(); ++i)
         {
           vertices.insert(i->first);
@@ -132,7 +132,7 @@ namespace Cut
         return newpath;
       }
 
-      bool issuperset(const plain_vertix_set& pathset, const cycle_t& c)
+      bool issuperset(const plain_vertex_set& pathset, const cycle_t& c)
       {
         for (cycle_t::const_iterator i = c.begin(); i != c.end(); ++i)
         {
@@ -226,7 +226,7 @@ namespace Cut
             std::copy(c.begin(), c.end(), std::inserter(known, known.begin()));
           }
 
-          plain_vertix_set pathset;
+          plain_vertex_set pathset;
           std::copy(path->begin(), path->end(), std::inserter(pathset, pathset.begin()));
 
           plain_cycle_set partial;
@@ -241,7 +241,7 @@ namespace Cut
 
           if (partial.size() > 0)
           {
-            path = substract(path, partial);
+            path = subtract(path, partial);
           }
 
           for (cycle_t::iterator i = path->begin(); i != path->end(); ++i)

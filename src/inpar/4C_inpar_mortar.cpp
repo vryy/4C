@@ -135,12 +135,12 @@ void Inpar::Mortar::set_valid_parameters(Teuchos::ParameterList& list)
       "Max. relative imbalance of subdomain size after redistribution", &parallelRedist);
 
   Core::Utils::double_parameter("MAX_BALANCE_EVAL_TIME", 2.0,
-      "Max-to-min ratio of contact evalation time per processor to triggger parallel "
+      "Max-to-min ratio of contact evaluation time per processor to trigger parallel "
       "redistribution",
       &parallelRedist);
 
   Core::Utils::double_parameter("MAX_BALANCE_SLAVE_ELES", 0.5,
-      "Max-to-min ratio of mortar slave elements per processor to triggger parallel "
+      "Max-to-min ratio of mortar slave elements per processor to trigger parallel "
       "redistribution",
       &parallelRedist);
 

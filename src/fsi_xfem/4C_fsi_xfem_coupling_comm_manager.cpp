@@ -453,7 +453,7 @@ std::shared_ptr<Core::LinAlg::MultiMapExtractor> XFEM::CouplingCommManager::get_
     FOUR_C_THROW(
         "Coupling_Comm_Manager::GetMapExtractor: Couldn't find Map Extractor for key (%d)", idx);
   }
-  return nullptr;  // to guarantee that the complier feels comfortable in his skin...
+  return nullptr;  // to guarantee that the compiler feels comfortable in his skin...
 }
 
 /*---------------------------------------------------------------------------------------------------*

@@ -1011,7 +1011,7 @@ namespace Discret
       Core::LinAlg::Matrix<facensd_, nsd_> dxyzdrs_;
       //! the metric tensor
       Core::LinAlg::Matrix<facensd_, facensd_> metrictensor_;
-      //! the area of an infintesimal surface element
+      //! the area of an infinitesimal surface element
       double drs_;
 
 
@@ -1158,9 +1158,9 @@ namespace Discret
       double tau_p_gp_2_;    ///< 2nd order stabilization factor for pressure gradient jump
                              ///< higher-order ghost penalty stabilization term
 
-      double tau_vel_1st_final_;  ///< final scaling for 1st order velocity cips and gps
-      double tau_pre_1st_final_;  ///< final scaling for 1st order pressure cips and gps
-      double tau_div_1st_final_;  ///< final scaling for 1st order divergence cips and gps
+      double tau_vel_1st_final_;  ///< final scaling for 1st order velocity chips and gps
+      double tau_pre_1st_final_;  ///< final scaling for 1st order pressure chips and gps
+      double tau_div_1st_final_;  ///< final scaling for 1st order divergence chips and gps
 
       double tau_vel_2nd_final_;  ///< final scaling for 2nd order velocity gps
       double tau_pre_2nd_final_;  ///< final scaling for 2nd order pressure gps

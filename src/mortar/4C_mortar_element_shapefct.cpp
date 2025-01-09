@@ -808,7 +808,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
     }
       // *********************************************************************
       // 1D dual linear shape functions (line2)
-      // (used for interpolation of Lagrange mutliplier field)
+      // (used for interpolation of Lagrange multiplier field)
       // *********************************************************************
     case Mortar::Element::lindual1D:
     {
@@ -882,7 +882,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
     }
       // *********************************************************************
       // 2D dual linear shape functions (tri3)
-      // (used for interpolation of Lagrange mutliplier field)
+      // (used for interpolation of Lagrange multiplier field)
       // *********************************************************************
     case Mortar::Element::lindual2D:
     {
@@ -931,7 +931,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
     }
       // *********************************************************************
       // 2D dual bilinear shape functions (quad4)
-      // (used for interpolation of Lagrange mutliplier field)
+      // (used for interpolation of Lagrange multiplier field)
       // (including adaption process for distorted elements)
       // *********************************************************************
     case Mortar::Element::bilindual2D:
@@ -1014,7 +1014,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
     }
       // *********************************************************************
       // 1D dual quadratic shape functions (line3)
-      // (used for interpolation of Lagrange mutliplier field)
+      // (used for interpolation of Lagrange multiplier field)
       // (including adaption process for distorted elements)
       // *********************************************************************
     case Mortar::Element::quaddual1D:
@@ -1091,7 +1091,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
     }
       // *********************************************************************
       // 1D linear part of dual quadratic shape functions (line3)
-      // (used for LINEAR interpolation of Lagrange mutliplier field)
+      // (used for LINEAR interpolation of Lagrange multiplier field)
       // (including adaption process for distorted elements)
       // *********************************************************************
     case Mortar::Element::quaddual1D_only_lin:
@@ -1185,7 +1185,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
     }
       // *********************************************************************
       // 2D dual quadratic shape functions (tri6)
-      // (used for interpolation of Lagrange mutliplier field)
+      // (used for interpolation of Lagrange multiplier field)
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
@@ -1261,7 +1261,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
 
     // *********************************************************************
     // 2D dual serendipity shape functions (quad8)
-    // (used for interpolation of Lagrange mutliplier field)
+    // (used for interpolation of Lagrange multiplier field)
     // (including adaption process for distorted elements)
     // (including modification of displacement shape functions)
     // *********************************************************************
@@ -1336,7 +1336,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
     }
       // *********************************************************************
       // 2D dual biquadratic shape functions (quad9)
-      // (used for interpolation of Lagrange mutliplier field)
+      // (used for interpolation of Lagrange multiplier field)
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
@@ -1411,7 +1411,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
     }
       // *********************************************************************
       // 2D dual quadratic shape functions (tri6)
-      // (used for LINEAR interpolation of Lagrange mutliplier field)
+      // (used for LINEAR interpolation of Lagrange multiplier field)
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
@@ -1502,7 +1502,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
     }
       // *********************************************************************
       // 2D dual serendipity shape functions (quad8)
-      // (used for LINEAR interpolation of Lagrange mutliplier field)
+      // (used for LINEAR interpolation of Lagrange multiplier field)
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
@@ -1594,7 +1594,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
     }
       // *********************************************************************
       // 2D dual biquadratic shape functions (quad9)
-      // (used for LINEAR interpolation of Lagrange mutliplier field)
+      // (used for LINEAR interpolation of Lagrange multiplier field)
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
@@ -1854,7 +1854,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
       break;
     }
       // *********************************************************************
-      // Unkown shape function type
+      // Unknown shape function type
       // *********************************************************************
     default:
     {
@@ -4042,7 +4042,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
     }
       //***********************************************************************
       // 2D dual quadratic shape functions (tri6)
-      // (used for LINEAR interpolation of Lagrange mutliplier field)
+      // (used for LINEAR interpolation of Lagrange multiplier field)
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       //***********************************************************************
@@ -4183,7 +4183,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
 
       // *********************************************************************
       // 2D dual serendipity shape functions (quad8)
-      // (used for LINEAR interpolation of Lagrange mutliplier field)
+      // (used for LINEAR interpolation of Lagrange multiplier field)
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************
@@ -4324,7 +4324,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
 
       // *********************************************************************
       // 2D dual biquadratic shape functions (quad9)
-      // (used for LINEAR interpolation of Lagrange mutliplier field)
+      // (used for LINEAR interpolation of Lagrange multiplier field)
       // (including adaption process for distorted elements)
       // (including modification of displacement shape functions)
       // *********************************************************************

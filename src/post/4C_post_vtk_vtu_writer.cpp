@@ -293,7 +293,7 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
 
     if (Core::FE::is_nurbs_celltype(ele->shape()))
     {
-      wirte_dof_result_step_nurbs_ele(
+      write_dof_result_step_nurbs_ele(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
     }
     else if (beamele != nullptr)
@@ -691,7 +691,7 @@ void PostVtuWriter::write_geo_beam_ele(const Discret::Elements::Beam3Base* beame
   celloffset.push_back(outNodeId);
 }
 
-void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
+void PostVtuWriter::write_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
     std::shared_ptr<Core::LinAlg::Vector<double>> ghostedData, const int from,
     const bool fillzeros) const
@@ -702,37 +702,37 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
   {
     case Core::FE::CellType::nurbs2:
     {
-      wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs2>(
+      write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs2>(
           ele, ncomponents, numdf, solution, *ghostedData, from, fillzeros);
       break;
     }
     case Core::FE::CellType::nurbs3:
     {
-      wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs3>(
+      write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs3>(
           ele, ncomponents, numdf, solution, *ghostedData, from, fillzeros);
       break;
     }
     case Core::FE::CellType::nurbs4:
     {
-      wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs4>(
+      write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs4>(
           ele, ncomponents, numdf, solution, *ghostedData, from, fillzeros);
       break;
     }
     case Core::FE::CellType::nurbs9:
     {
-      wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs9>(
+      write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs9>(
           ele, ncomponents, numdf, solution, *ghostedData, from, fillzeros);
       break;
     }
     case Core::FE::CellType::nurbs8:
     {
-      wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs8>(
+      write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs8>(
           ele, ncomponents, numdf, solution, *ghostedData, from, fillzeros);
       break;
     }
     case Core::FE::CellType::nurbs27:
     {
-      wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs27>(
+      write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs27>(
           ele, ncomponents, numdf, solution, *ghostedData, from, fillzeros);
       break;
     }
@@ -747,7 +747,7 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <Core::FE::CellType nurbs_type>
-void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
+void PostVtuWriter::write_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
     Core::LinAlg::Vector<double>& ghostedData, const int from, const bool fillzeros) const
 {
@@ -1025,27 +1025,27 @@ template void PostVtuWriter::write_geo_nurbs_ele<Core::FE::CellType::nurbs27>(
     std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs2>(
+template void PostVtuWriter::write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs2>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
     std::vector<double>& solution, Core::LinAlg::Vector<double>& ghostedData, const int from,
     const bool fillzeros) const;
-template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs3>(
+template void PostVtuWriter::write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs3>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
     std::vector<double>& solution, Core::LinAlg::Vector<double>& ghostedData, const int from,
     const bool fillzeros) const;
-template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs4>(
+template void PostVtuWriter::write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs4>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
     std::vector<double>& solution, Core::LinAlg::Vector<double>& ghostedData, const int from,
     const bool fillzeros) const;
-template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs9>(
+template void PostVtuWriter::write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs9>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
     std::vector<double>& solution, Core::LinAlg::Vector<double>& ghostedData, const int from,
     const bool fillzeros) const;
-template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs8>(
+template void PostVtuWriter::write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs8>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
     std::vector<double>& solution, Core::LinAlg::Vector<double>& ghostedData, const int from,
     const bool fillzeros) const;
-template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs27>(
+template void PostVtuWriter::write_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs27>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
     std::vector<double>& solution, Core::LinAlg::Vector<double>& ghostedData, const int from,
     const bool fillzeros) const;

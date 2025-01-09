@@ -72,7 +72,7 @@ namespace PoroElast
     //! nonlinear mortar adapter used to evaluate meshtying
     std::shared_ptr<Adapter::CouplingPoroMortar> mortar_adapter_;
 
-    //! fluid velocity dof row map splitted in active dofs and the rest (no pressures)
+    //! fluid velocity dof row map split in active dofs and the rest (no pressures)
     std::shared_ptr<Core::LinAlg::MultiMapExtractor>
         fvelactiverowdofmap_;  //!< should be named fluidvelocityactiverowdofmap_, but kept shorter
 

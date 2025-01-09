@@ -37,8 +37,8 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<std::shared_ptr<Mortar::Interface>> interface, const int spatialDim,
     const MPI_Comm& comm, const double alphaf, const int maxdof)
-    : Mortar::StrategyBase(std::make_shared<Mortar::StratDataContainer>(), dof_row_map, NodeRowMap,
-          params, spatialDim, comm, alphaf, maxdof),
+    : Mortar::StrategyBase(std::make_shared<Mortar::StrategyDataContainer>(), dof_row_map,
+          NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       dualquadslavetrafo_(false)
 {
@@ -519,7 +519,7 @@ void CONTACT::MtAbstractStrategy::mesh_initialization(
       //******************************************************************
       // get corresponding entries from Xslavemodcol
       int numdof = mtnode->num_dof();
-      if (n_dim() != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
+      if (n_dim() != numdof) FOUR_C_THROW("Inconsistency Dim <-> NumDof");
 
       // find DOFs of current node in Xslavemodcol and extract this node's position
       std::vector<int> locindex(numdof);
@@ -658,7 +658,7 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
 
       // be aware of problem dimension
       int numdof = mtnode->num_dof();
-      if (n_dim() != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
+      if (n_dim() != numdof) FOUR_C_THROW("Inconsistency Dim <-> NumDof");
 
       // find indices for DOFs of current node in Core::LinAlg::Vector<double>
       // and extract this node's quantity from vectorinterface
@@ -667,7 +667,7 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
       for (int dof = 0; dof < n_dim(); ++dof)
       {
         locindex[dof] = (vectorinterface.Map()).LID(mtnode->dofs()[dof]);
-        if (locindex[dof] < 0) FOUR_C_THROW("StoreNodalQuantites: Did not find dof in map");
+        if (locindex[dof] < 0) FOUR_C_THROW("StoreNodalQuantities: Did not find dof in map");
 
         switch (type)
         {

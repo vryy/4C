@@ -910,7 +910,7 @@ void Core::Geo::MeshFree::BoundingBox::
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   for (int dim = 0; dim < 3; ++dim)
     if (abs(edgelength_[dim]) < 1e-12)
-      FOUR_C_THROW(" you are about to devide by zero, edgelength not correctly initialized.");
+      FOUR_C_THROW(" you are about to divide by zero, edgelength not correctly initialized.");
 #endif
 
   const double Q = 1.0 / (edgelength_[0] * edgelength_[1] * edgelength_[2]);
@@ -945,7 +945,7 @@ void Core::Geo::MeshFree::BoundingBox::
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   for (int dim = 0; dim < 3; ++dim)
     if (abs(edgelength_[dim]) < 1e-12)
-      FOUR_C_THROW(" you are about to devide by zero, edgelength not correctly initialized.");
+      FOUR_C_THROW(" you are about to divide by zero, edgelength not correctly initialized.");
 #endif
 
   const double Q = 1.0 / (edgelength_[0] * edgelength_[1] * edgelength_[2]);

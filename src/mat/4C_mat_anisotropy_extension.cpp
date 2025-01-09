@@ -218,7 +218,7 @@ int Mat::FiberAnisotropyExtension<numfib>::get_fibers_per_element() const
   return get_anisotropy()->get_number_of_gauss_points();
 }
 
-// explicit instatiations of template classes
+// explicit instantiations of template classes
 template class Mat::FiberAnisotropyExtension<1u>;
 template class Mat::FiberAnisotropyExtension<2u>;
 FOUR_C_NAMESPACE_CLOSE

@@ -766,7 +766,7 @@ namespace Cut
      *  intersection point is outside the element and is not part of the interpolation
      *  space! These cases should be treated separately later!!!
      *  If TRIANGULATED_INTERSECTION flag is enabled, intersection of the quad4 with
-     *  the line is splitted into intersection of line with two tri3, obtained from the
+     *  the line is split into intersection of line with two tri3, obtained from the
      *  quad4. In the case it should always converge
      *
      *  (5) throw FOUR_C_THROW in case this intersection wasn't treated right --> this means
@@ -776,7 +776,7 @@ namespace Cut
      *  \author ager */
     bool intersect(PointSet& cuts) override;
 
-    // Try to find possible intersection points, if this intersection is between parallell size
+    // Try to find possible intersection points, if this intersection is between parallel size
     // and edge without using real ComputeIntersection
     ParallelIntersectionStatus handle_parallel_intersection(
         PointSet& cuts, int id = -1, bool output = false) override;
@@ -1125,7 +1125,7 @@ namespace Cut
     }
 
 
-    // Transform IDs of the edges in the one of triangle in the splitted quad4 into the ids of
+    // Transform IDs of the edges in the one of triangle in the split quad4 into the ids of
     // quad4 edges
     void get_quad_edge_ids_from_tri(std::vector<int>& quad4_touched_edges,
         const std::vector<int>& tri_touched_edges_ids, int tri_id)
@@ -1142,7 +1142,7 @@ namespace Cut
           count_id = 0;
         else if ((*e_it) == 1)
           count_id = 1;
-        // else it is diagnoal
+        // else it is diagonal
         else
           continue;
         int quad4_id = triangle + count_id;

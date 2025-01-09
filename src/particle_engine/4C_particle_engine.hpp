@@ -194,8 +194,8 @@ namespace PARTICLEENGINE
      *
      * Check all owned particle for their current position. If a particle leaves the spatial domain
      * of its currently owning processor it either left the computational domain and is removed or
-     * it entered the spatial domain of a neighboring processor and is transfered to this new owning
-     * processor.
+     * it entered the spatial domain of a neighboring processor and is transferred to this new
+     * owning processor.
      *
      * \author Sebastian Fuchs \date 03/2018
      */
@@ -613,11 +613,11 @@ namespace PARTICLEENGINE
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep);
 
     /*!
-     * \brief determine particles that need to be transfered
+     * \brief determine particles that need to be transferred
      *
      * Check the current position of owned particles close to the spatial domain of neighboring
      * processors. In case a particle left the spatial domain of its current owning processor it
-     * needs to be transfered to its new owning processor. This requires that particles travel not
+     * needs to be transferred to its new owning processor. This requires that particles travel not
      * more than one bin layer as each processor only knows the owning processor of the first layer
      * of bins surrounding its own spatial domain.
      *
@@ -626,7 +626,7 @@ namespace PARTICLEENGINE
      * \param[out] particlestoremove particles to be removed from containers on this processor
      * \param[out] particlestosend   particles to be send to other processors
      */
-    void determine_particles_to_be_transfered(std::vector<std::set<int>>& particlestoremove,
+    void determine_particles_to_be_transferred(std::vector<std::set<int>>& particlestoremove,
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend);
 
     /*!

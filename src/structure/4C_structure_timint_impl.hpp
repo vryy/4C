@@ -385,7 +385,7 @@ namespace Solid
     int newton_full();
 
     //! check for success of element evaluation in that no negative Jacobian
-    //! determinant occured, otherwise return error code
+    //! determinant occurred, otherwise return error code
     int element_error_check(bool evalerr);
 
     //! check for success of linear solve otherwise return error code
@@ -894,7 +894,7 @@ namespace Solid
     //! @name Output to file or screen
     //@{
 
-    //! Print to screen predictor informations about residual norm etc.
+    //! Print to screen predictor information about residual norm etc.
     //! \author lw (originally) \date 12/07
     void print_predictor();
 

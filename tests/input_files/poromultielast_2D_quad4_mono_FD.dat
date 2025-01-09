@@ -25,11 +25,11 @@ FDCHECKEPS                      1e-6
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 ---------------------------------------------POROMULTIPHASE DYNAMIC
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 NUMSTEP                         30
 MAXTIME                         0.3
 TIMESTEP                        0.01
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 ITEMAX                          10
 COUPALGO                        twoway_monolithic
 --------------------------POROMULTIPHASE DYNAMIC/MONOLITHIC

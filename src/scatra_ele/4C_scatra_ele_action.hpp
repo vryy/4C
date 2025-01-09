@@ -29,7 +29,8 @@ namespace ScaTra
     calc_elch_conductivity,                 ///< calc_elch_conductivity,
     calc_elch_domain_kinetics,              ///< calculate electrode kinetics in domain
     calc_elch_electrode_soc_and_c_rate,     ///< calculate electrode state of charge and C rate
-    calc_elch_elctrode_mean_concentration,  ///< calulate mean concentration of micro discretization
+    calc_elch_elctrode_mean_concentration,  ///< calculate mean concentration of micro
+                                            ///< discretization
     calc_error,                             ///< calc_error,
     calc_error_reinit,                      ///< calc_error_reinit,
     calc_flux_domain,                       ///< calc_condif_flux,

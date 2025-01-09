@@ -57,8 +57,8 @@ STABTYPE                        SUPG
 SUGRVEL                         no
 CHARELELENGTH                   root_of_volume
 -------------------------------------------------------SSI CONTROL
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 NUMSTEP                         30
 MAXTIME                         2.0
 TIMESTEP                        0.1

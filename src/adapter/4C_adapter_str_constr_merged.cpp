@@ -64,14 +64,14 @@ std::shared_ptr<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerg
   if (not issetup_) FOUR_C_THROW("Call setup() first!");
 
   // get initial guesses from structure and constraintmanager
-  std::shared_ptr<const Core::LinAlg::Vector<double>> strucGuess = structure_->initial_guess();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> structGuess = structure_->initial_guess();
   const Core::LinAlg::Vector<double> lagrGuess(
       *(structure_->get_constraint_manager()->get_constraint_map()), true);
 
   // merge stuff together
   std::shared_ptr<Core::LinAlg::Vector<double>> mergedGuess =
       std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap_, true);
-  conmerger_->add_cond_vector(*strucGuess, *mergedGuess);
+  conmerger_->add_cond_vector(*structGuess, *mergedGuess);
   conmerger_->add_other_vector(lagrGuess, *mergedGuess);
 
   return mergedGuess;

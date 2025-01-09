@@ -324,7 +324,7 @@ namespace FLD
     std::shared_ptr<FLD::Vreman> vreman() override { return nullptr; }
 
     /*!
-    \brief velocity required for evaluation of related quantites required on element level
+    \brief velocity required for evaluation of related quantities required on element level
 
     */
     std::shared_ptr<const Core::LinAlg::Vector<double>> evaluation_vel() override

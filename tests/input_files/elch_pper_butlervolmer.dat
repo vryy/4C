@@ -15,8 +15,8 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
-RESULTSEVRY                     1
-RESTARTEVRY                     10
+RESULTSEVERY                     1
+RESTARTEVERY                     10
 NUMSTEP                         7
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
@@ -64,14 +64,14 @@ INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 MAXTIME                         1000
 NUMSTEP                         7
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
 VELOCITYFIELD                   Navier_Stokes
 CALCFLUX_DOMAIN                 total
 OUTPUTSCALARS                   entire_domain
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 MATID                           5
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09

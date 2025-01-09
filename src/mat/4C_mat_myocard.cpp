@@ -31,7 +31,7 @@ Mat::PAR::Myocard::Myocard(const Core::Mat::PAR::Parameter::Data& matdata)
       diff1(matdata.parameters.get<double>("DIFF1")),
       diff2(matdata.parameters.get<double>("DIFF2")),
       diff3(0.0),
-      dt_deriv(matdata.parameters.get<double>("PERTUBATION_DERIV")),
+      dt_deriv(matdata.parameters.get<double>("PERTURBATION_DERIV")),
       model(matdata.parameters.get<std::string>("MODEL")),
       tissue(matdata.parameters.get<std::string>("TISSUE")),
       time_scale(matdata.parameters.get<double>("TIME_SCALE")),

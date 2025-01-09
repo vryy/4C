@@ -628,7 +628,7 @@ void Thermo::TemperBoundaryImpl<distype>::calculate_convection_fint_cond(
     // fac_ = Gauss weight * det(J) is calculated in eval_shape_func_and_int_fac()
 
     // ------------right-hand-side
-    // q . n = h ( T - T_sur )
+    // q . n = h ( T - T_sure )
 
     // multiply fac_ * coeff
     // --> must be insert in balance equation as positive term,
@@ -644,7 +644,7 @@ void Thermo::TemperBoundaryImpl<distype>::calculate_convection_fint_cond(
     Core::LinAlg::Matrix<1, 1> Ntemp(false);
     Ntemp.multiply_tn(funct_, etemp_);
 
-    // substract the surface temperature: Ntemp -=  T_surf
+    // subtract the surface temperature: Ntemp -=  T_surf
     Core::LinAlg::Matrix<1, 1> Tsurf(true);
     for (int i = 0; i < 1; ++i)
     {
@@ -802,8 +802,8 @@ void Thermo::TemperBoundaryImpl<distype>::calculate_nln_convection_fint_cond(
     }
 
     // ------------right-hand-side
-    // AK: q . n da = q^_c da = h ( T - T_sur ) da
-    // RK: q . n da = h ( T - T_sur ) da = =: Q^_c dA
+    // AK: q . n da = q^_c da = h ( T - T_sure ) da
+    // RK: q . n da = h ( T - T_sure ) da = =: Q^_c dA
     //      da  = J sqrt(N^T . C^{-1} . N) dA
     // here we use an alternative approach for the implementation
     // do not map the term to RK--> coordinate space,

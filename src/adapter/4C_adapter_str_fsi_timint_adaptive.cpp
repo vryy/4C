@@ -92,7 +92,10 @@ void Adapter::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
 
 /*----------------------------------------------------------------------------*/
 /* Do a single step with auxiliary time integration scheme */
-void Adapter::StructureFSITimIntAda::time_step_auxiliar() { str_ada()->integrate_step_auxiliar(); }
+void Adapter::StructureFSITimIntAda::time_step_auxiliary()
+{
+  str_ada()->integrate_step_auxiliary();
+}
 
 /*----------------------------------------------------------------------------*/
 /* Calculate time step size suggestion */

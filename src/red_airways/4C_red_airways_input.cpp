@@ -30,7 +30,7 @@ bool Discret::Elements::RedAirway::read_element(const std::string& eletype,
   // Read the element type, the element specific variables and store them to airwayParams_
   elem_type_ = container.get<std::string>("TYPE");
   if (elem_type_ == "Resistive" || elem_type_ == "InductoResistive" ||
-      elem_type_ == "ComplientResistive" || elem_type_ == "RLC" ||
+      elem_type_ == "CompliantResistive" || elem_type_ == "RLC" ||
       elem_type_ == "ViscoElasticRLC" || elem_type_ == "ConvectiveViscoElasticRLC")
   {
     resistance_ = container.get<std::string>("Resistance");
@@ -77,7 +77,7 @@ bool Discret::Elements::RedAirway::read_element(const std::string& eletype,
   else
   {
     FOUR_C_THROW(
-        "Reading type of RED_AIRWAY element failed. Possible types: ComplientResistive/"
+        "Reading type of RED_AIRWAY element failed. Possible types: CompliantResistive/"
         "PoiseuilleResistive/TurbulentPoiseuilleResistive/InductoResistive/RLC/ViscoElasticRLC/"
         "ConvectiveViscoElasticRLC");
     exit(1);

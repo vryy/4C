@@ -46,7 +46,7 @@ namespace Core::LinearSolver
      * it re-uses the existing preconditioner and only updates the fine level matrix
      * for the Krylov solver.
      *
-     * It maintains backward compability to the ML interface!
+     * It maintains backward compatibility to the ML interface!
      *
      * @param create Boolean flag to enforce (re-)creation of the preconditioner
      * @param matrix Epetra_CrsMatrix to be used as input for the preconditioner

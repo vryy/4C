@@ -251,7 +251,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
 
       /*!
@@ -307,10 +307,10 @@ namespace Discret
       \param params (in/out): ParameterList for communication between control routine
                               and elements
       \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
@@ -373,8 +373,8 @@ namespace Discret
         calc_ale_laplace_spatial,   ///< compute stiffness based on laplacian smoothing based on
                                     ///< spatial configuration
         calc_ale_node_normal,       ///< Calculate boundary node normal
-        ba_calc_ale_node_normal,    ///< Calculate boundary node normal
-        setup_material,             ///< Setup material in case of ElastHyper Tool Box
+        boundary_calc_ale_node_normal,  ///< Calculate boundary node normal
+        setup_material,                 ///< Setup material in case of ElastHyper Tool Box
         calc_det_jac  ///< calculate Jacobian determinant and mesh quality measure according to
                       ///< [Oddy et al. 1988]
       };
@@ -493,7 +493,7 @@ namespace Discret
       The calculated dynamic triangle sjq is perpendicular to edge pr and face
       pqr. According to Farhat et al.
 
-      The interface of this function is rather wierd, I changed it to reduce
+      The interface of this function is rather weird, I changed it to reduce
       re-calculation of vectors that are used multiple times.
 
       \param node_i (in)    : Determine position of triangle sjq in
@@ -656,7 +656,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
 
       /*!
@@ -703,10 +703,10 @@ namespace Discret
       \param params (in/out): ParameterList for communication between control routine
                               and elements
       \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
-                              the controling method does not epxect the element to fill
+                              the controlling method does not epxect the element to fill
                               this matrix.
       \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
@@ -818,7 +818,7 @@ namespace Discret
       //  The calculated dynamic triangle sjq is perpendicular to edge pr and face
       //  pqr. According to Farhat et al.
       //
-      //  The interface of this function is rather wierd, I changed it to reduce
+      //  The interface of this function is rather weird, I changed it to reduce
       //  re-calculation of vectors that are used multiple times.
       //
       //  \param node_i (in)    : Determine position of triangle sjq in

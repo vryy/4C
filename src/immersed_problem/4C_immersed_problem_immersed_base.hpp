@@ -279,7 +279,7 @@ namespace Immersed
     \param time           (in) : current time will be the first value in the row
     \param filenameending (in) : ending of file to write to
     \param valuetowrite   (in) : first set of values to write to row
-    \param valuetowrite2  (in) : second set of values to wrtie to row
+    \param valuetowrite2  (in) : second set of values to write to row
     \param valuetowrite3  (in) : third set of values to write to row
     */
     void write_extra_output(MPI_Comm comm, const double time, const std::string filenameending,
@@ -398,7 +398,7 @@ namespace Immersed
     const int numproc = Core::Communication::num_mpi_ranks(comm);
     const int myrank = Core::Communication::my_mpi_rank(comm);  // myrank
     const int torank = (myrank + 1) % numproc;                  // sends to
-    const int fromrank = (myrank + numproc - 1) % numproc;      // recieves from
+    const int fromrank = (myrank + numproc - 1) % numproc;      // receives from
 
     Core::Communication::Exporter exporter(comm);
 
@@ -445,7 +445,7 @@ namespace Immersed
     //////     round robin loop
     //////
     ////// in this loop every processor sends the current coordinates of the given target
-    ////// point xi to his neighbors and checks whether the recieved coordinates lie within
+    ////// point xi to his neighbors and checks whether the received coordinates lie within
     ////// one of the rank's searchbox elements.
     //////
     ////// if so, this neighbor interpolates the necessary quantities to this point.
@@ -533,8 +533,8 @@ namespace Immersed
               // get parameter space coords xi in source element of global point xvec of target
               // element NOTE: if the target point xvec is very far away from the source element
               // curr
-              //       it is unnecessary to jump into this functon and invoke a newton iteration.
-              // Therfore: only call GlobalToCurrentLocal if distance is smaller than
+              //       it is unnecessary to jump into this function and invoke a newton iteration.
+              // Therefore: only call GlobalToCurrentLocal if distance is smaller than
               // fac*characteristic element length
               if (distance < 1.5 * diagonal)
               {
@@ -787,7 +787,7 @@ namespace Immersed
         int from = -1;
         exporter.receive_any(from, tag, rdata, length);
         if (tag != 1234 or from != fromrank)
-          FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
+          FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) is(%i -> %i)", fromrank,
               myrank, from, myrank);
 
         // ---- unpack data -----
@@ -825,7 +825,7 @@ namespace Immersed
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (owner != Core::Communication::my_mpi_rank(comm))
-      FOUR_C_THROW("after round robin every proc should have recieved his original data");
+      FOUR_C_THROW("after round robin every proc should have received his original data");
 #endif
 
     // now every proc should store the requested quantities in vectofill for his targetxi
@@ -880,7 +880,7 @@ namespace Immersed
     int numproc = Core::Communication::num_mpi_ranks(comm);
     const int myrank = Core::Communication::my_mpi_rank(comm);  // myrank
     const int torank = (myrank + 1) % numproc;                  // sends to
-    const int fromrank = (myrank + numproc - 1) % numproc;      // recieves from
+    const int fromrank = (myrank + numproc - 1) % numproc;      // receives from
 
     if (numproc == 1) doCommunication = false;
     if (doCommunication == false) numproc = 1;
@@ -916,7 +916,7 @@ namespace Immersed
     //////     round robin loop
     //////
     ////// in this loop every processor sends the current coordinates of the given target
-    ////// point xi to his neighbors and checks whether the recieved coordinates lie within
+    ////// point xi to his neighbors and checks whether the received coordinates lie within
     ////// one of the rank's searchbox elements.
     //////
     ////// if so, this neighbor interpolates the necessary quantities to this point.
@@ -1110,7 +1110,7 @@ namespace Immersed
         int from = -1;
         exporter.receive_any(from, tag, rdata, length);
         if (tag != 1234 or from != fromrank)
-          FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
+          FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) is(%i -> %i)", fromrank,
               myrank, from, myrank);
 
         // ---- unpack data -----
@@ -1136,7 +1136,7 @@ namespace Immersed
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (owner != Core::Communication::my_mpi_rank(comm))
-      FOUR_C_THROW("after round robin every proc should have recieved his original data");
+      FOUR_C_THROW("after round robin every proc should have received his original data");
 #endif
 
     // now every proc should store the requested quantities in vectofill for his targetxi
@@ -1208,7 +1208,7 @@ namespace Immersed
     int numproc = Core::Communication::num_mpi_ranks(comm);
     const int myrank = Core::Communication::my_mpi_rank(comm);  // myrank
     const int torank = (myrank + 1) % numproc;                  // sends to
-    const int fromrank = (myrank + numproc - 1) % numproc;      // recieves from
+    const int fromrank = (myrank + numproc - 1) % numproc;      // receives from
 
     if (numproc == 1) doCommunication = false;
 
@@ -1258,7 +1258,7 @@ namespace Immersed
     //////     round robin loop
     //////
     ////// in this loop every processor sends the current coordinates of the given target
-    ////// point xi to his neighbors and checks whether the recieved coordinates lie within
+    ////// point xi to his neighbors and checks whether the received coordinates lie within
     ////// one of the rank's searchbox elements.
     //////
     ////// if so, this neighbor interpolates the necessary quantities to this point.
@@ -1285,7 +1285,7 @@ namespace Immersed
       std::vector<char> sdata;
       std::vector<char> rdata;
 
-      // local coordinates of structrual surface point in parameter space of the fluid element
+      // local coordinates of structural surface point in parameter space of the fluid element
       Core::LinAlg::Matrix<fluid_dim, 1> fluid_xi(true);
 
       // loop over points that are not yet matched
@@ -1342,15 +1342,15 @@ namespace Immersed
                 for (int inode = 0; inode < structele->num_node(); ++inode)
                 {
                   // get current global position of structure node
-                  std::vector<double> struct_node_postion(3);
+                  std::vector<double> struct_node_position(3);
                   for (int idim = 0; idim < 3; ++idim)
-                    struct_node_postion[idim] =
+                    struct_node_position[idim] =
                         (structele->nodes())[inode]->x()[idim] + mydispnp[inode * 3 + idim];
 
                   // distance between fluid node and given structure node
-                  double dist = sqrt(pow(fluid_node_glob_coord[0] - struct_node_postion[0], 2) +
-                                     pow(fluid_node_glob_coord[1] - struct_node_postion[1], 2) +
-                                     pow(fluid_node_glob_coord[2] - struct_node_postion[2], 2));
+                  double dist = sqrt(pow(fluid_node_glob_coord[0] - struct_node_position[0], 2) +
+                                     pow(fluid_node_glob_coord[1] - struct_node_position[1], 2) +
+                                     pow(fluid_node_glob_coord[2] - struct_node_position[2], 2));
 
                   // only store point information, if distance is smallest so far
                   if (dist < stored_dist)
@@ -1360,7 +1360,7 @@ namespace Immersed
                     for (int idim = 0; idim < 3; ++idim)
                     {
                       vel_to_store[idim] = myvelnp[inode * 3 + idim];
-                      pos_to_store[idim] = struct_node_postion[idim];
+                      pos_to_store[idim] = struct_node_position[idim];
                     }
                   }
                 }  // end loop over nodes
@@ -1513,7 +1513,7 @@ namespace Immersed
         int from = -1;
         exporter.receive_any(from, tag, rdata, length);
         if (tag != 1234 or from != fromrank)
-          FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
+          FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) is(%i -> %i)", fromrank,
               myrank, from, myrank);
 
         // ---- unpack data -----

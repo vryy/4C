@@ -18,7 +18,7 @@ DIM           3
 -------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Structure_Scalar_Interaction
 ----------------------------------------------------------------IO
-STDOUTEVRY                      0
+STDOUTEVERY                      0
 ---------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT              ascii
 INTERVAL_STEPS                  10
@@ -52,8 +52,8 @@ COUPLE_BOUNDARY_FLUXES          No
 COUPLINGTYPE                    MatchingNodes
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         10
-RESULTSEVRY                     10
-RESTARTEVRY                     10
+RESULTSEVERY                     10
+RESTARTEVERY                     10
 TIMESTEP                        0.1
 COUPALGO                        ssi_Monolithic
 SCATRATIMINTTYPE                Elch

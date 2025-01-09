@@ -144,9 +144,9 @@ namespace Core::IO::GridGenerator
 
       size_t idx = 0;
       for (size_t iz = zranges[mysection[2]]; iz < zranges[mysection[2] + 1]; ++iz)
-        for (size_t iy = yranges[mysection[1]]; iy < yranges[mysection[1] + 1]; ++iy)
+        for (size_t it = yranges[mysection[1]]; it < yranges[mysection[1] + 1]; ++it)
           for (size_t ix = xranges[mysection[0]]; ix < xranges[mysection[0] + 1]; ++ix)
-            mynewele[idx++] = (iz * inputData.interval_[1] + iy) * inputData.interval_[0] + ix;
+            mynewele[idx++] = (iz * inputData.interval_[1] + it) * inputData.interval_[0] + ix;
 
       elementRowMap = std::make_shared<Epetra_Map>(
           -1, nummynewele, mynewele.data(), 0, Core::Communication::as_epetra_comm(comm));
@@ -193,7 +193,7 @@ namespace Core::IO::GridGenerator
             inputData.distype_.c_str());
       }
 
-      // Create specified elemnts
+      // Create specified elements
       switch (distype_enum)
       {
         case Core::FE::CellType::hex8:
@@ -254,7 +254,7 @@ namespace Core::IO::GridGenerator
     // note that nothing is actually redistributed in here
     std::tie(elementRowMap, elementColMap) = dis.build_element_row_column(*nodeRowMap, *nodeColMap);
 
-    // we can now export elements to resonable row element distribution
+    // we can now export elements to reasonable row element distribution
     dis.export_row_elements(*elementRowMap);
 
     // export to the column map / create ghosting of elements

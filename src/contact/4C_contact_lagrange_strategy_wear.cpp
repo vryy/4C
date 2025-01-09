@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
  | ctor (public)                                             farah 09/13|
  *----------------------------------------------------------------------*/
 Wear::LagrangeStrategyWear::LagrangeStrategyWear(
-    const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<std::shared_ptr<CONTACT::Interface>> interfaces, int dim, MPI_Comm comm,
     double alphaf, int maxdof)
@@ -433,7 +433,7 @@ void Wear::LagrangeStrategyWear::assemble_mortar()
       interface_[0]->assemble_wear(*wearvector_);
       wgap_->Update(1.0, *wearvector_, 1.0);
 
-      // update alle gap function entries for slave nodes!
+      // update all gap function entries for slave nodes!
       for (int i = 0; i < (int)interface_.size(); ++i)
       {
         for (int j = 0; j < (int)interface_[i]->slave_row_nodes()->NumMyElements(); ++j)
@@ -470,7 +470,7 @@ void Wear::LagrangeStrategyWear::initialize()
 
   if (wearimpl_ and !wearprimvar_)
   {
-    // create matrices for implicite wear: these matrices are due to
+    // create matrices for implicit wear: these matrices are due to
     // the gap-change in the compl. fnc.
     // Here are only the lin. w.r.t. the lagr. mult.
     wlinmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*gactiven_, 3);
@@ -1239,7 +1239,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   Core::LinAlg::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
   std::shared_ptr<Core::LinAlg::Vector<double>> tempvec1;
 
-  // fst: mutliply with linstickLM
+  // fst: multiply with linstickLM
   std::shared_ptr<Core::LinAlg::Vector<double>> fstmod;
   if (stickset)
   {
@@ -1255,7 +1255,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   }
 
   //--------------------------------------------------------- SIXTH LINE
-  // fsl: mutliply with linslipLM
+  // fsl: multiply with linslipLM
   std::shared_ptr<Core::LinAlg::Vector<double>> fslmod;
   std::shared_ptr<Core::LinAlg::Vector<double>> fslwmod;
 
@@ -1850,7 +1850,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   //                       WEARBLOCKS - BASIC
   /********************************************************************/
   // wcoeff: all blocks based on T-matrix have to be scaled with this
-  // coefficent...
+  // coefficient...
   double wcoeff = params().get<double>("WEARCOEFF");
 
   /********************************************************************/
@@ -2354,7 +2354,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   Core::LinAlg::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
   std::shared_ptr<Core::LinAlg::Vector<double>> tempvec1;
 
-  // fst: mutliply with linstickLM
+  // fst: multiply with linstickLM
   std::shared_ptr<Core::LinAlg::Vector<double>> fstmod;
   if (stickset)
   {
@@ -2370,7 +2370,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   }
 
   //--------------------------------------------------------- SIXTH LINE
-  // fsl: mutliply with linslipLM
+  // fsl: multiply with linslipLM
   std::shared_ptr<Core::LinAlg::Vector<double>> fslmod;
 
   if (slipset)
@@ -4106,7 +4106,7 @@ void Wear::LagrangeStrategyWear::output_wear()
         // be aware of problem dimension
         int dim = n_dim();
         int numdof = frinode->num_dof();
-        if (dim != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
+        if (dim != numdof) FOUR_C_THROW("Inconsistency Dim <-> NumDof");
 
         // nodal normal vector and wear
         double nn[3];
@@ -4129,7 +4129,7 @@ void Wear::LagrangeStrategyWear::output_wear()
 
     // extract active parts of D matrix
     // matrices, maps
-    std::shared_ptr<Core::LinAlg::SparseMatrix> daa, dai, dia, dii;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> data, dai, dia, dii;
     std::shared_ptr<Epetra_Map> gidofs;
 
     // ****************************************************************
@@ -4137,7 +4137,7 @@ void Wear::LagrangeStrategyWear::output_wear()
     // why is here an empty gidofs map instead of a full map used???
     // ****************************************************************
     Core::LinAlg::split_matrix2x2(
-        dmatrix_, gactivedofs_, gidofs, gactivedofs_, gidofs, daa, dai, dia, dii);
+        dmatrix_, gactivedofs_, gidofs, gactivedofs_, gidofs, data, dai, dia, dii);
 
     // extract active parts of wear vector
     std::shared_ptr<Core::LinAlg::Vector<double>> wear_vectora =
@@ -4152,19 +4152,19 @@ void Wear::LagrangeStrategyWear::output_wear()
     /* approx. undo the weighting of the wear by solving D * w = w~
      * dmatrix_ * real_wear = wear_
      *
-     * Note: Due to dual shape functions, daa is diagonal. So we don't need an actual solver.
-     *       We rather divide by the diagonal element of daa.
+     * Note: Due to dual shape functions, data is diagonal. So we don't need an actual solver.
+     *       We rather divide by the diagonal element of data.
      */
     if (gactivedofs_->NumGlobalElements())
     {
       // number of active DOFs on this proc
       const int lNumActiveDOFs = wear_vectora->MyLength();
 
-      // extract diagonal of daa
+      // extract diagonal of data
       Core::LinAlg::Vector<double> diagD(*gactivedofs_);
-      daa->epetra_matrix()->ExtractDiagonalCopy(*diagD.get_ptr_of_Epetra_Vector());
+      data->epetra_matrix()->ExtractDiagonalCopy(*diagD.get_ptr_of_Epetra_Vector());
 
-      // solve by dividing through diagonal elements of daa. Do not divide by 0.
+      // solve by dividing through diagonal elements of data. Do not divide by 0.
       for (int i = 0; i < lNumActiveDOFs; ++i)
         if ((diagD)[i] != 0.0) (real_weara)[i] = (*wear_vectora)[i] / (diagD)[i];
     }
@@ -4242,7 +4242,7 @@ void Wear::LagrangeStrategyWear::output_wear()
         Core::LinAlg::Vector<double> diagD(*wear2_vectori);
         d2ii->epetra_matrix()->ExtractDiagonalCopy(*diagD.get_ptr_of_Epetra_Vector());
 
-        // solve by dividing through diagonal elements of daa. Do not divide by 0.
+        // solve by dividing through diagonal elements of data. Do not divide by 0.
         for (int i = 0; i < lNumActiveDOFs; ++i)
           if ((diagD)[i] != 0.0) (wear2_real)[i] = (*wear2_vectori)[i] / (diagD)[i];
       }
@@ -4276,7 +4276,7 @@ void Wear::LagrangeStrategyWear::do_write_restart(
   // TODO: extend this function to forcedrestart -- write output for
   // last converged wear... see contact_lagrange_strategy.cpp!
 
-  // initalize
+  // initialize
   std::shared_ptr<Core::LinAlg::Vector<double>> activetoggle =
       std::make_shared<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
   std::shared_ptr<Core::LinAlg::Vector<double>> sliptoggle, weightedwear, realwear;
@@ -4371,7 +4371,7 @@ void Wear::LagrangeStrategyWear::recover(std::shared_ptr<Core::LinAlg::Vector<do
     // condensation has been performed for active LM only,
     // thus we construct a modified invd matrix here which
     // only contains the active diagonal block
-    // (this automatically renders the incative LM to be zero)
+    // (this automatically renders the inactive LM to be zero)
     std::shared_ptr<Core::LinAlg::SparseMatrix> invda;
     std::shared_ptr<Epetra_Map> tempmap;
     std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
@@ -4483,7 +4483,7 @@ void Wear::LagrangeStrategyWear::recover(std::shared_ptr<Core::LinAlg::Vector<do
     // condensation has been performed for active LM only,
     // thus we construct a modified invd matrix here which
     // only contains the active diagonal block
-    // (this automatically renders the incative LM to be zero)
+    // (this automatically renders the inactive LM to be zero)
     std::shared_ptr<Core::LinAlg::SparseMatrix> invda;
     std::shared_ptr<Epetra_Map> tempmap;
     std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
@@ -4773,7 +4773,7 @@ void Wear::LagrangeStrategyWear::do_read_restart(
     dmatrix_ = temp;
   }
 
-  // read restart information on actice set and slip set (leave sets empty
+  // read restart information on active set and slip set (leave sets empty
   // if this is a restart with contact of a non-contact simulation run)
   std::shared_ptr<Core::LinAlg::Vector<double>> activetoggle =
       std::make_shared<Core::LinAlg::Vector<double>>(*gsnoderowmap_);
@@ -5170,7 +5170,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
         // be aware of problem dimension
         const int dim = n_dim();
         const int numdof = cnode->num_dof();
-        if (dim != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
+        if (dim != numdof) FOUR_C_THROW("Inconsistency Dim <-> NumDof");
 
         // find indices for DOFs of current node in Core::LinAlg::Vector<double>
         // and extract this node's quantity from vectorinterface
@@ -5179,7 +5179,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
         for (int dof = 0; dof < dim; ++dof)
         {
           locindex[dof] = (vectorinterface->Map()).LID(cnode->dofs()[dof]);
-          if (locindex[dof] < 0) FOUR_C_THROW("StoreNodalQuantites: Did not find dof in map");
+          if (locindex[dof] < 0) FOUR_C_THROW("StoreNodalQuantities: Did not find dof in map");
 
           switch (type)
           {
@@ -5189,7 +5189,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
               if (cnode->is_dbc() && cnode->active())
                 FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->id());
 
-              // explicity set global Lag. Mult. to zero for D.B.C nodes
+              // explicitly set global Lag. Mult. to zero for D.B.C nodes
               if (cnode->is_dbc()) (*vectorinterface)[locindex[dof]] = 0.0;
 
               // store updated wcurr into node
@@ -5204,7 +5204,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
               if (cnode->is_dbc() && cnode->active())
                 FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->id());
 
-              // explicity set global Lag. Mult. to zero for D.B.C nodes
+              // explicitly set global Lag. Mult. to zero for D.B.C nodes
               if (cnode->is_dbc()) (*vectorinterface)[locindex[dof]] = 0.0;
 
               // store updated wcurr into node
@@ -5219,7 +5219,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
               if (cnode->is_dbc() && cnode->active())
                 FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->id());
 
-              // explicity set global Lag. Mult. to zero for D.B.C nodes
+              // explicitly set global Lag. Mult. to zero for D.B.C nodes
               if (cnode->is_dbc()) (*vectorinterface)[locindex[dof]] = 0.0;
 
               // store updated wcurr into node

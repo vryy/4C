@@ -249,7 +249,7 @@ namespace
   TEST_F(FullConstrainedMixtureFiberTest, AdaptiveHistoryToleranceComparisonModelEquation)
   {
     // compare the results of the fully integrated constrained mixture fiber with the adaptive
-    // integraded fiber
+    // integrated fiber
     Mixture::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
     Mixture::FullConstrainedMixtureFiber cm_fiber_adaptive = generate_fiber<double>(
         12.0, 0.1, 1.1, true, Mixture::HistoryAdaptionStrategy::model_equation);
@@ -281,7 +281,7 @@ namespace
   TEST_F(FullConstrainedMixtureFiberTest, AdaptiveHistoryToleranceComparisonHigherOrder)
   {
     // compare the results of the fully integrated constrained mixture fiber with the adaptive
-    // integraded fiber
+    // integrated fiber
     Mixture::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
     Mixture::FullConstrainedMixtureFiber cm_fiber_adaptive = generate_fiber<double>(
         12.0, 0.1, 1.1, true, Mixture::HistoryAdaptionStrategy::higher_order_integration);
@@ -313,7 +313,7 @@ namespace
   TEST_F(FullConstrainedMixtureFiberTest, AdaptiveHistoryToleranceComparisonWindow)
   {
     // compare the results of the fully integrated constrained mixture fiber with the adaptive
-    // integraded fiber
+    // integrated fiber
     Mixture::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>(1.2, 0.1, 1.1);
     Mixture::FullConstrainedMixtureFiber cm_fiber_adaptive =
         generate_fiber<double>(1.2, 0.1, 1.1, true, Mixture::HistoryAdaptionStrategy::window);

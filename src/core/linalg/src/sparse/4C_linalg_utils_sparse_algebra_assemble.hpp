@@ -29,7 +29,7 @@ namespace Core::LinAlg
    \brief Assemble an Core::LinAlg::SerialDenseMatrix into an Epetra_CrsMatrix
 
    This is an individual call.
-   Will only assemble locally and will never do any commmunication.
+   Will only assemble locally and will never do any communication.
    All values that can not be assembled locally will be ignored.
    Will use the communicator and rowmap from matrix A to determine ownerships.
    Local matrix Aele may be \b square or \b rectangular.
@@ -38,7 +38,7 @@ namespace Core::LinAlg
    Filled()! If matrix A is not Filled(), it will be enlarged as required.
 
    \note The user must provide an \b additional input vector 'lmcol'
-   containing the column gids for assembly seperately!
+   containing the column gids for assembly separately!
 
    \param A (out)         : Sparse matrix to be assembled on
    \param Aele (in)       : dense matrix to be assembled
@@ -54,7 +54,7 @@ namespace Core::LinAlg
    \brief Assemble an Core::LinAlg::SerialDenseVector into an Core::LinAlg::Vector<double>
 
    This is an individual call.
-   Will only assemble locally and will never do any commmunication.
+   Will only assemble locally and will never do any communication.
    All values that can not be assembled locally will be ignored.
    Will use the communicator from vector V to determine ownerships.
 
@@ -70,7 +70,7 @@ namespace Core::LinAlg
    \brief Assemble a Core::LinAlg::SerialDenseVector into a Core::LinAlg::MultiVector<double>
 
    This is an individual call.
-   Will only assemble locally and will never do any commmunication.
+   Will only assemble locally and will never do any communication.
    All values that can not be assembled locally will be ignored.
    Will use the communicator from vector V to determine ownerships.
 
@@ -256,7 +256,7 @@ namespace Core::LinAlg
    The purpose of the routine is a smooth transition from Dirichlet toggle vectors
    to Dirichlet condition maps. Eventually, this method should be removed.
 
-   A Dirichlet toogle vector is a real vector which holds a 1.0 at DOF subjected
+   A Dirichlet toggle vector is a real vector which holds a 1.0 at DOF subjected
    to Dirichlet boundary conditions and a 0.0 at every remaining/free DOF.
 
    \param dbctoggle (in)     : the Dirichlet toggle vector

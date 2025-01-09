@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 CONTACT::AbstractStrategy::AbstractStrategy(
-    const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
     const Teuchos::ParameterList& params_in, const int spatialDim, const MPI_Comm& comm,
     const double alphaf, const int maxdof)
@@ -751,7 +751,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
   }
 
   // transform modified old D-matrix in case of friction
-  // (ony necessary after parallel redistribution)
+  // (only necessary after parallel redistribution)
   if (redistributed && friction_ && is_dual_quad_slave_trafo())
   {
     if (doldmod_ == nullptr)
@@ -1561,7 +1561,7 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> CONTACT::AbstractStrategy::evaluate_
 }
 
 /*----------------------------------------------------------------------*
- |  Store Lagrange mulitpliers and disp. jumps into CNode     popp 06/08|
+ |  Store Lagrange multipliers and disp. jumps into CNode     popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::QuantityType type)
 {
@@ -1631,7 +1631,7 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Qua
 
       // be aware of problem dimension
       const int numdof = cnode->num_dof();
-      if (n_dim() != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
+      if (n_dim() != numdof) FOUR_C_THROW("Inconsistency Dim <-> NumDof");
 
       // find indices for DOFs of current node in Core::LinAlg::Vector<double>
       // and extract this node's quantity from vectorinterface
@@ -1640,7 +1640,7 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Qua
       for (int dof = 0; dof < n_dim(); ++dof)
       {
         locindex[dof] = (vectorinterface->Map()).LID(cnode->dofs()[dof]);
-        if (locindex[dof] < 0) FOUR_C_THROW("StoreNodalQuantites: Did not find dof in map");
+        if (locindex[dof] < 0) FOUR_C_THROW("StoreNodalQuantities: Did not find dof in map");
 
         switch (type)
         {
@@ -1715,7 +1715,7 @@ void CONTACT::AbstractStrategy::compute_contact_stresses()
 
       // be aware of problem dimension
       const int numdof = cnode->num_dof();
-      if (n_dim() != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
+      if (n_dim() != numdof) FOUR_C_THROW("Inconsistency Dim <-> NumDof");
 
       double nn[3];
       double nt1[3];
@@ -1903,7 +1903,7 @@ void CONTACT::AbstractStrategy::do_write_restart(
     std::map<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>& restart_vectors,
     bool forcedrestart) const
 {
-  // initalize
+  // initialize
   std::shared_ptr<Core::LinAlg::Vector<double>> activetoggle =
       std::make_shared<Core::LinAlg::Vector<double>>(slave_row_nodes());
   std::shared_ptr<Core::LinAlg::Vector<double>> sliptoggle = nullptr;

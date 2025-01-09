@@ -62,7 +62,7 @@ namespace FBI
      */
     virtual void set_binning(std::shared_ptr<Core::Binstrategy::BinningStrategy> binning);
 
-    /** \brief Setup the Geoemtry object
+    /** \brief Setup the Geometry object
      *
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
@@ -104,7 +104,7 @@ namespace FBI
      * every pair is only evaluated once. This function handles all necessary communication to send
      * the data from the owner of the fluid element ( which did the search) to the owner of the beam
      * element ( who ensures uniqueness of the beam segments). This becomes obsolete as soon as the
-     * geoemtry pair is adapted to handle the communication of the tracking data instead.
+     * geometry pair is adapted to handle the communication of the tracking data instead.
      *
      * \param[in] discretizations vector containing the structure and fluid discretizations
      * respectively

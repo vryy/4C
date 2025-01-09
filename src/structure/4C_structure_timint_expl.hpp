@@ -267,7 +267,7 @@ namespace Solid
     {
       output_step(forced_writerestart);
       // write Gmsh output
-      write_gmsh_struc_output_step();
+      write_gmsh_struct_output_step();
       return;
     }
 
@@ -380,7 +380,7 @@ namespace Solid
       return Inpar::Solid::conv_success;
     }
 
-    //! prepare partiton step
+    //! prepare partition step
     void prepare_partition_step() override
     {
       // do nothing for explicit time integrators

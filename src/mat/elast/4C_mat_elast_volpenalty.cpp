@@ -15,9 +15,9 @@ FOUR_C_NAMESPACE_OPEN
 Mat::Elastic::PAR::VolPenalty::VolPenalty(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
       eps_(matdata.parameters.get<double>("EPSILON")),
-      gam_(matdata.parameters.get<double>("GAMMA"))
+      game_(matdata.parameters.get<double>("GAMMA"))
 {
-  if (eps_ < 0. || gam_ <= 0.)
+  if (eps_ < 0. || game_ <= 0.)
     FOUR_C_THROW("VolPenalty parameters EPSILON and GAMMA have to be greater zero");
 }
 
@@ -28,11 +28,11 @@ void Mat::Elastic::VolPenalty::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double eps = params_->eps_;
-  const double gam = params_->gam_;
+  const double game = params_->game_;
 
   // strain energy: Psi=\epsilon \left( J^{\gamma} + \frac 1 {J^{\gamma}} -2 \right)
   // add to overall strain energy
-  psi += eps * (pow(modinv(2), gam) + pow(modinv(2), -gam) - 2.);
+  psi += eps * (pow(modinv(2), game) + pow(modinv(2), -game) - 2.);
 }
 
 void Mat::Elastic::VolPenalty::add_derivatives_modified(Core::LinAlg::Matrix<3, 1>& dPmodI,
@@ -40,21 +40,22 @@ void Mat::Elastic::VolPenalty::add_derivatives_modified(Core::LinAlg::Matrix<3, 
     const int eleGID)
 {
   const double eps = params_->eps_;
-  const double gam = params_->gam_;
+  const double game = params_->game_;
 
-  dPmodI(2) += eps * gam * (pow(modinv(2), gam - 1.) - pow(modinv(2), -gam - 1.));
+  dPmodI(2) += eps * game * (pow(modinv(2), game - 1.) - pow(modinv(2), -game - 1.));
 
   ddPmodII(2) +=
-      eps * gam * ((gam - 1.) * pow(modinv(2), gam - 2.) + (gam + 1.) * pow(modinv(2), -gam - 2.));
+      eps * game *
+      ((game - 1.) * pow(modinv(2), game - 2.) + (game + 1.) * pow(modinv(2), -game - 2.));
 }
 
 void Mat::Elastic::VolPenalty::add3rd_vol_deriv(
     const Core::LinAlg::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
 {
   const double eps = params_->eps_;
-  const double gam = params_->gam_;
+  const double game = params_->game_;
   const double J = modinv(2);
-  d3PsiVolDJ3 += eps * (gam * (gam - 1.) * (gam - 2.) * pow(J, gam - 3.) +
-                           (-gam) * (-gam - 1.) * (-gam - 2.) * pow(J, -gam - 3.));
+  d3PsiVolDJ3 += eps * (game * (game - 1.) * (game - 2.) * pow(J, game - 3.) +
+                           (-game) * (-game - 1.) * (-game - 2.) * pow(J, -game - 3.));
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -178,7 +178,7 @@ Cut::TetMeshIntersection::TetMeshIntersection(Options& options, Element* element
         case 2:
           // Degenerated nonsense. Why does that happen?
           FOUR_C_THROW(
-              "In TetMeshIntersection() the corner points of a facet is points.size()=2. Shoudln't "
+              "In TetMeshIntersection() the corner points of a facet is points.size()=2. Should't "
               "happen?");
 
           // make sure the mapping entry exists
@@ -274,7 +274,7 @@ void Cut::TetMeshIntersection::cut(Mesh& parent_mesh, Element* element,
   plain_element_set elements_done;
   // increase counter
   ++count;
-  // note: purpose of count is not reallly known, guess it was related to recursion
+  // note: purpose of count is not really known, guess it was related to recursion
   cut_mesh_.cut(mesh_, elements_done /*, count */);
   // cut_mesh_.Cut( mesh_, elements_done, count );
 

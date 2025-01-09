@@ -21,8 +21,8 @@ SEARCH_RADIUS                         0.2
 MAXTIME                               0.05
 TIMESTEP                              0.01
 NUMSTEP                               2
-RESULTSEVRY                           3
-RESTARTEVRY                           3
+RESULTSEVERY                           3
+RESTARTEVERY                           3
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                               1.0E-08
 ITEMAX                                50

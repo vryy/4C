@@ -337,7 +337,7 @@ void FLD::TimIntHDG::set_initial_flow_field(
       initfield == Inpar::FLUID::initfield_passive_hit_const_input)
   {
     // initialize calculation of initial field based on fast Fourier transformation
-    HomIsoTurbInitialFieldHDG HitInitialFieldHDG(*this, initfield);
+    HomoIsoTurbInitialFieldHDG HitInitialFieldHDG(*this, initfield);
     // calculate initial field
     HitInitialFieldHDG.calculate_initial_field();
 
@@ -603,7 +603,7 @@ void FLD::TimIntHDG::calc_intermediate_solution()
 }
 
 /*----------------------------------------------------------------------*
- | Initialize forcing for HIT and peridic hill                  bk 04/15|
+ | Initialize forcing for HIT and periodic hill                  bk 04/15|
  *----------------------------------------------------------------------*/
 void FLD::TimIntHDG::init_forcing()
 {
@@ -621,7 +621,7 @@ void FLD::TimIntHDG::init_forcing()
         special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
         special_flow_ == "decaying_homogeneous_isotropic_turbulence")
     {
-      forcing_interface_ = std::make_shared<FLD::HomIsoTurbForcingHDG>(*this);
+      forcing_interface_ = std::make_shared<FLD::HomoIsoTurbForcingHDG>(*this);
     }
     else
       FOUR_C_THROW("forcing interface doesn't know this flow");

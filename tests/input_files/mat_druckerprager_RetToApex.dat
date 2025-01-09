@@ -38,8 +38,8 @@ SOLVER                          Superlu
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      Statics
 PRESTRESSTOLDISP                1e-12
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVERY                     1
+RESTARTEVERY                     1
 TIMESTEP                        5
 NUMSTEP                         3
 MAXTIME                         15

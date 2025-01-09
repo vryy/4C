@@ -1473,7 +1473,7 @@ void CONTACT::Coupling3dManager::consistent_dual_shape()
   if (algo != Inpar::Mortar::algorithm_mortar) return;
 
   // For standard shape functions no modification is necessary
-  // A switch erlier in the process improves computational efficiency
+  // A switch earlier in the process improves computational efficiency
   auto consistent =
       Teuchos::getIntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
   if (shape_fcn() == Inpar::Mortar::shape_standard || consistent == Inpar::Mortar::consistent_none)

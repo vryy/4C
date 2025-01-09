@@ -38,13 +38,13 @@ NORMCOMBI_RESFINC               Or
 NORM_INC                        AbsGlobal
 NORM_RESF                       AbsGlobal
 NUMSTEP                         20
-RESTARTEVRY                     10
+RESTARTEVERY                     10
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  Inf
 TIMESTEP                        0.01
-RESULTSEVRY                     5
+RESULTSEVERY                     5
 LINEAR_SOLVER                   1
 SECONDORDER                     no
 TRANSIENT_TERMS			none

@@ -48,7 +48,7 @@ namespace BeamInteraction
   namespace Beam3TangentSmoothing
   {
     //! \brief Determine the neighbour elements of an element
-    std::shared_ptr<B3CNeighbor> determine_neigbors(const Core::Elements::Element* element1);
+    std::shared_ptr<B3CNeighbor> determine_neighbors(const Core::Elements::Element* element1);
 
     //! \brief Get boundary node
     int get_boundary_node(const int nnode);

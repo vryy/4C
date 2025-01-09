@@ -544,7 +544,7 @@ namespace BeamInteraction
         const Core::LinAlg::Matrix<3, 1, TYPE>& t2_xi, bool& elementscolinear);
 
     /*!
-    \brief Evaluate orthogonality cond. of point to line projeciton
+    \brief Evaluate orthogonality cond. of point to line projection
     */
     void evaluate_ptl_orthogonality_condition(TYPE& f,
         const Core::LinAlg::Matrix<3, 1, TYPE>& delta_r, const double norm_delta_r,

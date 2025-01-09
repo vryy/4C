@@ -710,7 +710,7 @@ int Discret::Elements::SoTet4::evaluate_neumann(Teuchos::ParameterList& params,
   {
     if ((*onoff)[checkdof] != 0)
       FOUR_C_THROW(
-          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+          "Number of Dimensions in Neumann_Evaluation is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS
@@ -1361,7 +1361,7 @@ void Discret::Elements::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
       if (solid_material()->varying_density())
       {
         /*
-        If the density, i.e. the mass matrix, is not constant, a linearization is neccessary.
+        If the density, i.e. the mass matrix, is not constant, a linearization is necessary.
         In general, the mass matrix can be dependent on the displacements, the velocities and the
         accelerations. We write all the additional terms into the mass matrix, hence, conversion
         from accelerations to velocities and displacements are needed. As those conversions depend
@@ -1843,7 +1843,7 @@ void Discret::Elements::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
   if ((material()->material_type() == Core::Materials::m_constraintmixture) ||
       (material()->material_type() == Core::Materials::m_elasthyper))
   {
-    // in a first step ommit everything with prestress
+    // in a first step omit everything with prestress
 
     // current  displacements of element
     Core::LinAlg::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xdisp;
@@ -1985,7 +1985,7 @@ void Discret::Elements::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
 
         // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
         double newgamma = atan2(lambda(1, 1), lambda(2, 2));
-        // compression in 2nd max direction, thus fibers are alligned to max principal direction
+        // compression in 2nd max direction, thus fibers are aligned to max principal direction
         if (lambda(1, 1) < 0) newgamma = 0.0;
 
         // new fiber vectors

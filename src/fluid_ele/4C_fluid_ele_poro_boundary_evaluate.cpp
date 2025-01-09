@@ -102,7 +102,7 @@ void Discret::Elements::FluidPoroBoundary::location_vector(const Core::FE::Discr
       }
     }
     break;
-    case FLD::ba_none:
+    case FLD::boundary_none:
       FOUR_C_THROW("No action supplied");
       break;
     default:

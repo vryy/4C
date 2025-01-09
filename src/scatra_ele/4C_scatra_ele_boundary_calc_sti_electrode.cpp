@@ -216,7 +216,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype,
     }
     case Inpar::S2I::kinetics_butlervolmerreducedthermoresistance:
     {
-      // Flux of energy from mass flux and from difference in termperature
+      // Flux of energy from mass flux and from difference in temperature
       double j_timefacrhsfac(0.0);
       double djdT_slave_timefacfac(0.0);
       double djdT_master_timefacfac(0.0);

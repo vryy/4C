@@ -1107,7 +1107,7 @@ namespace Mat
 
   /*----------------------------------------------------------------------*/
   /*! \class InelasticDefgradLinTempIso
-   *Volumetric change due to this law is linearily dependent on the temperature
+   *Volumetric change due to this law depends on the temperature linearly.
    \f$ T \f$ as follows:
    \f[
    \boldsymbol{F}_\text{in} = \boldsymbol{I} \left[ 1 + \beta \left( T - T_\text{ref} \right)

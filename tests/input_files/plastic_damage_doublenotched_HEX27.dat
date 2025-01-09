@@ -44,7 +44,7 @@ FILESTEPS                       1000
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      yes
 PREFIX_GROUP_ID                 No
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 STRUCT_COUPLING_STRESS          No
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           GL
@@ -89,9 +89,9 @@ PREDICT                         ConstDis
 PRESTRESS                       none
 PRESTRESSTIME                   0
 PTCDT                           0.1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     1
+RESULTSEVERY                     1
 STC_LAYER                       1
 STC_SCALING                     no
 TIMESTEP                        0.2

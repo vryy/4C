@@ -8,8 +8,8 @@ https://physiology.arizona.edu/people/secomb/network/rattum98
 PROBLEMTYPE                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
-RESULTSEVRY                     2
-RESTARTEVRY                     3
+RESULTSEVERY                     2
+RESTARTEVERY                     3
 NUMSTEP                         4
 MAXTIME                         0.024
 TIMESTEP                        0.006

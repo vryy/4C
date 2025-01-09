@@ -99,7 +99,7 @@ namespace Core
  * All format arguments are passed as additional arguments. For example:
  *
  * @code
- *   FOUR_C_THROW("An error occured in iteration %d.", iter);
+ *   FOUR_C_THROW("An error occurred in iteration %d.", iter);
  * @endcode
  */
 #define FOUR_C_THROW \

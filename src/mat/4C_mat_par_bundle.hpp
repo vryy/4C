@@ -35,7 +35,7 @@ namespace Mat
     ///
     /// <h4>Special issues for multi-problem-instance applications</h4>
     /// We have for each Global::Problem instance an individual material bundle.
-    /// However, this fact is not transparanet at the read time of the elements
+    /// However, this fact is not transparent at the read time of the elements
     /// which are only aware of their material ID. The variable #materialreadfromproblem_
     /// of the material bundle of the 0th Global::Problem instance make it possible to switch
     /// among different Global::Problem. (The variable #materialreadfromproblem_ is redundant
@@ -77,7 +77,7 @@ namespace Mat
 
       /// return (first) ID by material type
       ///
-      /// \return The ID of seached for material type.
+      /// \return The ID of searched for material type.
       ///         If the search is unsuccessful -1 is returned
       int first_id_by_type(const Core::Materials::MaterialType type) const;
 
@@ -95,7 +95,7 @@ namespace Mat
       void reset_read_from_problem() { materialreadfromproblem_ = 0; }
 
      private:
-      /// The map linking material IDs to input paramters. The data is stored as a lazy pointer to
+      /// The map linking material IDs to input parameters. The data is stored as a lazy pointer to
       /// allow for lazy construction of material parameters in arbitrary order.
       std::map<int, Core::Utils::LazyPtr<Core::Mat::PAR::Parameter>> matmap_;
 

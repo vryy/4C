@@ -26,7 +26,7 @@ FILESTEPS                       1000
 COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 TIMESTEP                        0.1
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 SECONDORDER                     Yes
 CONTIPARTINT                    Yes
 -------------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
@@ -55,7 +55,7 @@ THETA                           1.0
 MAXTIME                         0.3
 TIMESTEP                        0.1
 NUMSTEP                         3
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 COUPALGO                        iter_xfem_monolithic
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          10

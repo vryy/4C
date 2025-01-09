@@ -44,9 +44,9 @@ void Inpar::PARTICLE::set_valid_parameters(Teuchos::ParameterList& list)
 
   // output type
   Core::Utils::int_parameter(
-      "RESULTSEVRY", 1, "write particle runtime output every RESULTSEVRY steps", &particledyn);
+      "RESULTSEVERY", 1, "write particle runtime output every RESULTSEVERY steps", &particledyn);
   Core::Utils::int_parameter(
-      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &particledyn);
+      "RESTARTEVERY", 1, "write restart possibility every RESTARTEVERY steps", &particledyn);
 
   // write ghosted particles
   Core::Utils::bool_parameter(

@@ -125,9 +125,9 @@ PREDICT                         ConstDis
 PRESTRESS                       None
 PRESTRESSTIME                   1.001
 PTCDT                           0.1
-RESEVRYERGY                     0
-RESTARTEVRY                     0
-RESULTSEVRY                     1
+RESEVERYERGY                     0
+RESTARTEVERY                     0
+RESULTSEVERY                     1
 STC_LAYER                       1
 TIMESTEP                        0.009
 TOLCONSTR                       1e-08

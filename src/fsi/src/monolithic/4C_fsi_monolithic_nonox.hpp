@@ -274,7 +274,7 @@ namespace FSI
      */
     void validate_parameters();
 
-    /// dof row map splitted in (field) blocks
+    /// dof row map split in (field) blocks
     Core::LinAlg::MultiMapExtractor blockrowdofmap_;
 
     /// output stream

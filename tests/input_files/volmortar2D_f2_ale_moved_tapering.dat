@@ -25,7 +25,7 @@ LIFTDRAG                        No
 CONVFORM                        convective
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 THETA                           1
 NUMSTEP                         5
 ITEMAX                          10
@@ -47,7 +47,7 @@ DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 NUMSTEP                         5
 MAXTIME                         5.0
 TIMESTEP                        0.1
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 MATCHGRID_FLUIDALE              no
 --------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        1.0

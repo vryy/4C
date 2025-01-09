@@ -145,14 +145,14 @@ namespace Arteries
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
-    /// This method provides backward compatability only. Formerly, the Dirichlet conditions
+    /// This method provides backward compatibility only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
     const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichlet();
 
     /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
     ///
-    /// This method provides backward compatability only. Formerly, the Dirichlet conditions
+    /// This method provides backward compatibility only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
     const std::shared_ptr<const Core::LinAlg::Vector<double>> inv_dirichlet();
@@ -191,7 +191,7 @@ namespace Arteries
     //@}
 
     //! @name Pressure at time n
-    std::shared_ptr<Core::LinAlg::Vector<double>> pn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> on_;
     //@}
 
     //! @name Area at time n

@@ -151,7 +151,7 @@ at least one `SOLVER` section (for contact problems we need to specify two solve
 one for the state, where not contact is active, and one for the state with active contact) and a `MATERIALS` section.
 The time integration method `DYNAMICTYPE` (Generalized alpha method), time step size `TIMESTEP` and final time `MAXTIME`
 are also specified for structural dynamics.
-An important parameter is `RESULTSEVRY`, which specifies how often output is written and thus directly controles the
+An important parameter is `RESULTSEVERY`, which specifies how often output is written and thus directly controles the
 size of the output file.
 
 The contact specific parameters are given under `--MORTAR COUPLING`. Dual Lagrange multipliers are chosen for the

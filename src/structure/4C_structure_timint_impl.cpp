@@ -316,7 +316,7 @@ void Solid::TimIntImpl::output(const bool forced_writerestart)
   output_step(forced_writerestart);
 
   // write Gmsh output
-  write_gmsh_struc_output_step();
+  write_gmsh_struct_output_step();
 }
 
 /*----------------------------------------------------------------------*/
@@ -523,7 +523,7 @@ void Solid::TimIntImpl::prepare_partition_step()
   }
 
   // determine characteristic norms
-  // we set the minumum of calc_ref_norm_force() and #tolfres_, because
+  // we set the minimum of calc_ref_norm_force() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
   normcharforce_ = calc_ref_norm_force();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
@@ -543,7 +543,7 @@ void Solid::TimIntImpl::prepare_partition_step()
 /* Check for LS with condensed variables and do preparations */
 void Solid::TimIntImpl::prepare_line_search()
 {
-  // each proc searchs through his elements
+  // each proc searches through his elements
   int haveCondensationLocal = 0;
   int haveCondensationGlobal = 0;
 
@@ -1088,7 +1088,7 @@ void Solid::TimIntImpl::apply_force_stiff_beam_contact(Core::LinAlg::SparseOpera
 
     // make contact / meshtying modifications to lhs and rhs
     // (set boolean flag 'newsti' to true, which activates
-    // sclaing of contact stiffness with appropriate scaling
+    // scaling of contact stiffness with appropriate scaling
     // factor, e.g. (1.0-alphaf), internally)
     beamcman_->evaluate(*system_matrix(), fresm, dis, beamcontactparams, true, timen_);
 
@@ -1327,7 +1327,7 @@ bool Solid::TimIntImpl::converged()
       default:
         FOUR_C_THROW(
             "Cannot check for convergence of residual pressures! Only for absolute residuals "
-            "implemeted so far!");
+            "implemented so far!");
         break;
     }
 
@@ -1826,7 +1826,7 @@ int Solid::TimIntImpl::lin_solve_error_check(int linerror)
 /* error check for element problems in form of a negative Jacobian determinant */
 int Solid::TimIntImpl::element_error_check(bool evalerr)
 {
-  // merly care about element problems if there is a fancy divcont action
+  // merely care about element problems if there is a fancy divcont action
   // and element errors are considered
   if (evalerr and (divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err or
                       divcontype_ == Inpar::Solid::divcont_adapt_3D0Dptc_ele_err))
@@ -3119,9 +3119,9 @@ void Solid::TimIntImpl::cmt_linear_solve()
     std::shared_ptr<Epetra_Map> slaveDofMap;
     std::shared_ptr<Epetra_Map> innerDofMap;
     std::shared_ptr<Epetra_Map> activeDofMap;
-    std::shared_ptr<Mortar::StrategyBase> strat =
+    std::shared_ptr<Mortar::StrategyBase> strategy =
         Core::Utils::shared_ptr_from_ref(cmtbridge_->get_strategy());
-    strat->collect_maps_for_preconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
+    strategy->collect_maps_for_preconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
 
     // feed Belos based solvers with contact information
     if (contactsolver_->params().isSublist("Belos Parameters"))
@@ -3132,14 +3132,14 @@ void Solid::TimIntImpl::cmt_linear_solve()
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", Teuchos::rcp(innerDofMap));
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", Teuchos::rcp(activeDofMap));
       std::shared_ptr<CONTACT::AbstractStrategy> costrat =
-          std::dynamic_pointer_cast<CONTACT::AbstractStrategy>(strat);
+          std::dynamic_pointer_cast<CONTACT::AbstractStrategy>(strategy);
       if (costrat != nullptr)
         mueluParams.set<std::string>("Core::ProblemType", "contact");
       else
         mueluParams.set<std::string>("Core::ProblemType", "meshtying");
       mueluParams.set<int>("time step", step_);
       mueluParams.set<int>("iter", iter_);
-      mueluParams.set<bool>("reuse preconditioner", strat->active_set_converged());
+      mueluParams.set<bool>("reuse preconditioner", strategy->active_set_converged());
     }
   }  // end: feed solver with contact/meshtying information
 
@@ -4180,7 +4180,7 @@ void Solid::TimIntImpl::use_block_matrix(
     std::shared_ptr<Core::LinAlg::Vector<double>> finert = nullptr;
     if (have_nonlinear_mass())
     {
-      finert = Core::LinAlg::create_vector(*dof_row_map_view(), true);  // intertial force
+      finert = Core::LinAlg::create_vector(*dof_row_map_view(), true);  // inertial force
       // Note: the following parameters are just dummies, since they are only needed to calculate
       // finert which we will not use anyway
       p.set("timintfac_dis", 0.0);  // dummy!
@@ -4222,7 +4222,7 @@ void Solid::TimIntImpl::use_block_matrix(
   }
 
   // We need to reset the stiffness matrix because its graph (topology)
-  // is not finished yet in case of constraints and posssibly other side
+  // is not finished yet in case of constraints and possibly other side
   // effects (basically managers).
   stiff_->reset();
 }
@@ -4498,9 +4498,9 @@ int Solid::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
     std::shared_ptr<Epetra_Map> slaveDofMap;
     std::shared_ptr<Epetra_Map> innerDofMap;
     std::shared_ptr<Epetra_Map> activeDofMap;
-    std::shared_ptr<Mortar::StrategyBase> strat =
+    std::shared_ptr<Mortar::StrategyBase> strategy =
         Core::Utils::shared_ptr_from_ref(cmtbridge_->get_strategy());
-    strat->collect_maps_for_preconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
+    strategy->collect_maps_for_preconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
 
     // feed Belos based solvers with contact information
     // if (contactsolver_->Params().isSublist("Belos Parameters"))
@@ -4514,14 +4514,14 @@ int Solid::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", Teuchos::rcp(innerDofMap));
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", Teuchos::rcp(activeDofMap));
       std::shared_ptr<CONTACT::AbstractStrategy> costrat =
-          std::dynamic_pointer_cast<CONTACT::AbstractStrategy>(strat);
+          std::dynamic_pointer_cast<CONTACT::AbstractStrategy>(strategy);
       if (costrat != nullptr)
         mueluParams.set<std::string>("Core::ProblemType", "contact");
       else
         mueluParams.set<std::string>("Core::ProblemType", "meshtying");
       mueluParams.set<int>("time step", step_);
       mueluParams.set<int>("iter", iter_);
-      mueluParams.set<bool>("reuse preconditioner", strat->active_set_converged());
+      mueluParams.set<bool>("reuse preconditioner", strategy->active_set_converged());
     }
 
   }  // end: feed solver with contact/meshtying information

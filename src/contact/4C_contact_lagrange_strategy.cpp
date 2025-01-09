@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::LagrangeStrategy::LagrangeStrategy(
-    const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<std::shared_ptr<CONTACT::Interface>> interface, const int spatialDim, MPI_Comm comm,
     const double alphaf, const int maxdof)
@@ -286,7 +286,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
         std::make_shared<Core::LinAlg::SparseMatrix>(*dmatrix_);
 
     // for nonsmooth contact inverting D is more complex:
-    // Note: this invertation if only applicable when vertex, edge and surface nodes
+    // Note: this inversion if only applicable when vertex, edge and surface nodes
     // are involved. For a falling coin (only surface and edge nodes), a special but
     // more easy implementation is needed.
     if (nonSmoothContact_)
@@ -362,32 +362,32 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       dev->scale(-1.0);
 
       // inv_dse
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum1;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det1;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dse;
-      dum1 = Core::LinAlg::matrix_multiply(*dse, false, invdE, false, false, false, true);
-      dinv_dse = Core::LinAlg::matrix_multiply(invdS, false, *dum1, false, false, false, true);
+      inv_det1 = Core::LinAlg::matrix_multiply(*dse, false, invdE, false, false, false, true);
+      dinv_dse = Core::LinAlg::matrix_multiply(invdS, false, *inv_det1, false, false, false, true);
 
       // inv_dev
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum2;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det2;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dev;
-      dum2 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
-      dinv_dev = Core::LinAlg::matrix_multiply(invdE, false, *dum2, false, false, false, true);
+      inv_det2 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
+      dinv_dev = Core::LinAlg::matrix_multiply(invdE, false, *inv_det2, false, false, false, true);
 
       // inv_dsv part1
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum3;
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum4;
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum5;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det3;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det4;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det5;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dsv1;
-      dum3 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
-      dum4 = Core::LinAlg::matrix_multiply(invdE, false, *dum3, false, false, false, true);
-      dum5 = Core::LinAlg::matrix_multiply(*dse, false, *dum4, false, false, false, true);
-      dinv_dsv1 = Core::LinAlg::matrix_multiply(invdS, false, *dum5, false, false, false, true);
+      inv_det3 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
+      inv_det4 = Core::LinAlg::matrix_multiply(invdE, false, *inv_det3, false, false, false, true);
+      inv_det5 = Core::LinAlg::matrix_multiply(*dse, false, *inv_det4, false, false, false, true);
+      dinv_dsv1 = Core::LinAlg::matrix_multiply(invdS, false, *inv_det5, false, false, false, true);
 
       // inv_dsv part2
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum6;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det6;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dsv2;
-      dum6 = Core::LinAlg::matrix_multiply(*dsv, false, invdV, false, false, false, true);
-      dinv_dsv2 = Core::LinAlg::matrix_multiply(invdS, false, *dum6, false, false, false, true);
+      inv_det6 = Core::LinAlg::matrix_multiply(*dsv, false, invdV, false, false, false, true);
+      dinv_dsv2 = Core::LinAlg::matrix_multiply(invdS, false, *inv_det6, false, false, false, true);
 
       // diagonal entries
       invd->add(invdS, false, 1.0, 1.0);
@@ -974,7 +974,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     Core::LinAlg::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
     std::shared_ptr<Core::LinAlg::Vector<double>> tempvec1;
 
-    // fst: mutliply with linstickLM
+    // fst: multiply with linstickLM
     std::shared_ptr<Core::LinAlg::Vector<double>> fstmod;
     if (stickset)
     {
@@ -996,7 +996,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     }
 
     //--------------------------------------------------------- SIXTH LINE
-    // fsl: mutliply with linslipLM
+    // fsl: multiply with linslipLM
     std::shared_ptr<Core::LinAlg::Vector<double>> fslmod;
     std::shared_ptr<Core::LinAlg::Vector<double>> fslwmod;
 
@@ -1525,7 +1525,7 @@ void CONTACT::LagrangeStrategy::save_reference_state(
   // initialize the displacement field
   set_state(Mortar::state_new_displacement, *dis);
 
-  // guarantee uniquness
+  // guarantee uniqueness
   std::set<std::pair<int, int>> donebefore;
 
   // kappa will be the shape function integral on the slave sides
@@ -2059,7 +2059,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
         std::make_shared<Core::LinAlg::SparseMatrix>(*dmatrix_);
 
     // for nonsmooth contact inverting D is more complex:
-    // Note: this invertation if only applicable when vertex, edge and surface nodes
+    // Note: this inversion if only applicable when vertex, edge and surface nodes
     // are involved. For a falling coin (only surface and edge nodes), a special but
     // more easy implementation is needed.
     if (nonSmoothContact_)
@@ -2135,32 +2135,32 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       dev->scale(-1.0);
 
       // inv_dse
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum1;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det1;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dse;
-      dum1 = Core::LinAlg::matrix_multiply(*dse, false, invdE, false, false, false, true);
-      dinv_dse = Core::LinAlg::matrix_multiply(invdS, false, *dum1, false, false, false, true);
+      inv_det1 = Core::LinAlg::matrix_multiply(*dse, false, invdE, false, false, false, true);
+      dinv_dse = Core::LinAlg::matrix_multiply(invdS, false, *inv_det1, false, false, false, true);
 
       // inv_dev
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum2;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det2;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dev;
-      dum2 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
-      dinv_dev = Core::LinAlg::matrix_multiply(invdE, false, *dum2, false, false, false, true);
+      inv_det2 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
+      dinv_dev = Core::LinAlg::matrix_multiply(invdE, false, *inv_det2, false, false, false, true);
 
       // inv_dsv part1
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum3;
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum4;
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum5;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det3;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det4;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det5;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dsv1;
-      dum3 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
-      dum4 = Core::LinAlg::matrix_multiply(invdE, false, *dum3, false, false, false, true);
-      dum5 = Core::LinAlg::matrix_multiply(*dse, false, *dum4, false, false, false, true);
-      dinv_dsv1 = Core::LinAlg::matrix_multiply(invdS, false, *dum5, false, false, false, true);
+      inv_det3 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
+      inv_det4 = Core::LinAlg::matrix_multiply(invdE, false, *inv_det3, false, false, false, true);
+      inv_det5 = Core::LinAlg::matrix_multiply(*dse, false, *inv_det4, false, false, false, true);
+      dinv_dsv1 = Core::LinAlg::matrix_multiply(invdS, false, *inv_det5, false, false, false, true);
 
       // inv_dsv part2
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum6;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det6;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dsv2;
-      dum6 = Core::LinAlg::matrix_multiply(*dsv, false, invdV, false, false, false, true);
-      dinv_dsv2 = Core::LinAlg::matrix_multiply(invdS, false, *dum6, false, false, false, true);
+      inv_det6 = Core::LinAlg::matrix_multiply(*dsv, false, invdV, false, false, false, true);
+      dinv_dsv2 = Core::LinAlg::matrix_multiply(invdS, false, *inv_det6, false, false, false, true);
 
       // diagonal entries
       invd->add(invdS, false, 1.0, 1.0);
@@ -2542,7 +2542,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     }
 
     //---------------------------------------------------------- FOURTH LINE
-    // nothing to do - execpt its regularized contact see --> do_regularization_scaling()
+    // nothing to do - except its regularized contact see --> do_regularization_scaling()
 
     //----------------------------------------------------------- FIFTH LINE
     // kan: multiply tmatrix with invda and kan
@@ -2653,7 +2653,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     fimod.Update(1.0, *fi, -1.0);
 
     //---------------------------------------------------------- FOURTH LINE
-    // gactive: nothing to do  - execpt its regularized contact see --> do_regularization_scaling()
+    // gactive: nothing to do  - except its regularized contact see --> do_regularization_scaling()
 
     //----------------------------------------------------------- FIFTH LINE
     // fa: multiply tmatrix with invda and fa
@@ -3558,7 +3558,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
         std::make_shared<Core::LinAlg::SparseMatrix>(*dmatrix_);
 
     // for nonsmooth contact inverting D is more complex:
-    // Note: this invertation if only applicable when vertex, edge and surface nodes
+    // Note: this inversion if only applicable when vertex, edge and surface nodes
     // are involved. For a falling coin (only surface and edge nodes), a special but
     // more easy implementation is needed.
     if (nonSmoothContact_)
@@ -3634,32 +3634,32 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
       dev->scale(-1.0);
 
       // inv_dse
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum1;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det1;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dse;
-      dum1 = Core::LinAlg::matrix_multiply(*dse, false, invdE, false, false, false, true);
-      dinv_dse = Core::LinAlg::matrix_multiply(invdS, false, *dum1, false, false, false, true);
+      inv_det1 = Core::LinAlg::matrix_multiply(*dse, false, invdE, false, false, false, true);
+      dinv_dse = Core::LinAlg::matrix_multiply(invdS, false, *inv_det1, false, false, false, true);
 
       // inv_dev
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum2;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det2;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dev;
-      dum2 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
-      dinv_dev = Core::LinAlg::matrix_multiply(invdE, false, *dum2, false, false, false, true);
+      inv_det2 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
+      dinv_dev = Core::LinAlg::matrix_multiply(invdE, false, *inv_det2, false, false, false, true);
 
       // inv_dsv part1
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum3;
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum4;
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum5;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det3;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det4;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det5;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dsv1;
-      dum3 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
-      dum4 = Core::LinAlg::matrix_multiply(invdE, false, *dum3, false, false, false, true);
-      dum5 = Core::LinAlg::matrix_multiply(*dse, false, *dum4, false, false, false, true);
-      dinv_dsv1 = Core::LinAlg::matrix_multiply(invdS, false, *dum5, false, false, false, true);
+      inv_det3 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
+      inv_det4 = Core::LinAlg::matrix_multiply(invdE, false, *inv_det3, false, false, false, true);
+      inv_det5 = Core::LinAlg::matrix_multiply(*dse, false, *inv_det4, false, false, false, true);
+      dinv_dsv1 = Core::LinAlg::matrix_multiply(invdS, false, *inv_det5, false, false, false, true);
 
       // inv_dsv part2
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum6;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det6;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dsv2;
-      dum6 = Core::LinAlg::matrix_multiply(*dsv, false, invdV, false, false, false, true);
-      dinv_dsv2 = Core::LinAlg::matrix_multiply(invdS, false, *dum6, false, false, false, true);
+      inv_det6 = Core::LinAlg::matrix_multiply(*dsv, false, invdV, false, false, false, true);
+      dinv_dsv2 = Core::LinAlg::matrix_multiply(invdS, false, *inv_det6, false, false, false, true);
 
       // diagonal entries
       invd->add(invdS, false, 1.0, 1.0);
@@ -3820,7 +3820,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
         std::make_shared<Core::LinAlg::SparseMatrix>(*dmatrix_);
 
     // for nonsmooth contact inverting D is more complex:
-    // Note: this invertation if only applicable when vertex, edge and surface nodes
+    // Note: this inversion if only applicable when vertex, edge and surface nodes
     // are involved. For a falling coin (only surface and edge nodes), a special but
     // more easy implementation is needed.
     if (nonSmoothContact_)
@@ -3896,32 +3896,32 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
       dev->scale(-1.0);
 
       // inv_dse
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum1;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det1;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dse;
-      dum1 = Core::LinAlg::matrix_multiply(*dse, false, invdE, false, false, false, true);
-      dinv_dse = Core::LinAlg::matrix_multiply(invdS, false, *dum1, false, false, false, true);
+      inv_det1 = Core::LinAlg::matrix_multiply(*dse, false, invdE, false, false, false, true);
+      dinv_dse = Core::LinAlg::matrix_multiply(invdS, false, *inv_det1, false, false, false, true);
 
       // inv_dev
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum2;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det2;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dev;
-      dum2 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
-      dinv_dev = Core::LinAlg::matrix_multiply(invdE, false, *dum2, false, false, false, true);
+      inv_det2 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
+      dinv_dev = Core::LinAlg::matrix_multiply(invdE, false, *inv_det2, false, false, false, true);
 
       // inv_dsv part1
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum3;
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum4;
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum5;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det3;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det4;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det5;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dsv1;
-      dum3 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
-      dum4 = Core::LinAlg::matrix_multiply(invdE, false, *dum3, false, false, false, true);
-      dum5 = Core::LinAlg::matrix_multiply(*dse, false, *dum4, false, false, false, true);
-      dinv_dsv1 = Core::LinAlg::matrix_multiply(invdS, false, *dum5, false, false, false, true);
+      inv_det3 = Core::LinAlg::matrix_multiply(*dev, false, invdV, false, false, false, true);
+      inv_det4 = Core::LinAlg::matrix_multiply(invdE, false, *inv_det3, false, false, false, true);
+      inv_det5 = Core::LinAlg::matrix_multiply(*dse, false, *inv_det4, false, false, false, true);
+      dinv_dsv1 = Core::LinAlg::matrix_multiply(invdS, false, *inv_det5, false, false, false, true);
 
       // inv_dsv part2
-      std::shared_ptr<Core::LinAlg::SparseMatrix> dum6;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> inv_det6;
       std::shared_ptr<Core::LinAlg::SparseMatrix> dinv_dsv2;
-      dum6 = Core::LinAlg::matrix_multiply(*dsv, false, invdV, false, false, false, true);
-      dinv_dsv2 = Core::LinAlg::matrix_multiply(invdS, false, *dum6, false, false, false, true);
+      inv_det6 = Core::LinAlg::matrix_multiply(*dsv, false, invdV, false, false, false, true);
+      dinv_dsv2 = Core::LinAlg::matrix_multiply(invdS, false, *inv_det6, false, false, false, true);
 
       // diagonal entries
       invd->add(invdS, false, 1.0, 1.0);
@@ -4471,7 +4471,7 @@ void CONTACT::LagrangeStrategy::recover(std::shared_ptr<Core::LinAlg::Vector<dou
     // condensation has been performed for active LM only,
     // thus we construct a modified invd matrix here which
     // only contains the active diagonal block
-    // (this automatically renders the incative LM to be zero)
+    // (this automatically renders the inactive LM to be zero)
     std::shared_ptr<Core::LinAlg::SparseMatrix> invda;
     std::shared_ptr<Epetra_Map> tempmap;
     std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
@@ -5384,7 +5384,7 @@ void CONTACT::LagrangeStrategy::evaluate_regularization_scaling(Core::LinAlg::Ve
       }  // loop over all slave nodes
     }  // loop over all interfaces
 
-    // Evaluate final scaling vetors!
+    // Evaluate final scaling vectors!
     {
       scalevec2.PutScalar(sign);
       scalevec2.Update(-sign * scal1ma, scalevec, 1.0);  // 1-alpha
@@ -5918,7 +5918,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Core::LinAlg::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
   std::shared_ptr<Core::LinAlg::Vector<double>> tempvec1;
 
-  // fst: mutliply with linstickLM
+  // fst: multiply with linstickLM
   std::shared_ptr<Core::LinAlg::Vector<double>> fstmod;
   if (stickset)
   {
@@ -5940,7 +5940,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   }
 
   //--------------------------------------------------------- SIXTH LINE
-  // fsl: mutliply with linslipLM
+  // fsl: multiply with linslipLM
   std::shared_ptr<Core::LinAlg::Vector<double>> fslmod;
   std::shared_ptr<Core::LinAlg::Vector<double>> fslwmod;
 
@@ -6603,7 +6603,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   }
 
   //---------------------------------------------------------- FOURTH LINE
-  // nothing to do - execpt its regularized contact see --> do_regularization_scaling()
+  // nothing to do - except its regularized contact see --> do_regularization_scaling()
 
   //----------------------------------------------------------- FIFTH LINE
   // kan: multiply tmatrix with invda and kan
@@ -6659,7 +6659,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   fimod.Update(1.0, *fi, -1.0);
 
   //---------------------------------------------------------- FOURTH LINE
-  // gactive: nothing to do  - execpt its regularized contact see --> do_regularization_scaling()
+  // gactive: nothing to do  - except its regularized contact see --> do_regularization_scaling()
 
   //----------------------------------------------------------- FIFTH LINE
   // fa: multiply tmatrix with invda and fa
@@ -6918,7 +6918,7 @@ void CONTACT::LagrangeStrategy::run_post_apply_jacobian_inverse(
     // condensation has been performed for active LM only,
     // thus we construct a modified invd matrix here which
     // only contains the active diagonal block
-    // (this automatically renders the incative LM to be zero)
+    // (this automatically renders the inactive LM to be zero)
     std::shared_ptr<Core::LinAlg::SparseMatrix> invda;
     std::shared_ptr<Epetra_Map> tempmap;
     std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;

@@ -556,7 +556,7 @@ bool Cut::Tri3BoundaryCell::is_valid_boundary_cell()
   temp(2, 0) = p2.norm2();
 
   // This is to scale the tolerance, it determines our maximum precision (i.e. machine precision)
-  //  double max_dist_to_orgin = temp.NormInf();
+  //  double max_dist_to_origin = temp.NormInf();
 
   // Distance between points in triangle
   temp(0, 0) = v01.norm2();
@@ -565,7 +565,7 @@ bool Cut::Tri3BoundaryCell::is_valid_boundary_cell()
 
   double min_dist_in_tri = temp.min_value();
   // We want to test with this one I think... But might lead to problems.
-  //  double tolerance = LINSOLVETOL*max_dist_to_orgin;
+  //  double tolerance = LINSOLVETOL*max_dist_to_origin;
 
   temp(0, 0) = points[0]->tolerance();
   temp(1, 0) = points[1]->tolerance();

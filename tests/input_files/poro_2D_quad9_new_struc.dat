@@ -16,7 +16,7 @@ INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 LINEAR_SOLVER                   3
 ---------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
@@ -52,9 +52,9 @@ TOLRES_PORO                     1e-08
 VECTORNORM_RESF                 Rms
 VECTORNORM_INC                  L1
 NUMSTEP                         50
-RESTARTEVRY                     100
+RESTARTEVERY                     100
 TIMESTEP                        0.01
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 LINEAR_SOLVER                   1
 SECONDORDER                     no
 CONTIPARTINT                    no

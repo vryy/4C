@@ -127,7 +127,7 @@ namespace SSI
 
     bool exit_newton_raphson_init_pot_calc(const SSI::SsiMono& ssi_mono) override
     {
-      FOUR_C_THROW("Caluclation of initial potential only for Elch");
+      FOUR_C_THROW("Calculation of initial potential only for Elch");
       return {};
     }
 

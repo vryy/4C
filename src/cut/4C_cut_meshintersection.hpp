@@ -37,7 +37,7 @@ namespace Cut
 
 
    public:
-    /// constructur for MeshIntersecton class
+    /// constructor for MeshIntersection class
     explicit MeshIntersection(int numcutmesh = 1, int myrank = -1) : ParentIntersection(myrank)
     {
       cut_mesh_.reserve(numcutmesh);

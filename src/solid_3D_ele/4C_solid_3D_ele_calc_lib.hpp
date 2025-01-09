@@ -552,7 +552,7 @@ namespace Discret::Elements
       {
         // For some reason, some contact tests with hex8 discretization don't like the computation
         // of the deformation gradient based on the nodal displacements. They only converge if the
-        // deformation gradient ist computed based on the current coordinates. Similarly, there are
+        // deformation gradient is computed based on the current coordinates. Similarly, there are
         // ssi and ssti tests with an tet4 discretization that only converge when using the
         // displacements. Until we found the problem, we compute the deformation gradient based on
         // the current coordinates (F=(X+u)^T  dN/dX^T) for hex8 and based on the displacement (F=I
@@ -1040,7 +1040,7 @@ namespace Discret::Elements
 
   /*!
    * @brief Evaluates the Gauss point coordinates in reference configuration
-   * and adds those to the paramater list
+   * and adds those to the parameter list
    *
    * @tparam celltype : Cell type
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
@@ -1060,7 +1060,7 @@ namespace Discret::Elements
 
   /*!
    * @brief Evaluates the element centroid coordinates in reference configuration
-   * and adds those to the paramater list
+   * and adds those to the parameter list
    *
    * @tparam celltype : Cell type
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element

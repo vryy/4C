@@ -88,7 +88,7 @@ void Inpar::FSI::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::double_parameter("MAXTIME", 1000.0, "Total simulation time", &fsidyn);
   Core::Utils::int_parameter("NUMSTEP", 200, "Total number of Timesteps", &fsidyn);
 
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &fsidyn);
+  Core::Utils::int_parameter("RESTARTEVERY", 1, "Increment for writing restart", &fsidyn);
 
   Core::Utils::bool_parameter("RESTART_FROM_PART_FSI", "No",
       "restart from partitioned fsi (e.g. from prestress calculations) instead of monolithic fsi",
@@ -107,7 +107,7 @@ void Inpar::FSI::set_valid_parameters(Teuchos::ParameterList& list)
 
   Core::Utils::double_parameter("TIMESTEP", 0.1, "Time increment dt", &fsidyn);
 
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &fsidyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "Increment for writing solution", &fsidyn);
 
   setStringToIntegralParameter<Inpar::FSI::Verbosity>("VERBOSITY", "full",
       "Verbosity of the FSI problem.", tuple<std::string>("full", "medium", "low", "subproblem"),

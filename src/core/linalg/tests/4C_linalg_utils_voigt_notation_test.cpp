@@ -19,11 +19,11 @@ namespace
   {
    public:
     Core::LinAlg::Matrix<3, 3> tens;
-    Core::LinAlg::Matrix<3, 3> itens;
+    Core::LinAlg::Matrix<3, 3> items;
     Core::LinAlg::Matrix<6, 1> tens_strain;
-    Core::LinAlg::Matrix<6, 1> itens_strain;
+    Core::LinAlg::Matrix<6, 1> items_strain;
     Core::LinAlg::Matrix<6, 1> tens_stress;
-    Core::LinAlg::Matrix<6, 1> itens_stress;
+    Core::LinAlg::Matrix<6, 1> items_stress;
 
     VoigtNotationTest()
     {
@@ -34,12 +34,12 @@ namespace
       tens(1, 2) = tens(2, 1) = 0.02;
       tens(0, 2) = tens(2, 0) = 0.03;
 
-      itens(0, 0) = 0.90972618;
-      itens(1, 1) = 0.83360457;
-      itens(2, 2) = 0.76990741;
-      itens(0, 1) = itens(1, 0) = -0.00723301;
-      itens(1, 2) = itens(2, 1) = -0.01265777;
-      itens(0, 2) = itens(2, 0) = -0.0208824;
+      items(0, 0) = 0.90972618;
+      items(1, 1) = 0.83360457;
+      items(2, 2) = 0.76990741;
+      items(0, 1) = items(1, 0) = -0.00723301;
+      items(1, 2) = items(2, 1) = -0.01265777;
+      items(0, 2) = items(2, 0) = -0.0208824;
 
       tens_strain(0) = tens_stress(0) = 1.1;
       tens_strain(1) = tens_stress(1) = 1.2;
@@ -49,23 +49,23 @@ namespace
       tens_stress(4) = 0.02;
       tens_stress(5) = 0.03;
 
-      itens_stress(0) = 0.90972618;
-      itens_stress(1) = 0.83360457;
-      itens_stress(2) = 0.76990741;
-      itens_stress(3) = -0.00723301;
-      itens_stress(4) = -0.01265777;
-      itens_stress(5) = -0.0208824;
+      items_stress(0) = 0.90972618;
+      items_stress(1) = 0.83360457;
+      items_stress(2) = 0.76990741;
+      items_stress(3) = -0.00723301;
+      items_stress(4) = -0.01265777;
+      items_stress(5) = -0.0208824;
 
       tens_strain(3) = 2 * 0.01;
       tens_strain(4) = 2 * 0.02;
       tens_strain(5) = 2 * 0.03;
 
-      itens_strain(0) = 0.90972618;
-      itens_strain(1) = 0.83360457;
-      itens_strain(2) = 0.76990741;
-      itens_strain(3) = 2 * -0.00723301;
-      itens_strain(4) = 2 * -0.01265777;
-      itens_strain(5) = 2 * -0.0208824;
+      items_strain(0) = 0.90972618;
+      items_strain(1) = 0.83360457;
+      items_strain(2) = 0.76990741;
+      items_strain(3) = 2 * -0.00723301;
+      items_strain(4) = 2 * -0.01265777;
+      items_strain(5) = 2 * -0.0208824;
     };
   };
 
@@ -117,18 +117,18 @@ namespace
 
   TEST_F(VoigtNotationTest, InverseStressLike)
   {
-    Core::LinAlg::Matrix<6, 1> itens_stress_result(false);
-    Core::LinAlg::Voigt::Stresses::inverse_tensor(tens_stress, itens_stress_result);
+    Core::LinAlg::Matrix<6, 1> items_stress_result(false);
+    Core::LinAlg::Voigt::Stresses::inverse_tensor(tens_stress, items_stress_result);
 
-    FOUR_C_EXPECT_NEAR(itens_stress_result, itens_stress, 1e-5);
+    FOUR_C_EXPECT_NEAR(items_stress_result, items_stress, 1e-5);
   }
 
   TEST_F(VoigtNotationTest, InverseStrainLike)
   {
-    Core::LinAlg::Matrix<6, 1> itens_strain_result(false);
-    Core::LinAlg::Voigt::Strains::inverse_tensor(tens_strain, itens_strain_result);
+    Core::LinAlg::Matrix<6, 1> items_strain_result(false);
+    Core::LinAlg::Voigt::Strains::inverse_tensor(tens_strain, items_strain_result);
 
-    FOUR_C_EXPECT_NEAR(itens_strain_result, itens_strain, 1e-5);
+    FOUR_C_EXPECT_NEAR(items_strain_result, items_strain, 1e-5);
   }
 
   TEST_F(VoigtNotationTest, to_stress_like)

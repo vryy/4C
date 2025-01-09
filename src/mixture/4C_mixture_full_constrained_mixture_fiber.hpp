@@ -103,7 +103,7 @@ namespace Mixture
         Number lambda_pre, HistoryAdaptionStrategy adaptive_history_strategy, bool enable_growth);
 
     /*!
-     * @brief Pack all internal data into tha #data
+     * @brief Pack all internal data into the #data
      *
      * @param data (out) : buffer to serialize data to.
      */
@@ -151,7 +151,7 @@ namespace Mixture
      * period.
      *
      * @param lambda_f (in) : Stretch of the fiber
-     * @param time (in) : Total tiem
+     * @param time (in) : Total time
      */
     void reinitialize_history(Number lambda_f, double time);
 
@@ -281,7 +281,7 @@ namespace Mixture
     /// The deposition time of the initially present mass
     double reference_time_ = 0.0;
 
-    /// A current time shit that is resetted after each timestep
+    /// A current time shit that is reset after each timestep
     double current_time_shift_ = 0.0;
 
     HistoryAdaptionStrategy adaptive_history_strategy_ = HistoryAdaptionStrategy::none;

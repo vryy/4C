@@ -336,12 +336,12 @@ void Mat::Elastic::CoupTransverselyIsotropic::error_handling(
   {
     std::shared_ptr<Core::Elements::ParamsInterface> interface_ptr = nullptr;
     interface_ptr = params->get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface");
-    std::shared_ptr<Solid::Elements::ParamsInterface> pinter =
+    std::shared_ptr<Solid::Elements::ParamsInterface> solid_params =
         std::dynamic_pointer_cast<Solid::Elements::ParamsInterface>(interface_ptr);
 
-    if (pinter->is_tolerate_errors())
+    if (solid_params->is_tolerate_errors())
     {
-      pinter->set_ele_eval_error_flag(Solid::Elements::ele_error_material_failed);
+      solid_params->set_ele_eval_error_flag(Solid::Elements::ele_error_material_failed);
       return;
     }
   }

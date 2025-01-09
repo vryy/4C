@@ -169,7 +169,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
 
       /*!
@@ -250,7 +250,7 @@ namespace Discret
 
       An element derived from this class uses the Evaluate method to receive commands
       and parameters from some control routine in params and evaluates element matrices and
-      vectors accoring to the command in params.
+      vectors according to the command in params.
 
       \param params (in/out)    : ParameterList for communication between control routine
                                   and elements

@@ -558,7 +558,7 @@ namespace Discret
           double& mass_inertia_translational, Core::LinAlg::Matrix<3, 3, T>& J) const;
 
       /** \brief setup only translational mass inertia factor from material law
-       *      this method is called by reduced beam formulation which don't inlcude
+       *      this method is called by reduced beam formulation which don't include
        *      rotational mass inertia
        *
        *  \author grill

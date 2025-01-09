@@ -24,8 +24,8 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          16
 CONVCHECK                       L_2_norm
-RESULTSEVRY                     3
-RESTARTEVRY                     3
+RESULTSEVERY                     3
+RESTARTEVERY                     3
 THETA                           1.0
 START_THETA                     1.0
 ALPHA_F                         1.00

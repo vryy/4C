@@ -790,10 +790,10 @@ void BeamInteraction::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
 
   // loop over all neighboring elements
   std::vector<int> rand_ele = BeamInteraction::Utils::permutation(neighbors.size());
-  for (auto const& eiter : rand_ele)
+  for (auto const& either : rand_ele)
   {
     Discret::Elements::Beam3Base const* beamele =
-        dynamic_cast<Discret::Elements::Beam3Base const*>(neighbors[eiter]);
+        dynamic_cast<Discret::Elements::Beam3Base const*>(neighbors[either]);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (sphere == nullptr or beamele == nullptr)

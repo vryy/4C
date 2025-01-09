@@ -271,7 +271,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
     // Switch fluid to interface split block matrix
     fluid_field()->use_block_matrix(true);
 
-    // build ale system matrix in splitted system
+    // build ale system matrix in split system
     ale_field()->create_system_matrix(ale_field()->interface());
 
     aleresidual_ =
@@ -1437,7 +1437,7 @@ void FSI::MortarMonolithicFluidSplit::update()
   // update lagrange multiplier field
   lambdaold_->Update(1.0, *lambda_, 0.0);
 
-  // update history variabels for sliding ale
+  // update history variables for sliding ale
   if (aleproj_ != Inpar::FSI::ALEprojection_none)
   {
     iprojdisp_ = std::make_shared<Core::LinAlg::Vector<double>>(*coupsfm_->slave_dof_map(), true);
@@ -1478,7 +1478,7 @@ void FSI::MortarMonolithicFluidSplit::output()
 
   if (aleproj_ != Inpar::FSI::ALEprojection_none)
   {
-    int uprestart = timeparams_.get<int>("RESTARTEVRY");
+    int uprestart = timeparams_.get<int>("RESTARTEVERY");
     if (uprestart != 0 && fluid_field()->step() % uprestart == 0)
     {
       fluid_field()->disc_writer()->write_vector("slideALE", iprojdisp_);
@@ -1511,8 +1511,8 @@ void FSI::MortarMonolithicFluidSplit::output_lambda()
    */
   std::shared_ptr<Core::LinAlg::Vector<double>> lambdafull =
       fluid_field()->interface()->insert_fsi_cond_vector(*lambda_);
-  const int uprestart = timeparams_.get<int>("RESTARTEVRY");
-  const int upres = timeparams_.get<int>("RESULTSEVRY");
+  const int uprestart = timeparams_.get<int>("RESTARTEVERY");
+  const int upres = timeparams_.get<int>("RESULTSEVERY");
   if ((uprestart != 0 and fluid_field()->step() % uprestart == 0) or
       (upres != 0 and fluid_field()->step() % upres == 0))
     fluid_field()->disc_writer()->write_vector("fsilambda", lambdafull);

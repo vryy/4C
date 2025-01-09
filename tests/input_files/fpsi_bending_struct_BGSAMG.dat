@@ -12,7 +12,7 @@ LINEAR_SOLVER                   1
 MAXTIME                         4
 NUMSTEP                         41
 NUM_INITSTEP                    0
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 TIMESTEP                        0.01
 -----------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
@@ -45,7 +45,7 @@ NUMSTASTEPS                     0
 NUMSTEP                         1
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
-RESTARTEVRY                     3
+RESTARTEVERY                     3
 SIMPLER_SOLVER                  -1
 STARTFUNCNO                     -1
 START_THETA                     1.0
@@ -54,7 +54,7 @@ STRONG_REDD_3D_COUPLING_TYPE    no
 THETA                           0.9
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 --------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1e-06
 TOL_VEL_INC	  1e-06
@@ -94,11 +94,11 @@ COUPALGO                        fpsi_monolithic_plain
 PARTITIONED                     monolithic
 ITEMAX                          100
 NUMSTEP                         4
-RESTARTEVRY                     3
+RESTARTEVERY                     3
 SHAPEDERIVATIVES                Yes
 USESHAPEDERIVATIVES             Yes
 TIMESTEP                        0.01
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 MAXTIME                         0.04
 ALPHABJ                         1.0
 LINEAR_SOLVER                   2
@@ -119,7 +119,7 @@ FLUID_WALL_SHEAR_STRESS         No
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
 PREFIX_GROUP_ID                 No
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_STRAIN                   No
@@ -134,7 +134,7 @@ VERBOSITY                       standard
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 SECONDORDER                     yes
 CONTIPARTINT                    yes
 --------------------------------------------------------PROBLEM TYPE

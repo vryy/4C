@@ -129,7 +129,7 @@ Airway::RedAirwayTissue::RedAirwayTissue(MPI_Comm comm, const Teuchos::Parameter
     FOUR_C_THROW("Parameter(s) for time integrators inconsistent");
 
   // Check Time integration parameters
-  if (sdyn.get<int>("RESTARTEVRY") != rawdyn.get<int>("RESTARTEVRY"))
+  if (sdyn.get<int>("RESTARTEVERY") != rawdyn.get<int>("RESTARTEVERY"))
     FOUR_C_THROW("Parameters for restart inconsistent");
 
   // Get coupling parameters
@@ -505,9 +505,9 @@ void Airway::RedAirwayTissue::setup_red_airways()
 
   // Restart and output
   // Restart
-  airwaystimeparams.set("write restart every", rawdyn.get<int>("RESTARTEVRY"));
+  airwaystimeparams.set("write restart every", rawdyn.get<int>("RESTARTEVERY"));
   // Solution output
-  airwaystimeparams.set("write solution every", rawdyn.get<int>("RESULTSEVRY"));
+  airwaystimeparams.set("write solution every", rawdyn.get<int>("RESULTSEVERY"));
 
   // Solver parameters
   // Solver type
@@ -532,7 +532,7 @@ void Airway::RedAirwayTissue::setup_red_airways()
     airwaystimeparams.set("CalcV0PreStress", false);
 
   // Get restart timestep
-  uprestart_ = rawdyn.get<int>("RESTARTEVRY");
+  uprestart_ = rawdyn.get<int>("RESTARTEVERY");
 
   //------------------------------------------------------------------
   // create all vectors and variables associated with the time

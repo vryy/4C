@@ -60,7 +60,7 @@ namespace Discret
       //! total dofs per element
       static constexpr int numdof_ = noddof_ * Base::numnod_;
 
-      //! @name Acess methods
+      //! @name Access methods
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy

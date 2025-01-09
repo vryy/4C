@@ -91,17 +91,17 @@ void SSI::Utils::change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& ss
     sdyn.set<int>("NUMSTEP", ssiparams.get<int>("NUMSTEP"));
   }
 
-  // Check correct input of restart. Code relies that both time value RESTARTEVRYTIME and
-  // RESULTSEVRYTIME are given if restart from time is applied
-  double restarttime = ssiparams.get<double>("RESTARTEVRYTIME");
-  double updatetime = ssiparams.get<double>("RESULTSEVRYTIME");
+  // Check correct input of restart. Code relies that both time value RESTARTEVERYTIME and
+  // RESULTSEVERYTIME are given if restart from time is applied
+  double restarttime = ssiparams.get<double>("RESTARTEVERYTIME");
+  double updatetime = ssiparams.get<double>("RESULTSEVERYTIME");
   if ((updatetime > 0.0) or (restarttime > 0.0))
   {
     if (updatetime <= 0.0 and restarttime <= 0.0)
     {
       FOUR_C_THROW(
-          "If time controlled output and restart is desired, both parameters RESTARTEVRYTIME and "
-          "RESULTSEVRYTIME has to be set");
+          "If time controlled output and restart is desired, both parameters RESTARTEVERYTIME and "
+          "RESULTSEVERYTIME has to be set");
     }
   }
 
@@ -116,7 +116,7 @@ void SSI::Utils::change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& ss
   }
   else
   {
-    int restart = ssiparams.get<int>("RESTARTEVRY");
+    int restart = ssiparams.get<int>("RESTARTEVERY");
     scatrarestart = restart;
     structurerestart = restart;
   }
@@ -132,17 +132,17 @@ void SSI::Utils::change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& ss
   }
   else
   {
-    int update = ssiparams.get<int>("RESULTSEVRY");
+    int update = ssiparams.get<int>("RESULTSEVERY");
     scatraupres = update;
     structureupres = update;
   }
 
   // restart
-  scatradyn.set<int>("RESTARTEVRY", scatrarestart);
-  sdyn.set<int>("RESTARTEVRY", structurerestart);
+  scatradyn.set<int>("RESTARTEVERY", scatrarestart);
+  sdyn.set<int>("RESTARTEVERY", structurerestart);
   // solution output
-  scatradyn.set<int>("RESULTSEVRY", scatraupres);
-  sdyn.set<int>("RESULTSEVRY", structureupres);
+  scatradyn.set<int>("RESULTSEVERY", scatraupres);
+  sdyn.set<int>("RESULTSEVERY", structureupres);
 
   if (Core::Communication::my_mpi_rank(comm) == 0)
   {
@@ -150,10 +150,10 @@ void SSI::Utils::change_time_parameter(MPI_Comm comm, Teuchos::ParameterList& ss
                  "==============================\n"
               << "\t Timestep scatra:           " << scatradyn.get<double>("TIMESTEP") << "\n"
               << "\t Timestep structure:        " << sdyn.get<double>("TIMESTEP") << "\n"
-              << "\t Result step scatra:        " << scatradyn.get<int>("RESULTSEVRY") << "\n"
-              << "\t Result step structure:     " << sdyn.get<int>("RESULTSEVRY") << "\n"
-              << "\t Restart step scatra:       " << scatradyn.get<int>("RESTARTEVRY") << "\n"
-              << "\t Restart step structure:    " << sdyn.get<int>("RESTARTEVRY") << "\n"
+              << "\t Result step scatra:        " << scatradyn.get<int>("RESULTSEVERY") << "\n"
+              << "\t Result step structure:     " << sdyn.get<int>("RESULTSEVERY") << "\n"
+              << "\t Restart step scatra:       " << scatradyn.get<int>("RESTARTEVERY") << "\n"
+              << "\t Restart step structure:    " << sdyn.get<int>("RESTARTEVERY") << "\n"
               << "================================================================================="
                  "=======\n \n";
   }
@@ -1103,13 +1103,13 @@ void SSI::Utils::SSIMeshTying::find_matching_node_pairs(Core::FE::Discretization
   std::vector<std::pair<int, int>> my_coupling_pairs;
 
   // get all mesh tying conditions
-  std::vector<Core::Conditions::Condition*> meshtying_conditons(0, nullptr);
-  dis.get_condition(name_meshtying_condition, meshtying_conditons);
+  std::vector<Core::Conditions::Condition*> meshtying_conditions(0, nullptr);
+  dis.get_condition(name_meshtying_condition, meshtying_conditions);
 
-  // match nodes between all mesh tying conditons (named with "a" and "b")
-  for (int a = 0; a < static_cast<int>(meshtying_conditons.size()); ++a)
+  // match nodes between all mesh tying conditions (named with "a" and "b")
+  for (int a = 0; a < static_cast<int>(meshtying_conditions.size()); ++a)
   {
-    auto* meshtying_condition_a = meshtying_conditons.at(a);
+    auto* meshtying_condition_a = meshtying_conditions.at(a);
 
     // nodes of meshtying_condition_a owned by this proc
     std::vector<int> inodegidvec_a;
@@ -1122,9 +1122,9 @@ void SSI::Utils::SSIMeshTying::find_matching_node_pairs(Core::FE::Discretization
     tree.setup();
 
     // find nodes from condition b that match nodes from condition a
-    for (int b = a + 1; b < static_cast<int>(meshtying_conditons.size()); ++b)
+    for (int b = a + 1; b < static_cast<int>(meshtying_conditions.size()); ++b)
     {
-      auto* meshtying_condition_b = meshtying_conditons.at(b);
+      auto* meshtying_condition_b = meshtying_conditions.at(b);
 
       // nodes of meshtying_condition_b owned by this proc
       std::vector<int> inodegidvec_b;
@@ -1340,16 +1340,16 @@ void SSI::Utils::SSIMeshTying::find_slave_slave_transformation_nodes(Core::FE::D
     std::vector<int>& all_coupled_original_slave_gids) const
 {
   // store nodes that are slave nodes from the input
-  std::vector<Core::Conditions::Condition*> meshtying_conditons(0, nullptr);
-  dis.get_condition(name_meshtying_condition, meshtying_conditons);
+  std::vector<Core::Conditions::Condition*> meshtying_conditions(0, nullptr);
+  dis.get_condition(name_meshtying_condition, meshtying_conditions);
 
   std::vector<int> original_slave_gids;
-  for (auto* meshtying_conditon : meshtying_conditons)
+  for (auto* meshtying_condition : meshtying_conditions)
   {
-    if (meshtying_conditon->parameters().get<int>("interface side") == Inpar::S2I::side_slave)
+    if (meshtying_condition->parameters().get<int>("interface side") == Inpar::S2I::side_slave)
     {
       Core::Communication::add_owned_node_gid_from_list(
-          dis, *meshtying_conditon->get_nodes(), original_slave_gids);
+          dis, *meshtying_condition->get_nodes(), original_slave_gids);
     }
   }
 

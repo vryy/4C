@@ -80,8 +80,8 @@ void Discret::Elements::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_s
   // get element volume
   const double vol = my::eval_shape_func_and_derivs_at_ele_center();
 
-  // get elemet length
-  // cast dimension to a double varibale -> pow()
+  // get element length
+  // cast dimension to a double variable -> pow()
   const double dim = static_cast<double>(nsd_);
   const double h = std::pow(vol, 1.0 / dim);
 

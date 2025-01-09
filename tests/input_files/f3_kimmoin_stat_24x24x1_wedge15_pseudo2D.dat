@@ -29,7 +29,7 @@ TIMEINTEGR       One_Step_Theta
 NONLINITER       fixed_point_like
 ITEMAX           10
 CONVCHECK        L_2_norm
-RESTARTEVRY      0
+RESTARTEVERY      0
 NUMSTEP          1
 NUMSTASTEPS      0
 MAXTIME          1.0

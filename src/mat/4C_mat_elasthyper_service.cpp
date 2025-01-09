@@ -38,7 +38,7 @@ void Mat::elast_hyper_evaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
   // Evaluate identity tensor
   Core::LinAlg::Voigt::identity_matrix(id2);
 
-  // Evalutate Right Cauchy-Green strain tensor in strain-like Voigt notation
+  // Evaluate Right Cauchy-Green strain tensor in strain-like Voigt notation
   evaluate_right_cauchy_green_strain_like_voigt(glstrain, C_strain);
 
   // invert Right Cauchy Green Strain tensor
@@ -174,7 +174,7 @@ void Mat::elast_hyper_add_isotropic_stress_cmat(Core::LinAlg::Matrix<6, 1>& S_st
   static Core::LinAlg::Matrix<6, 1> C_stress(false);
   // Inverse Right Cauchy-Green tensor in stress-like Voigt notation
   static Core::LinAlg::Matrix<6, 1> iC_stress(false);
-  // 4th order identity tensor (rows and colums are stress-like)
+  // 4th order identity tensor (rows and columns are stress-like)
   static Core::LinAlg::Matrix<6, 6> id4sharp(false);
   Core::LinAlg::Voigt::fourth_order_identity_matrix<Core::LinAlg::Voigt::NotationType::stress,
       Core::LinAlg::Voigt::NotationType::stress>(id4sharp);
@@ -256,7 +256,7 @@ void Mat::elast_hyper_add_response_stretches(Core::LinAlg::Matrix<6, 6>& cmat,
         p->add_coefficients_stretches_modified(modgamma, moddelta, modstr);
       }
     }
-    // convert modified coefficients to oridinary counterparts
+    // convert modified coefficients to ordinary counterparts
     //
     // derivatives of modified pr. stretches WRT pr. stretches
     static Core::LinAlg::Matrix<3, 3> modbypr(false);
@@ -483,88 +483,88 @@ void Mat::elast_hyper_check_polyconvexity(const Core::LinAlg::Matrix<3, 3>& defg
       if (i == j) ID4(i, j) = 1.0;
 
   // Frechet Derivative according to Ebbing, PhD-thesis page 79, Eq: (5.31)
-  static Core::LinAlg::Matrix<19, 19> FreD(true);
-  FreD.clear();
+  static Core::LinAlg::Matrix<19, 19> FreeD(true);
+  FreeD.clear();
 
   // single matrices of Frechet Derivative:
 
   // d^2P/dFdF
   // = 4 d^2\Psi/dI_1dI_1 F \otimes F + 2 \d\Psi/dI_1 *II
-  static Core::LinAlg::Matrix<9, 9> FreDFF(true);
-  FreDFF.clear();
-  FreDFF.multiply_nt(4 * ddPII(0), dfgrd, dfgrd, 1.0);
-  FreDFF.update(2 * dPI(0), ID4, 1.0);
+  static Core::LinAlg::Matrix<9, 9> FreeDFF(true);
+  FreeDFF.clear();
+  FreeDFF.multiply_nt(4 * ddPII(0), dfgrd, dfgrd, 1.0);
+  FreeDFF.update(2 * dPI(0), ID4, 1.0);
 
   // d^2P/d(cofF)d(cofF)
   // = = 4 d^2\Psi/dI_2dI_2 cof(F) \otimes cof(F) + 2 \d\Psi/dI_2 *II
-  static Core::LinAlg::Matrix<9, 9> FreDcFcF(true);
-  FreDcFcF.clear();
-  FreDcFcF.multiply_nt(4 * ddPII(1), CofF, CofF, 1.0);
-  FreDcFcF.update(2 * dPI(1), ID4, 1.0);
+  static Core::LinAlg::Matrix<9, 9> FreeDcFcF(true);
+  FreeDcFcF.clear();
+  FreeDcFcF.multiply_nt(4 * ddPII(1), CofF, CofF, 1.0);
+  FreeDcFcF.update(2 * dPI(1), ID4, 1.0);
 
   // d^2P/d(detF)d(detF)
   // = 2*d \Psi/dI_3 + 4*I_3*d^2\Psi/dI_3dI_3
-  double FreDJJ(true);
-  FreDJJ += 2 * dPI(2) + 4 * prinv(2) * ddPII(2);
+  double FreeDJJ(true);
+  FreeDJJ += 2 * dPI(2) + 4 * prinv(2) * ddPII(2);
 
   // d^2P/d(cofF)dF
   // = 4*d\Psi/dI_1dI_2 F /otimes CofF
-  static Core::LinAlg::Matrix<9, 9> FreDcFF(true);
-  FreDcFF.clear();
-  FreDcFF.multiply_nt(4 * ddPII(5), dfgrd, CofF, 1.0);
+  static Core::LinAlg::Matrix<9, 9> FreeDcFF(true);
+  FreeDcFF.clear();
+  FreeDcFF.multiply_nt(4 * ddPII(5), dfgrd, CofF, 1.0);
 
   // d^2P/d(detF)d(cofF)
   // = 4*J*d^2 \Psi /dI_2 dI_3 \mat{CofF}
-  static Core::LinAlg::Matrix<9, 1> FreDcFJ(true);
-  FreDcFF.clear();
-  FreDcFJ.update(4 * J * ddPII(3), CofF, 1.0);
+  static Core::LinAlg::Matrix<9, 1> FreeDcFJ(true);
+  FreeDcFF.clear();
+  FreeDcFJ.update(4 * J * ddPII(3), CofF, 1.0);
 
   // d^2P/d(detF) dF = d^2P/dF d(detF)
   // = 4*J*d^2 \Psi /dI_1 dI_3 \mat{F}
-  static Core::LinAlg::Matrix<9, 1> FreDFJ(true);
-  FreDcFF.clear();
-  FreDFJ.update(4 * J * ddPII(4), dfgrd, 1.0);
+  static Core::LinAlg::Matrix<9, 1> FreeDFJ(true);
+  FreeDcFF.clear();
+  FreeDFJ.update(4 * J * ddPII(4), dfgrd, 1.0);
 
   // Sort values in Frechet Derivative
 
-  // FreD = [FreDFF   FreDcFF    FreDFJ
-  //         FreDcFF  FreDcFcF   FreDcFJ
-  //         FreDFJ   FreDcFJ    FreDJJ]
+  // FreeD = [FreeDFF   FreeDcFF    FreeDFJ
+  //         FreeDcFF  FreeDcFcF   FreeDcFJ
+  //         FreeDFJ   FreeDcFJ    FreeDJJ]
   for (int i = 0; i < 9; i++)
     for (int j = 0; j < 9; j++)
     {
-      FreD(i, j) = FreDFF(i, j);
-      FreD(i, j + 9) = FreDcFF(i, j);
-      FreD(i + 9, j) = FreDcFF(i, j);
-      FreD(i + 9, j + 9) = FreDcFcF(i, j);
+      FreeD(i, j) = FreeDFF(i, j);
+      FreeD(i, j + 9) = FreeDcFF(i, j);
+      FreeD(i + 9, j) = FreeDcFF(i, j);
+      FreeD(i + 9, j + 9) = FreeDcFcF(i, j);
     }
 
   for (int i = 0; i < 9; i++)
   {
-    FreD(i + 9, 18) = FreDcFJ(i);
-    FreD(18, i + 9) = FreDcFJ(i);
-    FreD(i, 18) = FreDFJ(i);
-    FreD(18, i) = FreDFJ(i);
+    FreeD(i + 9, 18) = FreeDcFJ(i);
+    FreeD(18, i + 9) = FreeDcFJ(i);
+    FreeD(i, 18) = FreeDFJ(i);
+    FreeD(18, i) = FreeDFJ(i);
   }
 
-  FreD(18, 18) = FreDJJ;
+  FreeD(18, 18) = FreeDJJ;
 
   // EigenValues of Frechet Derivative
-  static Core::LinAlg::Matrix<19, 19> EWFreD(true);  // EW on diagonal
-  static Core::LinAlg::Matrix<19, 19> EVFreD(true);
-  Core::LinAlg::syev(FreD, EWFreD, EVFreD);
+  static Core::LinAlg::Matrix<19, 19> EWFreeD(true);  // EW on diagonal
+  static Core::LinAlg::Matrix<19, 19> EVFreeD(true);
+  Core::LinAlg::syev(FreeD, EWFreeD, EVFreeD);
 
   // Just positive EigenValues --> System is polyconvex
   for (int i = 0; i < 19; i++)
     for (int j = 0; j < 19; j++)
       if (i == j)  // values on diagonal = EigenValues
-        if (EWFreD(i, i) <
-            (-1.0e-10 * EWFreD.norm_inf()))  // do not test < 0, but reasonable small value
+        if (EWFreeD(i, i) <
+            (-1.0e-10 * EWFreeD.norm_inf()))  // do not test < 0, but reasonable small value
         {
           std::cout << "\nWARNING: Your system is not polyconvex!" << std::endl;
           std::cout << "Polyconvexity fails at: Element-Id: " << eleGID
                     << " and Gauss-Point: " << gp << std::endl;
-          std::cout << "Eigenvalues of the Frechet Derivative are: " << EWFreD << std::endl;
+          std::cout << "Eigenvalues of the Frechet Derivative are: " << EWFreeD << std::endl;
         }
 }
 

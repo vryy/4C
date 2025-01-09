@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mortar::StratDataContainer::StratDataContainer()
+Mortar::StrategyDataContainer::StrategyDataContainer()
     : probdofs_(nullptr),
       probnodes_(nullptr),
       comm_(nullptr),
@@ -41,7 +41,7 @@ Mortar::StratDataContainer::StratDataContainer()
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 01/10 |
  *----------------------------------------------------------------------*/
-Mortar::StrategyBase::StrategyBase(const std::shared_ptr<Mortar::StratDataContainer>& data_ptr,
+Mortar::StrategyBase::StrategyBase(const std::shared_ptr<Mortar::StrategyDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
     const Teuchos::ParameterList& params, const int spatialDim, const MPI_Comm& comm,
     const double alphaf, const int maxdof)

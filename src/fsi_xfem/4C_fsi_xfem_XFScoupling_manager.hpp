@@ -88,7 +88,7 @@ namespace XFEM
     //"XFEMSurfFSIMono"
     const std::string cond_name_;
 
-    // Global Index in the blockmatrix of the coupled sytem [0] = structure-, [1] = fluid- block
+    // Global Index in the blockmatrix of the coupled system [0] = structure-, [1] = fluid- block
     std::vector<int> idx_;
 
     bool interface_second_order_;

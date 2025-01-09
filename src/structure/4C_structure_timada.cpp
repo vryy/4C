@@ -153,7 +153,7 @@ int Solid::TimAda::integrate()
       // integrate system with auxiliary TIS
       // we hold \f$D_{n+1}^{AUX}\f$ on #locdiserrn_
       // and \f$V_{n+1}^{AUX}\f$ on #locvelerrn_
-      integrate_step_auxiliar();
+      integrate_step_auxiliary();
 
       // integrate system with marching TIS and
       sti_->integrate_step();

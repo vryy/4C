@@ -564,7 +564,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
 
   // ==================================================================
   // decide on Jacobian and preconditioner
-  // We migh want to use no preconditioner at all. Some kind of
+  // We might want to use no preconditioner at all. Some kind of
   // Jacobian has to be provided, otherwise the linear system uses
   // plain finite differences.
 
@@ -576,7 +576,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
   {
     // Teuchos::ParameterList& mfParams = nlParams.sublist("FSI Matrix Free");
 
-    // MatrixFree seems to be the most interessting choice. This
+    // MatrixFree seems to be the most interesting choice. This
     // version builds on our steepest descent relaxation
     // implementation to approximate the Jacobian times x.
 
@@ -596,7 +596,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
 
     bool kelleyPerturbation = mfParams.get("Kelley Perturbation", false);
 
-    // MatrixFree seems to be the most interessting choice. But you
+    // MatrixFree seems to be the most interesting choice. But you
     // must set a rather low tolerance for the linear solver.
 
     MF = Teuchos::make_rcp<::NOX::Epetra::MatrixFree>(

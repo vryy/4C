@@ -133,7 +133,7 @@ namespace Core::Geo
       /*!
        \brief returns the child node indices which overlaps with a given AABB
        \param AABB                AABB
-       \return vector of childen indices
+       \return vector of children indices
        */
       std::vector<int> classify_xaabb(const Core::LinAlg::Matrix<3, 2>& AABB) const;
 
@@ -141,7 +141,7 @@ namespace Core::Geo
        \brief returns the index of the child node which overlaps with a given AABB
        \param index               index
        \param AABB                AABB
-       \return vector of childen indices
+       \return vector of children indices
        */
       bool classify_xaabb(int& index, const Core::LinAlg::Matrix<3, 2>& AABB) const;
 
@@ -149,7 +149,7 @@ namespace Core::Geo
        \brief returns the index of the child node which overlaps with a given AABB
        \param index               index
        \param AABB                AABB
-       \return vector of childen indices
+       \return vector of children indices
        */
       bool classify_kdop(int& index, const Core::LinAlg::Matrix<9, 2>& KDOP) const;
 
@@ -269,7 +269,7 @@ namespace Core::Geo
       /*!
        \brief return pointer to the child node determined by the child index
        \param index   child node index
-       \return retruns pointer to child node
+       \return returns pointer to child node
        */
       std::shared_ptr<Core::Geo::SearchTree::TreeNode> get_child(const int index) const;
 

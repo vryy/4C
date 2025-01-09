@@ -31,7 +31,7 @@ namespace EleMag
     project_electric_from_scatra_field,
     /// Update secondary solution (local solver)
     update_secondary_solution,
-    /// Interpolate the discontinous solution to mesh nodes (output)
+    /// Interpolate the discontinuous solution to mesh nodes (output)
     interpolate_hdg_to_node,
     /// Update secondary solution and compute RHS
     update_secondary_solution_and_calc_residual,
@@ -39,7 +39,7 @@ namespace EleMag
     ele_init,
     /// Fill the restart vectors
     fill_restart_vecs,
-    /// Initilize elements from a given state
+    /// Initialize elements from a given state
     ele_init_from_restart,
     /// Project Dirichlet boundary conditions
     project_dirich_field,
@@ -51,7 +51,7 @@ namespace EleMag
     project_field_test,
     /// Project global field (testing purposes)
     project_field_test_trace,
-    /// Compute error wrt analitical solution
+    /// Compute error wrt analytical solution
     compute_error
   };  // enum Action
 

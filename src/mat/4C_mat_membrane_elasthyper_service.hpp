@@ -68,7 +68,7 @@ namespace Mat
    * @param rcg33 (in) : Right Cauchy-Green tensor in membrane thickness direction
    * @param icg (in) : Inverse Right Cauchy-Green tensor in local membrane coordinate system (strain
    * like)
-   * @param gp (in) : Guass point
+   * @param gp (in) : Gauss point
    * @param eleGID (in) : global element id
    * @param potsum (in) : Vector of summands of the strain energy function
    * @param properties (in) : Properties of the summands of the strain energy function

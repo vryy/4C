@@ -86,7 +86,7 @@ void ScaTra::TimIntOneStepTheta::setup()
   {
     if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") == "isotropic")
     {
-      homisoturb_forcing_ = std::make_shared<ScaTra::HomIsoTurbScalarForcing>(this);
+      homisoturb_forcing_ = std::make_shared<ScaTra::HomoIsoTurbScalarForcing>(this);
       // initialize forcing algorithm
       homisoturb_forcing_->set_initial_spectrum(
           Teuchos::getIntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));

@@ -50,9 +50,9 @@ void Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(Teuchos::ParameterList
 
   // Number of integration along the circumference in cross section coupling.
   Core::Utils::int_parameter("INTEGRATION_POINTS_CIRCUMFERENCE", 6,
-      "Number of Integration points along the circumferencial direction of the beam. This is "
+      "Number of Integration points along the circumferential direction of the beam. This is "
       "parameter is only used in beam to cylinder meshtying. No gauss integration is "
-      "used along the circumferencial direction, equally spaced integration points are used.",
+      "used along the circumferential direction, equally spaced integration points are used.",
       &list);
 }
 

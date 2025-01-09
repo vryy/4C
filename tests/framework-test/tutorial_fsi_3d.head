@@ -122,7 +122,7 @@ FLUID_STRESS                    No
 FLUID_WALL_SHEAR_STRESS         No
 //
 //     Yes,No,yes,no,YES,NO
-FLUID_ELEDATA_EVRY_STEP         No
+FLUID_ELEDATA_EVERY_STEP         No
 //
 //     Yes,No,yes,no,YES,NO
 THERM_TEMPERATURE               No
@@ -137,7 +137,7 @@ THERM_TEMPGRAD                  None
 FILESTEPS                       1000
 //
 // Print to screen every n step
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 //
 // Write screen output
 //     Yes,No,yes,no,YES,NO
@@ -173,14 +173,14 @@ PRESTRESS                       none
 // time to switch from pre to post stressing
 PRESTRESSTIME                   0
 //
-// save displacements and contact forces every RESULTSEVRY steps
-RESULTSEVRY                     1
+// save displacements and contact forces every RESULTSEVERY steps
+RESULTSEVERY                     1
 //
 // write system energies every requested step
-RESEVRYERGY                     0
+RESEVERYERGY                     0
 //
-// write restart possibility every RESTARTEVRY steps
-RESTARTEVRY                     1
+// write restart possibility every RESTARTEVERY steps
+RESTARTEVERY                     1
 //
 // time step size
 TIMESTEP                        0.05
@@ -497,10 +497,10 @@ COMPUTE_EKIN                    No
 NEW_OST                         No
 //
 // Increment for writing solution
-RESULTSEVRY                      1
+RESULTSEVERY                      1
 //
 // Increment for writing restart
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 //
 // Total number of Timesteps
 NUMSTEP                         1
@@ -677,11 +677,11 @@ TOLDISP                         1e-06
 //
 NUM_INITSTEP                    0
 //
-// write restart data every RESTARTEVRY steps
-RESTARTEVRY                     1
+// write restart data every RESTARTEVERY steps
+RESTARTEVERY                     1
 //
-// write results every RESULTSTEVRY steps
-RESULTSEVRY                     0
+// write results every RESULTSTEVERY steps
+RESULTSEVERY                     0
 //
 // What to do if nonlinear solver does not converge?
 //     stop,continue
@@ -731,10 +731,10 @@ SECONDORDER                     No
 NUMSTEP                         3
 //
 // Increment for writing solution
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 //
 // Increment for writing restart
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 //
 // Time increment dt
 TIMESTEP                        0.1

@@ -185,7 +185,7 @@ void Core::LinAlg::matrix_put(const Core::LinAlg::SparseMatrix& A, const double 
 {
   // put values onto sysmat
   if (A.get_matrixtype() != Core::LinAlg::SparseMatrix::CRS_MATRIX)
-    FOUR_C_THROW("Please check code and see wether it is save to apply it to matrix type %d",
+    FOUR_C_THROW("Please check code and see whether it is save to apply it to matrix type %d",
         A.get_matrixtype());
   Epetra_CrsMatrix* Aprime = const_cast<Epetra_CrsMatrix*>(&(*(A.epetra_matrix())));
   if (Aprime == nullptr) FOUR_C_THROW("Cast failed");
@@ -194,7 +194,7 @@ void Core::LinAlg::matrix_put(const Core::LinAlg::SparseMatrix& A, const double 
   const int MaxNumEntries = EPETRA_MAX(Aprime->MaxNumEntries(), B.max_num_entries());
 
   // define row map to tackle
-  // if #rowmap (a subset of #RowMap()) is provided, a selective replacing is perfomed
+  // if #rowmap (a subset of #RowMap()) is provided, a selective replacing is performed
   const Epetra_Map* tomap = nullptr;
   if (rowmap != nullptr)
     tomap = &(*rowmap);

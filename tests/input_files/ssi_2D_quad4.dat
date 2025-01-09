@@ -42,8 +42,8 @@ THETA                           0.5
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                     1
-RESTARTEVRY                     20
+RESULTSEVERY                     1
+RESTARTEVERY                     20
 NUMSTEP                         10000
 MAXTIME                         2.0
 TIMESTEP                        1.0
@@ -61,8 +61,8 @@ OUTPUTSCALARS                   entire_domain
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 -------------------------------------------------------SSI CONTROL
-RESULTSEVRY                           1
-RESTARTEVRY                     1
+RESULTSEVERY                           1
+RESTARTEVERY                     1
 NUMSTEP                         1
 MAXTIME                         1.0
 TIMESTEP                        1.0

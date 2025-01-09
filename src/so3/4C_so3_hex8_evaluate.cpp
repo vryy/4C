@@ -958,7 +958,7 @@ int Discret::Elements::SoHex8::evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     // in case of multi-scale problems, possible EAS internal data on microscale
     // have to be stored in every macroscopic Gauss point
-    // allocation and initializiation of these data arrays can only be
+    // allocation and initialization of these data arrays can only be
     // done in the elements that know the number of EAS parameters
     case Core::Elements::multi_init_eas:
     {
@@ -1207,7 +1207,7 @@ int Discret::Elements::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
   {
     if ((*onoff)[checkdof] != 0)
       FOUR_C_THROW(
-          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+          "Number of Dimensions in Neumann_Evaluation is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS
@@ -1565,7 +1565,7 @@ void Discret::Elements::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
   for (int i = 0; i < NUMDOF_SOH8; ++i) nodaldisp(i, 0) = disp[i];
 
   /*
-  ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
+  ** EAS Technology: declare, initialize, set up, and alpha history -------- EAS
   */
   // in any case declare variables, sizes etc. only in eascase
   Core::LinAlg::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
@@ -1666,7 +1666,7 @@ void Discret::Elements::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
 
     /* end of EAS Update ******************/
 
-    // EAS portion of internal forces, also called enhacement vector s or Rtilde
+    // EAS portion of internal forces, also called enhancement vector s or Rtilde
     feas.size(neas_);
 
     // EAS matrix K_{alpha alpha}, also called Dtilde
@@ -1838,7 +1838,7 @@ void Discret::Elements::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
     if (eastype_ != soh8_easnone)
     {
       M.shape(Mat::NUM_STRESS_3D, neas_);
-      // map local M to global, also enhancement is refered to element origin
+      // map local M to global, also enhancement is referred to element origin
       // M = detJ0/detJ T0^{-T} . M
       // Core::LinAlg::SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
       // add enhanced strains = M . alpha to GL strains to "unlock" element
@@ -2302,7 +2302,7 @@ void Discret::Elements::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
       if (so3mat->varying_density())
       {
         /*
-         If the density, i.e. the mass matrix, is not constant, a linearization is neccessary.
+         If the density, i.e. the mass matrix, is not constant, a linearization is necessary.
          In general, the mass matrix can be dependent on the displacements, the velocities and the
          accelerations. We write all the additional terms into the mass matrix, hence, conversion
          from accelerations to velocities and displacements are needed. As those conversions depend
@@ -2991,7 +2991,7 @@ void Discret::Elements::SoHex8::evaluate_finite_difference_material_tangent(
     {
       FOUR_C_THROW("be careful ! fdcheck has not been tested with EAS, yet! ");
       M.shape(Mat::NUM_STRESS_3D, neas_);
-      // map local M to global, also enhancement is refered to element origin
+      // map local M to global, also enhancement is referred to element origin
       // M = detJ0/detJ T0^{-T} . M
       // Core::LinAlg::SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
       // add enhanced strains = M . alpha to GL strains to "unlock" element

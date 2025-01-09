@@ -89,8 +89,8 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
 
   if (determine_neighbors)
   {
-    neighbors1_ = BeamInteraction::Beam3TangentSmoothing::determine_neigbors(element1());
-    neighbors2_ = BeamInteraction::Beam3TangentSmoothing::determine_neigbors(element2());
+    neighbors1_ = BeamInteraction::Beam3TangentSmoothing::determine_neighbors(element1());
+    neighbors2_ = BeamInteraction::Beam3TangentSmoothing::determine_neighbors(element2());
 
     bool leftboundarynode1 = false;
     bool rightboundarynode1 = false;
@@ -268,7 +268,7 @@ bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::evaluate(
 
   bool endpoint_penalty = params()->beam_to_beam_contact_params()->end_point_penalty();
 
-// Sub-devision of contact elements in search segments or not?
+// Sub-division of contact elements in search segments or not?
 #ifndef NOSEGMENTATION
   get_close_segments(endpoints1, endpoints2, closesmallanglesegments, closelargeanglesegments,
       closeendpointsegments, maxactivegap_);
@@ -405,10 +405,10 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
     validpairfound = closest_point_projection(
         eta_left1, eta_left2, l1, l2, segmentdata, closestpoint, segid1, segid2);
 
-    // With the following block we sort out identical contact points that occure more than once
+    // With the following block we sort out identical contact points that occur more than once
     // within this element pair -> this is possible, when the contact point lies on the boundary
     // between two segments!
-    bool allready_found = false;
+    bool already_found = false;
 
     for (unsigned int i = 0; i < cpvariables_.size(); i++)
     {
@@ -419,10 +419,10 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
               XIETARESOLUTIONFAC * XIETAITERATIVEDISPTOL and
           std::fabs(eta2_eval - Core::FADUtils::cast_to_double(closestpoint.second)) <
               XIETARESOLUTIONFAC * XIETAITERATIVEDISPTOL)
-        allready_found = true;
+        already_found = true;
     }
 
-    if (validpairfound and !allready_found)
+    if (validpairfound and !already_found)
     {
       std::pair<int, int> integration_ids = std::make_pair(-2, -2);
       cpvariables_.push_back(std::make_shared<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
@@ -694,7 +694,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
             if (leftsolutionwithinsegment)
               FOUR_C_THROW(
                   "Something went wrong here: both boundary nodes of the master beam (discretized "
-                  "by one finite element?!?) are prejected as left boundary of the integration "
+                  "by one finite element?!?) are projected as left boundary of the integration "
                   "segment!");
 
             leftsolutionwithinsegment = true;
@@ -710,7 +710,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
             if (rightsolutionwithinsegment)
               FOUR_C_THROW(
                   "Something went wrong here: both boundary nodes of the master beam (discretized "
-                  "by one finite element?!?) are prejected as right boundary of the integration "
+                  "by one finite element?!?) are projected as right boundary of the integration "
                   "segment!");
 
             rightsolutionwithinsegment = true;
@@ -740,7 +740,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
   // loop over all integration intervals
   for (int interval = imin; interval <= imax; interval++)
   {
-    // Calculate parameter bounds of considered intergration interval
+    // Calculate parameter bounds of considered integration interval
     double eta1_min = -1.0 + interval * 2.0 / intintervals;
     double eta1_max = -1.0 + (interval + 1) * 2.0 / intintervals;
 
@@ -897,7 +897,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
 #ifdef ENDPOINTSEGMENTATION
   if (iminmax == nullptr or leftrightsolutionwithinsegment == nullptr or
       eta1_leftrightboundary == nullptr)
-    FOUR_C_THROW("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
+    FOUR_C_THROW("In case of ENDPOINTSEGMENTATION no NUll pointer should be handed in!!!");
 
   *iminmax = std::make_pair(imin, imax);
   *leftrightsolutionwithinsegment =
@@ -926,7 +926,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes,
 
   if (iminmax == nullptr or leftrightsolutionwithinsegment == nullptr or
       eta1_leftrightboundary == nullptr)
-    FOUR_C_THROW("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
+    FOUR_C_THROW("In case of ENDPOINTSEGMENTATION no NUll pointer should be handed in!!!");
 
   int imin = (*iminmax).first;
   int imax = (*iminmax).second;
@@ -1505,7 +1505,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_pena
 
       break;
     }
-    case Inpar::BeamContact::pl_lpqp:  // quadratic regularization for positiv gaps
+    case Inpar::BeamContact::pl_lpqp:  // quadratic regularization for positive gaps
     {
       if (g0 == -1.0)
         FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
@@ -1548,7 +1548,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_pena
         FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
 
       // k \in ~[1;3] delivers sensible results representing a parable without turning point
-      // k \in ~[3;6] delivers a parable with turning point and consequentely also small negative
+      // k \in ~[3;6] delivers a parable with turning point and consequently also small negative
       // contact forces ~0.1*f0 k=2.0 is  identical to the quadratic regularization for positive
       // gaps!
       double k = c0;
@@ -1572,7 +1572,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_pena
 
       break;
     }
-    case Inpar::BeamContact::pl_lpdqp:  // double quadratic regularization for positiv gaps
+    case Inpar::BeamContact::pl_lpdqp:  // double quadratic regularization for positive gaps
     {
       if (g0 == -1.0)
         FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
@@ -1620,7 +1620,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_pena
 
       break;
     }
-    case Inpar::BeamContact::pl_lpep:  // exponential regularization for positiv gaps. Here g0
+    case Inpar::BeamContact::pl_lpep:  // exponential regularization for positive gaps. Here g0
                                        // represents the cut off radius!
     {
       if (g0 == -1.0)
@@ -2246,7 +2246,7 @@ bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
       // std::cout << "norm_delta_r: " << norm_delta_r << std::endl;
       if (norm_delta_r < NORMTOL)
       {
-        // this exludes pairs with IDs i and i+2, i.e. contact with the next but one element
+        // this excludes pairs with IDs i and i+2, i.e. contact with the next but one element
         if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(eta1)) <= 1.0 and
             Core::FADUtils::cast_to_double(Core::FADUtils::norm(eta2)) <= 1.0)
         {
@@ -2353,7 +2353,7 @@ bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
     // Newton iteration unconverged after BEAMCONTACTMAXITER
     if (!converged)
     {
-      // Initialize g_min with a very large value, at which no active conact should occur!
+      // Initialize g_min with a very large value, at which no active contact should occur!
       double g_min = 1000 * r2_;
       if (check_contact_status(g_min))
         FOUR_C_THROW("Are sure that contact should be active at such large gaps?");
@@ -2533,7 +2533,7 @@ bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
     double& alpha, bool& pairactive, bool smallanglepair, bool invertpairs,
     bool orthogonalprojection)
 {
-  /* Attention: With the paramters invertpairs and orthogonalprojection, 4 different types of
+  /* Attention: With the parameters invertpairs and orthogonalprojection, 4 different types of
    * projections can be realized. The parameter invertpairs=true simply changes the meaning of eta1
    * and eta2 within this method, i.e. in this case the given parameter coordinate is eta2 of beam2
    * and the searched parameter is eta1 on beam1 while in the standard case eta1 is given and eta2
@@ -2677,7 +2677,7 @@ bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
       // std::cout << "norm_delta_r: " << norm_delta_r << std::endl;
       if (norm_delta_r < NORMTOL)
       {
-        // this exludes pairs with IDs i and i+2, i.e. contact with the next but one element
+        // this excludes pairs with IDs i and i+2, i.e. contact with the next but one element
         if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(eta1)) +
                 Core::FADUtils::cast_to_double(Core::FADUtils::norm(eta2)) <
             NEIGHBORTOL)
@@ -2806,7 +2806,7 @@ bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
       // TODO:
       this->print(std::cout);
       FOUR_C_THROW(
-          "Local Newton loop unconverged. Adapt segangle or the shift angles for small-anlge "
+          "Local Newton loop unconverged. Adapt segangle or the shift angles for small-angle "
           "contact!");
 
       eta1 = 1e+12;
@@ -4703,7 +4703,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes,
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- | Evaluate orthogonality cond. of point to line projeciton  meier 10/14|
+ | Evaluate orthogonality cond. of point to line projection  meier 10/14|
  *----------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BeamInteraction::BeamToBeamContactPair<numnodes,
@@ -4735,7 +4735,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes,
   return;
 }
 /*----------------------------------------------------------------------*
- |  end: Evaluate orthogonality cond. of point to line projeciton
+ |  end: Evaluate orthogonality cond. of point to line projection
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -4827,7 +4827,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::compute_n
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Check if conact is active or inactive                    meier 02/14|
+ |  Check if contact is active or inactive                    meier 02/14|
  *----------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::check_contact_status(
@@ -4902,7 +4902,7 @@ bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::check_con
   return contactflag;
 }
 /*----------------------------------------------------------------------*
- |  end: Check if conact is active or inactive
+ |  end: Check if contact is active or inactive
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*
@@ -5011,7 +5011,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::print(
   }
 
   out << "\n";
-  // Todo add more relevant information here: segments, contact stati, angles ...
+  // Todo add more relevant information here: segments, contact states, angles ...
 }
 
 /*----------------------------------------------------------------------------*
@@ -5371,7 +5371,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes,
 //  //Therefore, all changes within this class are automatically considered and have not to be
 //  //adapted in this finite difference check!
 //  if(fint.GlobalLength()>2*3*numnodes*numnodalvalues)
-//    FOUR_C_THROW("So far, this fd_check only works for simualtions with two elements!!!");
+//    FOUR_C_THROW("So far, this fd_check only works for simulations with two elements!!!");
 //
 //  Core::LinAlg::Vector<double> fint1(fint);
 //  fint1.PutScalar(0.0);

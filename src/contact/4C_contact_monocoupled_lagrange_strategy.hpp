@@ -33,7 +33,7 @@ namespace CONTACT
 
     */
     MonoCoupledLagrangeStrategy(
-        const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+        const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, MPI_Comm comm,
         double alphaf, int maxdof);
@@ -56,7 +56,7 @@ namespace CONTACT
     };
 
     // Overload CONTACT::LagrangeStrategy::recover as this is called in the structure --> no
-    // enought information available for monolithically coupled algorithms!
+    // enough information available for monolithically coupled algorithms!
     void recover(std::shared_ptr<Core::LinAlg::Vector<double>> disi) override
     {
       if (has_to_recover_ && 0)
@@ -89,7 +89,7 @@ namespace CONTACT
         bool predictor);
 
     // Alternative Method to CONTACT::LagrangeStrategy::recover as this is called in the structure
-    // --> no enought information available for monolithically coupled algorithms!
+    // --> no enough information available for monolithically coupled algorithms!
     /*!
     \brief Recovery method
 
@@ -128,7 +128,7 @@ namespace CONTACT
     std::shared_ptr<Core::LinAlg::Vector<double>>
         lambdaold_;  // old vector of Lagrange multipliers(for poro no pen.) at t_n
 
-    //! pure useage safty flags
+    //! pure usage safety flags
     bool has_to_evaluate_;  // checks if apply_force_stiff_cmt_coupled() after every call of
                             // apply_force_stiff_cmt()
     bool has_to_recover_;   // checks if RecoverCoupled() after every call of recover()

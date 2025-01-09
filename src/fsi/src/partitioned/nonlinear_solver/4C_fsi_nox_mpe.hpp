@@ -27,7 +27,7 @@ namespace NOX
 
       Calculates the update direction by means of the Minimal Polynomial
       vector extrapolation method as proposed by Avram Sidi. That is we
-      calcualte a krylov subspace based on the residuals here and
+      calculate a krylov subspace based on the residuals here and
       approximate the solution inside this subspace. The size of the
       subspace is given by the user. In each cycle there is one operator
       evaluation, so this is an expensive direction search.

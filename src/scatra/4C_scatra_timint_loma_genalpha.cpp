@@ -82,7 +82,7 @@ void ScaTra::TimIntLomaGenAlpha::predict_therm_pressure()
   double fact = (gamma_ - 1.0) / gamma_;
   thermpressdtnp_ = fact * thermpressdtn_;
 
-  // same-thermodynamic-pressure-derivative predictor (currrently not used)
+  // same-thermodynamic-pressure-derivative predictor (currently not used)
   // thermpressnp_ += dta_*thermpressdtn_;
   // prediction of time derivative not required (would also not be required
   // to be performed, since we just updated the time derivatives of density,
@@ -93,7 +93,7 @@ void ScaTra::TimIntLomaGenAlpha::predict_therm_pressure()
 
 
 /*----------------------------------------------------------------------*
- | compute values of therm. pressure at interm. time steps     vg 09/09 |
+ | compute values of therm. pressure at intermediate time steps         |
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure_intermediate_values()
 {

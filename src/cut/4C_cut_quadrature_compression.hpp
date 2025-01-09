@@ -47,7 +47,7 @@ namespace Cut
         Core::LinAlg::SerialDenseVector& sol);
 
     /*!
-    \brief Solve the under/over determined system by performing QR decomposition, achived using
+    \brief Solve the under/over determined system by performing QR decomposition, achieved using
     Teuchos framework
      */
     void qr_decomposition_teuchos(std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& mat,
@@ -55,7 +55,7 @@ namespace Cut
         std::shared_ptr<Core::LinAlg::SerialDenseVector>& sol);
 
     /*!
-    \brief Solve the under/over determined system by performing QR decomposition, achived using
+    \brief Solve the under/over determined system by performing QR decomposition, achieved using
     LAPACK
      */
     void qr_decomposition_lapack(std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& mat,

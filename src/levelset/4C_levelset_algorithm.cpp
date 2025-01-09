@@ -345,7 +345,7 @@ void ScaTra::LevelSetAlgorithm::reinitialization()
       //             capture interface before reinitialization
       // -----------------------------------------------------------------
       // get volume distribution before reinitialization
-      // initalize structure holding the interface
+      // initialize structure holding the interface
       // potentially required for reinitialization via signed distance to interface
       std::map<int, Core::Geo::BoundaryIntCells> zerolevelset;
       zerolevelset.clear();
@@ -430,7 +430,7 @@ void ScaTra::LevelSetAlgorithm::check_and_write_output_and_restart()
  *----------------------------------------------------------------------------*/
 void ScaTra::LevelSetAlgorithm::output_of_level_set_specific_values()
 {
-  // capture interface, evalute mass conservation, write to file
+  // capture interface, evaluate mass conservation, write to file
   std::map<int, Core::Geo::BoundaryIntCells> zerolevelset;
   zerolevelset.clear();
   capture_interface(zerolevelset, true);

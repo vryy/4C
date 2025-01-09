@@ -25,7 +25,7 @@
 #define NUMDOF_SOTET4 12      ///< total dofs per element
 #define NUMGPT_SOTET4 1       ///< total gauss points per element  /****/
 #define NUMDIM_SOTET4 3       ///< number of dimensions/****/
-#define NUMCOORD_SOTET4 4     ///< number of shape function cooordinates (ksi1-ksi4)
+#define NUMCOORD_SOTET4 4     ///< number of shape function coordinates (ksi1-ksi4)
 #define NUMNOD_SOTET4_FACE 3  ///< number of nodes on a TET4 face (which is a TRI3)
 #define NUMGPT_SOTET4_FACE 1  ///< number of GP on a TET4 face (which is a TRI3)
 
@@ -181,7 +181,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
 
       /*!
@@ -286,10 +286,10 @@ namespace Discret
       \param discretization : pointer to discretization for de-assembly
       \param lm (in)        : location matrix for de-assembly
       \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If nullptr on input,
-                              the controling method does not expect the element to fill
+                              the controlling method does not expect the element to fill
                               this matrix.
       \param elemat2 (out)  : (mass-)matrix to be filled by element. If nullptr on input,
-                              the controling method does not expect the element to fill
+                              the controlling method does not expect the element to fill
                               this matrix.
       \param elevec1 (out)  : (internal force-)vector to be filled by element. If nullptr on input,
                               the controlling method does not expect the element

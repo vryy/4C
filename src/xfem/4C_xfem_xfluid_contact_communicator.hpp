@@ -240,7 +240,7 @@ namespace XFEM
 
    private:
     //! The the contact state at local coord of Element cele and compare to the fsi_traction,
-    //! return true if contact is evaluated, reture false if FSI is evaluated
+    //! return true if contact is evaluated, return false if FSI is evaluated
     bool check_nitsche_contact_state(CONTACT::Element* cele,
         const Core::LinAlg::Matrix<2, 1>& xsi,  // local coord on the ele element
         const double& full_fsi_traction,        // stressfluid + penalty
@@ -375,7 +375,7 @@ namespace XFEM
     /// FSI_NoContact, 4 ... FSI_Contact
     std::vector<int> sum_gps_;
 
-    /// store the last evaluted set of physical sides for solid side with id key
+    /// store the last evaluated set of physical sides for solid side with id key
     std::pair<int, std::set<Cut::Side*>> last_physical_sides_;
 
     /// last computed element h measure with key fluidele id

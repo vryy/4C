@@ -246,7 +246,7 @@ namespace Cut
    private:
     /*!
      \brief Project the integration rule available in the local coordinates of the
-     integation-cells to the local coordinates of background element
+     integration-cells to the local coordinates of background element
      */
     template <Core::FE::CellType distype>
     std::shared_ptr<Core::FE::GaussPoints> create_projected(

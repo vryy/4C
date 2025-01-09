@@ -57,7 +57,7 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_dis(const Core::FE::Discretiz
 
 /*----------------------------------------------------------------------*
  | delivers a slightly enlarged axis-aligned bounding box for u.may09/09|
- | given elements with their current postions for sliding ALE           |
+ | given elements with their current positions for sliding ALE           |
  *----------------------------------------------------------------------*/
 Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_eles(
     std::map<int, std::shared_ptr<Core::Elements::Element>>& elements,
@@ -121,7 +121,7 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_positions(
 {
   Core::LinAlg::Matrix<3, 2> XAABB(true);
 
-  if (currentpositions.size() == 0) FOUR_C_THROW("map with current positions is emtpy");
+  if (currentpositions.size() == 0) FOUR_C_THROW("map with current positions is empty");
 
   // initialize XAABB as rectangle around the first node
   const Core::LinAlg::Matrix<3, 1> initcurrentpos = currentpositions.begin()->second;
@@ -135,11 +135,11 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_positions(
   std::map<int, Core::LinAlg::Matrix<3, 1>>::const_iterator iter;
   for (iter = currentpositions.begin(); iter != currentpositions.end(); ++iter)
   {
-    const Core::LinAlg::Matrix<3, 1> currentpos = iter->second;
+    const Core::LinAlg::Matrix<3, 1> currents = iter->second;
     for (int dim = 0; dim < 3; dim++)
     {
-      XAABB(dim, 0) = std::min(XAABB(dim, 0), currentpos(dim) - TOL7);
-      XAABB(dim, 1) = std::max(XAABB(dim, 1), currentpos(dim) + TOL7);
+      XAABB(dim, 0) = std::min(XAABB(dim, 0), currents(dim) - TOL7);
+      XAABB(dim, 1) = std::max(XAABB(dim, 1), currents(dim) + TOL7);
     }
   }
   return XAABB;

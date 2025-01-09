@@ -59,7 +59,7 @@ namespace Solid
      *  - \f$D_{n+1}^{AUX}\f$ in #locdiserrn_
      *  - \f$V_{n+1}^{AUX}\f$ in #locvelerrn_
      */
-    void integrate_step_auxiliar() override;
+    void integrate_step_auxiliary() override;
 
     //@}
 

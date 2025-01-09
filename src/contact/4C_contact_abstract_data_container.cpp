@@ -9,7 +9,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
+CONTACT::AbstractStrategyDataContainer::AbstractStrategyDataContainer()
     : glmdofrowmap_(nullptr),
       gsnoderowmap_(nullptr),
       gmnoderowmap_(nullptr),

@@ -286,7 +286,7 @@ namespace CONTACT
     The enum input parameter defines, which quantity has to be updated.
     Currently, the possibilities "lmold", "lmcurrent", "lmupdate" and
     "lmuzawa" exist. Note that "lmold" means the converged value LM_n
-    of the last time / load step, whereas "lmcurrent" adresses the current
+    of the last time / load step, whereas "lmcurrent" addresses the current
     (not necessarily converged) value of the LM_n+1. "lmupdate" is a special
     option called only in recover() after the update of the Lagr. multipliers.
     It basically does the same as "lmcurrent", but also checks for D.B.C.

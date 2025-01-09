@@ -21,7 +21,7 @@ FILESTEPS                       1000
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      yes
 PREFIX_GROUP_ID                 No
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 STRUCT_COUPLING_STRESS          No
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
@@ -55,9 +55,9 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         50
 PREDICT                         ConstTemp
-RESEVRYERGY                     10
-RESULTSEVRY                     5
-RESTARTEVRY                     20
+RESEVERYERGY                     10
+RESULTSEVERY                     5
+RESTARTEVERY                     20
 TIMESTEP                        2.0
 TOLRES                          1e-08
 TOLTEMP                         1e-10

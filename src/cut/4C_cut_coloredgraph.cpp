@@ -392,7 +392,7 @@ namespace Cut
           }
           else if (facet_color[facet] == 2)  // black
           {
-            // if a black facet is poped for the last time (it is not any more
+            // if a black facet is popped for the last time (it is not any more
             // on the stack), we make it available again.
             if (std::find(facet_stack.begin(), facet_stack.end(), facet) == facet_stack.end())
             {
@@ -521,7 +521,7 @@ void Cut::ColoredGraph::Cycle::print() const
   std::cout << "\n";
 }
 
-// splits splittrace into isolated components, and pushes it into splitted_trace
+// splits splittrace into isolated components, and pushes it into split_trace
 void Cut::ColoredGraph::Graph::split_splittrace(const std::vector<int>& split_trace,
     Graph& datagraph, std::vector<std::vector<int>>& isolated_components)
 {
@@ -553,7 +553,7 @@ void Cut::ColoredGraph::Graph::split_splittrace(const std::vector<int>& split_tr
   lines_to_explore.push(seed);
   bool visited_all_loops = false;
 
-  // lines that we proccessed over (not to
+  // lines that we processed over (not to
   // go though them again if we have connected split loops)
 
   std::set<int> done_lines;
@@ -821,7 +821,7 @@ void Cut::ColoredGraph::CycleList::add_points(Graph& graph, Graph& used, Graph& 
 {
   push_back(cycle);
 
-  // while there are elements to loop over  ( while there are still "cutted-parts" of the element)
+  // while there are elements to loop over  ( while there are still "cut-parts" of the element)
   while (free.size() > 0)
   {
     // create new graph with the same separation of line and facets

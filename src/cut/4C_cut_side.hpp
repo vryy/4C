@@ -387,7 +387,7 @@ namespace Cut
         Mesh& mesh, Element* element, Side& side, const PointSet& cut, point_line_set& new_lines);
 
 
-    // create paralle cut surface between two sides
+    // create parallel cut surface between two sides
     virtual bool create_parallel_cut_surface(Mesh& mesh, Element* element, Side& other,
         const PointSet& cut, std::vector<Point*>* cut_point_for_lines_out = nullptr);
 

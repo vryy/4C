@@ -483,7 +483,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_tau_1d_exact(
   double vel_norm(0.0);
   vel_norm = convelint.norm2();
 
-  if (diffus < 1e-14) FOUR_C_THROW("Invalid diffusion coefficent");
+  if (diffus < 1e-14) FOUR_C_THROW("Invalid diffusion coefficient");
   double epe = 0.5 * densnp * vel_norm * h / diffus;
 
   const double pp = exp(epe);
@@ -553,7 +553,7 @@ double Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_char_ele_length(
     // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
     case Inpar::ScaTra::root_of_volume:
     {
-      // cast dimension to a double varibale -> pow()
+      // cast dimension to a double variable -> pow()
       const double dim = double(nsd_ele_);
       h = std::pow(vol, 1.0 / dim);
     }
@@ -711,17 +711,17 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
           //    the input file. Consistently, one has to use the same definition here.
           // 2. Instead of using sigma = tau_bhbar, Hughes et al. suggested to use sigma = tau_bhbar
           // - tau to not double
-          //    the SUPG stabilization. This is another inconsitent aspect on this implementation.
+          //    the SUPG stabilization. This is another inconsistent aspect on this implementation.
           //    To have the right tau here (i.e, not the one the last gauss point or even last
           //    step), one has to calaculate tau first. Then, sigma and, hence, the addition
           //    diffusion is computed based on this tau. Next, tau is recomputed with the
-          //    diffusivity repaced by the original (physical) diffusivity plus the estimated
-          //    artificial diffusivity. This is pobably not a good choice, because, first, tau is
+          //    diffusivity replaced by the original (physical) diffusivity plus the estimated
+          //    artificial diffusivity. This is probably not a good choice, because, first, tau is
           //    considered in the estimation of the artificial diffusion and then this artificial
           //    diffusion is incorporated into tau. This would reduce the effect. Perhaps, one
           //    should either consider tau in sigma or the artificial diffusion in tau. When
           //    changing this aspect, be aware that tau has to be computed after the subgrid-scale
-          //    velocity has been calcuated since, for this calculation tau is overwritten by its
+          //    velocity has been calculated since, for this calculation tau is overwritten by its
           //    value in the fluid field. Note that similar considerations may also hold for the
           //    methods by do Carmo and Almeida.
 

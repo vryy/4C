@@ -48,7 +48,7 @@ Core::DOFSets::DofSetMergedWrapper::~DofSetMergedWrapper()
 const Epetra_Map* Core::DOFSets::DofSetMergedWrapper::dof_row_map() const
 {
   // the merged dofset does not add new dofs. So we can just return the
-  // originial dof map here.
+  // original dof map here.
   return sourcedofset_->dof_row_map();
 }
 
@@ -57,7 +57,7 @@ const Epetra_Map* Core::DOFSets::DofSetMergedWrapper::dof_row_map() const
 const Epetra_Map* Core::DOFSets::DofSetMergedWrapper::dof_col_map() const
 {
   // the merged dofset does not add new dofs. So we can just return the
-  // originial dof map here.
+  // original dof map here.
   return sourcedofset_->dof_col_map();
 }
 

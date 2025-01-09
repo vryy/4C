@@ -122,7 +122,7 @@ namespace Mat
      *
      * The vector data contains all information to rebuild the exact copy of an instance of a class
      * on a different processor. The first entry in data hast to be an integer which is the unique
-     * parobject id defined at the top of this file and delivered by UniqueParObjetId().
+     * parobject id defined at the top of this file and delivered by UniqueParObjectId().
      *
      * @param data (in) : vector storing all data to be unpacked into this instance
      */

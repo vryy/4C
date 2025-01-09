@@ -212,7 +212,7 @@ void FSI::Monolithic::timeloop_ada_dt(
       prepare_time_step();
 
       // Do the auxiliary step first
-      time_step_auxiliar();
+      time_step_auxiliary();
 
       // Do the time step with the marching time integrator
       time_step(interface);
@@ -314,7 +314,7 @@ void FSI::Monolithic::print_header_repeated_step() const
   if (adaptstep_ != 0 and Core::Communication::my_mpi_rank(get_comm()) == 0)
   {
     Core::IO::cout << Core::IO::endl
-                   << "__________REAPEATING TIME STEP " << step() << " WITH DT = " << dt()
+                   << "__________REPEATING TIME STEP " << step() << " WITH DT = " << dt()
                    << " FOR THE " << adaptstep_ << ". TIME__________" << Core::IO::endl;
   }
 }
@@ -419,9 +419,9 @@ void FSI::Monolithic::print_adaptivity_summary() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::time_step_auxiliar()
+void FSI::Monolithic::time_step_auxiliary()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::time_step_auxiliar");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::time_step_auxiliary");
 
   // ---------------------------------------------------------------------------
   // Structure field
@@ -429,7 +429,7 @@ void FSI::Monolithic::time_step_auxiliar()
   if (is_ada_structure())
   {
     std::dynamic_pointer_cast<Adapter::StructureFSITimIntAda>(structure_field())
-        ->time_step_auxiliar();
+        ->time_step_auxiliary();
   }
   // ---------------------------------------------------------------------------
 
@@ -438,7 +438,7 @@ void FSI::Monolithic::time_step_auxiliar()
   // ---------------------------------------------------------------------------
   if (is_ada_fluid())
   {
-    fluid_field()->time_step_auxiliar();
+    fluid_field()->time_step_auxiliary();
   }
   // ---------------------------------------------------------------------------
 

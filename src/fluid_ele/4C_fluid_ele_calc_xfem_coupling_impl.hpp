@@ -438,7 +438,7 @@ namespace Discret
         );
 
         //! evaluate traction-consistency term for Nitsche's method (for integration by parts
-        //! aproach)
+        //! approach)
         void nit_projected_traction_consistency_term(
             const Core::LinAlg::Matrix<nsd_, nen_>&
                 derxy_m_timefacfac_ks,  ///< master shape function derivatives * timefacfac *

@@ -60,7 +60,7 @@ namespace Solid
         return os_precision_;
       };
 
-      /// file tpye ending
+      /// file type ending
       std::string const& file_type() const
       {
         check_init_setup();

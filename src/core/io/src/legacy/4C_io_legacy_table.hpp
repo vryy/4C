@@ -54,7 +54,7 @@ int map_find_map(MAP* map, const char* key, MAP** dir);
 
 
 /* Find the last symbols value. The value has to be of the given
- * type. Calls FOUR_C_THROW on failture. */
+ * type. Calls FOUR_C_THROW on failure. */
 const char* map_read_string(MAP* map, const char* key);
 int map_read_int(MAP* map, const char* key);
 double map_read_real(MAP* map, const char* key);
@@ -92,7 +92,7 @@ void map_prepend_symbols(MAP* map, const char* key, SYMBOL* symbol, int count);
 int symbol_is_map(const SYMBOL* symbol);
 
 
-/* Extract the value of this symbol. Returns false on failture. */
+/* Extract the value of this symbol. Returns false on failure. */
 int symbol_get_string(const SYMBOL* symbol, const char** string);
 int symbol_get_int(const SYMBOL* symbol, int* integer);
 int symbol_get_real(const SYMBOL* symbol, double* real);

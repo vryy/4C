@@ -24,7 +24,7 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 LINEAR_SOLVER                   3
 ---------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
@@ -63,7 +63,7 @@ NORMCOMBI_RESFINC               And
 NORM_INC                        AbsSingleFields
 NORM_RESF                       AbsSingleFields
 NUMSTEP                         2
-RESTARTEVRY                     5
+RESTARTEVERY                     5
 TOLINC_DISP                     1e-08
 TOLINC_VEL                      1e-08
 TOLINC_PRES                     1e-08
@@ -75,7 +75,7 @@ TOLRES_PORO                     1e-08
 VECTORNORM_RESF                 Rms
 VECTORNORM_INC                  L1
 TIMESTEP                        0.01
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 LINEAR_SOLVER                   1
 SECONDORDER                     no
 CONTIPARTINT                    no

@@ -67,7 +67,7 @@ namespace Utils
     */
 
     Cardiovascular0D(std::shared_ptr<Core::FE::Discretization>
-                         discr,  ///< discretization where Cardiovascular0D funtion lives on
+                         discr,  ///< discretization where Cardiovascular0D function lives on
         const std::string&
             CondName  ///< Name of condition to create Cardiovascular0D functions from
     );

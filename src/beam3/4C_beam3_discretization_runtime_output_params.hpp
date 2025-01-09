@@ -52,7 +52,7 @@ namespace Discret
         return write_triads_visualizationpoints_;
       };
 
-      /// whether to use abolute positions or initial positions for the vtu geometry definition
+      /// whether to use absolute positions or initial positions for the vtu geometry definition
       /// (i.e. for the visualization point coordinates)
       bool use_absolute_positions() const
       {
@@ -117,7 +117,7 @@ namespace Discret
       };
 
       /// whether to write element and network orientation parameter
-      bool is_write_orientation_paramter() const
+      bool is_write_orientation_parameter() const
       {
         check_init_setup();
         return write_orientation_parameter_;
@@ -184,7 +184,7 @@ namespace Discret
       /// whether to write displacement output
       bool output_displacement_state_;
 
-      /// whether to use abolute positions or initial positions for the vtu geometry definition
+      /// whether to use absolute positions or initial positions for the vtu geometry definition
       /// (i.e. for the visualization point coordinates)
       bool use_absolute_positions_visualizationpoint_coordinates_;
 

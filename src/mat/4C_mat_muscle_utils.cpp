@@ -97,18 +97,18 @@ double Mat::Utils::Muscle::evaluate_force_stretch_dependency_ehret(
 double Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
     const double lambdaM, const double lambdaMin, const double lambdaOpt)
 {
-  double dFxidLamdaM = 0.0;
+  double dFxidLambdaM = 0.0;
   double explambda = std::exp(((2 * lambdaMin - lambdaM - lambdaOpt) * (lambdaM - lambdaOpt)) /
                               (2 * std::pow(lambdaMin - lambdaOpt, 2)));  // prefactor
 
   if (lambdaM > lambdaMin)
   {
-    dFxidLamdaM = ((std::pow(lambdaMin - lambdaM, 2) - std::pow(lambdaMin - lambdaOpt, 2)) /
-                      std::pow(lambdaMin - lambdaOpt, 3)) *
-                  explambda;
+    dFxidLambdaM = ((std::pow(lambdaMin - lambdaM, 2) - std::pow(lambdaMin - lambdaOpt, 2)) /
+                       std::pow(lambdaMin - lambdaOpt, 3)) *
+                   explambda;
   }
 
-  return dFxidLamdaM;
+  return dFxidLambdaM;
 }
 
 double Mat::Utils::Muscle::evaluate_integral_force_stretch_dependency_ehret(
@@ -270,21 +270,21 @@ double Mat::Utils::Muscle::evaluate_derivative_active_force_stretch_dependency_b
   double ratio_lambda = lambdaM / lambdaOpt;
 
   // derivative of active stretch dependency fxi w.r.t. fiber stretch
-  double dFxidLamdaM = 1.0;
+  double dFxidLambdaM = 1.0;
   if (lambdaM <= 0.6 * lambdaOpt)
   {
-    dFxidLamdaM = 18 / lambdaOpt * (ratio_lambda - 0.4);
+    dFxidLambdaM = 18 / lambdaOpt * (ratio_lambda - 0.4);
   }
   else if (lambdaM < 1.4 * lambdaOpt)
   {
-    dFxidLamdaM = 8 / lambdaOpt * (1 - ratio_lambda);
+    dFxidLambdaM = 8 / lambdaOpt * (1 - ratio_lambda);
   }
   else
   {
-    dFxidLamdaM = 18 / lambdaOpt * (ratio_lambda - 1.6);
+    dFxidLambdaM = 18 / lambdaOpt * (ratio_lambda - 1.6);
   }
 
-  return dFxidLamdaM;
+  return dFxidLambdaM;
 }
 
 double Mat::Utils::Muscle::evaluate_passive_force_stretch_dependency_blemker(const double lambdaM,
@@ -327,27 +327,27 @@ double Mat::Utils::Muscle::evaluate_derivative_passive_force_stretch_dependency_
   double P3 = P1 * P2 * std::exp(P2 * (lambdaStar / lambdaOpt - 1.0)) / lambdaOpt;
 
   // derivative of passive stretch dependency fxi w.r.t. fibre stretch
-  double dFxidLamdaM = 1.0;
+  double dFxidLambdaM = 1.0;
   if (lambdaM <= lambdaOpt)
   {
-    dFxidLamdaM = 0.0;
+    dFxidLambdaM = 0.0;
   }
   else if (lambdaM < lambdaStar)
   {
-    dFxidLamdaM = P1 * std::exp(P2 * (ratio_lambda - 1.0)) * P2 / lambdaOpt;
+    dFxidLambdaM = P1 * std::exp(P2 * (ratio_lambda - 1.0)) * P2 / lambdaOpt;
   }
   else
   {
-    dFxidLamdaM = P3 / lambdaOpt;
+    dFxidLambdaM = P3 / lambdaOpt;
   }
 
-  return dFxidLamdaM;
+  return dFxidLambdaM;
 }
 
 double Mat::Utils::Muscle::evaluate_time_dependent_active_stress_tanh(const double sigma_max,
     const double alpha, const double beta, const double t_act_start, const double t_current)
 {
-  // compute time-depencency ft
+  // compute time-dependency ft
   double ft = 0;
   if (t_current >= t_act_start)
   {

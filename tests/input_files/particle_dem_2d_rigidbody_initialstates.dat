@@ -5,7 +5,7 @@ for the rigid phase
 -----------------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Particle
 --------------------------------------------------------------------------IO
-STDOUTEVRY                      50
+STDOUTEVERY                      50
 VERBOSITY                       standard
 ------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND            5.0
@@ -13,8 +13,8 @@ DOMAINBOUNDINGBOX               -20.0 -20.0 -0.01 20.0 20.0 0.01
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYPE                      VelocityVerlet
 INTERACTION                     DEM
-RESULTSEVRY                     50
-RESTARTEVRY                     800
+RESULTSEVERY                     50
+RESTARTEVERY                     800
 TIMESTEP                        0.01
 NUMSTEP                         1000
 MAXTIME                         10.0

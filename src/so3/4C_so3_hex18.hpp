@@ -168,7 +168,7 @@ namespace Discret
 
       //@}
 
-      //! @name Acess methods
+      //! @name Access methods
 
 
       /*!
@@ -275,10 +275,10 @@ namespace Discret
       \param discretization : pointer to discretization for de-assembly
       \param lm (in)        : location matrix for de-assembly
       \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If nullptr on input,
-                              the controling method does not expect the element to fill
+                              the controlling method does not expect the element to fill
                               this matrix.
       \param elemat2 (out)  : (mass-)matrix to be filled by element. If nullptr on input,
-                              the controling method does not expect the element to fill
+                              the controlling method does not expect the element to fill
                               this matrix.
       \param elevec1 (out)  : (internal force-)vector to be filled by element. If nullptr on input,
                               the controlling method does not expect the element

@@ -22,8 +22,8 @@ void Inpar::Lubrication::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::double_parameter("MAXTIME", 1000.0, "Total simulation time", &lubricationdyn);
   Core::Utils::int_parameter("NUMSTEP", 20, "Total number of time steps", &lubricationdyn);
   Core::Utils::double_parameter("TIMESTEP", 0.1, "Time increment dt", &lubricationdyn);
-  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &lubricationdyn);
-  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &lubricationdyn);
+  Core::Utils::int_parameter("RESULTSEVERY", 1, "Increment for writing solution", &lubricationdyn);
+  Core::Utils::int_parameter("RESTARTEVERY", 1, "Increment for writing restart", &lubricationdyn);
 
   setStringToIntegralParameter<Inpar::Lubrication::CalcError>("CALCERROR", "No",
       "compute error compared to analytical solution",

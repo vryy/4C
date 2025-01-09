@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-// Auxiliar routine to boolify integral Yes/No data
+// Auxiliary routine to boolify integral Yes/No data
 void Input::boolify_valid_input_parameters(
     Teuchos::ParameterList& list  ///< the valid input parameter list
 )

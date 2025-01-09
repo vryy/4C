@@ -461,7 +461,7 @@ int main(int argc, char** argv)
   // selfcut 3d-Island detection
   functable["selfcut_island"] = test_generated_26182;
 
-  // tests that failed, due to the problem with spliting surface with holes
+  // tests that failed, due to the problem with splitting surface with holes
   // in the colored
   functable["split_colored_graph_1"] = test_generated_197489;
   functable["split_colored_graph_2"] = test_generated_238425;

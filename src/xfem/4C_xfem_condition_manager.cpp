@@ -402,7 +402,7 @@ void XFEM::ConditionManager::write_access_geometric_quantities(
     Core::LinAlg::Vector<double>& scalaraf, Core::LinAlg::MultiVector<double>& smoothed_gradphiaf,
     Core::LinAlg::Vector<double>& curvatureaf)
 {
-  // TOOD: when using two-phase in combination with other levelset, how to access to the right
+  // TODO: when using two-phase in combination with other levelset, how to access to the right
   // coupling twophase coupling object?
   // TODO: safety check, that there is a unique two-phase coupling object!?
   if (levelset_coupl_.size() != 1)
@@ -1018,7 +1018,7 @@ void XFEM::ConditionManager::get_coupling_ele_location_vector(
 // comment: as soon as we start doing mesh and levelset coupling with overlapping interfaces, we
 // need to provide the position of the volumecells down here as well to choose the correct material.
 // atm the position this is hardcoded in the coupling objects
-// (all assume Cut::Point::outside, exept TwoPhaseFlow Master outside, Slave inside)
+// (all assume Cut::Point::outside, except TwoPhaseFlow Master outside, Slave inside)
 void XFEM::ConditionManager::get_average_weights(
     const int coup_sid,              ///< the overall global coupling side id
     Core::Elements::Element* xfele,  ///< xfluid ele

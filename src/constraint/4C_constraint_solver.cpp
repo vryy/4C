@@ -120,7 +120,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Core::LinAlg::SparseMatrix& stif
   // Core::LinAlg::SparseMatrix constrT =
   // *(std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(constr));
 
-  // ONLY compatability
+  // ONLY compatibility
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != nullptr)
     dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(*dirichtoggle_);
@@ -266,7 +266,7 @@ void CONSTRAINTS::ConstraintSolver::solve_direct(Core::LinAlg::SparseMatrix& sti
       std::make_shared<Core::LinAlg::Vector<double>>(*mergedmap);
   std::shared_ptr<Core::LinAlg::Vector<double>> mergedsol =
       std::make_shared<Core::LinAlg::Vector<double>>(*mergedmap);
-  // ONLY compatability
+  // ONLY compatibility
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != nullptr)
     dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(*dirichtoggle_);
@@ -316,7 +316,7 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Core::LinAlg::SparseMatrix& sti
   constrTrans.add(constrT, true, 1.0, 0.0);
   constrTrans.complete(constrT.range_map(), constrT.domain_map());
 
-  // ONLY compatability
+  // ONLY compatibility
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != nullptr)
     dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(*dirichtoggle_);

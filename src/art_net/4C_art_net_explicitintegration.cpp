@@ -140,7 +140,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   // Vectors used for postporcesing visualization
   // --------------------------------------------
   qn_ = Core::LinAlg::create_vector(*noderowmap, true);
-  pn_ = Core::LinAlg::create_vector(*noderowmap, true);
+  on_ = Core::LinAlg::create_vector(*noderowmap, true);
   an_ = Core::LinAlg::create_vector(*noderowmap, true);
   nodeIds_ = Core::LinAlg::create_vector(*noderowmap, true);
 
@@ -323,7 +323,7 @@ void Arteries::ArtNetExplicitTimeInt::solve(
     // action for elements
     eleparams.set<Arteries::Action>("action", Arteries::solve_riemann_problem);
 
-    // set vecotr values needed by elements
+    // set vector values needed by elements
     discret_->clear_state();
     discret_->set_state("qanp", qanp_);
 
@@ -352,7 +352,7 @@ void Arteries::ArtNetExplicitTimeInt::solve(
     // action for elements
     eleparams.set<Arteries::Action>("action", Arteries::set_term_bc);
 
-    // set vecotr values needed by elements
+    // set vector values needed by elements
     discret_->clear_state();
     discret_->set_state("qanp", qanp_);
 
@@ -418,7 +418,7 @@ void Arteries::ArtNetExplicitTimeInt::solve(
     // action for elements
     eleparams.set<Arteries::Action>("action", Arteries::evaluate_wf_wb);
 
-    // set vecotr values needed by elements
+    // set vector values needed by elements
     discret_->clear_state();
     discret_->set_state("qanp", qanp_);
 
@@ -442,7 +442,7 @@ void Arteries::ArtNetExplicitTimeInt::solve_scatra()
     // action for elements
     eleparams.set<Arteries::Action>("action", Arteries::evaluate_scatra_analytically);
 
-    // set vecotr values needed by elements
+    // set vector values needed by elements
     discret_->clear_state();
 
     eleparams.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("Wfn", Wfn_);
@@ -466,7 +466,7 @@ void Arteries::ArtNetExplicitTimeInt::solve_scatra()
     // action for elements
     eleparams.set<Arteries::Action>("action", Arteries::set_scatra_term_bc);
 
-    // set vecotr values needed by elements
+    // set vector values needed by elements
     discret_->clear_state();
     discret_->set_state("qanp", qanp_);
 
@@ -548,7 +548,7 @@ void Arteries::ArtNetExplicitTimeInt::init_save_state()
 /*----------------------------------------------------------------------*
  | Saves and backs up the current state.                                |
  |                                                                      |
- |  This is currently needed for stronly coupling 3D-0D fields          |
+ |  This is currently needed for strongly coupling 3D-0D fields          |
  |  example:                                                            |
  |  saved_qanp_ = qanp_                                                 |
  |  saved_Wfnp_ = Wfnp_                                                 |
@@ -584,7 +584,7 @@ void Arteries::ArtNetExplicitTimeInt::save_state()
 /*----------------------------------------------------------------------*
  | Loads backed up states.                                              |
  |                                                                      |
- |  This is currently needed for stronly coupling 3D-0D fields          |
+ |  This is currently needed for strongly coupling 3D-0D fields          |
  |  example:                                                            |
  |  qanp_   =  saved_qanp_                                              |
  |  Wfnp_   =  saved_Wfnp_                                              |
@@ -678,7 +678,7 @@ void Arteries::ArtNetExplicitTimeInt::output(
     // Export postpro results
     this->calc_postprocessing_values();
     output_.write_vector("one_d_artery_flow", qn_);
-    output_.write_vector("one_d_artery_pressure", pn_);
+    output_.write_vector("one_d_artery_pressure", on_);
     output_.write_vector("one_d_artery_area", an_);
 
     if (solvescatra_)
@@ -709,7 +709,7 @@ void Arteries::ArtNetExplicitTimeInt::output(
     // Export postpro results
     this->calc_postprocessing_values();
     output_.write_vector("one_d_artery_flow", qn_);
-    output_.write_vector("one_d_artery_pressure", pn_);
+    output_.write_vector("one_d_artery_pressure", on_);
     output_.write_vector("one_d_artery_area", an_);
 
     if (solvescatra_)
@@ -800,7 +800,7 @@ void Arteries::ArtNetExplicitTimeInt::calc_postprocessing_values()
   // action for elements
   eleparams.set<Arteries::Action>("action", Arteries::calc_postpro_vals);
 
-  // set vecotr values needed by elements
+  // set vector values needed by elements
   discret_->clear_state();
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting qanp"<<std::endl;
   discret_->set_state("qanp", qanp_);
@@ -811,7 +811,7 @@ void Arteries::ArtNetExplicitTimeInt::calc_postprocessing_values()
 
   eleparams.set("time step size", dta_);
   eleparams.set("total time", time_);
-  eleparams.set("pressure", pn_);
+  eleparams.set("pressure", on_);
   eleparams.set("art_area", an_);
   eleparams.set("flow", qn_);
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro evaluat disc"<<std::endl;
@@ -833,7 +833,7 @@ void Arteries::ArtNetExplicitTimeInt::calc_scatra_from_scatra_fw(
   // action for elements
   eleparams.set<Arteries::Action>("action", Arteries::calc_scatra_from_scatra_fb);
 
-  // set vecotr values needed by elements
+  // set vector values needed by elements
   discret_->clear_state();
   eleparams.set("scatra", scatra);
   eleparams.set("scatra_fb", scatra_fb);

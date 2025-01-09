@@ -150,7 +150,7 @@ void Adapter::StructureTimeAda::setup_time_ada()
 void Adapter::StructureTimeAda::read_restart(int step)
 {
   setup_time_ada();
-  setup_auxiliar();
+  setup_auxiliary();
 }
 
 /*----------------------------------------------------------------------*/
@@ -198,7 +198,7 @@ int Adapter::StructureTimeAda::integrate()
       // integrate system with auxiliary TIS
       // we hold \f$D_{n+1}^{AUX}\f$ on #locdiserrn_
       // and \f$V_{n+1}^{AUX}\f$ on #locvelerrn_
-      integrate_step_auxiliar();
+      integrate_step_auxiliary();
 
       // call the predictor
       pre_predict();
@@ -299,7 +299,7 @@ int Adapter::StructureTimeAda::integrate()
     update_period();
     outrest_ = outsys_ = outstr_ = outene_ = false;
 
-    update_auxiliar();
+    update_auxiliary();
 
     // the user reads but rarely listens
     if (myrank == 0)

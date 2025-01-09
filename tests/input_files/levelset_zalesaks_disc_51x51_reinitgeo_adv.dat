@@ -13,8 +13,8 @@ RESTART                         0
 NUMSTEP                         20
 MAXTIME                         40.0
 TIMESTEP                        0.4
-RESULTSEVRY                           1
-RESTARTEVRY                     10
+RESULTSEVERY                           1
+RESTARTEVERY                     10
 EXTRACT_INTERFACE_VEL           No
 NUM_CONVEL_LAYERS               -1
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
@@ -30,13 +30,13 @@ INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 MAXTIME                         40.0
 NUMSTEP                         100
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.4
 VELFUNCNO                       1
 VELOCITYFIELD                   function
-RESULTSEVRY                           1
+RESULTSEVERY                           1
 CONVFORM                        convective
 MATID                           1
 LINEAR_SOLVER                   1

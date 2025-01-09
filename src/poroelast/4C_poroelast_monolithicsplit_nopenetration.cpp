@@ -200,7 +200,7 @@ void PoroElast::MonolithicSplitNoPenetration::recover_lagrange_multiplier_after_
   // compute the above mentioned product
   cfsggcur_->multiply(false, *ddginc_, *cfsggddg);
 
-  // store the prodcut F_{\Gamma\Gamma} \Delta u_\Gamma^{n+1} in here
+  // store the product F_{\Gamma\Gamma} \Delta u_\Gamma^{n+1} in here
   std::shared_ptr<Core::LinAlg::Vector<double>> fggddg =
       Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
   // compute the above mentioned product
@@ -298,7 +298,7 @@ void PoroElast::MonolithicSplitNoPenetration::setup_system_matrix(
   mat.matrix(0, 1).add(k_sf->matrix(sidx_nopen, fidx_nopen), false, 1.0, 1.0);
   /*----------------------------------------------------------------------*/
   // pure fluid part
-  // incomplete because the fluid interface can have more connections than the
+  // uncomplete because the fluid interface can have more connections than the
   // structural one. (Tet elements in fluid can cause this.) We should do
   // this just once...
   // f->UnComplete();
@@ -534,7 +534,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   //------------------------------End of invert D
   // Matrix!-----------------------------------------------
 
-  // Transform also colum map of D-Matrix
+  // Transform also column map of D-Matrix
   (*k_d_transform_)(*fluid_field()->interface()->fsi_cond_map(),
       fluid_field()->block_system_matrix()->matrix(1, 1).col_map(), *tmp_k_D, 1.0,
       Coupling::Adapter::CouplingSlaveConverter(*icoupfs_), *k_d_);

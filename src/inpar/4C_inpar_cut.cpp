@@ -37,7 +37,7 @@ void Inpar::Cut::set_valid_parameters(Teuchos::ParameterList& list)
   // A general floattype for Cut::Position for Embedded Elements (compute_distance)
   // If specified this floattype is used for all computations of Cut::Position with
   // embedded elements
-  setStringToIntegralParameter<FourC::Cut::CutFloatType>("GENERAL_POSITON_DISTANCE_FLOATTYPE",
+  setStringToIntegralParameter<FourC::Cut::CutFloatType>("GENERAL_POSITION_DISTANCE_FLOATTYPE",
       "none", "A general floattype for Cut::Position for Embedded Elements (compute_distance)",
       tuple<std::string>("none", "cln", "double"),
       tuple<FourC::Cut::CutFloatType>(floattype_none, floattype_cln, floattype_double),
@@ -45,23 +45,23 @@ void Inpar::Cut::set_valid_parameters(Teuchos::ParameterList& list)
 
   // A general floattype for Cut::Position for Elements (ComputePosition)
   // If specified this floattype is used for all computations of Cut::Position
-  setStringToIntegralParameter<FourC::Cut::CutFloatType>("GENERAL_POSITON_POSITION_FLOATTYPE",
+  setStringToIntegralParameter<FourC::Cut::CutFloatType>("GENERAL_POSITION_POSITION_FLOATTYPE",
       "none", "A general floattype for Cut::Position Elements (ComputePosition)",
       tuple<std::string>("none", "cln", "double"),
       tuple<FourC::Cut::CutFloatType>(floattype_none, floattype_cln, floattype_double),
       &cut_general);
 
-  // Specifiy which Referenceplanes are used in DirectDivergence
+  // Specify which Referenceplanes are used in DirectDivergence
   setStringToIntegralParameter<FourC::Cut::CutDirectDivergenceRefplane>(
       "DIRECT_DIVERGENCE_REFPLANE", "all",
-      "Specifiy which Referenceplanes are used in DirectDivergence",
+      "Specify which Referenceplanes are used in DirectDivergence",
       tuple<std::string>("all", "diagonal_side", "facet", "diagonal", "side", "none"),
       tuple<FourC::Cut::CutDirectDivergenceRefplane>(DirDiv_refplane_all,
           DirDiv_refplane_diagonal_side, DirDiv_refplane_facet, DirDiv_refplane_diagonal,
           DirDiv_refplane_side, DirDiv_refplane_none),
       &cut_general);
 
-  // Specifiy is Cutsides are triangulated
+  // Specify is Cutsides are triangulated
   Core::Utils::bool_parameter(
       "SPLIT_CUTSIDES", "Yes", "Split Quad4 CutSides into Tri3-Subtriangles?", &cut_general);
 

@@ -163,7 +163,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FBIConstraintenforcer::st
     fluid_->apply_interface_values(assemble_fluid_coupling_residual());
   }
 
-  // return the current struture velocity
+  // return the current structure velocity
   return std::dynamic_pointer_cast<Adapter::FBIStructureWrapper>(structure_)
       ->extract_interface_velnp();
 };

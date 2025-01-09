@@ -670,7 +670,7 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   // feeding elements to the interface
   std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
 
-  // eleoffset is neccessary because slave and master elements are from different conditions
+  // eleoffset is necessary because slave and master elements are from different conditions
   const int eleoffset = masterdis->element_row_map()->MaxAllGID() + 1;
 
   // MASTER NODES

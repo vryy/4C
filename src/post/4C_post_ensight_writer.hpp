@@ -53,7 +53,7 @@ const int sublinemap[2][2] = {{0, 2}, {2, 1}};
 const int subquadmap[4][4] = {{0, 4, 8, 7}, {4, 1, 5, 8}, {8, 5, 2, 6}, {7, 8, 6, 3}};
 
 //! defines how 8 hex8 elements are constructed from a hex27
-//  ;-) its symetric for some reason
+//  ;-) its symmetric for some reason
 const int subhexmap[8][8] = {{0, 8, 20, 11, 12, 21, 26, 24}, {8, 1, 9, 20, 21, 13, 22, 26},
     {20, 9, 2, 10, 26, 22, 14, 23}, {11, 20, 10, 3, 24, 26, 23, 15},
     {12, 21, 26, 24, 4, 16, 25, 19}, {21, 13, 22, 26, 16, 5, 17, 25},
@@ -183,7 +183,7 @@ class EnsightWriter : public PostWriterBase
   );
 
   /*! \brief Write the coordinates for a Polynomial discretization
-      The coordinates of the vizualisation points (i.e. the corner
+      The coordinates of the visualisation points (i.e. the corner
       nodes of elements displayed in paraview) are just the node
       coordinates of the nodes in the discretization.
     */
@@ -191,7 +191,7 @@ class EnsightWriter : public PostWriterBase
       std::ofstream& geofile, Core::FE::Discretization& dis, std::shared_ptr<Epetra_Map>& proc0map);
 
   /*! \brief Write the coordinates for a Nurbs discretization
-    The coordinates of the vizualisation points (i.e. the corner
+    The coordinates of the visualisation points (i.e. the corner
     nodes of elements displayed in paraview) are not the control point
     coordinates of the nodes in the discretization but the points the
     knot values are mapped to.
@@ -209,7 +209,7 @@ class EnsightWriter : public PostWriterBase
   /*! \brief Write the cells for a Nurbs discretization
     quadratic nurbs split one element in knot space into
     four(2d)/eight(3d) cells. The global numbering of the
-    vizualisation points (i.e. the corner points of the
+    visualisation points (i.e. the corner points of the
     cells) is computed from the local patch numbering and
     the patch offset.                              (gammi)
 
@@ -226,7 +226,7 @@ class EnsightWriter : public PostWriterBase
 
   /*! \brief Quadratic nurbs split one nurbs27 element
     in knot space into eight(3d) cells. The global
-    numbering of the vizualisation points (i.e. the corner
+    numbering of the visualisation points (i.e. the corner
     points of the cells) are computed from the local patch
     numbering and the patch offset. This method appends
     the node connectivity for one hex8 cell to the vector

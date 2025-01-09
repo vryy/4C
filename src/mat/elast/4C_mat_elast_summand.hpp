@@ -724,15 +724,15 @@ namespace Mat
       //! Indicator for the chosen formulations
       virtual void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
-          bool& isomod,       ///< global indicator for isotropic splitted formulation
+          bool& isomod,       ///< global indicator for isotropic split formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
-          bool& anisomod,     ///< global indicator for anisotropic splitted formulation
+          bool& anisomod,     ///< global indicator for anisotropic split formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
           ) = 0;
 
       //! Indicator for the chosen viscoelastic formulations
       virtual void specify_visco_formulation(
-          bool& isovisco,     ///< global indicator for isotropic, splitted and viscous formulation
+          bool& isovisco,     ///< global indicator for isotropic, split and viscous formulation
           bool& viscogenmax,  ///< global indicator for viscous contribution according to the
                               ///< SLS-Model
           bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution

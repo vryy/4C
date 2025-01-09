@@ -56,7 +56,7 @@ namespace Mat
       //! @name stretch dependent activation contribution
       const double lambdaMin_;  ///< minimal active fiber stretch
       const double
-          lambdaOpt_;  ///< optimal active fiber stretch related active nominal stress maximimum
+          lambdaOpt_;  ///< optimal active fiber stretch related active nominal stress maximum
       //! @}
 
       //! @name time-/space-dependent activation
@@ -70,7 +70,7 @@ namespace Mat
        * Depending on the type of activation prescription this is one of the options below:
        * - Id of the function in the input file specifying an analytical function
        * - Map retrieved from the pattern file path in the input file specifying a discrete values.
-       *   The integer key refers to the elememt ids, the vector bundles time-activation pairs.
+       *   The integer key refers to the element ids, the vector bundles time-activation pairs.
        */
       using ActivationParameterVariant = std::variant<std::monostate, const int,
           const std::unordered_map<int, std::vector<std::pair<double, double>>>>;
@@ -110,8 +110,8 @@ namespace Mat
    * 1. The derivative of omegaa w.r.t. C is included as described for the active stress
    * approach in Giantesio et al. [2]. This leads to an additional term in the stress and material
    * tangent computation and an updated equation for the activation level omegaa.
-   * 2. The twitch superposition is neglected and the time and space depenent optimal nominal stress
-   * is computed through a user-prescribed function.
+   * 2. The twitch superposition is neglected and the time and space dependent optimal nominal
+   * stress is computed through a user-prescribed function.
    * 3. A velocity dependence is not considered.
    *
    * References:

@@ -27,17 +27,17 @@ namespace FLD
   // forward declarations
   class FluidImplicitTimeInt;
 
-  // inital condition for homogeneous isotropic turbulence
+  // initial condition for homogeneous isotropic turbulence
   // based on the Comte-Bellot - Corrsion experiment
-  class HomIsoTurbInitialField
+  class HomoIsoTurbInitialField
   {
    public:
     //! constructor
-    HomIsoTurbInitialField(
+    HomoIsoTurbInitialField(
         FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield);
 
     //! destructor
-    virtual ~HomIsoTurbInitialField() = default;
+    virtual ~HomoIsoTurbInitialField() = default;
 
     //! calculate initial field
     virtual void calculate_initial_field();
@@ -84,13 +84,13 @@ namespace FLD
     std::vector<double> E_exp_;
   };
 
-  // inital condition for homogeneous isotropic turbulence
+  // initial condition for homogeneous isotropic turbulence
   // based on the Comte-Bellot - Corrsion experiment
-  class HomIsoTurbInitialFieldHDG : public HomIsoTurbInitialField
+  class HomoIsoTurbInitialFieldHDG : public HomoIsoTurbInitialField
   {
    public:
     //! constructor
-    HomIsoTurbInitialFieldHDG(
+    HomoIsoTurbInitialFieldHDG(
         FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield);
 
 

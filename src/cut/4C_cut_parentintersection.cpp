@@ -57,7 +57,7 @@ void Cut::ParentIntersection::create_nodal_dof_set(
     Node* n = i->second;
     int n_gid = n->id();
 
-    std::vector<int> sourrounding_elements;
+    std::vector<int> surrounding_elements;
 
     // get all adjacent elements to this node if this is a real (- not a shadow -) node
     if (n_gid >= 0)
@@ -76,7 +76,7 @@ void Cut::ParentIntersection::create_nodal_dof_set(
 
         if (e != nullptr)
         {
-          sourrounding_elements.push_back(adj_eid);
+          surrounding_elements.push_back(adj_eid);
         }
       }  // end loop over adjacent elements
 
@@ -101,7 +101,7 @@ void Cut::ParentIntersection::create_nodal_dof_set(
           cell_sets_inside;  // sets of volumecells connected between subelements
       std::vector<plain_volumecell_set> cell_sets_outside;
 
-      find_nodal_cell_sets(include_inner, eids, sourrounding_elements, nodal_cell_sets_inside,
+      find_nodal_cell_sets(include_inner, eids, surrounding_elements, nodal_cell_sets_inside,
           nodal_cell_sets_outside, cell_sets_inside, cell_sets_outside, cell_sets);
 
 
@@ -361,7 +361,7 @@ void Cut::ParentIntersection::create_parallel_dof_set_data_vc(
  | find cell sets around each node (especially for quadratic elements)     schott 03/12 |
  *-------------------------------------------------------------------------------------*/
 void Cut::ParentIntersection::find_nodal_cell_sets(bool include_inner, std::set<int>& eids,
-    std::vector<int>& sourrounding_elements,
+    std::vector<int>& surrounding_elements,
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets_inside,
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets_outside,
     std::vector<plain_volumecell_set>& cell_sets_inside,
@@ -370,8 +370,8 @@ void Cut::ParentIntersection::find_nodal_cell_sets(bool include_inner, std::set<
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 5/6 --- cut_positions_dofsets --- FindNodalCellSets");
 
-  for (std::vector<int>::iterator i = sourrounding_elements.begin();
-      i != sourrounding_elements.end(); ++i)
+  for (std::vector<int>::iterator i = surrounding_elements.begin(); i != surrounding_elements.end();
+      ++i)
   {
     int eid = *i;
 
@@ -417,7 +417,7 @@ void Cut::ParentIntersection::find_nodal_cell_sets(bool include_inner, std::set<
 
         node->assign_nodal_cell_set(ele_vc_sets_outside, nodal_cell_sets_outside);
       }
-    }  // end loop over nodes of current sourrounding element
+    }  // end loop over nodes of current surrounding element
   }
 }
 

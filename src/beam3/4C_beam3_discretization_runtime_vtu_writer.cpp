@@ -1322,7 +1322,7 @@ void BeamDiscretizationRuntimeOutputWriter::
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater(
+void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_parameter(
     const Core::LinAlg::Vector<double>& displacement_state_vector)
 {
   /*
@@ -1638,7 +1638,7 @@ int BeamDiscretizationRuntimeOutputWriter::get_global_number_of_gauss_points_per
   if (my_num_gp_signed > 0 and my_num_gp_signed != global_num_gp)
     FOUR_C_THROW("The number of Gauss points must be the same for all elements in discretization!");
   else if (global_num_gp < 0)
-    FOUR_C_THROW("The number of Gauss points must be zero or a positve integer!");
+    FOUR_C_THROW("The number of Gauss points must be zero or a positive integer!");
 
   return global_num_gp;
 }

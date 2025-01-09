@@ -109,7 +109,7 @@ namespace Discret
           case Inpar::XFEM::adj_skew:
             return -1.0;
           default:
-            FOUR_C_THROW("Unkown type of AdjointScaling!");
+            FOUR_C_THROW("Unknown type of AdjointScaling!");
         }
         return 0.0;  // make compiler happy
       }

@@ -149,7 +149,7 @@ namespace CONSTRAINTS
     double tolres_;        ///< tolerance for residual
     double tolconstr_;     ///< tolerance for constraint
     std::shared_ptr<Core::LinAlg::Vector<double>>
-        dirichtoggle_;                                     ///< \b only for compatability: dirichlet
+        dirichtoggle_;                                     ///< \b only for compatibility: dirichlet
                                                            ///< toggle -- monitor its target change!
     std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     std::shared_ptr<Core::LinAlg::Vector<double>>

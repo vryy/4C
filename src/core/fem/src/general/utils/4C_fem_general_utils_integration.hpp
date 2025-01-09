@@ -369,7 +369,7 @@ namespace Core::FE
                              ///< Element Method)
     tri_4point,   ///< degree of precision: 3  (open)   (Hughes, The Finite Element Method)
     tri_6point,   ///< degree of precision: 4  (open)   (Hughes, The Finite Element Method)
-    tri_7point,   ///< degree of precision: 5  (open)   (Gilbert Strang, George Fix, An
+    tri_7point,   ///< degree of precision: 5  (open)   (Gilbert Strange, George Fix, An
                   ///< Analysis of the Finite Element Method, Cambridge, 1973,ISBN:
                   ///< 096140888X,LC: TA335.S77.)
     tri_12point,  ///< degree of precision: 6  (open)   (Hughes, The Finite Element

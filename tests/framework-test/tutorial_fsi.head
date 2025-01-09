@@ -14,7 +14,7 @@ NUMSTEP                         41
 //
 NUM_INITSTEP                    0
 //
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 //
 TIMESTEP                        0.1
 //
@@ -171,7 +171,7 @@ PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
 //
 // Increment for writing restart
-RESTARTEVRY                     20
+RESTARTEVERY                     20
 //
 // Assemble fluid system matrix into a block system
 //                              Yes,No,yes,no,YES,NO
@@ -201,7 +201,7 @@ TIMEINTEGR                      Np_Gen_Alpha
 TIMESTEP                        0.01
 //
 // Increment for writing solution
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 //
 --------------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES                           1.e-12
@@ -339,7 +339,7 @@ MAXTIME                         3
 NUMSTEP                         3
 //
 // Increment for writing restart
-RESTARTEVRY                     1
+RESTARTEVERY                     1
 //
 // Second order coupling at the interface.
 //                              Yes,No,yes,no,YES,NO
@@ -353,7 +353,7 @@ SLIDEALEPROJ                    None
 TIMESTEP                        0.1
 //
 // Increment for writing solution
-RESULTSEVRY                     1
+RESULTSEVERY                     1
 //
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 //
@@ -550,7 +550,7 @@ OUTPUT_BIN                      yes
 PREFIX_GROUP_ID                 No
 //
 // Print to screen every n step
-STDOUTEVRY                      1
+STDOUTEVERY                      1
 //
 //                              No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
 STRUCT_COUPLING_STRESS          No
@@ -1105,14 +1105,14 @@ PRESTRESSTIME                   0
 PTCDT                           0.1
 //
 // write system energies every requested step
-RESEVRYERGY                     0
+RESEVERYERGY                     0
 //
-// write restart possibility every RESTARTEVRY steps
-RESTARTEVRY                     1
+// write restart possibility every RESTARTEVERY steps
+RESTARTEVERY                     1
 //
 //
-// save displacements and contact forces every RESULTSEVRY steps
-RESULTSEVRY                     1
+// save displacements and contact forces every RESULTSEVERY steps
+RESULTSEVERY                     1
 //
 // number of STC layers for multilayer case
 STC_LAYER                       1

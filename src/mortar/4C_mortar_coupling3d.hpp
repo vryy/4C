@@ -108,7 +108,7 @@ namespace Mortar
      Note that (here) for linear ansatz functions in 3D, this is IDENTICAL to
      the SlaveElement() as no splitting of the Mortar::Elements is performed.
      For the 3D quadratic case with the use of auxiliary planes, this
-     methd is overloaded by the derived class Mortar::Coupling3dQuad!
+     method is overloaded by the derived class Mortar::Coupling3dQuad!
 
      */
     virtual Mortar::Element& slave_int_element() const { return sele_; }
@@ -119,7 +119,7 @@ namespace Mortar
      Note that (here) for linear ansatz functions in 3D, this is IDENTICAL to
      the SlaveElement() as no splitting of the Mortar::Elements is performed.
      For the 3D quadratic case with the use of auxiliary planes, this
-     methd is overloaded by the derived class Mortar::Coupling3dQuad!
+     method is overloaded by the derived class Mortar::Coupling3dQuad!
 
      */
     virtual Mortar::Element& master_int_element() const { return mele_; }
@@ -394,7 +394,7 @@ namespace Mortar
      In some cases, projection of the master element may lead to a non-convex
      input polygon poly2list, which leads to a FOUR_C_THROW. Before the error is
      thrown, this method (similarly to RoughCheck()) again checks if the two
-     elements to tbe clipped are close to each other at all and returns a
+     elements to the clipped are close to each other at all and returns a
      boolean flag. If they are not close, then coupling is stopped for the pair.
 
      \param poly1list (in): vector of vertex objects for input polygon 1 (slave)

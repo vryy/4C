@@ -36,7 +36,7 @@ namespace CONTACT
         const Teuchos::ParameterList& params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, const MPI_Comm& comm,
         double alphaf, int maxdof)
-        : AbstractStrategy(std::make_shared<CONTACT::AbstractStratDataContainer>(), dof_row_map,
+        : AbstractStrategy(std::make_shared<CONTACT::AbstractStrategyDataContainer>(), dof_row_map,
               NodeRowMap, params, dim, comm, alphaf, maxdof),
           interface_(std::move(interface)),
           curr_state_eval_(false)
@@ -44,7 +44,7 @@ namespace CONTACT
     }
 
     //! Shared data constructor
-    NitscheStrategy(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategy(const std::shared_ptr<CONTACT::AbstractStrategyDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
         std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim, const MPI_Comm& comm,

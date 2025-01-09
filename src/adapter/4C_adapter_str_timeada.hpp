@@ -195,7 +195,7 @@ namespace Adapter
     void reset_step() override;
 
     /// setup of the auxiliary time integrator
-    virtual void setup_auxiliar() = 0;
+    virtual void setup_auxiliary() = 0;
 
    private:
     //! Setup necessities for time adaptivity
@@ -208,11 +208,11 @@ namespace Adapter
      *  - \f$D_{n+1}^{AUX}\f$ in #locdiserrn_
      *  - \f$V_{n+1}^{AUX}\f$ in #locvelerrn_
      */
-    virtual void integrate_step_auxiliar() = 0;
+    virtual void integrate_step_auxiliary() = 0;
 
-    /*! \brief Update the auxiliar integrator
+    /*! \brief Update the auxiliary integrator
      */
-    virtual void update_auxiliar() = 0;
+    virtual void update_auxiliary() = 0;
 
     //! Modify step size to hit precisely output period
     void size_for_output();

@@ -27,7 +27,7 @@ Discret::Elements::Beam3Base::Beam3Base(int id, int owner)
     : Core::Elements::Element(id, owner),
       Tref_(0),
       centerline_hermite_(true),
-      filamenttype_(Inpar::BeamInteraction::filtype_none),
+      filamenttype_(Inpar::BeamInteraction::filetype_none),
       interface_ptr_(nullptr),
       browndyn_interface_ptr_(nullptr)
 {

@@ -390,7 +390,7 @@ namespace Discret::Elements
     }
   }
 
-  /// Check wheter a solid variant can evaluate the Cauchy stress at xi in a specifc direction
+  /// Check whether a solid variant can evaluate the Cauchy stress at xi in a specific direction
   /// including the derivatives
   template <typename T, int dim, typename AlwaysVoid = void>
   constexpr bool can_evaluate_cauchy_n_dir = false;

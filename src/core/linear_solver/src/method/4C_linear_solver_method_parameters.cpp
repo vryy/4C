@@ -134,7 +134,7 @@ void Core::LinearSolver::Parameters::fix_null_space(std::string field, const Epe
     FOUR_C_THROW("Nullspace map of length %d does not match old map length of %d", nullspaceLength,
         oldmap.NumMyElements());
   if (newmapLength > nullspaceLength)
-    FOUR_C_THROW("New problem size larger than old - full rebuild of nullspace neccessary");
+    FOUR_C_THROW("New problem size larger than old - full rebuild of nullspace necessary");
 
   std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspaceNew =
       std::make_shared<Core::LinAlg::MultiVector<double>>(newmap, ndim, true);

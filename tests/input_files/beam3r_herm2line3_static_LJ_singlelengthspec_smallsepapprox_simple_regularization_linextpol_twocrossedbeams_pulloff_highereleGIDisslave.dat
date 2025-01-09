@@ -12,7 +12,7 @@ NUMTHERMDIS            0
 OUTPUT_BIN             Yes
 STRUCT_DISP            Yes
 FILESTEPS              1000000
-STDOUTEVRY             100
+STDOUTEVERY             100
 VERBOSITY              Standard
 ----------------------------------------------------------------IO/MONITOR STRUCTURE DBC
 PRECISION_FILE         16
@@ -33,9 +33,9 @@ STRAINS_GAUSSPOINT              Yes
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 DYNAMICTYPE                      Statics
-RESULTSEVRY                     1000
-RESEVRYERGY                     3
-RESTARTEVRY                     100
+RESULTSEVERY                     1000
+RESEVERYERGY                     3
+RESTARTEVERY                     100
 NLNSOL                          fullnewton
 DIVERCONT                       stop
 TIMESTEP                        5e-2

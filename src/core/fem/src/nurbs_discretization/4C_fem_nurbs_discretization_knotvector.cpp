@@ -213,7 +213,7 @@ bool Core::FE::Nurbs::Knotvector::get_ele_knots(
 
   convert_ele_gid_to_knot_ids(gid, npatch, cartids);
 
-  // use them to aquire the required knots
+  // use them to acquire the required knots
   for (int rr = 0; rr < dim_; ++rr)
   {
     (eleknots[rr]).size(2 * (degree_[npatch])[rr] + 2);

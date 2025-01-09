@@ -216,7 +216,7 @@ namespace Arteries
       //! the output writer
       Core::IO::DiscretizationWriter& output_;
 
-      //! the vector defining whethe an element is inlet or outlet
+      //! the vector defining whether an element is inlet or outlet
       std::vector<int> io_art_flag_;
 
       //! Size of the nonlinear problem matrix
