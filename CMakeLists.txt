@@ -38,6 +38,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # is that CMake and/or clang-tidy will be updated to handle modules better.
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
+# Ensure cmake setup the correct runtime path when installing
+# see here for more information: https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
+include(GNUInstallDirs)
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 # The version number.
 set(FOUR_C_VERSION_MAJOR 1)
 set(FOUR_C_VERSION_MINOR 0)
@@ -148,6 +156,13 @@ add_library(${FOUR_C_LIBRARY_NAME})
 # Remove the CMake generated prefix "lib" because we already added it manually, to have a distinct target name.
 set_target_properties(${FOUR_C_LIBRARY_NAME} PROPERTIES PREFIX "")
 target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE four_c_private_compile_interface)
+if(NOT BUILD_SHARED_LIBS)
+  install(
+    TARGETS four_c_private_compile_interface
+    EXPORT 4CTargets
+    FILE_SET HEADERS
+    )
+endif()
 
 # Set up Python build/test venv
 include(cmake/python/set_up_python.cmake)
@@ -160,8 +175,10 @@ add_subdirectory(apps)
 add_subdirectory(doc/doxygen EXCLUDE_FROM_ALL)
 add_subdirectory(doc/readthedocs EXCLUDE_FROM_ALL)
 
-###------------------------------------------------------------------ Tests
-
+# Tests
 add_subdirectory(unittests)
 add_subdirectory(tests/cut_test)
 include(tests/list_of_tests.cmake)
+
+# Installation
+include(cmake/setup_install.cmake)

@@ -49,3 +49,21 @@ if(FOUR_C_WITH_GOOGLETEST)
 else()
   message(STATUS "Unit tests with GoogleTest: disabled")
 endif()
+
+# setup test for installation
+set(FOURC_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/cmake/4C)
+configure_file(
+  ${CMAKE_SOURCE_DIR}/tests/install_test/main.cpp.in
+  ${CMAKE_BINARY_DIR}/tests/install_test/main.cpp
+  @ONLY
+  )
+configure_file(
+  ${CMAKE_SOURCE_DIR}/tests/install_test/CMakeLists.txt.in
+  ${CMAKE_BINARY_DIR}/tests/install_test/CMakeLists.txt
+  @ONLY
+  )
+configure_file(
+  ${CMAKE_SOURCE_DIR}/tests/install_test/test_install.sh.in
+  ${CMAKE_BINARY_DIR}/tests/install_test/test_install.sh
+  @ONLY
+  )
