@@ -226,7 +226,7 @@ namespace Core::Utils
   namespace Internal
   {
     //! Internal helper to figure out the correct time points from input.
-    std::vector<double> extract_time_vector(const Input::LineDefinition& timevar);
+    std::vector<double> extract_time_vector(const Core::IO::InputParameterContainer& timevar);
   }  // namespace Internal
 }  // namespace Core::Utils
 

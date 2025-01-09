@@ -18,12 +18,12 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  using LineDefinitionVector = std::vector<Input::LineDefinition>;
+  using InputParameters = std::vector<Core::IO::InputParameterContainer>;
 
-  using TypeErasedFunctionCreator = std::function<std::any(const LineDefinitionVector&)>;
+  using TypeErasedFunctionCreator = std::function<std::any(const InputParameters&)>;
 
   template <typename T>
-  using FunctionCreator = std::shared_ptr<T> (*)(const LineDefinitionVector&);
+  using FunctionCreator = std::shared_ptr<T> (*)(const InputParameters&);
 
   /**
    * Utility function that takes a function object returning a std::shared_ptr<T> and erases its
@@ -33,7 +33,7 @@ namespace
   template <typename T>
   TypeErasedFunctionCreator wrap_function(FunctionCreator<T> fun)
   {
-    return [fun](const LineDefinitionVector& linedefs) -> std::any
+    return [fun](const InputParameters& linedefs) -> std::any
     {
       std::shared_ptr<T> created = fun(linedefs);
       if (created == nullptr)
@@ -44,7 +44,7 @@ namespace
   }
 
 
-  std::any create_builtin_function(const std::vector<Input::LineDefinition>& function_line_defs)
+  std::any create_builtin_function(const std::vector<Core::IO::InputParameterContainer>& parameters)
   {
     // List all known TryCreate functions in a vector, so they can be called with a unified
     // syntax below. Also, erase their exact return type, since we can only store std::any.
@@ -55,7 +55,7 @@ namespace
 
     for (const auto& try_create_function : try_create_function_vector)
     {
-      auto maybe_function = try_create_function(function_line_defs);
+      auto maybe_function = try_create_function(parameters);
       if (maybe_function.has_value()) return maybe_function;
     }
 
@@ -168,7 +168,10 @@ void Core::Utils::FunctionManager::read_input(Core::IO::InputFile& input)
 
             if (parsed_lines.size() > 0 && unparsed_lines.size() == 0)
             {
-              functions_.emplace_back(function_factory(parsed_lines));
+              std::vector<Core::IO::InputParameterContainer> parsed_lines_data(parsed_lines.size());
+              std::ranges::transform(parsed_lines, parsed_lines_data.begin(),
+                  [](const auto& line) { return line.container(); });
+              functions_.emplace_back(function_factory(parsed_lines_data));
               return false;
             }
           }

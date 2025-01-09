@@ -30,16 +30,16 @@ namespace
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   std::shared_ptr<Core::Utils::FunctionOfSpaceTime> create_structure_function(
-      const std::vector<Input::LineDefinition>& function_line_defs)
+      const std::vector<Core::IO::InputParameterContainer>& parameters)
   {
-    if (function_line_defs.size() != 1) return nullptr;
+    if (parameters.size() != 1) return nullptr;
 
-    const auto& function_lin_def = function_line_defs.front();
+    const auto& function_lin_def = parameters.front();
 
-    if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE", false))
+    if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE", false))
     {
       // read data
-      int mat_id_struct = function_lin_def.container().get_or<int>("MAT_STRUCT", -1);
+      int mat_id_struct = function_lin_def.get_or<int>("MAT_STRUCT", -1);
 
       if (mat_id_struct <= 0)
         FOUR_C_THROW(
@@ -50,11 +50,10 @@ namespace
 
       return std::make_shared<Solid::WeaklyCompressibleEtienneFSIStructureFunction>(fparams);
     }
-    else if (function_lin_def.container().get_or(
-                 "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE", false))
+    else if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE", false))
     {
       // read data
-      int mat_id_struct = function_lin_def.container().get_or<int>("MAT_STRUCT", -1);
+      int mat_id_struct = function_lin_def.get_or<int>("MAT_STRUCT", -1);
 
       if (mat_id_struct <= 0)
       {

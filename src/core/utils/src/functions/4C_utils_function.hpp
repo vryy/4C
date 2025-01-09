@@ -251,11 +251,11 @@ namespace Core::Utils
 
   /// try to create SymbolicFunctionOfAnything from a given line definition
   std::shared_ptr<FunctionOfAnything> try_create_symbolic_function_of_anything(
-      const std::vector<Input::LineDefinition>& function_line_defs);
+      const std::vector<Core::IO::InputParameterContainer>& parameters);
 
   /// create a vector function from multiple expressions
   std::shared_ptr<FunctionOfSpaceTime> try_create_symbolic_function_of_space_time(
-      const std::vector<Input::LineDefinition>& function_line_defs);
+      const std::vector<Core::IO::InputParameterContainer>& parameters);
 }  // namespace Core::Utils
 
 

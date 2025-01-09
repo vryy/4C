@@ -26,22 +26,21 @@ namespace
 {
 
   std::shared_ptr<Core::Utils::FunctionOfScalar> create_library_function_scalar(
-      const std::vector<Input::LineDefinition>& function_line_defs)
+      const std::vector<Core::IO::InputParameterContainer>& parameters)
   {
-    if (function_line_defs.size() != 1) return nullptr;
+    if (parameters.size() != 1) return nullptr;
 
-    const auto& function_lin_def = function_line_defs.front();
+    const auto& function_lin_def = parameters.front();
 
-    if (function_lin_def.container().get_or<bool>("FASTPOLYNOMIAL", false))
+    if (function_lin_def.get_or<bool>("FASTPOLYNOMIAL", false))
     {
-      std::vector<double> coefficients =
-          function_lin_def.container().get<std::vector<double>>("COEFF");
+      std::vector<double> coefficients = function_lin_def.get<std::vector<double>>("COEFF");
 
       return std::make_shared<Core::Utils::FastPolynomialFunction>(std::move(coefficients));
     }
-    else if (function_lin_def.container().get_or<bool>("CUBIC_SPLINE_FROM_CSV", false))
+    else if (function_lin_def.get_or<bool>("CUBIC_SPLINE_FROM_CSV", false))
     {
-      const auto csv_file = function_lin_def.container().get<std::filesystem::path>("CSV");
+      const auto csv_file = function_lin_def.get<std::filesystem::path>("CSV");
 
       // safety check
       if (csv_file.empty())
