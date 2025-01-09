@@ -1552,11 +1552,11 @@ namespace
         computed_state_quantities_transv_isotrop =
             transv_isotrop_elast_viscoplast_->evaluate_state_quantities(CM,
                 iFin_transv_isotrop_elast_viscoplast_solution_,
-                plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 10.0, 0.0);
+                plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 1.0);
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantities
         computed_state_quantities_isotrop = isotrop_elast_viscoplast_->evaluate_state_quantities(CM,
             iFin_transv_isotrop_elast_viscoplast_solution_,
-            plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 10.0, 0.0);
+            plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 1.0);
     if (err_status != Mat::ViscoplastErrorType::NoErrors)
     {
       FOUR_C_THROW("Error encountered during testing of TestEvaluateStateQuantities");
@@ -1616,15 +1616,13 @@ namespace
         computed_state_quantity_derivatives_transv_isotrop =
             transv_isotrop_elast_viscoplast_->evaluate_state_quantity_derivatives(CM,
                 iFin_transv_isotrop_elast_viscoplast_solution_,
-                plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 1.0e100, 0.0,
-                true);
+                plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 1.0, true);
 
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantityDerivatives
         computed_state_quantity_derivatives_isotrop =
             isotrop_elast_viscoplast_->evaluate_state_quantity_derivatives(CM,
                 iFin_transv_isotrop_elast_viscoplast_solution_,
-                plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 1.0e100, 0.0,
-                true);
+                plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 1.0, true);
 
     if (err_status != Mat::ViscoplastErrorType::NoErrors)
     {
