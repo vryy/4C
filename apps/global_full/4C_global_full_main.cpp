@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include <csignal>
+#include <format>
 #include <iostream>
 
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
@@ -304,19 +305,29 @@ int main(int argc, char* argv[])
   {
     if (Core::Communication::my_mpi_rank(gcomm) == 0)
     {
-      printf(
-          "\n"
-          "**********************************************\n"
-          "*                                            *\n"
-          "*                     4C                     *\n"
-          "*                                            *\n"
-          "*                                            *\n"
-          "*             version (git SHA1)             *\n"
-          "*  %s  *\n"
-          "*                                            *\n"
-          "*                                            *\n"
-          "**********************************************\n\n",
-          VersionControl::git_hash);
+      constexpr int box_width = 54;
+
+      const auto print_centered = [&](const std::string& str)
+      {
+        // Subtract 2 for the asterisks on either side
+        constexpr int width = box_width - 2;
+        FOUR_C_ASSERT(str.size() < width, "String is too long to be centered.");
+        std::cout << '*' << std::format("{:^{}}", str, width) << "*\n";
+      };
+
+      std::cout << '\n';
+      std::cout << std::string(box_width, '*') << '\n';
+      print_centered("");
+      print_centered("4C");
+      print_centered("");
+      print_centered("version " FOUR_C_VERSION_FULL);
+      print_centered("");
+      print_centered("git SHA1");
+      print_centered(VersionControl::git_hash);
+      print_centered("");
+      std::cout << std::string(box_width, '*') << '\n';
+      std::cout << '\n';
+
       printf(
           "Trilinos Version %s (git SHA1 %s)\n", TrilinosVersion.c_str(), TrilinosGitHash.c_str());
       printf("Total number of processors: %d\n", Core::Communication::num_mpi_ranks(gcomm));
