@@ -46,9 +46,28 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-# The version number.
-set(FOUR_C_VERSION_MAJOR 1)
-set(FOUR_C_VERSION_MINOR 0)
+# Read the version from the VERSION file. Instead of encoding the version in the CMakeLists.txt,
+# the file allows easy access to the version from other scripts.
+# Following https://calver.org/, the version string has to look like this:  YYYY.MINOR.PATCH[-MODIFIER]
+# where PATCH is optional and implicitly 0 if not present.
+file(STRINGS "${PROJECT_SOURCE_DIR}/VERSION" FOUR_C_VERSION_FULL LIMIT_COUNT 1)
+string(
+  REGEX MATCH
+        "([0-9][0-9][0-9][0-9])\.([0-9]+)\.([0-9]+)(-([a-z0-9]+))?"
+        _dummy
+        ${FOUR_C_VERSION_FULL}
+  )
+if(NOT _dummy)
+  message(
+    FATAL_ERROR
+      "The version string ${FOUR_C_VERSION_FULL} does not match the expected format YYYY.MINOR.PATCH[-MODIFIER]."
+    )
+endif()
+set(FOUR_C_VERSION_MAJOR ${CMAKE_MATCH_1})
+set(FOUR_C_VERSION_MINOR ${CMAKE_MATCH_2})
+set(FOUR_C_VERSION_PATCH ${CMAKE_MATCH_3})
+
+message(STATUS "Configuring 4C version ${FOUR_C_VERSION_FULL}")
 
 # Assert a valid build configuration
 set(_allowed_build_types "DEBUG" "RELEASE" "RELWITHDEBINFO")

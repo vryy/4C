@@ -97,7 +97,7 @@ configure_package_config_file(
 write_basic_package_version_file(
   ${CMAKE_BINARY_DIR}/cmake/templates/4CConfigVersion.cmake
   VERSION ${FOUR_C_VERSION_STRING}
-  COMPATIBILITY AnyNewerVersion
+  COMPATIBILITY ExactVersion
   )
 
 install(
