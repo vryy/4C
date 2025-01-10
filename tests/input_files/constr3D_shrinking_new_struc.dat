@@ -76,7 +76,7 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.02*t
 SYMBOLIC_FUNCTION_OF_TIME 1-0.02*t
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           1
-E 4 - 1 2 0.0
+E 4 - ConditionID 1 curve 2 activeTime 0.0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           3

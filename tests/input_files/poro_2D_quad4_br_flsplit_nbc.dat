@@ -105,7 +105,7 @@ STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
 // Surface x+
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0  FUNCT 1 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0  FUNCT 1 0 0 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // Point x+y+
@@ -138,8 +138,8 @@ DSURF                           1
 E 1 -
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 DLINE                           2
-E 1 - 1 fluid conforming
-E 2 - 2 fluid conforming
+E 1 - 1
+E 2 - 2
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 5 DNODE 2

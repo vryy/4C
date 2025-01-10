@@ -183,8 +183,8 @@ CARDIOVASCULAR0D DIS cardiovascular0d SPECIAL QUANTITY q_ven_pul VALUE 7.4921020
 STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE -4.49728830192664242e-01 TOLERANCE 1e-6
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           2
-E 8 - NUMDOF 3 ONOFF 1 0 0 VAL -1.0 0.0 0.0 FUNCT 2 2 2 orthopressure Mid
-E 9 - NUMDOF 3 ONOFF 1 0 0 VAL -1.0 0.0 0.0 FUNCT 3 3 3 orthopressure Mid
+E 8 - NUMDOF 3 ONOFF 1 0 0 VAL -1.0 0.0 0.0 FUNCT 2 2 2 TYPE orthopressure
+E 9 - NUMDOF 3 ONOFF 1 0 0 VAL -1.0 0.0 0.0 FUNCT 3 3 3 TYPE orthopressure
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
@@ -192,8 +192,8 @@ E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
 DSURF                           2
-E 6 - 0
-E 7 - 1
+E 6 - ConditionID 0
+E 7 - ConditionID 1
 ----DESIGN SURF CARDIOVASCULAR 0D SYS-PUL CIRCULATION CONDITIONS
 DSURF                           2
 E 6 - id 0 TYPE ventricle_left

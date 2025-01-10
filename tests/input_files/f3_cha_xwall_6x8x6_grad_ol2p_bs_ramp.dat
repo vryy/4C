@@ -119,7 +119,7 @@ FLUID DIS fluid NODE 237 QUANTITY pressure VALUE 3.71566845790299166e-04 TOLERAN
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   1
 // volume1
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Dead
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Dead
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // wall_top
@@ -135,16 +135,16 @@ E 2 -
 --------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF  4
 // master_stream
-E 3 - 1 Master PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 3 - ID 1 MASTER_OR_SLAVE Master PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 // slave_stream
-E 4 - 1 Slave  PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 4 - ID 1 MASTER_OR_SLAVE Slave PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 // slave_span
-E 5 - 2 Slave  PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 5 - ID 2 MASTER_OR_SLAVE Slave PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 // master_span
-E 6 - 2 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 6 - ID 2 MASTER_OR_SLAVE Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 -----------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL   1
-E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
+E 1 - DIS fluid NUMMODES 4 ONOFF 0 0 0 1 WEIGHTVECDEF integration
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    420 DNODE 1
 -----------------------------------------------DSURF-NODE TOPOLOGY

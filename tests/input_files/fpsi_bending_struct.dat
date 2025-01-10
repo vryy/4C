@@ -225,9 +225,9 @@ E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -------------------------------DESIGN FPSI COUPLING SURF CONDITIONS
 DSURF  2
 // whole_channel_interface
-E 18 - 1 fluid conforming fsi_real
+E 18 - 1
 // whole_obstacle_interface
-E 17 - 1 structure conforming fsi_real
+E 17 - 1
 -----------------------------DESIGN SURFACE PORO PRESSURE INTEGRATION
 DSURF                           1
 //E 12 -

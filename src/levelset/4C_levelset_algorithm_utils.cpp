@@ -508,20 +508,17 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   std::vector<double> globalmaxs(0);
   for (size_t i = 0; i < surfacepbcs.size(); ++i)
   {
-    const auto ismaster =
-        surfacepbcs[i]->parameters().get<std::string>("Is slave periodic boundary condition");
+    const auto ismaster = surfacepbcs[i]->parameters().get<std::string>("MASTER_OR_SLAVE");
     if (ismaster == "Master")
     {
-      const int masterid =
-          surfacepbcs[i]->parameters().get<int>("Id of periodic boundary condition");
+      const int masterid = surfacepbcs[i]->parameters().get<int>("ID");
       std::vector<int> nodeids(*(surfacepbcs[i]->get_nodes()));
       for (auto& surfacepbc : surfacepbcs)
       {
-        const int slaveid = surfacepbc->parameters().get<int>("Id of periodic boundary condition");
+        const int slaveid = surfacepbc->parameters().get<int>("ID");
         if (masterid == slaveid)
         {
-          const auto isslave =
-              surfacepbc->parameters().get<std::string>("Is slave periodic boundary condition");
+          const auto isslave = surfacepbc->parameters().get<std::string>("MASTER_OR_SLAVE");
           if (isslave == "Slave")
           {
             const std::vector<int>* slavenodeids = surfacepbc->get_nodes();

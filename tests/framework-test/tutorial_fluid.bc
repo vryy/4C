@@ -76,7 +76,5 @@ sectionname="DESIGN POINT DIRICH CONDITIONS"
 description="NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 0 0 0"
 
 -----------------------------------------VALIDCONDITIONS
-------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-//E num - none 0 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+
 ... remaining stuff has been removed

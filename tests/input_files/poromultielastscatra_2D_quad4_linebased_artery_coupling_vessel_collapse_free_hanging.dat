@@ -206,15 +206,15 @@ E 2 - NUMDOF 1 ONOFF 1 VAL 2.88e-4 FUNCT 0
 ------------------------------DESIGN LINE INITIAL FIELD CONDITIONS
 DLINE  2
 // all 1D nodes
-E 3 - Artery 1
+E 3  - FIELD Artery FUNCT 1
 // all 1D nodes
-E 3 - ScaTra 2
+E 3 - FIELD ScaTra FUNCT 2
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  2
 // all_nodes
-E 1 - PoroMultiFluid 3
+E 1  - FIELD PoroMultiFluid FUNCT 3
 // all_nodes
-E 1 - ScaTra 4
+E 1 - FIELD ScaTra FUNCT 4
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    403 DNODE 1
 NODE    553 DNODE 2

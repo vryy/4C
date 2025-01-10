@@ -92,7 +92,7 @@ SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2 500000.0 DESCRIPTION 5 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          1
-E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 3 3 3 3 3 3  Live Mid
+E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 3 3 3 3 3 3  TYPE Live
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 141 DNODE 1
 NODE 247 DNODE 1

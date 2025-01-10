@@ -122,7 +122,7 @@ STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 1.24034175141121890e-05 TOLE
 -----------------------------------------DESIGN LINE PORO NEUMANN CONDITIONS
 DLINE                           1
 //                              line_radial_top
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 50.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 50.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 //                              outer_bottom
@@ -142,9 +142,9 @@ E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 DLINE                           2
 //                              inner_circ
-E 3 - 1 fluid conforming
+E 3 - 1
 //                              outer_circ
-E 4 - 1 fluid conforming
+E 4 - 1
 --------------------------------------------DESIGN FLOW RATE LINE CONDITIONS
 DLINE                           4
 //                              line_radial_top

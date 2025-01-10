@@ -304,16 +304,14 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
 
           for (unsigned numcond = 0; numcond < mysurfpbcs_.size(); ++numcond)
           {
-            const int myid =
-                mysurfpbcs_[numcond]->parameters().get<int>("Id of periodic boundary condition");
+            const int myid = mysurfpbcs_[numcond]->parameters().get<int>("ID");
             const int mylayer = mysurfpbcs_[numcond]->parameters().get<int>("LAYER");
             // yes, I am the condition with id pbcid and in the desired layer
 
             if (myid == pbcid && (mylayer + 1) == nlayer)
             {
               const std::string& mymasterslavetoggle =
-                  mysurfpbcs_[numcond]->parameters().get<std::string>(
-                      "Is slave periodic boundary condition");
+                  mysurfpbcs_[numcond]->parameters().get<std::string>("MASTER_OR_SLAVE");
 
               if (mymasterslavetoggle == "Master")
               {
@@ -765,8 +763,7 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
           for (unsigned numcond = 0; numcond < thiscond.size(); ++numcond)
           {
             const std::string& mymasterslavetoggle =
-                thiscond[numcond]->parameters().get<std::string>(
-                    "Is slave periodic boundary condition");
+                thiscond[numcond]->parameters().get<std::string>("MASTER_OR_SLAVE");
 
             if (mymasterslavetoggle == "Master")
             {
@@ -988,7 +985,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     for (unsigned numcond = 0; numcond < thiscond.size(); ++numcond)
     {
       const std::string& mymasterslavetoggle =
-          thiscond[numcond]->parameters().get<std::string>("Is slave periodic boundary condition");
+          thiscond[numcond]->parameters().get<std::string>("MASTER_OR_SLAVE");
 
       if (mymasterslavetoggle == "Slave")
       {

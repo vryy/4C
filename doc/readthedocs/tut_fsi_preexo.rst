@@ -175,7 +175,7 @@ Therefore we assign:
    ::
 
       sectionname="DESIGN SURF NEUMANN CONDITIONS"
-      description="NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.01 0.0 FUNCT 0 0 0 Live Mid"
+      description="NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.01 0.0 FUNCT 0 0 0 TYPE Live"
 
 - Delete the remaining items ``eb2`` and ``ns10`` to ``ns39``.
 

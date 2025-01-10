@@ -206,11 +206,11 @@ E 1 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  1
 // scatra_membrane
-E 2 - ScaTra 1
+E 2 - FIELD ScaTra FUNCT 1
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   1
 // scatra_cytosol
-E 1 - ScaTra 2
+E 1 - FIELD ScaTra FUNCT 2
 -----DESIGN SCATRA HETEROGENEOUS REACTION SURF CONDITIONS / MASTER
 DSURF  1
 // scatra_cell_scurface_of_volume

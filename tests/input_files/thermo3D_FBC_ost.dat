@@ -53,11 +53,11 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // right surface: heatflux
-E 2 - NUMDOF 1 ONOFF 1 VAL 20.0 FUNCT 1 Live Mid
+E 2 - NUMDOF 1 ONOFF 1 VAL 20.0 FUNCT 1 TYPE Live
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 // body temperature
-E 1 - NUMDOF 1 ONOFF 1 VAL 3.0 FUNCT 1 Live Mid
+E 1 - NUMDOF 1 ONOFF 1 VAL 3.0 FUNCT 1 TYPE Live
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // left surface temperature

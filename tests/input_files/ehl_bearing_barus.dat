@@ -96,7 +96,7 @@ DVOL   1
 E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1 1 0 FUNCT 1 1 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   1
-E 1 - Velocity 2 2 2
+E 1 - FIELD Velocity FUNCT 2
 ---------------------DESIGN SURF EHL MORTAR COUPLING CONDITIONS 3D
 DSURF  2
 E 2 - 1 Slave

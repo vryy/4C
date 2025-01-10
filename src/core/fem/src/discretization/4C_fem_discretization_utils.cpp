@@ -48,7 +48,7 @@ void Core::FE::Utils::evaluate_initial_field(const Core::Utils::FunctionManager&
     for (const auto& initfieldcondition : initfieldconditions)
     {
       if (initfieldcondition->type() != type) continue;
-      const std::string condstring = initfieldcondition->parameters().get<std::string>("Field");
+      const std::string condstring = initfieldcondition->parameters().get<std::string>("FIELD");
       if (condstring != fieldstring) continue;
       do_initial_field(function_manager, discret, *initfieldcondition, fieldvector, locids);
     }
@@ -67,7 +67,7 @@ void Core::FE::Utils::do_initial_field(const Core::Utils::FunctionManager& funct
 
   // loop nodes to identify and evaluate spatial distributions
   // of Initfield boundary conditions
-  const auto funct_num = cond.parameters().get<int>("funct");
+  const auto funct_num = cond.parameters().get<int>("FUNCT");
 
   for (const int cond_nodeid : cond_nodeids)
   {

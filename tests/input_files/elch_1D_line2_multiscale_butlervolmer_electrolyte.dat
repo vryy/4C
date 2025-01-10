@@ -68,7 +68,7 @@ SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.88351098327706046e+00 TOL
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 6.0 TOLERANCE 1.e-20
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 1
-E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 -3.3584e-05 FUNCT 0 0 0 Live Mid
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 -3.3584e-05 FUNCT 0 0 0 TYPE Live
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
@@ -82,9 +82,9 @@ E 1 - ID 0
 E 2 - ID 1
 ------------------------------DESIGN LINE INITIAL FIELD CONDITIONS
 DLINE  3
-E 1 - ScaTra 1
-E 2 - ScaTra 2
-E 3 - ScaTra 3
+E 1 - FIELD ScaTra FUNCT 1
+E 2 - FIELD ScaTra FUNCT 2
+E 3 - FIELD ScaTra FUNCT 3
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 30 DNODE 2

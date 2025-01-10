@@ -2282,7 +2282,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   // pre-factor for adjoint-consistency term:
   // either 1.0 (adjoint-consistent, default) or -1.0 (adjoint-inconsistent)
   double gamma = 1.0;
-  const auto consistency = dbc->parameters().get<std::string>("Choice of gamma parameter");
+  const auto consistency = dbc->parameters().get<std::string>("GAMMATYPE");
   if (consistency == "adjoint-consistent")
     gamma = 1.0;
   else if (consistency == "diffusive-optimal")

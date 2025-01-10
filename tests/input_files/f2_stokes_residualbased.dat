@@ -55,11 +55,11 @@ FLUID DIS fluid NODE 25 QUANTITY pressure VALUE  0.5 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1  QUANTITY pressure VALUE -0.5 TOLERANCE 1e-12
 --------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
 DSURF                            1
-E 1 - fluid NUMMODES 3 ONOFF 0 0 1 integration
+E 1 - DIS fluid NUMMODES 3 ONOFF 0 0 1 WEIGHTVECDEF integration
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              Body_force
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // Node_topright

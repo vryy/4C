@@ -71,9 +71,9 @@ SCATRA DIS scatra NODE 261 QUANTITY phi VALUE 3.434321063e-01 TOLERANCE 1e-9
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           2
 //                              inflow
-E 1 - 1 Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
+E 1 - ID 1 MASTER_OR_SLAVE Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 //                              outflow
-E 2 - 1 Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
+E 2 - ID 1 MASTER_OR_SLAVE Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

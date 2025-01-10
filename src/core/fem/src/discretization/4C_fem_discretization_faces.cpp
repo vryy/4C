@@ -280,10 +280,9 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
         std::map<int, std::set<int>> slavetopbcset;
         for (auto& mypbc : mypbcs)
         {
-          const int myid = mypbc->parameters().get<int>("Id of periodic boundary condition");
+          const int myid = mypbc->parameters().get<int>("ID");
 
-          const auto mymasterslavetoggle =
-              mypbc->parameters().get<std::string>("Is slave periodic boundary condition");
+          const auto mymasterslavetoggle = mypbc->parameters().get<std::string>("MASTER_OR_SLAVE");
 
           if (mymasterslavetoggle == "Master")
           {

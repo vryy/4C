@@ -272,15 +272,15 @@ E 1 - NUMDOF 5 ONOFF 1 1 1 0 1 VAL 1.0 1.0 0.0 0.0 2660.0 FUNCT 21 22 0 0 23
 ------------------------------DESIGN LINE INITIAL FIELD CONDITIONS
 DLINE  2
 // curve_right
-E 2 - PoroMultiFluid 13
+E 2 - FIELD PoroMultiFluid FUNCT 13
 // curve_right
-E 2 - ScaTra 14
+E 2 - FIELD ScaTra FUNCT 14
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  2
 // surface
-E 1 - PoroMultiFluid 15
+E 1 - FIELD PoroMultiFluid FUNCT 15
 // surface
-E 1 - ScaTra 16
+E 1 - FIELD ScaTra FUNCT 16
 ----------------------------DESIGN TRANSPORT ROBIN LINE CONDITIONS
 DLINE  4
 // curve_left

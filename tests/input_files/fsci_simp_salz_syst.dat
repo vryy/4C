@@ -236,9 +236,9 @@ E 2 - flow_rate 0.0 343.0 0.0 0.0 0.0 0
 -------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF  2
 // fluid-bag_surface
-E 3 - 1 fluid conforming fsi_real
+E 3 - 1
 // bag-fluid_surface
-E 5 - 1 structure conforming fsi_real
+E 5 - 1
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    17555 DLINE 1
 NODE    17556 DLINE 1

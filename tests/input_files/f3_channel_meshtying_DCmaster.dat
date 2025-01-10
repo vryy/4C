@@ -161,7 +161,7 @@ DLINE 0
 //E 3 - 1
 ------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
 DSURF 1
-E 5 - juhu
+E 5 -
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    10045 DLINE 1
 NODE    10046 DLINE 1

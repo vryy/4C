@@ -143,7 +143,7 @@ E 4 -
 ----------------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF                           1
 //                              Surface
-E 1 - Porosity 2
+E 1 - FIELD Porosity FUNCT 2
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    29 DNODE 1
 NODE    76 DNODE 1

@@ -83,7 +83,7 @@ STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 7.96666795681926332e-01 TOLE
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // nbc_surfaces
-E 1 - NUMDOF 3  ONOFF 1 0 0  VAL 100.0 0.0 0.0 FUNCT 1 0 0 pseudo_orthopressure Mid
+E 1 - NUMDOF 3  ONOFF 1 0 0  VAL 100.0 0.0 0.0 FUNCT 1 0 0 pseudo_orthopressure
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // dbc_fixed

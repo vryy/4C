@@ -50,7 +50,7 @@ COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME atan(x/y)
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 3 - NUMDOF 3 ONOFF 1 0 0 VAL -13332.2668 0.0 0.0 FUNCT 0 0 0 orthopressure
+E 3 - NUMDOF 3 ONOFF 1 0 0 VAL -13332.2668 0.0 0.0 FUNCT 0 0 0 TYPE orthopressure
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0

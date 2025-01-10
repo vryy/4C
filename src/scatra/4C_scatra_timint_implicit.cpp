@@ -916,7 +916,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_krylov_projection()
   // check if for scatra Krylov projection is required
   for (std::size_t icond = 0; icond < numcond; icond++)
   {
-    const auto& name = KSPCond[icond]->parameters().get<std::string>("discretization");
+    const auto& name = KSPCond[icond]->parameters().get<std::string>("DIS");
     if (name == "scatra")
     {
       numscatra++;
@@ -2373,7 +2373,7 @@ void ScaTra::ScaTraTimIntImpl::setup_krylov_space_projection(Core::Conditions::C
   }
 
   // get from dat-file definition how weights are to be computed
-  const auto* weighttype = &kspcond->parameters().get<std::string>("weight vector definition");
+  const auto* weighttype = &kspcond->parameters().get<std::string>("WEIGHTVECDEF");
 
   // set flag for projection update true only if ALE and integral weights
   if (isale_ and (*weighttype == "integration")) updateprojection_ = true;

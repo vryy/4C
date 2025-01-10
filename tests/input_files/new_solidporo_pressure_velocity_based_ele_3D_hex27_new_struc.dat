@@ -183,17 +183,17 @@ E 5 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 --------------------DESIGN SURFACE NORMAL NO PENETRATION CONDITION
 DSURF                           1
 // Surface z-
-//E 2 - 2
+//E 2 -
 // Surface y-
-//E 3 - 1
+//E 3 -
 // Surface z+
-//E 1 - 2
+//E 1 -
 // Surface y+
-//E 5 - 1
+//E 5 -
 // Surface x-
-//E 4 - 1
+//E 4 -
 // Surface x+
-E 6 - 0
+E 6 -
 ------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 E 1 -

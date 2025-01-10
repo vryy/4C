@@ -116,7 +116,7 @@ STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE -1.36051399528835221e-03 T
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // Surface x+
-E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 Live Mid
+E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // Node x+y+z+

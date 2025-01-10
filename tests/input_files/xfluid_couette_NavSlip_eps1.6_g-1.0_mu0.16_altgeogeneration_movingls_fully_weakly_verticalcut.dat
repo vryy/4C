@@ -195,7 +195,7 @@ XFLUID DIS fluid NODE 623 QUANTITY velz VALUE 0.0 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 623 QUANTITY pressure VALUE -2.0 TOLERANCE 1e-12
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 100.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 100.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 //                              volume

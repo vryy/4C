@@ -158,7 +158,7 @@ FLUID DIS fluid NODE 732 QUANTITY pressure VALUE 9.810000036e-01 TOLERANCE 1e-10
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              cell
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -9.81 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -9.81 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              fix_pressure

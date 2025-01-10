@@ -76,7 +76,7 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 2 3 1000 VALUES 0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // d4_px
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 TYPE Live
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // d3_xyz

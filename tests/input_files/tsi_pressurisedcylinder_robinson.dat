@@ -123,9 +123,7 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5 500000.0 DESCRIPTIO
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              surf_pseudo_orthopressure
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -2.517e4 0.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 pseudo_orthopressure Mid
-// without time curve
-//E 1 - 0 1 0 0 0 0 0 -2.517e4 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -2.517e4 0.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 TYPE pseudo_orthopressure
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              line_sym_edge__fix_yz_move_x

@@ -62,7 +62,7 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -y
 SYMBOLIC_FUNCTION_OF_TIME sin(2*(t)*pi/10)
 ---------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
 DSURF                           1
-E 1 - 1 0.01 3 0.0 2 3 4 abs
+E 1 - ConditionID 1 amplitude 0.01 curve 3 activeTime 0.0 planeNodes 2 3 4 control abs
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          3

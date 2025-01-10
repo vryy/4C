@@ -2058,7 +2058,7 @@ void FLD::FluidImplicitTimeInt::init_krylov_space_projection()
   // check if for fluid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
-    const auto& name = KSPcond[icond]->parameters().get<std::string>("discretization");
+    const auto& name = KSPcond[icond]->parameters().get<std::string>("DIS");
     if (name == "fluid")
     {
       numfluid++;
@@ -2113,7 +2113,7 @@ void FLD::FluidImplicitTimeInt::setup_krylov_space_projection(Core::Conditions::
   kspsplitter_->setup(*discret_);
 
   // get from dat-file definition how weights are to be computed
-  const auto* weighttype = &kspcond->parameters().get<std::string>("weight vector definition");
+  const auto* weighttype = &kspcond->parameters().get<std::string>("WEIGHTVECDEF");
 
   // set flag for projection update true only if ALE and integral weights
   if (alefluid_ and (*weighttype == "integration")) updateprojection_ = true;

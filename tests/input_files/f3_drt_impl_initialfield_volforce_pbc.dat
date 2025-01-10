@@ -58,7 +58,7 @@ AZTOL                           1.0E-11
 AZCONV                          AZ_r0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
-E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
+E 1 - DIS fluid NUMMODES 4 ONOFF 0 0 0 1 WEIGHTVECDEF integration
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           8
@@ -78,19 +78,19 @@ E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            1
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Dead
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Dead
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 // DOBJECT PBC_ID ORIENTATION
 DSURF                           4
-E 1 - 1 Master PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
-E 2 - 2 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
-E 3 - 1 Slave PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
-E 4 - 2 Slave PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 1 - ID 1 MASTER_OR_SLAVE Master PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 2 - ID 2 MASTER_OR_SLAVE Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 3 - ID 1 MASTER_OR_SLAVE Slave PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 4 - ID 2 MASTER_OR_SLAVE Slave PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 ------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
 // DOBJECT Id
 DSURF                           2
-E 5 - standard
-E 6 - standard
+E 5 -
+E 6 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 52 DNODE 2

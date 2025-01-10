@@ -62,14 +62,14 @@ SOLVER                          UMFPACK
 ----------------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 // initial velocity for upper ring
 DSURF                           8
-E 1 - Velocity 1
-E 2 - Velocity 1
-E 3 - Velocity 1
-E 4 - Velocity 1
-E 5 - Velocity 1
-E 6 - Velocity 1
-E 7 - Velocity 1
-E 8 - Velocity 1
+E 1 - FIELD Velocity FUNCT 1
+E 2 - FIELD Velocity FUNCT 1
+E 3 - FIELD Velocity FUNCT 1
+E 4 - FIELD Velocity FUNCT 1
+E 5 - FIELD Velocity FUNCT 1
+E 6 - FIELD Velocity FUNCT 1
+E 7 - FIELD Velocity FUNCT 1
+E 8 - FIELD Velocity FUNCT 1
 -----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           2
 E 10 - 1 Master Inactive

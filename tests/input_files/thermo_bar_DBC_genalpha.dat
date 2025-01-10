@@ -79,7 +79,7 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 4 500000.0 DESCRIPTIO
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  0
 // right_surface_temperature
-//E 2 - 1  1 0 0 0 0 0  10.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0  // first 1 is loadcurve
+//E 2 - 1  1 0 0 0 0 0  10.0 0.0 0.0 0.0 0.0 0.0  TYPE Live 0 0 0 0 0 0  // first 1 is loadcurve
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // left_surface_temperature

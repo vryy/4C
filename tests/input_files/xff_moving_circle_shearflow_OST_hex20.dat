@@ -103,7 +103,7 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.5 500000.0 DESCRIPT
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // xFluid outflow
-E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -9.0 1.25 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -9.0 1.25 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 3
 // xFluid upper surface

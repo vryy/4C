@@ -102,11 +102,11 @@ E 3 - NUMDOF 2 ONOFF 1 1 VAL 9476.0 0.0 FUNCT 0 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   3
 // Electrode
-E 1 - ScaTra 1
+E 1 - FIELD ScaTra FUNCT 1
 // Electrolyte
-E 2 - ScaTra 2
+E 2 - FIELD ScaTra FUNCT 2
 // Electrode
-E 3 - ScaTra 3
+E 3 - FIELD ScaTra FUNCT 3
 ------------------------------DESIGN S2I MESHTYING SURF CONDITIONS
 DSURF  4
 // Electrode side

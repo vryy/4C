@@ -133,7 +133,7 @@ SCATRA DIS scatra NODE 200 QUANTITY phi7 VALUE 3.91627185414680312e+00 TOLERANCE
 SCATRA DIS scatra NODE 200 QUANTITY phi8 VALUE 3.91627185414680179e+00 TOLERANCE 1e-7
 ----------------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
 DSURF                           1
-// // left surface curve  x y z 0 0 0 Val1 Val2 Val3 0 0 0 Live Mid/orthopreassure Mid
+// // left surface curve  x y z 0 0 0 Val1 Val2 Val3 0 0 0 TYPE Live/orthopreassure
 E 1 - NUMDOF 8 ONOFF 1 1 0 1 0 0 1 1 VAL 1.0 1.0 1.0 1.0 0.5 0.5 0.5 0.5 FUNCT 4 4 4 4 3 3 3 3
 ----------------------------------------------DESIGN TRANSPORT ROBIN SURF CONDITIONS
 DSURF                           2

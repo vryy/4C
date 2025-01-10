@@ -57,8 +57,7 @@ bool FLD::is_slave_node_of_rot_sym_pbc(const Core::Nodes::Node* node, double& ro
   bool isrotsymslave(false);
   for (unsigned int j = 0; j < pbc.size(); ++j)
   {
-    const std::string& isslave =
-        pbc[j]->parameters().get<std::string>("Is slave periodic boundary condition");
+    const std::string& isslave = pbc[j]->parameters().get<std::string>("MASTER_OR_SLAVE");
     if (isslave == "Slave")
     {
       rotangle = get_rot_angle_from_condition(pbc[j]);
@@ -99,7 +98,7 @@ void FLD::get_relevant_slave_nodes_of_rot_sym_pbc(
   for (unsigned numcond = 0; numcond < mypbccond.size(); ++numcond)
   {
     const std::string& mymasterslavetoggle =
-        mypbccond[numcond]->parameters().get<std::string>("Is slave periodic boundary condition");
+        mypbccond[numcond]->parameters().get<std::string>("MASTER_OR_SLAVE");
     const double rotangle = FLD::get_rot_angle_from_condition(mypbccond[numcond]);
 
     // only slave nodes with non-zero angle of rotation require rotation

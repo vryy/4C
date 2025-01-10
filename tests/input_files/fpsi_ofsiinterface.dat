@@ -290,7 +290,7 @@ E 7 -
 E 10 -
 ------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL   1
-E 2 - 0
+E 2 -
 ---------------------------DESIGN SURFACE PORO PARTIAL INTEGRATION
 //DSURF        0
 //E 7 -

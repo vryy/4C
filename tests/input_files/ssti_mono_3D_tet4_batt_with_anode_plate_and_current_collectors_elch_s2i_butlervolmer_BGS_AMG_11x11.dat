@@ -217,15 +217,15 @@ E 5 - NUMDOF 2 ONOFF 1 0 VAL 1.2e3 0.0 FUNCT 0 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   5
 // anode
-E 1 - ScaTra 1
+E 1 - FIELD ScaTra FUNCT 1
 // electrolyte
-E 2 - ScaTra 2
+E 2 - FIELD ScaTra FUNCT 2
 // cathode
-E 3 - ScaTra 3
+E 3 - FIELD ScaTra FUNCT 3
 // anode_cc
-E 4 - ScaTra 5
+E 4 - FIELD ScaTra FUNCT 5
 // cathode_cc
-E 5 - ScaTra 4
+E 5 - FIELD ScaTra FUNCT 4
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  10
 // cc-side_(sl)_of_an-cc_interface

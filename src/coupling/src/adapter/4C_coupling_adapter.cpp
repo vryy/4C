@@ -520,8 +520,7 @@ void Coupling::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization&
       unsigned ntimesmaster = 0;
       for (auto& cond : thiscond)
       {
-        const auto& mymasterslavetoggle =
-            cond->parameters().get<std::string>("Is slave periodic boundary condition");
+        const auto& mymasterslavetoggle = cond->parameters().get<std::string>("MASTER_OR_SLAVE");
 
         if (mymasterslavetoggle == "Master")
         {

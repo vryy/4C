@@ -178,19 +178,19 @@ pressure or surface heat flux, accordingly.
 
    ----------------------------DESIGN [POINT|LINE|SURF|VOL] NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal   //  numtotal is the number of subsequent lines
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TYPE Live
    -------------------------------------------DESIGN POINT MOMENT EB CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TYPE Live
    -----------------------DESIGN [POINT|LINE|SURF] TRANSPORT NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF          numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TYPE Live
    ----------------------DESIGN [POINT|LINE|SURF|VOL] THERMO NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TYPE Live
    ------------------------DESIGN [POINT|LINE|SURF|VOL] PORO NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TYPE Live
 
 See the respective reference sections for :ref:`mechanical <designpointneumannconditions>`,
 :ref:`MOMENT EB <designpointmomentebconditions>`, :ref:`TRANSPORT <designpointtransportneumannconditions>`,
@@ -328,15 +328,13 @@ See also :ref:`designsurfacenormaldirmultipntconstraint3d` and :ref:`designsurfa
 Node displacement relative to a given surface or line
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-::
-
    ---------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
    DSURF <numtotal>
-   E <surfset> - <conditionID> <amplitude> <curveID> <inittime> <node1> <node2> <node3> [abs|rel]
+   E <surfset> - ConditionID <conditionID> amplitude <amplitude> curve <curveID> activeTime <inittime> planeNodes <node1> <node2> <node3> control [abs|rel]
    //
    ---------------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
    DLINE <numtotal>
-   E <lineset> - <conditionID> <amplitude> <curveID> <node1> <node2> <node3> [dist|angle] <inittime>
+   E <lineset> - ConditionID <conditionID> amplitude <amplitude> curve <curveID> constrNode1 <node1> constrNode2 <node2> constrNode3 <node3> control [dist|angle] activeTime <inittime>
    //
 
 
@@ -352,16 +350,16 @@ Periodic boundary conditions
    --------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
    DSURF  <numtotal>
    // definition of slave surface
-   E <surfset> - 1 Slave PLANE [xy|xz|yz] LAYER 1 ANGLE 0.0 ABSTREETOL 1e-6
+   E <surfset> - ID 1 MASTER_OR_SLAVE Slave PLANE [xy|xz|yz] LAYER 1 ANGLE 0.0 ABSTREETOL 1e-6
    // definition of master surface
-   E <surfset> - 1 Master PLANE [xy|xz|yz] LAYER 1 ANGLE 0.0 ABSTREETOL 1e-6
+   E <surfset> - ID 1 MASTER_OR_SLAVE Master PLANE [xy|xz|yz] LAYER 1 ANGLE 0.0 ABSTREETOL 1e-6
    //
    --------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
    DLINE  <numtotal>
    // definition of slave line
-   E <lineset> - 1 Slave PLANE [xy|xz|yz] LAYER 1 ANGLE 0.0 ABSTREETOL 1e-6
+   E <lineset> - ID 1 MASTER_OR_SLAVE Slave PLANE [xy|xz|yz] LAYER 1 ANGLE 0.0 ABSTREETOL 1e-6
    // definition of master line
-   E <lineset> - 1 Master PLANE [xy|xz|yz] LAYER 1 ANGLE 0.0 ABSTREETOL 1e-6
+   E <lineset> - ID 1 MASTER_OR_SLAVE Master PLANE [xy|xz|yz] LAYER 1 ANGLE 0.0 ABSTREETOL 1e-6
 
 
 Periodic boundaries are defined as conditions, where nodes on one surface (normal to any of the cartesian coordinate directions, i.e., xy, yz, or xz),

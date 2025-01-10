@@ -158,7 +158,7 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.005*y+1.0 //initial temperature fi
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 //                              volume
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 PressureGrad
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE PressureGrad
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // wall top
@@ -168,17 +168,17 @@ E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           4
 // master stream
-E 3 - 2 Master PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 3 - ID 2 MASTER_OR_SLAVE Master PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 // slave stream
-E 4 - 2 Slave PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 4 - ID 2 MASTER_OR_SLAVE Slave PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 // slave span
-E 5 - 1 Slave PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 5 - ID 1 MASTER_OR_SLAVE Slave PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 // master span
-E 6 - 1 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+E 6 - ID 1 MASTER_OR_SLAVE Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 //                              volume
-E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
+E 1 - DIS fluid NUMMODES 4 ONOFF 0 0 0 1 WEIGHTVECDEF integration
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           2
 // wall top

@@ -290,15 +290,15 @@ E 2 - NUMDOF 5 ONOFF 1 1 1 1 1 VAL 191.7026207774473 0.0 0.0 0.1 2660.0 FUNCT 0 
 ------------------------------DESIGN LINE INITIAL FIELD CONDITIONS
 DLINE  2
 // curve_right
-E 2 - PoroMultiFluid 12
+E 2 - FIELD PoroMultiFluid FUNCT 12
 // curve_right
-E 2 - ScaTra 13
+E 2 - FIELD ScaTra FUNCT 13
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  2
 // all_nodes
-E 1 - PoroMultiFluid 2
+E 1  - FIELD PoroMultiFluid FUNCT 2
 // all_nodes
-E 1 - ScaTra 3
+E 1 - FIELD ScaTra FUNCT 3
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    4 DNODE 1
 NODE    1 DNODE 2

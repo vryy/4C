@@ -412,14 +412,6 @@ DLINE  2
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.1 0.0 FUNCT 2 0
 // structure_inflow_line
 E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.1 0.0 FUNCT 2 0
-// ---------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-// DSURF                           1
-// // structure_inflow_all
-// E 7 - none 1 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
-//-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-//DSURF  1
-//// fluid_fsi_all
-//E 5 -
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    5 DLINE 1
 NODE    6 DLINE 1

@@ -56,7 +56,6 @@ int Discret::Elements::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
     neum_live,                  // standard Neumann load
     neum_pseudo_orthopressure,  // pseudo-orthopressure load
     neum_orthopressure,         // orthopressure load
-    neum_torque                 // torque
   };
 
   LoadType ltype = neum_none;
@@ -87,11 +86,6 @@ int Discret::Elements::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
   else if (type == "neum_orthopressure")
   {
     ltype = neum_orthopressure;
-    config = config_spatial;
-  }
-  else if (type == "neum_torque")
-  {
-    ltype = neum_torque;
     config = config_spatial;
   }
   else
@@ -379,65 +373,6 @@ int Discret::Elements::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
       }
       break;
 
-      case neum_torque:
-      {
-        // check whether only first, fourth, fifth and sixth value is set
-        if ((*onoff)[0] != 1) FOUR_C_THROW("Torque value not provided!");
-        if ((*onoff)[3] != 1) FOUR_C_THROW("X-coordinate of axis for torque not provided!");
-        if ((*onoff)[4] != 1) FOUR_C_THROW("Y-coordinate of axis for torque not provided!");
-        if ((*onoff)[5] != 1) FOUR_C_THROW("Z-coordinate of axis for torque not provided!");
-        for (int checkdof = 1; checkdof < 3; ++checkdof)
-          if ((*onoff)[checkdof] != 0) FOUR_C_THROW("Incorrect value for torque!");
-
-        // get values for torque and coordinates of axis
-        double torque_value = (*val)[0];
-        Core::LinAlg::Matrix<3, 1> axis(true);
-        axis(0) = (*val)[3];
-        axis(1) = (*val)[4];
-        axis(2) = (*val)[5];
-
-        // compute normal vector (with area as length)
-        std::vector<double> normal(3);
-        surface_integration(normal, xc, deriv);
-
-        // compute cross product of axis and (negative) normal
-        Core::LinAlg::Matrix<3, 1> crossprod(true);
-        crossprod(0) = -(axis(1) * normal[2] - axis(2) * normal[1]);
-        crossprod(1) = -(axis(2) * normal[0] - axis(0) * normal[2]);
-        crossprod(2) = -(axis(0) * normal[1] - axis(1) * normal[0]);
-
-        // factor given by spatial function
-        double functfac = 1.0;
-        int functnum = -1;
-
-        if (spa_func) functnum = (*spa_func)[0];
-        {
-          if (functnum > 0)
-          {
-            Core::LinAlg::multiply_tn(gp_coord, funct, xc);
-            // write coordinates in another datatype
-            double gp_coord2[numdim];
-            for (int i = 0; i < numdim; i++)
-            {
-              gp_coord2[i] = gp_coord(0, i);
-            }
-            const double* coordgpref = gp_coord2;  // needed for function evaluation
-
-            // evaluate function at current gauss point
-            functfac = Global::Problem::instance()
-                           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
-                           .evaluate(coordgpref, time, 0);
-          }
-          else
-            functfac = 1.0;
-        }
-
-        const double fac = intpoints.qwgt[gp] * functfac * torque_value;
-        for (int node = 0; node < numnode; ++node)
-          for (int dim = 0; dim < 3; dim++)
-            elevec1[node * numdf + dim] += funct[node] * crossprod(dim) * fac;
-      }
-      break;
 
       default:
         FOUR_C_THROW("Unknown type of SurfaceNeumann load");

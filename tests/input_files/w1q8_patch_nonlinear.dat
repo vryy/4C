@@ -54,7 +54,7 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100 NUE 0 DENS 1
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
 //                              NBC
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 //                              DBC

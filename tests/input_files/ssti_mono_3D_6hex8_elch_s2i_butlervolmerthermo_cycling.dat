@@ -160,11 +160,11 @@ E 2 - NUMDOF 2 ONOFF 1 0 VAL 1.2e3 0.0 FUNCT 0 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   3
 // anode
-E 1 - ScaTra 1
+E 1 - FIELD ScaTra FUNCT 1
 // electrolyte
-E 2 - ScaTra 2
+E 2 - FIELD ScaTra FUNCT 2
 // cathode
-E 3 - ScaTra 3
+E 3 - FIELD ScaTra FUNCT 3
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
 // an_el_an_side

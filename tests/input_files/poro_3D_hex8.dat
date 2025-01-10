@@ -119,11 +119,7 @@ STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE -1.36046680133099077e-03 T
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // Surface x+
-E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 Live Mid
------------------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
-DSURF                           0
-// Surface x+
-//E 6 - 1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // Node x+y+z+
@@ -230,7 +226,7 @@ E 6 -
 E 4 -
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           0
-//E 6 - 1 fluid conforming fsi_real
+//E 6 - 1
 ----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 E 1 -

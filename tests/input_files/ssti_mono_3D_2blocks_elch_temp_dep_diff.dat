@@ -128,9 +128,9 @@ E 3 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 3
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
 // electrode
-E 1 - ScaTra 1
+E 1 - FIELD ScaTra FUNCT 1
 // electrolyte
-E 2 - ScaTra 2
+E 2 - FIELD ScaTra FUNCT 2
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1

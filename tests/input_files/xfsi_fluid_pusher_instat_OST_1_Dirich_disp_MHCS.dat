@@ -131,11 +131,11 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500.0 DESCRIPTION
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 2
 // surface outflow
-E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -4.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
-E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -6.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -4.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -6.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 1
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 0
 // top inflow points
@@ -200,12 +200,12 @@ E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 4 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
 DSURF 6
-E 7 - 1 structure conforming
-E 8 - 1 structure conforming
-E 9 - 1 structure conforming
-E 10 - 1 structure conforming
-E 11 - 1 structure conforming
-E 12 - 1 structure conforming
+E 7 - 1
+E 8 - 1
+E 9 - 1
+E 10 - 1
+E 11 - 1
+E 12 - 1
 ---------------------------------DESIGN XFEM FSI PARTITIONED SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF 6

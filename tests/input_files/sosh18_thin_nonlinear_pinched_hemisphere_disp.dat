@@ -48,8 +48,8 @@ MAT 10 MAT_Struct_StVenantKirchhoff YOUNG 6.825e7 NUE 0.3 DENS 0.001
 SYMBOLIC_FUNCTION_OF_TIME t*2.5
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          2
-E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.5 0.0 0.0 FUNCT 1 0 0 Live Mid
-E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.5 0.0 FUNCT 0 1 0 Live Mid
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.5 0.0 0.0 FUNCT 1 0 0 TYPE Live
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.5 0.0 FUNCT 0 1 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0

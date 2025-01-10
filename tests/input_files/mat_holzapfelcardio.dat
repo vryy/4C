@@ -38,7 +38,7 @@ STRUCTURE DIS structure NODE 114 QUANTITY dispz VALUE -5.7739217087733963e-03 TO
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // structure surface top
-E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.1 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.1 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 TYPE Live
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // structure vertex front right

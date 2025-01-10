@@ -72,8 +72,8 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 3 none none
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
-E 1 - ScaTra 1
-E 2 - ScaTra 2
+E 1 - FIELD ScaTra FUNCT 1
+E 2 - FIELD ScaTra FUNCT 2
 --------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  2
 E 2 - 1 Slave S2I_KINETICS_ID  0

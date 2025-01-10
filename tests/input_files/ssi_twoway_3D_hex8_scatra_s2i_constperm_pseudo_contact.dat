@@ -81,9 +81,9 @@ E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT none none none
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
 // left_block
-E 1 - ScaTra 1
+E 1 - FIELD ScaTra FUNCT 1
 // right_block
-E 2 - ScaTra 2
+E 2 - FIELD ScaTra FUNCT 2
 -------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  2
 // left_block_side_of_interface

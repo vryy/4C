@@ -172,14 +172,14 @@ DVOL  1
 E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.1 0.0 FUNCT 0 0 0
 -----------------------------DESIGN POINT INITIAL FIELD CONDITIONS
 DPOINT 2
-E 1 - ScaTra 3
-E 1 - Artery 5
+E 1 - FIELD ScaTra FUNCT 3
+E 1 - FIELD Artery FUNCT 5
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
 // vol_porousdomain
-E 1 - PoroMultiFluid 1
+E 1 - FIELD PoroMultiFluid FUNCT 1
 // vol_porousdomain
-E 1 - ScaTra 2
+E 1 - FIELD ScaTra FUNCT 2
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 27 DNODE 1
 NODE 29 DNODE 2
