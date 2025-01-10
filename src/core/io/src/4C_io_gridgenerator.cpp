@@ -27,11 +27,11 @@ namespace Core::IO::GridGenerator
 {
   // forward declarations
   std::shared_ptr<Core::Elements::Element> create_hex_element(int eleid, int nodeoffset, int myrank,
-      Input::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
-      std::string distype);
+      const Core::IO::InputParameterContainer& ele_data, std::array<int, 3> interval,
+      std::string elementtype, std::string distype);
 
   std::shared_ptr<Core::Elements::Element> create_wedge_element(int eleid, int nodeoffset,
-      int myrank, Input::LineDefinition* linedef, std::array<int, 3> interval,
+      int myrank, const Core::IO::InputParameterContainer& ele_data, std::array<int, 3> interval,
       std::string elementtype, std::string distype);
 
   /*----------------------------------------------------------------------*/
@@ -184,7 +184,9 @@ namespace Core::IO::GridGenerator
             inputData.elementtype_.c_str(), inputData.distype_.c_str());
 
       std::istringstream eleargstream(argument_line);
-      if (not linedef->read(eleargstream))
+      auto ele_data = linedef->read(eleargstream);
+
+      if (!ele_data.has_value())
       {
         Core::IO::cout << "\n" << eleid << " " << inputData.elementtype_ << " ";
         linedef->print(Core::IO::cout.cout_replacement());
@@ -201,7 +203,7 @@ namespace Core::IO::GridGenerator
         case Core::FE::CellType::hex27:
         {
           std::shared_ptr<Core::Elements::Element> ele =
-              create_hex_element(eleid, inputData.node_gid_of_first_new_node_, myrank, linedef,
+              create_hex_element(eleid, inputData.node_gid_of_first_new_node_, myrank, *ele_data,
                   inputData.interval_, inputData.elementtype_, inputData.distype_);
           // add element to discretization
           dis.add_element(ele);
@@ -210,9 +212,9 @@ namespace Core::IO::GridGenerator
         case Core::FE::CellType::wedge6:
         case Core::FE::CellType::wedge15:
         {
-          std::shared_ptr<Core::Elements::Element> ele =
-              IO::GridGenerator::create_wedge_element(eleid, inputData.node_gid_of_first_new_node_,
-                  myrank, linedef, inputData.interval_, inputData.elementtype_, inputData.distype_);
+          std::shared_ptr<Core::Elements::Element> ele = IO::GridGenerator::create_wedge_element(
+              eleid, inputData.node_gid_of_first_new_node_, myrank, *ele_data, inputData.interval_,
+              inputData.elementtype_, inputData.distype_);
           dis.add_element(ele);
           break;
         }
@@ -338,8 +340,8 @@ namespace Core::IO::GridGenerator
    | create HEX type elements for the partition                           |
    *----------------------------------------------------------------------*/
   std::shared_ptr<Core::Elements::Element> create_hex_element(int eleid, int nodeOffset, int myrank,
-      Input::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
-      std::string distype)
+      const Core::IO::InputParameterContainer& ele_data, std::array<int, 3> interval,
+      std::string elementtype, std::string distype)
   {
     // Reserve nodeids for this element type
     std::vector<int> nodeids(
@@ -398,7 +400,7 @@ namespace Core::IO::GridGenerator
     std::shared_ptr<Core::Elements::Element> ele =
         Core::Communication::factory(elementtype, distype, eleid, myrank);
     ele->set_node_ids(nodeids.size(), &(nodeids[0]));
-    ele->read_element(elementtype, distype, linedef->container());
+    ele->read_element(elementtype, distype, ele_data);
     return ele;
   }
 
@@ -409,7 +411,7 @@ namespace Core::IO::GridGenerator
    | Wedges aligned in z-direction.                                       |
    *----------------------------------------------------------------------*/
   std::shared_ptr<Core::Elements::Element> create_wedge_element(int eleid, int nodeoffset,
-      int myrank, Input::LineDefinition* linedef, std::array<int, 3> interval,
+      int myrank, const Core::IO::InputParameterContainer& ele_data, std::array<int, 3> interval,
       std::string elementtype, std::string distype)
   {
     // Reserve nodeids for this element type
@@ -496,7 +498,7 @@ namespace Core::IO::GridGenerator
     std::shared_ptr<Core::Elements::Element> ele =
         Core::Communication::factory(elementtype, distype, eleid, myrank);
     ele->set_node_ids(nodeids.size(), &(nodeids[0]));
-    ele->read_element(elementtype, distype, linedef->container());
+    ele->read_element(elementtype, distype, ele_data);
     return ele;
   }
 

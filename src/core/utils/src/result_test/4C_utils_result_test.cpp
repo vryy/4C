@@ -146,22 +146,22 @@ void Core::Utils::ResultTestManager::test_all(MPI_Comm comm)
   if (Core::Communication::my_mpi_rank(comm) == 0)
     Core::IO::cout << "\nChecking results of " << size << " tests:\n";
 
-  for (auto& result : results_)
+  for (const auto& result : results_)
   {
     for (const auto& fieldtest : fieldtest_)
     {
-      if (fieldtest->match(result.container()))
+      if (fieldtest->match(result))
       {
-        if (result.container().get_if<int>("ELEMENT") != nullptr)
-          fieldtest->test_element(result.container(), nerr, test_count);
-        else if (result.container().get_if<int>("NODE") != nullptr)
-          fieldtest->test_node(result.container(), nerr, test_count);
-        else if (result.container().get_if<int>("LINE") != nullptr ||
-                 result.container().get_if<int>("SURFACE") != nullptr ||
-                 result.container().get_if<int>("VOLUME") != nullptr)
-          fieldtest->test_node_on_geometry(result.container(), nerr, test_count, get_node_set());
+        if (result.get_if<int>("ELEMENT") != nullptr)
+          fieldtest->test_element(result, nerr, test_count);
+        else if (result.get_if<int>("NODE") != nullptr)
+          fieldtest->test_node(result, nerr, test_count);
+        else if (result.get_if<int>("LINE") != nullptr ||
+                 result.get_if<int>("SURFACE") != nullptr ||
+                 result.get_if<int>("VOLUME") != nullptr)
+          fieldtest->test_node_on_geometry(result, nerr, test_count, get_node_set());
         else
-          fieldtest->test_special(result.container(), nerr, test_count, uneval_test_count);
+          fieldtest->test_special(result, nerr, test_count, uneval_test_count);
       }
     }
   }
@@ -204,7 +204,8 @@ void Core::Utils::ResultTestManager::test_all(MPI_Comm comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Utils::ResultTestManager::set_parsed_lines(std::vector<Input::LineDefinition> results)
+void Core::Utils::ResultTestManager::set_parsed_lines(
+    std::vector<Core::IO::InputParameterContainer> results)
 {
   results_ = std::move(results);
 }

@@ -344,7 +344,7 @@ bool Core::IO::InputFileUtils::need_to_print_equal_sign(const Teuchos::Parameter
 }
 
 
-std::vector<Input::LineDefinition> Core::IO::InputFileUtils::read_all_lines_in_section(
+std::vector<Core::IO::InputParameterContainer> Core::IO::InputFileUtils::read_all_lines_in_section(
     Core::IO::InputFile& input, const std::string& section,
     const std::vector<Input::LineDefinition>& possible_lines)
 {
@@ -374,12 +374,12 @@ std::vector<Input::LineDefinition> Core::IO::InputFileUtils::read_all_lines_in_s
 }
 
 
-std::pair<std::vector<Input::LineDefinition>, std::vector<std::string>>
+std::pair<std::vector<Core::IO::InputParameterContainer>, std::vector<std::string>>
 Core::IO::InputFileUtils::read_matching_lines_in_section(Core::IO::InputFile& input,
     const std::string& section, const std::vector<Input::LineDefinition>& possible_lines)
 {
   std::vector<std::string> unparsed_lines;
-  std::vector<Input::LineDefinition> parsed_lines;
+  std::vector<Core::IO::InputParameterContainer> parsed_lines;
 
   Input::LineDefinition::ReadContext context{.input_file = input.file_for_section(section)};
 
@@ -389,11 +389,10 @@ Core::IO::InputFileUtils::read_matching_lines_in_section(Core::IO::InputFile& in
     {
       std::stringstream l{input_line};
 
-      // Make a copy that potentially gets filled by the Read.
-      auto parsed_definition = definition;
-      if (parsed_definition.read(l, context))
+      auto data = definition.read(l, context);
+      if (data.has_value())
       {
-        parsed_lines.emplace_back(std::move(parsed_definition));
+        parsed_lines.emplace_back(std::move(data.value()));
         return;
       }
     }

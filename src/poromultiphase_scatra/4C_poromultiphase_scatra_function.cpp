@@ -64,20 +64,17 @@ namespace
 
   template <int dim>
   std::shared_ptr<Core::Utils::FunctionOfAnything> try_create_poro_function(
-      const std::vector<Input::LineDefinition>& function_line_defs)
+      const std::vector<Core::IO::InputParameterContainer>& parameters)
   {
-    if (function_line_defs.size() != 1) return nullptr;
+    if (parameters.size() != 1) return nullptr;
 
-    const auto& function_lin_def = function_line_defs.front();
+    const auto& function_lin_def = parameters.front();
 
-    if (function_lin_def.container().get_if<std::string>("POROMULTIPHASESCATRA_FUNCTION") !=
-        nullptr)
+    if (function_lin_def.get_if<std::string>("POROMULTIPHASESCATRA_FUNCTION") != nullptr)
     {
-      std::string type =
-          function_lin_def.container().get<std::string>("POROMULTIPHASESCATRA_FUNCTION");
+      std::string type = function_lin_def.get<std::string>("POROMULTIPHASESCATRA_FUNCTION");
 
-      auto params =
-          function_lin_def.container().get<std::vector<std::pair<std::string, double>>>("PARAMS");
+      auto params = function_lin_def.get<std::vector<std::pair<std::string, double>>>("PARAMS");
 
       return create_poro_function<dim>(type, params);
     }
@@ -88,16 +85,16 @@ namespace
   }
 
   auto try_create_poro_function_dispatch(
-      const std::vector<Input::LineDefinition>& function_line_defs)
+      const std::vector<Core::IO::InputParameterContainer>& parameters)
   {
     switch (Global::Problem::instance()->n_dim())
     {
       case 1:
-        return try_create_poro_function<1>(function_line_defs);
+        return try_create_poro_function<1>(parameters);
       case 2:
-        return try_create_poro_function<2>(function_line_defs);
+        return try_create_poro_function<2>(parameters);
       case 3:
-        return try_create_poro_function<3>(function_line_defs);
+        return try_create_poro_function<3>(parameters);
       default:
         FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
     }

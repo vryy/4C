@@ -56,33 +56,33 @@ namespace
 
 
   std::shared_ptr<Core::Utils::FunctionOfSpaceTime> create_fluid_function(
-      const std::vector<Input::LineDefinition>& function_line_defs)
+      const std::vector<Core::IO::InputParameterContainer>& parameters)
   {
-    if (function_line_defs.size() != 1) return nullptr;
+    if (parameters.size() != 1) return nullptr;
 
-    const auto& function_lin_def = function_line_defs.front();
+    const auto& function_lin_def = parameters.front();
 
-    if (function_lin_def.container().get_or("BELTRAMI", false))
+    if (function_lin_def.get_or("BELTRAMI", false))
     {
-      double c1 = function_lin_def.container().get<double>("c1");
+      double c1 = function_lin_def.get<double>("c1");
 
       return std::make_shared<FLD::BeltramiFunction>(c1);
     }
-    else if (function_lin_def.container().get_or("CHANNELWEAKLYCOMPRESSIBLE", false))
+    else if (function_lin_def.get_or("CHANNELWEAKLYCOMPRESSIBLE", false))
     {
       return std::make_shared<FLD::ChannelWeaklyCompressibleFunction>();
     }
-    else if (function_lin_def.container().get_or("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE", false))
+    else if (function_lin_def.get_or("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE", false))
     {
       return std::make_shared<FLD::CorrectionTermChannelWeaklyCompressibleFunction>();
     }
-    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_POISEUILLE", false))
+    else if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_POISEUILLE", false))
     {
       // read data
-      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
-      auto L = function_lin_def.container().get_or<double>("L", 0);
-      auto R = function_lin_def.container().get_or<double>("R", 0);
-      auto U = function_lin_def.container().get_or<double>("U", 0);
+      int mat_id = function_lin_def.get_or<int>("MAT", -1);
+      auto L = function_lin_def.get_or<double>("L", 0);
+      auto R = function_lin_def.get_or<double>("R", 0);
+      auto U = function_lin_def.get_or<double>("U", 0);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE");
@@ -95,13 +95,13 @@ namespace
 
       return std::make_shared<FLD::WeaklyCompressiblePoiseuilleFunction>(fparams, L, R, U);
     }
-    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE", false))
+    else if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE", false))
     {
       // read data
-      auto mat_id = function_lin_def.container().get_or<int>("MAT", -1);
-      auto L = function_lin_def.container().get_or<double>("L", 0);
-      auto R = function_lin_def.container().get_or<double>("R", 0);
-      auto U = function_lin_def.container().get_or<double>("U", 0);
+      auto mat_id = function_lin_def.get_or<int>("MAT", -1);
+      auto L = function_lin_def.get_or<double>("L", 0);
+      auto R = function_lin_def.get_or<double>("R", 0);
+      auto U = function_lin_def.get_or<double>("U", 0);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
@@ -117,10 +117,10 @@ namespace
 
       return std::make_shared<FLD::WeaklyCompressiblePoiseuilleForceFunction>(fparams, L, R, U);
     }
-    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW", false))
+    else if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW", false))
     {
       // read data
-      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      int mat_id = function_lin_def.get_or<int>("MAT", -1);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
@@ -130,11 +130,10 @@ namespace
 
       return std::make_shared<FLD::WeaklyCompressibleManufacturedFlowFunction>(fparams);
     }
-    else if (function_lin_def.container().get_or(
-                 "WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE", false))
+    else if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE", false))
     {
       // read data
-      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      int mat_id = function_lin_def.get_or<int>("MAT", -1);
 
       if (mat_id <= 0)
         FOUR_C_THROW(
@@ -145,10 +144,10 @@ namespace
 
       return std::make_shared<FLD::WeaklyCompressibleManufacturedFlowForceFunction>(fparams);
     }
-    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD", false))
+    else if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD", false))
     {
       // read data
-      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      int mat_id = function_lin_def.get_or<int>("MAT", -1);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
@@ -158,10 +157,10 @@ namespace
 
       return std::make_shared<FLD::WeaklyCompressibleEtienneCFDFunction>(fparams);
     }
-    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE", false))
+    else if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE", false))
     {
       // read data
-      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      int mat_id = function_lin_def.get_or<int>("MAT", -1);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
@@ -171,10 +170,10 @@ namespace
 
       return std::make_shared<FLD::WeaklyCompressibleEtienneCFDForceFunction>(fparams);
     }
-    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY", false))
+    else if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY", false))
     {
       // read data
-      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      int mat_id = function_lin_def.get_or<int>("MAT", -1);
 
       if (mat_id <= 0)
         FOUR_C_THROW(
@@ -185,11 +184,11 @@ namespace
 
       return std::make_shared<FLD::WeaklyCompressibleEtienneCFDViscosityFunction>(fparams);
     }
-    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID", false))
+    else if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID", false))
     {
       // read data
-      int mat_id_fluid = function_lin_def.container().get_or<int>("MAT_FLUID", -1);
-      int mat_id_struct = function_lin_def.container().get_or<int>("MAT_STRUCT", -1);
+      int mat_id_fluid = function_lin_def.get_or<int>("MAT_FLUID", -1);
+      int mat_id_struct = function_lin_def.get_or<int>("MAT_STRUCT", -1);
 
       if (mat_id_fluid <= 0)
         FOUR_C_THROW(
@@ -205,12 +204,11 @@ namespace
       return std::make_shared<FLD::WeaklyCompressibleEtienneFSIFluidFunction>(
           fparams_fluid, fparams_struct);
     }
-    else if (function_lin_def.container().get_or(
-                 "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE", false))
+    else if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE", false))
     {
       // read data
-      int mat_id_fluid = function_lin_def.container().get_or<int>("MAT_FLUID", -1);
-      int mat_id_struct = function_lin_def.container().get_or<int>("MAT_STRUCT", -1);
+      int mat_id_fluid = function_lin_def.get_or<int>("MAT_FLUID", -1);
+      int mat_id_struct = function_lin_def.get_or<int>("MAT_STRUCT", -1);
 
       if (mat_id_fluid <= 0)
       {
@@ -232,12 +230,11 @@ namespace
       return std::make_shared<FLD::WeaklyCompressibleEtienneFSIFluidForceFunction>(
           fparams_fluid, fparams_struct);
     }
-    else if (function_lin_def.container().get_or(
-                 "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY", false))
+    else if (function_lin_def.get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY", false))
     {
       // read data
-      int mat_id_fluid = function_lin_def.container().get_or<int>("MAT_FLUID", -1);
-      int mat_id_struct = function_lin_def.container().get_or<int>("MAT_STRUCT", -1);
+      int mat_id_fluid = function_lin_def.get_or<int>("MAT_FLUID", -1);
+      int mat_id_struct = function_lin_def.get_or<int>("MAT_STRUCT", -1);
 
       if (mat_id_fluid <= 0)
       {
@@ -259,10 +256,10 @@ namespace
       return std::make_shared<FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction>(
           fparams_fluid, fparams_struct);
     }
-    else if (function_lin_def.container().get_or("BELTRAMI-UP", false))
+    else if (function_lin_def.get_or("BELTRAMI-UP", false))
     {
       // read data
-      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      int mat_id = function_lin_def.get_or<int>("MAT", -1);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
 
@@ -271,11 +268,11 @@ namespace
 
       return std::make_shared<FLD::BeltramiUP>(fparams);
     }
-    else if (function_lin_def.container().get_or("BELTRAMI-RHS", false))
+    else if (function_lin_def.get_or("BELTRAMI-RHS", false))
     {
       // read material
-      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
-      int is_stokes = function_lin_def.container().get_or<int>("ISSTOKES", 0);
+      int mat_id = function_lin_def.get_or<int>("MAT", -1);
+      int is_stokes = function_lin_def.get_or<int>("ISSTOKES", 0);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in BELTRAMI-RHS");
 
@@ -284,11 +281,11 @@ namespace
 
       return std::make_shared<FLD::BeltramiRHS>(fparams, (bool)is_stokes);
     }
-    else if (function_lin_def.container().get_or("KIMMOIN-UP", false))
+    else if (function_lin_def.get_or("KIMMOIN-UP", false))
     {
       // read material
-      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
-      int is_stationary = function_lin_def.container().get_or<int>("ISSTAT", 0);
+      int mat_id = function_lin_def.get_or<int>("MAT", -1);
+      int is_stationary = function_lin_def.get_or<int>("ISSTAT", 0);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
 
@@ -297,12 +294,12 @@ namespace
 
       return std::make_shared<FLD::KimMoinUP>(fparams, (bool)is_stationary);
     }
-    else if (function_lin_def.container().get_or("KIMMOIN-RHS", false))
+    else if (function_lin_def.get_or("KIMMOIN-RHS", false))
     {
       // read material
-      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
-      int is_stationary = function_lin_def.container().get_or<int>("ISSTAT", 0);
-      int is_stokes = function_lin_def.container().get_or<int>("ISSTOKES", 0);
+      int mat_id = function_lin_def.get_or<int>("MAT", -1);
+      int is_stationary = function_lin_def.get_or<int>("ISSTAT", 0);
+      int is_stokes = function_lin_def.get_or<int>("ISSTOKES", 0);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-RHS");
 
@@ -311,12 +308,12 @@ namespace
 
       return std::make_shared<FLD::KimMoinRHS>(fparams, (bool)is_stationary, (bool)is_stokes);
     }
-    else if (function_lin_def.container().get_or("KIMMOIN-STRESS", false))
+    else if (function_lin_def.get_or("KIMMOIN-STRESS", false))
     {
       // read material
-      auto mat_id = function_lin_def.container().get_or<int>("MAT", -1);
-      auto is_stationary = function_lin_def.container().get_or<int>("ISSTAT", 0);
-      auto amplitude = function_lin_def.container().get_or<double>("AMPLITUDE", 1.0);
+      auto mat_id = function_lin_def.get_or<int>("MAT", -1);
+      auto is_stationary = function_lin_def.get_or<int>("ISSTAT", 0);
+      auto amplitude = function_lin_def.get_or<double>("AMPLITUDE", 1.0);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
 

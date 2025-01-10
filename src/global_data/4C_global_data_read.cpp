@@ -2117,15 +2117,15 @@ void Global::read_cloning_material_map(Global::Problem& problem, Core::IO::Input
   const std::vector<Input::LineDefinition> lines = Core::FE::valid_cloning_material_map_lines();
 
   // perform the actual reading and extract the input parameters
-  std::vector<Input::LineDefinition> input_line_vec =
+  auto parameters =
       Core::IO::InputFileUtils::read_all_lines_in_section(input, "CLONING MATERIAL MAP", lines);
-  for (const auto& input_line : input_line_vec)
+  for (const auto& input_line : parameters)
   {
     // extract what was read from the input file
-    std::string src_field = input_line.container().get<std::string>("SRC_FIELD");
-    int src_matid = input_line.container().get_or<int>("SRC_MAT", -1);
-    std::string tar_field = input_line.container().get<std::string>("TAR_FIELD");
-    int tar_matid = input_line.container().get_or<int>("TAR_MAT", -1);
+    std::string src_field = input_line.get<std::string>("SRC_FIELD");
+    int src_matid = input_line.get_or<int>("SRC_MAT", -1);
+    std::string tar_field = input_line.get<std::string>("TAR_FIELD");
+    int tar_matid = input_line.get_or<int>("TAR_MAT", -1);
 
     // create the key pair
     std::pair<std::string, std::string> fields(src_field, tar_field);

@@ -43,7 +43,8 @@ namespace Core::Utils
     /**
      * Type used to pass functions that create 4C Functions from a number of parsed lines.
      */
-    using FunctionFactory = std::function<std::any(const std::vector<Input::LineDefinition>&)>;
+    using FunctionFactory =
+        std::function<std::any(const std::vector<Core::IO::InputParameterContainer>& lines)>;
 
     /// Return all known input lines that define a Function.
     std::vector<Input::LineDefinition> valid_function_lines();

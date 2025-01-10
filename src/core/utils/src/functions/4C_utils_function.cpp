@@ -165,23 +165,22 @@ namespace
 
 std::shared_ptr<Core::Utils::FunctionOfAnything>
 Core::Utils::try_create_symbolic_function_of_anything(
-    const std::vector<Input::LineDefinition>& function_line_defs)
+    const std::vector<Core::IO::InputParameterContainer>& parameters)
 {
-  if (function_line_defs.size() != 1) return nullptr;
+  if (parameters.size() != 1) return nullptr;
 
-  const auto& function_lin_def = function_line_defs.front();
+  const auto& function_lin_def = parameters.front();
 
-  if (function_lin_def.container().get_if<std::string>("VARFUNCTION") != nullptr)
+  if (function_lin_def.get_if<std::string>("VARFUNCTION") != nullptr)
 
   {
-    std::string component = function_lin_def.container().get<std::string>("VARFUNCTION");
+    std::string component = function_lin_def.get<std::string>("VARFUNCTION");
 
     std::vector<std::pair<std::string, double>> constants;
-    if (function_lin_def.container().get_if<std::vector<std::pair<std::string, double>>>(
-            "CONSTANTS") != nullptr)
+    if (function_lin_def.get_if<std::vector<std::pair<std::string, double>>>("CONSTANTS") !=
+        nullptr)
     {
-      constants = function_lin_def.container().get<std::vector<std::pair<std::string, double>>>(
-          "CONSTANTS");
+      constants = function_lin_def.get<std::vector<std::pair<std::string, double>>>("CONSTANTS");
     }
 
     return std::make_shared<Core::Utils::SymbolicFunctionOfAnything>(component, constants);
@@ -196,7 +195,7 @@ Core::Utils::try_create_symbolic_function_of_anything(
 
 std::shared_ptr<Core::Utils::FunctionOfSpaceTime>
 Core::Utils::try_create_symbolic_function_of_space_time(
-    const std::vector<Input::LineDefinition>& function_line_defs)
+    const std::vector<Core::IO::InputParameterContainer>& parameters)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfSpaceTime.
   // This line accepts optional components in the beginning although this is not directly supported
@@ -217,19 +216,18 @@ Core::Utils::try_create_symbolic_function_of_space_time(
   int maxcomp = 0;
   int maxvar = -1;
   bool found_function_of_space_time(false);
-  for (const auto& ith_function_lin_def : function_line_defs)
+  for (const auto& ith_function_lin_def : parameters)
   {
-    ignore_errors_in([&]() { maxcomp = ith_function_lin_def.container().get<int>("COMPONENT"); });
-    ignore_errors_in([&]() { maxvar = ith_function_lin_def.container().get<int>("VARIABLE"); });
-    if (ith_function_lin_def.container().get_if<std::string>("SYMBOLIC_FUNCTION_OF_SPACE_TIME") !=
-        nullptr)
+    ignore_errors_in([&]() { maxcomp = ith_function_lin_def.get<int>("COMPONENT"); });
+    ignore_errors_in([&]() { maxvar = ith_function_lin_def.get<int>("VARIABLE"); });
+    if (ith_function_lin_def.get_if<std::string>("SYMBOLIC_FUNCTION_OF_SPACE_TIME") != nullptr)
       found_function_of_space_time = true;
   }
 
   if (!found_function_of_space_time) return nullptr;
 
   // evaluate the number of rows used for the definition of the variables
-  std::size_t numrowsvar = function_line_defs.size() - maxcomp - 1;
+  std::size_t numrowsvar = parameters.size() - maxcomp - 1;
 
   // define a vector of strings
   std::vector<std::string> functstring(maxcomp + 1);
@@ -238,16 +236,16 @@ Core::Utils::try_create_symbolic_function_of_space_time(
   for (int n = 0; n <= maxcomp; ++n)
   {
     // update the current row
-    const Input::LineDefinition& functcomp = function_line_defs[n];
+    const auto& functcomp = parameters[n];
 
     // check the validity of the n-th component
     int compid = 0;
-    ignore_errors_in([&]() { compid = functcomp.container().get<int>("COMPONENT"); });
+    ignore_errors_in([&]() { compid = functcomp.get<int>("COMPONENT"); });
     if (compid != n) FOUR_C_THROW("expected COMPONENT %d but got COMPONENT %d", n, compid);
 
 
     // read the expression of the n-th component of the i-th function
-    functstring[n] = functcomp.container().get<std::string>("SYMBOLIC_FUNCTION_OF_SPACE_TIME");
+    functstring[n] = functcomp.get<std::string>("SYMBOLIC_FUNCTION_OF_SPACE_TIME");
   }
 
   std::map<int, std::vector<std::shared_ptr<FunctionVariable>>> variable_pieces;
@@ -256,29 +254,29 @@ Core::Utils::try_create_symbolic_function_of_space_time(
   for (std::size_t j = 1; j <= numrowsvar; ++j)
   {
     // update the current row
-    const Input::LineDefinition& line = function_line_defs[maxcomp + j];
+    const auto& line = parameters[maxcomp + j];
 
     // read the number of the variable
     int varid;
-    ignore_errors_in([&]() { varid = line.container().get<int>("VARIABLE"); });
+    ignore_errors_in([&]() { varid = line.get<int>("VARIABLE"); });
 
     const auto variable = std::invoke(
         [&]() -> std::shared_ptr<Core::Utils::FunctionVariable>
         {
           // read the name of the variable
-          std::string varname = line.container().get<std::string>("NAME");
+          std::string varname = line.get<std::string>("NAME");
 
           // read the type of the variable
-          std::string vartype = line.container().get<std::string>("TYPE");
+          std::string vartype = line.get<std::string>("TYPE");
 
           // read periodicity data
           Periodicstruct periodicdata{};
 
-          periodicdata.periodic = line.container().get<bool>("PERIODIC");
+          periodicdata.periodic = line.get<bool>("PERIODIC");
           if (periodicdata.periodic)
           {
-            periodicdata.t1 = line.container().get<double>("T1");
-            periodicdata.t2 = line.container().get<double>("T2");
+            periodicdata.t1 = line.get<double>("T1");
+            periodicdata.t2 = line.get<double>("T2");
           }
           else
           {
@@ -289,7 +287,7 @@ Core::Utils::try_create_symbolic_function_of_space_time(
           // distinguish the type of the variable
           if (vartype == "expression")
           {
-            auto description_vec = line.container().get<std::vector<std::string>>("DESCRIPTION");
+            auto description_vec = line.get<std::vector<std::string>>("DESCRIPTION");
             if (description_vec.size() != 1)
             {
               FOUR_C_THROW(
@@ -306,7 +304,7 @@ Core::Utils::try_create_symbolic_function_of_space_time(
             std::vector<double> times = Internal::extract_time_vector(line);
 
             // read values
-            auto values = line.container().get<std::vector<double>>("VALUES");
+            auto values = line.get<std::vector<double>>("VALUES");
 
             return std::make_shared<LinearInterpolationVariable>(
                 varname, times, values, periodicdata);
@@ -317,7 +315,7 @@ Core::Utils::try_create_symbolic_function_of_space_time(
             std::vector<double> times = Internal::extract_time_vector(line);
 
             // read descriptions (strings separated with spaces)
-            auto description_vec = line.container().get<std::vector<std::string>>("DESCRIPTION");
+            auto description_vec = line.get<std::vector<std::string>>("DESCRIPTION");
             // check if the number of times = number of descriptions + 1
             std::size_t numtimes = times.size();
             std::size_t numdescriptions = description_vec.size();
@@ -334,7 +332,7 @@ Core::Utils::try_create_symbolic_function_of_space_time(
             std::vector<double> times = Internal::extract_time_vector(line);
 
             // read values
-            auto values = line.container().get<std::vector<double>>("VALUES");
+            auto values = line.get<std::vector<double>>("VALUES");
 
             return std::make_shared<FourierInterpolationVariable>(
                 varname, times, values, periodicdata);

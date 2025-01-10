@@ -82,7 +82,7 @@ namespace Core::Utils
 
   //! create a vector function of time from multiple expressions
   std::shared_ptr<FunctionOfTime> try_create_function_of_time(
-      const std::vector<Input::LineDefinition>& function_line_defs);
+      const std::vector<Core::IO::InputParameterContainer>& parameters);
 
 }  // namespace Core::Utils
 

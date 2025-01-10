@@ -33,9 +33,6 @@ namespace Input
      public:
       /// Components that make up an InputLine.
       std::vector<Core::IO::InputSpec> components_;
-
-      /// Store the read data.
-      Core::IO::InputParameterContainer container_;
     };
   }  // namespace Internal
 
@@ -297,9 +294,9 @@ namespace Input
 
 
   std::optional<Core::IO::InputParameterContainer> LineDefinition::read(
-      std::istream& stream, const ReadContext& context)
+      std::istream& stream, const ReadContext& context) const
   {
-    pimpl_->container_ = Core::IO::InputParameterContainer();
+    Core::IO::InputParameterContainer container;
 
     // extract everything from the stream into a string
     std::stringstream ss;
@@ -310,19 +307,14 @@ namespace Input
     {
       auto input_line = Core::IO::InputSpecBuilders::group(pimpl_->components_);
       Core::IO::ValueParser parser(line, {.base_path = context.input_file.parent_path()});
-      Core::IO::fully_parse(parser, input_line, pimpl_->container_);
+      Core::IO::fully_parse(parser, input_line, container);
     }
     catch (const Core::Exception& e)
     {
       return std::nullopt;
     }
 
-    return pimpl_->container_;
-  }
-
-  const Core::IO::InputParameterContainer& LineDefinition::container() const
-  {
-    return pimpl_->container_;
+    return container;
   }
 
 

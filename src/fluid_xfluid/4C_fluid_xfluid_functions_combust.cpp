@@ -17,15 +17,15 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   std::shared_ptr<Core::Utils::FunctionOfSpaceTime> create_combust_function(
-      const std::vector<Input::LineDefinition>& function_line_defs)
+      const std::vector<Core::IO::InputParameterContainer>& parameters)
   {
-    if (function_line_defs.size() != 1) return nullptr;
+    if (parameters.size() != 1) return nullptr;
 
-    if (function_line_defs.front().container().get_or("ZALESAKSDISK", false))
+    if (parameters.front().get_or("ZALESAKSDISK", false))
     {
       return std::make_shared<Discret::Utils::ZalesaksDiskFunction>();
     }
-    else if (function_line_defs.front().container().get_or("COLLAPSINGWATERCOLUMN", false))
+    else if (parameters.front().get_or("COLLAPSINGWATERCOLUMN", false))
     {
       return std::make_shared<Discret::Utils::CollapsingWaterColumnFunction>();
     }

@@ -528,13 +528,14 @@ Core::Utils::FunctionVariable& Core::Utils::PiecewiseVariable::find_piece_for_ti
   return **active_piece;
 }
 
-std::vector<double> Core::Utils::Internal::extract_time_vector(const Input::LineDefinition& timevar)
+std::vector<double> Core::Utils::Internal::extract_time_vector(
+    const Core::IO::InputParameterContainer& timevar)
 {
   // read the number of points
-  int numpoints = timevar.container().get<int>("NUMPOINTS");
+  int numpoints = timevar.get<int>("NUMPOINTS");
 
   // read whether times are defined by number of points or by vector
-  bool bynum = timevar.container().get<bool>("BYNUM");
+  bool bynum = timevar.get<bool>("BYNUM");
 
   // read respectively create times vector
   std::vector<double> times = std::invoke(
@@ -543,7 +544,7 @@ std::vector<double> Core::Utils::Internal::extract_time_vector(const Input::Line
         if (bynum)  // times defined by number of points
         {
           // read the time range
-          auto timerange = timevar.container().get<std::vector<double>>("TIMERANGE");
+          auto timerange = timevar.get<std::vector<double>>("TIMERANGE");
 
           std::vector<double> times;
 
@@ -571,7 +572,7 @@ std::vector<double> Core::Utils::Internal::extract_time_vector(const Input::Line
         }
         else  // times defined by vector
         {
-          auto times = timevar.container().get<std::vector<double>>("TIMES");
+          auto times = timevar.get<std::vector<double>>("TIMES");
 
           return times;
         }

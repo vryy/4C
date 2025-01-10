@@ -21,67 +21,65 @@ namespace
   using namespace Discret::Utils;
 
   std::shared_ptr<Core::Utils::FunctionOfSpaceTime> create_xfluid_function(
-      const std::vector<Input::LineDefinition>& function_line_defs)
+      const std::vector<Core::IO::InputParameterContainer>& parameters)
   {
-    if (function_line_defs.size() != 1) return nullptr;
+    if (parameters.size() != 1) return nullptr;
 
-    const auto& function_lin_def = function_line_defs.front();
+    const auto& function_lin_def = parameters.front();
 
-    if (function_lin_def.container().get_or<bool>("FORWARDFACINGSTEP", false))
+    if (function_lin_def.get_or<bool>("FORWARDFACINGSTEP", false))
     {
       return std::make_shared<GerstenbergerForwardfacingStep>();
     }
-    else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETCYLINDER", false))
+    else if (function_lin_def.get_or<bool>("MOVINGLEVELSETCYLINDER", false))
     {
-      auto origin = function_lin_def.container().get<std::vector<double>>("ORIGIN");
+      auto origin = function_lin_def.get<std::vector<double>>("ORIGIN");
 
-      auto radius = function_lin_def.container().get<double>("RADIUS");
+      auto radius = function_lin_def.get<double>("RADIUS");
 
-      auto direction = function_lin_def.container().get<std::vector<double>>("DIRECTION");
+      auto direction = function_lin_def.get<std::vector<double>>("DIRECTION");
 
-      auto distance = function_lin_def.container().get<double>("DISTANCE");
+      auto distance = function_lin_def.get<double>("DISTANCE");
 
-      auto maxspeed = function_lin_def.container().get<double>("MAXSPEED");
+      auto maxspeed = function_lin_def.get<double>("MAXSPEED");
 
       return std::make_shared<MovingLevelSetCylinder>(
           &origin, radius, &direction, distance, maxspeed);
     }
-    else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUS", false) or
-             function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSVELOCITY", false) or
-             function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSSLIPLENGTH", false))
+    else if (function_lin_def.get_or<bool>("MOVINGLEVELSETTORUS", false) or
+             function_lin_def.get_or<bool>("MOVINGLEVELSETTORUSVELOCITY", false) or
+             function_lin_def.get_or<bool>("MOVINGLEVELSETTORUSSLIPLENGTH", false))
     {
-      auto origin = function_lin_def.container().get<std::vector<double>>("ORIGIN");
+      auto origin = function_lin_def.get<std::vector<double>>("ORIGIN");
 
-      auto orient_vec_torus =
-          function_lin_def.container().get<std::vector<double>>("ORIENTVEC_TORUS");
+      auto orient_vec_torus = function_lin_def.get<std::vector<double>>("ORIENTVEC_TORUS");
 
-      auto radius = function_lin_def.container().get<double>("RADIUS");
+      auto radius = function_lin_def.get<double>("RADIUS");
 
-      auto radius_tube = function_lin_def.container().get<double>("RADIUS_TUBE");
+      auto radius_tube = function_lin_def.get<double>("RADIUS_TUBE");
 
-      auto direction = function_lin_def.container().get<std::vector<double>>("DIRECTION");
+      auto direction = function_lin_def.get<std::vector<double>>("DIRECTION");
 
-      auto distance = function_lin_def.container().get<double>("DISTANCE");
+      auto distance = function_lin_def.get<double>("DISTANCE");
 
-      auto maxspeed = function_lin_def.container().get<double>("MAXSPEED");
+      auto maxspeed = function_lin_def.get<double>("MAXSPEED");
 
-      auto rot_vec_torus = function_lin_def.container().get<std::vector<double>>("ROTATION_VEC");
+      auto rot_vec_torus = function_lin_def.get<std::vector<double>>("ROTATION_VEC");
 
-      auto rotspeed =
-          function_lin_def.container().get<double>("ROTATION_SPEED");  // revolutions per second
+      auto rotspeed = function_lin_def.get<double>("ROTATION_SPEED");  // revolutions per second
 
       auto rotramptime =
-          function_lin_def.container().get<double>("ROTATION_RAMPTIME");  // revolutions per second
+          function_lin_def.get<double>("ROTATION_RAMPTIME");  // revolutions per second
 
-      if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUS", false))
+      if (function_lin_def.get_or<bool>("MOVINGLEVELSETTORUS", false))
         return std::make_shared<MovingLevelSetTorus>(&origin, &orient_vec_torus, radius,
             radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime);
-      else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSVELOCITY", false))
+      else if (function_lin_def.get_or<bool>("MOVINGLEVELSETTORUSVELOCITY", false))
         return std::make_shared<MovingLevelSetTorusVelocity>(&origin, &orient_vec_torus, radius,
             radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime);
-      else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSSLIPLENGTH", false))
+      else if (function_lin_def.get_or<bool>("MOVINGLEVELSETTORUSSLIPLENGTH", false))
       {
-        auto slipfunct = function_lin_def.container().get<int>("SLIP_FUNCT");
+        auto slipfunct = function_lin_def.get<int>("SLIP_FUNCT");
         return std::make_shared<MovingLevelSetTorusSliplength>(&origin, &orient_vec_torus, radius,
             radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime,
             slipfunct);
@@ -92,40 +90,40 @@ namespace
         return std::shared_ptr<Core::Utils::FunctionOfSpaceTime>(nullptr);
       }
     }
-    else if (function_lin_def.container().get_or<bool>("TAYLORCOUETTEFLOW", false))
+    else if (function_lin_def.get_or<bool>("TAYLORCOUETTEFLOW", false))
     {
-      auto radius_i = function_lin_def.container().get<double>("RADIUS_I");
-      auto radius_o = function_lin_def.container().get<double>("RADIUS_O");
+      auto radius_i = function_lin_def.get<double>("RADIUS_I");
+      auto radius_o = function_lin_def.get<double>("RADIUS_O");
 
-      auto vel_theta_i = function_lin_def.container().get<double>("VEL_THETA_I");
-      auto vel_theta_o = function_lin_def.container().get<double>("VEL_THETA_O");
+      auto vel_theta_i = function_lin_def.get<double>("VEL_THETA_I");
+      auto vel_theta_o = function_lin_def.get<double>("VEL_THETA_O");
 
-      auto sliplength_i = function_lin_def.container().get<double>("SLIPLENGTH_I");
-      auto sliplength_o = function_lin_def.container().get<double>("SLIPLENGTH_O");
+      auto sliplength_i = function_lin_def.get<double>("SLIPLENGTH_I");
+      auto sliplength_o = function_lin_def.get<double>("SLIPLENGTH_O");
 
-      auto traction_theta_i = function_lin_def.container().get<double>("TRACTION_THETA_I");
-      auto traction_theta_o = function_lin_def.container().get<double>("TRACTION_THETA_O");
+      auto traction_theta_i = function_lin_def.get<double>("TRACTION_THETA_I");
+      auto traction_theta_o = function_lin_def.get<double>("TRACTION_THETA_O");
 
-      auto viscosity = function_lin_def.container().get<double>("VISCOSITY");
+      auto viscosity = function_lin_def.get<double>("VISCOSITY");
 
       return std::make_shared<TaylorCouetteFlow>(radius_i, radius_o, vel_theta_i, vel_theta_o,
           sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity);
     }
-    else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW", false))
+    else if (function_lin_def.get_or<bool>("URQUIZABOXFLOW", false))
     {
-      auto lengthx = function_lin_def.container().get<double>("LENGTHX");
-      auto lengthy = function_lin_def.container().get<double>("LENGTHY");
+      auto lengthx = function_lin_def.get<double>("LENGTHX");
+      auto lengthy = function_lin_def.get<double>("LENGTHY");
 
-      auto rotation = function_lin_def.container().get<double>("ROTATION");
-      auto viscosity = function_lin_def.container().get<double>("VISCOSITY");
-      auto density = function_lin_def.container().get<double>("DENSITY");
+      auto rotation = function_lin_def.get<double>("ROTATION");
+      auto viscosity = function_lin_def.get<double>("VISCOSITY");
+      auto density = function_lin_def.get<double>("DENSITY");
 
-      auto functno = function_lin_def.container().get<int>("CASE");
+      auto functno = function_lin_def.get<int>("CASE");
 
       std::vector<double> lin_comb(2, 0.0);
-      if (function_lin_def.container().get_if<std::vector<double>>("COMBINATION") != nullptr)
+      if (function_lin_def.get_if<std::vector<double>>("COMBINATION") != nullptr)
       {
-        lin_comb = function_lin_def.container().get<std::vector<double>>("COMBINATION");
+        lin_comb = function_lin_def.get<std::vector<double>>("COMBINATION");
       }
       else if (functno == 3)
         FOUR_C_THROW(
@@ -135,21 +133,21 @@ namespace
       return std::make_shared<UrquizaBoxFlow>(
           lengthx, lengthy, rotation, viscosity, density, functno, lin_comb);
     }
-    else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW_FORCE", false))
+    else if (function_lin_def.get_or<bool>("URQUIZABOXFLOW_FORCE", false))
     {
-      auto lengthx = function_lin_def.container().get<double>("LENGTHX");
-      auto lengthy = function_lin_def.container().get<double>("LENGTHY");
+      auto lengthx = function_lin_def.get<double>("LENGTHX");
+      auto lengthy = function_lin_def.get<double>("LENGTHY");
 
-      auto rotation = function_lin_def.container().get<double>("ROTATION");
-      auto viscosity = function_lin_def.container().get<double>("VISCOSITY");
-      auto density = function_lin_def.container().get<double>("DENSITY");
+      auto rotation = function_lin_def.get<double>("ROTATION");
+      auto viscosity = function_lin_def.get<double>("VISCOSITY");
+      auto density = function_lin_def.get<double>("DENSITY");
 
-      auto functno = function_lin_def.container().get<int>("CASE");
+      auto functno = function_lin_def.get<int>("CASE");
 
       std::vector<double> lin_comb(2, 0.0);
-      if (function_lin_def.container().get_if<std::vector<double>>("COMBINATION") != nullptr)
+      if (function_lin_def.get_if<std::vector<double>>("COMBINATION") != nullptr)
       {
-        lin_comb = function_lin_def.container().get<std::vector<double>>("COMBINATION");
+        lin_comb = function_lin_def.get<std::vector<double>>("COMBINATION");
       }
       else if (functno == 3)
         FOUR_C_THROW(
@@ -159,21 +157,21 @@ namespace
       return std::make_shared<UrquizaBoxFlowForce>(
           lengthx, lengthy, rotation, viscosity, density, functno, lin_comb);
     }
-    else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW_TRACTION", false))
+    else if (function_lin_def.get_or<bool>("URQUIZABOXFLOW_TRACTION", false))
     {
-      auto lengthx = function_lin_def.container().get<double>("LENGTHX");
-      auto lengthy = function_lin_def.container().get<double>("LENGTHY");
+      auto lengthx = function_lin_def.get<double>("LENGTHX");
+      auto lengthy = function_lin_def.get<double>("LENGTHY");
 
-      auto rotation = function_lin_def.container().get<double>("ROTATION");
-      auto viscosity = function_lin_def.container().get<double>("VISCOSITY");
-      auto density = function_lin_def.container().get<double>("DENSITY");
+      auto rotation = function_lin_def.get<double>("ROTATION");
+      auto viscosity = function_lin_def.get<double>("VISCOSITY");
+      auto density = function_lin_def.get<double>("DENSITY");
 
-      auto functno = function_lin_def.container().get<int>("CASE");
+      auto functno = function_lin_def.get<int>("CASE");
 
       std::vector<double> lin_comb(2, 0.0);
-      if (function_lin_def.container().get_if<std::vector<double>>("COMBINATION") != nullptr)
+      if (function_lin_def.get_if<std::vector<double>>("COMBINATION") != nullptr)
       {
-        lin_comb = function_lin_def.container().get<std::vector<double>>("COMBINATION");
+        lin_comb = function_lin_def.get<std::vector<double>>("COMBINATION");
       }
       else if (functno == 3)
         FOUR_C_THROW(
