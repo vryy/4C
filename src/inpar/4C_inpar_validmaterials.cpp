@@ -13,6 +13,7 @@
 #include "4C_io_file_reader.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_io_linecomponent.hpp"
+#include "4C_mat_electrode.hpp"
 #include "4C_mat_materialdefinition.hpp"
 
 #include <filesystem>
@@ -1002,35 +1003,47 @@ std::shared_ptr<std::vector<std::shared_ptr<Mat::MaterialDefinition>>> Input::va
                                                  "'C_MAX'"}));
 
     // model for half cell open circuit potential of electrode
-    matelectrode->add_component(entry<std::string>(
-        "OCP_MODEL", {.description = "model for half cell open circuit potential of electrode: "
-                                     "Redlich-Kister, Taralov, Polynomial, csv"}));
-
-    // lower bound of range of validity as a fraction of C_MAX for ocp calculation model
-    matelectrode->add_component(
-        entry<double>("X_MIN", {.description = "lower bound of range of validity as a fraction of "
-                                               "C_MAX for ocp calculation model"}));
-
-    // upper bound of range of validity as a fraction of C_MAX for ocp calculation model
-    matelectrode->add_component(
-        entry<double>("X_MAX", {.description = "upper bound of range of validity as a fraction of "
-                                               "C_MAX for ocp calculation model"}));
-
-    // number of parameters underlying half cell open circuit potential model
-    matelectrode->add_component(entry<int>("OCP_PARA_NUM",
-        {.description = "number of parameters underlying half cell open circuit potential model",
-            .default_value = 0}));
-
-    // parameters underlying half cell open circuit potential model
-    matelectrode->add_component(entry<std::vector<double>>(
-        "OCP_PARA", {.description = "parameters underlying half cell open circuit potential model",
-                        .required = false,
-                        .size = from_parameter<int>("OCP_PARA_NUM")}));
-
-    // *.csv file with data points for half cell open circuit potential
-    matelectrode->add_component(entry<std::string>("OCP_CSV",
-        {.description = "\\*.csv file with data points for half cell open circuit potential",
-            .default_value = ""}));
+    using namespace Core::IO::InputSpecBuilders;
+    matelectrode->add_component(group("OCP_MODEL",
+        {
+            one_of(
+                {
+                    group("Function",
+                        {
+                            entry<int>("OCP_FUNCT_NUM",
+                                {
+                                    .description = "function number of function that is used to "
+                                                   "model the open circuit potential",
+                                }),
+                        }),
+                    group("Redlich-Kister",
+                        {
+                            entry<int>("OCP_PARA_NUM",
+                                {
+                                    .description = "number of parameters underlying half "
+                                                   "cell open circuit potential model",
+                                }),
+                            entry<std::vector<double>>(
+                                "OCP_PARA", {.description = "parameters underlying half cell open "
+                                                            "circuit potential model",
+                                                .size = from_parameter<int>("OCP_PARA_NUM")}),
+                        }),
+                    group("Taralov",
+                        {
+                            entry<std::vector<double>>(
+                                "OCP_PARA", {.description = "parameters underlying half cell open "
+                                                            "circuit potential model",
+                                                .size = 13}),
+                        }),
+                },
+                store_index_as<Mat::PAR::OCPModels>("OCP_MODEL")),
+            entry<double>(
+                "X_MIN", {.description = "lower bound of range of validity as a fraction of "
+                                         "C_MAX for ocp calculation model"}),
+            entry<double>(
+                "X_MAX", {.description = "upper bound of range of validity as a fraction of "
+                                         "C_MAX for ocp calculation model"}),
+        }));
 
     // add electrode material to global list of valid materials
     Mat::append_material_definition(matlist, matelectrode);

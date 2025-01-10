@@ -7,10 +7,16 @@
 
 #include <gtest/gtest.h>
 
+#include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
+#include "4C_global_data_read.hpp"
+#include "4C_global_legacy_module.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_singleton_owner.hpp"
+
+#include <fstream>
 
 namespace
 {
@@ -21,70 +27,66 @@ namespace
    protected:
     void SetUp() override
     {
+      setup_global_problem();
+
+      setup_anode_ocp_polynomial();
+      setup_anode_ocp_redlich_kister();
+      setup_anode_ocp_taralov();
+      setup_cathode_ocp_csv();
+      setup_cathode_ocp_polynomial();
+      setup_cathode_ocp_redlich_kister();
+      setup_cathode_ocp_taralov();
+    }
+
+    void setup_anode_ocp_polynomial()
+    {
       // initialize container for material parameters
       Core::IO::InputParameterContainer container;
+      set_dummy_parameters_to_container(container);
 
-      // create dummy elch parameter list and add dummy value for gas constant
-      auto parameter_list = std::make_shared<Teuchos::ParameterList>();
-      auto elch_params = parameter_list->sublist("ELCH CONTROL", false);
-      elch_params.set<double>("GAS_CONSTANT", -1.0);
+      // half-cell open-circuit equilibrium potential by function
+      auto& ocp_model = container.group("OCP_MODEL");
+      // choose the ocp model
+      ocp_model.add("OCP_MODEL", Mat::PAR::OCPModels::function);
+      // create the chosen ocp model 'Function'
+      auto& ocp_function = ocp_model.group("Function");
+      ocp_function.add("OCP_FUNCT_NUM", 2);
+      ocp_model.add("X_MIN", -1.0);
+      ocp_model.add("X_MAX", -1.0);
+      // add the ocp model
+      container.add("OCP_MODEL", ocp_model);
 
-      // set the parameter list in the global problem
-      Global::Problem::instance()->set_parameter_list(parameter_list);
+      // add parameters for lithium metal anode to container
+      container.add("C_MAX", 100000.0);
 
-      // add dummy parameters to container
-      container.add("DIFF_COEF_CONC_DEP_FUNCT", 0);
-      container.add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
-      container.add("DIFF_PARA_NUM", 0);
-      container.add("DIFF_PARA", std::vector<double>(0, 0.0));
-      container.add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-      container.add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
-      container.add("COND_CONC_DEP_FUNCT", 0);
-      container.add("COND_TEMP_SCALE_FUNCT", 0);
-      container.add("COND_PARA_NUM", 0);
-      container.add("COND_PARA", std::vector<double>(0, 0.0));
-      container.add("COND_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-      container.add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
-
-      // obtain half-cell open-circuit equilibrium potential from cubic spline interpolation of
-      // *.csv data points
-      container.add("OCP_MODEL", std::string("csv"));
-
-      // add cathode parameters to container according to master thesis by Alexander Rupp (2017)
-      container.add("C_MAX", 4793.3);
-      container.add("CHI_MAX", 1.0);
-      container.add("OCP_PARA_NUM", 0);
-      container.add("OCP_PARA", std::vector<double>(0, 0.0));
-      std::string ocpcsv(__FILE__);
-      ocpcsv.replace(ocpcsv.end() - 3, ocpcsv.end(), "csv");
-
-      container.add("OCP_CSV", ocpcsv);
-      container.add("X_MIN", -1.0);
-      container.add("X_MAX", -1.0);
-
-      // initialize parameter class for cathode material
-      parameters_cathode_csv_ = std::make_shared<Mat::PAR::Electrode>(
+      // initialize parameter class for anode material
+      parameters_anode_polynomial_ = std::make_shared<Mat::PAR::Electrode>(
           Core::Mat::PAR::Parameter::Data{.parameters = container});
 
-      // initialize cathode material
-      cathode_csv_ = std::make_shared<Mat::Electrode>(parameters_cathode_csv_.get());
+      // initialize anode material
+      anode_polynomial_ = std::make_shared<Mat::Electrode>(parameters_anode_polynomial_.get());
 
-      // define sample concentration values for cathode material
-      // cf. master thesis by Alexander Rupp (2017)
-      concentrations_cathode_csv_.resize(3, 0.0);
-      concentrations_cathode_csv_[0] = 1677.6;  // cathode concentration at 100% state of charge
-      concentrations_cathode_csv_[1] =
-          3115.6;  // cathode concentration at 50% intercalation fraction
-      concentrations_cathode_csv_[2] = 4553.6;  // cathode concentration at 0% state of charge*/
+      // define fictitious sample concentration values for anode material
+      concentrations_anode_polynomial_.resize(3, 0.0);
+      concentrations_anode_polynomial_[0] = 500.;   // anode concentration at 10% state of charge
+      concentrations_anode_polynomial_[1] = 2500.;  // anode concentration at 50% state of charge
+      concentrations_anode_polynomial_[2] = 4500.;  // anode concentration at 90% state of charge
+    }
+
+    void setup_anode_ocp_redlich_kister()
+    {
+      // initialize container for material parameters
+      Core::IO::InputParameterContainer container;
+      set_dummy_parameters_to_container(container);
 
       // choose semi-empirical Redlich-Kister expansion to model half-cell open-circuit equilibrium
       // potential
-      container.add("OCP_MODEL", std::string("Redlich-Kister"));
-
-      // add anode parameters to container according to Goldin et al., Electrochimica Acta 64 (2012)
-      // 118-129
-      container.add("C_MAX", 16.1);
-      container.add("OCP_PARA_NUM", 16);
+      auto& ocp_model = container.group("OCP_MODEL");
+      // choose the ocp model
+      ocp_model.add("OCP_MODEL", Mat::PAR::OCPModels::redlichkister);
+      // create the chosen ocp model 'Redlich-Kister'
+      auto& ocp_redlich_kister = ocp_model.group("Redlich-Kister");
+      ocp_redlich_kister.add("OCP_PARA_NUM", 16);
       std::vector<double> ocp_para(16, 0.0);
       ocp_para[0] = 1.1652e4;
       ocp_para[1] = -3.268e3;
@@ -102,10 +104,12 @@ namespace
       ocp_para[13] = 3.956e4;
       ocp_para[14] = 9.302e4;
       ocp_para[15] = -3.280e4;
-      container.add("OCP_PARA", ocp_para);
-      container.add("OCP_CSV", std::string(""));
-      container.add("X_MIN", -1.0);
-      container.add("X_MAX", -1.0);
+      ocp_redlich_kister.add("OCP_PARA", ocp_para);
+      ocp_model.add("X_MIN", -1.0);
+      ocp_model.add("X_MAX", -1.0);
+      // add the ocp model
+      container.add("OCP_MODEL", ocp_model);
+      container.add("C_MAX", 16.1);
 
       // initialize parameter class for anode material
       parameters_anode_redlichkister_ = std::make_shared<Mat::PAR::Electrode>(
@@ -124,12 +128,138 @@ namespace
                  // original form of Redlich-Kister expansion)
       concentrations_anode_redlichkister_[2] =
           10.88;  // anode concentration at 100% state of charge
+    }
+
+    void setup_anode_ocp_taralov()
+    {
+      // initialize container for material parameters
+      Core::IO::InputParameterContainer container;
+      set_dummy_parameters_to_container(container);
+
+      // choose half-cell open-circuit equilibrium potential according to Taralov, Taralova, Popov,
+      // Iliev, Latz, and Zausch (2012)
+      auto& ocp_model = container.group("OCP_MODEL");
+      // choose the ocp model
+      ocp_model.add("OCP_MODEL", Mat::PAR::OCPModels::taralov);
+      // create the chosen ocp model 'Taralov'
+      auto& ocp_taralov = ocp_model.group("Taralov");
+      std::vector<double> ocp_para(13, 0.0);
+      ocp_para[0] = -0.132;
+      ocp_para[10] = 1.41;
+      ocp_para[11] = -3.52;
+      ocp_taralov.add("OCP_PARA", ocp_para);
+      ocp_model.add("X_MIN", -1.0);
+      ocp_model.add("X_MAX", -1.0);
+      // add the ocp model
+      container.add("OCP_MODEL", ocp_model);
+      container.add("C_MAX", 24.681);
+
+      // initialize parameter class for anode material
+      parameters_anode_taralov_ = std::make_shared<Mat::PAR::Electrode>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
+
+      // initialize anode material
+      anode_taralov_ = std::make_shared<Mat::Electrode>(parameters_anode_taralov_.get());
+
+      // define sample concentration values for anode material
+      // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
+      concentrations_anode_taralov_.resize(3, 0.0);
+      concentrations_anode_taralov_[0] = 2.4681;   // anode concentration at 10% state of charge
+      concentrations_anode_taralov_[1] = 12.3405;  // anode concentration at 50% state of charge
+      concentrations_anode_taralov_[2] = 22.2129;  // anode concentration at 90% state of charge
+    }
+
+    void setup_cathode_ocp_csv()
+    {
+      // initialize container for material parameters
+      Core::IO::InputParameterContainer container;
+      set_dummy_parameters_to_container(container);
+
+      // obtain half-cell open-circuit equilibrium potential from cubic spline interpolation of
+      // *.csv data points
+      auto& ocp_model = container.group("OCP_MODEL");
+      // choose the ocp model
+      ocp_model.add("OCP_MODEL", Mat::PAR::OCPModels::function);
+      // create the chosen ocp model 'Function'
+      auto& ocp_function = ocp_model.group("Function");
+      // add cathode parameters to container according to master thesis by Alexander Rupp (2017)
+      ocp_function.add("OCP_FUNCT_NUM", 1);
+      ocp_model.add("X_MIN", -1.0);
+      ocp_model.add("X_MAX", -1.0);
+      // add the ocp model
+      container.add("OCP_MODEL", ocp_model);
+      container.add("C_MAX", 4793.3);
+
+      // initialize parameter class for cathode material
+      parameters_cathode_csv_ = std::make_shared<Mat::PAR::Electrode>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
+
+      // initialize cathode material
+      cathode_csv_ = std::make_shared<Mat::Electrode>(parameters_cathode_csv_.get());
+
+      // define sample concentration values for cathode material
+      // cf. master thesis by Alexander Rupp (2017)
+      concentrations_cathode_csv_.resize(3, 0.0);
+      concentrations_cathode_csv_[0] = 1677.6;  // cathode concentration at 100% state of charge
+      concentrations_cathode_csv_[1] =
+          3115.6;  // cathode concentration at 50% intercalation fraction
+      concentrations_cathode_csv_[2] = 4553.6;  // cathode concentration at 0% state of charge
+    }
+
+    void setup_cathode_ocp_polynomial()
+    {
+      // initialize container for material parameters
+      Core::IO::InputParameterContainer container;
+      set_dummy_parameters_to_container(container);
+
+      // add cathode parameters to container according to Ji et al., Journal of The Electrochemical
+      // Society 160 (4) (2013) A636-A649
+      auto& ocp_model = container.group("OCP_MODEL");
+      // choose the ocp model
+      ocp_model.add("OCP_MODEL", Mat::PAR::OCPModels::function);
+      // create the chosen ocp model 'Function'
+      auto& ocp_function = ocp_model.group("Function");
+      ocp_function.add("OCP_FUNCT_NUM", 3);
+      ocp_model.add("X_MIN", -1.0);
+      ocp_model.add("X_MAX", -1.0);
+      // add the ocp model
+      container.add("OCP_MODEL", ocp_model);
+      container.add("C_MAX", 4793.3);
+
+      // initialize parameter class for cathode material
+      parameters_cathode_polynomial_ = std::make_shared<Mat::PAR::Electrode>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
+
+      // initialize cathode material
+      cathode_polynomial_ = std::make_shared<Mat::Electrode>(parameters_cathode_polynomial_.get());
+
+      // define sample concentration values for cathode material
+      // cf. Ji et al., Journal of The Electrochemical Society 160 (4) (2013) A636-A649
+      concentrations_cathode_polynomial_.resize(3, 0.0);
+      concentrations_cathode_polynomial_[0] =
+          1677.6;  // cathode concentration at 100% state of charge
+      concentrations_cathode_polynomial_[1] =
+          3115.6;  // cathode concentration at 50% state of charge
+      concentrations_cathode_polynomial_[2] =
+          4553.6;  // cathode concentration at 0% state of charge
+    }
+
+
+    void setup_cathode_ocp_redlich_kister()
+    {
+      // initialize container for material parameters
+      Core::IO::InputParameterContainer container;
+      set_dummy_parameters_to_container(container);
 
       // add cathode parameters to container according to Goldin et al., Electrochimica Acta 64
       // (2012) 118-129
-      container.add("C_MAX", 23.9);
-      container.add("OCP_PARA_NUM", 21);
-      ocp_para.resize(21, 0.0);
+      auto& ocp_model = container.group("OCP_MODEL");
+      // choose the ocp model
+      ocp_model.add("OCP_MODEL", Mat::PAR::OCPModels::redlichkister);
+      // create the chosen ocp model 'Redlich-Kister'
+      auto& ocp_redlich_kister = ocp_model.group("Redlich-Kister");
+      ocp_redlich_kister.add("OCP_PARA_NUM", 21);
+      std::vector<double> ocp_para(21, 0.0);
       ocp_para[0] = 3.954616e5;
       ocp_para[1] = -7.676e4;
       ocp_para[2] = 3.799e4;
@@ -151,10 +281,12 @@ namespace
       ocp_para[18] = -1.599e5;
       ocp_para[19] = 6.658e5;
       ocp_para[20] = -1.084e6;
-      container.add("OCP_PARA", ocp_para);
-      container.add("OCP_CSV", std::string(""));
-      container.add("X_MIN", -1.0);
-      container.add("X_MAX", -1.0);
+      ocp_redlich_kister.add("OCP_PARA", ocp_para);
+      ocp_model.add("X_MIN", -1.0);
+      ocp_model.add("X_MAX", -1.0);
+      // add the ocp model
+      container.add("OCP_MODEL", ocp_model);
+      container.add("C_MAX", 23.9);
 
       // initialize parameter class for cathode material
       parameters_cathode_redlichkister_ = std::make_shared<Mat::PAR::Electrode>(
@@ -170,46 +302,26 @@ namespace
       concentrations_cathode_redlichkister_[0] =
           10.56;  // cathode concentration at 100% state of charge
       concentrations_cathode_redlichkister_[1] =
-          11.95;  // cathode concentration at 50% intercalation fraction (constitutes singularity in
-                  // original form of Redlich-Kister expansion)
+          11.95;  // cathode concentration at 50% intercalation fraction (constitutes singularity
+                  // in original form of Redlich-Kister expansion)
       concentrations_cathode_redlichkister_[2] =
           22.37;  // cathode concentration at 0% state of charge
+    }
 
-      // choose half-cell open-circuit equilibrium potential according to Taralov, Taralova, Popov,
-      // Iliev, Latz, and Zausch (2012)
-      container.add("OCP_MODEL", std::string("Taralov"));
+    void setup_cathode_ocp_taralov()
+    {
+      // initialize container for material parameters
+      Core::IO::InputParameterContainer container;
+      set_dummy_parameters_to_container(container);
 
-      // add anode parameters to container according to Taralov, Taralova, Popov, Iliev, Latz, and
-      // Zausch (2012)
-      container.add("C_MAX", 24.681);
-      container.add("OCP_PARA_NUM", 13);
-      ocp_para.resize(13, 0.0);
-      std::fill(ocp_para.begin(), ocp_para.end(), 0.0);
-      ocp_para[0] = -0.132;
-      ocp_para[10] = 1.41;
-      ocp_para[11] = -3.52;
-      container.add("OCP_PARA", ocp_para);
-      container.add("OCP_CSV", std::string(""));
-      container.add("X_MIN", -1.0);
-      container.add("X_MAX", -1.0);
-
-      // initialize parameter class for anode material
-      parameters_anode_taralov_ = std::make_shared<Mat::PAR::Electrode>(
-          Core::Mat::PAR::Parameter::Data{.parameters = container});
-
-      // initialize anode material
-      anode_taralov_ = std::make_shared<Mat::Electrode>(parameters_anode_taralov_.get());
-
-      // define sample concentration values for anode material
-      // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
-      concentrations_anode_taralov_.resize(3, 0.0);
-      concentrations_anode_taralov_[0] = 2.4681;   // anode concentration at 10% state of charge
-      concentrations_anode_taralov_[1] = 12.3405;  // anode concentration at 50% state of charge
-      concentrations_anode_taralov_[2] = 22.2129;  // anode concentration at 90% state of charge
-
-      // add cathode parameters to container according to Taralov, Taralova, Popov, Iliev, Latz, and
-      // Zausch (2012)
-      container.add("C_MAX", 23.671);
+      // add cathode parameters to container according to Taralov, Taralova, Popov, Iliev, Latz,
+      // and Zausch (2012)
+      auto& ocp_model = container.group("OCP_MODEL");
+      // choose the ocp model
+      ocp_model.add("OCP_MODEL", Mat::PAR::OCPModels::taralov);
+      // create the chosen ocp model 'Taralov'
+      auto& ocp_taralov = ocp_model.group("Taralov");
+      std::vector<double> ocp_para(13, 0.0);
       ocp_para[0] = 4.06279;
       ocp_para[1] = 0.0677504;
       ocp_para[2] = -21.8502;
@@ -223,10 +335,12 @@ namespace
       ocp_para[10] = 0.01;
       ocp_para[11] = -200.0;
       ocp_para[12] = -0.19;
-      container.add("OCP_PARA", ocp_para);
-      container.add("OCP_CSV", std::string(""));
-      container.add("X_MIN", -1.0);
-      container.add("X_MAX", -1.0);
+      ocp_taralov.add("OCP_PARA", ocp_para);
+      ocp_model.add("X_MIN", -1.0);
+      ocp_model.add("X_MAX", -1.0);
+      // add the ocp model
+      container.add("OCP_MODEL", ocp_model);
+      container.add("C_MAX", 23.671);
 
       // initialize parameter class for cathode material
       parameters_cathode_taralov_ = std::make_shared<Mat::PAR::Electrode>(
@@ -241,64 +355,95 @@ namespace
       concentrations_cathode_taralov_[0] = 4.02407;  // cathode concentration at 90% state of charge
       concentrations_cathode_taralov_[1] = 11.8355;  // cathode concentration at 50% state of charge
       concentrations_cathode_taralov_[2] = 21.3039;  // cathode concentration at 17% state of charge
+    }
 
-      // choose polynomial half-cell open-circuit equilibrium potential
-      container.add("OCP_MODEL", std::string("Polynomial"));
+    void set_dummy_parameters_to_container(Core::IO::InputParameterContainer& container) const
+    {
+      // add dummy parameters to container
+      container.add("CHI_MAX", 1.0);
+      container.add("COND_CONC_DEP_FUNCT", 0);
+      container.add("COND_PARA_NUM", 0);
+      container.add("COND_PARA", std::vector<double>(0, 0.0));
+      container.add("COND_TEMP_SCALE_FUNCT", 0);
+      container.add("COND_TEMP_SCALE_FUNCT_PARA_NUM", 0);
+      container.add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
+      container.add("DIFF_COEF_CONC_DEP_FUNCT", 0);
+      container.add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
+      container.add("DIFF_PARA_NUM", 0);
+      container.add("DIFF_PARA", std::vector<double>(0, 0.0));
+      container.add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0);
+      container.add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
+    }
 
-      // add parameters for lithium metal anode to container
-      container.add("C_MAX", 100000.0);
-      container.add("OCP_PARA_NUM", 1);
-      ocp_para.resize(1, 0.0);
-      ocp_para[0] = 0.0;
-      container.add("OCP_PARA", ocp_para);
-      container.add("OCP_CSV", std::string(""));
-      container.add("X_MIN", -1.0);
-      container.add("X_MAX", -1.0);
+    void setup_global_problem() const
+    {
+      Global::Problem* problem = Global::Problem::instance();
 
-      // initialize parameter class for anode material
-      parameters_anode_polynomial_ = std::make_shared<Mat::PAR::Electrode>(
-          Core::Mat::PAR::Parameter::Data{.parameters = container});
+      // create default communicators
+      std::shared_ptr<Core::Communication::Communicators> communicators =
+          Core::Communication::create_comm({});
+      problem->set_communicators(communicators);
+      MPI_Comm comm = communicators->global_comm();
 
-      // initialize anode material
-      anode_polynomial_ = std::make_shared<Mat::Electrode>(parameters_anode_polynomial_.get());
+      std::string csv_template_file_name = "4C_electrode_test.csv";
+      std::string dat_file_name = "4C_electrode_test.dat";
+      setup_template_csv_file(csv_template_file_name);
+      setup_dummy_dat_file(dat_file_name, csv_template_file_name);
 
-      // define fictitious sample concentration values for anode material
-      concentrations_anode_polynomial_.resize(3, 0.0);
-      concentrations_anode_polynomial_[0] = 500.;   // anode concentration at 10% state of charge
-      concentrations_anode_polynomial_[1] = 2500.;  // anode concentration at 50% state of charge
-      concentrations_anode_polynomial_[2] = 4500.;  // anode concentration at 90% state of charge
+      Core::IO::InputFile reader{dat_file_name, comm};
 
-      // add cathode parameters to container according to Ji et al., Journal of The Electrochemical
-      // Society 160 (4) (2013) A636-A649
-      container.add("C_MAX", 4793.3);
-      container.add("OCP_PARA_NUM", 5);
-      ocp_para.resize(5, 0.0);
-      ocp_para[0] = 4.563;
-      ocp_para[1] = 2.595;
-      ocp_para[2] = -16.77;
-      ocp_para[3] = 23.88;
-      ocp_para[4] = -10.72;
-      container.add("OCP_PARA", ocp_para);
-      container.add("OCP_CSV", std::string(""));
-      container.add("X_MIN", 0.3);
-      container.add("X_MAX", 1.0);
+      Global::read_parameter(*problem, reader);
 
-      // initialize parameter class for cathode material
-      parameters_cathode_polynomial_ = std::make_shared<Mat::PAR::Electrode>(
-          Core::Mat::PAR::Parameter::Data{.parameters = container});
+      {
+        Core::Utils::FunctionManager function_manager;
+        global_legacy_module_callbacks().AttachFunctionDefinitions(function_manager);
+        function_manager.read_input(reader);
+        problem->set_function_manager(std::move(function_manager));
+      }
+    }
 
-      // initialize cathode material
-      cathode_polynomial_ = std::make_shared<Mat::Electrode>(parameters_cathode_polynomial_.get());
+    void setup_template_csv_file(const std::string& csv_template_file_name) const
+    {
+      std::ofstream test_csv_file{csv_template_file_name};
 
-      // define sample concentration values for cathode material
-      // cf. Ji et al., Journal of The Electrochemical Society 160 (4) (2013) A636-A649
-      concentrations_cathode_polynomial_.resize(3, 0.0);
-      concentrations_cathode_polynomial_[0] =
-          1677.6;  // cathode concentration at 100% state of charge
-      concentrations_cathode_polynomial_[1] =
-          3115.6;  // cathode concentration at 50% state of charge
-      concentrations_cathode_polynomial_[2] =
-          4553.6;  // cathode concentration at 0% state of charge
+      // include header line
+      test_csv_file << "#intercalation_fraction,half_cell_open_circuit_potential" << '\n';
+      // include the actual data
+      test_csv_file << "0.300000000000000,4.44000000000000" << '\n';
+      test_csv_file << "0.322400000000000,4.34000000000000" << '\n';
+      test_csv_file << "0.371400000000000,4.23000000000000" << '\n';
+      test_csv_file << "0.430900000000000,4.13000000000000" << '\n';
+      test_csv_file << "0.502300000000000,4.02500000000000" << '\n';
+      test_csv_file << "0.566000000000000,3.94500000000000" << '\n';
+      test_csv_file << "0.680100000000000,3.83500000000000" << '\n';
+      test_csv_file << "0.842500000000000,3.71000000000000" << '\n';
+      test_csv_file << "0.910400000000000,3.62000000000000" << '\n';
+      test_csv_file << "0.947500000000000,3.51000000000000" << '\n';
+      test_csv_file << "0.960100000000000,3.42000000000000" << '\n';
+      test_csv_file << "0.969900000000000,3.30000000000000" << '\n';
+      test_csv_file << "0.976200000000000,3.16500000000000" << '\n';
+      test_csv_file << "0.979000000000000,3.02000000000000" << '\n';
+      test_csv_file << "0.980400000000000,2.90000000000000" << '\n';
+      test_csv_file << "0.982500000000000,2.68800000000000" << '\n';
+    }
+
+
+
+    void setup_dummy_dat_file(
+        const std::string& dat_file_name, const std::string& csv_template_file_name) const
+    {
+      std::ofstream dat_file{dat_file_name};
+
+      // This is just a dummy dat file filled with the data necessary for the unit tests
+      dat_file << "------------------------------------------------------ELCH CONTROL" << '\n';
+      dat_file << "GAS_CONSTANT                    " << std::to_string(gasconstant_) << '\n';
+      dat_file << "------------------------------------------------------------FUNCT1" << '\n';
+      dat_file << "CUBIC_SPLINE_FROM_CSV CSV " << csv_template_file_name << '\n';
+      dat_file << "------------------------------------------------------------FUNCT2" << '\n';
+      dat_file << "FASTPOLYNOMIAL NUMCOEFF 1 COEFF 0.0" << '\n';
+      dat_file << "------------------------------------------------------------FUNCT3" << '\n';
+      dat_file << "FASTPOLYNOMIAL NUMCOEFF 5 COEFF 4.563 2.595 -16.77 23.88 -10.72" << '\n';
+      dat_file << "---------------------------------------------------------------END" << '\n';
     }
 
     //! cathode material based on half cell open circuit potential obtained from cubic spline
