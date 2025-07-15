@@ -15,6 +15,7 @@
 #include "4C_rebalance.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
+#include <deal.II/base/point.h>
 #include <mpi.h>
 
 #include <array>
@@ -27,9 +28,11 @@ namespace TESTING
    * Fill the given @p discretization with a hypercube mesh. A total of `subdivisions^3` elements
    * are created and partitioned among all processes in @p comm.
    * */
-  inline void fill_discretization_hyper_cube(
-      Core::FE::Discretization& discretization, int subdivisions, MPI_Comm comm)
+  inline void fill_discretization_hyper_cube(Core::FE::Discretization& discretization,
+      int subdivisions, MPI_Comm comm, bool vector_valued = true,
+      const std::function<dealii::Point<3>(const dealii::Point<3>&)>& node_transform = {})
   {
+    constexpr int dim = 3;
     discretization.clear_discret();
 
     const int my_rank = Core::Communication::my_mpi_rank(comm);
@@ -66,7 +69,7 @@ namespace TESTING
                 lid(i, j + 1, k + 1)};
 
             builder.add_element(Core::FE::CellType::hex8, nodeids, ele_id,
-                {.num_dof_per_node = 3, .num_dof_per_element = 0});
+                {.num_dof_per_node = vector_valued ? dim : 1, .num_dof_per_element = 0});
           }
         }
       }
@@ -79,7 +82,12 @@ namespace TESTING
         {
           for (int k = 0; k < subdivisions + 1; ++k)
           {
-            const std::array<double, 3> coords = {i * increment, j * increment, k * increment};
+            std::array<double, 3> coords = {i * increment, j * increment, k * increment};
+            if (node_transform)
+            {
+              auto new_point = node_transform(dealii::Point<3>(coords[0], coords[1], coords[2]));
+              coords = {new_point[0], new_point[1], new_point[2]};
+            }
             builder.add_node(coords, lid(i, j, k), nullptr);
           }
         }
@@ -288,7 +296,9 @@ namespace TESTING
     discretization.fill_complete();
   }
 
-  inline void fill_undeformed_hex27(Core::FE::Discretization& discretization, MPI_Comm comm)
+  inline void fill_undeformed_hex27(Core::FE::Discretization& discretization, MPI_Comm comm,
+      const bool vector_valued = true,
+      const std::function<dealii::Point<3>(const dealii::Point<3>&)>& node_transform = {})
   {
     Core::FE::DiscretizationBuilder<3> builder(comm);
 
@@ -297,17 +307,24 @@ namespace TESTING
       std::array<int, 27> nodeids{};
       std::iota(nodeids.begin(), nodeids.end(), 0);
 
-      builder.add_element(
-          Core::FE::CellType::hex27, nodeids, 0, {.num_dof_per_node = 3, .num_dof_per_element = 0});
+      builder.add_element(Core::FE::CellType::hex27, nodeids, 0,
+          {.num_dof_per_node = vector_valued ? 3 : 1, .num_dof_per_element = 0});
 
-      const std::vector<std::array<double, 3>> coords{{-1.0, -1.0, -1.0}, {1.0, -1.0, -1.0},
+      std::vector<std::array<double, 3>> coords{{-1.0, -1.0, -1.0}, {1.0, -1.0, -1.0},
           {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0}, {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, 1.0},
           {-1.0, 1.0, 1.0}, {0.0, -1.0, -1.0}, {1.0, 0.0, -1.0}, {0.0, 1.0, -1.0},
           {-1.0, 0.0, -1.0}, {-1.0, -1.0, 0.0}, {1.0, -1.0, 0.0}, {1.0, 1.0, 0.0}, {-1.0, 1.0, 0.0},
           {0.0, -1.0, 1.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0}, {-1.0, 0.0, 1.0}, {0.0, 0.0, -1.0},
           {0.0, -1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0.0, 1.0},
           {0.0, 0.0, 0.0}};
-
+      if (node_transform)
+      {
+        for (auto& coord : coords)
+        {
+          auto new_point = node_transform(dealii::Point<3>(coord[0], coord[1], coord[2]));
+          coord = {new_point[0], new_point[1], new_point[2]};
+        }
+      }
       int counter = 0;
       for (const auto& coord : coords) builder.add_node(coord, counter++, nullptr);
     }
