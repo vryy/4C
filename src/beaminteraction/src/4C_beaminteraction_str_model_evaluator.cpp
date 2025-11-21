@@ -24,8 +24,12 @@
 #include "4C_beaminteraction_submodel_evaluator_generic.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_fem_condition_point_coupling_redistribution.hpp"
+#include "4C_fem_dofset.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_fem_geometry_periodic_boundingbox.hpp"
+#include "4C_geometric_search_bounding_volume.hpp"
+#include "4C_geometric_search_distributed_tree.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
@@ -35,15 +39,19 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_rebalance_graph_based.hpp"
 #include "4C_rebalance_print.hpp"
 #include "4C_rigidsphere.hpp"
 #include "4C_solid_3D_ele.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_utils.hpp"
+#include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <thread>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -191,27 +199,33 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::setup()
       return Core::Binstrategy::DefaultRelevantPoints{}(discret, ele, disnp);
   };
 
-  binstrategy_ = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
-      Global::Problem::instance()->output_control_file(), ia_discret_->get_comm(),
-      Core::Communication::my_mpi_rank(ia_discret_->get_comm()), correct_node,
-      determine_relevant_points, discret_vec, disp_vec);
-
-  binstrategy_->set_deforming_binning_domain_handler(
-      tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box());
-
-  bindis_ = binstrategy_->bin_discret();
-
-  // construct, init and setup beam crosslinker handler and binning strategy
-  // todo: move this and its single call during partition to crosslinker submodel
-  if (have_sub_model_type(BeamInteraction::SubModelType::submodel_crosslinking))
+  if (!have_sub_model_type(BeamInteraction::SubModelType::submodel_beamcontact) or
+      have_sub_model_type(BeamInteraction::SubModelType::submodel_potential) or
+      have_sub_model_type(BeamInteraction::SubModelType::submodel_crosslinking) or
+      have_sub_model_type(BeamInteraction::SubModelType::submodel_spherebeamlink))
   {
-    beam_crosslinker_handler_ = std::make_shared<BeamInteraction::BeamCrosslinkerHandler>();
-    beam_crosslinker_handler_->init(global_state().get_my_rank(), binstrategy_);
-    beam_crosslinker_handler_->setup();
-  }
+    binstrategy_ = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
+        Global::Problem::instance()->output_control_file(), ia_discret_->get_comm(),
+        Core::Communication::my_mpi_rank(ia_discret_->get_comm()), correct_node,
+        determine_relevant_points, discret_vec, disp_vec);
 
-  // some screen output for binning
-  print_binning_info_to_screen();
+    binstrategy_->set_deforming_binning_domain_handler(
+        tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box());
+
+    bindis_ = binstrategy_->bin_discret();
+
+    // construct, init and setup beam crosslinker handler and binning strategy
+    // todo: move this and its single call during partition to crosslinker submodel
+    if (have_sub_model_type(BeamInteraction::SubModelType::submodel_crosslinking))
+    {
+      beam_crosslinker_handler_ = std::make_shared<BeamInteraction::BeamCrosslinkerHandler>();
+      beam_crosslinker_handler_->init(global_state().get_my_rank(), binstrategy_);
+      beam_crosslinker_handler_->setup();
+    }
+
+    // some screen output for binning
+    print_binning_info_to_screen();
+  }
 
   // extract map for each eletype that is in discretization
   eletypeextractor_ = std::make_shared<BeamInteraction::Utils::MapExtractor>();
@@ -232,7 +246,19 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::setup()
 
   // some screen output
   Core::Rebalance::print_parallel_distribution(*ia_discret_);
-  Core::Rebalance::print_parallel_distribution(*bindis_);
+
+  if (!have_sub_model_type(BeamInteraction::SubModelType::submodel_beamcontact) or
+      have_sub_model_type(BeamInteraction::SubModelType::submodel_potential) or
+      have_sub_model_type(BeamInteraction::SubModelType::submodel_crosslinking) or
+      have_sub_model_type(BeamInteraction::SubModelType::submodel_spherebeamlink))
+  {
+    Core::Rebalance::print_parallel_distribution(*bindis_);
+  }
+
+  if (bindis_ == nullptr and binstrategy_ == nullptr and myrank_ == 0)
+    Core::IO::cout(Core::IO::debug)
+        << "Binning based discretization for interaction pair evaluation will be omitted."
+        << Core::IO::endl;
 
   issetup_ = true;
 }
@@ -250,7 +276,8 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::post_setup_submodels(
     (*some_iter)->post_setup();
 
   if (beaminteraction_params_ptr_->get_repartition_strategy() ==
-      BeamInteraction::RepartitionStrategy::repstr_adaptive)
+          BeamInteraction::RepartitionStrategy::repstr_adaptive and
+      !have_sub_model_type(BeamInteraction::SubModelType::submodel_beamcontact))
   {
     // submodel loop to determine half interaction radius
     for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
@@ -470,7 +497,54 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::partition_problem()
 
   if (!use_binning_based_partitioning())
   {
-    FOUR_C_THROW("Binning free beaminteraction for contact scenarios is not implemented yet.");
+    const auto geometric_search_params_ptr_ = Core::GeometricSearch::GeometricSearchParams(
+        Global::Problem::instance()->geometric_search_params(),
+        Global::Problem::instance()->io_params());
+
+    std::shared_ptr<const Core::LinAlg::Graph> enriched_graph =
+        Core::Rebalance::build_monolithic_node_graph(
+            *ia_discret_, geometric_search_params_ptr_, ia_state_ptr_->get_dis_col_np());
+
+    Teuchos::ParameterList rebalanceParams;
+    rebalanceParams.set("imbalance_tolerance", 1.1);
+    rebalanceParams.set("algorithm", "phg");
+    rebalanceParams.set("partitioning_approach", "partition");
+
+    rebalanceParams.set("debug_level", "no_status");
+    Teuchos::ParameterList& zparams = rebalanceParams.sublist("zoltan_parameters", false);
+    zparams.set("DEBUG_LEVEL", "0");
+
+    const auto [noderowmap, nodecolmap] =
+        Core::Rebalance::rebalance_node_maps(*enriched_graph, rebalanceParams);
+
+    bool assigndegreesoffreedom = true;
+    bool initelements = false;
+    bool doboundarycondition = true;
+    bool killdofs = true;
+    bool killcond = true;
+
+    // build the overlapping and non-overlapping element maps
+    const auto& [elerowmap, elecolmap] =
+        ia_discret_->build_element_row_column(*noderowmap, *nodecolmap, true);
+
+    // export nodes and elements to the new maps
+    ia_discret_->export_row_nodes(*noderowmap, killdofs, killcond);
+    ia_discret_->export_column_nodes(*nodecolmap, killdofs, killcond);
+    ia_discret_->export_row_elements(*elerowmap, killdofs, killcond);
+    ia_discret_->export_column_elements(*elecolmap, killdofs, killcond);
+
+    try
+    {
+      // these exports have set Filled()=false as all maps are invalid now
+      ia_discret_->fill_complete({.assign_degrees_of_freedom = assigndegreesoffreedom,
+          .init_elements = initelements,
+          .do_boundary_conditions = doboundarycondition});
+    }
+    catch (const Core::DOFSets::NodalDistributionException& e)
+    {
+      // this can happen due to improper node distribution in assign degrees of freedom
+      Core::Conditions::redistribute_for_point_coupling_conditions(*ia_discret_);
+    }
   }
   else
   {
@@ -505,7 +579,7 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::partition_problem()
     // now node (=crosslinker) to bin (=element) relation needs to be
     // established in binning discretization. Therefore some nodes need to
     // change their owner according to the bins owner they reside in
-    if (have_sub_model_type(BeamInteraction::submodel_crosslinking))
+    if (have_sub_model_type(BeamInteraction::SubModelType::submodel_crosslinking))
       beam_crosslinker_handler_->distribute_linker_to_bins(noderowmap);
 
     // determine boundary bins (physical boundary as well as boundary to other procs)
@@ -841,7 +915,7 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::write_restart(
 
   if (!use_binning_based_partitioning())
   {
-    FOUR_C_THROW("Binning free beaminteraction for contact scenarios is not implemented yet.");
+    ia_writer->clear_map_cache();
   }
   else
   {
@@ -886,7 +960,23 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::read_restart(
 
   if (!use_binning_based_partitioning())
   {
-    FOUR_C_THROW("Binning free beaminteraction for contact scenarios is not implemented yet.");
+    // need to read step next (as it was written next, do safety check)
+    if (stepn != ia_reader.read_int("step"))
+      FOUR_C_THROW("Restart step not consistent with read restart step. ");
+
+    // get beam displacement state
+    BeamInteraction::Utils::update_dof_map_of_vector(*ia_discret_, ia_state_ptr_->get_dis_np());
+
+    // get current displacement state and export to interaction discretization dofmap
+    BeamInteraction::Utils::update_dof_map_of_vector(
+        *ia_discret_, ia_state_ptr_->get_dis_np(), global_state().get_dis_np());
+
+    // update column vector
+    ia_state_ptr_->get_dis_col_np() =
+        std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret_->dof_col_map());
+    Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
+
+    partition_problem();
   }
   else
   {
@@ -927,6 +1017,8 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::read_restart(
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BeamInteractionModelEvaluator::run_pre_compute_x(
     const Core::LinAlg::Vector<double>& xold, Core::LinAlg::Vector<double>& dir_mutable,
     const NOX::Nln::Group& curr_grp)
@@ -982,7 +1074,20 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::update_step_element()
 
   if (!use_binning_based_partitioning())
   {
-    FOUR_C_THROW("Binning free beaminteraction for contact scenarios is not implemented yet.");
+    Vector::iterator some_iter;
+    bool beam_redist = check_if_beam_discret_redistribution_needs_to_be_done();
+    for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+      (*some_iter)->pre_update_step_element(beam_redist);
+
+    partition_problem();
+
+    // submodel loop update
+    for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+      (*some_iter)->update_step_element(beam_redist);
+
+    // submodel post update
+    for (some_iter = me_vec_ptr_->begin(); some_iter != me_vec_ptr_->end(); ++some_iter)
+      (*some_iter)->post_update_step_element();
   }
   else
   {
@@ -1074,7 +1179,8 @@ bool Solid::ModelEvaluator::BeamInteractionModelEvaluator::
     check_if_beam_discret_redistribution_needs_to_be_done()
 {
   if (beaminteraction_params_ptr_->get_repartition_strategy() !=
-      BeamInteraction::RepartitionStrategy::repstr_adaptive)
+          BeamInteraction::RepartitionStrategy::repstr_adaptive or
+      have_sub_model_type(BeamInteraction::SubModelType::submodel_beamcontact))
     return true;
 
   Core::LinAlg::Vector<double> dis_increment(*global_state().dof_row_map(), true);
