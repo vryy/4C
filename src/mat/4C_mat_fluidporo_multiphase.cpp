@@ -320,6 +320,53 @@ void Mat::FluidPoroMultiPhase::unpack(Core::Communication::UnpackBuffer& buffer)
   // -> position check cannot be done in this case
 }
 
+std::vector<double> Mat::FluidPoroMultiPhase::get_phase_densities() const
+{
+  std::vector<double> fluidphase_densities(num_fluid_phases() + num_vol_frac(), 0.0);
+
+  // get densities of fluid phases in multiphase porespace
+  for (int iphase = 0; iphase < num_fluid_phases(); ++iphase)
+  {
+    // get the single phase density
+    fluidphase_densities[iphase] =
+        PoroPressureBased::ElementUtils::get_single_phase_mat_from_material(*this, iphase)
+            .density();
+  }
+
+  if (num_vol_frac())
+  {
+    // get densities of volfrac phases
+    if (paramsporo_->closing_relation_volfrac_ ==
+        Mat::PAR::PoroFluidPressureBased::ClosingRelation::
+            evolutionequation_homogenized_vasculature_tumor)
+    {
+      for (int ivolfrac = 0; ivolfrac < num_vol_frac(); ++ivolfrac)
+      {
+        // get single volfrac density
+        fluidphase_densities[num_fluid_phases() + ivolfrac] =
+            PoroPressureBased::ElementUtils::get_single_vol_frac_mat_from_multi_material(
+                *this, num_fluid_phases() + ivolfrac)
+                .density();
+      }
+    }
+    else if (paramsporo_->closing_relation_volfrac_ ==
+             Mat::PAR::PoroFluidPressureBased::ClosingRelation::evolutionequation_blood_lung)
+    {
+      for (int ivolfrac = 0; ivolfrac < num_vol_frac(); ++ivolfrac)
+      {
+        // get single volfrac density
+        fluidphase_densities[num_fluid_phases() + ivolfrac] =
+            PoroPressureBased::ElementUtils::
+                get_single_vol_frac_pressure_blood_lung_mat_from_multi_material(
+                    *this, num_fluid_phases() + ivolfrac)
+                    .density();
+      }
+    }
+  }
+
+  return fluidphase_densities;
+}
+
 /*----------------------------------------------------------------------*
  *  Evaluate generalized pressure of all phases            vuong 08/16 |
  *----------------------------------------------------------------------*/

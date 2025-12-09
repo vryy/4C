@@ -146,16 +146,19 @@ namespace Mat
     }
 
     /// return permeability
-    double permeability() const { return paramsporo_->permeability_; }
+    [[nodiscard]] double permeability() const { return paramsporo_->permeability_; }
 
     /// return number of fluid phases
-    int num_fluid_phases() const { return paramsporo_->numfluidphases_; }
+    [[nodiscard]] int num_fluid_phases() const { return paramsporo_->numfluidphases_; }
 
     /// return number of volume fractions
-    int num_vol_frac() const { return paramsporo_->numvolfrac_; }
+    [[nodiscard]] int num_vol_frac() const { return paramsporo_->numvolfrac_; }
 
     /// Return quick accessible material parameter data
-    Mat::PAR::FluidPoroMultiPhase* parameter() const override { return paramsporo_; }
+    [[nodiscard]] Mat::PAR::FluidPoroMultiPhase* parameter() const override { return paramsporo_; }
+
+    //! Return phase densities
+    [[nodiscard]] std::vector<double> get_phase_densities() const;
 
     /// initialize the material
     virtual void initialize();
