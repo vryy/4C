@@ -112,11 +112,14 @@ int Solid::MonitorDbc::get_unique_id(int tagged_id, Core::Conditions::GeometryTy
 void Solid::MonitorDbc::create_reaction_force_condition(
     const Core::Conditions::Condition& tagged_cond, Core::FE::Discretization& discret) const
 {
-  const int new_id = get_unique_id(tagged_cond.id(), tagged_cond.g_type());
+  const std::string rcond_name =
+      (tagged_cond.entity_type() == Core::Conditions::EntityType::node_set_name)
+          ? tagged_cond.node_set_name()
+          : std::to_string(1 + get_unique_id(tagged_cond.id(), tagged_cond.g_type()));
 
   auto rcond_ptr =
-      std::make_shared<Core::Conditions::Condition>(new_id, Core::Conditions::ElementTag, true,
-          tagged_cond.g_type(), Core::Conditions::EntityType::legacy_id);
+      std::make_shared<Core::Conditions::Condition>(tagged_cond.id(), Core::Conditions::ElementTag,
+          true, tagged_cond.g_type(), Core::Conditions::EntityType::node_set_name, rcond_name);
 
   rcond_ptr->parameters().add("ONOFF", (tagged_cond.parameters().get<std::vector<int>>("ONOFF")));
   rcond_ptr->set_nodes(*tagged_cond.get_nodes());
@@ -130,7 +133,7 @@ void Solid::MonitorDbc::read_restart_yaml_file(const Core::Conditions::Condition
       Global::Problem::instance()->output_control_file()->restart_name());
 
   const std::string filename =
-      full_restart_dirpath + "-" + std::to_string(rcond.id() + 1) + "_monitor_dbc.yaml";
+      full_restart_dirpath + "-" + rcond.node_set_name() + "_monitor_dbc.yaml";
 
   std::ifstream in(filename, std::ios::binary);
   if (!in)
@@ -196,11 +199,11 @@ void Solid::MonitorDbc::setup()
   for (const auto& rcond_ptr : rconds)
   {
     const Core::Conditions::Condition& rcond = *rcond_ptr;
-    auto ipair = react_maps_.insert(
-        std::make_pair(rcond.id(), std::vector<std::shared_ptr<Core::LinAlg::Map>>(3, nullptr)));
+    auto ipair = react_maps_.insert(std::make_pair(
+        rcond.node_set_name(), std::vector<std::shared_ptr<Core::LinAlg::Map>>(3, nullptr)));
 
     if (not ipair.second)
-      FOUR_C_THROW("The reaction condition id #{} seems to be non-unique!", rcond.id());
+      FOUR_C_THROW("The reaction condition id #{} seems to be non-unique!", rcond.node_set_name());
 
     create_reaction_maps(*discret_ptr_, rcond, ipair.first->second.data());
 
@@ -211,7 +214,7 @@ void Solid::MonitorDbc::setup()
         dbc_monitor_csvwriter_.emplace_back(std::make_unique<Core::IO::RuntimeCsvWriter>(
             Core::Communication::my_mpi_rank(get_comm()),
             *Global::Problem::instance()->output_control_file(),
-            std::to_string(rcond.id() + 1) + "_monitor_dbc"));
+            rcond.node_set_name() + "_monitor_dbc"));
         const int csv_precision = 16;
         dbc_monitor_csvwriter_.back()->register_data_vector("ref_area", 1, csv_precision);
         dbc_monitor_csvwriter_.back()->register_data_vector("curr_area", 1, csv_precision);
@@ -322,12 +325,11 @@ void Solid::MonitorDbc::execute(Core::IO::DiscretizationWriter& writer)
     std::fill_n(rmoment_xyz.data(), DIM, 0.0);
 
     const auto* const rcond_ptr = rconds[condition_counter];
-    const int rid = rcond_ptr->id();
+    const std::string rcond_name = rcond_ptr->node_set_name();
     get_area(area.data(), rcond_ptr);
 
-    get_reaction_force(rforce_xyz, react_maps_[rid].data());
-    get_reaction_moment(rmoment_xyz, react_maps_[rid].data(), rcond_ptr);
-
+    get_reaction_force(rforce_xyz, react_maps_[rcond_name].data());
+    get_reaction_moment(rmoment_xyz, react_maps_[rcond_name].data(), rcond_ptr);
     std::vector<double> rforce_vec(DIM);
     std::vector<double> rmoment_vec(DIM);
     rforce_vec.assign(rforce_xyz.data(), rforce_xyz.data() + DIM);
@@ -366,7 +368,7 @@ void Solid::MonitorDbc::execute(Core::IO::DiscretizationWriter& writer)
         current_entry["ref_area"] << area_ref;
 
         std::string file_name = Global::Problem::instance()->output_control_file()->file_name() +
-                                "-" + std::to_string(rid + 1) + "_monitor_dbc.yaml";
+                                "-" + rcond_ptr->node_set_name() + "_monitor_dbc.yaml";
 
         std::ofstream output_filestream(file_name, std::ios::out);
         if (!output_filestream.is_open())
@@ -392,7 +394,8 @@ void Solid::MonitorDbc::write_results_to_screen(const Core::Conditions::Conditio
 {
   if (Core::Communication::my_mpi_rank(get_comm()) != 0) return;
 
-  Core::IO::cout << "\n\n--- Monitor Dirichlet boundary condition " << rcond.id() + 1 << " \n";
+  Core::IO::cout << "\n\n--- Monitor Dirichlet boundary condition " << rcond.node_set_name()
+                 << " \n";
   write_condition_header(Core::IO::cout.os(), OS_WIDTH);
   write_column_header(Core::IO::cout.os(), OS_WIDTH);
   write_results(Core::IO::cout.os(), OS_WIDTH, os_precision_, gstate_ptr_->get_step_n(),
