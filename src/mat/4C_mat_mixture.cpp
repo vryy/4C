@@ -11,6 +11,7 @@
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
+#include "4C_mixture_constituent_remodelfiber_ssi.hpp"
 #include "4C_utils_enum.hpp"
 
 #include <memory>
@@ -319,5 +320,26 @@ bool Mat::Mixture::evaluate_output_data(
   }
 
   return out;
+}
+
+const Mixture::MixtureConstituentRemodelFiberSsi* Mat::Mixture::ssi_constituent_by_material_id(
+    int material_id) const
+{
+  const auto& matids = params_->constituents_;
+  const auto& constits = *constituents_;
+
+  FOUR_C_ASSERT(
+      matids.size() == constits.size(), "Mismatch between material id and constituent instances!");
+
+  for (std::size_t i = 0; i < matids.size(); ++i)
+  {
+    if (matids[i]->id() == material_id)
+    {
+      // dynamic_cast returns nullptr if constituent is not a MixtureConstituentRemodelFiberSsi
+      return dynamic_cast<const FourC::Mixture::MixtureConstituentRemodelFiberSsi*>(
+          constits[i].get());
+    }
+  }
+  return nullptr;
 }
 FOUR_C_NAMESPACE_CLOSE

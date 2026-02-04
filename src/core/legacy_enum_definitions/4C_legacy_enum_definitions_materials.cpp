@@ -39,6 +39,8 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "MAT_lubrication_law_roeland";
     case m_scatra:
       return "MAT_scatra";
+    case m_scatra_gr:
+      return "MAT_scatra_gr";
     case m_scatra_reaction_poroECM:
       return "MAT_scatra_reaction_poro";
     case m_scatra_reaction:
@@ -379,6 +381,8 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "MIX_Prestress_Strategy_Iterative";
     case mix_full_constrained_mixture_fiber:
       return "MIX_Constituent_FullConstrainedMixtureFiber";
+    case mix_remodelfiber_ssi:
+      return "MIX_Constituent_SsiRemodelFiber";
     case mix_remodelfiber_expl:
       return "MIX_Constituent_ExplicitRemodelFiber";
     case mix_remodelfiber_impl:

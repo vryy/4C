@@ -130,6 +130,11 @@ namespace ScaTra
         impltypestring = "Cardiac monodomain";
         break;
       }
+      case Inpar::ScaTra::impltype_gr:
+      {
+        impltypestring = "Growth and remodeling";
+        break;
+      }
       case Inpar::ScaTra::impltype_elch_diffcond:
       {
         impltypestring = "Electrochemistry for diffusion-conduction formulation";

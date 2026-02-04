@@ -86,6 +86,8 @@ namespace Mixture
      * @param lambda_ext (in) : inelastic external stretch
      */
     void set_state(double lambda_f, double lambda_ext);
+    void set_growth_scalar(double growth_scalar);
+    void set_lambda_r(double lambda_r);
 
    public:
     /// @brief Evaluation methods
@@ -126,6 +128,8 @@ namespace Mixture
         double dt) const;
     [[nodiscard]] double evaluate_current_growth_scalar() const;
     [[nodiscard]] double evaluate_current_lambda_r() const;
+    [[nodiscard]] double evaluate_growth_reaction_coefficient() const;
+    [[nodiscard]] double evaluate_remodeling_reaction_coefficient() const;
     [[nodiscard]] double evaluate_d_current_growth_scalar_d_lambda_f_sq() const;
     [[nodiscard]] double evaluate_d_current_lambda_r_d_lambda_f_sq() const;
     [[nodiscard]] double evaluate_d_current_cauchy_stress_d_lambda_f_sq() const;

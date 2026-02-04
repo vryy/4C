@@ -163,6 +163,20 @@ void Mixture::Implementation::RemodelFiberImplementation<numstates, T>::set_stat
 }
 
 template <int numstates, typename T>
+void Mixture::Implementation::RemodelFiberImplementation<numstates, T>::set_growth_scalar(
+    const T growth_scalar)
+{
+  states_.back().growth_scalar = growth_scalar;
+}
+
+template <int numstates, typename T>
+void Mixture::Implementation::RemodelFiberImplementation<numstates, T>::set_lambda_r(
+    const T lambda_r)
+{
+  states_.back().lambda_r = lambda_r;
+}
+
+template <int numstates, typename T>
 Mixture::Implementation::IntegrationState<numstates, T>
 Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::get_integration_state_growth_scalar() const
@@ -330,7 +344,15 @@ void Mixture::Implementation::RemodelFiberImplementation<numstates,
   d_lambda_r_d_lambda_f_sq_ = 0.0;
 }
 
-
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_growth_reaction_coefficient(const T lambda_f, const T lambda_r,
+    const T lambda_ext) const
+{
+  const T dsig = (evaluate_fiber_cauchy_stress(lambda_f, lambda_r, lambda_ext) - sig_h_) / sig_h_;
+  return (growth_evolution_.evaluate_true_mass_production_rate(dsig) +
+          growth_evolution_.evaluate_true_mass_removal_rate(dsig));
+}
 
 template <int numstates, typename T>
 T Mixture::Implementation::RemodelFiberImplementation<numstates,
@@ -399,6 +421,19 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
 
 template <int numstates, typename T>
 T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_remodeling_reaction_coefficient(const T lambda_f, const T lambda_r,
+    const T lambda_ext) const
+{
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
+  const T delta_sig = evaluate_fiber_cauchy_stress(lambda_f, lambda_r, lambda_ext) - sig_h_;
+  const T dsigdI4 = evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext);
+
+  return (growth_evolution_.evaluate_true_mass_production_rate(delta_sig / sig_h_)) * delta_sig /
+         (2.0 * dsigdI4 * I4);
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_remodel_evolution_equation_dt(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
@@ -408,7 +443,6 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
 
   T dlambdardt = (growth_evolution_.evaluate_true_mass_production_rate(delta_sig / sig_h_)) *
                  lambda_r * delta_sig / (2.0 * dsigdI4 * I4);
-
 
   return dlambdardt;
 }
@@ -671,6 +705,29 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
          (d_i4_d_lambda_f_sq + d_i4_d_lambda_r * d_lambda_r_d_lambda_f_sq_);
 }
 
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_growth_reaction_coefficient() const
+{
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
+  const T lambda_f = states_.back().lambda_f;
+  const T lambda_r = states_.back().lambda_r;
+  const T lambda_ext = states_.back().lambda_ext;
+
+  return evaluate_growth_reaction_coefficient(lambda_f, lambda_r, lambda_ext);
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_remodeling_reaction_coefficient() const
+{
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
+  const T lambda_f = states_.back().lambda_f;
+  const T lambda_r = states_.back().lambda_r;
+  const T lambda_ext = states_.back().lambda_ext;
+
+  return evaluate_remodeling_reaction_coefficient(lambda_f, lambda_r, lambda_ext);
+}
 
 //---- REMODELFIBER
 template <int numstates>
@@ -711,6 +768,18 @@ template <int numstates>
 void Mixture::RemodelFiber<numstates>::set_state(const double lambda_f, const double lambda_ext)
 {
   impl_->set_state(lambda_f, lambda_ext);
+}
+
+template <int numstates>
+void Mixture::RemodelFiber<numstates>::set_growth_scalar(const double growth_scalar)
+{
+  impl_->set_growth_scalar(growth_scalar);
+}
+
+template <int numstates>
+void Mixture::RemodelFiber<numstates>::set_lambda_r(const double lambda_r)
+{
+  impl_->set_lambda_r(lambda_r);
 }
 
 template <int numstates>
@@ -784,6 +853,18 @@ template <int numstates>
 double Mixture::RemodelFiber<numstates>::evaluate_current_lambda_r() const
 {
   return impl_->evaluate_current_lambda_r();
+}
+
+template <int numstates>
+double Mixture::RemodelFiber<numstates>::evaluate_growth_reaction_coefficient() const
+{
+  return impl_->evaluate_growth_reaction_coefficient();
+}
+
+template <int numstates>
+double Mixture::RemodelFiber<numstates>::evaluate_remodeling_reaction_coefficient() const
+{
+  return impl_->evaluate_remodeling_reaction_coefficient();
 }
 
 template <int numstates>

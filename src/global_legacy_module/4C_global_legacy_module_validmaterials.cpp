@@ -18,6 +18,7 @@
 #include "4C_mat_fluidporo_singlephase.hpp"
 #include "4C_mat_micromaterial.hpp"
 #include "4C_mat_muscle_combo.hpp"
+#include "4C_mat_scatra_growth_remodel.hpp"
 #include "4C_porofluid_pressure_based_elast_scatra_input.hpp"
 
 #include <filesystem>
@@ -379,6 +380,24 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
         },
         {.description = "chemotaxis material"});
   }
+
+  /*----------------------------------------------------------------------*/
+  // scalar transport material for growth and remodeling
+  {
+    known_materials[Core::Materials::m_scatra_gr] = group("MAT_scatra_gr",
+        {
+            parameter<double>("DIFFUSIVITY", {.description = "diffusivity"}),
+            parameter<int>("STRUCTURE_MAT_ID",
+                {.description = "material ID of the RemodelFiberSsi constituent that provides "
+                                "the reaction coefficient"}),
+            parameter<Mat::PAR::ScatraGrowthRemodelMat::ScalarQuantity>(
+                "SCALAR_QUANTITY", {.description = "scalar mode: growth or remodeling"}),
+        },
+        {.description = "Simple transport material with linear reaction used in growth "
+                        "and remodeling"});
+  }
+
+  /*----------------------------------------------------------------------*/
 
   /*----------------------------------------------------------------------*/
   // scalar transport material for multi-scale approach
@@ -4121,6 +4140,47 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
         },
         {.description =
                 "A 1D constituent that grows with the full constrained mixture fiber theory"});
+  }
+
+
+  /*----------------------------------------------------------------------*/
+  // Mixture constituent for a remodel fiber
+  {
+    using namespace Core::IO::InputSpecBuilders::Validators;
+    known_materials[Core::Materials::mix_remodelfiber_ssi] = group(
+        "MIX_Constituent_SsiRemodelFiber",
+        {
+            interpolated_input_field<Core::LinAlg::Tensor<double, 3>, Mat::FiberInterpolation>(
+                "ORIENTATION", {.description = "A unit vector field pointing in the direction of "
+                                               "the fiber in the reference configuration."}),
+            parameter<int>("FIBER_MATERIAL_ID", {.description = "Id of fiber material"}),
+            parameter<bool>("ENABLE_GROWTH",
+                {.description = "Switch for the growth (default true)", .default_value = true}),
+            parameter<bool>("ENABLE_BASAL_MASS_PRODUCTION",
+                {.description = "Switch to enable the basal mass production rate (default true)",
+                    .default_value = true}),
+            parameter<double>("DECAY_TIME", {.description = "Decay time of deposited tissue"}),
+            parameter<double>("GROWTH_CONSTANT", {.description = "Growth constant of the tissue"}),
+            parameter<double>(
+                "DEPOSITION_STRETCH", {.description = "Stretch at with the fiber is deposited"}),
+            parameter<int>("DEPOSITION_STRETCH_TIMEFUNCT",
+                {.description =
+                        "Id of the time function to scale the deposition stretch (Default: 0=None)",
+                    .default_value = 0}),
+            parameter<bool>("INELASTIC_GROWTH",
+                {.description = "Mixture rule has inelastic growth (default false)",
+                    .default_value = false}),
+            parameter<int>("GROWTH_SCALAR_ID",
+                {.description =
+                        "Index of the corresponding growth scalar material in the scatra matlist",
+                    .validator = positive_or_zero<int>()}),
+            parameter<int>(
+                "REMODELING_SCALAR_ID", {.description = "Index of the corresponding remodeling "
+                                                        "scalar material in the scatra matlist",
+                                            .validator = positive_or_zero<int>()}),
+        },
+        {.description =
+                "A 1D constituent where the g&r evolution is solved in a coupled ssi framework"});
   }
 
   /*----------------------------------------------------------------------*/

@@ -202,6 +202,7 @@ namespace Inpar
       impltype_pororeacECM,
       impltype_aniso,
       impltype_cardiac_monodomain,
+      impltype_gr,
       impltype_chemo,
       impltype_chemoreac,
       impltype_std_hdg,

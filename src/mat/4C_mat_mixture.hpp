@@ -17,6 +17,7 @@
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_mixture_constituent.hpp"
+#include "4C_mixture_constituent_remodelfiber_ssi.hpp"
 #include "4C_mixture_rule.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -214,11 +215,21 @@ namespace Mat
     /// \brief Return material mass density given by mixture rule
     [[nodiscard]] double density() const override { return mixture_rule_->return_mass_density(); };
 
+    /// Return ssi constituent by its material id - only needed for G&R in ssi coupling
+    [[nodiscard]] const FourC::Mixture::MixtureConstituentRemodelFiberSsi*
+    ssi_constituent_by_material_id(int material_id) const;
+
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool evaluate_output_data(
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
+
+    [[nodiscard]] const std::vector<std::unique_ptr<FourC::Mixture::MixtureConstituent>>&
+    constituents() const
+    {
+      return *constituents_;
+    }
 
    private:
     /// Material parameters

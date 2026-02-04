@@ -22,6 +22,7 @@
 #include "4C_scatra_ele_calc_elch_electrode_sti_thermo.hpp"
 #include "4C_scatra_ele_calc_elch_NP.hpp"
 #include "4C_scatra_ele_calc_elch_scl.hpp"
+#include "4C_scatra_ele_calc_growth_remodel.hpp"
 #include "4C_scatra_ele_calc_hdg.hpp"
 #include "4C_scatra_ele_calc_loma.hpp"
 #include "4C_scatra_ele_calc_ls.hpp"
@@ -299,7 +300,7 @@ Discret::Elements::ScaTraEleInterface* Discret::Elements::ScaTraFactory::define_
   {
     if (problem != Inpar::ScaTra::impltype_std and
         problem != Inpar::ScaTra::impltype_cardiac_monodomain and
-        problem != Inpar::ScaTra::impltype_advreac and
+        problem != Inpar::ScaTra::impltype_gr and problem != Inpar::ScaTra::impltype_advreac and
         problem != Inpar::ScaTra::impltype_lsreinit and
         problem != Inpar::ScaTra::impltype_one_d_artery and
         problem != Inpar::ScaTra::impltype_no_physics and
@@ -419,6 +420,11 @@ Discret::Elements::ScaTraEleInterface* Discret::Elements::ScaTraFactory::define_
     case Inpar::ScaTra::impltype_cardiac_monodomain:
     {
       return Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::instance(
+          numdofpernode, numscal, disname);
+    }
+    case Inpar::ScaTra::impltype_gr:
+    {
+      return Discret::Elements::ScaTraEleCalcGrowthRemodel<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_one_d_artery:

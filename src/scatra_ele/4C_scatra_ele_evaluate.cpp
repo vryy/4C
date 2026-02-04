@@ -98,6 +98,7 @@ int Discret::Elements::Transport::evaluate(Teuchos::ParameterList& params,
     case Inpar::ScaTra::impltype_chemoreac:
     case Inpar::ScaTra::impltype_aniso:
     case Inpar::ScaTra::impltype_cardiac_monodomain:
+    case Inpar::ScaTra::impltype_gr:
     case Inpar::ScaTra::impltype_loma:
     case Inpar::ScaTra::impltype_poro:
     case Inpar::ScaTra::impltype_pororeac:

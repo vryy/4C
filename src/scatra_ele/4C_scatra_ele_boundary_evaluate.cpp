@@ -73,6 +73,7 @@ int Discret::Elements::TransportBoundary::evaluate(Teuchos::ParameterList& param
     case Inpar::ScaTra::impltype_chemoreac:
     case Inpar::ScaTra::impltype_aniso:
     case Inpar::ScaTra::impltype_cardiac_monodomain:
+    case Inpar::ScaTra::impltype_gr:
     case Inpar::ScaTra::impltype_levelset:
     case Inpar::ScaTra::impltype_loma:
     case Inpar::ScaTra::impltype_poro:
