@@ -1141,6 +1141,14 @@ namespace Solid
         return str_data_ptr_->get_delta_time();
       }
 
+      //! get the current time step for the element evaluation [derived]
+      [[nodiscard]] inline double get_total_time() const override
+      {
+        check_init_setup();
+        return str_data_ptr_->get_total_time();
+      }
+
+
       //! get reference to the set model evaluator
       [[nodiscard]] const Generic& get_model_evaluator() const override
       {

@@ -69,6 +69,9 @@ namespace CONTACT
     //! get the current time step [derived]
     virtual double get_delta_time() const = 0;
 
+    //! get the total time
+    virtual double get_total_time() const = 0;
+
     //! get a pointer to the contact model evaluator
     virtual const Solid::ModelEvaluator::Generic& get_model_evaluator() const = 0;
 

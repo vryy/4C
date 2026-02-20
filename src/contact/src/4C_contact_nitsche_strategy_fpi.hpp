@@ -41,6 +41,8 @@ namespace CONTACT
           weighting_(
               Teuchos::getIntegralValue<CONTACT::NitscheWeighting>(params, "NITSCHE_WEIGHTING"))
     {
+      init_time_step_size_and_total_time(params);
+
       if (Teuchos::getIntegralValue<CONTACT::FrictionType>(params, "FRICTION") !=
           CONTACT::FrictionType::none)
         FOUR_C_THROW("NitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
@@ -57,6 +59,8 @@ namespace CONTACT
           weighting_(
               Teuchos::getIntegralValue<CONTACT::NitscheWeighting>(params, "NITSCHE_WEIGHTING"))
     {
+      init_time_step_size_and_total_time(params);
+
       if (Teuchos::getIntegralValue<CONTACT::FrictionType>(params, "FRICTION") !=
           CONTACT::FrictionType::none)
         FOUR_C_THROW("NitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
