@@ -67,6 +67,23 @@ SSI::SsiMono::SsiMono(MPI_Comm comm, const Teuchos::ParameterList& globaltimepar
               Global::Problem::instance()->io_params(), "VERBOSITY"))),
       timer_(std::make_shared<Teuchos::Time>("SSI_Mono", true))
 {
+  const auto init_pot_calc_linear_solver =
+      globaltimeparams.sublist("ELCH").get<std::optional<int>>("INIT_POT_CALC_LINEAR_SOLVER");
+
+  if (init_pot_calc_linear_solver.has_value())
+  {
+    init_pot_calc_solver_ = std::make_shared<Core::LinAlg::Solver>(
+        Global::Problem::instance()->solver_params(init_pot_calc_linear_solver.value()), comm,
+        Global::Problem::instance()->solver_params_callback(),
+        Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::instance()->io_params(), "VERBOSITY"));
+  }
+  else
+  {
+    // use the linear solver of the main algorithm if no dedicated solver for the initial potential
+    // calculation has been set
+    init_pot_calc_solver_ = solver_;
+  }
 }
 
 /*-------------------------------------------------------------------------------*
@@ -374,7 +391,7 @@ void SSI::SsiMono::evaluate_off_diag_contributions() const
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SSI::SsiMono::build_null_spaces() const
+void SSI::SsiMono::build_null_spaces(Core::LinAlg::Solver& solver) const
 {
   switch (scatra_field()->matrix_type())
   {
@@ -383,11 +400,11 @@ void SSI::SsiMono::build_null_spaces() const
     {
       // equip smoother for scatra matrix blocks with null space
       scatra_field()->build_block_null_spaces(
-          *solver_, ssi_maps_->get_block_positions(Subproblem::scalar_transport).at(0));
+          solver, ssi_maps_->get_block_positions(Subproblem::scalar_transport).at(0));
       if (is_scatra_manifold())
       {
         scatra_manifold()->build_block_null_spaces(
-            *solver_, ssi_maps_->get_block_positions(Subproblem::manifold).at(0));
+            solver, ssi_maps_->get_block_positions(Subproblem::manifold).at(0));
       }
       break;
     }
@@ -397,7 +414,7 @@ void SSI::SsiMono::build_null_spaces() const
       std::ostringstream scatrablockstr;
       scatrablockstr << ssi_maps_->get_block_positions(Subproblem::scalar_transport).at(0) + 1;
       Teuchos::ParameterList& blocksmootherparamsscatra =
-          solver_->params().sublist("Inverse" + scatrablockstr.str());
+          solver.params().sublist("Inverse" + scatrablockstr.str());
 
       Core::LinearSolver::Parameters::compute_solver_parameters(
           *scatra_field()->discretization(), blocksmootherparamsscatra);
@@ -407,7 +424,7 @@ void SSI::SsiMono::build_null_spaces() const
         std::ostringstream scatramanifoldblockstr;
         scatramanifoldblockstr << ssi_maps_->get_block_positions(Subproblem::manifold).at(0) + 1;
         Teuchos::ParameterList& blocksmootherparamsscatramanifold =
-            solver_->params().sublist("Inverse" + scatramanifoldblockstr.str());
+            solver.params().sublist("Inverse" + scatramanifoldblockstr.str());
 
         Core::LinearSolver::Parameters::compute_solver_parameters(
             *scatra_manifold()->discretization(), blocksmootherparamsscatramanifold);
@@ -427,9 +444,9 @@ void SSI::SsiMono::build_null_spaces() const
   iblockstr << ssi_maps_->get_block_positions(Subproblem::structure).at(0) + 1;
 
   Teuchos::ParameterList& blocksmootherparams =
-      solver_->params().sublist("Inverse" + iblockstr.str());
+      solver.params().sublist("Inverse" + iblockstr.str());
 
-  if (solver_->params().isSublist("AMGnxn Parameters"))
+  if (solver.params().isSublist("AMGnxn Parameters"))
   {
     blocksmootherparams.sublist("Belos Parameters");
     blocksmootherparams.sublist("MueLu Parameters");
@@ -720,7 +737,8 @@ void SSI::SsiMono::setup_system()
     {
       // feed block preconditioner with null space information for each block of global block system
       // matrix
-      build_null_spaces();
+      build_null_spaces(*solver_);
+      if (init_pot_calc_solver_ != nullptr) build_null_spaces(*init_pot_calc_solver_);
 
       break;
     }
@@ -790,7 +808,7 @@ void SSI::SsiMono::setup_system()
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::SsiMono::solve_linear_system() const
+void SSI::SsiMono::solve_linear_system(Core::LinAlg::Solver& solver) const
 {
   TEUCHOS_FUNC_TIME_MONITOR("SSI mono: solve linear system");
   strategy_equilibration_->equilibrate_system(
@@ -803,14 +821,14 @@ void SSI::SsiMono::solve_linear_system() const
   solver_params.reset = iteration_count() == 1;
   if (relax_lin_solver_iter_step_ > 0)
   {
-    solver_->reset_tolerance();
+    solver.reset_tolerance();
     if (iteration_count() <= relax_lin_solver_iter_step_)
     {
-      solver_params.tolerance = solver_->get_tolerance() * relax_lin_solver_tolerance_;
+      solver_params.tolerance = solver.get_tolerance() * relax_lin_solver_tolerance_;
     }
   }
-  solver_->solve(ssi_matrices_->system_matrix(), ssi_vectors_->increment(),
-      ssi_vectors_->residual(), solver_params);
+  solver.solve(ssi_matrices_->system_matrix(), ssi_vectors_->increment(), ssi_vectors_->residual(),
+      solver_params);
 
   strategy_equilibration_->unequilibrate_increment(ssi_vectors_->increment());
 }
@@ -866,7 +884,7 @@ void SSI::SsiMono::newton_loop()
     // store time before solving global system of equations
     const double time_before_solving = timer_->wallTime();
 
-    solve_linear_system();
+    solve_linear_system(*solver_);
 
     // time needed for solving global system of equations
     double my_solve_time = timer_->wallTime() - time_before_solving;
@@ -985,8 +1003,8 @@ void SSI::SsiMono::update_iter_structure() const
   {
     for (const auto& meshtying : ssi_structure_mesh_tying()->mesh_tying_handlers())
     {
-      auto coupling_adapter = meshtying->slave_master_coupling();
-      auto coupling_map_extractor = meshtying->slave_master_extractor();
+      const auto coupling_adapter = meshtying->slave_master_coupling();
+      const auto coupling_map_extractor = meshtying->slave_master_extractor();
 
       // displacements
       coupling_map_extractor->insert_vector(
@@ -1032,11 +1050,12 @@ std::vector<Core::LinAlg::EquilibrationMethod> SSI::SsiMono::get_block_equilibra
       }
       else
       {
-        auto block_positions_scatra = ssi_maps_->get_block_positions(Subproblem::scalar_transport);
-        auto block_position_structure = ssi_maps_->get_block_positions(Subproblem::structure);
+        const auto block_positions_scatra =
+            ssi_maps_->get_block_positions(Subproblem::scalar_transport);
+        const auto block_position_structure = ssi_maps_->get_block_positions(Subproblem::structure);
         if (is_scatra_manifold())
         {
-          auto block_positions_scatra_manifold =
+          const auto block_positions_scatra_manifold =
               ssi_maps_->get_block_positions(Subproblem::manifold);
 
           equilibration_method_vector =
@@ -1173,12 +1192,12 @@ void SSI::SsiMono::calc_initial_potential_field()
   }
 
   // store initial velocity to restore them afterwards
-  auto init_velocity = *structure_field()->velnp();
+  const auto init_velocity = *structure_field()->velnp();
 
   // cast scatra time integrators to elch to call elch specific methods
-  auto scatra_elch = std::dynamic_pointer_cast<ScaTra::ScaTraTimIntElch>(scatra_field());
-  auto manifold_elch = is_scatra_manifold()
-                           ? std::dynamic_pointer_cast<ScaTra::ScaTraTimIntElch>(scatra_manifold())
+  const auto scatra_elch = std::dynamic_pointer_cast<ScaTra::ScaTraTimIntElch>(scatra_field());
+  const auto manifold_elch =
+      is_scatra_manifold() ? std::dynamic_pointer_cast<ScaTra::ScaTraTimIntElch>(scatra_manifold())
                            : nullptr;
   if (scatra_elch == nullptr or (is_scatra_manifold() and manifold_elch == nullptr))
     FOUR_C_THROW("Cast to Elch time integrator failed. Scatra is not an Elch problem");
@@ -1187,8 +1206,9 @@ void SSI::SsiMono::calc_initial_potential_field()
   scatra_elch->pre_calc_initial_potential_field();
   if (is_scatra_manifold()) manifold_elch->pre_calc_initial_potential_field();
 
-  auto scatra_elch_splitter = scatra_field()->splitter();
-  auto manifold_elch_splitter = is_scatra_manifold() ? scatra_manifold()->splitter() : nullptr;
+  const auto scatra_elch_splitter = scatra_field()->splitter();
+  const auto manifold_elch_splitter =
+      is_scatra_manifold() ? scatra_manifold()->splitter() : nullptr;
 
   reset_iteration_count();
 
@@ -1245,7 +1265,7 @@ void SSI::SsiMono::calc_initial_potential_field()
     // store time before solving global system of equations
     const double time_before_solving = timer_->wallTime();
 
-    solve_linear_system();
+    solve_linear_system(*init_pot_calc_solver_);
 
     // time needed for solving global system of equations
     double my_solve_time = timer_->wallTime() - time_before_solving;

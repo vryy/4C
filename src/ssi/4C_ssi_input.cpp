@@ -225,7 +225,11 @@ std::vector<Core::IO::InputSpec> SSI::valid_parameters()
 
           parameter<bool>("INITPOTCALC",
               {.description = "Automatically calculate initial field for electric potential",
-                  .default_value = false})},
+                  .default_value = false}),
+          parameter<std::optional<int>>("INIT_POT_CALC_LINEAR_SOLVER",
+              {.description = "ID of linear solver for global system of equations for calculation "
+                              "of the initial potential field"}),
+      },
       {.required = false}));
   return specs;
 }
