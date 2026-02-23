@@ -255,6 +255,14 @@ namespace Particle
     LogNormalRadiusDistribution
   };
 
+  // decide on the dimension of the peridynamic problem
+  enum class PeridynamicDimension
+  {
+    Peridynamic_3D,
+    Peridynamic_2DPlaneStress,
+    Peridynamic_2DPlaneStrain
+  };
+
   //! particle parameters
   std::vector<Core::IO::InputSpec> valid_parameters();
 

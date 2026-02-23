@@ -42,15 +42,15 @@ namespace Particle
     explicit SPHPeridynamic(const Teuchos::ParameterList& params);
 
     //! init peridynamic handler
-    void init(const std::shared_ptr<Particle::PDNeighborPairs> neighborpairs_pd);
+    void init(const std::shared_ptr<PDNeighborPairs> neighborpairs_pd);
 
     //! setup peridynamic handler
-    void setup(const std::shared_ptr<Particle::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<Particle::MaterialHandler> particlematerial);
+    void setup(const std::shared_ptr<ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<MaterialHandler> particlematerial);
 
     //! insert peridynamic evaluation dependent states
     void insert_particle_states_of_particle_types(
-        std::map<Particle::TypeEnum, std::set<Particle::StateEnum>>& particlestatestotypes) const;
+        std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const;
 
     //! setup peridynamic bond list
     void init_peridynamic_bondlist();
@@ -60,7 +60,7 @@ namespace Particle
 
     //! check valid peridynamic bond
     bool check_valid_peridynamic_bond_entry(
-        const int localid, const int globalid, Particle::ParticleContainer* container) const;
+        const int localid, const int globalid, ParticleContainer* container) const;
 
     //! damage evaluation of peridynamic body
     void damage_evaluation();
@@ -76,21 +76,19 @@ namespace Particle
     void compute_acceleration() const;
 
     //! interface to particle engine
-    std::shared_ptr<Particle::ParticleEngineInterface> particleengineinterface_;
+    std::shared_ptr<ParticleEngineInterface> particleengineinterface_;
 
     //! particle container bundle
-    Particle::ParticleContainerBundleShrdPtr particlecontainerbundle_;
+    ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! particle material handler
-    std::shared_ptr<Particle::MaterialHandler> particlematerial_;
+    std::shared_ptr<MaterialHandler> particlematerial_;
 
     //! neighbor pair handler for PD and for DEM like interaction
-    std::shared_ptr<Particle::PDNeighborPairs> neighborpairs_pd_;
+    std::shared_ptr<PDNeighborPairs> neighborpairs_pd_;
 
     //! bond list for PD bodies
-    std::shared_ptr<
-        std::vector<std::pair<Particle::LocalGlobalIndexTuple, Particle::LocalGlobalIndexTuple>>>
-        bondlist_;
+    std::shared_ptr<std::vector<std::pair<LocalGlobalIndexTuple, LocalGlobalIndexTuple>>> bondlist_;
 
     //! peridynamic interaction horizon
     const double horizon_pd_;
@@ -103,6 +101,9 @@ namespace Particle
 
     //! contact damping parameter
     const double damp_;
+
+    //! peridynamic dimension
+    const PeridynamicDimension peridynamic_dimension_;
   };
 
 }  // namespace Particle

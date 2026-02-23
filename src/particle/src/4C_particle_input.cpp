@@ -591,7 +591,12 @@ std::vector<Core::IO::InputSpec> Particle::valid_parameters()
           parameter<double>(
               "NORMAL_STIFF", {.description = "normal contact stiffness", .default_value = 0.0}),
           parameter<double>("NORMAL_DAMP",
-              {.description = "normal contact damping parameter", .default_value = 0.0})},
+              {.description = "normal contact damping parameter", .default_value = 0.0}),
+
+          // peridynamic dimension
+          parameter<PeridynamicDimension>(
+              "PD_DIMENSION", {.description = "dimension of peridynamic problem",
+                                  .default_value = PeridynamicDimension::Peridynamic_3D})},
       {.required = false}));
   return specs;
 }
