@@ -746,6 +746,7 @@ void Particle::ParticleAlgorithm::get_max_particle_position_increment(
       particleengine_->get_particle_container_bundle();
 
   // iterate over particle types
+  ParticleType type_of_particle_with_max_travel_distance = UninitializedType;
   for (auto& typeEnum : particlecontainerbundle->get_particle_types())
   {
     // get container of owned particles of current particle type
@@ -777,13 +778,17 @@ void Particle::ParticleAlgorithm::get_max_particle_position_increment(
 
       // iterate over spatial dimension
       for (int dim = 0; dim < statedim; ++dim)
+      {
         maxpositionincrement = std::max(maxpositionincrement, std::abs(positionincrement[dim]));
+        type_of_particle_with_max_travel_distance = typeEnum;
+      }
     }
   }
 
   // bin size safety check
   if (maxpositionincrement > particleengine_->min_bin_size())
-    FOUR_C_THROW("a particle traveled more than one bin on this processor!");
+    FOUR_C_THROW("a particle of phase '{}' traveled more than one bin on this processor!",
+        enum_to_type_name(type_of_particle_with_max_travel_distance));
 
   // get maximum particle position increment on all processors
   allprocmaxpositionincrement = Core::Communication::max_all(maxpositionincrement, get_comm());
