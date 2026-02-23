@@ -15,11 +15,21 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Core::LinAlg::Map::Map(int NumGlobalElements, int IndexBase, const MPI_Comm& Comm)
-    : map_(MapVariant(std::in_place_type<Utils::OwnerOrView<Epetra_Map>>,
-          Utils::make_owner<Epetra_Map>(
-              NumGlobalElements, IndexBase, Core::Communication::as_epetra_comm(Comm))))
+Core::LinAlg::Map::Map(int NumGlobalElements, int IndexBase, const MPI_Comm& Comm,
+    const Core::LinAlg::LocalGlobal mode)
 {
+  if (mode == Core::LinAlg::LocalGlobal::globally_distributed)
+  {
+    map_ = MapVariant(std::in_place_type<Utils::OwnerOrView<Epetra_Map>>,
+        Utils::make_owner<Epetra_Map>(
+            NumGlobalElements, IndexBase, Core::Communication::as_epetra_comm(Comm)));
+  }
+  else if (mode == Core::LinAlg::LocalGlobal::locally_replicated)
+  {
+    map_ = MapVariant(std::in_place_type<Utils::OwnerOrView<Epetra_LocalMap>>,
+        Utils::make_owner<Epetra_LocalMap>(
+            NumGlobalElements, IndexBase, Core::Communication::as_epetra_comm(Comm)));
+  }
 }
 
 Core::LinAlg::Map::Map(

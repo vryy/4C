@@ -10,10 +10,13 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg.hpp"
 #include "4C_linalg_view.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_owner_or_view.hpp"
 
+#include <Epetra_BlockMap.h>
+#include <Epetra_LocalMap.h>
 #include <Epetra_Map.h>
 #include <mpi.h>
 
@@ -27,7 +30,24 @@ namespace Core::LinAlg
   class Map
   {
    public:
-    Map(int NumGlobalElements, int IndexBase, const MPI_Comm& Comm);
+    /**
+     * @brief Construct a Map describing the distribution of global indices.
+     *
+     * Creates a mapping of a contiguous range of global indices onto the
+     * processes of the given MPI communicator.
+     *
+     * @param NumGlobalElements Total number of global elements in the map.
+     * @param IndexBase The global index of the first element (typically 0 or 1).
+     * @param Comm The MPI communicator over which the map is defined.
+     * @param mode Specifies whether the map is globally distributed or locally replicated. Defaults
+     * to LocalGlobal::globally_distributed.
+     *
+     * @note In globally distributed mode, each rank owns a subset of the global index range. In
+     * locally replicated mode, all ranks conceptually own all global indices. This is intended for
+     * small data structures where replication is acceptable.
+     */
+    Map(int NumGlobalElements, int IndexBase, const MPI_Comm& Comm,
+        const Core::LinAlg::LocalGlobal mode = Core::LinAlg::LocalGlobal::globally_distributed);
 
     Map(int NumGlobalElements, int NumMyElements, int IndexBase, const MPI_Comm& Comm);
 
@@ -175,14 +195,16 @@ namespace Core::LinAlg
     Map() = default;
 
     // This wrapper may have two different variants
-    // Either it holds an Epetra_Map or Epetra_BlockMap
-    using MapVariant =
-        std::variant<Utils::OwnerOrView<Epetra_Map>, Utils::OwnerOrView<Epetra_BlockMap>>;
+    // Either it holds an Epetra_Map, Epetra_LocalMap or Epetra_BlockMap
+    using MapVariant = std::variant<Utils::OwnerOrView<Epetra_Map>,
+        Utils::OwnerOrView<Epetra_LocalMap>, Utils::OwnerOrView<Epetra_BlockMap>>;
 
     Epetra_BlockMap& wrapped()
     {
-      if (auto* ptr = std::get_if<Utils::OwnerOrView<Epetra_Map>>(&map_))
-        return **ptr;
+      if (auto* distr_ptr = std::get_if<Utils::OwnerOrView<Epetra_Map>>(&map_))
+        return **distr_ptr;
+      else if (auto* local_ptr = std::get_if<Utils::OwnerOrView<Epetra_LocalMap>>(&map_))
+        return **local_ptr;
       else
         return *std::get<Utils::OwnerOrView<Epetra_BlockMap>>(map_);
     }
@@ -192,7 +214,7 @@ namespace Core::LinAlg
       return const_cast<const Epetra_BlockMap&>(const_cast<Map*>(this)->wrapped());
     }
 
-    //! stores an Epetra_BlockMap or Epetra_Map
+    //! stores an Epetra_BlockMap, Epetra_LocalMap or Epetra_Map
     MapVariant map_;
   };
 
@@ -201,6 +223,12 @@ namespace Core::LinAlg
     os << m.get_epetra_block_map();
     return os;
   }
+
+  template <>
+  struct EnableViewFor<Epetra_LocalMap>
+  {
+    using type = Map;
+  };
 
   template <>
   struct EnableViewFor<Epetra_Map>
