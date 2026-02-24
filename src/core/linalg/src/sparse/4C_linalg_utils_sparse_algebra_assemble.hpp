@@ -293,6 +293,29 @@ namespace Core::LinAlg
       const Core::LinAlg::Map& dbcmap, bool diagonalblock,
       const std::shared_ptr<const Core::LinAlg::SparseMatrix>& trafo);
 
+  /**
+   * @brief Checks whether the system matrix contains Dirichlet boundary conditions.
+   *
+   * This function inspects the given sparse matrix and determines whether it
+   * contains rows that correspond to Dirichlet boundary conditions.
+   *
+   * A row is classified as a Dirichlet row if it contains exactly one non-zero entry . Such rows
+   * typically arise from strongly imposed Dirichlet boundary conditions, where the matrix row is
+   * modified to enforce a fixed degree of freedom.
+   *
+   * The check is performed locally on each process by counting rows with exactly one non-zero
+   * entry. The global number of such rows is then computed using a parallel sum over all processes.
+   *
+   * @param A (in): The sparse matrix to be examined.
+   *
+   * @return true if at least one Dirichlet row exists in the global matrix; false otherwise.
+   *
+   * @warning This heuristic assumes that Dirichlet boundary conditions are mposed by modifying the
+   *          matrix such that the corresponding row contains exactly one non-zero entry. If a
+   *          different enforcement strategy is used, this detection method may not be valid.
+   */
+  bool has_dirichlet_boundary_condition(const Core::LinAlg::SparseMatrix& A);
+
 }  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE

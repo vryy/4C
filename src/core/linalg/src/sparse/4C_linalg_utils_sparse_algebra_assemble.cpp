@@ -435,4 +435,48 @@ bool Core::LinAlg::is_dirichlet_boundary_condition_already_applied(
   return false;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool Core::LinAlg::has_dirichlet_boundary_condition(const Core::LinAlg::SparseMatrix& A)
+{
+  std::vector<int> dirichlet_rows;
+
+  for (int row = 0; row < A.num_my_rows(); row++)
+  {
+    int num_entries;
+    int* indices;
+    double* values;
+
+    A.extract_my_row_view(row, num_entries, values, indices);
+    int number_of_nonzeros = 0;
+    int nonzero_index = 0;
+
+    for (int j = 0; j < num_entries; j++)
+    {
+      if (std::abs(values[j]) > std::numeric_limits<double>::epsilon())
+      {
+        nonzero_index = j;
+        number_of_nonzeros++;
+      }
+    }
+
+    if (number_of_nonzeros == 1)
+    {
+      const int col = indices[nonzero_index];
+      const double val = values[nonzero_index];
+
+      if (col == row && std::abs(val - 1.0) < std::numeric_limits<double>::epsilon())
+      {
+        dirichlet_rows.push_back(row);
+      }
+    }
+  }
+
+  const int number_of_dirichlet_rows =
+      Core::Communication::sum_all(dirichlet_rows.size(), A.get_comm());
+
+  return number_of_dirichlet_rows > 0;
+}
+
 FOUR_C_NAMESPACE_CLOSE
