@@ -246,8 +246,7 @@ void Particle::ParticleInteractionSPH::insert_particle_states_of_particle_types(
 void Particle::ParticleInteractionSPH::set_initial_states()
 {
   // get kernel space dimension
-  int kernelspacedim = 0;
-  kernel_->kernel_space_dimension(kernelspacedim);
+  const int kernelspacedim = kernel_->kernel_space_dimension();
 
   // get initial particle spacing
   const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");

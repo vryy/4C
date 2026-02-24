@@ -31,17 +31,20 @@ namespace
       Teuchos::ParameterList params_sph_1D;
       Teuchos::setStringToIntegralParameter<Particle::KernelSpaceDimension>("KERNEL_SPACE_DIM",
           "Kernel1D", "kernel space dimension number", Teuchos::tuple<std::string>("Kernel1D"),
-          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::Kernel1D), &params_sph_1D);
+          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::KernelSpaceDimension::Kernel1D),
+          &params_sph_1D);
 
       Teuchos::ParameterList params_sph_2D;
       Teuchos::setStringToIntegralParameter<Particle::KernelSpaceDimension>("KERNEL_SPACE_DIM",
           "Kernel2D", "kernel space dimension number", Teuchos::tuple<std::string>("Kernel2D"),
-          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::Kernel2D), &params_sph_2D);
+          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::KernelSpaceDimension::Kernel2D),
+          &params_sph_2D);
 
       Teuchos::ParameterList params_sph_3D;
       Teuchos::setStringToIntegralParameter<Particle::KernelSpaceDimension>("KERNEL_SPACE_DIM",
           "Kernel3D", "kernel space dimension number", Teuchos::tuple<std::string>("Kernel3D"),
-          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::Kernel3D), &params_sph_3D);
+          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::KernelSpaceDimension::Kernel3D),
+          &params_sph_3D);
 
       // create kernel handler
       kernel_1D_ = std::make_unique<Particle::SPHKernelCubicSpline>(params_sph_1D);
@@ -54,13 +57,13 @@ namespace
   {
     int dim = 0;
 
-    kernel_1D_->kernel_space_dimension(dim);
+    dim = kernel_1D_->kernel_space_dimension();
     EXPECT_EQ(dim, 1);
 
-    kernel_2D_->kernel_space_dimension(dim);
+    dim = kernel_2D_->kernel_space_dimension();
     EXPECT_EQ(dim, 2);
 
-    kernel_3D_->kernel_space_dimension(dim);
+    dim = kernel_3D_->kernel_space_dimension();
     EXPECT_EQ(dim, 3);
   }
 
@@ -293,17 +296,20 @@ namespace
       Teuchos::ParameterList params_sph_1D;
       Teuchos::setStringToIntegralParameter<Particle::KernelSpaceDimension>("KERNEL_SPACE_DIM",
           "Kernel1D", "kernel space dimension number", Teuchos::tuple<std::string>("Kernel1D"),
-          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::Kernel1D), &params_sph_1D);
+          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::KernelSpaceDimension::Kernel1D),
+          &params_sph_1D);
 
       Teuchos::ParameterList params_sph_2D;
       Teuchos::setStringToIntegralParameter<Particle::KernelSpaceDimension>("KERNEL_SPACE_DIM",
           "Kernel2D", "kernel space dimension number", Teuchos::tuple<std::string>("Kernel2D"),
-          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::Kernel2D), &params_sph_2D);
+          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::KernelSpaceDimension::Kernel2D),
+          &params_sph_2D);
 
       Teuchos::ParameterList params_sph_3D;
       Teuchos::setStringToIntegralParameter<Particle::KernelSpaceDimension>("KERNEL_SPACE_DIM",
           "Kernel3D", "kernel space dimension number", Teuchos::tuple<std::string>("Kernel3D"),
-          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::Kernel3D), &params_sph_3D);
+          Teuchos::tuple<Particle::KernelSpaceDimension>(Particle::KernelSpaceDimension::Kernel3D),
+          &params_sph_3D);
 
       // create kernel handler
       kernel_1D_ = std::make_unique<Particle::SPHKernelQuinticSpline>(params_sph_1D);
@@ -316,13 +322,13 @@ namespace
   {
     int dim = 0;
 
-    kernel_1D_->kernel_space_dimension(dim);
+    dim = kernel_1D_->kernel_space_dimension();
     EXPECT_EQ(dim, 1);
 
-    kernel_2D_->kernel_space_dimension(dim);
+    dim = kernel_2D_->kernel_space_dimension();
     EXPECT_EQ(dim, 2);
 
-    kernel_3D_->kernel_space_dimension(dim);
+    dim = kernel_3D_->kernel_space_dimension();
     EXPECT_EQ(dim, 3);
   }
 

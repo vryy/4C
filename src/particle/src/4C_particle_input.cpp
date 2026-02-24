@@ -204,7 +204,7 @@ std::vector<Core::IO::InputSpec> Particle::valid_parameters()
           // kernel space dimension number
           parameter<KernelSpaceDimension>(
               "KERNEL_SPACE_DIM", {.description = "kernel space dimension number",
-                                      .default_value = Particle::Kernel3D}),
+                                      .default_value = Particle::KernelSpaceDimension::Kernel3D}),
 
           parameter<double>("INITIALPARTICLESPACING",
               {.description = "initial spacing of particles", .default_value = 0.0}),

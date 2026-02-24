@@ -89,8 +89,7 @@ void Particle::SPHVirtualWallParticle::init_relative_positions_of_virtual_partic
   const int numparticleperdir = std::round(maxinteractiondistance / initialparticlespacing);
 
   // get the kernel dimensionality
-  int kernel_dim = 0;
-  kernel_->kernel_space_dimension(kernel_dim);
+  const int kernel_dim = kernel_->kernel_space_dimension();
 
   const int s_start = (kernel_dim > 1) ? (-numparticleperdir + 1) : 0;
   const int s_end = (kernel_dim > 1) ? numparticleperdir : 1;

@@ -35,7 +35,7 @@ namespace Particle
     virtual ~SPHKernelBase() = default;
 
     //! get kernel space dimension
-    virtual void kernel_space_dimension(int& dim) const final;
+    virtual int kernel_space_dimension() const final;
 
     //! get smoothing length from kernel support radius
     virtual double smoothing_length(const double& support) const = 0;
