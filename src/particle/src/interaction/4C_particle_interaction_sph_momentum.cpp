@@ -212,6 +212,9 @@ void Particle::SPHMomentum::momentum_equation_particle_contribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("Particle::SPHMomentum::momentum_equation_particle_contribution");
 
+  // get factor from kernel space dimension
+  const int kernelfac = kernel_->kernel_space_dimension() + 2;
+
   // get relevant particle pair indices
   std::vector<int> relindices;
   neighborpairs_->get_relevant_particle_pair_indices_for_equal_combination(
@@ -290,18 +293,10 @@ void Particle::SPHMomentum::momentum_equation_particle_contribution() const
         speccoeff_ji, particlepair.e_ij_, acc_i, acc_j);
 
     // evaluate shear forces
-    {
-      // get factor from kernel space dimension
-      int kernelfac = 0;
-      kernel_->kernel_space_dimension(kernelfac);
-      kernelfac += 2;
-
-      // evaluate shear forces
-      momentumformulation_->shear_forces(dens_i, dens_j, vel_i, vel_j, kernelfac,
-          material_i->dynamicViscosity_, material_j->dynamicViscosity_, material_i->bulkViscosity_,
-          material_j->bulkViscosity_, particlepair.absdist_, speccoeff_ij, speccoeff_ji,
-          particlepair.e_ij_, acc_i, acc_j);
-    }
+    momentumformulation_->shear_forces(dens_i, dens_j, vel_i, vel_j, kernelfac,
+        material_i->dynamicViscosity_, material_j->dynamicViscosity_, material_i->bulkViscosity_,
+        material_j->bulkViscosity_, particlepair.absdist_, speccoeff_ij, speccoeff_ji,
+        particlepair.e_ij_, acc_i, acc_j);
 
     // apply transport velocity formulation
     if (transportvelocityformulation_ ==
@@ -375,6 +370,9 @@ void Particle::SPHMomentum::momentum_equation_particle_boundary_contribution() c
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "Particle::SPHMomentum::momentum_equation_particle_boundary_contribution");
+
+  // get factor from kernel space dimension
+  const int kernelfac = kernel_->kernel_space_dimension() + 2;
 
   // get relevant particle pair indices
   std::vector<int> relindices;
@@ -478,11 +476,6 @@ void Particle::SPHMomentum::momentum_equation_particle_boundary_contribution() c
     // evaluate shear forces
     if (boundaryparticleinteraction_ == Particle::NoSlipBoundaryParticle)
     {
-      // get factor from kernel space dimension
-      int kernelfac = 0;
-      kernel_->kernel_space_dimension(kernelfac);
-      kernelfac += 2;
-
       // evaluate shear forces
       momentumformulation_->shear_forces(dens_i, dens_j, vel_i, vel_j, kernelfac,
           material_i->dynamicViscosity_, material_i->dynamicViscosity_, material_i->bulkViscosity_,
@@ -551,6 +544,9 @@ void Particle::SPHMomentum::momentum_equation_particle_boundary_contribution() c
 void Particle::SPHMomentum::momentum_equation_particle_wall_contribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("Particle::SPHMomentum::momentum_equation_particle_wall_contribution");
+
+  // get factor from kernel space dimension
+  const int kernelfac = kernel_->kernel_space_dimension() + 2;
 
   // get wall data state container
   std::shared_ptr<Particle::WallDataState> walldatastate =
@@ -758,11 +754,6 @@ void Particle::SPHMomentum::momentum_equation_particle_wall_contribution() const
         // evaluate shear forces
         if (boundaryparticleinteraction_ == Particle::NoSlipBoundaryParticle)
         {
-          // get factor from kernel space dimension
-          int kernelfac = 0;
-          kernel_->kernel_space_dimension(kernelfac);
-          kernelfac += 2;
-
           // evaluate shear forces
           momentumformulation_->shear_forces(dens_i, dens_k, vel_i, vel_k, kernelfac,
               material_i->dynamicViscosity_, material_i->dynamicViscosity_,

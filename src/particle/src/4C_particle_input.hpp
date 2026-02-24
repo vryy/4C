@@ -74,7 +74,7 @@ namespace Particle
   };
 
   //! kernel space dimension number
-  enum KernelSpaceDimension
+  enum class KernelSpaceDimension
   {
     Kernel1D,
     Kernel2D,

@@ -9,6 +9,7 @@
 
 #include "4C_particle_interaction_utils.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_std23_unreachable.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -24,31 +25,24 @@ Particle::SPHKernelBase::SPHKernelBase(const Teuchos::ParameterList& params)
   // empty constructor
 }
 
-void Particle::SPHKernelBase::kernel_space_dimension(int& dim) const
+int Particle::SPHKernelBase::kernel_space_dimension() const
 {
   switch (kernelspacedim_)
   {
-    case Particle::Kernel1D:
-    {
-      dim = 1;
-      break;
-    }
-    case Particle::Kernel2D:
-    {
-      dim = 2;
-      break;
-    }
-    case Particle::Kernel3D:
-    {
-      dim = 3;
-      break;
-    }
+    case Particle::KernelSpaceDimension::Kernel1D:
+      return 1;
+
+    case Particle::KernelSpaceDimension::Kernel2D:
+      return 2;
+
+    case Particle::KernelSpaceDimension::Kernel3D:
+      return 3;
+
     default:
-    {
       FOUR_C_THROW("unknown kernel space dimension!");
-      break;
-    }
   }
+
+  std23::unreachable();
 }
 
 void Particle::SPHKernelBase::grad_wij(
@@ -72,17 +66,17 @@ double Particle::SPHKernelCubicSpline::normalization_constant(const double& inv_
 {
   switch (kernelspacedim_)
   {
-    case Particle::Kernel1D:
+    case Particle::KernelSpaceDimension::Kernel1D:
     {
       // (2.0 / 3.0) * inv_h
       return 0.6666666666666666 * inv_h;
     }
-    case Particle::Kernel2D:
+    case Particle::KernelSpaceDimension::Kernel2D:
     {
       // (10.0 / 7.0) * std::numbers::inv_pi * inv_h * inv_h
       return 0.4547284088339866 * ParticleUtils::pow<2>(inv_h);
     }
-    case Particle::Kernel3D:
+    case Particle::KernelSpaceDimension::Kernel3D:
     {
       return std::numbers::inv_pi * ParticleUtils::pow<3>(inv_h);
     }
@@ -157,17 +151,17 @@ double Particle::SPHKernelQuinticSpline::normalization_constant(const double& in
 {
   switch (kernelspacedim_)
   {
-    case Particle::Kernel1D:
+    case Particle::KernelSpaceDimension::Kernel1D:
     {
       // (inv_h / 120.0)
       return 0.0083333333333333 * inv_h;
     }
-    case Particle::Kernel2D:
+    case Particle::KernelSpaceDimension::Kernel2D:
     {
       // (7.0 / 478.0) * std::numbers::inv_pi * inv_h * inv_h
       return 0.0046614418478797 * ParticleUtils::pow<2>(inv_h);
     }
-    case Particle::Kernel3D:
+    case Particle::KernelSpaceDimension::Kernel3D:
     {
       // (3.0 / 359.0) * std::numbers::inv_pi * inv_h * inv_h * inv_h
       return 0.0026599711937364 * ParticleUtils::pow<3>(inv_h);
