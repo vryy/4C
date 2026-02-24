@@ -41,31 +41,86 @@ namespace
     Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
         TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), comm_);
 
-    has_dirichlet = Core::LinAlg::has_dirichlet_boundary_condition(A);
-    EXPECT_EQ(has_dirichlet, false);
-
-    // Explicitly modify a row to be Dirichlet
-    if (rank == 0)
+    // Matrix has no Dirichlet rows
     {
-      int num_entries;
-      int* indices;
-      double* values;
-
-      A.extract_my_row_view(0, num_entries, values, indices);
-
-      for (int i = 0; i < num_entries; i++)
-      {
-        if (i == 0)
-          values[i] = 1.0;
-        else
-          values[i] = 0.0;
-      }
-
-      A.replace_global_values(0, num_entries, values, indices);
+      has_dirichlet = Core::LinAlg::has_dirichlet_boundary_condition(A);
+      EXPECT_EQ(has_dirichlet, false);
     }
 
-    has_dirichlet = Core::LinAlg::has_dirichlet_boundary_condition(A);
-    EXPECT_EQ(has_dirichlet, true);
+    // Explicitly modify a row to contain one value
+    {
+      if (rank == 0)
+      {
+        int num_entries;
+        int* indices;
+        double* values;
+
+        A.extract_my_row_view(0, num_entries, values, indices);
+
+        for (int i = 0; i < num_entries; i++)
+        {
+          if (i == num_entries - 1)
+            values[i] = 2.0;
+          else
+            values[i] = 0.0;
+        }
+
+        A.replace_global_values(0, num_entries, values, indices);
+      }
+
+      has_dirichlet = Core::LinAlg::has_dirichlet_boundary_condition(A);
+      EXPECT_EQ(has_dirichlet, false);
+    }
+
+    // Explicitly modify a row to be a diagonal, but not Dirichlet
+    {
+      if (rank == 0)
+      {
+        int num_entries;
+        int* indices;
+        double* values;
+
+        A.extract_my_row_view(0, num_entries, values, indices);
+
+        for (int i = 0; i < num_entries; i++)
+        {
+          if (i == 0)
+            values[i] = 2.0;
+          else
+            values[i] = 0.0;
+        }
+
+        A.replace_global_values(0, num_entries, values, indices);
+      }
+
+      has_dirichlet = Core::LinAlg::has_dirichlet_boundary_condition(A);
+      EXPECT_EQ(has_dirichlet, false);
+    }
+
+    // Explicitly modify a row to be Dirichlet
+    {
+      if (rank == 0)
+      {
+        int num_entries;
+        int* indices;
+        double* values;
+
+        A.extract_my_row_view(0, num_entries, values, indices);
+
+        for (int i = 0; i < num_entries; i++)
+        {
+          if (i == 0)
+            values[i] = 1.0;
+          else
+            values[i] = 0.0;
+        }
+
+        A.replace_global_values(0, num_entries, values, indices);
+      }
+
+      has_dirichlet = Core::LinAlg::has_dirichlet_boundary_condition(A);
+      EXPECT_EQ(has_dirichlet, true);
+    }
   }
 }  // namespace
 
