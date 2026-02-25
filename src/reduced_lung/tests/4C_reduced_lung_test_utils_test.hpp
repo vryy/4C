@@ -58,16 +58,43 @@ namespace ReducedLung::TestUtils
     fd_derivative.update(-1.0 / (2 * eps), res_plus, 1.0 / (2 * eps), res_minus, 0.0);
 
     // Compare with Jacobian column
+    const int n_rows_per_element = []<typename DataType>(const DataType& data)
+    {
+      if constexpr (requires { data.n_state_equations; })
+      {
+        return data.n_state_equations;
+      }
+      else
+      {
+        return 1;
+      }
+    }(model.data);
+
     for (size_t i = 0; i < model.data.number_of_elements(); ++i)
     {
-      int n_entries = 0;
-      double* jac_vals = nullptr;
-      int* col_indices = nullptr;
-      jac.extract_my_row_view(i, n_entries, jac_vals, col_indices);
+      const int row_id = model.data.local_row_id[i];
+      for (int row_offset = 0; row_offset < n_rows_per_element; ++row_offset)
+      {
+        int n_entries = 0;
+        double* jac_vals = nullptr;
+        int* col_indices = nullptr;
+        const int row = row_id + row_offset;
+        jac.extract_my_row_view(row, n_entries, jac_vals, col_indices);
 
-      ASSERT_EQ(col_indices[jac_col], dof_lids[i]);
-      EXPECT_NEAR(jac_vals[jac_col], fd_derivative.local_values_as_span()[i], eps)
-          << "Mismatch at row " << i << ", col " << jac_col;
+        int col_index = -1;
+        for (int entry = 0; entry < n_entries; ++entry)
+        {
+          if (col_indices[entry] == dof_lids[i])
+          {
+            col_index = entry;
+            break;
+          }
+        }
+
+        ASSERT_NE(col_index, -1) << "Column for dof " << dof_lids[i] << " not found in row " << row;
+        EXPECT_NEAR(jac_vals[col_index], fd_derivative.local_values_as_span()[row], eps)
+            << "Mismatch at row " << row << ", col " << jac_col;
+      }
     }
   }
 }  // namespace ReducedLung::TestUtils

@@ -886,6 +886,11 @@ namespace ReducedLung
           internal_state_updater_flow_model(data, locally_relevant_dofs);
           for (size_t i = 0; i < data.number_of_elements(); i++)
           {
+            kv_model.area[i] =
+                kv_model.area_n[i] +
+                dt / data.ref_length[i] *
+                    (locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]] -
+                        locally_relevant_dofs.local_values_as_span()[data.lid_q2[i]]);
             kv_model.beta_w[i] =
                 std::sqrt(M_PI) * kv_model.wall_thickness[i] * kv_model.wall_elasticity[i] /
                 ((1 - kv_model.wall_poisson_ratio[i] * kv_model.wall_poisson_ratio[i]) *
@@ -893,14 +898,9 @@ namespace ReducedLung
             kv_model.gamma_w[i] = kv_model.beta_w[i] * kv_model.viscous_time_constant[i] *
                                   std::tan(kv_model.viscous_phase_shift[i]) / (4.0 * M_PI);
             kv_model.compliance_C[i] =
-                2 * std::sqrt(data.ref_area[i]) * data.ref_length[i] / kv_model.beta_w[i];
+                2 * std::sqrt(kv_model.area[i]) * data.ref_length[i] / kv_model.beta_w[i];
             kv_model.viscous_resistance_Rvisc[i] =
-                kv_model.gamma_w[i] / (std::sqrt(data.ref_area[i]) * data.ref_length[i]);
-            kv_model.area[i] =
-                kv_model.area_n[i] +
-                dt / data.ref_length[i] *
-                    (locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]] -
-                        locally_relevant_dofs.local_values_as_span()[data.lid_q2[i]]);
+                kv_model.gamma_w[i] / (std::sqrt(kv_model.area[i]) * data.ref_length[i]);
           }
         };
       }

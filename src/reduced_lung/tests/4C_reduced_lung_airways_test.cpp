@@ -182,7 +182,7 @@ namespace
     // Create small airway data for testing (3 elements)
     model.data.global_element_id = {0, 1, 2};
     model.data.local_element_id = {0, 1, 2};
-    model.data.local_row_id = {0, 1, 2};
+    model.data.local_row_id = {0, 2, 4};
     model.data.gid_p1 = {0, 1, 2};
     model.data.gid_p2 = {3, 4, 5};
     model.data.gid_q1 = {6, 7, 8};

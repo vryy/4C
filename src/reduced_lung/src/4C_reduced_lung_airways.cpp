@@ -40,6 +40,9 @@ namespace ReducedLung
     {
       for (size_t i = 0; i < data.number_of_elements(); i++)
       {
+        const int momentum_row = data.local_row_id[i];
+        const int mass_row = data.local_row_id[i] + 1;
+
         double neg_res_momentum =
             -1 * (locally_relevant_dofs.local_values_as_span()[data.lid_p1[i]] -
                      locally_relevant_dofs.local_values_as_span()[data.lid_p2[i]] -
@@ -58,9 +61,8 @@ namespace ReducedLung
                              locally_relevant_dofs.local_values_as_span()[data.lid_q2[i]]) +
                      2 * kelvin_voigt_wall_model.viscous_resistance_Rvisc[i] *
                          (data.q1_n[i] - data.q2_n[i]));  // Pext component not implemented yet.
-        target.replace_local_value(data.local_row_id[i], neg_res_momentum);
-        target.replace_local_value(
-            static_cast<int>(data.local_row_id[i] + data.number_of_elements()), neg_res_mass);
+        target.replace_local_value(momentum_row, neg_res_momentum);
+        target.replace_local_value(mass_row, neg_res_mass);
       }
     }
 
@@ -129,6 +131,9 @@ namespace ReducedLung
       [[maybe_unused]] int err;  // Saves error code of trilinos functions.
       for (size_t i = 0; i < data.number_of_elements(); i++)
       {
+        const int momentum_row = data.local_row_id[i];
+        const int mass_row = data.local_row_id[i] + 1;
+
         if (!target.filled())
         {
           std::array<int, 4> column_indices;
@@ -136,24 +141,20 @@ namespace ReducedLung
           column_indices = {data.lid_p1[i], data.lid_p2[i], data.lid_q1[i], data.lid_q2[i]};
           values = {1.0, -1.0, resistance_derivative.first[i] + inertia_derivative.first[i],
               resistance_derivative.second[i] + inertia_derivative.second[i]};
-          target.insert_my_values(data.local_row_id[i], 4, values.data(), column_indices.data());
+          target.insert_my_values(momentum_row, 4, values.data(), column_indices.data());
           values = {1.0, 1.0, viscous_wall_resistance_derivative.first[i],
               viscous_wall_resistance_derivative.second[i]};
-          target.insert_my_values(
-              static_cast<int>(data.local_row_id[i] + data.number_of_elements()), 4, values.data(),
-              column_indices.data());
+          target.insert_my_values(mass_row, 4, values.data(), column_indices.data());
         }
         else
         {
           std::array<int, 2> q_column_indices{data.lid_q1[i], data.lid_q2[i]};
           std::array<double, 2> grad_q{resistance_derivative.first[i] + inertia_derivative.first[i],
               resistance_derivative.second[i] + inertia_derivative.second[i]};
-          target.replace_my_values(data.local_row_id[i], 2, grad_q.data(), q_column_indices.data());
+          target.replace_my_values(momentum_row, 2, grad_q.data(), q_column_indices.data());
           grad_q = {viscous_wall_resistance_derivative.first[i],
               viscous_wall_resistance_derivative.second[i]};
-          target.replace_my_values(
-              static_cast<int>(data.local_row_id[i] + data.number_of_elements()), 2, grad_q.data(),
-              q_column_indices.data());
+          target.replace_my_values(mass_row, 2, grad_q.data(), q_column_indices.data());
         }
       }
     }
@@ -269,14 +270,12 @@ namespace ReducedLung
 
       for (size_t i = 0; i < data.number_of_elements(); i++)
       {
-        double dRvisc_da =
-            model.viscous_time_constant[i] * std::tan(model.viscous_phase_shift[i]) /
-            (8.0 * M_PI * model.area[i] * std::sqrt(model.area[i]) * data.ref_length[i]) *
-            model.beta_w[i];
+        double dRvisc_da = -model.gamma_w[i] /
+                           (2.0 * model.area[i] * std::sqrt(model.area[i]) * data.ref_length[i]);
         double da_dq1 = dt / data.ref_length[i];
         double da_dq2 = -dt / data.ref_length[i];
-        double dCinv_da = -model.beta_w[i] / (4.0 * data.ref_area[i] * std::sqrt(data.ref_area[i]) *
-                                                 data.ref_length[i]);
+        double dCinv_da = -model.beta_w[i] /
+                          (4.0 * model.area[i] * std::sqrt(model.area[i]) * data.ref_length[i]);
         viscous_resistance_derivative_q1[i] =
             -2 * ((dRvisc_da * da_dq1 + dt * dCinv_da * da_dq1) *
                          (dofs.local_values_as_span()[data.lid_q1[i]] -
