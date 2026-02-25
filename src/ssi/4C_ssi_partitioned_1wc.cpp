@@ -190,20 +190,6 @@ void SSI::SSIPart1WCSolidToScatra::init(MPI_Comm comm,
   // call setup of base class
   SSI::SSIPart1WC::init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
-
-  // do some checks
-  {
-    auto convform = Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
-    if (convform != Inpar::ScaTra::convform_conservative)
-    {
-      FOUR_C_THROW(
-          "If the scalar transport problem is solved on the deforming domain, the conservative "
-          "form "
-          "must be "
-          "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR "
-          "TRANSPORT DYNAMIC section!");
-    }
-  }
 }
 
 /*----------------------------------------------------------------------*/

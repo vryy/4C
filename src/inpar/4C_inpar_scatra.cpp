@@ -216,6 +216,16 @@ std::vector<Core::IO::InputSpec> Inpar::ScaTra::valid_parameters()
               "SKIPINITDER", {.description = "Flag to skip computation of initial time derivative",
                                  .default_value = false}),
 
+          parameter<bool>("IS_INTENSIVE_SCALAR",
+              {.description = "If true, the scalar is treated as an intensive/material quantity "
+                              "without volume reference. "
+                              "In this case, the convective (non-conservative) form is allowed "
+                              "on deforming domains. "
+                              "If false, the scalar is assumed to be volume-referenced "
+                              "(e.g. concentration per current volume), and the conservative "
+                              "form must be used to account for volume changes.",
+                  .default_value = false}),
+
           deprecated_selection<Inpar::ScaTra::FSSUGRDIFF>("FSSUGRDIFF",
               {
                   {"No", fssugrdiff_no},
