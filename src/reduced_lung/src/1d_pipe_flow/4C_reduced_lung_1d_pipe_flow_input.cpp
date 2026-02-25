@@ -16,6 +16,122 @@ Core::IO::InputSpec ReducedLung1dPipeFlow::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
+  // rheology model spec
+  Core::IO::InputSpec rheological_model_spec_terminal_unit = group<
+      Parameters::TerminalUnits::RheologicalModel>("rheological_model",
+      {
+          input_field<Parameters::TerminalUnits::RheologicalModel::RheologicalModelType>(
+              "rheological_model_type",
+              {
+                  .description = "Type of the rheological model.",
+                  .store = in_struct(
+                      &Parameters::TerminalUnits::RheologicalModel::rheological_model_type),
+              }),
+          group<Parameters::TerminalUnits::RheologicalModel::KelvinVoigt>("kelvin_voigt",
+              {
+                  input_field<double>("viscosity_kelvin_voigt_eta",
+                      {
+                          .description = "Viscosity parameter (dashpot) of the terminal unit.",
+                          .store = in_struct(&Parameters::TerminalUnits::RheologicalModel::
+                                  KelvinVoigt::viscosity_kelvin_voigt_eta),
+                      }),
+              },
+              {
+                  .description = "Kelvin-Voigt model of the terminal unit.",
+                  .required = false,
+                  .store = in_struct(&Parameters::TerminalUnits::RheologicalModel::kelvin_voigt),
+              }),
+          group<Parameters::TerminalUnits::RheologicalModel::FourElementMaxwell>(
+              "4_element_maxwell",
+              {
+                  input_field<double>("viscosity_kelvin_voigt_eta",
+                      {
+                          .description =
+                              "Dashpot viscosity of the Kelvin-Voigt body of the terminal unit.",
+                          .store = in_struct(&Parameters::TerminalUnits::RheologicalModel::
+                                  FourElementMaxwell::viscosity_kelvin_voigt_eta),
+                      }),
+                  input_field<double>("viscosity_maxwell_eta_m",
+                      {
+                          .description =
+                              "Dashpot viscosity of the Maxwell body of the terminal unit.",
+                          .store = in_struct(&Parameters::TerminalUnits::RheologicalModel::
+                                  FourElementMaxwell::viscosity_maxwell_eta_m),
+                      }),
+                  input_field<double>("elasticity_maxwell_e_m",
+                      {
+                          .description = "Spring stiffness of the Maxwell "
+                                         "body of the terminal unit.",
+                          .store = in_struct(&Parameters::TerminalUnits::RheologicalModel::
+                                  FourElementMaxwell::elasticity_maxwell_e_m),
+                      }),
+              },
+              {
+                  .description = "4-element Maxwell model of the "
+                                 "terminal unit.",
+                  .required = false,
+                  .store =
+                      in_struct(&Parameters::TerminalUnits::RheologicalModel::four_element_maxwell),
+              }),
+      },
+      {
+          .description = "Rheological model of the terminal unit.",
+          .store = in_struct(&Parameters::TerminalUnits::rheological_model),
+      });
+
+  // elasticity model spec
+  Core::IO::InputSpec elasticity_model_spec_terminal_units = group<
+      Parameters::TerminalUnits::ElasticityModel>("elasticity_model",
+      {
+          input_field<Parameters::TerminalUnits::ElasticityModel::ElasticityModelType>(
+              "elasticity_model_type",
+              {
+                  .description = "Type of the elastic model.",
+                  .store =
+                      in_struct(&Parameters::TerminalUnits::ElasticityModel::elasticity_model_type),
+              }),
+          group<Parameters::TerminalUnits::ElasticityModel::Linear>("linear",
+              {
+                  input_field<double>("elasticity_e",
+                      {
+                          .description = "Linear elastic stiffness of the terminal unit.",
+                          .store = in_struct(
+                              &Parameters::TerminalUnits::ElasticityModel::Linear::elasticity_e),
+                      }),
+              },
+              {
+                  .description =
+                      "Linear elastic model in the rheological model of the terminal unit.",
+                  .required = false,
+                  .store = in_struct(&Parameters::TerminalUnits::ElasticityModel::linear),
+              }),
+          group<Parameters::TerminalUnits::ElasticityModel::Ogden>("ogden",
+              {
+                  input_field<double>("ogden_parameter_kappa",
+                      {
+                          .description = "Parameter Kappa in volumetric Ogden law.",
+                          .store = in_struct(&Parameters::TerminalUnits::ElasticityModel::Ogden::
+                                  ogden_parameter_kappa),
+                      }),
+                  input_field<double>("ogden_parameter_beta",
+                      {
+                          .description = "Parameter Beta in volumetric Ogden law.",
+                          .store = in_struct(&Parameters::TerminalUnits::ElasticityModel::Ogden::
+                                  ogden_parameter_beta),
+                      }),
+              },
+              {
+                  .description = "Ogden type spring in the rheological model of the terminal unit.",
+                  .required = false,
+                  .store = in_struct(&Parameters::TerminalUnits::ElasticityModel::ogden),
+              }),
+      },
+      {
+          .description = "Elasticity model for the customizable spring of the rheological model.",
+          .required = false,
+          .store = in_struct(&Parameters::TerminalUnits::elasticity_model),
+      });
+
   Core::IO::InputSpec spec = group("reduced_lung",
       {
           group<Parameters>("general",
@@ -71,7 +187,8 @@ Core::IO::InputSpec ReducedLung1dPipeFlow::valid_parameters()
                               {"area", "velocity", "flow", "pressure"},
                               {.description = "Choice of prescribed parameter at inflow boundary",
                                   .store = in_struct(&Parameters::BoundaryConditions::input)}),
-                          deprecated_selection<std::string>("output", {"reflection", "pressure"},
+                          deprecated_selection<std::string>("output",
+                              {"reflection", "pressure", "terminal_unit"},
                               {.description = "Choice of prescribed parameter at outflow boundary",
                                   .store = in_struct(&Parameters::BoundaryConditions::output)}),
                           parameter<int>("function_ID",
@@ -96,8 +213,21 @@ Core::IO::InputSpec ReducedLung1dPipeFlow::valid_parameters()
                       },
                       {.description = "Parameters of fluid",
                           .store = in_struct(&Parameters::boundary_conditions)}),
-              }),
-      },  // content of group reduced_lung
+
+                  group<Parameters::TerminalUnits>("terminal_units",
+                      {
+                          rheological_model_spec_terminal_unit,
+                          elasticity_model_spec_terminal_units,
+                          input_field<double>("acinar_reference_volume_v0",
+                              {.description = "Reference volume of acinus at terminal unit.",
+                                  .store = in_struct(&Parameters::TerminalUnits::acinar_volume_v)}),
+                      },
+                      {.description = "Terminal units.",
+                          .required = false,
+                          .store = in_struct(&Parameters::terminal_units)}),
+              },  // content of group reduced_lung
+              {.description = "Information needed for 1D modeling of fluid flow."}),
+      },
       {.description = "Reduced-dimensional fluid dynamics in a 1D network", .required = false});
   return spec;
 }

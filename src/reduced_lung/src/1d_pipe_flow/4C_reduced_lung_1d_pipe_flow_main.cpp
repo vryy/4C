@@ -23,6 +23,7 @@
 #include "4C_mat_vplast_law.hpp"
 #include "4C_reduced_lung_1d_pipe_flow_input.hpp"
 #include "4C_reduced_lung_1d_pipe_flow_resulttest.hpp"
+#include "4C_reduced_lung_1d_pipe_flow_terminal_unit.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_utils_function_of_time.hpp"
 
@@ -512,6 +513,9 @@ namespace ReducedLung1dPipeFlow
         local_in_out_nodes, comm);  // contains all nodes with normal_in_out = +/-1
     std::unordered_set<int> visited_nodes;
     std::vector<JunctionInfo> all_junctions;
+    std::vector<int> boundary_nodes;
+    std::vector<ReducedLung1DPipe::TerminalUnit::TerminalUnitModel> all_terminal_units;
+    std::unordered_map<int, std::size_t> global_tu_id_to_index;
 
     for (auto it = all_in_out_nodes.begin(); it != all_in_out_nodes.end(); ++it)
     {
@@ -541,6 +545,34 @@ namespace ReducedLung1dPipeFlow
         bool does_this_rank_participate = std::ranges::find(junction_info.node_owners, mpi_rank) !=
                                           junction_info.node_owners.end();
         if (does_this_rank_participate) all_junctions.emplace_back(junction_info);
+      }
+      // treat terminal units and create TU model per boundary node if node has information on
+      // terminal unit
+      else if (junction_info.node_ids.size() == 1 &&
+               junction_info.node_owners.front() == mpi_rank &&
+               input.boundary_conditions.output == "terminal_unit" &&
+               normals.get_values()[discretization->node_row_map()->lid(
+                   junction_info.node_ids.front())] == 1)
+      {
+        // fill data
+        ReducedLung1DPipe::TerminalUnit::TerminalUnitData terminal_unit_data;
+        terminal_unit_data.global_node_id = junction_info.node_ids.front();
+        terminal_unit_data.node_owner = junction_info.node_owners.front();
+        terminal_unit_data.volume_v =
+            input.terminal_units.acinar_volume_v.at(terminal_unit_data.global_node_id);
+        terminal_unit_data.reference_volume_v0 = terminal_unit_data.volume_v;
+
+        // create Terminal unit model
+        ReducedLung1DPipe::TerminalUnit::TerminalUnitModel tu_model;
+        tu_model.data = terminal_unit_data;
+        tu_model.elasticity_model = ReducedLung1DPipe::TerminalUnit::create_elasticity_model(
+            input.terminal_units.elasticity_model, terminal_unit_data.global_node_id);
+        tu_model.rheological_model = ReducedLung1DPipe::TerminalUnit::create_rheological_model(
+            input.terminal_units.rheological_model, terminal_unit_data.global_node_id);
+        // create map to access terminal units
+        global_tu_id_to_index[terminal_unit_data.global_node_id] = all_terminal_units.size();
+        // add to vector
+        all_terminal_units.push_back(tu_model);
       }
     }
     // Now we have a list of all_junctions that are relevant on a rank. This means every rank know
@@ -930,7 +962,7 @@ namespace ReducedLung1dPipeFlow
           /+********************************************************************************/
           else
           {
-            double u_condition = 0.0;
+            double u_condition = boundary_u;
             double A_condition = boundary_A;
 
             // precribed inflow
@@ -1027,6 +1059,50 @@ namespace ReducedLung1dPipeFlow
                 u_condition = characteristic_W_outgoing -
                               4 * std::pow(A_condition, 0.25) *
                                   sqrt(0.5 * beta_element / input.fluid.density_rho);
+              }
+              else if (input.boundary_conditions.output == "terminal_unit")
+              {
+                // access TerminalUnitModel at output node
+                auto it = global_tu_id_to_index.find(element.node_ids()[boundary_local_index]);
+                if (it == global_tu_id_to_index.end())
+                {
+                  // FOUR_C_ASSERT(false, "Wrong TU mapping.");
+                  return;
+                }
+                ReducedLung1DPipe::TerminalUnit::TerminalUnitModel& terminal_unit =
+                    all_terminal_units[it->second];
+                // get jacobian and residual using, A and u from last time step
+                auto [residual_f, jacobian] = terminal_unit.evaluate_residual_jacobian(A_condition,
+                    reference_area_element, beta_element, boundary_Pext, input.fluid.density_rho,
+                    characteristic_W_outgoing, dt);
+
+                int iter = 0;
+                // Newton-Raphson solving for A at 1D terminal node
+                while (abs(residual_f) > 1e-8)
+                {
+                  A_condition -= residual_f / jacobian;
+                  // recompute residual with new values
+                  auto result = terminal_unit.evaluate_residual_jacobian(A_condition,
+                      reference_area_element, beta_element, boundary_Pext, input.fluid.density_rho,
+                      characteristic_W_outgoing, dt);
+                  residual_f = result.first;
+                  jacobian = result.second;
+                  iter++;
+                  if (iter >= 100)
+                  {
+                    FOUR_C_THROW(
+                        "Newton Raphson method exceeded maximum allowed iterations at terminal "
+                        "unit.");
+                  }
+                }
+
+                u_condition = characteristic_W_outgoing -
+                              4 * std::pow(A_condition, 0.25) *
+                                  sqrt(0.5 * beta_element / input.fluid.density_rho);
+                double Q_condition = A_condition * u_condition;
+                // update model data
+                terminal_unit.update_terminal_unit_data(Q_condition, dt, A_condition, beta_element,
+                    input.fluid.density_rho, characteristic_W_outgoing);
               }
               else
               {

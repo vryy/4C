@@ -53,6 +53,64 @@ namespace ReducedLung1dPipeFlow
       std::optional<double> pulse_width;
       const Core::Utils::FunctionOfTime* bc_fct;
     } boundary_conditions;
+
+    // information on terminal units where 1D is coupled to 0D
+    struct TerminalUnits
+    {
+      Core::IO::InputField<double> acinar_volume_v;
+      struct RheologicalModel
+      {
+        /**
+         * Enum to distinguish between different rheological models for the terminal units in
+         * the 1D reduced lung implementation.
+         */
+        enum class RheologicalModelType : std::uint8_t
+        {
+          KelvinVoigt,
+          FourElementMaxwell
+        };
+
+        Core::IO::InputField<RheologicalModelType> rheological_model_type;
+
+        struct KelvinVoigt
+        {
+          Core::IO::InputField<double> viscosity_kelvin_voigt_eta;
+        } kelvin_voigt;
+
+        struct FourElementMaxwell
+        {
+          Core::IO::InputField<double> viscosity_kelvin_voigt_eta;
+          Core::IO::InputField<double> viscosity_maxwell_eta_m;
+          Core::IO::InputField<double> elasticity_maxwell_e_m;
+        } four_element_maxwell;
+      } rheological_model;
+
+      struct ElasticityModel
+      {
+        /**
+         * Enum to distinguish between different elasticity models for the terminal units in the 1D
+         * reduced lung implementation.
+         */
+        enum class ElasticityModelType : std::uint8_t
+        {
+          Linear,
+          Ogden
+        };
+
+        Core::IO::InputField<ElasticityModelType> elasticity_model_type;
+
+        struct Linear
+        {
+          Core::IO::InputField<double> elasticity_e;
+        } linear;
+
+        struct Ogden
+        {
+          Core::IO::InputField<double> ogden_parameter_kappa;
+          Core::IO::InputField<double> ogden_parameter_beta;
+        } ogden;
+      } elasticity_model;
+    } terminal_units;
   };
   Core::IO::InputSpec valid_parameters();
 }  // namespace ReducedLung1dPipeFlow
