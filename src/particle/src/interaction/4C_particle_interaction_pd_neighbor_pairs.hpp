@@ -17,6 +17,7 @@
 #include "4C_particle_engine_enums.hpp"
 #include "4C_particle_engine_typedefs.hpp"
 #include "4C_particle_interaction_pd_neighbor_pair_struct.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -53,7 +54,7 @@ namespace Particle
   {
    public:
     //! constructor
-    explicit PDNeighborPairs(const MPI_Comm& comm);
+    explicit PDNeighborPairs(const MPI_Comm& comm, const Teuchos::ParameterList& params_pd);
 
     //! setup neighbor pair handler
     void setup(const std::shared_ptr<Particle::ParticleEngineInterface> particleengineinterface,
@@ -126,6 +127,9 @@ namespace Particle
 
     //! communicator
     const MPI_Comm& comm_;
+
+    //! peridynamic grid spacing
+    const double peridynamic_grid_spacing_;
   };
 
 }  // namespace Particle
