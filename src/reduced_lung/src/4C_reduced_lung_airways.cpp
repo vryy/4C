@@ -412,9 +412,9 @@ namespace ReducedLung
           {
             model.data.q2_n[i] = locally_relevant_dofs.local_values_as_span()[model.data.lid_q2[i]];
           }
-
-          model.end_of_timestep_routine(model.data, locally_relevant_dofs, dt);
         }
+
+        model.end_of_timestep_routine(model.data, locally_relevant_dofs, dt);
       }
     }
 
