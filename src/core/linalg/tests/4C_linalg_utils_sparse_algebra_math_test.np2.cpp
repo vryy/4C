@@ -244,7 +244,7 @@ namespace
 
     auto map = Core::LinAlg::Map(10, 0, comm_);
     auto multi_vector = Core::LinAlg::MultiVector<double>(map, num_basis_vectors, true);
-    multi_vector.get_epetra_multi_vector().Random();
+    multi_vector.random();
 
     auto local_map = Core::LinAlg::Map(multi_vector.num_vectors(), 0, multi_vector.get_comm(),
         Core::LinAlg::LocalGlobal::locally_replicated);
@@ -261,8 +261,7 @@ namespace
 
       result.multiply('T', 'N', 1.0, multi_vector, multi_vector, 0.0);
       auto gram_matrix = Core::LinAlg::SerialDenseMatrix(Teuchos::DataAccess::Copy,
-          result.get_values(), result.get_epetra_multi_vector().Stride(), result.num_vectors(),
-          result.num_vectors());
+          result.get_values(), result.stride(), result.num_vectors(), result.num_vectors());
 
       FOUR_C_EXPECT_NEAR(gram_matrix, identity, 1e-12);
     }

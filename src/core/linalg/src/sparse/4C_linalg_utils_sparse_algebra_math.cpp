@@ -533,7 +533,7 @@ Core::LinAlg::MultiVector<double> Core::LinAlg::orthonormalize_multi_vector(
   temp.multiply('T', 'N', 1.0, multi_vector, multi_vector, 0.0);
 
   auto Q = Core::LinAlg::SerialDenseMatrix(Teuchos::DataAccess::Copy, temp.get_values(),
-      temp.get_epetra_multi_vector().Stride(), temp.num_vectors(), temp.num_vectors());
+      temp.stride(), temp.num_vectors(), temp.num_vectors());
 
   Teuchos::LAPACK<int, double> lapack;
   int err = 0;
