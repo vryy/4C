@@ -11,11 +11,8 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_linalg_four_tensor.hpp"
-#include "4C_mat_anisotropy.hpp"
-#include "4C_mat_anisotropy_extension_default.hpp"
-#include "4C_mat_anisotropy_extension_provider.hpp"
-#include "4C_mat_muscle_utils.hpp"
+#include "4C_io_input_field.hpp"
+#include "4C_mat_fiber_interpolation.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_local_numeric_methods.hpp"
@@ -93,8 +90,11 @@ namespace Mat
       //! @}
 
       const double density_;  ///< density
-      //@}
+                              //@}
 
+      const Core::IO::InterpolatedInputField<Core::LinAlg::Tensor<double, 3>,
+          Mat::FiberInterpolation>
+          fiber_orientation_;  ///< fiber orientation field
     };  // end class Muscle_Giantesio
   }  // end namespace PAR
 
@@ -318,13 +318,7 @@ namespace Mat
     /// Activation level of the previous timestep
     double omegaa_old_;
 
-    /// Holder for anisotropic behavior
-    Mat::Anisotropy anisotropy_;
-
-    /// Anisotropy extension holder
-    Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };  // end class Muscle_Giantesio
-
 }  // end namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE

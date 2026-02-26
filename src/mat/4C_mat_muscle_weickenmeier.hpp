@@ -11,9 +11,8 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_anisotropy.hpp"
-#include "4C_mat_anisotropy_extension_default.hpp"
-#include "4C_mat_anisotropy_extension_provider.hpp"
+#include "4C_io_input_field.hpp"
+#include "4C_mat_fiber_interpolation.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
 
@@ -91,7 +90,11 @@ namespace Mat
       //! @}
 
       const double density_;  ///< density
-      //@}
+                              //@}
+
+      const Core::IO::InterpolatedInputField<Core::LinAlg::Tensor<double, 3>,
+          Mat::FiberInterpolation>
+          fiber_orientation_;  ///< fiber orientation field
 
     };  // end class Muscle_Weickenmeier
   }  // end namespace PAR
@@ -219,12 +222,6 @@ namespace Mat
 
     /// Fibre stretch of the previous timestep
     double lambda_m_old_;
-
-    /// Holder for anisotropic behavior
-    Mat::Anisotropy anisotropy_;
-
-    /// Anisotropy extension holder
-    Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };  // end class Muscle_Weickenmeier
 
 }  // end namespace Mat

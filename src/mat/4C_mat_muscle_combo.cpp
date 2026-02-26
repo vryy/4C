@@ -15,7 +15,7 @@
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
 #include "4C_linalg_tensor_generators.hpp"
-#include "4C_mat_elast_aniso_structuraltensor_strategy.hpp"
+#include "4C_mat_fiber_interpolation.hpp"
 #include "4C_mat_muscle_utils.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
@@ -110,7 +110,10 @@ Mat::PAR::MuscleCombo::MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdat
       lambdaMin_(matdata.parameters.get<double>("LAMBDAMIN")),
       lambdaOpt_(matdata.parameters.get<double>("LAMBDAOPT")),
       activationParams_(get_activation_params(matdata)),
-      density_(matdata.parameters.get<double>("DENS"))
+      density_(matdata.parameters.get<double>("DENS")),
+      fiber_orientation_(
+          matdata.parameters.get<Core::IO::InterpolatedInputField<Core::LinAlg::Tensor<double, 3>,
+              Mat::FiberInterpolation>>("FIBER_ORIENTATION"))
 {
 }
 
@@ -129,35 +132,11 @@ Core::Communication::ParObject* Mat::MuscleComboType::create(
   return muscle_combo;
 }
 
-Mat::MuscleCombo::MuscleCombo()
-    : params_(nullptr),
-      anisotropy_(),
-      anisotropy_extension_(true, 0.0, 0,
-          std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
-              new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
-          {0}),
-      activation_evaluator_(std::monostate{})
-{
-}
+Mat::MuscleCombo::MuscleCombo() : params_(nullptr), activation_evaluator_(std::monostate{}) {}
 
 Mat::MuscleCombo::MuscleCombo(Mat::PAR::MuscleCombo* params)
-    : params_(params),
-      anisotropy_(),
-      anisotropy_extension_(true, 0.0, 0,
-          std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
-              new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
-          {0}),
-      activation_evaluator_(std::monostate{})
+    : params_(params), activation_evaluator_(std::monostate{})
 {
-  // register anisotropy extension to global anisotropy
-  anisotropy_.register_anisotropy_extension(anisotropy_extension_);
-
-  // initialize fiber directions and structural tensor
-  anisotropy_extension_.register_needed_tensors(
-      Mat::FiberAnisotropyExtension<1>::FIBER_VECTORS |
-      Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
-
-  // cannot set activation_function here, because function manager did not yet read functions
 }
 
 void Mat::MuscleCombo::pack(Core::Communication::PackBuffer& data) const
@@ -170,8 +149,6 @@ void Mat::MuscleCombo::pack(Core::Communication::PackBuffer& data) const
   int matid = -1;
   if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-
-  anisotropy_extension_.pack_anisotropy(data);
 }
 
 void Mat::MuscleCombo::unpack(Core::Communication::UnpackBuffer& buffer)
@@ -202,17 +179,11 @@ void Mat::MuscleCombo::unpack(Core::Communication::UnpackBuffer& buffer)
             material_type());
     }
   }
-
-  anisotropy_extension_.unpack_anisotropy(buffer);
 }
 
 void Mat::MuscleCombo::setup(int numgp, const Discret::Elements::Fibers& fibers,
     const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
-  // Read anisotropy
-  anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(fibers, coord_system);
-
   activation_evaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
 }
 
@@ -242,9 +213,12 @@ void Mat::MuscleCombo::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgra
   // inverse right Cauchy Green tensor C^-1
   const Core::LinAlg::SymmetricTensor<double, 3, 3> invC = Core::LinAlg::inv(C);
 
+  // interpolate fiber orientation at current integration point
+  Core::LinAlg::Tensor<double, 3> orientation =
+      params_->fiber_orientation_.interpolate(eleGID, context.xi->as_span());
+
   // structural tensor M, i.e. dyadic product of fibre directions
-  const Core::LinAlg::SymmetricTensor<double, 3, 3> M =
-      anisotropy_extension_.get_structural_tensor(gp, 0);
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> M = Core::LinAlg::self_dyadic(orientation);
 
   // structural tensor L = omega0/3*Identity + omegap*M
   const Core::LinAlg::SymmetricTensor<double, 3, 3> L =

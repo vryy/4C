@@ -16,7 +16,6 @@
 #include "4C_linalg_tensor_conversion.hpp"
 #include "4C_linalg_tensor_einstein.hpp"
 #include "4C_linalg_tensor_generators.hpp"
-#include "4C_mat_elast_aniso_structuraltensor_strategy.hpp"
 #include "4C_mat_muscle_utils.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
@@ -127,7 +126,11 @@ Mat::PAR::MuscleGiantesio::MuscleGiantesio(const Core::Mat::PAR::Parameter::Data
       actTimes_((matdata.parameters.get<std::vector<double>>("ACTTIMES"))),
       actIntervalsNum_(matdata.parameters.get<int>("ACTINTERVALSNUM")),
       actValues_((matdata.parameters.get<std::vector<double>>("ACTVALUES"))),
-      density_(matdata.parameters.get<double>("DENS"))
+      density_(matdata.parameters.get<double>("DENS")),
+      fiber_orientation_(
+          matdata.parameters.get<Core::IO::InterpolatedInputField<Core::LinAlg::Tensor<double, 3>,
+              Mat::FiberInterpolation>>("FIBER_ORIENTATION"))
+
 {
   // active material parameters
   // stimulation frequency dependent parameters
@@ -163,39 +166,14 @@ Core::Communication::ParObject* Mat::MuscleGiantesioType::create(
   return muscle_giantesio;
 }
 
-Mat::MuscleGiantesio::MuscleGiantesio()
-    : params_(nullptr),
-      lambda_m_old_(1.0),
-      omegaa_old_(-1.0),
-      anisotropy_(),
-      anisotropy_extension_(true, 0.0, 0,
-          std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
-              new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
-          {0})
-{
-}
+Mat::MuscleGiantesio::MuscleGiantesio() : params_(nullptr), lambda_m_old_(1.0), omegaa_old_(-1.0) {}
 
 Mat::MuscleGiantesio::MuscleGiantesio(Mat::PAR::MuscleGiantesio* params)
-    : params_(params),
-      lambda_m_old_(1.0),
-      omegaa_old_(-1.0),
-      anisotropy_(),
-      anisotropy_extension_(true, 0.0, 0,
-          std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
-              new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
-          {0})
+    : params_(params), lambda_m_old_(1.0), omegaa_old_(-1.0)
 {
   // initialize lambdaMOld_ and omegaOld_
   lambda_m_old_ = 1.0;
   omegaa_old_ = -1.0;
-
-  // register anisotropy extension to global anisotropy
-  anisotropy_.register_anisotropy_extension(anisotropy_extension_);
-
-  // initialize fiber directions and structural tensor
-  anisotropy_extension_.register_needed_tensors(
-      Mat::FiberAnisotropyExtension<1>::FIBER_VECTORS |
-      Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
 void Mat::MuscleGiantesio::pack(Core::Communication::PackBuffer& data) const
@@ -211,8 +189,6 @@ void Mat::MuscleGiantesio::pack(Core::Communication::PackBuffer& data) const
 
   add_to_pack(data, lambda_m_old_);
   add_to_pack(data, omegaa_old_);
-
-  anisotropy_extension_.pack_anisotropy(data);
 }
 
 void Mat::MuscleGiantesio::unpack(Core::Communication::UnpackBuffer& buffer)
@@ -243,16 +219,11 @@ void Mat::MuscleGiantesio::unpack(Core::Communication::UnpackBuffer& buffer)
 
   extract_from_pack(buffer, lambda_m_old_);
   extract_from_pack(buffer, omegaa_old_);
-
-  anisotropy_extension_.unpack_anisotropy(buffer);
 }
 
 void Mat::MuscleGiantesio::setup(int numgp, const Discret::Elements::Fibers& fibers,
     const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
-  // Read anisotropy
-  anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(fibers, coord_system);
 }
 
 void Mat::MuscleGiantesio::update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd, int const gp,
@@ -263,9 +234,12 @@ void Mat::MuscleGiantesio::update(Core::LinAlg::Tensor<double, 3, 3> const& defg
   Core::LinAlg::SymmetricTensor<double, 3, 3> C =
       Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(defgrd) * defgrd);
 
+  // interpolate fiber orientation at current integration point
+  Core::LinAlg::Tensor<double, 3> orientation =
+      params_->fiber_orientation_.interpolate(eleGID, context.xi->as_span());
+
   // structural tensor M, i.e. dyadic product of fibre directions
-  const Core::LinAlg::SymmetricTensor<double, 3, 3>& M =
-      anisotropy_extension_.get_structural_tensor(gp, 0);
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> M = Core::LinAlg::self_dyadic(orientation);
 
   // save the current fibre stretch in lambdaMOld_
   lambda_m_old_ = Mat::Utils::Muscle::fiber_stretch(C, M);
@@ -306,9 +280,14 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
   // inverse right Cauchy Green tensor C^-1
   const auto invC = Core::LinAlg::inv(C);
 
+  // interpolate fiber orientation at current integration point
+  Core::LinAlg::Tensor<double, 3> orientation =
+      params_->fiber_orientation_.interpolate(eleGID, context.xi->as_span());
+
   // structural tensor M, i.e. dyadic product of fibre directions
-  const Core::LinAlg::SymmetricTensor<double, 3, 3> M =
-      anisotropy_extension_.get_structural_tensor(gp, 0);
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> M = Core::LinAlg::self_dyadic(orientation);
+
+  // fiber stretch lambdaM
   const double lambdaM = Mat::Utils::Muscle::fiber_stretch(C, M);
 
   // derivative of lambdaM w.r.t. C
