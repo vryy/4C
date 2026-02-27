@@ -536,7 +536,7 @@ void Particle::ParticleInteractionSPH::init_neighbor_pair_handler()
   if (params_.get<bool>("PD_BODY_INTERACTION"))
   {
     // create neighbor pair handler
-    neighborpairs_pd_ = std::make_shared<Particle::PDNeighborPairs>(comm_);
+    neighborpairs_pd_ = std::make_shared<Particle::PDNeighborPairs>(comm_, params_.sublist("PD"));
   }
 }
 

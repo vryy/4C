@@ -41,7 +41,9 @@ namespace
       const int localid, const int globalid, Particle::ParticleContainer* container);
 }  // namespace
 
-Particle::PDNeighborPairs::PDNeighborPairs(const MPI_Comm& comm) : comm_(comm)
+Particle::PDNeighborPairs::PDNeighborPairs(
+    const MPI_Comm& comm, const Teuchos::ParameterList& params_pd)
+    : comm_(comm), peridynamic_grid_spacing_(params_pd.get<double>("PERIDYNAMIC_GRID_SPACING"))
 {
   // empty constructor
 }
@@ -135,10 +137,7 @@ void Particle::PDNeighborPairs::evaluate_particle_pairs()
     // all close and non-bonded particle pairs are considered as potential colliding partners
     // undergoing short range force interaction
     const double* pos_i = container_i->get_ptr_to_state(Particle::Position, particle_i);
-    const double* rad_i = container_i->get_ptr_to_state(Particle::Radius, particle_i);
-
     const double* pos_j = container_j->get_ptr_to_state(Particle::Position, particle_j);
-    const double* rad_j = container_j->get_ptr_to_state(Particle::Radius, particle_j);
 
     // vector from particle i to j
     double r_ji[3];
@@ -150,12 +149,15 @@ void Particle::PDNeighborPairs::evaluate_particle_pairs()
     const double absdist = ParticleUtils::vec_norm_two(r_ji);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
+    const double* rad_i = container_i->get_ptr_to_state(Particle::Radius, particle_i);
+    const double* rad_j = container_j->get_ptr_to_state(Particle::Radius, particle_j);
+
     if (absdist < (1.0e-10 * rad_i[0]) or absdist < (1.0e-10 * rad_j[0]))
       FOUR_C_THROW("absolute distance %f between particles close to zero!", absdist);
 #endif
 
-    // gap between particles
-    const double gap = absdist - rad_i[0] - rad_j[0];
+    // gap calculation based on initial spacing
+    const double gap = absdist - peridynamic_grid_spacing_;
 
     // neighboring particles within interaction distance
     if (gap < 0.0)
