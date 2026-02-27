@@ -1371,7 +1371,7 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(Mortar::Element::Physic
       {
         if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {
-          if (mastertype == Mortar::Element::poro)
+          if (mastertype == Mortar::Element::structure)
           {
             FOUR_C_THROW(
                 "struct and poro master elements on the same processor - no mixed interface "
@@ -1385,9 +1385,11 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(Mortar::Element::Physic
     }
     if (cele.phys_type() == Mortar::Element::other)
     {
-      if (mastertype == Mortar::Element::structure)
+      if (mastertype == Mortar::Element::poro)
+      {
         FOUR_C_THROW(
             "struct and poro master elements on the same processor - no mixed interface supported");
+      }
       cele.phys_type() = Mortar::Element::structure;
       mastertype = Mortar::Element::structure;
     }

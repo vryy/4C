@@ -1,4 +1,13 @@
-TITLE: []
+TITLE:
+  - "Contact simulation between a solid HEX8 element (master) and a poro-viscoplastic HEX8 element (slave)."
+  - "Mortar coupling is applied with the Nitsche algorithm."
+  - "A displacement is prescribed using cosine ramps 'downwards' (in the negative z-direction) on the
+    upper solid HEX8 element. The bottom surface of the poro-viscoplastic element is fixed."
+  - "The poro-viscoplastic material behavior is described by a neo-Hookean porosity law, with Reformulated
+    Johnson-Cook finite strain viscoplasticity (see Mareau: A thermodynamically consistent formulation
+    of the Johnson-Cook model, Mechanics of Materials 143, 2020).  The solid element is modeled with a
+    neo-Hooke elasticity law."
+  - "Both elements exhibit the same Young's modulus."
 PROBLEM TYPE:
   PROBLEMTYPE: "Poroelasticity"
 IO:
@@ -62,13 +71,43 @@ MATERIALS:
       BULKMODULUS: 2e+08
       PENALTYPARAMETER: 0.001
   - MAT: 2
-    MAT_ElastHyper:
-      NUMMAT: 1
-      MATIDS: [4]
-      DENS: 5
-  - MAT: 4
+    MAT_MultiplicativeSplitDefgradElastHyper:
+      NUMMATEL: 1
+      MATIDSEL: [21]
+      NUMFACINEL: 1
+      INELDEFGRADFACIDS: [22]
+      DENS: 7830
+  - MAT: 21
     ELAST_CoupNeoHooke:
-      YOUNG: 20000
+      YOUNG: 2.0e4
+      NUE: 0.3
+  - MAT: 22
+    MAT_InelasticDefgradTransvIsotropElastViscoplast:
+      VISCOPLAST_LAW_ID: 23
+      FIBER_READER_ID: 24
+      YIELD_COND_A: 1
+      YIELD_COND_B: 2
+      YIELD_COND_F: 2.5
+      ANISOTROPY: "isotrop"
+      LOG_SUBSTEP: true
+      MAX_HALVE_NUM_SUBSTEP: 10
+  - MAT: 23
+    MAT_ViscoplasticLawReformulatedJohnsonCook:
+      STRAIN_RATE_PREFAC: 1
+      STRAIN_RATE_EXP_FAC: 0.014
+      INIT_YIELD_STRENGTH: 792
+      ISOTROP_HARDEN_PREFAC: 510
+      ISOTROP_HARDEN_EXP: 0.26
+  - MAT: 24
+    ELAST_CoupTransverselyIsotropic:
+      ALPHA: 1
+      BETA: 1
+      GAMMA: 1
+      ANGLE: 0
+      STR_TENS_ID: 25
+  - MAT: 25
+    ELAST_StructuralTensor:
+      STRATEGY: "Standard"
   - MAT: 3
     MAT_FluidPoro:
       DYNVISCOSITY: 1
@@ -178,47 +217,47 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispx"
-      VALUE: -9.265688714409604e-07
+      VALUE: -1.99286663515699757e-03
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispy"
-      VALUE: 9.265688715560302e-07
+      VALUE: 1.99286663515695246e-03
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispz"
-      VALUE: -0.010026035928431517
+      VALUE: -9.24549511219532535e-03
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "velz"
-      VALUE: -0.004580350515641884
+      VALUE: -4.23587133633450408e-03
       TOLERANCE: 1e-10
   - FLUID:
       DIS: "porofluid"
       NODE: 8
       QUANTITY: "velx"
-      VALUE: -0.00250075122887097
+      VALUE: -1.61327796062363292e-03
       TOLERANCE: 1e-10
   - FLUID:
       DIS: "porofluid"
       NODE: 8
       QUANTITY: "vely"
-      VALUE: 0.0025007512288710188
+      VALUE: 1.61327796062362577e-03
       TOLERANCE: 1e-10
   - FLUID:
       DIS: "porofluid"
       NODE: 8
       QUANTITY: "velz"
-      VALUE: -0.003992350959438563
+      VALUE: -3.47653525531736642e-03
       TOLERANCE: 1e-10
   - FLUID:
       DIS: "porofluid"
       NODE: 8
       QUANTITY: "pressure"
-      VALUE: 0.021914417064731757
+      VALUE: 6.49690772571310648e-03
       TOLERANCE: 1e-10
