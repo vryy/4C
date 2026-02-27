@@ -10,7 +10,6 @@
 #include "4C_reduced_lung_boundary_conditions.hpp"
 
 #include "4C_fem_discretization.hpp"
-#include "4C_global_data.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_vector.hpp"
@@ -187,12 +186,12 @@ namespace
   }
 
   BoundaryConditionContainer create_boundary_conditions_from_fixture(
-      const BoundaryConditionFixture& fixture)
+      const BoundaryConditionFixture& fixture, const Core::Utils::FunctionManager& function_manager)
   {
     BoundaryConditionContainer boundary_conditions;
     create_boundary_conditions(*fixture.discretization, fixture.parameters,
         fixture.ele_ids_per_node, fixture.global_dof_per_ele, fixture.first_global_dof_of_ele,
-        boundary_conditions);
+        function_manager, boundary_conditions);
     return boundary_conditions;
   }
 
@@ -206,24 +205,13 @@ namespace
     }
   }
 
-  struct FunctionManagerGuard
-  {
-    Core::Utils::FunctionManager original;
-
-    FunctionManagerGuard() : original(Global::Problem::instance()->function_manager()) {}
-
-    ~FunctionManagerGuard()
-    {
-      Global::Problem::instance()->set_function_manager(std::move(original));
-    }
-  };
-
   TEST(BoundaryConditionsTests, CreateBoundaryConditionsGroupsByType)
   {
     skip_if_parallel();
 
     auto fixture = make_fixture();
-    auto boundary_conditions = create_boundary_conditions_from_fixture(fixture);
+    Core::Utils::FunctionManager function_manager;
+    auto boundary_conditions = create_boundary_conditions_from_fixture(fixture, function_manager);
 
     ASSERT_EQ(boundary_conditions.models.size(), 2u);
 
@@ -255,7 +243,8 @@ namespace
     skip_if_parallel();
 
     auto fixture = make_fixture();
-    auto boundary_conditions = create_boundary_conditions_from_fixture(fixture);
+    Core::Utils::FunctionManager function_manager;
+    auto boundary_conditions = create_boundary_conditions_from_fixture(fixture, function_manager);
 
     int n_local_equations = 0;
     assign_local_equation_ids(boundary_conditions, n_local_equations);
@@ -294,7 +283,8 @@ namespace
     skip_if_parallel();
 
     auto fixture = make_fixture();
-    auto boundary_conditions = create_boundary_conditions_from_fixture(fixture);
+    Core::Utils::FunctionManager function_manager;
+    auto boundary_conditions = create_boundary_conditions_from_fixture(fixture, function_manager);
 
     int n_local_equations = 0;
     assign_local_equation_ids(boundary_conditions, n_local_equations);
@@ -339,10 +329,11 @@ namespace
     fixture.ele_ids_per_node.erase(0);
 
     BoundaryConditionContainer boundary_conditions;
+    Core::Utils::FunctionManager function_manager;
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
         create_boundary_conditions(*fixture.discretization, fixture.parameters,
             fixture.ele_ids_per_node, fixture.global_dof_per_ele, fixture.first_global_dof_of_ele,
-            boundary_conditions),
+            function_manager, boundary_conditions),
         Core::Exception, "not part of the topology");
   }
 
@@ -355,18 +346,17 @@ namespace
         make_single_bc_parameters(2, ReducedLungParameters::BoundaryConditions::Type::Pressure);
 
     BoundaryConditionContainer boundary_conditions;
+    Core::Utils::FunctionManager function_manager;
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
         create_boundary_conditions(*fixture.discretization, fixture.parameters,
             fixture.ele_ids_per_node, fixture.global_dof_per_ele, fixture.first_global_dof_of_ele,
-            boundary_conditions),
+            function_manager, boundary_conditions),
         Core::Exception, "must connect to exactly one element");
   }
 
   TEST(BoundaryConditionsTests, ResidualAssemblyFunctionValue)
   {
     skip_if_parallel();
-
-    FunctionManagerGuard guard;
 
     Core::Utils::FunctionManager function_manager;
     std::vector<std::any> functions;
@@ -375,13 +365,12 @@ namespace
             std::vector<std::shared_ptr<Core::Utils::FunctionVariable>>{}));
     functions.emplace_back(function);
     function_manager.set_functions(functions);
-    Global::Problem::instance()->set_function_manager(std::move(function_manager));
 
     auto fixture = make_fixture();
     fixture.parameters = make_function_bc_parameters(
         1, ReducedLungParameters::BoundaryConditions::Type::Pressure, 1);
 
-    auto boundary_conditions = create_boundary_conditions_from_fixture(fixture);
+    auto boundary_conditions = create_boundary_conditions_from_fixture(fixture, function_manager);
 
     int n_local_equations = 0;
     assign_local_equation_ids(boundary_conditions, n_local_equations);
@@ -414,10 +403,11 @@ namespace
     fixture.parameters = make_duplicate_type_parameters();
 
     BoundaryConditionContainer boundary_conditions;
+    Core::Utils::FunctionManager function_manager;
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
         create_boundary_conditions(*fixture.discretization, fixture.parameters,
             fixture.ele_ids_per_node, fixture.global_dof_per_ele, fixture.first_global_dof_of_ele,
-            boundary_conditions),
+            function_manager, boundary_conditions),
         Core::Exception, "Multiple pressure boundary conditions assigned to node");
   }
 }  // namespace

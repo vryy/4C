@@ -9,11 +9,11 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
-#include "4C_global_data.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_function_manager.hpp"
 #include "4C_utils_function_of_time.hpp"
 
 #include <tuple>
@@ -157,6 +157,7 @@ namespace ReducedLung
         const std::map<int, std::vector<int>>& global_ele_ids_per_node,
         const std::map<int, int>& global_dof_per_ele,
         const std::map<int, int>& first_global_dof_of_ele,
+        const Core::Utils::FunctionManager& function_manager,
         BoundaryConditionContainer& boundary_conditions)
     {
       boundary_conditions.models.clear();
@@ -299,8 +300,7 @@ namespace ReducedLung
           if (value_source == ValueSource::function_id)
           {
             model.function =
-                &Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfTime>(
-                    function_key);
+                &function_manager.function_by_id<Core::Utils::FunctionOfTime>(function_key);
           }
           boundary_conditions.models.push_back(std::move(model));
           const size_t new_index = boundary_conditions.models.size() - 1;
@@ -313,8 +313,7 @@ namespace ReducedLung
         {
           // Ensure the function pointer is cached even if the model existed already.
           model.function =
-              &Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfTime>(
-                  model.function_id);
+              &function_manager.function_by_id<Core::Utils::FunctionOfTime>(model.function_id);
         }
         model.add_condition(node_id, element_id, local_bc_id, global_dof_id, bc_id, value);
         local_bc_id++;

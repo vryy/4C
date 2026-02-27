@@ -93,7 +93,8 @@ namespace ReducedLung
     Junctions::BifurcationData bifurcations;
 
     BoundaryConditions::create_boundary_conditions(*actdis, parameters, global_ele_ids_per_node,
-        global_dof_per_ele, first_global_dof_of_ele, boundary_conditions);
+        global_dof_per_ele, first_global_dof_of_ele, problem->function_manager(),
+        boundary_conditions);
     BoundaryConditions::create_evaluators(boundary_conditions);
 
     Junctions::create_junctions(*actdis, global_ele_ids_per_node, global_dof_per_ele,

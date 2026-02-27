@@ -33,8 +33,9 @@ namespace Core::LinAlg
 
 namespace Core::Utils
 {
+  class FunctionManager;
   class FunctionOfTime;
-}
+}  // namespace Core::Utils
 
 namespace ReducedLung
 {
@@ -161,6 +162,7 @@ namespace ReducedLung
         const std::map<int, std::vector<int>>& global_ele_ids_per_node,
         const std::map<int, int>& global_dof_per_ele,
         const std::map<int, int>& first_global_dof_of_ele,
+        const Core::Utils::FunctionManager& function_manager,
         BoundaryConditionContainer& boundary_conditions);
 
     /**
