@@ -39,7 +39,8 @@ namespace CONTACT
               NodeRowMap, params, dim, comm, alphaf, maxdof),
           interface_(std::move(interface)),
           curr_state_eval_(false)
-    { /* empty */
+    {
+      init_time_step_size_and_total_time(params);
     }
 
     //! Shared data constructor
@@ -51,7 +52,8 @@ namespace CONTACT
         : AbstractStrategy(data_ptr, dof_row_map, NodeRowMap, params, dim, comm, alphaf, maxdof),
           interface_(std::move(interface)),
           curr_state_eval_(false)
-    { /* empty */
+    {
+      init_time_step_size_and_total_time(params);
     }
 
     // don't want = operator and cctor
@@ -93,7 +95,7 @@ namespace CONTACT
       */
     void setup(bool redistributed, bool init) override;
 
-    virtual void update_trace_ineq_etimates();
+    virtual void update_trace_ineq_estimates();
 
     /*! \brief Get dirichlet B.C. status and store into Nodes
 
@@ -274,10 +276,41 @@ namespace CONTACT
     virtual std::shared_ptr<Core::LinAlg::SparseMatrix> create_matrix_block_ptr(
         const MatBlockType& bt);
 
+
+    /*!
+     * @brief Save time step size \f$ \Delta t \f$, and total time \f$ t_{n+1} \f$
+     *
+     * @param[in] time_step_size  time step size \f$ \Delta t \f$
+     * @param[in] total time  total time \f$ t_{n+1} \f$
+     *
+     */
+    void save_time_step_size_and_total_time(const double time_step_size, const double total_time);
+
+    /*!
+     * @brief Initialize time step size \f$ \Delta t \f$, and total time \f$ t_{n+1} \f$
+     *
+     * @param[in] params parameter list containing timestep for evaluating the reference state
+     */
+    void init_time_step_size_and_total_time(const Teuchos::ParameterList& params)
+    {
+      const double time_step_size =
+          params.isParameter("TIMESTEP") ? params.get<double>("TIMESTEP") : 0.0;
+      const double dummy_total_time = 0.0;
+      save_time_step_size_and_total_time(time_step_size, dummy_total_time);
+    }
+
+
     std::vector<std::shared_ptr<CONTACT::Interface>> interface_;
 
     std::shared_ptr<Core::LinAlg::Vector<double>> curr_state_;
     bool curr_state_eval_;
+
+    //! time step size
+    double time_step_size_;
+
+    //! total time \f$ t_{n+1} \f$
+    double total_time_;
+
 
     std::shared_ptr<Core::LinAlg::FEVector<double>> fc_;
     std::shared_ptr<Core::LinAlg::SparseMatrix> kc_;
