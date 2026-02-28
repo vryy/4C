@@ -12,6 +12,36 @@
 
 #include <cmath>
 
+#if defined(__cpp_lib_math_special_functions) && __cpp_lib_math_special_functions >= 201603L
+#define HAS_STD_COMP_ELLINT_X 1
+#else
+#define HAS_STD_COMP_ELLINT_X 0
+#endif
+
+#if HAS_STD_COMP_ELLINT_X
+namespace Internal
+{
+  using std::comp_ellint_1;
+  using std::comp_ellint_2;
+  using std::comp_ellint_3;
+}  // namespace Internal
+#else
+/* Implement the comp_ellint_x functions since they are missing in old version of llvm's libc++, see
+ * https://github.com/llvm/llvm-project/issues/99939*/
+#include <boost/math/special_functions/ellint_1.hpp>
+#include <boost/math/special_functions/ellint_2.hpp>
+#include <boost/math/special_functions/ellint_3.hpp>
+namespace Internal
+{
+  using boost::math::ellint_1;
+  using boost::math::ellint_2;
+  using boost::math::ellint_3;
+  inline double comp_ellint_1(double k) { return boost::math::ellint_1(k); }
+  inline double comp_ellint_2(double k) { return boost::math::ellint_2(k); }
+  inline double comp_ellint_3(double k, double nu) { return boost::math::ellint_3(k, nu); }
+}  // namespace Internal
+#endif
+
 FOUR_C_NAMESPACE_OPEN namespace
 {
   std::shared_ptr<Core::Utils::FunctionOfSpaceTime> create_scatra_function(
@@ -292,8 +322,8 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::evaluate_magnetic_field(
   auto P_1 = [](const double k)
   {
     const double k_squared = std::pow(k, 2.0);
-    const double K = std::comp_ellint_1(std::sqrt(1.0 - k_squared));
-    const double E = std::comp_ellint_2(std::sqrt(1.0 - k_squared));
+    const double K = Internal::comp_ellint_1(std::sqrt(1.0 - k_squared));
+    const double E = Internal::comp_ellint_2(std::sqrt(1.0 - k_squared));
     return K - (2.0 / (1.0 - k_squared)) * (K - E);
   };
 
@@ -301,7 +331,7 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::evaluate_magnetic_field(
   {
     const double gamma_squared = std::pow(gamma, 2.0);
     const double k_squared = std::pow(k, 2.0);
-    const double K = std::comp_ellint_1(std::sqrt(1.0 - k_squared));
+    const double K = Internal::comp_ellint_1(std::sqrt(1.0 - k_squared));
     const double P = safe_comp_ellint_3(std::sqrt(1.0 - k_squared), 1 - gamma_squared);
 
     return -(gamma / (1.0 - gamma_squared)) * (P - K) -
@@ -435,10 +465,10 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::evaluate_magnetic_force(
   const double c_4 = b_4 + std::pow(rho, 2.0);
 
   // precompute complete elliptic integrals
-  const double K_p = std::comp_ellint_1(std::sqrt(psi_p));
-  const double K_m = std::comp_ellint_1(std::sqrt(psi_m));
-  const double E_p = std::comp_ellint_2(std::sqrt(psi_p));
-  const double E_m = std::comp_ellint_2(std::sqrt(psi_m));
+  const double K_p = Internal::comp_ellint_1(std::sqrt(psi_p));
+  const double K_m = Internal::comp_ellint_1(std::sqrt(psi_m));
+  const double E_p = Internal::comp_ellint_2(std::sqrt(psi_p));
+  const double E_m = Internal::comp_ellint_2(std::sqrt(psi_m));
 
   // calculate auxiliary functions
   const double Q_1 =
@@ -497,7 +527,7 @@ double ScaTra::safe_comp_ellint_3(double k, double nu)
   k = std::clamp(k, -1.0 + safe_margin, 1.0 - safe_margin);
   nu = std::min(nu, 1.0 - safe_margin);
 
-  return std::comp_ellint_3(k, nu);
+  return Internal::comp_ellint_3(k, nu);
 }
 
 FOUR_C_NAMESPACE_CLOSE
