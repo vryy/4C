@@ -174,7 +174,7 @@ jobs:
           git fetch origin 2f71f97f0b2d6f885dbeac39a7460863b10a14c0 --depth 1
           git checkout FETCH_HEAD
       - name: Download aggregated ninja trace
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: clang18_build-time-trace
           path: ${{ github.workspace }}
