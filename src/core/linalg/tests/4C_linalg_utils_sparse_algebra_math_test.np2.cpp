@@ -12,6 +12,7 @@
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_utils_sparse_algebra_io.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_unittest_utils_assertions_test.hpp"
 #include "4C_unittest_utils_support_files_test.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -227,6 +228,42 @@ namespace
       constexpr double expected_frobenius_norm = 7.448506913184814e+03;
       EXPECT_NEAR(
           A_thresh->norm_frobenius(), expected_frobenius_norm, expected_frobenius_norm * 1e-10);
+    }
+  }
+
+  /**
+   * This test generates a random multi vector with three basis vectors
+   * and applies an orthonormalization procedure to it.
+   *
+   * After orthonormalization, the Gram matrix of the resulting vectors is computed. If the columns
+   * are orthonormal, the Gram matrix must equal the identity matrix.
+   */
+  TEST_F(SparseAlgebraMathTest, MultiVectorOrthonormalization)
+  {
+    const int num_basis_vectors = 3;
+
+    auto map = Core::LinAlg::Map(10, 0, comm_);
+    auto multi_vector = Core::LinAlg::MultiVector<double>(map, num_basis_vectors, true);
+    multi_vector.random();
+
+    auto local_map = Core::LinAlg::Map(multi_vector.num_vectors(), 0, multi_vector.get_comm(),
+        Core::LinAlg::LocalGlobal::locally_replicated);
+    auto result = Core::LinAlg::MultiVector<double>(local_map, multi_vector.num_vectors());
+
+    // The inner product is equal to an identity, thus the vector columns are orthonormal.
+    {
+      auto identity = Core::LinAlg::SerialDenseMatrix(num_basis_vectors, num_basis_vectors, true);
+      identity(0, 0) = 1.0;
+      identity(1, 1) = 1.0;
+      identity(2, 2) = 1.0;
+
+      multi_vector = Core::LinAlg::orthonormalize_multi_vector(multi_vector);
+
+      result.multiply('T', 'N', 1.0, multi_vector, multi_vector, 0.0);
+      auto gram_matrix = Core::LinAlg::SerialDenseMatrix(Teuchos::DataAccess::Copy,
+          result.get_values(), result.stride(), result.num_vectors(), result.num_vectors());
+
+      FOUR_C_EXPECT_NEAR(gram_matrix, identity, 1e-12);
     }
   }
 }  // namespace

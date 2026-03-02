@@ -521,4 +521,37 @@ void Core::LinAlg::multiply_multi_vectors(Core::LinAlg::MultiVector<double>& mul
   result.import(multivect_temp, impo, Core::LinAlg::CombineMode::insert);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Core::LinAlg::MultiVector<double> Core::LinAlg::orthonormalize_multi_vector(
+    const Core::LinAlg::MultiVector<double>& multi_vector)
+{
+  auto local_map = Map(multi_vector.num_vectors(), 0, multi_vector.get_comm(),
+      Core::LinAlg::LocalGlobal::locally_replicated);
+  auto temp = Core::LinAlg::MultiVector<double>(local_map, multi_vector.num_vectors());
+
+  temp.multiply('T', 'N', 1.0, multi_vector, multi_vector, 0.0);
+
+  auto Q = Core::LinAlg::SerialDenseMatrix(Teuchos::DataAccess::Copy, temp.get_values(),
+      temp.stride(), temp.num_vectors(), temp.num_vectors());
+
+  Teuchos::LAPACK<int, double> lapack;
+  int err = 0;
+
+  lapack.POTRF('L', multi_vector.num_vectors(), Q.values(), Q.stride(), &err);
+  FOUR_C_ASSERT(err == 0, "An error happened in the construction of the triangular factorization.");
+
+  lapack.TRTRI('L', 'N', multi_vector.num_vectors(), Q.values(), Q.stride(), &err);
+  FOUR_C_ASSERT(err == 0, "An error happened in the construction of the triangular inverse.");
+
+  auto orthonormalized_multi_vector =
+      Core::LinAlg::MultiVector<double>(multi_vector.get_map(), multi_vector.num_vectors());
+
+  for (int i = 0; i < multi_vector.num_vectors(); i++)
+    for (int j = 0; j <= i; j++)
+      orthonormalized_multi_vector.get_vector(i).update(Q(i, j), multi_vector.get_vector(j), 1.0);
+
+  return orthonormalized_multi_vector;
+}
+
 FOUR_C_NAMESPACE_CLOSE

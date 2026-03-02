@@ -54,6 +54,18 @@ namespace Core::LinAlg
   };
 
   /**
+   * @brief Describes how an object is distributed across MPI ranks.
+   *
+   * This enumeration specifies whether an object is stored redundantly on every process or
+   * partitioned across processes in a distributed-memory parallel environment.
+   */
+  enum class LocalGlobal
+  {
+    locally_replicated,
+    globally_distributed
+  };
+
+  /**
    * \brief Mapping between internal CombineMode values and corresponding Epetra_CombineMode
    * constants.
    *

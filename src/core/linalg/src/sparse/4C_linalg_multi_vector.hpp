@@ -97,6 +97,12 @@ namespace Core::LinAlg
     //! Print method
     void print(std::ostream& os) const { vector_->Print(os); }
 
+    //! Initialize with random numbers
+    void random() { vector_->Random(); }
+
+    //! Compute stride of the multi vector
+    int stride() const { return vector_->Stride(); }
+
     //! Returns the number of vectors in the multi-vector.
     int num_vectors() const { return vector_->NumVectors(); }
 

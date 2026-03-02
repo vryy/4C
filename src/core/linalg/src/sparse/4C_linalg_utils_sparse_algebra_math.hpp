@@ -194,7 +194,7 @@ namespace Core::LinAlg
    * \param fill (in): Flag indicating whether complete should be called on result upon exit,
    * (defaults to true)
    *
-   * \return SparseMatrix containing the outer-product MV*MV
+   * \return SparseMatrix containing the outer-product MV*MV^T
    */
   Core::LinAlg::SparseMatrix multiply_multi_vector_multi_vector(
       const Core::LinAlg::MultiVector<double>& mv1, const Core::LinAlg::MultiVector<double>& mv2,
@@ -206,6 +206,21 @@ namespace Core::LinAlg
   void multiply_multi_vectors(Core::LinAlg::MultiVector<double>&, char,
       Core::LinAlg::MultiVector<double>&, char, Core::LinAlg::Map&, Core::LinAlg::Import&,
       Core::LinAlg::MultiVector<double>&);
+
+  /**
+   * \brief Orthonormalize the columns of a multi-vector.
+   *
+   * This function takes a multi-vector whose columns represent a set of vectors (e.g. nullspace
+   * or near-nullspace basis vectors) and returns a new multi-vector whose columns form an
+   * orthonormal basis for the same column space.
+   *
+   * \param multi_vector (in): Input multi-vector whose columns will be orthonormalized.
+   *
+   * \return A new multi-vector with orthonormal columns spanning the same column space as the
+   * input.
+   */
+  Core::LinAlg::MultiVector<double> orthonormalize_multi_vector(
+      const Core::LinAlg::MultiVector<double>& multi_vector);
 
 }  // namespace Core::LinAlg
 
