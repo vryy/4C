@@ -2188,6 +2188,7 @@ four_c_test_add_csv_yaml_comparison(BASED_ON ${current} RESULT_FILE xxx_system_v
 four_c_test_add_csv_yaml_comparison(BASED_ON ${current} RESULT_FILE xxx_sparse_system_matrix.csv REFERENCE_FILE ref/ssi_mono_3D_1hex8_elch_polyiso_NMC-622_growthlaw_mat.csv TOL_R 1.0e-6 TOL_A 1.0e-10)
 four_c_test_add_csv_yaml_comparison(BASED_ON ${current} RESULT_FILE xxx_full_map.csv REFERENCE_FILE ref/ssi_mono_3D_1hex8_elch_polyiso_NMC-622_growthlaw_map.csv TOL_R 1.0e-6 TOL_A 1.0e-10)
 four_c_test(TEST_FILE ssi_mono_3D_1hex8_scatra.4C.yaml NP 3)
+four_c_test(TEST_FILE ssi_mono_3D_1hex8_scatra_intensive.4C.yaml NP 3)
 four_c_test(TEST_FILE ssi_mono_3D_1hex8_scatra_linaniso_growthlaw.4C.yaml NP 3)
 four_c_test(TEST_FILE ssi_mono_3D_27hex8_scatra_BGS-AMG_2x2.4C.yaml NP 3 RETURN_AS current)
 four_c_test_restart(BASED_ON ${current} SAME_FILE NP 3 RESTART_STEP 5)

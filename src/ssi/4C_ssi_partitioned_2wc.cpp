@@ -62,14 +62,6 @@ void SSI::SSIPart2WC::init(MPI_Comm comm, const Teuchos::ParameterList& globalti
     }
   }
 
-  auto convform = Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
-  if (convform == Inpar::ScaTra::convform_convective)
-  {
-    FOUR_C_THROW(
-        "If the scalar transport problem is solved on the deforming domain, the conservative "
-        "form must be used to include volume changes. Set 'CONVFORM' to 'conservative' in the "
-        "SCALAR TRANSPORT DYNAMIC section.");
-  }
 
   if (diff_time_step_size())
   {

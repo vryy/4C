@@ -17,6 +17,7 @@
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_data_read.hpp"
+#include "4C_inpar_scatra.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_input_file.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -76,6 +77,26 @@ void SSI::SSIBase::init(MPI_Comm comm, const Teuchos::ParameterList& globaltimep
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string& struct_disname, const std::string& scatra_disname, const bool is_ale)
 {
+  // do some initial checks
+  auto convform = Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
+  const bool isintensive = scatraparams.get<bool>("IS_INTENSIVE_SCALAR");
+  if (convform != Inpar::ScaTra::convform_conservative && !isintensive)
+  {
+    FOUR_C_THROW(
+        "Inconsistent scalar transport formulation on a deforming domain: "
+        "The scalar is defined as volume-referenced (IS_INTENSIVE_SCALAR = false), "
+        "therefore the conservative form is required to account for volume changes. "
+        "Please set 'CONVFORM' to 'conservative' in the SCALAR TRANSPORT DYNAMIC section.");
+  }
+  if (convform == Inpar::ScaTra::convform_conservative && isintensive)
+  {
+    FOUR_C_THROW(
+        "Inconsistent scalar transport formulation on a deforming domain: "
+        "The scalar is defined as intensive (IS_INTENSIVE_SCALAR = true), "
+        "therefore the non-conservative form should be used. "
+        "Please set 'CONVFORM' to 'convective' in the SCALAR TRANSPORT DYNAMIC section.");
+  }
+
   // reset the setup flag
   set_is_setup(false);
 
