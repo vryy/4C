@@ -32,7 +32,7 @@ else() # Fetch MIRCO from GIT repository
   set(TRILINOS_IN_MIRCO "OFF")
 
   set(MIRCO_GIT_REPO "https://github.com/imcs-compsim/MIRCO.git")
-  set(MIRCO_GIT_TAG "84d9fa94b3cd2d358f9c498e716d50181ba626f2")
+  set(MIRCO_GIT_TAG "de05a25cf595510b8e315d91aa56b6f7a69ad727")
 
   fetchcontent_declare(
     mirco
