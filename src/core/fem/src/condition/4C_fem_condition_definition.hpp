@@ -63,7 +63,7 @@ namespace Core::Conditions
   /// Struct storing the necessary information to create a condition, parsed from the input file.
   struct ConditionSpec
   {
-    const EntityType type;
+    const EntityType entity_type;
     const std::optional<int>
         id;  //< The ID of the condition, referring to the entity specified by the EntityType. Not
              // set if the condition is identified via a node set name.

@@ -132,7 +132,7 @@ Core::Conditions::ConditionSpec Core::Conditions::ConditionDefinition::read_cond
   }
 
   return {
-      .type = entity_type.value(),
+      .entity_type = entity_type.value(),
       .id = id,
       .node_set_name = node_set_name,
       .condition_type = condtype_,

@@ -91,10 +91,13 @@ namespace Core::Conditions
      *                            (elements) have to be build
      * \param gtype (in): type of geometric entity this condition lives on
      * \param entity_type (in): type of entity this condition is associated with
+     * \param nodes (in): vector of global node IDs this condition is associated with
+     * \param parameters (in): input parameters for this condition
      * \param node_set_name (in): optional name of the node set in the external mesh file
      */
     Condition(const int id, const Core::Conditions::ConditionType type, const bool buildgeometry,
         const Core::Conditions::GeometryType gtype, const EntityType entity_type,
+        const std::vector<int>& nodes, IO::InputParameterContainer parameters,
         const std::optional<std::string>& node_set_name = std::nullopt);
 
     /*!

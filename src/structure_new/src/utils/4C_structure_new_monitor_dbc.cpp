@@ -116,13 +116,12 @@ void Solid::MonitorDbc::create_reaction_force_condition(
       (tagged_cond.entity_type() == Core::Conditions::EntityType::node_set_name)
           ? tagged_cond.node_set_name()
           : std::to_string(1 + get_unique_id(tagged_cond.id(), tagged_cond.g_type()));
-
+  auto rcond_parameters = Core::IO::InputParameterContainer();
+  rcond_parameters.add("ONOFF", (tagged_cond.parameters().get<std::vector<int>>("ONOFF")));
   auto rcond_ptr =
       std::make_shared<Core::Conditions::Condition>(tagged_cond.id(), Core::Conditions::ElementTag,
-          true, tagged_cond.g_type(), Core::Conditions::EntityType::node_set_name, rcond_name);
-
-  rcond_ptr->parameters().add("ONOFF", (tagged_cond.parameters().get<std::vector<int>>("ONOFF")));
-  rcond_ptr->set_nodes(*tagged_cond.get_nodes());
+          true, tagged_cond.g_type(), Core::Conditions::EntityType::node_set_name,
+          *tagged_cond.get_nodes(), rcond_parameters, rcond_name);
 
   discret.set_condition("ReactionForce", rcond_ptr);
 }
