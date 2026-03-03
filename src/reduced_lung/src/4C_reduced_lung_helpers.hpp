@@ -16,10 +16,14 @@
 #include "4C_reduced_lung_boundary_conditions.hpp"
 #include "4C_reduced_lung_junctions.hpp"
 #include "4C_reduced_lung_terminal_unit.hpp"
+#include "4C_solver_nonlin_nox_adapter.hpp"
 
 #include <mpi.h>
+#include <Teuchos_ParameterList.hpp>
 
+#include <functional>
 #include <map>
+#include <optional>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -28,6 +32,14 @@ namespace Core::Nodes
 {
   class Node;
 }
+
+namespace Core::LinAlg
+{
+  class Solver;
+  class SparseOperator;
+  template <typename T>
+  class Vector;
+}  // namespace Core::LinAlg
 
 namespace Core::FE
 {
@@ -41,6 +53,101 @@ namespace Core::Rebalance
 
 namespace ReducedLung
 {
+  /**
+   * @brief Context bundling all objects required to construct and run @ref NoxSolver.
+   */
+  struct NoxSolverContext
+  {
+    MPI_Comm comm;  ///< MPI communicator used by NOX and the linear solver.
+    const ReducedLungParameters::Dynamics& dynamics;  ///< Nonlinear/timestep solver parameters.
+    const Teuchos::ParameterList& linear_solver_parameters;  ///< Linear solver configuration.
+    std::function<const Teuchos::ParameterList&(int)>
+        solver_params_callback;          ///< Callback for nested/ID-based solver parameters.
+    Core::LinAlg::Vector<double>& dofs;  ///< Owned dof vector.
+    Core::LinAlg::Vector<double>& locally_relevant_dofs;   ///< Ghosted dof vector.
+    Core::LinAlg::Vector<double>& x;                       ///< NOX solution vector.
+    Core::LinAlg::SparseOperator& jacobian;                ///< NOX Jacobian operator.
+    Airways::AirwayContainer& airways;                     ///< Airway model container.
+    TerminalUnits::TerminalUnitContainer& terminal_units;  ///< Terminal-unit model container.
+    Junctions::ConnectionData& connections;                ///< Junction connection equations/data.
+    Junctions::BifurcationData& bifurcations;              ///< Junction bifurcation equations/data.
+    BoundaryConditions::BoundaryConditionContainer&
+        boundary_conditions;  ///< Boundary-condition container.
+  };
+
+  /**
+   * @brief NOX solver for reduced lung simulations.
+   *
+   * Encapsulates all NOX setup, callbacks, and time management for reduced lung physics.
+   * Provides a simple interface: construct once, then call solve(time) in each timestep.
+   */
+  class NoxSolver
+  {
+   public:
+    /**
+     * @brief Construct NOX solver with all required model components.
+     *
+     * @param context NOX setup context including communicator, dynamics, linear solver setup,
+     * and all bound vectors/operators/model containers.
+     * @param initial_time Initial time for the simulation.
+     */
+    NoxSolver(const NoxSolverContext& context, double initial_time = 0.0);
+
+    NoxSolver(const NoxSolver&) = delete;
+    NoxSolver& operator=(const NoxSolver&) = delete;
+    NoxSolver(NoxSolver&&) = delete;
+    NoxSolver& operator=(NoxSolver&&) = delete;
+    ~NoxSolver() = default;
+
+    /**
+     * @brief Solve nonlinear system at given physical time.
+     *
+     * Updates current time for boundary conditions, performs Newton solve,
+     * and synchronizes the converged solution to dofs, locally_relevant_dofs,
+     * and internal state vectors (airways, terminal units).
+     *
+     * @param time Current physical time for time-dependent BCs.
+     * @return Number of nonlinear iterations performed.
+     */
+    unsigned int solve(double time);
+
+   private:
+    // Callback implementations for NOX
+    bool residual(const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& residual,
+        NOX::Nln::FillType fill_type);
+
+    bool jacobian(const Core::LinAlg::Vector<double>& x, Core::LinAlg::SparseOperator& jac);
+
+    // Helper to sync state from NOX vector to model containers
+    void sync_state_from_x(const Core::LinAlg::Vector<double>& x);
+
+    Core::LinAlg::Vector<double>& x_solution_;
+    Core::LinAlg::Vector<double>& dofs_;
+    Core::LinAlg::Vector<double>& locally_relevant_dofs_;
+    Airways::AirwayContainer& airways_;
+    TerminalUnits::TerminalUnitContainer& terminal_units_;
+    Junctions::ConnectionData& connections_;
+    Junctions::BifurcationData& bifurcations_;
+    BoundaryConditions::BoundaryConditionContainer& boundary_conditions_;
+
+    // Time integration parameters
+    double dt_;
+    double current_time_;
+
+    std::shared_ptr<Core::LinAlg::Solver> linear_solver_;
+
+    // NOX adapter
+    std::optional<NOX::Nln::Adapter> adapter_;
+  };
+
+  /**
+   * @brief Create a NOX parameter list for reduced-lung nonlinear solves.
+   *
+   * @param dynamics Reduced-lung dynamics parameters.
+   * @return Teuchos parameter list configured for NOX::Nln::Adapter.
+   */
+  Teuchos::ParameterList create_nox_parameter_list(const ReducedLungParameters::Dynamics& dynamics);
+
   /*!
    * @brief Build a minimal discretization from the reduced lung topology.
    *

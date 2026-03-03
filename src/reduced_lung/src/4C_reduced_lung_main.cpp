@@ -16,7 +16,6 @@
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_input_field.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "4C_linear_solver_method_linalg.hpp"
 #include "4C_rebalance.hpp"
 #include "4C_reduced_lung_airways.hpp"
 #include "4C_reduced_lung_boundary_conditions.hpp"
@@ -83,10 +82,6 @@ namespace ReducedLung
       build_discretization_from_topology(
           *actdis, context.parameters.lung_tree.topology, context.rebalance_parameters);
       actdis->fill_complete();
-
-      Core::LinAlg::Solver solver(context.linear_solver_parameters, actdis->get_comm(),
-          context.solver_params_callback,
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(context.io_parameters, "VERBOSITY"));
 
       // Create runtime output writer
       Core::IO::DiscretizationVisualizationWriterMesh visualization_writer(
@@ -175,25 +170,35 @@ namespace ReducedLung
       // Create system matrix and vectors:
       // Vector with all degrees of freedom (p1, p2, q, ...) associated to the elements.
       auto dofs = Core::LinAlg::Vector<double>(locally_owned_dof_map, true);
-      // Vector with all degrees of freedom (p1, p2, q, ...) at the last timestep.
-      auto dofs_n = Core::LinAlg::Vector<double>(locally_owned_dof_map, true);
       // Vector with locally relevant degrees of freedom, needs to import data from dofs vector.
       auto locally_relevant_dofs = Core::LinAlg::Vector<double>(locally_relevant_dof_map, true);
-      // Solution vector of the system of equations with increments of all dofs calculated per
-      // iteration.
+      // Solution vector (on row_map) used as the NOX initial guess each time step.
       auto x = Core::LinAlg::Vector<double>(row_map, true);
-      // Exported solution that can be directly added to dofs.
-      auto x_mapped_to_dofs = Core::LinAlg::Vector<double>(locally_owned_dof_map, true);
-      // Right hand side vector with residuals of the system equations.
-      auto rhs = Core::LinAlg::Vector<double>(row_map, true);
       // Jacobian of the system equations.
       auto sysmat = Core::LinAlg::SparseMatrix(row_map, locally_relevant_dof_map, 3);
 
       // Time integration parameters.
       const double dt = context.parameters.dynamics.time_increment;
       const int n_timesteps = context.parameters.dynamics.number_of_steps;
-      Airways::update_internal_state_vectors(airways, locally_relevant_dofs, dt);
-      TerminalUnits::update_internal_state_vectors(terminal_units, locally_relevant_dofs, dt);
+      double current_time = 0.0;
+
+      const NoxSolverContext nox_solver_context{
+          .comm = comm,
+          .dynamics = context.parameters.dynamics,
+          .linear_solver_parameters = context.linear_solver_parameters,
+          .solver_params_callback = context.solver_params_callback,
+          .dofs = dofs,
+          .locally_relevant_dofs = locally_relevant_dofs,
+          .x = x,
+          .jacobian = sysmat,
+          .airways = airways,
+          .terminal_units = terminal_units,
+          .connections = connections,
+          .bifurcations = bifurcations,
+          .boundary_conditions = boundary_conditions,
+      };
+
+      auto nox_solver = NoxSolver(nox_solver_context, current_time);
 
       // Time loop
       if (Core::Communication::my_mpi_rank(comm) == 0)
@@ -210,42 +215,11 @@ namespace ReducedLung
                     << "\n----------------------------------------\n"
                     << std::flush;
         }
-        dofs_n.update(1.0, dofs, 0.0);
+        current_time += dt;
 
-        Airways::update_residual_vector(rhs, airways, locally_relevant_dofs, dt);
-        Airways::update_jacobian(sysmat, airways, locally_relevant_dofs, dt);
+        // Solve the nonlinear system. Converged state sync is handled inside nox_solver.solve().
+        nox_solver.solve(current_time);
 
-        TerminalUnits::update_residual_vector(rhs, terminal_units, locally_relevant_dofs, dt);
-        TerminalUnits::update_jacobian(sysmat, terminal_units, locally_relevant_dofs, dt);
-
-        Junctions::update_residual_vector(rhs, connections, bifurcations, locally_relevant_dofs);
-        Junctions::update_jacobian(sysmat, connections, bifurcations);
-
-        BoundaryConditions::update_residual_vector(
-            rhs, boundary_conditions, locally_relevant_dofs, n * dt);
-        BoundaryConditions::update_jacobian(sysmat, boundary_conditions);
-
-        // Fix sparsity pattern after the first assembly process.
-        if (!sysmat.filled())
-        {
-          sysmat.complete();
-        }
-
-        // Solve.
-        rhs.scale(-1.0);
-        solver.solve(Core::Utils::shared_ptr_from_ref(sysmat), Core::Utils::shared_ptr_from_ref(x),
-            Core::Utils::shared_ptr_from_ref(rhs), {});
-
-        // Update dofs with solution vector.
-        export_to(x, x_mapped_to_dofs);
-        dofs.update(1.0, x_mapped_to_dofs, 1.0);
-        export_to(dofs, locally_relevant_dofs);
-
-        // To be done at end of each nonlinear loop iteration
-        TerminalUnits::update_internal_state_vectors(terminal_units, locally_relevant_dofs, dt);
-        Airways::update_internal_state_vectors(airways, locally_relevant_dofs, dt);
-
-        // To be done at end of each timestep
         TerminalUnits::end_of_timestep_routine(terminal_units, locally_relevant_dofs, dt);
         Airways::end_of_timestep_routine(airways, locally_relevant_dofs, dt);
 
@@ -255,7 +229,7 @@ namespace ReducedLung
           visualization_writer.reset();
           collect_runtime_output_data(visualization_writer, airways, terminal_units,
               locally_relevant_dofs, actdis->element_row_map());
-          visualization_writer.write_to_disk(dt * n, n);
+          visualization_writer.write_to_disk(current_time, n);
         }
       }
     }
