@@ -15,7 +15,6 @@
 #include "4C_rebalance.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
-#include <deal.II/base/point.h>
 #include <mpi.h>
 
 #include <array>
@@ -24,13 +23,17 @@ namespace TESTING
 {
   using namespace FourC;
 
+  template <int dim>
+  using transformation_function =
+      std::function<std::array<double, dim>(const std::array<double, dim>&)>;
+
   /**
    * Fill the given @p discretization with a hypercube mesh. A total of `subdivisions^3` elements
    * are created and partitioned among all processes in @p comm.
    * */
   inline void fill_discretization_hyper_cube(Core::FE::Discretization& discretization,
       int subdivisions, MPI_Comm comm, bool vector_valued = true,
-      const std::function<dealii::Point<3>(const dealii::Point<3>&)>& node_transform = {})
+      const transformation_function<3>& node_transform = {})
   {
     constexpr int dim = 3;
     discretization.clear_discret();
@@ -85,8 +88,7 @@ namespace TESTING
             std::array<double, 3> coords = {i * increment, j * increment, k * increment};
             if (node_transform)
             {
-              auto new_point = node_transform(dealii::Point<3>(coords[0], coords[1], coords[2]));
-              coords = {new_point[0], new_point[1], new_point[2]};
+              coords = node_transform(coords);
             }
             builder.add_node(coords, lid(i, j, k), nullptr);
           }
@@ -297,8 +299,7 @@ namespace TESTING
   }
 
   inline void fill_undeformed_hex27(Core::FE::Discretization& discretization, MPI_Comm comm,
-      const bool vector_valued = true,
-      const std::function<dealii::Point<3>(const dealii::Point<3>&)>& node_transform = {})
+      const bool vector_valued = true, const transformation_function<3>& node_transform = {})
   {
     Core::FE::DiscretizationBuilder<3> builder(comm);
 
@@ -321,8 +322,7 @@ namespace TESTING
       {
         for (auto& coord : coords)
         {
-          auto new_point = node_transform(dealii::Point<3>(coord[0], coord[1], coord[2]));
-          coord = {new_point[0], new_point[1], new_point[2]};
+          coord = node_transform(coord);
         }
       }
       int counter = 0;

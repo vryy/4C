@@ -29,27 +29,55 @@ namespace
   using namespace FourC;
 
   template <int dim>
+  TESTING::transformation_function<dim> to_transformation_function(
+      const std::function<dealii::Point<dim>(const dealii::Point<dim>&)>& transform)
+  {
+    return [transform](const std::array<double, dim>& coords) -> std::array<double, dim>
+    {
+      dealii::Point<dim> point;
+      for (unsigned int d = 0; d < dim; ++d) point[d] = coords[d];
+      dealii::Point<dim> transformed_point = transform(point);
+      std::array<double, dim> transformed_coords;
+      for (unsigned int d = 0; d < dim; ++d) transformed_coords[d] = transformed_point[d];
+      return transformed_coords;
+    };
+  }
+
+
+  template <int dim>
+  std::array<double, 3> to_array(const dealii::Point<dim>& coords)
+  {
+    std::array<double, 3> array{};
+    for (unsigned int d = 0; d < dim; ++d) array[d] = coords[d];
+    return array;
+  }
+
+
+
+  template <int dim>
   struct Transformations
   {
-    static dealii::Point<dim> no_transform(const dealii::Point<dim>& coords) { return coords; }
-    static dealii::Point<dim> linear_transform(const dealii::Point<dim>& coords)
+    using point_type = std::array<double, dim>;
+
+    static point_type no_transform(const point_type& coords) { return coords; }
+    static point_type linear_transform(const point_type& coords)
     {
-      dealii::Point transformed_coords = coords;
+      point_type transformed_coords = coords;
       transformed_coords[0] = coords[0] + 0.5 * (coords[1] + 1.0);
       if constexpr (dim > 1) transformed_coords[1] = coords[1] + 0.5 * (coords[0] + 1.0);
       if constexpr (dim > 2) transformed_coords[2] = coords[2] * 0.5;
       return transformed_coords;
     }
-    static dealii::Point<dim> quadratic_transform(const dealii::Point<dim>& coords)
+    static point_type quadratic_transform(const point_type& coords)
     {
-      dealii::Point transformed_coords = coords;
+      point_type transformed_coords = coords;
       transformed_coords[0] = coords[0] + 0.25 * (coords[1] + 1.0) * (coords[1] + 1.0);
       if constexpr (dim > 1) transformed_coords[1] = coords[1];
       if constexpr (dim > 2) transformed_coords[2] = coords[2];
       return transformed_coords;
     }
 
-    static double linear_function(const dealii::Point<dim>& p, const unsigned int component)
+    static double linear_function(const point_type& p, const unsigned int component)
     {
       double value = 0.0;
       for (unsigned int d = 0; d < dim; ++d)
@@ -59,7 +87,7 @@ namespace
       return value;
     }
 
-    static double quadratic_function(const dealii::Point<dim>& p, const unsigned int component)
+    static double quadratic_function(const point_type& p, const unsigned int component)
     {
       double value = 0.0;
       for (unsigned int d = 0; d < dim; ++d)
@@ -70,14 +98,14 @@ namespace
     }
 
     static void fill_hex_27(Core::FE::Discretization& dis, bool vector_valued,
-        const std::function<dealii::Point<dim>(const dealii::Point<dim>&)>& transform)
+        const TESTING::transformation_function<dim>& transform)
     {
       TESTING::fill_undeformed_hex27(dis, MPI_COMM_WORLD, vector_valued, transform);
     }
 
     template <int subdivisions>
     static void fill_hex_8(Core::FE::Discretization& dis, bool vector_valued,
-        const std::function<dealii::Point<dim>(const dealii::Point<dim>&)>& transform)
+        const TESTING::transformation_function<dim>& transform)
     {
       TESTING::fill_discretization_hyper_cube(
           dis, subdivisions, MPI_COMM_WORLD, vector_valued, transform);
@@ -104,10 +132,9 @@ namespace
     using VectorType = dealii::LinearAlgebra::distributed::Vector<double>;
 
 
-    std::function<dealii::Point<dim>(const dealii::Point<dim>&)> transform;
-    std::function<double(const dealii::Point<dim>&, unsigned int)> function;
-    std::function<void(Core::FE::Discretization&, bool,
-        std::function<dealii::Point<dim>(const dealii::Point<dim>&)>)>
+    TESTING::transformation_function<dim> transform;
+    std::function<double(const std::array<double, 3>&, unsigned int)> function;
+    std::function<void(Core::FE::Discretization&, bool, TESTING::transformation_function<dim>)>
         fill_function;
 
 
@@ -229,7 +256,7 @@ namespace
               for (unsigned int c = 0; c < n_components; ++c)
               {
                 // add the contribution to the local vector
-                local_vector(i) += function(quad_point, c) *
+                local_vector(i) += function(to_array<dim>(quad_point), c) *
                                    fe_values_test.shape_value_component(i, q_index, c) *
                                    fe_values_test.JxW(q_index);
               }
@@ -263,7 +290,7 @@ namespace
         element->location_vector(context.get_discretization(), location_array);
         for (int node = 0; node < element->num_node(); ++node)
         {
-          dealii::Point<dim> coords;
+          std::array<double, dim> coords;
           for (unsigned int d = 0; d < dim; ++d) coords[d] = element->nodes()[node]->x()[d];
           for (unsigned int c = 0; c < n_components; ++c)
           {
