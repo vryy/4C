@@ -72,7 +72,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& icg,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress, double I3, const int gp, const int eleGID,
-    const Teuchos::ParameterList& params)
+    const EvaluationContext& context)
 {
   // right Cauchy Green tensor C in matrix notation
   const Core::LinAlg::Matrix<3, 3> C = Core::LinAlg::make_matrix(Core::LinAlg::get_full(rcg));
@@ -109,7 +109,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   const double& beta = params_->beta_;
   const double& sigma_max = params_->sigma_max_;
   const double& t_act_start = params_->t_act_start_;
-  const double& t_tot = params.get<double>("total time");  // current simulation time
+  const double& t_tot = *context.total_time;  // current simulation time
   double sigma_max_ft = Mat::Utils::Muscle::evaluate_time_dependent_active_stress_tanh(
       sigma_max, alpha, beta, t_act_start, t_tot);
 

@@ -13,6 +13,7 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_elast_summand.hpp"
+#include "4C_mat_so3_material.hpp"
 
 #include <NOX.H>
 
@@ -31,6 +32,7 @@ namespace Mat
    * @param defgrd      (in)      : deformation gradient
    * @param glstrain    (in)      : Green lagrange strain in strain-like Voigt notation
    * @param params      (in/out)  : Container for additional information
+   * @param context     (in)      : Container for additional information
    * @param stress      (out)     : 2nd Piola Kirchhoff stress
    * @param cmat        (out)     : Elasticity tensor
    * @param gp          (in)      : Gauss point
@@ -41,7 +43,8 @@ namespace Mat
    */
   void elast_hyper_evaluate(const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-      const Teuchos::ParameterList& params, Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
+      const Teuchos::ParameterList& params, const EvaluationContext& context,
+      Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
       Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID,
       const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
       const SummandProperties& properties, bool checkpolyconvexity = false);
@@ -233,15 +236,14 @@ namespace Mat
    * @param iC_strain Inverse Right Cauchy-Green deformation tensor in strain like Voigt notation
    * @param prinv Principal invariants of the Right Cauchy-Green strain tensor
    * @param eleGID Global element id
-   * @param params Container for additional information
+   * @param context Container for additional information
    * @param potsum Summands of the Free-energy function
    */
   void elast_hyper_add_anisotropic_mod(Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
       Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& C_strain,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& iC_strain,
-      const Core::LinAlg::Matrix<3, 1>& prinv, int gp, int eleGID,
-      const Teuchos::ParameterList& params,
+      const Core::LinAlg::Matrix<3, 1>& prinv, int gp, int eleGID, const EvaluationContext& context,
       const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum);
 
   /*!

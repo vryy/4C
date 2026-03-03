@@ -348,7 +348,7 @@ void Mat::ElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad
 {
   bool checkpolyconvexity = (params_ != nullptr and params_->polyconvex_ != 0);
 
-  elast_hyper_evaluate(*defgrad, glstrain, params, stress, cmat, gp, eleGID, potsum_,
+  elast_hyper_evaluate(*defgrad, glstrain, params, context, stress, cmat, gp, eleGID, potsum_,
       summandProperties_, checkpolyconvexity);
 }
 
