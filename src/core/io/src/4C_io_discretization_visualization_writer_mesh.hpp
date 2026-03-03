@@ -236,6 +236,8 @@ namespace Core::IO
     //! Node row and col maps the geometry of visualization writer is based on
     std::shared_ptr<Core::LinAlg::Map> noderowmap_last_geometry_set_;
     std::shared_ptr<Core::LinAlg::Map> nodecolmap_last_geometry_set_;
+    std::shared_ptr<Core::LinAlg::Map> elemrowmap_last_geometry_set_;
+    std::shared_ptr<Core::LinAlg::Map> elemcolmap_last_geometry_set_;
   };
 
   /**
