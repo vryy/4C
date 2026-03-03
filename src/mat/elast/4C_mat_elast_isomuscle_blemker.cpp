@@ -109,7 +109,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
 
   // helper variables for computation of 2nd Piola Kirchhoff stress and elasticity tensor
   double H1 = (modI1 * modI4 - modI5) / (2.0 * lambdaM);
-  // prevents singularitys in cross-fiber-shear-free states
+  // prevents singularities in cross-fiber-shear-free states
   if ((H1 - 1.0) < 1e-15) H1 = 1.0 + 1e-15;
   double H2 = std::sqrt(H1 * H1 - 1.0);
   double H3 = modI1 / (2.0 * lambdaM) - H1 / (2.0 * modI4);
@@ -148,7 +148,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   Core::LinAlg::Matrix<6, 1> modSv(Core::LinAlg::Initialization::uninitialized);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(modS, modSv);
 
-  // isometirc 2nd Piola-Kirchhoff tensor S_iso from fictitious 2nd PK stress
+  // isometric 2nd Piola-Kirchhoff tensor S_iso from fictitious 2nd PK stress
   double traceCmodS = modSv(0) * rcg(0, 0) + modSv(1) * rcg(1, 1) + modSv(2) * rcg(2, 2) +
                       2 * (modSv(3) * rcg(0, 1) + modSv(4) * rcg(1, 2) + modSv(5) * rcg(0, 2));
   Core::LinAlg::SymmetricTensor<double, 3, 3> S_isov =
@@ -201,7 +201,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   MdI5sumdI5M.multiply_nt(Mv, modCMsumMmodCv);
   MdI5sumdI5M.multiply_nt(1.0, modCMsumMmodCv, Mv, 1.0);  // summand11 = dyad(M,dI5) + dyad(dI5,M)
 
-  // fictitious elasticiy tensor
+  // fictitious elasticity tensor
   Core::LinAlg::Matrix<6, 6> modcmat(Core::LinAlg::Initialization::uninitialized);
   modcmat.update(delta1, IdId);
   modcmat.update(delta5, IdMsumMId, 1.0);
