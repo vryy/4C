@@ -41,8 +41,7 @@ Core::LinAlg::Map DealiiWrappers::create_dealii_to_four_c_map(
     four_c_ele->location_vector(context.get_discretization(), location_array);
 
 
-    auto reindexing =
-        ConversionTools::DealToFourC::reindex_shape_functions_scalar(four_c_ele->shape());
+    auto reindexing = DealiiToFourC::reindex_shape_functions_scalar(four_c_ele->shape());
 
     FOUR_C_ASSERT(location_array[0].lm_.size() == dof_indices.size(), "Internal error.");
 
@@ -129,7 +128,8 @@ void DealiiWrappers::VectorConverter<VectorType, dim, spacedim>::to_dealii(
   FOUR_C_ASSERT(n_local_elements == dealii_to_four_c_map_.num_my_elements(), "Internal error.");
 
 
-  vector_in_dealii_layout_.export_to(four_c_vector, dealii_to_four_c_importer_, Insert);
+  vector_in_dealii_layout_.export_to(
+      four_c_vector, dealii_to_four_c_importer_, Core::LinAlg::CombineMode::insert);
 
   std::copy(vector_in_dealii_layout_.get_values(),
       vector_in_dealii_layout_.get_values() + n_local_elements, dealii_vector.begin());

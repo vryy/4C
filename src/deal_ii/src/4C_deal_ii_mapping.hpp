@@ -209,8 +209,7 @@ namespace DealiiWrappers
 
         // we now have to assign the position of the nodes to the dof indices
         dealii::Vector<double> local_position_vector(dofs_per_cell);
-        auto reordering =
-            ConversionTools::FourCToDeal::reindex_shape_functions_scalar(element->shape());
+        auto reordering = FourCToDealii::reindex_shape_functions_scalar(element->shape());
         for (unsigned int n = 0; n < n_nodes; ++n)
         {
           const auto local_dealii_index = reordering[n];

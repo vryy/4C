@@ -273,7 +273,7 @@ namespace DealiiWrappers
     FOUR_C_ASSERT(fe.dofs_per_cell == fe.n_components() * cell_data_.element->num_node(),
         "The number of dofs per cell in the deal.II finite element does not match the "
         "number of dofs per cell in the 4C finite element.");
-    ConversionTools::FourCToDeal::reindex_shape_functions<dim, spacedim>(
+    FourCToDealii::reindex_shape_functions<dim, spacedim>(
         cell_data_.element->shape(), fe.n_components(), cell_data_.four_c_shape_indices);
   }
   template <int dim, int spacedim>

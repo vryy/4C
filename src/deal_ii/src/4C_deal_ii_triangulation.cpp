@@ -104,8 +104,8 @@ namespace DealiiWrappers
       my_element_gids[i_ele] = element->id();
 
 
-      my_element_centers[i_ele] = ConversionTools::FourCToDeal::vertices_to_dealii<spacedim>(
-          element, my_cell_vertices[i_ele]);
+      my_element_centers[i_ele] =
+          FourCToDealii::vertices_to_dealii<spacedim>(*element, my_cell_vertices[i_ele]);
     }
 
     const auto all_cell_vertices =
@@ -235,7 +235,7 @@ namespace DealiiWrappers
 
           const auto* local_element = discretization.l_row_element(local_index);
           auto fe_iter = std::find(finite_element_names.begin(), finite_element_names.end(),
-              ConversionTools::FourCToDeal::dealii_fe_name(local_element->shape()));
+              FourCToDealii::dealii_fe_name(local_element->shape()));
           context.active_fe_indices_[cell->active_cell_index()] =
               static_cast<unsigned int>(std::distance(finite_element_names.begin(), fe_iter));
         }
@@ -307,7 +307,7 @@ namespace DealiiWrappers
 
           const auto* local_element = discretization.l_row_element(local_index);
           auto fe_iter = std::find(finite_element_names.begin(), finite_element_names.end(),
-              ConversionTools::FourCToDeal::dealii_fe_name(local_element->shape()));
+              FourCToDealii::dealii_fe_name(local_element->shape()));
           context.active_fe_indices_[cell->active_cell_index()] =
               static_cast<unsigned int>(std::distance(finite_element_names.begin(), fe_iter));
         }
@@ -337,8 +337,7 @@ namespace DealiiWrappers
       const auto* four_c_element = discretization.l_row_element(i);
       max_num_dof_per_node = std::max(
           max_num_dof_per_node, four_c_element->num_dof_per_node(*four_c_element->nodes()[0]));
-      local_dealii_fes.emplace(
-          ConversionTools::FourCToDeal::dealii_fe_name(four_c_element->shape()));
+      local_dealii_fes.emplace(FourCToDealii::dealii_fe_name(four_c_element->shape()));
     }
 
     max_num_dof_per_node = dealii::Utilities::MPI::max(max_num_dof_per_node, comm);

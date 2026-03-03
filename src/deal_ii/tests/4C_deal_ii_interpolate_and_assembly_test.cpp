@@ -7,7 +7,6 @@
 
 #include <gtest/gtest.h>
 
-#include "4C_deal_ii_create_discretization_helper_test.hpp"
 #include "4C_deal_ii_element_conversion.hpp"
 #include "4C_deal_ii_fe_values_context.hpp"
 #include "4C_deal_ii_linalg_sparsity.hpp"
@@ -16,6 +15,7 @@
 #include "4C_deal_ii_vector_conversion.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset.hpp"
+#include "4C_unittest_utils_create_discretization_helper_test.hpp"
 
 #include <deal.II/lac/la_parallel_vector.h>
 #include <deal.II/lac/precondition.h>
