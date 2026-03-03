@@ -563,7 +563,15 @@ namespace ReducedLung
         linear_elasticity_model.elastic_pressure_p_el.push_back(0.0);
         linear_elasticity_model.elastic_pressure_grad_dp_el.push_back(0.0);
       }
-      void operator()(OgdenHyperelasticity& ogden_model) const {}
+      void operator()(OgdenHyperelasticity& ogden_model) const
+      {
+        ogden_model.bulk_modulus_kappa.push_back(
+            params->ogden.ogden_parameter_kappa.at(global_element_id, "ogden_parameter_kappa"));
+        ogden_model.nonlinear_stiffening_beta.push_back(
+            params->ogden.ogden_parameter_beta.at(global_element_id, "ogden_parameter_beta"));
+        ogden_model.elastic_pressure_p_el.push_back(0.0);
+        ogden_model.elastic_pressure_grad_dp_el.push_back(0.0);
+      }
 
       int global_element_id;
       const ReducedLungParameters::LungTree::TerminalUnits::ElasticityModel* params;

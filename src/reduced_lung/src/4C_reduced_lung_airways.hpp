@@ -988,6 +988,7 @@ namespace ReducedLung
                 .at(global_element_id, "turbulence_factor_gamma"));
         model.has_inertia.push_back(params->lung_tree.airways.flow_model.include_inertia.at(
             global_element_id, "include_inertia"));
+        model.k_turb.push_back(1.0);
       }
       int global_element_id;
       const ReducedLungParameters* params;
@@ -1014,6 +1015,13 @@ namespace ReducedLung
         model.viscous_phase_shift.push_back(params->kelvin_voigt.viscosity.viscous_phase_shift.at(
             global_element_id, "viscous_phase_shift"));
         model.area_n.push_back(ref_area);
+
+        // Initialize internal state vectors - will be computed by internal state updater
+        model.area.push_back(ref_area);
+        model.beta_w.push_back(0.0);
+        model.gamma_w.push_back(0.0);
+        model.compliance_C.push_back(0.0);
+        model.viscous_resistance_Rvisc.push_back(0.0);
       }
       int global_element_id;
       const ReducedLungParameters::LungTree::Airways::WallModel* params;
