@@ -100,6 +100,19 @@ namespace DealiiWrappers
 
   namespace Internal
   {
+    /**
+     * Function to creat an isoparametric mapping using the dealii::MappingFEField class.
+     * This function is used internally by the MappingContext class to create the mapping and
+     * any additional data that is required for the mapping. In particular this means
+     * we must populate a dealii::DoFHandler on the Context Triangulation and a
+     * vector that holds the positions of the nodes in the real cell using the same finite element
+     * basis functions but with the correct number of components for the mapping.
+     * This data is then stored in the MappingContext class and kept alive for the lifetime of the
+     * mapping.
+     * @note Currently only supported for the case that there is only one finite element type in the
+     * context, since the underlying dealii::MappingFEField does not support multiple finite
+     * elements.
+     */
     template <int dim, int spacedim = dim,
         typename VectorType = dealii::LinearAlgebra::distributed::Vector<double>>
     dealii::MappingFEField<dim, spacedim, VectorType> create_isoparametric_mapping(
@@ -116,7 +129,7 @@ namespace DealiiWrappers
       const Context<dim, spacedim>& context)
   {
     FOUR_C_ASSERT(context.n_finite_elements() == 1,
-        "Currently only supported for the case that there is only one finite element in the "
+        "Currently only supported for the case that there is only one finite element type in the "
         "context, since the underlying dealii::MappingFEField does not support multiple finite "
         "elements.");
 
