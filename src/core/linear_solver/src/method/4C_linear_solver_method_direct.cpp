@@ -100,6 +100,11 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
         FOUR_C_THROW("Unsupported solver type {}!", magic_enum::enum_name(solvertype_));
     }
 
+    FOUR_C_ASSERT_ALWAYS(Amesos2::query(solver_type),
+        "Requested direct solver {} is not available in Amesos2! Check your Amesos2 installation "
+        "and choose an available solver!",
+        solver_type);
+
     solver_ = Amesos2::create<Epetra_CrsMatrix, Epetra_MultiVector>(
         solver_type, Teuchos::rcpFromRef(a_->epetra_matrix()));
     solver_->setB(Teuchos::rcpFromRef(b_->get_epetra_multi_vector()));
