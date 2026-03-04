@@ -136,6 +136,10 @@ namespace Core::IO
         std::make_shared<Core::LinAlg::Map>(*discretization_->node_row_map());
     nodecolmap_last_geometry_set_ =
         std::make_shared<Core::LinAlg::Map>(*discretization_->node_col_map());
+    elemrowmap_last_geometry_set_ =
+        std::make_shared<Core::LinAlg::Map>(*discretization_->element_row_map());
+    elemcolmap_last_geometry_set_ =
+        std::make_shared<Core::LinAlg::Map>(*discretization_->element_col_map());
   }
 
   /*-----------------------------------------------------------------------------------------------*
@@ -145,7 +149,9 @@ namespace Core::IO
     // check if parallel distribution of discretization changed
     int map_changed =
         ((not noderowmap_last_geometry_set_->same_as(*discretization_->node_row_map())) or
-            (not nodecolmap_last_geometry_set_->same_as(*discretization_->node_col_map())));
+            (not nodecolmap_last_geometry_set_->same_as(*discretization_->node_col_map())) or
+            (not elemrowmap_last_geometry_set_->same_as(*discretization_->element_row_map())) or
+            (not elemcolmap_last_geometry_set_->same_as(*discretization_->element_col_map())));
     int map_changed_allproc(0);
     map_changed_allproc = Core::Communication::max_all(map_changed, discretization_->get_comm());
 
