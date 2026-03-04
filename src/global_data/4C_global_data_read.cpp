@@ -30,6 +30,7 @@
 #include "4C_io_input_file.hpp"
 #include "4C_io_input_file_utils.hpp"
 #include "4C_io_input_spec_builders.hpp"
+#include "4C_io_mesh.hpp"
 #include "4C_io_meshreader.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_mat_elchphase.hpp"
@@ -46,6 +47,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -1471,64 +1474,6 @@ void Global::read_result(Global::Problem& problem, Core::IO::InputFile& input)
   if (result_descriptions) problem.get_result_test_manager().set_parsed_lines(*result_descriptions);
 }
 
-namespace
-{
-  void get_node_sets_from_mesh(
-      std::map<int, std::vector<int>>& node_sets, const Core::IO::MeshReader& mesh_reader)
-  {
-    node_sets.clear();
-    const int my_rank = Core::Communication::my_mpi_rank(mesh_reader.get_comm());
-
-    // Data is available on rank zero: bring it into the right shape and broadcast it.
-    if (my_rank == 0)
-    {
-      if (const auto* external_mesh = mesh_reader.get_external_mesh_on_rank_zero(); external_mesh)
-      {
-        const auto& node_sets_from_mesh = external_mesh->point_sets();
-        for (const auto& [id, node_set] : node_sets_from_mesh)
-        {
-          const auto& set = node_set.point_ids;
-          node_sets[id] = std::vector<int>(set.begin(), set.end());
-        }
-      }
-      Core::Communication::broadcast(node_sets, 0, mesh_reader.get_comm());
-    }
-    else
-    {
-      Core::Communication::broadcast(node_sets, 0, mesh_reader.get_comm());
-    }
-  }
-
-  void get_element_block_nodes_from_mesh(
-      std::map<int, std::vector<int>>& element_block_nodes, const Core::IO::MeshReader& mesh_reader)
-  {
-    element_block_nodes.clear();
-    const int my_rank = Core::Communication::my_mpi_rank(mesh_reader.get_comm());
-
-    // Data is available on rank zero: bring it into the right shape and broadcast it.
-    if (my_rank == 0)
-    {
-      if (const auto* external_mesh = mesh_reader.get_external_mesh_on_rank_zero(); external_mesh)
-      {
-        for (const auto& [id, eb] : external_mesh->cell_blocks())
-        {
-          std::set<int> nodes;
-          for (const auto& cell : eb.cells())
-          {
-            nodes.insert(cell.begin(), cell.end());
-          }
-          element_block_nodes[id] = std::vector<int>(nodes.begin(), nodes.end());
-        }
-      }
-      Core::Communication::broadcast(element_block_nodes, 0, mesh_reader.get_comm());
-    }
-    else
-    {
-      Core::Communication::broadcast(element_block_nodes, 0, mesh_reader.get_comm());
-    }
-  }
-}  // namespace
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Global::read_conditions(
@@ -1541,38 +1486,27 @@ void Global::read_conditions(
     Core::IO::cout.flush();
   }
 
+  Core::Conditions::InputNodeSets input_node_sets;
+
   //--------------------------------------------- read generic node sets
   const auto get_discretization_callback = [](const std::string& name) -> decltype(auto)
   { return *Global::Problem::instance()->get_dis(name); };
 
   // read design nodes <-> nodes
-  std::vector<std::vector<int>> dnode_fenode;
-  Core::IO::read_design(input, "DNODE", dnode_fenode, get_discretization_callback);
+  Core::IO::read_design(input, "DNODE", input_node_sets.dnode_fenode, get_discretization_callback);
 
   // read design lines <-> nodes
-  std::vector<std::vector<int>> dline_fenode;
-  Core::IO::read_design(input, "DLINE", dline_fenode, get_discretization_callback);
+  Core::IO::read_design(input, "DLINE", input_node_sets.dline_fenode, get_discretization_callback);
 
   // read design surfaces <-> nodes
-  std::vector<std::vector<int>> dsurf_fenode;
-  Core::IO::read_design(input, "DSURF", dsurf_fenode, get_discretization_callback);
+  Core::IO::read_design(input, "DSURF", input_node_sets.dsurf_fenode, get_discretization_callback);
 
   // read design volumes <-> nodes
-  std::vector<std::vector<int>> dvol_fenode;
-  Core::IO::read_design(input, "DVOL", dvol_fenode, get_discretization_callback);
+  Core::IO::read_design(input, "DVOL", input_node_sets.dvol_fenode, get_discretization_callback);
 
-  std::map<int, std::vector<int>> node_sets;
-  get_node_sets_from_mesh(node_sets, mesh_reader);
+  mesh_reader.get_node_sets(input_node_sets.node_sets, input_node_sets.node_sets_names);
 
-  std::map<int, std::vector<int>> element_block_nodes;
-  get_element_block_nodes_from_mesh(element_block_nodes, mesh_reader);
-
-  // check for meshfree discretisation to add node set topologies
-  std::vector<std::vector<std::vector<int>>*> nodeset(4);
-  nodeset[0] = &dnode_fenode;
-  nodeset[1] = &dline_fenode;
-  nodeset[2] = &dsurf_fenode;
-  nodeset[3] = &dvol_fenode;
+  mesh_reader.get_element_block_nodes(input_node_sets.element_block_nodes);
 
   // create list of known conditions
   std::vector<Core::Conditions::ConditionDefinition> valid_conditions = Global::valid_conditions();
@@ -1585,99 +1519,16 @@ void Global::read_conditions(
   // Note that this will reset (un-fill_complete) the discretizations.
   for (const auto& condition_definition : valid_conditions)
   {
-    std::multimap<int, std::shared_ptr<Core::Conditions::Condition>> cond;
+    std::vector<Core::Conditions::ConditionSpec> condition_specs;
 
     // read conditions from the input file
-    condition_definition.read(input, cond);
+    condition_definition.read(input, condition_specs);
 
     // add nodes to conditions
-    for (const auto& [entity_id, condition] : cond)
+    for (const auto& condition_spec : condition_specs)
     {
-      switch (condition->entity_type())
-      {
-        case Core::Conditions::EntityType::legacy_id:
-        {
-          if (dnode_fenode.size() == 0 && dline_fenode.size() == 0 && dsurf_fenode.size() == 0 &&
-              dvol_fenode.size() == 0)
-          {
-            FOUR_C_THROW(
-                "{} condition {} uses legacy_id entity type but no legacy entities were defined in "
-                "the input file.\n"
-                "This is probably because the geometry is handled in an external file.\n"
-                "If this is the case, you must specify a specific entity type (node_set_id or "
-                "element_block_id).\n",
-                condition_definition.name(), entity_id);
-          }
-          switch (condition->g_type())
-          {
-            case Core::Conditions::geometry_type_point:
-              if (entity_id < 0 or static_cast<unsigned>(entity_id) >= dnode_fenode.size())
-              {
-                FOUR_C_THROW(
-                    "DPoint {} not in range [0:{}[\n"
-                    "DPoint condition on non existent DPoint?"
-                    "Could not read set from entity type.",
-                    entity_id, dnode_fenode.size());
-              }
-              condition->set_nodes(dnode_fenode[entity_id]);
-              break;
-            case Core::Conditions::geometry_type_line:
-              if (entity_id < 0 or static_cast<unsigned>(entity_id) >= dline_fenode.size())
-              {
-                FOUR_C_THROW(
-                    "DLine {} not in range [0:{}[\n"
-                    "DLine condition on non existent DLine?"
-                    "Could not read set from entity type.",
-                    entity_id, dline_fenode.size());
-              }
-              condition->set_nodes(dline_fenode[entity_id]);
-              break;
-            case Core::Conditions::geometry_type_surface:
-              if (entity_id < 0 or static_cast<unsigned>(entity_id) >= dsurf_fenode.size())
-              {
-                FOUR_C_THROW(
-                    "DSurface {} not in range [0:{}[\n"
-                    "DSurface condition on non existent DSurface?"
-                    "Could not read set from entity type.",
-                    entity_id, dsurf_fenode.size());
-              }
-              condition->set_nodes(dsurf_fenode[entity_id]);
-              break;
-            case Core::Conditions::geometry_type_volume:
-              if (entity_id < 0 or static_cast<unsigned>(entity_id) >= dvol_fenode.size())
-              {
-                FOUR_C_THROW(
-                    "DVolume {} not in range [0:{}[\n"
-                    "DVolume condition on non existent DVolume?",
-                    entity_id, dvol_fenode.size());
-              }
-              condition->set_nodes(dvol_fenode[entity_id]);
-              break;
-            default:
-              FOUR_C_THROW("geometry type unspecified");
-              break;
-          }
-
-          break;
-        }
-        case Core::Conditions::EntityType::node_set_id:
-        {
-          FOUR_C_ASSERT_ALWAYS(node_sets.contains(entity_id),
-              "Cannot apply condition '{}' to node set {} which is not specified in the mesh file.",
-              condition_definition.name(), entity_id);
-          condition->set_nodes(node_sets[entity_id]);
-          break;
-        }
-        case Core::Conditions::EntityType::element_block_id:
-        {
-          FOUR_C_ASSERT_ALWAYS(element_block_nodes.contains(entity_id),
-              "Cannot apply condition '{}' to element block {} which is not specified in the mesh "
-              "file.",
-              condition_definition.name(), entity_id);
-          condition->set_nodes(element_block_nodes[entity_id]);
-          break;
-        }
-      }
+      std::unique_ptr<Core::Conditions::Condition> condition =
+          Core::Conditions::make_condition(condition_spec, input_node_sets);
 
       // Iterate through all discretizations and sort the appropriate condition
       // into the correct discretization it applies to

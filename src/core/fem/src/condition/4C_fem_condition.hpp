@@ -11,12 +11,17 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_condition_definition.hpp"
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_legacy_enum_definitions_conditions.hpp"
 
 #include <algorithm>
+#include <map>
 #include <memory>
+#include <optional>
+#include <string>
 #include <tuple>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -33,25 +38,21 @@ namespace Core::Elements
 namespace Core::Conditions
 {
   /**
-   * Which type of entity is the ID of a condition referring to?
+   * @brief Struct storing the node sets read from the input file. This is used to set the nodes of
+   * conditions based on the input file data.
+   *
    */
-  enum class EntityType
+  struct InputNodeSets
   {
-    /**
-     * Refers to a numbering of nodes specified in the input file directly. Note that an ID is only
-     * unique within a GeometryType. The same ID may be used across different GeometryTypes.
-     */
-    legacy_id,
-
-    /**
-     * Refers to a node set ID.
-     */
-    node_set_id,
-
-    /**
-     * Refers to an element block ID.
-     */
-    element_block_id,
+    std::vector<std::vector<int>> dvol_fenode;   //< legacy design volume ID to node mapping
+    std::vector<std::vector<int>> dsurf_fenode;  //< legacy design surface ID to node mapping
+    std::vector<std::vector<int>> dline_fenode;  //< legacy design line ID to node mapping
+    std::vector<std::vector<int>> dnode_fenode;  //< legacy design node ID to node mapping
+    std::map<int, std::vector<int>> node_sets;   //< node set ID to node mapping from external mesh
+    std::map<std::string, std::vector<int>>
+        node_sets_names;  //< node set name to node set IDs mapping from external mesh
+    std::map<int, std::vector<int>>
+        element_block_nodes;  //< element block ID to node mapping from external mesh
   };
 
   /*!
@@ -90,9 +91,14 @@ namespace Core::Conditions
      *                            (elements) have to be build
      * \param gtype (in): type of geometric entity this condition lives on
      * \param entity_type (in): type of entity this condition is associated with
+     * \param nodes (in): vector of global node IDs this condition is associated with
+     * \param parameters (in): input parameters for this condition
+     * \param node_set_name (in): optional name of the node set in the external mesh file
      */
     Condition(const int id, const Core::Conditions::ConditionType type, const bool buildgeometry,
-        const Core::Conditions::GeometryType gtype, EntityType entity_type);
+        const Core::Conditions::GeometryType gtype, const EntityType entity_type,
+        const std::vector<int>& nodes, IO::InputParameterContainer parameters,
+        const std::optional<std::string>& node_set_name = std::nullopt);
 
     /*!
     \brief Default constructor with type condition_none
@@ -107,7 +113,13 @@ namespace Core::Conditions
     /*!
     \brief Return condition id
     */
-    [[nodiscard]] inline int id() const { return id_; }
+    [[nodiscard]] int id() const { return id_; }
+
+    /**
+     * @brief Return the name of the node set this condition is associated with.
+     * Asserts that the node set name is available.
+     */
+    [[nodiscard]] const std::string& node_set_name() const;
 
     /*!
     \brief Return vector of my global node ids
@@ -194,7 +206,7 @@ namespace Core::Conditions
     /**
      * Create a copy of this object but do not copy the geometry.
      */
-    [[nodiscard]] std::shared_ptr<Core::Conditions::Condition> copy_without_geometry() const;
+    [[nodiscard]] std::unique_ptr<Core::Conditions::Condition> copy_without_geometry() const;
 
     //! Comparison operator.
     friend bool operator<(const Condition& lhs, const Condition& rhs);
@@ -242,7 +254,7 @@ namespace Core::Conditions
     Condition& operator=(const Condition& old) = default;
 
     //! Unique id of this condition, no second condition of the same type with same id may exist
-    int id_{-1};
+    int id_{};
 
     //! global node ids
     std::vector<int> nodes_{};
@@ -259,6 +271,9 @@ namespace Core::Conditions
     //! Type of entity this condition is associated with
     EntityType entity_type_{};
 
+    //! Optional name of the node set in the external mesh file
+    std::optional<std::string> node_set_name_{};
+
     //! Geometry description of this condition
     std::map<int, std::shared_ptr<Core::Elements::Element>> geometry_;
 
@@ -269,6 +284,18 @@ namespace Core::Conditions
   {
     return std::tie(lhs.type_, lhs.id_) < std::tie(rhs.type_, rhs.id_);
   }
+
+  /**
+   * @brief Create a fully initiated condition based on the given condition specification and the
+   * node sets read from the input file. The nodes and parameter are set based on the resolution of
+   * the input.
+   *
+   * @param condition_spec Validated Input specification of the condition to be created.
+   * @param input_node_sets Collection of all node sets read from the input file or external mesh
+   * @return std::unique_ptr<Condition>
+   */
+  std::unique_ptr<Core::Conditions::Condition> make_condition(
+      const ConditionSpec& condition_spec, const InputNodeSets& input_node_sets);
 
   //! Mapping of geometry type to its spatial dimensionality
   const std::map<GeometryType, unsigned int> geometry_type_to_dim = {
