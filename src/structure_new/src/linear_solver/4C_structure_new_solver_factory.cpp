@@ -332,8 +332,8 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_co
           Global::Problem::instance()->solver_params(lin_solver_id), "SOLVER");
       const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
           Global::Problem::instance()->solver_params(lin_solver_id), "AZPREC");
-      if (sol != Core::LinearSolver::SolverType::umfpack &&
-          sol != Core::LinearSolver::SolverType::superlu)
+      if (sol != Core::LinearSolver::SolverType::UMFPACK &&
+          sol != Core::LinearSolver::SolverType::Superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner
         if (prec != Core::LinearSolver::PreconditionerType::multigrid_muelu &&

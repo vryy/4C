@@ -415,8 +415,8 @@ Adapter::StructureBaseAlgorithm::create_contact_meshtying_solver(
           Global::Problem::instance()->solver_params(linsolvernumber), "SOLVER");
       const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
           Global::Problem::instance()->solver_params(linsolvernumber), "AZPREC");
-      if (sol != Core::LinearSolver::SolverType::umfpack &&
-          sol != Core::LinearSolver::SolverType::superlu)
+      if (sol != Core::LinearSolver::SolverType::UMFPACK &&
+          sol != Core::LinearSolver::SolverType::Superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner
         if (prec != Core::LinearSolver::PreconditionerType::multigrid_muelu &&

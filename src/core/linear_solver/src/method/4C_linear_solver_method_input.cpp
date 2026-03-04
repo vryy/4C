@@ -22,16 +22,8 @@ namespace Core::LinearSolver
     using namespace Core::IO::InputSpecBuilders;
     return all_of({
         // Solver options
-        deprecated_selection<Core::LinearSolver::SolverType>("SOLVER",
-            {
-                {"UMFPACK", Core::LinearSolver::SolverType::umfpack},
-                {"Superlu", Core::LinearSolver::SolverType::superlu},
-                {"Belos", Core::LinearSolver::SolverType::belos},
-                {"undefined", Core::LinearSolver::SolverType::undefined},
-            },
-            {.description = "The solver to attack the system of linear equations arising of FE "
-                            "approach with.",
-                .default_value = Core::LinearSolver::SolverType::undefined}),
+        parameter<Core::LinearSolver::SolverType>("SOLVER",
+            {.description = "Linear solver used to solve the system of linear equations."}),
 
         // Iterative solver options
         deprecated_selection<Core::LinearSolver::IterativeSolverType>("AZSOLVE",

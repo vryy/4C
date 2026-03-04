@@ -521,8 +521,8 @@ void FPSI::Monolithic::setup_solver()
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == Core::LinearSolver::SolverType::umfpack or
-                  solvertype == Core::LinearSolver::SolverType::superlu);
+  directsolve_ = (solvertype == Core::LinearSolver::SolverType::UMFPACK or
+                  solvertype == Core::LinearSolver::SolverType::Superlu);
 
   if (directsolve_)
     solver_ = std::make_shared<Core::LinAlg::Solver>(solverparams, get_comm(),
@@ -630,7 +630,7 @@ void FPSI::Monolithic::create_linear_solver()
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(fpsisolverparams, "SOLVER");
 
-  if (solvertype != Core::LinearSolver::SolverType::belos)
+  if (solvertype != Core::LinearSolver::SolverType::Belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;

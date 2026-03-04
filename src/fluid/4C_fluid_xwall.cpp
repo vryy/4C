@@ -749,9 +749,9 @@ void FLD::XWall::setup_l2_projection()
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY"));
 
-    if (solvertype != Core::LinearSolver::SolverType::umfpack)
+    if (solvertype != Core::LinearSolver::SolverType::UMFPACK)
     {
-      if (solvertype != Core::LinearSolver::SolverType::belos && myrank_ == 0)
+      if (solvertype != Core::LinearSolver::SolverType::Belos && myrank_ == 0)
         std::cout
             << "\nUse Belos as solver because it can handle several right hand sides at once!\n"
             << std::endl;

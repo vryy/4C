@@ -601,7 +601,7 @@ void FS3I::PartFS3I::setup_system()
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(coupledscatrasolvparams, "SOLVER");
 
-  if (solvertype != Core::LinearSolver::SolverType::belos)
+  if (solvertype != Core::LinearSolver::SolverType::Belos)
     FOUR_C_THROW("Iterative solver expected");
 
   const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(

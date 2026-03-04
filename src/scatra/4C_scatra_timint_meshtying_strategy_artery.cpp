@@ -160,11 +160,11 @@ void ScaTra::MeshtyingStrategyArtery::initialize_linear_solver(
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
   // no need to do the rest for direct solvers
-  if (solvertype == Core::LinearSolver::SolverType::umfpack or
-      solvertype == Core::LinearSolver::SolverType::superlu)
+  if (solvertype == Core::LinearSolver::SolverType::UMFPACK or
+      solvertype == Core::LinearSolver::SolverType::Superlu)
     return;
 
-  if (solvertype != Core::LinearSolver::SolverType::belos)
+  if (solvertype != Core::LinearSolver::SolverType::Belos)
     FOUR_C_THROW("Iterative solver expected");
 
   const auto azprectype =

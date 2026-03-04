@@ -145,7 +145,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
 
-      if (solvertype == Core::LinearSolver::SolverType::belos)
+      if (solvertype == Core::LinearSolver::SolverType::Belos)
       {
         const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");           // fluid solver
         const int fluidpressuresolver = fdyn.get<int>("SIMPLER_SOLVER");  // fluid pressure solver

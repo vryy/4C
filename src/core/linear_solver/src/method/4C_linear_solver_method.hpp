@@ -44,10 +44,10 @@ namespace Core::LinearSolver
   //! Available solvers in the Amesos package and Iterative methods
   enum class SolverType
   {
-    umfpack,   ///< Amesos direct solver using UMFPACK
-    superlu,   ///< Amesos direct solver using SuperLU_Dist
-    belos,     ///< Belos iterative solver
-    undefined  ///< undefined solver
+    KLU2,     ///< Amesos direct solver using KLU2
+    UMFPACK,  ///< Amesos direct solver using UMFPACK
+    Superlu,  ///< Amesos direct solver using SuperLU_Dist
+    Belos,    ///< Belos iterative solver
   };
 
   //! Different solvers within the Belos package

@@ -179,7 +179,7 @@ void LowMach::Algorithm::setup()
     const auto solvertype =
         Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(lomasolverparams, "SOLVER");
 
-    if (solvertype != Core::LinearSolver::SolverType::belos)
+    if (solvertype != Core::LinearSolver::SolverType::Belos)
       FOUR_C_THROW(
           "SOLVER {} is not valid for LOMA. It has to be an iterative Solver (with BGS2x2 block "
           "preconditioner)",
