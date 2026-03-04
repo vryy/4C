@@ -7,6 +7,8 @@
 
 #include <gtest/gtest.h>
 
+#include <gmock/gmock.h>
+
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_element_integration.hpp"
 #include "4C_io_mesh.hpp"
@@ -15,6 +17,7 @@
 #include "4C_unittest_utils_assertions_test.hpp"
 #include "4C_unittest_utils_support_files_test.hpp"
 #include "4C_utils_demangle.hpp"
+#include "4C_utils_flat_vector_vector.hpp"
 
 #include <variant>
 
@@ -71,111 +74,103 @@ namespace
 #ifndef FOUR_C_WITH_VTK
     GTEST_SKIP() << "Skipping test: 4C vtu-input requires VTK support";
 #endif
-    Core::IO::MeshInput::RawMesh<3> mesh = Core::IO::VTU::read_vtu_file(
-        TESTING::get_support_file_path("test_files/vtu/hex8_point_data.vtu"));
+    Core::IO::MeshInput::Mesh<3> mesh = Core::IO::MeshInput::Mesh(Core::IO::VTU::read_vtu_file(
+        TESTING::get_support_file_path("test_files/vtu/hex8_point_data.vtu")));
 
-    ASSERT_EQ(mesh.points.size(), 16);
-    EXPECT_EQ(mesh.point_data.size(), 10);
+    ASSERT_EQ(mesh.points().size(), 16);
+    EXPECT_EQ(mesh.points_with_data()[0].data_size(), 10);
+
+    const auto point_ref = mesh.points_with_data()[10];
 
     // Check scalar double field
-    ASSERT_TRUE((std::holds_alternative<std::vector<double>>(mesh.point_data["scalar_float"])));
-    const auto& scalar_float = std::get<std::vector<double>>(mesh.point_data["scalar_float"]);
-    EXPECT_NEAR(scalar_float[10], 10.0, 1e-10);
+    ASSERT_TRUE((std::holds_alternative<std::span<const double>>(point_ref.data("scalar_float"))));
+    const auto& scalar_float = point_ref.data_as<double>("scalar_float");
+    EXPECT_NEAR(scalar_float, 10.0, 1e-10);
 
     // Check scalar int field
-    ASSERT_TRUE((std::holds_alternative<std::vector<int>>(mesh.point_data["scalar_int"])));
-    const auto& scalar_int = std::get<std::vector<int>>(mesh.point_data["scalar_int"]);
-    EXPECT_EQ(scalar_int[10], 10);
+    ASSERT_TRUE((std::holds_alternative<std::span<const int>>(point_ref.data("scalar_int"))));
+    const auto& scalar_int = point_ref.data_as<int>("scalar_int");
+    EXPECT_EQ(scalar_int, 10);
 
     // Check reading a double rank-1-Tensor field
-    ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::Tensor<double, 3>>>(
-        mesh.point_data["vector_float"])));
-    const auto& vector_float =
-        std::get<std::vector<Core::LinAlg::Tensor<double, 3>>>(mesh.point_data["vector_float"]);
-    for (std::size_t node_id = 0; node_id < mesh.points.size(); ++node_id)
-    {
-      auto ref = Core::LinAlg::make_tensor_view<3>(mesh.points[node_id].data());
-      Core::LinAlg::Tensor<double, 3> value = vector_float[node_id];
-      FOUR_C_EXPECT_NEAR(value, ref, 1e-12);
-    }
+    ASSERT_TRUE((std::holds_alternative<std::span<const double>>(point_ref.data("vector_float"))));
+    const auto& vector_float = point_ref.data_as<std::vector<double>>("vector_float");
+    ASSERT_EQ(vector_float.size(), 3);
+    auto ref = Core::LinAlg::make_tensor_view<3>(mesh.points()[10].data());
+    FOUR_C_EXPECT_NEAR(
+        (point_ref.data_as<Core::LinAlg::Tensor<double, 3>>("vector_float")), ref, 1e-12);
 
     // Check reading a int rank-1-Tensor field
-    ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::Tensor<int, 3>>>(
-        mesh.point_data["vector_int"])));
-    const auto& vector_int =
-        std::get<std::vector<Core::LinAlg::Tensor<int, 3>>>(mesh.point_data["vector_int"]);
-    for (std::size_t node_id = 0; node_id < mesh.points.size(); ++node_id)
-    {
-      Core::LinAlg::Tensor<int, 3> ref = {{
-          static_cast<int>(mesh.points[node_id][0]),
-          static_cast<int>(mesh.points[node_id][1]),
-          static_cast<int>(mesh.points[node_id][2]),
-      }};
-      Core::LinAlg::Tensor<int, 3> value = vector_int[node_id];
-      FOUR_C_EXPECT_NEAR(value, ref, 1e-12);
-    }
+    ASSERT_TRUE((std::holds_alternative<std::span<const int>>(point_ref.data("vector_int"))));
+    const auto& vector_int = point_ref.data_as<std::vector<int>>("vector_int");
+    ASSERT_EQ(vector_int.size(), 3);
+    Core::LinAlg::Tensor<int, 3> ref_int = {{
+        static_cast<int>(mesh.points()[10][0]),
+        static_cast<int>(mesh.points()[10][1]),
+        static_cast<int>(mesh.points()[10][2]),
+    }};
+    FOUR_C_EXPECT_NEAR(
+        (point_ref.data_as<Core::LinAlg::Tensor<int, 3>>("vector_int")), ref_int, 1e-12);
 
     {
       // Check reading a double rank-2-SymmetricTensor field
-      ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>>>(
-          mesh.point_data["symmetric_tensor_float"])));
-      const auto& tensor_float = std::get<std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>>>(
-          mesh.point_data["symmetric_tensor_float"]);
+      ASSERT_TRUE((std::holds_alternative<std::span<const double>>(
+          point_ref.data("symmetric_tensor_float"))));
+      const auto& vector_double = point_ref.data_as<std::vector<double>>("symmetric_tensor_float");
+      ASSERT_EQ(vector_double.size(), 6);
       const auto ref = Core::LinAlg::assume_symmetry(Core::LinAlg::Tensor<double, 3, 3>{{
-
           {1.1, 4.1, 6.1},
           {4.1, 2.1, 5.1},
           {6.1, 5.1, 3.1},
       }});
-      Core::LinAlg::SymmetricTensor<double, 3, 3> value = tensor_float[10];
-      FOUR_C_EXPECT_NEAR(value, ref, 1e-12);
+      FOUR_C_EXPECT_NEAR((point_ref.data_as<Core::LinAlg::SymmetricTensor<double, 3, 3>>(
+                             "symmetric_tensor_float")),
+          ref, 1e-12);
     }
 
     {
-      // Check reading a int rank-2-SymmetricTensor field
-      ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::SymmetricTensor<int, 3, 3>>>(
-          mesh.point_data["symmetric_tensor_int"])));
-      const auto& tensor_int = std::get<std::vector<Core::LinAlg::SymmetricTensor<int, 3, 3>>>(
-          mesh.point_data["symmetric_tensor_int"]);
+      // Check reading a double rank-2-SymmetricTensor field
+      ASSERT_TRUE(
+          (std::holds_alternative<std::span<const int>>(point_ref.data("symmetric_tensor_int"))));
+      const auto& vector_int = point_ref.data_as<std::vector<int>>("symmetric_tensor_int");
+      ASSERT_EQ(vector_int.size(), 6);
       const auto ref = Core::LinAlg::assume_symmetry(Core::LinAlg::Tensor<int, 3, 3>{{
-
           {11, 14, 16},
           {14, 12, 15},
           {16, 15, 13},
       }});
-      Core::LinAlg::SymmetricTensor<int, 3, 3> value = tensor_int[10];
-      FOUR_C_EXPECT_NEAR(value, ref, 1e-12);
+      FOUR_C_EXPECT_NEAR(
+          (point_ref.data_as<Core::LinAlg::SymmetricTensor<int, 3, 3>>("symmetric_tensor_int")),
+          ref, 1e-12);
     }
 
     {
       // Check reading a double rank-2-Tensor field
-      ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::Tensor<double, 3, 3>>>(
-          mesh.point_data["tensor_float"])));
-      const auto& tensor_float = std::get<std::vector<Core::LinAlg::Tensor<double, 3, 3>>>(
-          mesh.point_data["tensor_float"]);
-      const Core::LinAlg::Tensor<double, 3, 3> ref = {{
+      ASSERT_TRUE(
+          (std::holds_alternative<std::span<const double>>(point_ref.data("tensor_float"))));
+      const auto& vector_double = point_ref.data_as<std::vector<double>>("tensor_float");
+      ASSERT_EQ(vector_double.size(), 9);
+      const auto ref = Core::LinAlg::Tensor<double, 3, 3>{{
           {1.1, 2.1, 3.1},
           {4.1, 5.1, 6.1},
           {7.1, 8.1, 9.1},
       }};
-      Core::LinAlg::Tensor<double, 3, 3> value = tensor_float[10];
-      FOUR_C_EXPECT_NEAR(value, ref, 1e-12);
+      FOUR_C_EXPECT_NEAR(
+          (point_ref.data_as<Core::LinAlg::Tensor<double, 3, 3>>("tensor_float")), ref, 1e-12);
     }
-
 
     {
       // Check reading a int rank-2-Tensor field
-      ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::Tensor<int, 3, 3>>>(
-          mesh.point_data["tensor_int"])));
-      const auto& tensor_int =
-          std::get<std::vector<Core::LinAlg::Tensor<int, 3, 3>>>(mesh.point_data["tensor_int"]);
-      const Core::LinAlg::Tensor<double, 3, 3> ref = {{
+      ASSERT_TRUE((std::holds_alternative<std::span<const int>>(point_ref.data("tensor_int"))));
+      const auto& vector_int = point_ref.data_as<std::vector<int>>("tensor_int");
+      ASSERT_EQ(vector_int.size(), 9);
+      const auto ref = Core::LinAlg::Tensor<int, 3, 3>{{
           {11, 12, 13},
           {14, 15, 16},
           {17, 18, 19},
       }};
-      Core::LinAlg::Tensor<int, 3, 3> value = tensor_int[10];
-      FOUR_C_EXPECT_NEAR(value, ref, 1e-12);
+      FOUR_C_EXPECT_NEAR(
+          (point_ref.data_as<Core::LinAlg::Tensor<int, 3, 3>>("tensor_int")), ref, 1e-12);
     }
   }
 
@@ -184,107 +179,139 @@ namespace
 #ifndef FOUR_C_WITH_VTK
     GTEST_SKIP() << "Skipping test: 4C vtu-input requires VTK support";
 #endif
-    Core::IO::MeshInput::RawMesh<3> mesh = Core::IO::VTU::read_vtu_file(
-        TESTING::get_support_file_path("test_files/vtu/hex8_cell_data.vtu"));
+    Core::IO::MeshInput::Mesh<3> mesh = Core::IO::MeshInput::Mesh(Core::IO::VTU::read_vtu_file(
+        TESTING::get_support_file_path("test_files/vtu/hex8_cell_data.vtu")));
 
-    ASSERT_EQ(mesh.cell_blocks.size(), 2);
-    ASSERT_EQ(mesh.cell_blocks.at(1).size(), 2);
-    ASSERT_EQ(mesh.cell_blocks.at(2).size(), 1);
+    ASSERT_EQ(mesh.cell_blocks().size(), 2);
+    ASSERT_EQ(mesh.cell_blocks()[0].size(), 2);
+    ASSERT_EQ(mesh.cell_blocks()[1].size(), 1);
 
-    EXPECT_EQ(mesh.cell_blocks.at(1).cell_data.size(), 10);
+    EXPECT_EQ(mesh.cell_blocks()[0].cell_data().size(), 10);
 
-    const Core::IO::MeshInput::CellBlock<3>& cell_block = mesh.cell_blocks.at(1);
+    const auto& cell_block = mesh.cell_blocks()[0];
+    const auto& cell_reference = cell_block.cells_with_data()[1];
 
     // Check scalar double field
-    ASSERT_TRUE(
-        (std::holds_alternative<std::vector<double>>(cell_block.cell_data.at("scalar_float"))));
-    const auto& scalar_float =
-        std::get<std::vector<double>>(cell_block.cell_data.at("scalar_float"));
-    EXPECT_NEAR(scalar_float[1], 1.2, 1e-10);
+    ASSERT_TRUE((std::holds_alternative<Core::Utils::Vector2D<double>>(
+        cell_block.cell_data().at("scalar_float"))));
+    const auto& scalar_float = cell_reference.data_as<double>("scalar_float");
+    EXPECT_NEAR(scalar_float, 1.2, 1e-10);
+
+    // I should also be able to read it as a vector of length 1
+    const auto& scalar_float_vector = cell_reference.data_as<std::vector<double>>("scalar_float");
+    EXPECT_EQ(scalar_float_vector.size(), 1);
+    EXPECT_NEAR(scalar_float_vector[0], 1.2, 1e-10);
 
     // Check scalar int field
-    ASSERT_TRUE((std::holds_alternative<std::vector<int>>(cell_block.cell_data.at("scalar_int"))));
-    const auto& scalar_int = std::get<std::vector<int>>(cell_block.cell_data.at("scalar_int"));
-    EXPECT_EQ(scalar_int[1], 1);
+    ASSERT_TRUE((std::holds_alternative<Core::Utils::Vector2D<int>>(
+        cell_block.cell_data().at("scalar_int"))));
+    const auto& scalar_int = cell_reference.data_as<int>("scalar_int");
+    EXPECT_EQ(scalar_int, 1);
 
     {
       // Check reading a double rank-1-Tensor field
-      ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::Tensor<double, 3>>>(
-          cell_block.cell_data.at("vector_float"))));
-      const auto& vector_float = std::get<std::vector<Core::LinAlg::Tensor<double, 3>>>(
-          cell_block.cell_data.at("vector_float"));
+      ASSERT_TRUE((std::holds_alternative<Core::Utils::Vector2D<double>>(
+          cell_block.cell_data().at("vector_float"))));
       const Core::LinAlg::Tensor<double, 3> ref = {{0.2, 1.2, 0.2}};
-      FOUR_C_EXPECT_NEAR(vector_float[1], ref, 1e-12);
+
+      // Cannot read a vector as a double!
+      EXPECT_ANY_THROW(
+          [[maybe_unused]] const auto& _ = cell_reference.data_as<double>("vector_float"));
+
+      // Can read a vector as a vector of double
+      const auto& vector_float = cell_reference.data_as<std::vector<double>>("vector_float");
+      ASSERT_THAT(vector_float, testing::SizeIs(3));
+      ASSERT_THAT(vector_float[0], ref(0));
+      ASSERT_THAT(vector_float[1], ref(1));
+      ASSERT_THAT(vector_float[2], ref(2));
+
+      // Can read a vector as a array of double with correct size
+      const auto& array_float = cell_reference.data_as<std::array<double, 3>>("vector_float");
+      ASSERT_THAT(array_float, testing::SizeIs(3));
+      ASSERT_THAT(array_float[0], ref(0));
+      ASSERT_THAT(array_float[1], ref(1));
+      ASSERT_THAT(array_float[2], ref(2));
+
+      // Cannot read a vector as a array of double with wrong size
+      EXPECT_ANY_THROW(({
+        [[maybe_unused]] const auto& _ =
+            cell_reference.data_as<std::array<double, 2>>("vector_float");
+      }));
+      EXPECT_ANY_THROW(({
+        [[maybe_unused]] const auto& _ =
+            cell_reference.data_as<std::array<double, 4>>("vector_float");
+      }));
+
+      // Can read a vector as a Tensor of double with correct size
+      const auto& tensor_float =
+          cell_reference.data_as<Core::LinAlg::Tensor<double, 3>>("vector_float");
+      FOUR_C_EXPECT_NEAR(tensor_float, ref, 1e-12);
     }
 
     {
       // Check reading a int rank-1-Tensor field
-      ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::Tensor<int, 3>>>(
-          cell_block.cell_data.at("vector_int"))));
-      const auto& vector_int = std::get<std::vector<Core::LinAlg::Tensor<int, 3>>>(
-          cell_block.cell_data.at("vector_int"));
+      ASSERT_TRUE((std::holds_alternative<Core::Utils::Vector2D<int>>(
+          cell_block.cell_data().at("vector_int"))));
+      const auto& vector_int = cell_reference.data_as<Core::LinAlg::Tensor<int, 3>>("vector_int");
       const Core::LinAlg::Tensor<int, 3> ref = {{0, 1, 0}};
-      FOUR_C_EXPECT_NEAR(vector_int[1], ref, 1e-12);
+      FOUR_C_EXPECT_NEAR(vector_int, ref, 1e-12);
     }
 
     {
       // Check reading a double rank-2-SymmetricTensor field
-      ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>>>(
-          cell_block.cell_data.at("symmetric_tensor_float"))));
-      const auto& tensor_float = std::get<std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>>>(
-          cell_block.cell_data.at("symmetric_tensor_float"));
+      ASSERT_TRUE((std::holds_alternative<Core::Utils::Vector2D<double>>(
+          cell_block.cell_data().at("symmetric_tensor_float"))));
+      const auto& tensor_float =
+          cell_reference.data_as<Core::LinAlg::SymmetricTensor<double, 3, 3>>(
+              "symmetric_tensor_float");
       const Core::LinAlg::Tensor<double, 3, 3> ref = {{
           {1.01, 4.01, 6.01},
           {4.01, 2.01, 5.01},
           {6.01, 5.01, 3.01},
       }};
-      Core::LinAlg::SymmetricTensor<double, 3, 3> value = tensor_float[1];
-      FOUR_C_EXPECT_NEAR(value, ref, 1e-12);
+      FOUR_C_EXPECT_NEAR(tensor_float, ref, 1e-12);
     }
 
     {
       // Check reading a int rank-2-SymmetricTensor field
-      ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::SymmetricTensor<int, 3, 3>>>(
-          cell_block.cell_data.at("symmetric_tensor_int"))));
-      const auto& tensor_int = std::get<std::vector<Core::LinAlg::SymmetricTensor<int, 3, 3>>>(
-          cell_block.cell_data.at("symmetric_tensor_int"));
+      ASSERT_TRUE((std::holds_alternative<Core::Utils::Vector2D<int>>(
+          cell_block.cell_data().at("symmetric_tensor_int"))));
+      const auto& tensor_int =
+          cell_reference.data_as<Core::LinAlg::SymmetricTensor<int, 3, 3>>("symmetric_tensor_int");
       const Core::LinAlg::Tensor<int, 3, 3> ref = {{
           {2, 5, 7},
           {5, 3, 6},
           {7, 6, 4},
       }};
-      Core::LinAlg::SymmetricTensor<int, 3, 3> value = tensor_int[1];
-      FOUR_C_EXPECT_NEAR(value, ref, 1e-12);
+      FOUR_C_EXPECT_NEAR(tensor_int, ref, 1e-12);
     }
 
     {
       // Check reading a int rank-2-Tensor field
-      ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::Tensor<double, 3, 3>>>(
-          cell_block.cell_data.at("tensor_float"))));
-      const auto& tensor_float = std::get<std::vector<Core::LinAlg::Tensor<double, 3, 3>>>(
-          cell_block.cell_data.at("tensor_float"));
+      ASSERT_TRUE((std::holds_alternative<Core::Utils::Vector2D<double>>(
+          cell_block.cell_data().at("tensor_float"))));
+      const auto& tensor_float =
+          cell_reference.data_as<Core::LinAlg::Tensor<double, 3, 3>>("tensor_float");
       const Core::LinAlg::Tensor<double, 3, 3> ref = {{
           {1.01, 2.01, 3.01},
           {4.01, 5.01, 6.01},
           {7.01, 8.01, 9.01},
       }};
-      Core::LinAlg::Tensor<double, 3, 3> value = tensor_float[1];
-      FOUR_C_EXPECT_NEAR(value, ref, 1e-12);
+      FOUR_C_EXPECT_NEAR(tensor_float, ref, 1e-12);
     }
 
     {
       // Check reading a int rank-2-Tensor field
-      ASSERT_TRUE((std::holds_alternative<std::vector<Core::LinAlg::Tensor<int, 3, 3>>>(
-          cell_block.cell_data.at("tensor_int"))));
-      const auto& tensor_int = std::get<std::vector<Core::LinAlg::Tensor<int, 3, 3>>>(
-          cell_block.cell_data.at("tensor_int"));
+      ASSERT_TRUE((std::holds_alternative<Core::Utils::Vector2D<int>>(
+          cell_block.cell_data().at("tensor_int"))));
+      const auto& tensor_int =
+          cell_reference.data_as<Core::LinAlg::Tensor<int, 3, 3>>("tensor_int");
       const Core::LinAlg::Tensor<int, 3, 3> ref = {{
           {2, 3, 4},
           {5, 6, 7},
           {8, 9, 10},
       }};
-      Core::LinAlg::Tensor<int, 3, 3> value = tensor_int[1];
-      FOUR_C_EXPECT_NEAR(value, ref, 1e-12);
+      FOUR_C_EXPECT_NEAR(tensor_int, ref, 1e-12);
     }
   }
 

@@ -108,12 +108,12 @@ namespace TESTING
     }
 
     int cell_id = 0;
-    for (const auto& [_, block] : mesh.cell_blocks())
+    for (const auto& cell_block : mesh.cell_blocks())
     {
-      for (const auto& cell : block.cells())
+      for (const auto& cell : cell_block.cells())
       {
-        builder.add_element(
-            block.cell_type, cell, cell_id, {.num_dof_per_node = 3, .num_dof_per_element = 0});
+        builder.add_element(cell_block.cell_type(), cell, cell_id,
+            {.num_dof_per_node = 3, .num_dof_per_element = 0});
 
         cell_id++;
       }

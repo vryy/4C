@@ -591,12 +591,12 @@ namespace
 
       int ele_count = 0;
       std::vector<Core::IO::MeshInput::ExternalIdType> relevant_blocks;
-      for (auto& [eb_id, eb] : mesh.cell_blocks())
+      for (const auto& cell_block : mesh.cell_blocks())
       {
         // Look into the input file to find out which elements we need to assign to this block.
-        const int eb_id_copy = eb_id;  // work around compiler warning in clang18
+        const int eb_id = cell_block.id();
         auto current_block_data = std::ranges::find_if(element_block_data,
-            [eb_id_copy](const auto& e) { return e.template get<int>("ID") == eb_id_copy; });
+            [eb_id](const auto& e) { return e.template get<int>("ID") == eb_id; });
         if (current_block_data == element_block_data.end())
         {
           skipped_blocks.emplace_back(eb_id);
@@ -608,22 +608,23 @@ namespace
         const auto [element_name, cell_type, specific_data] =
             element_definition.unpack_element_data(*current_block_data);
 
-        const std::string cell_type_string = Core::FE::cell_type_to_string(eb.cell_type);
+        const std::string cell_type_string = Core::FE::cell_type_to_string(cell_block.cell_type());
 
-        FOUR_C_ASSERT_ALWAYS(cell_type == eb.cell_type,
+        FOUR_C_ASSERT_ALWAYS(cell_type == cell_block.cell_type(),
             "Element block '{}' has cell type '{}' but your given element definition for '{}' has "
             "cell type '{}'.",
-            eb_id, eb.cell_type, element_name, cell_type);
+            eb_id, cell_block.cell_type(), element_name, cell_type);
 
         size_t cell_id_in_block = 0;
-        for (const auto& cell : eb.cells())
+        for (const auto& cell : cell_block.cells())
         {
           // Do not yet use the external cell ID. 4C is not yet prepared to deal with this!
           // replace ele_count with cell.external_id once possible
           auto ele = Core::Communication::factory(element_name, cell_type_string, ele_count, 0);
           if (!ele) FOUR_C_THROW("element creation failed");
           ele->set_node_ids(cell.size(), cell.data());
-          Core::IO::MeshInput::ElementDataFromCellData element_data{eb.cell_data, cell_id_in_block};
+          Core::IO::MeshInput::ElementDataFromCellData element_data{
+              cell_block.cell_data(), cell_id_in_block, mesh.converters()};
           ele->read_element(element_name, cell_type_string, specific_data, element_data);
 
           user_elements.emplace(ele_count, std::move(ele));
@@ -898,14 +899,14 @@ void Core::IO::MeshReader::get_element_block_nodes(
   {
     if (const auto* external_mesh = get_external_mesh_on_rank_zero(); external_mesh)
     {
-      for (const auto& [id, eb] : external_mesh->cell_blocks())
+      for (const auto& cell_block : external_mesh->cell_blocks())
       {
         std::set<int> nodes;
-        for (const auto& cell : eb.cells())
+        for (const auto& cell : cell_block.cells())
         {
           nodes.insert(cell.begin(), cell.end());
         }
-        element_block_nodes[id] = std::vector<int>(nodes.begin(), nodes.end());
+        element_block_nodes[cell_block.id()] = std::vector<int>(nodes.begin(), nodes.end());
       }
     }
     Core::Communication::broadcast(element_block_nodes, 0, get_comm());

@@ -9,6 +9,8 @@
 
 #include "4C_io_mesh.hpp"
 
+#include "4C_utils_flat_vector_vector.hpp"
+
 namespace
 {
   using namespace FourC;
@@ -35,8 +37,10 @@ namespace
 
     mesh.point_sets[10].point_ids = {0, 1, 3, 4};
     mesh.point_sets[20].point_ids = {22, 23, 25, 26};
-
-    mesh.point_data["test_data"] = std::vector<double>(mesh.points.size(), 1.0);
+    Core::Utils::Vector2D<double> test_data(1);
+    for (std::size_t i = 0; i < mesh.points.size(); ++i)
+      test_data.push_back(std::vector<double>(1, 1.0));
+    mesh.point_data["test_data"] = test_data;
 
     assert_valid(mesh);
   }
@@ -60,8 +64,12 @@ namespace
 
     for (auto pd : filtered_mesh.points_with_data())
     {
-      EXPECT_EQ(std::get<double>(pd.data("test_data")), 1.0);
+      EXPECT_EQ(std::get<std::span<const double>>(pd.data("test_data"))[0], 1.0);
       EXPECT_EQ(pd.data_as<double>("test_data"), 1.0);
+
+      // Alternatively, I can also read the data as a vector/array
+      EXPECT_EQ((pd.data_as<std::vector<double>>("test_data")[0]), 1.0);
+      EXPECT_EQ((pd.data_as<std::array<double, 1>>("test_data")[0]), 1.0);
     }
   }
 }  // namespace

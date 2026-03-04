@@ -34,6 +34,7 @@ namespace Core::Utils
   {
    public:
     using size_type = std::size_t;
+    using value_type = T;
 
     //! Default constructor. Creates an empty FlatVectorVector.
     FlatVectorVector() = default;
@@ -60,6 +61,13 @@ namespace Core::Utils
         std::copy(inner.begin(), inner.end(), data_.begin() + pos);
         pos += inner.size();
       }
+    }
+
+    //! @brief append an inner vector
+    void push_back(const std::vector<T>& inner)
+    {
+      data_.insert(data_.end(), inner.begin(), inner.end());
+      offsets_.push_back(data_.size());
     }
 
     /**
