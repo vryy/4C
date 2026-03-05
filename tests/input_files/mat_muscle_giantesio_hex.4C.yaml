@@ -137,6 +137,8 @@ MATERIALS:
       ACTINTERVALSNUM: 1
       ACTVALUES: [0]
       DENS: 1
+      FIBER_ORIENTATION:
+        constant: [0, 0, 1]
   - MAT: 2
     MAT_Muscle_Giantesio:
       ALPHA: 19.69
@@ -162,6 +164,8 @@ MATERIALS:
       ACTINTERVALSNUM: 1
       ACTVALUES: [1]
       DENS: 1
+      FIBER_ORIENTATION:
+        constant: [0, 0, 1]
 FUNCT1:
   - COMPONENT: 0
     SYMBOLIC_FUNCTION_OF_SPACE_TIME: "a"
@@ -287,5 +291,5 @@ NODE COORDS:
   - "NODE 15 COORD 3.0 1.0 0.0"
   - "NODE 16 COORD 3.0 1.0 1.0"
 STRUCTURE ELEMENTS:
-  - "1 SOLID HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0"
-  - "2 SOLID HEX8 9 10 11 12 13 14 15 16 MAT 2 KINEM nonlinear FIBER1 0.0 0.0 1.0"
+  - "1 SOLID HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear"
+  - "2 SOLID HEX8 9 10 11 12 13 14 15 16 MAT 2 KINEM nonlinear"

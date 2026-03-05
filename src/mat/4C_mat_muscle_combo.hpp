@@ -12,14 +12,12 @@
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_io_input_field.hpp"
-#include "4C_mat_anisotropy.hpp"
-#include "4C_mat_anisotropy_extension_default.hpp"
+#include "4C_mat_fiber_interpolation.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_function.hpp"
 
 #include <memory>
-#include <unordered_map>
 #include <variant>
 
 FOUR_C_NAMESPACE_OPEN
@@ -84,8 +82,11 @@ namespace Mat
       //! @}
 
       const double density_;  ///< density
-      //@}
+                              //@}
 
+      const Core::IO::InterpolatedInputField<Core::LinAlg::Tensor<double, 3>,
+          Mat::FiberInterpolation>
+          fiber_orientation_;  ///< fiber orientation field
     };  // end class MuscleCombo
   }  // end namespace PAR
 
@@ -221,12 +222,6 @@ namespace Mat
 
     /// Combo material parameters
     Mat::PAR::MuscleCombo* params_{};
-
-    /// Holder for anisotropic behavior
-    Mat::Anisotropy anisotropy_;
-
-    /// Anisotropy extension holder
-    Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
 
     /// Activation evaluator, either analytical symbolic function of space and time or discrete
     /// activation map

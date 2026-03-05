@@ -477,6 +477,9 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                     .size = from_parameter<int>("ACTINTERVALSNUM")}),
             parameter<double>(
                 "DENS", {.description = "density", .validator = positive_or_zero<double>()}),
+            interpolated_input_field<Core::LinAlg::Tensor<double, 3>, Mat::FiberInterpolation>(
+                "FIBER_ORIENTATION",
+                {.description = "A unit vector field pointing in the direction of the fibers."}),
         },
         {.description = "Weickenmeier muscle material"});
   }
@@ -518,6 +521,9 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             }),
             parameter<double>(
                 "DENS", {.description = "density", .validator = positive_or_zero<double>()}),
+            interpolated_input_field<Core::LinAlg::Tensor<double, 3>, Mat::FiberInterpolation>(
+                "FIBER_ORIENTATION",
+                {.description = "A unit vector field pointing in the direction of the fibers."}),
         },
         {.description = "Combo muscle material"});
   }
@@ -596,6 +602,9 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                     .size = from_parameter<int>("ACTINTERVALSNUM")}),
             parameter<double>(
                 "DENS", {.description = "density", .validator = positive_or_zero<double>()}),
+            interpolated_input_field<Core::LinAlg::Tensor<double, 3>, Mat::FiberInterpolation>(
+                "FIBER_ORIENTATION",
+                {.description = "A unit vector field pointing in the direction of the fibers."}),
         },
         {.description = "Giantesio active strain muscle material"});
   }
