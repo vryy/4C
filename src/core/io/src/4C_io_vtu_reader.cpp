@@ -13,9 +13,12 @@
 #include "4C_io_mesh.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor_internals.hpp"
+#include "4C_utils_demangle.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_vector2D.hpp"
 
 #include <type_traits>
+#include <typeindex>
 
 #ifdef FOUR_C_WITH_VTK
 #include <vtkArrayDispatch.h>
@@ -107,26 +110,27 @@ namespace
    * @brief Given a templated container (templated for the scalar type), create an empty instance of
    * the container. Optionally reserve space for the given number of entries.
    */
-  template <template <typename> typename Container>
-  Core::IO::MeshInput::FieldDataVariantType<3> make_container_with_supported_scalar_type(
+  Core::IO::MeshInput::FieldDataVariantType make_container_with_supported_scalar_type(
       vtkDataArray& array, bool reserve = true)
   {
-    Core::IO::MeshInput::FieldDataVariantType<3> type;
+    std::optional<Core::IO::MeshInput::FieldDataVariantType> type{};
     if (!vtkArrayDispatch::DispatchByValueType<vtkArrayDispatch::AllTypes>::Execute(&array,
             [&](auto* typed_array)
             {
               using ValueType = typename std::decay_t<decltype(*typed_array)>::ValueType;
               if constexpr (std::is_integral_v<ValueType>)
               {
-                Container<int> container{};
-                if (reserve) container.reserve(array.GetSize());
-                type = std::move(container);
+                Core::Utils::Vector2D<int> container{
+                    static_cast<size_t>(array.GetNumberOfComponents())};
+                if (reserve) container.reserve(array.GetNumberOfTuples());
+                type.emplace(std::move(container));
               }
               else if constexpr (std::is_floating_point_v<ValueType>)
               {
-                Container<double> container{};
-                if (reserve) container.reserve(array.GetSize());
-                type = std::move(container);
+                Core::Utils::Vector2D<double> container{
+                    static_cast<size_t>(array.GetNumberOfComponents())};
+                if (reserve) container.reserve(array.GetNumberOfTuples());
+                type.emplace(std::move(container));
               }
               else
               {
@@ -140,9 +144,9 @@ namespace
       // Handle vtkBitArray separately as it is not covered by vtkArrayDispatch::AllTypes
       if (vtkBitArray::SafeDownCast(&array))
       {
-        Container<bool> container{};
-        if (reserve) container.reserve(array.GetSize());
-        type = std::move(container);
+        Core::Utils::Vector2D<bool> container{static_cast<size_t>(array.GetNumberOfComponents())};
+        if (reserve) container.reserve(array.GetNumberOfTuples());
+        type.emplace(std::move(container));
       }
       else
       {
@@ -151,7 +155,10 @@ namespace
       }
     }
 
-    return type;
+    FOUR_C_ASSERT(type.has_value(), "Failed to create container for array {} of type {}!",
+        array.GetName(), array.GetDataTypeAsString());
+
+    return *type;
   }
 
   struct ScalarFieldType
@@ -187,127 +194,34 @@ namespace
    * given components in the array. Optionally, the vector can already reserve space for the number
    * of entries in the array.
    */
-  Core::IO::MeshInput::FieldDataVariantType<3> make_empty_field_data_variant(
+  Core::IO::MeshInput::FieldDataVariantType make_empty_field_data_variant(
       vtkDataArray& array, bool reserve = true)
   {
-    const int n_components = array.GetNumberOfComponents();
-    switch (n_components)
-    {
-      case 1:
-        return make_container_with_supported_scalar_type<ScalarFieldType::type>(
-            array, /*reserve=*/reserve);
-      case 3:
-        return make_container_with_supported_scalar_type<VectorFieldType<3>::type>(
-            array, /*reserve=*/reserve);
-      case 6:
-        return make_container_with_supported_scalar_type<SymmetricTensorFieldType<3>::type>(
-            array, /*reserve=*/reserve);
-      case 9:
-        return make_container_with_supported_scalar_type<TensorFieldType<3>::type>(
-            array, /*reserve=*/reserve);
-      default:
-        FOUR_C_THROW(
-            "Array {} has {} components, but can only handle 1 (scalar), 3 (vector), 6 (symmetric "
-            "tensor) or 9 (tensor) "
-            "components!",
-            array.GetName(), n_components);
-    }
+    return make_container_with_supported_scalar_type(array, /*reserve=*/reserve);
   }
 
   template <typename T>
-  T extract_data_item(vtkDataArray& array, vtkIdType index)
+  std::vector<T> extract_raw_data(vtkDataArray& array, vtkIdType index)
   {
     const int n_components = array.GetNumberOfComponents();
 
-    auto extract_entry = [&](auto& typed_array) -> T
+    std::vector<T> raw_data;
+
+
+    auto extract_entry = [&](auto& typed_array) -> std::vector<T>
     {
-      switch (n_components)
+      std::vector<T> raw_data_item(n_components);
+      for (int c = 0; c < n_components; ++c)
       {
-        case 1:
-        {
-          // scalar
-          if constexpr (std::is_arithmetic_v<T>)
-          {
-            return T(typed_array.GetValue(index));
-          }
-          FOUR_C_THROW("Implementation error: Here we expect that the types are convertible.");
-        }
-        case 3:
-        {
-          // vector
-          if constexpr (Core::LinAlg::is_tensor<T>)
-          {
-            using ScalarType = typename T::value_type;
-            if constexpr (T::rank() == 1)
-            {
-              return T{{ScalarType(typed_array.GetComponent(index, 0)),
-                  ScalarType(typed_array.GetComponent(index, 1)),
-                  ScalarType(typed_array.GetComponent(index, 2))}};
-            }
-          }
-          FOUR_C_THROW("Implementation error: Here we expect that T is a Tensor type.");
-        }
-        case 6:
-        {
-          // symmetric tensor
-          if constexpr (Core::LinAlg::is_symmetric_tensor<T>)
-          {
-            using ScalarType = typename T::value_type;
-            if constexpr (T::rank() == 2)
-            {
-              std::array<ScalarType, 6> components{ScalarType(typed_array.GetComponent(index, 0)),
-                  ScalarType(typed_array.GetComponent(index, 1)),
-                  ScalarType(typed_array.GetComponent(index, 2)),
-                  ScalarType(typed_array.GetComponent(index, 3)),
-                  ScalarType(typed_array.GetComponent(index, 4)),
-                  ScalarType(typed_array.GetComponent(index, 5))};
-              return Core::LinAlg::make_symmetric_tensor_view<3, 3>(components.data());
-            }
-          }
-          FOUR_C_THROW("Implementation error: Here we expect that T is a SymmetricTensor type.");
-        }
-        case 9:
-        {
-          // tensor
-          if constexpr (Core::LinAlg::is_tensor<T>)
-          {
-            using ScalarType = typename T::value_type;
-            if constexpr (T::rank() == 2 && !Core::LinAlg::is_compressed_tensor<T>)
-            {
-              return T{{
-                  {
-                      ScalarType(typed_array.GetComponent(index, 0)),
-                      ScalarType(typed_array.GetComponent(index, 1)),
-                      ScalarType(typed_array.GetComponent(index, 2)),
-                  },
-                  {
-                      ScalarType(typed_array.GetComponent(index, 3)),
-                      ScalarType(typed_array.GetComponent(index, 4)),
-                      ScalarType(typed_array.GetComponent(index, 5)),
-                  },
-                  {
-                      ScalarType(typed_array.GetComponent(index, 6)),
-                      ScalarType(typed_array.GetComponent(index, 7)),
-                      ScalarType(typed_array.GetComponent(index, 8)),
-                  },
-              }};
-            }
-          }
-          FOUR_C_THROW("Implementation error: Here we expect that T is a SymmetricTensor type.");
-        }
-        default:
-          FOUR_C_THROW(
-              "Array {} has {} components, but can only handle 1 (scalar), 3 "
-              "(vector), 6 (symmetric tensor) or 9 (tensor) components!",
-              array.GetName(), n_components);
+        raw_data_item[c] = static_cast<T>(typed_array.GetComponent(index, c));
       }
+      return raw_data_item;
     };
 
-    T result;
     if (vtkArrayDispatch::DispatchByValueType<vtkArrayDispatch::AllTypes>::Execute(
-            &array, [&](auto* typed_array) { result = extract_entry(*typed_array); }))
+            &array, [&](auto* typed_array) { raw_data = extract_entry(*typed_array); }))
     {
-      return result;
+      return raw_data;
     }
     // Handle vtkBitArray separately as it is not covered by vtkArrayDispatch::AllTypes
     if (vtkBitArray* bit_array = vtkBitArray::SafeDownCast(&array))
@@ -362,6 +276,62 @@ namespace
           return four_c_connectivity;
         });
   }
+
+  template <typename SourceType, typename TargetTensor>
+  std::pair<std::type_index, std::function<std::any(std::any)>> make_tensor_conversion_item()
+  {
+    return std::make_pair(
+        Core::IO::MeshInput::make_converter_type_index<SourceType, TargetTensor>(),
+        [](std::any source) -> std::any
+        {
+          const auto& typed_source = std::any_cast<std::span<const SourceType>>(source);
+
+          FOUR_C_ASSERT(typed_source.size() == TargetTensor::compressed_size,
+              "Expecting {} components to convert to {}, but got {} components.",
+              TargetTensor::compressed_size, Core::Utils::try_demangle(typeid(TargetTensor).name()),
+              typed_source.size());
+
+          TargetTensor result{};
+          std::copy(typed_source.begin(), typed_source.end(), result.container().begin());
+
+          // vtu uses row major ordering for tensors, but 4C uses column major, so we need to
+          // transpose the result if it is a non-symmetric rank-2 tensor
+          constexpr bool is_transpose = TargetTensor::rank() == 2 && !TargetTensor::is_compressed;
+          if constexpr (is_transpose)
+            return Core::LinAlg::transpose(result);
+          else
+            return result;
+        });
+  }
+
+  template <unsigned dim>
+  [[nodiscard]] std::unordered_map<std::type_index, std::function<std::any(std::any)>>
+  make_type_converters()
+  {
+    std::unordered_map<std::type_index, std::function<std::any(std::any)>> converters{};
+
+    // from double to double tensor
+    converters.insert(make_tensor_conversion_item<double, Core::LinAlg::Tensor<double, dim>>());
+    converters.insert(
+        make_tensor_conversion_item<double, Core::LinAlg::SymmetricTensor<double, dim, dim>>());
+    converters.insert(
+        make_tensor_conversion_item<double, Core::LinAlg::Tensor<double, dim, dim>>());
+
+    // from int to int tensor
+    converters.insert(make_tensor_conversion_item<int, Core::LinAlg::Tensor<int, dim>>());
+    converters.insert(
+        make_tensor_conversion_item<int, Core::LinAlg::SymmetricTensor<int, dim, dim>>());
+    converters.insert(make_tensor_conversion_item<int, Core::LinAlg::Tensor<int, dim, dim>>());
+
+    // from bool to bool tensor
+    converters.insert(make_tensor_conversion_item<bool, Core::LinAlg::Tensor<bool, dim>>());
+    converters.insert(
+        make_tensor_conversion_item<bool, Core::LinAlg::SymmetricTensor<bool, dim, dim>>());
+    converters.insert(make_tensor_conversion_item<bool, Core::LinAlg::Tensor<bool, dim, dim>>());
+
+
+    return converters;
+  };
 }  // namespace
 
 Core::IO::MeshInput::RawMesh<3> Core::IO::VTU::read_vtu_file(const std::filesystem::path& vtu_file)
@@ -370,6 +340,9 @@ Core::IO::MeshInput::RawMesh<3> Core::IO::VTU::read_vtu_file(const std::filesyst
       std::filesystem::exists(vtu_file), "File {} does not exist.", vtu_file.string());
 
   Core::IO::MeshInput::RawMesh<3> mesh{};
+
+  // append type converters for vtu
+  mesh.converters = make_type_converters<3>();
 
   // Read the VTU file
   vtkSmartPointer<vtkXMLUnstructuredGridReader> reader =
@@ -385,7 +358,7 @@ Core::IO::MeshInput::RawMesh<3> Core::IO::VTU::read_vtu_file(const std::filesyst
   auto point_sets = get_numbered_arrays_with_prefix(point_data, "point_set");
   for (const auto& [name, vtk_data] : point_data)
   {
-    mesh.point_data[name] = make_empty_field_data_variant(vtk_data.get(), /*reserve=*/true);
+    mesh.point_data.emplace(name, make_empty_field_data_variant(vtk_data.get(), /*reserve=*/true));
   }
 
   for (vtkIdType i = 0; i < vtk_mesh->GetNumberOfPoints(); ++i)
@@ -400,8 +373,8 @@ Core::IO::MeshInput::RawMesh<3> Core::IO::VTU::read_vtu_file(const std::filesyst
       std::visit(
           [&](auto& value)
           {
-            value.emplace_back(
-                extract_data_item<typename std::remove_reference_t<decltype(value)>::value_type>(
+            value.push_back(
+                extract_raw_data<typename std::remove_reference_t<decltype(value)>::value_type>(
                     array, i));
           },
           mesh.point_data[name]);
@@ -465,7 +438,7 @@ Core::IO::MeshInput::RawMesh<3> Core::IO::VTU::read_vtu_file(const std::filesyst
           [&](auto& value)
           {
             using ValueType = typename std::remove_reference_t<decltype(value)>::value_type;
-            value.emplace_back(extract_data_item<ValueType>(array, i));
+            value.push_back(extract_raw_data<ValueType>(array, i));
           },
           cell_block.cell_data[name]);
     }

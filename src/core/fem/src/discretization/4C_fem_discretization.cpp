@@ -117,9 +117,9 @@ void Core::FE::Discretization::fill_from_mesh(const IO::MeshInput::Mesh<3>& mesh
     Core::Elements::ElementDefinition element_definition;
 
     unsigned ele_count = 0;
-    for (const auto& [eb_id, eb] : mesh.cell_blocks())
+    for (const auto& block : mesh.cell_blocks())
     {
-      for (const auto& connectivity : eb.cells())
+      for (const auto& connectivity : block.cells())
       {
         (void)connectivity;
         std::shared_ptr<Core::Elements::Element> user_element = nullptr;
@@ -129,7 +129,7 @@ void Core::FE::Discretization::fill_from_mesh(const IO::MeshInput::Mesh<3>& mesh
 
         // Currently, we always require a user element
         FOUR_C_ASSERT_ALWAYS(user_element,
-            "Need a user element for element ID {} in block with ID {}.", ele_count, eb_id);
+            "Need a user element for element ID {} in block with ID {}.", ele_count, block.id());
 
         add_element(user_element);
         ele_count++;

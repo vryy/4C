@@ -224,8 +224,9 @@ void Core::IO::MeshInput::print(const Mesh<dim>& mesh, std::ostream& os, Verbosi
 {
   if (verbose >= VerbosityLevel::summary)
   {
-    auto num_elements = std::accumulate(mesh.cell_blocks().begin(), mesh.cell_blocks().end(), 0,
-        [](int sum, const auto& block) { return sum + block.second.size(); });
+    const auto cell_blocks = mesh.cell_blocks();
+    auto num_elements = std::accumulate(cell_blocks.begin(), cell_blocks.end(), 0,
+        [](int sum, const auto& block) { return sum + block.size(); });
 
     os << "Mesh consists of " << mesh.points().size() << " points and " << num_elements
        << " cells organized in " << mesh.cell_blocks().size() << " cell-blocks and "
@@ -254,12 +255,12 @@ void Core::IO::MeshInput::print(const Mesh<dim>& mesh, std::ostream& os, Verbosi
       os << "\n";
     }
     os << "cell-blocks:\n";
-    for (const auto& [id, cell_block] : mesh.cell_blocks())
+    for (const auto& cell_block : mesh.cell_blocks())
     {
-      os << "  cell-block " << id;
-      if (cell_block.name.has_value()) os << " (" << *cell_block.name << ")";
+      os << "  cell-block " << cell_block.id();
+      if (cell_block.name().has_value()) os << " (" << *cell_block.name() << ")";
       os << ": ";
-      print(cell_block, os, verbose);
+      print(cell_block.get(), os, verbose);
     }
     os << "\n";
 

@@ -52,68 +52,32 @@ bool Discret::Elements::Beam3r::read_element(const std::string& eletype, const s
   use_fad_ = container.get<bool>("USE_FAD");
 
   // Store the nodal rotation vectors
-  std::vector<double> nodal_rotation_vectors(3 * nnodetriad);
+  const std::vector<double> nodal_rotation_vectors = std::invoke(
+      [&]() -> std::vector<double>
+      {
+        if (container.get_if<std::vector<double>>("TRIADS"))
+        {
+          return container.get<std::vector<double>>("TRIADS");
+        }
+        else if (container.get_if<std::string>("NODAL_ROTATION_VECTORS"))
+        {
+          const auto& triad_field_name = container.get<std::string>("NODAL_ROTATION_VECTORS");
+          const auto rotation_vectors = element_data.get<std::vector<double>>(triad_field_name);
+          FOUR_C_ASSERT_ALWAYS(std::cmp_equal(rotation_vectors.size(), 3 * nnodetriad),
+              "The size of the nodal rotation vector array must be 3 times the number of nodes per "
+              "element ({}), but {} values are given in the array {}.",
+              nnodetriad, rotation_vectors.size(), triad_field_name);
+          return rotation_vectors;
+        }
+        else
+        {
+          FOUR_C_THROW(
+              "No definition for nodal triads provided! Please set either TRIADS or "
+              "NODAL_ROTATION_VECTORS for beam3r elements!");
+        }
+      });
 
-  if (container.get_if<std::vector<double>>("TRIADS"))
-  {
-    nodal_rotation_vectors = container.get<std::vector<double>>("TRIADS");
-  }
-  else if (container.get_if<std::string>("NODAL_ROTATION_VECTORS"))
-  {
-    const auto triad_field_name = container.get<std::string>("NODAL_ROTATION_VECTORS");
-    switch (nnodetriad)
-    {
-      case 2:
-      {
-        // TODO: We currently have to store the triad in a symmetric tensor since that one takes 6
-        // components. This should be changed in the future, once we can read plain vectors from
-        // the mesh.
-        const auto& triad_field_data =
-            element_data.get<Core::LinAlg::SymmetricTensor<double, 3, 3>>(triad_field_name);
-        // In the input data we define a cell data field with 6 components. For now they internally
-        // get converted to a symmetric tensor, the following mapping extracts the correct order as
-        // given in the input data.
-        nodal_rotation_vectors[0] = triad_field_data(0, 0);
-        nodal_rotation_vectors[1] = triad_field_data(1, 1);
-        nodal_rotation_vectors[2] = triad_field_data(2, 2);
-        nodal_rotation_vectors[3] = triad_field_data(0, 1);
-        nodal_rotation_vectors[4] = triad_field_data(1, 2);
-        nodal_rotation_vectors[5] = triad_field_data(0, 2);
-        break;
-      }
-      case 3:
-      {
-        // TODO: We currently have to store the triad in a tensor since that one takes 9
-        // components. This should be changed in the future, once we can read plain vectors from
-        // the mesh.
-        const auto& triad_field_data =
-            element_data.get<Core::LinAlg::Tensor<double, 3, 3>>(triad_field_name);
-        nodal_rotation_vectors[0] = triad_field_data(0, 0);
-        nodal_rotation_vectors[1] = triad_field_data(0, 1);
-        nodal_rotation_vectors[2] = triad_field_data(0, 2);
-        nodal_rotation_vectors[3] = triad_field_data(1, 0);
-        nodal_rotation_vectors[4] = triad_field_data(1, 1);
-        nodal_rotation_vectors[5] = triad_field_data(1, 2);
-        nodal_rotation_vectors[6] = triad_field_data(2, 0);
-        nodal_rotation_vectors[7] = triad_field_data(2, 1);
-        nodal_rotation_vectors[8] = triad_field_data(2, 2);
-        break;
-      }
-      default:
-      {
-        FOUR_C_THROW(
-            "Nodal triad definition from mesh is only implemented for up to 2 and 3 nodes per "
-            "element, but {} nodes are given for beam3r element.",
-            nnodetriad);
-      }
-    }
-  }
-  else
-  {
-    FOUR_C_THROW(
-        "No definition for nodal triads provided! Please set either TRIADS or "
-        "NODAL_ROTATION_VECTORS for beam3r elements!");
-  }
+
 
   theta0node_.resize(nnodetriad);
   for (int node = 0; node < nnodetriad; node++)
