@@ -184,9 +184,10 @@ void Core::LinAlg::Solver::setup(std::shared_ptr<Core::LinAlg::SparseOperator> m
         solver_ = std::make_shared<Core::LinearSolver::IterativeSolver>(comm_, Solver::params());
         break;
       }
+      case Core::LinearSolver::SolverType::KLU2:
+      case Core::LinearSolver::SolverType::MUMPS:
       case Core::LinearSolver::SolverType::UMFPACK:
       case Core::LinearSolver::SolverType::Superlu:
-      case Core::LinearSolver::SolverType::KLU2:
       {
         solver_ = std::make_shared<Core::LinearSolver::DirectSolver>(solvertype);
         break;
@@ -411,6 +412,10 @@ Teuchos::ParameterList Core::LinAlg::Solver::translate_solver_parameters(
   {
     case Core::LinearSolver::SolverType::KLU2:
       outparams.set<Core::LinearSolver::SolverType>("solver", Core::LinearSolver::SolverType::KLU2);
+      break;
+    case Core::LinearSolver::SolverType::MUMPS:
+      outparams.set<Core::LinearSolver::SolverType>(
+          "solver", Core::LinearSolver::SolverType::MUMPS);
       break;
     case Core::LinearSolver::SolverType::UMFPACK:
       outparams.set<Core::LinearSolver::SolverType>(

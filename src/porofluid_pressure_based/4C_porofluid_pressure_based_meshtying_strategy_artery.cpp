@@ -159,9 +159,7 @@ void PoroPressureBased::MeshtyingArtery::initialize_linear_solver(
   const auto solver_type =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solver_params, "SOLVER");
   // no need to do the rest for direct solvers
-  if (solver_type == Core::LinearSolver::SolverType::UMFPACK or
-      solver_type == Core::LinearSolver::SolverType::Superlu)
-    return;
+  if (Core::LinearSolver::is_direct_linear_solver(solver_type)) return;
 
   if (solver_type != Core::LinearSolver::SolverType::Belos)
     FOUR_C_THROW("Iterative solver expected");

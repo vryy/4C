@@ -326,14 +326,11 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_co
             " set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       // plausibility check
-
-      // solver can be either UMFPACK (direct solver) or an iterative solver
       const auto sol = Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(
           Global::Problem::instance()->solver_params(lin_solver_id), "SOLVER");
       const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
           Global::Problem::instance()->solver_params(lin_solver_id), "AZPREC");
-      if (sol != Core::LinearSolver::SolverType::UMFPACK &&
-          sol != Core::LinearSolver::SolverType::Superlu)
+      if (Core::LinearSolver::is_iterative_linear_solver(sol))
       {
         // if an iterative solver is chosen we need a block preconditioner
         if (prec != Core::LinearSolver::PreconditionerType::multigrid_muelu &&
