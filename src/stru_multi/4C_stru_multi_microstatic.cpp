@@ -1135,7 +1135,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
 
     switch (solvertype)
     {
-      case Core::LinearSolver::SolverType::belos:
+      case Core::LinearSolver::SolverType::Belos:
       {
         // solve for 9 rhs at the same time --> thanks to Belos
         Core::LinAlg::SolverParams solver_params;
@@ -1144,8 +1144,8 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
         solver.solve_with_multi_vector(stiff_, iterinc, rhs_, solver_params);
         break;
       }
-      case Core::LinearSolver::SolverType::superlu:
-      case Core::LinearSolver::SolverType::umfpack:
+      case Core::LinearSolver::SolverType::Superlu:
+      case Core::LinearSolver::SolverType::UMFPACK:
       {
         // solve for 9 rhs iteratively
         for (int i = 0; i < rhs_->num_vectors(); i++)

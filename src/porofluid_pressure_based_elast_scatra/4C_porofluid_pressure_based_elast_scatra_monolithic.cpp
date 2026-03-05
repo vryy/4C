@@ -291,11 +291,11 @@ void PoroPressureBased::PorofluidElastScatraMonolithicAlgorithm::create_linear_s
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   // no need to do the rest for direct solvers
-  if (solvertype == Core::LinearSolver::SolverType::umfpack or
-      solvertype == Core::LinearSolver::SolverType::superlu)
+  if (solvertype == Core::LinearSolver::SolverType::UMFPACK or
+      solvertype == Core::LinearSolver::SolverType::Superlu)
     return;
 
-  if (solvertype != Core::LinearSolver::SolverType::belos)
+  if (solvertype != Core::LinearSolver::SolverType::Belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;

@@ -13,13 +13,15 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_linear_solver_method_projector.hpp"
 
+#include <magic_enum/magic_enum.hpp>
+
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Core::LinearSolver::DirectSolver::DirectSolver(std::string solvertype)
+Core::LinearSolver::DirectSolver::DirectSolver(Core::LinearSolver::SolverType solvertype)
     : solvertype_(solvertype), factored_(false), solver_(nullptr), projector_(nullptr)
 {
 }
@@ -68,27 +70,40 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
     std::string solver_type;
     Teuchos::ParameterList params("Amesos2");
 
-    if (solvertype_ == "umfpack")
+    switch (solvertype_)
     {
-      solver_type = "Umfpack";
-      auto& umfpack_params = params.sublist(solver_type);
-      umfpack_params.set("IsContiguous", false, "Are GIDs Contiguous");
+      case SolverType::KLU2:
+      {
+        solver_type = "KLU2";
+        auto& klu_params = params.sublist(solver_type);
+        klu_params.set("IsContiguous", false, "Are GIDs Contiguous");
+        break;
+      }
+      case SolverType::UMFPACK:
+      {
+        solver_type = "Umfpack";
+        auto& umfpack_params = params.sublist(solver_type);
+        umfpack_params.set("IsContiguous", false, "Are GIDs Contiguous");
+        break;
+      }
+      case SolverType::Superlu:
+      {
+        solver_type = "SuperLU_DIST";
+        auto& superludist_params = params.sublist(solver_type);
+        superludist_params.set("Equil", true, "Whether to equilibrate the system before solve");
+        superludist_params.set("RowPerm", "LargeDiag_MC64", "Row ordering");
+        superludist_params.set("ReplaceTinyPivot", true, "Replace tiny pivot");
+        superludist_params.set("IsContiguous", false, "Are GIDs Contiguous");
+        break;
+      }
+      default:
+        FOUR_C_THROW("Unsupported solver type {}!", magic_enum::enum_name(solvertype_));
     }
-    else if (solvertype_ == "superlu")
-    {
-      solver_type = "SuperLU_DIST";
-      auto& superludist_params = params.sublist(solver_type);
-      superludist_params.set("Equil", true, "Whether to equilibrate the system before solve");
-      superludist_params.set("RowPerm", "LargeDiag_MC64", "Row ordering");
-      superludist_params.set("ReplaceTinyPivot", true, "Replace tiny pivot");
-      superludist_params.set("IsContiguous", false, "Are GIDs Contiguous");
-    }
-    else
-    {
-      solver_type = "KLU2";
-      auto& klu_params = params.sublist(solver_type);
-      klu_params.set("IsContiguous", false, "Are GIDs Contiguous");
-    }
+
+    FOUR_C_ASSERT_ALWAYS(Amesos2::query(solver_type),
+        "Requested direct solver {} is not available in Amesos2! Check your Amesos2 installation "
+        "and choose an available solver!",
+        solver_type);
 
     solver_ = Amesos2::create<Epetra_CrsMatrix, Epetra_MultiVector>(
         solver_type, Teuchos::rcpFromRef(a_->epetra_matrix()));

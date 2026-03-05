@@ -117,7 +117,7 @@ void Solid::ModelEvaluator::Cardiovascular0D::setup()
 
   Teuchos::ParameterList solvparams;
   Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
-      "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
+      "SOLVER", Core::LinearSolver::SolverType::UMFPACK, solvparams);
   std::shared_ptr<Core::LinAlg::Solver> dummysolver(new Core::LinAlg::Solver(
       solvparams, disnp_ptr_->get_comm(), nullptr, Core::IO::Verbositylevel::standard));
 

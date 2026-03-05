@@ -218,8 +218,8 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_proj
       solverparams, comm, get_solver_params, Core::IO::Verbositylevel::standard);
 
   // skip setup of preconditioner in case of a direct solver
-  if (solvertype != Core::LinearSolver::SolverType::umfpack and
-      solvertype != Core::LinearSolver::SolverType::superlu)
+  if (solvertype != Core::LinearSolver::SolverType::UMFPACK and
+      solvertype != Core::LinearSolver::SolverType::Superlu)
   {
     const auto prectype =
         Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(solverparams, "AZPREC");
@@ -251,7 +251,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_proj
 
   switch (solvertype)
   {
-    case Core::LinearSolver::SolverType::belos:
+    case Core::LinearSolver::SolverType::Belos:
     {
       // solve for numvec rhs at the same time using Belos solver
       Core::LinAlg::SolverParams solver_params;

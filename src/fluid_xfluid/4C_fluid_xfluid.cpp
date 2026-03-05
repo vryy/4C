@@ -12,7 +12,6 @@
 #include "4C_cut_sidehandle.hpp"
 #include "4C_cut_volumecell.hpp"
 #include "4C_fem_dofset_predefineddofnumber.hpp"
-#include "4C_fem_dofset_transparent_independent.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
@@ -32,13 +31,12 @@
 #include "4C_linalg.hpp"
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
-#include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_utils_function.hpp"
-#include "4C_utils_parameter_list.hpp"
 #include "4C_xfem_condition_manager.hpp"
 #include "4C_xfem_discretization.hpp"
 #include "4C_xfem_discretization_utils.hpp"
@@ -4116,7 +4114,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   Teuchos::ParameterList solverparams;
 
   // use iterative solver
-  solverparams.set("solver", "belos");
+  solverparams.set<Core::LinearSolver::SolverType>("solver", Core::LinearSolver::SolverType::Belos);
   Teuchos::ParameterList& solverlist = solverparams.sublist("Belos Parameters");
   solverlist.set("Solver Type", "GMRES");
   solverlist.set<double>("Convergence Tolerance", 1.0e-12);

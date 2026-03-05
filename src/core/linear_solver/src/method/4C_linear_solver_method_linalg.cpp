@@ -177,19 +177,23 @@ void Core::LinAlg::Solver::setup(std::shared_ptr<Core::LinAlg::SparseOperator> m
 
   if (solver_ == nullptr)
   {
-    // decide what solver to use
-    std::string solvertype = Solver::params().get("solver", "none");
-
-    if ("belos" == solvertype)
+    switch (auto solvertype = Solver::params().get<Core::LinearSolver::SolverType>("solver"))
     {
-      solver_ = std::make_shared<Core::LinearSolver::IterativeSolver>(comm_, Solver::params());
+      case Core::LinearSolver::SolverType::Belos:
+      {
+        solver_ = std::make_shared<Core::LinearSolver::IterativeSolver>(comm_, Solver::params());
+        break;
+      }
+      case Core::LinearSolver::SolverType::UMFPACK:
+      case Core::LinearSolver::SolverType::Superlu:
+      case Core::LinearSolver::SolverType::KLU2:
+      {
+        solver_ = std::make_shared<Core::LinearSolver::DirectSolver>(solvertype);
+        break;
+      }
+      default:
+        FOUR_C_THROW("Unknown type of solver {}!", solvertype);
     }
-    else if ("umfpack" == solvertype or "superlu" == solvertype)
-    {
-      solver_ = std::make_shared<Core::LinearSolver::DirectSolver>(solvertype);
-    }
-    else
-      FOUR_C_THROW("Unknown type of solver");
   }
 
   solver_->setup(matrix, b, refactor, params.reset, params.projector);
@@ -275,7 +279,7 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
     const Core::IO::Verbositylevel verbosity, const MPI_Comm& comm)
 {
   Teuchos::ParameterList outparams;
-  outparams.set("solver", "belos");
+  outparams.set<Core::LinearSolver::SolverType>("solver", Core::LinearSolver::SolverType::Belos);
   Teuchos::ParameterList& beloslist = outparams.sublist("Belos Parameters");
 
   beloslist.set("reuse", inparams.get<int>("AZREUSE"));
@@ -405,23 +409,22 @@ Teuchos::ParameterList Core::LinAlg::Solver::translate_solver_parameters(
 
   switch (Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(inparams, "SOLVER"))
   {
-    case Core::LinearSolver::SolverType::undefined:
-      std::cout << "undefined solver! Set " << inparams.name() << "  in your input file!"
-                << std::endl;
-      FOUR_C_THROW("fix your input file");
+    case Core::LinearSolver::SolverType::KLU2:
+      outparams.set<Core::LinearSolver::SolverType>("solver", Core::LinearSolver::SolverType::KLU2);
       break;
-    case Core::LinearSolver::SolverType::umfpack:
-      outparams.set("solver", "umfpack");
+    case Core::LinearSolver::SolverType::UMFPACK:
+      outparams.set<Core::LinearSolver::SolverType>(
+          "solver", Core::LinearSolver::SolverType::UMFPACK);
       break;
-    case Core::LinearSolver::SolverType::superlu:
-      outparams.set("solver", "superlu");
+    case Core::LinearSolver::SolverType::Superlu:
+      outparams.set<Core::LinearSolver::SolverType>(
+          "solver", Core::LinearSolver::SolverType::Superlu);
       break;
-    case Core::LinearSolver::SolverType::belos:
+    case Core::LinearSolver::SolverType::Belos:
       outparams = translate_four_c_to_belos(inparams, get_solver_params, verbosity, comm);
       break;
     default:
       FOUR_C_THROW("Unsupported type of solver");
-      break;
   }
 
   return outparams;

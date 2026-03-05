@@ -238,7 +238,7 @@ void TSI::Monolithic::create_linear_solver()
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(tsisolverparams, "SOLVER");
 
-  if (solvertype != Core::LinearSolver::SolverType::belos)
+  if (solvertype != Core::LinearSolver::SolverType::Belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!\n";
     std::cout << " Note: the BGS2x2 preconditioner now \n";

@@ -1381,7 +1381,7 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
 
     Teuchos::ParameterList solvparams;
     Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
-        "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
+        "SOLVER", Core::LinearSolver::SolverType::UMFPACK, solvparams);
     Core::LinAlg::Solver solver(solvparams, comm_, nullptr, Core::IO::Verbositylevel::standard);
 
     Core::LinAlg::SolverParams solver_params;

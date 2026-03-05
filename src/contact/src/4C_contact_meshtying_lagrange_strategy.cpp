@@ -245,7 +245,7 @@ CONTACT::MtLagrangeStrategy::mesh_initialization()
 
       Teuchos::ParameterList solvparams;
       Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
-          "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
+          "SOLVER", Core::LinearSolver::SolverType::UMFPACK, solvparams);
       Core::LinAlg::Solver solver(
           solvparams, get_comm(), nullptr, Core::IO::Verbositylevel::standard);
 
@@ -282,7 +282,7 @@ CONTACT::MtLagrangeStrategy::mesh_initialization()
 
       Teuchos::ParameterList solvparams;
       Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
-          "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
+          "SOLVER", Core::LinearSolver::SolverType::UMFPACK, solvparams);
       Core::LinAlg::Solver solver(
           solvparams, get_comm(), nullptr, Core::IO::Verbositylevel::standard);
 

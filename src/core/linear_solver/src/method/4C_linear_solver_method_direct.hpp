@@ -24,12 +24,11 @@ namespace Core::LinearSolver
   class DirectSolver : public SolverTypeBase
   {
    public:
-    explicit DirectSolver(std::string solvertype);
+    explicit DirectSolver(Core::LinearSolver::SolverType solvertype);
 
     /*! \brief Setup the solver object
      *
-     * @param A Matrix of the linear system
-     * @param x Solution vector of the linear system
+     * @param matrix Matrix of the linear system
      * @param b Right-hand side vector of the linear system
      * @param refactor Boolean flag to enforce a refactorization of the matrix
      * @param reset Boolean flag to enforce a full reset of the solver object
@@ -41,11 +40,11 @@ namespace Core::LinearSolver
 
     int solve(Core::LinAlg::MultiVector<double>& x) override;
 
-    bool is_factored() { return factored_; }
+    [[nodiscard]] bool is_factored() const { return factored_; }
 
    private:
     //! type/implementation of Amesos solver to be used
-    const std::string solvertype_;
+    const Core::LinearSolver::SolverType solvertype_;
 
     //! flag indicating whether a valid factorization is stored
     bool factored_;

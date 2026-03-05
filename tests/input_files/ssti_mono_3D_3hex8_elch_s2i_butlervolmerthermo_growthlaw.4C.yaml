@@ -49,7 +49,7 @@ SSTI CONTROL/THERMO:
   LINEAR_SOLVER: 1
   INITIALFIELD: "field_by_condition"
 SOLVER 1:
-  SOLVER: "UMFPACK"
+  SOLVER: KLU2 # other direct solver like UMFPACK is recommended, however KLU2 is used here to test the interface with KLU2
 MATERIALS:
   - MAT: 1
     MAT_electrode:
@@ -243,43 +243,43 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 6
       QUANTITY: "dispx"
-      VALUE: -4.395791892876576e-05
+      VALUE: -4.39579203207457928e-05
       TOLERANCE: 4.4e-12
   - STRUCTURE:
       DIS: "structure"
       NODE: 16
       QUANTITY: "dispx"
-      VALUE: -9.626025608699073e-05
+      VALUE: -9.62602557242097420e-05
       TOLERANCE: 9.6e-12
   - STRUCTURE:
       DIS: "structure"
       NODE: 16
       QUANTITY: "dispy"
-      VALUE: 8.18215400782480417e-06
+      VALUE: 8.18215400782441623e-06
       TOLERANCE: 8.2e-13
   - STRUCTURE:
       DIS: "structure"
       NODE: 16
       QUANTITY: "dispz"
-      VALUE: 8.182155847161086e-06
+      VALUE: 8.18215526679789522e-06
       TOLERANCE: 8.2e-13
   - STRUCTURE:
       DIS: "structure"
       NODE: 18
       QUANTITY: "dispx"
-      VALUE: -9.626025735296876e-05
+      VALUE: -9.62602562138705576e-05
       TOLERANCE: 9.6e-12
   - SCATRA:
       DIS: "scatra"
       NODE: 5
       QUANTITY: "phi1"
-      VALUE: 5.168074465947565
+      VALUE: 5.16807465477049721e+00
       TOLERANCE: 5.2e-07
   - SCATRA:
       DIS: "scatra"
       NODE: 5
       QUANTITY: "phi2"
-      VALUE: 9.108397056810732e-05
+      VALUE: 9.10839711957962242e-05
       TOLERANCE: 9.1e-12
   - SCATRA:
       DIS: "scatra"
@@ -291,37 +291,37 @@ RESULT DESCRIPTION:
       DIS: "scatra"
       NODE: 15
       QUANTITY: "phi2"
-      VALUE: 0.11653070524492559
+      VALUE: 1.16530703590220663e-01
       TOLERANCE: 1.2e-08
   - SCATRA:
       DIS: "scatra"
       NODE: 24
       QUANTITY: "phi1"
-      VALUE: 10289.162225865643
+      VALUE: 1.02891622210407550e+04
       TOLERANCE: 0.001
   - SCATRA:
       DIS: "scatra"
       NODE: 24
       QUANTITY: "phi2"
-      VALUE: 4.232961139539012
+      VALUE: 4.23296113767921689e+00
       TOLERANCE: 4.2e-07
   - SCATRA:
       DIS: "thermo"
       NODE: 8
       QUANTITY: "phi"
-      VALUE: 255.083208085407
+      VALUE: 2.55083219509554368e+02
       TOLERANCE: 2.6e-05
   - SCATRA:
       DIS: "thermo"
       NODE: 16
       QUANTITY: "phi"
-      VALUE: 288.4286095420156
+      VALUE: 2.88428612135808464e+02
       TOLERANCE: 2.9e-05
   - SCATRA:
       DIS: "thermo"
       NODE: 20
       QUANTITY: "phi"
-      VALUE: 299.30673822665915
+      VALUE: 2.99306738008738819e+02
       TOLERANCE: 3e-05
   - SSTI:
       SPECIAL: true

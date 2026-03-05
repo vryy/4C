@@ -2013,8 +2013,8 @@ void FSI::MonolithicXFEM::create_linear_solver()
   //----------------------------------------------
   // create direct solver for merged block matrix
   //----------------------------------------------
-  if (solvertype == Core::LinearSolver::SolverType::umfpack ||
-      solvertype == Core::LinearSolver::SolverType::superlu)
+  if (solvertype == Core::LinearSolver::SolverType::UMFPACK ||
+      solvertype == Core::LinearSolver::SolverType::Superlu)
   {
     if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "Merged XFSI block matrix is used!\n" << std::endl;
@@ -2038,7 +2038,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
   // create iterative solver for XFSI block matrix
   //----------------------------------------------
 
-  if (solvertype != Core::LinearSolver::SolverType::belos)
+  if (solvertype != Core::LinearSolver::SolverType::Belos)
     FOUR_C_THROW("Iterative solver expected");
 
   // get parameter list of structural dynamics
