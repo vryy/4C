@@ -670,7 +670,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
 
   if (summandProperties_.anisomod)
   {
-    elast_hyper_add_anisotropic_mod(stress, cmat, C, iC, prinv, gp, eleGID, params, potsum_);
+    elast_hyper_add_anisotropic_mod(stress, cmat, C, iC, prinv, gp, eleGID, context, potsum_);
   }
 }
 

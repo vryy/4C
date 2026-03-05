@@ -69,7 +69,7 @@ namespace Mat
      *
      * <h3>References</h3>
      * <ul>
-     * <li> [1] Adolfson and Enelund (2003): Fractional Derivative Visocelasticity at
+     * <li> [1] Adolfson and Enelund (2003): Fractional Derivative Viscoelasticity at
      *          Large Deformations
      * </ul>
      */

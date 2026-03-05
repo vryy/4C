@@ -12,7 +12,6 @@
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_tensor_conversion.hpp"
-#include "4C_mat_elast_aniso_structuraltensor_strategy.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_muscle_utils.hpp"
 #include "4C_mat_service.hpp"
@@ -33,46 +32,31 @@ Mat::Elastic::PAR::IsoMuscleBlemker::IsoMuscleBlemker(
       lambda_star_(matdata.parameters.get<double>("LAMBDASTAR")),
       alpha_(matdata.parameters.get<double>("ALPHA")),
       beta_(matdata.parameters.get<double>("BETA")),
-      t_act_start_(matdata.parameters.get<double>("ACTSTARTTIME"))
+      t_act_start_(matdata.parameters.get<double>("ACTSTARTTIME")),
+      fiber_orientation_(
+          matdata.parameters.get<Core::IO::InterpolatedInputField<Core::LinAlg::Tensor<double, 3>,
+              Mat::FiberInterpolation>>("FIBER_ORIENTATION"))
+
 {
 }
 
 
 Mat::Elastic::IsoMuscleBlemker::IsoMuscleBlemker(Mat::Elastic::PAR::IsoMuscleBlemker* params)
-    : params_(params),
-      anisotropy_extension_(true, 0.0, false,
-          std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
-              new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
-          {0})
+    : params_(params)
 
 {
-  // initialize fiber directions and structural tensor
-  anisotropy_extension_.register_needed_tensors(
-      Mat::FiberAnisotropyExtension<1>::FIBER_VECTORS |
-      Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void Mat::Elastic::IsoMuscleBlemker::pack_summand(Core::Communication::PackBuffer& data) const
-{
-  anisotropy_extension_.pack_anisotropy(data);
-}
+void Mat::Elastic::IsoMuscleBlemker::pack_summand(Core::Communication::PackBuffer& data) const {}
 
-void Mat::Elastic::IsoMuscleBlemker::unpack_summand(Core::Communication::UnpackBuffer& buffer)
-{
-  anisotropy_extension_.unpack_anisotropy(buffer);
-}
-
-void Mat::Elastic::IsoMuscleBlemker::register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
-{
-  anisotropy.register_anisotropy_extension(anisotropy_extension_);
-}
+void Mat::Elastic::IsoMuscleBlemker::unpack_summand(Core::Communication::UnpackBuffer& buffer) {}
 
 void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& rcg,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& icg,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress, double I3, const int gp, const int eleGID,
-    const Teuchos::ParameterList& params)
+    const EvaluationContext& context)
 {
   // right Cauchy Green tensor C in matrix notation
   const Core::LinAlg::Matrix<3, 3> C = Core::LinAlg::make_matrix(Core::LinAlg::get_full(rcg));
@@ -85,9 +69,12 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   Core::LinAlg::Matrix<3, 3> modC(Core::LinAlg::Initialization::uninitialized);
   modC.update(incJ, C, 0.0);
 
+  // interpolate fiber orientation at current integration point
+  Core::LinAlg::Tensor<double, 3> orientation =
+      params_->fiber_orientation_.interpolate(eleGID, context.xi->as_span());
+
   // structural tensor M, i.e. dyadic product of fibre directions
-  Core::LinAlg::SymmetricTensor<double, 3, 3> M =
-      anisotropy_extension_.get_structural_tensor(gp, 0);
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> M = Core::LinAlg::self_dyadic(orientation);
   Core::LinAlg::Matrix<6, 1> Mv = Core::LinAlg::make_stress_like_voigt_view(M);
   const Core::LinAlg::Matrix<3, 3> M_mat = Core::LinAlg::make_matrix(Core::LinAlg::get_full(M));
 
@@ -109,7 +96,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   const double& beta = params_->beta_;
   const double& sigma_max = params_->sigma_max_;
   const double& t_act_start = params_->t_act_start_;
-  const double& t_tot = params.get<double>("total time");  // current simulation time
+  const double& t_tot = *context.total_time;  // current simulation time
   double sigma_max_ft = Mat::Utils::Muscle::evaluate_time_dependent_active_stress_tanh(
       sigma_max, alpha, beta, t_act_start, t_tot);
 
@@ -122,7 +109,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
 
   // helper variables for computation of 2nd Piola Kirchhoff stress and elasticity tensor
   double H1 = (modI1 * modI4 - modI5) / (2.0 * lambdaM);
-  // prevents singularitys in cross-fiber-shear-free states
+  // prevents singularities in cross-fiber-shear-free states
   if ((H1 - 1.0) < 1e-15) H1 = 1.0 + 1e-15;
   double H2 = std::sqrt(H1 * H1 - 1.0);
   double H3 = modI1 / (2.0 * lambdaM) - H1 / (2.0 * modI4);
@@ -161,7 +148,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   Core::LinAlg::Matrix<6, 1> modSv(Core::LinAlg::Initialization::uninitialized);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(modS, modSv);
 
-  // isometirc 2nd Piola-Kirchhoff tensor S_iso from fictitious 2nd PK stress
+  // isometric 2nd Piola-Kirchhoff tensor S_iso from fictitious 2nd PK stress
   double traceCmodS = modSv(0) * rcg(0, 0) + modSv(1) * rcg(1, 1) + modSv(2) * rcg(2, 2) +
                       2 * (modSv(3) * rcg(0, 1) + modSv(4) * rcg(1, 2) + modSv(5) * rcg(0, 2));
   Core::LinAlg::SymmetricTensor<double, 3, 3> S_isov =
@@ -214,7 +201,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   MdI5sumdI5M.multiply_nt(Mv, modCMsumMmodCv);
   MdI5sumdI5M.multiply_nt(1.0, modCMsumMmodCv, Mv, 1.0);  // summand11 = dyad(M,dI5) + dyad(dI5,M)
 
-  // fictitious elasticiy tensor
+  // fictitious elasticity tensor
   Core::LinAlg::Matrix<6, 6> modcmat(Core::LinAlg::Initialization::uninitialized);
   modcmat.update(delta1, IdId);
   modcmat.update(delta5, IdMsumMId, 1.0);

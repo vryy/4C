@@ -1982,6 +1982,9 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                             .validator = positive_or_zero<double>()}),
             parameter<double>("ACTSTARTTIME", {.description = "starting time of muscle activation",
                                                   .validator = positive_or_zero<double>()}),
+            interpolated_input_field<Core::LinAlg::Tensor<double, 3>, Mat::FiberInterpolation>(
+                "FIBER_ORIENTATION",
+                {.description = "A unit vector field pointing in the direction of the fibers."}),
         },
         {.description = "anisotropic Blemker muscle material"});
   }

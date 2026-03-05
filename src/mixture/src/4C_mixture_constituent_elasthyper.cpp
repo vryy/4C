@@ -65,8 +65,8 @@ void Mixture::MixtureConstituentElastHyper::evaluate(const Core::LinAlg::Tensor<
   else
   {
     // Evaluate stresses using ElastHyper service functions
-    Mat::elast_hyper_evaluate(
-        F, E_strain, params, S_stress, cmat, gp, eleGID, summands(), summand_properties(), false);
+    Mat::elast_hyper_evaluate(F, E_strain, params, context, S_stress, cmat, gp, eleGID, summands(),
+        summand_properties(), false);
   }
 }
 

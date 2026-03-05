@@ -69,7 +69,7 @@ namespace Mat
      * \f]
      *
      * [1] Simo and Pister - 1984
-     * [2] Hartmann - "The class of Simo & Pister-type Hyperelasticity Relastions"
+     * [2] Hartmann - "The class of Simo & Pister-type Hyperelasticity Relations"
      */
     class CoupSimoPister : public Summand
     {

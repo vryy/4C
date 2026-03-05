@@ -72,24 +72,6 @@ std::shared_ptr<Mat::Elastic::Summand> Mat::Elastic::Summand::factory(int matnum
   // retrieve validated input line of material ID in question
   auto* curmat = Global::Problem::instance(probinst)->materials()->parameter_by_id(matnum);
 
-  // construct structural tensor strategy for anisotropic materials
-  switch (curmat->type())
-  {
-    case Core::Materials::mes_isoanisoexpo:
-    case Core::Materials::mes_isomuscleblemker:
-    case Core::Materials::mes_coupanisoexpo:
-    case Core::Materials::mes_coupanisoexpoactive:
-    case Core::Materials::mes_coupanisoexpotwocoup:
-    case Core::Materials::mes_coupanisoneohooke:
-    case Core::Materials::mes_coupanisopow:
-    case Core::Materials::mes_coupanisoneohooke_varprop:
-    {
-      break;
-    }
-    default:
-      break;
-  }
-
   switch (curmat->type())
   {
     case Core::Materials::mes_anisoactivestress_evolution:

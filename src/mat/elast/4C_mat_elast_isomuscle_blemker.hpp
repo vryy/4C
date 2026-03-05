@@ -11,10 +11,10 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_anisotropy.hpp"
-#include "4C_mat_anisotropy_extension_default.hpp"
-#include "4C_mat_anisotropy_extension_provider.hpp"
+#include "4C_io_input_field.hpp"
 #include "4C_mat_elast_summand.hpp"
+#include "4C_mat_fiber_interpolation.hpp"
+#include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
 
 #include <memory>
@@ -55,6 +55,10 @@ namespace Mat
         double t_act_start_;  ///< starting time of muscle activation
         //! @}
 
+        const Core::IO::InterpolatedInputField<Core::LinAlg::Tensor<double, 3>,
+            Mat::FiberInterpolation>
+            fiber_orientation_;  ///< fiber orientation field
+
         /// Create material instance of matching type with my parameters
         std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
       };  // class IsoMuscleBlemker
@@ -82,10 +86,8 @@ namespace Mat
       /// constructor with given material parameters
       IsoMuscleBlemker(Mat::Elastic::PAR::IsoMuscleBlemker* params);
 
-      /// Pack anisotropy
       void pack_summand(Core::Communication::PackBuffer& data) const override;
 
-      /// Unpack anisotropy
       void unpack_summand(Core::Communication::UnpackBuffer& buffer) override;
 
       /// Provide the material type
@@ -93,8 +95,6 @@ namespace Mat
       {
         return Core::Materials::mes_isomuscleblemker;
       }
-
-      void register_anisotropy_extensions(Anisotropy& anisotropy) override;
 
       /*!
        * \brief Add isochoric anisotropic stress and elasticity tensor
@@ -112,7 +112,7 @@ namespace Mat
           double I3,                                                ///< third principal invariant
           int gp,                                                   ///< Gauss point
           int eleGID,                                               ///< element GID
-          const Teuchos::ParameterList& params  ///< Container for additional information
+          const EvaluationContext& context  ///< Container for additional information
           ) override;
 
       /// Specify the formulation as anisomod
@@ -127,9 +127,6 @@ namespace Mat
       Mat::Elastic::PAR::IsoMuscleBlemker* params_;
 
      private:
-      /// Anisotropy extension holder
-      Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
-
       /*!
        * \brief Evaluate total fiber cauchy stress and derivative w.r.t the fibre stretch
        *

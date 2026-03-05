@@ -21,7 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 
 void Mat::elast_hyper_evaluate(const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
+    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, const int gp, int eleGID,
     const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties, bool checkpolyconvexity)
@@ -69,7 +70,7 @@ void Mat::elast_hyper_evaluate(const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
 
   // Evaluate anisotropic stress response from summands with modified invariants formulation
   if (properties.anisomod)
-    elast_hyper_add_anisotropic_mod(stress, cmat, C_strain, iC, prinv, gp, eleGID, params, potsum);
+    elast_hyper_add_anisotropic_mod(stress, cmat, C_strain, iC, prinv, gp, eleGID, context, potsum);
 }
 
 void Mat::evaluate_right_cauchy_green_strain_like_voigt(
@@ -401,14 +402,15 @@ void Mat::elast_hyper_add_anisotropic_mod(Core::LinAlg::SymmetricTensor<double, 
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& C_strain,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& iC_strain,
     const Core::LinAlg::Matrix<3, 1>& prinv, const int gp, int eleGID,
-    const Teuchos::ParameterList& params,
+    const EvaluationContext& context,
     const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum)
 {
   // Loop over all summands and add aniso stress
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
   // ToDo: i.e. by evaluating the derivatives of the potsum w.r.t. the anisotropic invariants
   for (auto& p : potsum)
-    p->add_stress_aniso_modified(C_strain, iC_strain, cmat, S_stress, prinv(2), gp, eleGID, params);
+    p->add_stress_aniso_modified(
+        C_strain, iC_strain, cmat, S_stress, prinv(2), gp, eleGID, context);
 }
 
 void Mat::calculate_gamma_delta(Core::LinAlg::Matrix<3, 1>& gamma,

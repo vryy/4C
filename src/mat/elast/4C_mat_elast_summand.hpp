@@ -17,6 +17,7 @@
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele_fibers.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -201,10 +202,7 @@ namespace Mat
               prinv,  ///< principal invariants of right Cauchy-Green tensor
           int gp,     ///< Gauss point
           int eleGID  ///< element GID
-      )
-      {
-        return;  // do nothing
-      };
+      ) {};
 
       /*!
        * @brief retrieve coefficients of third derivative of summand with respect to principal
@@ -263,7 +261,6 @@ namespace Mat
           int eleGID)                                   ///< element GID
       {
         FOUR_C_THROW("not implemented");
-        return;  // do nothing
       }
 
       /*!
@@ -320,10 +317,7 @@ namespace Mat
               modinv,  ///< modified invariants of right Cauchy-Green tensor
           int gp,      ///< Gauss point
           int eleGID   ///< global ID of element
-      )
-      {
-        return;  // do nothing
-      };
+      ) {};
 
       /*!
        * @brief retrieve coefficients for the third derivative of volumetric summand with respect to
@@ -344,10 +338,8 @@ namespace Mat
        *             \mathbf{C}^{-1}\otimes\mathbf{C}^{-1}
        * \f]
        */
-      virtual void add3rd_vol_deriv(const Core::LinAlg::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
-      {
-        return;  // do nothing
-      };
+      virtual void add3rd_vol_deriv(
+          const Core::LinAlg::Matrix<3, 1>& modinv, double& d3PsiVolDJ3) {};
 
       /*!
        * add the derivatives of a coupled strain energy functions associated with a purely
@@ -358,7 +350,6 @@ namespace Mat
       virtual void add_coup_deriv_vol(
           const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
       {
-        return;  // do nothing
       }
 
       /*!
@@ -553,10 +544,7 @@ namespace Mat
           Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,      ///< 2nd PK-stress
           const Teuchos::ParameterList& params,  ///< Container for additional information
           int gp,                                ///< Gauss point
-          int eleGID)
-      {
-        return;  // do nothing
-      };
+          int eleGID) {};
 
       virtual void add_coefficients_visco_principal(
           const Core::LinAlg::Matrix<3, 1>& inv,  ///< invariants of right Cauchy-Green tensor
@@ -565,10 +553,7 @@ namespace Mat
           Core::LinAlg::Matrix<7, 1>& rateinv,
           const Teuchos::ParameterList& params,  ///< Container for additional information
           int gp,                                ///< Gauss point
-          int eleGID)
-      {
-        return;  // do nothing
-      };
+          int eleGID) {};
 
       virtual void add_coefficients_visco_modified(
           const Core::LinAlg::Matrix<3, 1>&
@@ -577,10 +562,7 @@ namespace Mat
           Core::LinAlg::Matrix<33, 1>& modxi,  ///< see above
           Core::LinAlg::Matrix<7, 1>& modrateinv, const Teuchos::ParameterList& params,
           int gp,  ///< Gauss point
-          int eleGID)
-      {
-        return;  // do nothing
-      };
+          int eleGID) {};
 
       //! Read material parameters of viscogenmax or viscofract
       virtual void read_material_parameters_visco(double& tau,  ///< relaxation parameter tau
@@ -588,27 +570,18 @@ namespace Mat
           double& alpha,  ///< fractional order derivative (just for visoc_fract)
           std::string&
               solve  //!< solution variant for time evolution of viscous stress (just for genmax)
-      )
-      {
-        return;  // do nothing
-      };
+      ) {};
 
       //! GeneralizedGenMax
       virtual void read_material_parameters(int& numbranch,  //!< number of visco branches
           const std::vector<int>*& matids,                   //!< material ids of visco branches
           std::string& solve  //!< solution variant for time evolution of viscous stress
-      )
-      {
-        return;  // not implemented in base class. May be overridden in subclass.
-      };
+      ) {};
 
       //! GeneralizedGenMax
       virtual void read_material_parameters(double& nummat,  //!< number of visco branches
           const std::vector<int>*& matids                    //!< material ids of visco branches
-      )
-      {
-        return;  // not implemented in base class. May be overridden in subclass.
-      };
+      ) {};
 
       /// Retrieve stress and cmat of summand for fiber directions with respect to modified strains
       virtual void add_stress_aniso_modified(
@@ -620,11 +593,8 @@ namespace Mat
           double I3,                                                ///< third principal invariant
           int gp,                                                   ///< Gauss point
           int eleGID,                                               ///< element GID
-          const Teuchos::ParameterList& params  ///< Container for additional information
-      )
-      {
-        return;  // do nothing
-      };
+          const EvaluationContext& context  ///< Container for additional information
+      ) {};
 
       /*!
        * @brief Answer if coefficients with respect to principal stretches are provided
@@ -653,7 +623,6 @@ namespace Mat
               prstr  ///< principal stretches, [lambda_1, lambda_2, lambda_3]
       )
       {
-        return;  // do nothing
       }
 
       /*!
@@ -688,17 +657,13 @@ namespace Mat
                       ///< \bar{\lambda}_2, \bar{\lambda}_3]
       )
       {
-        return;  // do nothing
       }
 
       //! Set fiber directions
       virtual void set_fiber_vecs(const double newgamma,     ///< new angle
           const Core::LinAlg::Tensor<double, 3, 3>& locsys,  ///< local coordinate system
           const Core::LinAlg::Tensor<double, 3, 3>& defgrd   ///< deformation gradient
-      )
-      {
-        return;  // do nothing
-      };
+      ) {};
 
       //! Set fiber directions
       virtual void set_fiber_vecs(
