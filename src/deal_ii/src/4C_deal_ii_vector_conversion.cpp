@@ -30,18 +30,18 @@ Core::LinAlg::Map DealiiWrappers::create_dealii_to_four_c_map(
   // communicate everything non-local afterwards.
   for (const auto& cell : dof_handler.active_cell_iterators())
   {
-    if (!cell->is_locally_owned()) continue;
+    if (!cell->is_locally_owned() || not context.is_locally_owned(cell)) continue;
 
     const auto& fe = cell->get_fe();
     std::vector<dealii::types::global_dof_index> dof_indices(fe.n_dofs_per_cell());
     cell->get_dof_indices(dof_indices);
 
     Core::Elements::LocationArray location_array{1};
-    const auto* four_c_ele = context.to_element(cell);
-    four_c_ele->location_vector(context.get_discretization(), location_array);
+    const auto& four_c_ele = context.to_element(cell);
+    four_c_ele.location_vector(context.get_discretization(), location_array);
 
 
-    auto reindexing = DealiiToFourC::reindex_shape_functions_scalar(four_c_ele->shape());
+    auto reindexing = DealiiToFourC::reindex_shape_functions_scalar(four_c_ele.shape());
 
     FOUR_C_ASSERT(location_array[0].lm_.size() == dof_indices.size(), "Internal error.");
 

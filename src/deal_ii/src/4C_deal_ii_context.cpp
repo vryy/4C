@@ -16,11 +16,11 @@ namespace DealiiWrappers
   namespace Internal
   {
     void get_dof_indices_with_local_reorder(const Core::FE::Discretization& discretization,
-        const Core::Elements::Element* element, const std::span<const int>& local_reorder,
+        const Core::Elements::Element& element, const std::span<const int>& local_reorder,
         std::vector<dealii::types::global_dof_index>& dof_indices)
     {
       Core::Elements::LocationArray location_array(discretization.num_dof_sets());
-      element->location_vector(discretization, location_array);
+      element.location_vector(discretization, location_array);
       dof_indices.resize(location_array[0].lm_.size());
       for (unsigned int i = 0; i < location_array[0].lm_.size(); ++i)
       {
@@ -29,11 +29,11 @@ namespace DealiiWrappers
     }
 
     void get_dof_indices(const Core::FE::Discretization& discretization,
-        const Core::Elements::Element* element,
+        const Core::Elements::Element& element,
         std::vector<dealii::types::global_dof_index>& dof_indices)
     {
       Core::Elements::LocationArray location_array(discretization.num_dof_sets());
-      element->location_vector(discretization, location_array);
+      element.location_vector(discretization, location_array);
       dof_indices.resize(location_array[0].lm_.size());
       std::copy(location_array[0].lm_.begin(), location_array[0].lm_.end(), dof_indices.begin());
     }

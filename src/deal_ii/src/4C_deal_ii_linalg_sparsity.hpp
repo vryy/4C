@@ -62,8 +62,9 @@ namespace DealiiWrappers
 
     for (const auto& cell : dof_handler.active_cell_iterators())
     {
-      // skip ghost cells
-      if (!cell->is_locally_owned()) continue;
+      // skip ghost cells and cells that are not local in the discretization as they
+      // do not contain FE information.
+      if (!cell->is_locally_owned() || not context.is_locally_owned(cell)) continue;
 
 
       const unsigned int n_dofs_on_cell_dealii = cell->get_fe().dofs_per_cell;

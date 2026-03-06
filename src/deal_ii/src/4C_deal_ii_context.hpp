@@ -33,7 +33,7 @@ namespace DealiiWrappers
      * The result is written back to the @p dof_indices vector.
      */
     void get_dof_indices(const Core::FE::Discretization& discretization,
-        const Core::Elements::Element* element,
+        const Core::Elements::Element& element,
         std::vector<dealii::types::global_dof_index>& dof_indices);
 
     // Create a function alias for the above function
@@ -44,7 +44,7 @@ namespace DealiiWrappers
      * local dof is written to dof_indices[local_reorder[i]].
      */
     void get_dof_indices_with_local_reorder(const Core::FE::Discretization& discretization,
-        const Core::Elements::Element* element, const std::span<const int>& local_reorder,
+        const Core::Elements::Element& element, const std::span<const int>& local_reorder,
         std::vector<dealii::types::global_dof_index>& dof_indices);
 
     constexpr auto get_dof_indices_deal_ii_ordering = get_dof_indices_with_local_reorder;
@@ -85,8 +85,20 @@ namespace DealiiWrappers
 
     /**
      * Convert a cell iterator to the corresponding 4C element.
+     * This function throws if the underlying cell is not locally owned by the discretization.
+     * You can check if a cell is locally owned by the discretization by using the
+     * is_locally_owned() method below.
      */
-    const Core::Elements::Element* to_element(
+    const Core::Elements::Element& to_element(
+        const typename dealii::Triangulation<dim, spacedim>::cell_iterator& cell) const;
+
+    /**
+     * Check if a given cell of the triangulation is locally owned by the discretization. This is
+     * relevant in the case of parallel discretization used together with a serial triangulation,
+     * where the triangulation contains all cells but the context only contains the FE information
+     * for the locally owned cells.
+     */
+    bool is_locally_owned(
         const typename dealii::Triangulation<dim, spacedim>::cell_iterator& cell) const;
 
 
@@ -111,6 +123,8 @@ namespace DealiiWrappers
     /**
      * Get the active fe index for the given cell. This index corresponds to the index of the
      * finite element in the finite_elements collection of this context.
+     * @return if the cell is not locally owned by the discretization this function returns
+     * dealii::numbers::invalid_unsigned_int.
      */
     unsigned int get_active_fe_index(
         const typename dealii::Triangulation<dim, spacedim>::cell_iterator& cell) const;
@@ -207,13 +221,34 @@ namespace DealiiWrappers
 
 
   template <int dim, int spacedim>
-  const Core::Elements::Element* Context<dim, spacedim>::to_element(
+  const Core::Elements::Element& Context<dim, spacedim>::to_element(
       const typename dealii::Triangulation<dim, spacedim>::cell_iterator& cell) const
   {
     FOUR_C_ASSERT(&cell->get_triangulation() == &triangulation_,
         "The cell iterator does not belong to the triangulation of this context.");
-    return discretization_.l_row_element(
+    FOUR_C_ASSERT(cell->active_cell_index() < active_cell_index_to_element_lid_.size(),
+        "The active cell index {} is out of bounds for the active-cell-to-element mapping "
+        "vector of size {}, menaning you tried to access a cell that is not part of the"
+        "triangulation.",
+        cell->active_cell_index(), active_cell_index_to_element_lid_.size());
+
+    if (not this->is_locally_owned(cell))
+      FOUR_C_THROW(
+          "The cell with active cell index {} is not locally owned by the discretization, thus "
+          "there is no corresponding 4C element for this cell in this context. The return "
+          "value of this function would thus cause undefined behavior."
+          "You can check if a cell is locally owned by the discretization by using the "
+          "is_locally_owned(cell) function.",
+          cell->active_cell_index());
+
+    return *discretization_.l_row_element(
         active_cell_index_to_element_lid_[cell->active_cell_index()]);
+  }
+  template <int dim, int spacedim>
+  bool Context<dim, spacedim>::is_locally_owned(
+      const typename dealii::Triangulation<dim, spacedim>::cell_iterator& cell) const
+  {
+    return (active_cell_index_to_element_lid_.at(cell->active_cell_index()) >= 0);
   }
 
 

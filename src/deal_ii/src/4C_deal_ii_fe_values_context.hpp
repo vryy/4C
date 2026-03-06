@@ -265,9 +265,9 @@ namespace DealiiWrappers
   void Internal::FEValuesContextImplementation<dim, spacedim>::reinit_cell_data(
       const typename dealii::Triangulation<dim, spacedim>::cell_iterator& cell)
   {
-    const auto* element = get_context().to_element(cell);
-    if (cell_data_.element == element) return;  // no need to reinitialize if the cell is the same
-    cell_data_.element = element;
+    const auto& element = get_context().to_element(cell);
+    if (cell_data_.element == &element) return;  // no need to reinitialize if the cell is the same
+    cell_data_.element = &element;
     cell_data_.active_index = get_context().get_active_fe_index(cell);
     const auto& fe = get_context().get_finite_elements()[cell_data_.active_index];
     FOUR_C_ASSERT(fe.dofs_per_cell == fe.n_components() * cell_data_.element->num_node(),
@@ -298,14 +298,14 @@ namespace DealiiWrappers
       std::vector<dealii::types::global_dof_index>& dof_indices) const
   {
     Internal::get_dof_indices_four_c_ordering(
-        get_context().get_discretization(), cell_data_.element, dof_indices);
+        get_context().get_discretization(), *cell_data_.element, dof_indices);
   }
   template <int dim, int spacedim>
   void Internal::FEValuesContextImplementation<dim, spacedim>::get_dof_indices_dealii_ordering(
       std::vector<dealii::types::global_dof_index>& dof_indices) const
   {
     Internal::get_dof_indices_deal_ii_ordering(get_context().get_discretization(),
-        cell_data_.element, cell_data_.four_c_shape_indices, dof_indices);
+        *cell_data_.element, cell_data_.four_c_shape_indices, dof_indices);
   }
   template <int dim, int spacedim>
   const Context<dim, spacedim>&

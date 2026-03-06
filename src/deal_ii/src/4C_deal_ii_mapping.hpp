@@ -204,9 +204,9 @@ namespace DealiiWrappers
         if (not cell->is_locally_owned()) continue;
 
         // get the equivalent element in four_c
-        const auto* element = context.to_element(cell);
-        const unsigned int n_nodes = element->num_node();
-        const auto* nodes = element->nodes();
+        const auto& element = context.to_element(cell);
+        const unsigned int n_nodes = element.num_node();
+        const auto* nodes = element.nodes();
 
 
         // get the dof indices for the cell
@@ -222,7 +222,7 @@ namespace DealiiWrappers
 
         // we now have to assign the position of the nodes to the dof indices
         dealii::Vector<double> local_position_vector(dofs_per_cell);
-        auto reordering = FourCToDealii::reindex_shape_functions_scalar(element->shape());
+        auto reordering = FourCToDealii::reindex_shape_functions_scalar(element.shape());
         for (unsigned int n = 0; n < n_nodes; ++n)
         {
           const auto local_dealii_index = reordering[n];
