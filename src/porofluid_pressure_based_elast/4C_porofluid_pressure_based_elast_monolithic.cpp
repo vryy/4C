@@ -641,9 +641,7 @@ void PoroPressureBased::PorofluidElastMonolithicAlgorithm::create_linear_solver(
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   // no need to do the rest for direct solvers
-  if (solvertype == Core::LinearSolver::SolverType::UMFPACK or
-      solvertype == Core::LinearSolver::SolverType::Superlu)
-    return;
+  if (Core::LinearSolver::is_direct_linear_solver(solvertype)) return;
 
   if (solvertype != Core::LinearSolver::SolverType::Belos)
   {

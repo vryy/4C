@@ -576,7 +576,7 @@ bool PoroElastScaTra::PoroScatraMono::setup_solver()
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == Core::LinearSolver::SolverType::UMFPACK);
+  directsolve_ = Core::LinearSolver::is_direct_linear_solver(solvertype);
 
   if (directsolve_)
   {

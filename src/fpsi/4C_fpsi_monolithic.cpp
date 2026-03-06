@@ -521,14 +521,15 @@ void FPSI::Monolithic::setup_solver()
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == Core::LinearSolver::SolverType::UMFPACK or
-                  solvertype == Core::LinearSolver::SolverType::Superlu);
+  directsolve_ = Core::LinearSolver::is_direct_linear_solver(solvertype);
 
   if (directsolve_)
+  {
     solver_ = std::make_shared<Core::LinAlg::Solver>(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY"));
+  }
   else
     // create a linear solver
     create_linear_solver();

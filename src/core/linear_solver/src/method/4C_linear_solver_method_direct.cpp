@@ -79,6 +79,13 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
         klu_params.set("IsContiguous", false, "Are GIDs Contiguous");
         break;
       }
+      case SolverType::MUMPS:
+      {
+        solver_type = "MUMPS";
+        auto& mumps_params = params.sublist(solver_type);
+        mumps_params.set("IsContiguous", false, "Are GIDs Contiguous");
+        break;
+      }
       case SolverType::UMFPACK:
       {
         solver_type = "Umfpack";

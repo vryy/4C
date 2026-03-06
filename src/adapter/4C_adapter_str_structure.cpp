@@ -415,19 +415,20 @@ Adapter::StructureBaseAlgorithm::create_contact_meshtying_solver(
           Global::Problem::instance()->solver_params(linsolvernumber), "SOLVER");
       const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
           Global::Problem::instance()->solver_params(linsolvernumber), "AZPREC");
-      if (sol != Core::LinearSolver::SolverType::UMFPACK &&
-          sol != Core::LinearSolver::SolverType::Superlu)
+      if (Core::LinearSolver::is_iterative_linear_solver(sol))
       {
         // if an iterative solver is chosen we need a block preconditioner
         if (prec != Core::LinearSolver::PreconditionerType::multigrid_muelu &&
             prec != Core::LinearSolver::PreconditionerType::block_teko &&
             prec != Core::LinearSolver::PreconditionerType::ilu)
+        {
           FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar meshtying/contact problems "
               "in saddle-point formulation, a block preconditioner is required. Choose an "
               "appropriate block preconditioner such as CheapSIMPLE or MueLu "
               "(if MueLu is available) in the SOLVER {} block in your input file.",
               linsolvernumber);
+        }
       }
 
       // build meshtying/contact solver

@@ -218,8 +218,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_proj
       solverparams, comm, get_solver_params, Core::IO::Verbositylevel::standard);
 
   // skip setup of preconditioner in case of a direct solver
-  if (solvertype != Core::LinearSolver::SolverType::UMFPACK and
-      solvertype != Core::LinearSolver::SolverType::Superlu)
+  if (Core::LinearSolver::is_iterative_linear_solver(solvertype))
   {
     const auto prectype =
         Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(solverparams, "AZPREC");

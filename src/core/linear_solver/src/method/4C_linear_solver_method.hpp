@@ -45,6 +45,7 @@ namespace Core::LinearSolver
   enum class SolverType
   {
     KLU2,     ///< Amesos direct solver using KLU2
+    MUMPS,    ///< Amesos direct solver using MUMPS
     UMFPACK,  ///< Amesos direct solver using UMFPACK
     Superlu,  ///< Amesos direct solver using SuperLU_Dist
     Belos,    ///< Belos iterative solver
@@ -66,6 +67,38 @@ namespace Core::LinearSolver
     multigrid_nxn,  ///< multigrid preconditioner for a nxn block matrix (indirectly MueLu package)
     block_teko      ///< block preconditioning (Teko package, recommended!)
   };
+
+  /*!
+   * @brief return whether the chosen solver for the linear system is a direct solver or not
+   *
+   * @param solver_type[in] solver type of the linear system
+   * @return true, if it is a direct solver, false else
+   */
+  [[nodiscard]] inline bool is_direct_linear_solver(const SolverType& solver_type)
+  {
+    switch (solver_type)
+    {
+      case SolverType::KLU2:
+      case SolverType::MUMPS:
+      case SolverType::UMFPACK:
+      case SolverType::Superlu:
+        return true;
+      case SolverType::Belos:
+        return false;
+    }
+    FOUR_C_THROW("Unknown type of solver!");
+  }
+
+  /*!
+   * @brief return whether the chosen solver for the linear system is an iterative solver or not
+   *
+   * @param solver_type[in] solver type of the linear system
+   * @return true, if it is an iterative solver, false else
+   */
+  [[nodiscard]] inline bool is_iterative_linear_solver(const SolverType& solver_type)
+  {
+    return !is_direct_linear_solver(solver_type);
+  }
 
   /// linear solver type base class
   class SolverTypeBase

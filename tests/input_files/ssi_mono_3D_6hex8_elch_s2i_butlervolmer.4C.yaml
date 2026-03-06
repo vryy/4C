@@ -49,7 +49,7 @@ SSI CONTROL/MONOLITHIC:
 SSI CONTROL/ELCH:
   INITPOTCALC: true
 SOLVER 1:
-  SOLVER: "UMFPACK"
+  SOLVER: MUMPS
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
@@ -178,25 +178,25 @@ RESULT DESCRIPTION:
       DIS: "scatra"
       NODE: 5
       QUANTITY: "phi1"
-      VALUE: 11.166198679011396
+      VALUE: 1.11661986790114600e+01
       TOLERANCE: 1.1e-07
   - SCATRA:
       DIS: "scatra"
       NODE: 5
       QUANTITY: "phi2"
-      VALUE: -9.487463033456896e-08
+      VALUE: -9.48746303346055845e-08
       TOLERANCE: 9.5e-16
   - SCATRA:
       DIS: "scatra"
       NODE: 9
       QUANTITY: "phi1"
-      VALUE: 10.708936667019938
+      VALUE: 1.07089366670198345e+01
       TOLERANCE: 1.1e-07
   - SCATRA:
       DIS: "scatra"
       NODE: 9
       QUANTITY: "phi2"
-      VALUE: -1.8974970840037044e-07
+      VALUE: -1.89749708400442940e-07
       TOLERANCE: 1.9e-15
   - SCATRA:
       DIS: "scatra"
@@ -208,7 +208,7 @@ RESULT DESCRIPTION:
       DIS: "scatra"
       NODE: 13
       QUANTITY: "phi2"
-      VALUE: -0.09071627653648522
+      VALUE: -9.07162765364882967e-02
       TOLERANCE: 9.1e-10
   - SCATRA:
       DIS: "scatra"
@@ -220,67 +220,67 @@ RESULT DESCRIPTION:
       DIS: "scatra"
       NODE: 17
       QUANTITY: "phi2"
-      VALUE: -0.09071794695177553
+      VALUE: -9.07179469517785941e-02
       TOLERANCE: 9.1e-10
   - SCATRA:
       DIS: "scatra"
       SPECIAL: true
       QUANTITY: "soc1"
-      VALUE: 0.9943509299628314
+      VALUE: 9.94350929962831032e-01
       TOLERANCE: 9.9e-09
   - SCATRA:
       DIS: "scatra"
       SPECIAL: true
       QUANTITY: "soc2"
-      VALUE: 0.9957677901459299
-      TOLERANCE: 1e-08
+      VALUE: 9.95767790145929310e-01
+      TOLERANCE: 1.0e-08
   - SCATRA:
       DIS: "scatra"
       SPECIAL: true
       QUANTITY: "c-rate1"
-      VALUE: 3.0854469626390713
+      VALUE: 3.08544696240271010e+00
       TOLERANCE: 3.1e-06
   - SCATRA:
       DIS: "scatra"
       SPECIAL: true
       QUANTITY: "c-rate2"
-      VALUE: -158.542390103342
+      VALUE: -1.58542390103118265e+02
       TOLERANCE: 0.00016
   - SCATRA:
       DIS: "scatra"
       SPECIAL: true
       QUANTITY: "cellvoltage"
-      VALUE: 3.8533254862210016
+      VALUE: 3.85332548622099402e+00
       TOLERANCE: 3.9e-08
   - STRUCTURE:
       DIS: "structure"
       NODE: 5
       QUANTITY: "dispx"
-      VALUE: -1.6693826928374345e-05
+      VALUE: -1.66938269283751513e-05
       TOLERANCE: 1.7e-13
   - STRUCTURE:
       DIS: "structure"
       NODE: 9
       QUANTITY: "dispx"
-      VALUE: -3.338301344989527e-05
+      VALUE: -3.33830134498949813e-05
       TOLERANCE: 3.3e-13
   - STRUCTURE:
       DIS: "structure"
       NODE: 13
       QUANTITY: "dispx"
-      VALUE: -3.338301344989527e-05
+      VALUE: -3.33830134498949813e-05
       TOLERANCE: 3.3e-13
   - STRUCTURE:
       DIS: "structure"
       NODE: 17
       QUANTITY: "dispx"
-      VALUE: -5.006281648656702e-05
-      TOLERANCE: 5e-13
+      VALUE: -5.00628164865677512e-05
+      TOLERANCE: 5.0e-13
   - SSI:
       SPECIAL: true
       QUANTITY: "numiterlastnonlinearsolve"
       VALUE: 3
-      TOLERANCE: 1e-16
+      TOLERANCE: 1.0e-16
 DESIGN SURF TRANSPORT NEUMANN CONDITIONS:
   - E: 6
     NUMDOF: 2

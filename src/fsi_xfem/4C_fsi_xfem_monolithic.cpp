@@ -2013,8 +2013,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
   //----------------------------------------------
   // create direct solver for merged block matrix
   //----------------------------------------------
-  if (solvertype == Core::LinearSolver::SolverType::UMFPACK ||
-      solvertype == Core::LinearSolver::SolverType::Superlu)
+  if (Core::LinearSolver::is_direct_linear_solver(solvertype))
   {
     if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       std::cout << "Merged XFSI block matrix is used!\n" << std::endl;
