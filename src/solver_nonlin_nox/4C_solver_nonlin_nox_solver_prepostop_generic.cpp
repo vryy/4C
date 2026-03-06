@@ -19,7 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::Solver::PrePostOp::Generic::Generic()
+NOX::Nln::Solver::PrePostOp::Generic::Generic(
+    NOX::Nln::StatusTest::QuantityType status_test_tolerance_quantity)
+    : status_test_tolerance_quantity_(status_test_tolerance_quantity)
 {
   // empty constructor
 }
@@ -70,10 +72,7 @@ void NOX::Nln::Solver::PrePostOp::Generic::runPreSolve(const ::NOX::Solver::Gene
         // object
         const ::NOX::StatusTest::Generic& statusTest = lsSolver->get_outer_status_test();
         double specified_tol = NOX::Nln::Aux::get_norm_f_class_variable(
-            statusTest, NOX::Nln::StatusTest::quantity_structure, "SpecifiedTolerance");
-        if (specified_tol == -1.0)
-          specified_tol = NOX::Nln::Aux::get_norm_f_class_variable(
-              statusTest, NOX::Nln::StatusTest::quantity_levelset_reinit, "SpecifiedTolerance");
+            statusTest, status_test_tolerance_quantity_, "SpecifiedTolerance");
 
         if (specified_tol == -1.0)
         {

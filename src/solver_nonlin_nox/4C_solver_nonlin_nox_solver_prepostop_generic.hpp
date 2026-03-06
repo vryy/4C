@@ -10,6 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_solver_nonlin_nox_enum_lists.hpp"
+
 #include <NOX_Observer.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -36,11 +38,16 @@ namespace NOX
         {
          public:
           //! constructor
-          Generic();
+          Generic(NOX::Nln::StatusTest::QuantityType status_test_tolerance_quantity =
+                      NOX::Nln::StatusTest::quantity_structure);
 
           void runPreIterate(const ::NOX::Solver::Generic& solver) override;
 
           void runPreSolve(const ::NOX::Solver::Generic& nlnSolver) override;
+
+         private:
+          //! Quantity which is used to find the status test item for the tolerance reference
+          NOX::Nln::StatusTest::QuantityType status_test_tolerance_quantity_;
         };
       }  // namespace PrePostOp
     }  // namespace Solver
