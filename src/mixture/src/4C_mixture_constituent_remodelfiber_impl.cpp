@@ -9,7 +9,6 @@
 
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
-#include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_mat_elast_aniso_structuraltensor_strategy.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -30,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 // anonymous namespace for helper classes and functions
 namespace
 {
-  [[nodiscard]] Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_c(
+  [[nodiscard]] Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_cauchy_green(
       const Core::LinAlg::Tensor<double, 3, 3>& F)
   {
     return Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(F) * F);
@@ -190,7 +189,7 @@ Mixture::MixtureConstituentRemodelFiberImpl::evaluate_d_lambdafsq_dc(int gp, int
 }
 
 Core::LinAlg::SymmetricTensor<double, 3, 3>
-Mixture::MixtureConstituentRemodelFiberImpl::evaluate_current_p_k2(int gp, int eleGID) const
+Mixture::MixtureConstituentRemodelFiberImpl::evaluate_current_pk2(int gp, int eleGID) const
 {
   const double fiber_pk2 = remodel_fiber_[gp].evaluate_current_fiber_pk2_stress();
 
@@ -231,8 +230,7 @@ void Mixture::MixtureConstituentRemodelFiberImpl::integrate_local_evolution_equa
       "enabled!");
 
   // Integrate local evolution equations
-  Core::LinAlg::Matrix<2, 2> K =
-      remodel_fiber_[gp].integrate_local_evolution_equations_implicit(dt);
+  remodel_fiber_[gp].integrate_local_evolution_equations_implicit(dt);
 }
 
 void Mixture::MixtureConstituentRemodelFiberImpl::evaluate(
@@ -256,14 +254,14 @@ void Mixture::MixtureConstituentRemodelFiberImpl::evaluate(
     structural_tensors_.emplace_back(Core::LinAlg::self_dyadic(orientation));
   }
 
-  Core::LinAlg::SymmetricTensor<double, 3, 3> C = evaluate_c(F);
+  Core::LinAlg::SymmetricTensor<double, 3, 3> C = evaluate_cauchy_green(F);
 
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   remodel_fiber_[gp].set_state(lambda_f, 1.0);
 
   if (params_->enable_growth_) integrate_local_evolution_equations(dt, gp, eleGID);
 
-  S_stress = evaluate_current_p_k2(gp, eleGID);
+  S_stress = evaluate_current_pk2(gp, eleGID);
   cmat = evaluate_current_cmat(gp, eleGID);
 }
 

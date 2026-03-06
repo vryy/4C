@@ -174,11 +174,8 @@ namespace Mixture
        * @brief Integrate the local evolution equation with an implicit time integration scheme.
        *
        * @param dt (in) : timestep
-       *
-       * @return Derivative of the residuum of the time integration scheme w.r.t. growth scalar
-       * and lambda_r
        */
-      Core::LinAlg::Matrix<2, 2, T> integrate_local_evolution_equations_implicit(T dt);
+      void integrate_local_evolution_equations_implicit(T dt);
 
       /*!
        * @brief Integrate the local evolution equation with an explicit time integration scheme.

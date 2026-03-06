@@ -219,7 +219,7 @@ Mixture::Implementation::RemodelFiberImplementation<numstates, T>::get_integrati
 }
 
 template <int numstates, typename T>
-Core::LinAlg::Matrix<2, 2, T> Mixture::Implementation::RemodelFiberImplementation<numstates,
+void Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::integrate_local_evolution_equations_implicit(const T dt)
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
@@ -319,8 +319,6 @@ Core::LinAlg::Matrix<2, 2, T> Mixture::Implementation::RemodelFiberImplementatio
   // store current derivative of lambda_r and growth_scalar w.r.t. lambda_f
   d_growth_scalar_d_lambda_f_sq_ = -d_growth_scalar_d_residuum.dot(d_residuum_d_lambda_f_sq);
   d_lambda_r_d_lambda_f_sq_ = -d_lambda_r_d_residuum.dot(d_residuum_d_lambda_f_sq);
-
-  return K;
 }
 
 
@@ -783,11 +781,10 @@ void Mixture::RemodelFiber<numstates>::set_lambda_r(const double lambda_r)
 }
 
 template <int numstates>
-Core::LinAlg::Matrix<2, 2>
-Mixture::RemodelFiber<numstates>::integrate_local_evolution_equations_implicit(const double dt)
+void Mixture::RemodelFiber<numstates>::integrate_local_evolution_equations_implicit(const double dt)
 {
-  return impl_->integrate_local_evolution_equations_implicit(dt);
-};
+  impl_->integrate_local_evolution_equations_implicit(dt);
+}
 
 template <int numstates>
 void Mixture::RemodelFiber<numstates>::integrate_local_evolution_equations_explicit(const double dt)

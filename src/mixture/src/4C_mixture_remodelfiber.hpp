@@ -10,7 +10,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mixture_growth_evolution_linear_cauchy_poisson_turnover.hpp"
 
 #include <memory>
@@ -102,11 +101,8 @@ namespace Mixture
      * @brief Integrate the local evolution equation with an implicit time integration scheme.
      *
      * @param dt (in) : timestep
-     *
-     * @return Derivative of the residuum of the time integration scheme w.r.t. growth scalar and
-     * lambda_r
      */
-    Core::LinAlg::Matrix<2, 2> integrate_local_evolution_equations_implicit(double dt);
+    void integrate_local_evolution_equations_implicit(double dt);
 
     /*!
      * @brief Integrate the local evolution equation with an explicit time integration scheme.

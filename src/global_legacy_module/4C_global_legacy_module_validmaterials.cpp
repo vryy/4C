@@ -4221,9 +4221,6 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<bool>("INELASTIC_GROWTH",
                 {.description = "Mixture rule has inelastic growth (default false)",
                     .default_value = false}),
-            parameter<double>("GAMMA",
-                {.description = "Angle of fiber alignment in degree (default = 0.0 degrees)",
-                    .default_value = 0.0}),
         },
         {.description = "A 1D constituent that remodels"});
   }
