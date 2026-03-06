@@ -201,13 +201,6 @@ namespace Core::LinAlg
       const int id = 1, const bool fill = true);
 
   /**
-   * \brief Multiply two multi vectors
-   */
-  void multiply_multi_vectors(Core::LinAlg::MultiVector<double>&, char,
-      Core::LinAlg::MultiVector<double>&, char, Core::LinAlg::Map&, Core::LinAlg::Import&,
-      Core::LinAlg::MultiVector<double>&);
-
-  /**
    * \brief Orthonormalize the columns of a multi-vector.
    *
    * This function takes a multi-vector whose columns represent a set of vectors (e.g. nullspace
