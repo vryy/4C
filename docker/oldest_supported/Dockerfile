@@ -20,13 +20,12 @@ RUN apt-get update && apt-get install -y locales && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     locale-gen en_US.UTF-8 && \
     rm -rf /var/lib/apt/lists/*
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 RUN apt-get update && apt-get install -y \
       build-essential \
-      flex \
       ffmpeg \
       git \
       libglu1-mesa \
@@ -57,6 +56,9 @@ RUN apt-get update && apt-get install -y \
       libparmetis-dev \
       libmetis-dev \
       libsuitesparse-dev \
+      libmumps-dev \
+      libscalapack-mpi-dev \
+      mpi-default-dev \
       ninja-build \
       libyaml-dev \
       clang \
@@ -82,7 +84,7 @@ RUN /dependencies/current/superlu_dist/install.sh ${INSTALL_DIR}
 # Install qhull 2012.1
 RUN /dependencies/current/qhull/install.sh ${INSTALL_DIR}
 
-# Install Trilinos
+# Install Trilinos 2025.6
 RUN /dependencies/oldest_supported/trilinos/install.sh ${INSTALL_DIR}
 
 # Install deal.II (needs to happen after Trilinos)

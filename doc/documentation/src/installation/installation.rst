@@ -33,6 +33,8 @@ External solver and linear algebra:
 - :ref:`SuperLUDist <superludist>` (recommended version: 7.2.0)
 - BLAS
 - LAPACK
+- Mumps
+- ScaLAPACK (as a dependency of Mumps)
 
 Graph and domain partitioner:
 
