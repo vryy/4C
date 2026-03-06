@@ -57,6 +57,7 @@ four_c_test(TEST_FILE beam3eb_static_one_element_pure_neumann_projection.4C.yaml
 four_c_test(TEST_FILE beam3eb_static_one_element_pure_neumann_constraint.4C.yaml NP 1)
 four_c_test(TEST_FILE beam3eb_static_pure_neumann_projection.4C.yaml NP 2)
 four_c_test(TEST_FILE beam3eb_static_pure_neumann_constraint.4C.yaml NP 2)
+four_c_test(TEST_FILE beam3eb_static_pure_neumann_partial_projection.4C.yaml NP 2)
 four_c_test(TEST_FILE beam3eb_static_pure_neumann_partial_constraint.4C.yaml NP 2)
 four_c_test(TEST_FILE beam3r_herm2line2_static_test1.4C.yaml NP 2)
 four_c_test(TEST_FILE beam3r_herm2line3_backweuler_browndyn_crosslinking_beam3rline2.4C.yaml NP 2 RETURN_AS current)
