@@ -212,18 +212,16 @@ namespace ReducedLung
         }
         dofs_n.update(1.0, dofs, 0.0);
 
-        Airways::update_negative_residual_vector(rhs, airways, locally_relevant_dofs, dt);
+        Airways::update_residual_vector(rhs, airways, locally_relevant_dofs, dt);
         Airways::update_jacobian(sysmat, airways, locally_relevant_dofs, dt);
 
-        TerminalUnits::update_negative_residual_vector(
-            rhs, terminal_units, locally_relevant_dofs, dt);
+        TerminalUnits::update_residual_vector(rhs, terminal_units, locally_relevant_dofs, dt);
         TerminalUnits::update_jacobian(sysmat, terminal_units, locally_relevant_dofs, dt);
 
-        Junctions::update_negative_residual_vector(
-            rhs, connections, bifurcations, locally_relevant_dofs);
+        Junctions::update_residual_vector(rhs, connections, bifurcations, locally_relevant_dofs);
         Junctions::update_jacobian(sysmat, connections, bifurcations);
 
-        BoundaryConditions::update_negative_residual_vector(
+        BoundaryConditions::update_residual_vector(
             rhs, boundary_conditions, locally_relevant_dofs, n * dt);
         BoundaryConditions::update_jacobian(sysmat, boundary_conditions);
 
@@ -234,6 +232,7 @@ namespace ReducedLung
         }
 
         // Solve.
+        rhs.scale(-1.0);
         solver.solve(Core::Utils::shared_ptr_from_ref(sysmat), Core::Utils::shared_ptr_from_ref(x),
             Core::Utils::shared_ptr_from_ref(rhs), {});
 

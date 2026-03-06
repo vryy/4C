@@ -96,10 +96,10 @@ namespace
     locally_relevant_dofs.get_values()[2] = 3.0;
     locally_relevant_dofs.get_values()[3] = 4.0;
 
-    update_negative_residual_vector(rhs, connections, bifurcations, locally_relevant_dofs);
+    update_residual_vector(rhs, connections, bifurcations, locally_relevant_dofs);
 
-    EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[0], -10.0 + 5.0);
-    EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[1], -3.0 + 4.0);
+    EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[0], 10.0 - 5.0);
+    EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[1], 3.0 - 4.0);
   }
 
   TEST(JunctionsTests, BifurcationResidualAssembly)
@@ -123,11 +123,11 @@ namespace
     locally_relevant_dofs.get_values()[4] = 3.0;
     locally_relevant_dofs.get_values()[5] = 4.0;
 
-    update_negative_residual_vector(rhs, connections, bifurcations, locally_relevant_dofs);
+    update_residual_vector(rhs, connections, bifurcations, locally_relevant_dofs);
 
-    EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[0], -10.0 + 7.0);
-    EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[1], -10.0 + 6.0);
-    EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[2], -8.0 + 3.0 + 4.0);
+    EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[0], 10.0 - 7.0);
+    EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[1], 10.0 - 6.0);
+    EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[2], 8.0 - 3.0 - 4.0);
   }
 
   TEST(JunctionsTests, ConnectionJacobianAssembledOnce)

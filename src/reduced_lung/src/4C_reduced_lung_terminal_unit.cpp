@@ -47,47 +47,47 @@ namespace ReducedLung
       return ogden_hyperelastic_model.elastic_pressure_p_el;
     }
 
-    void evaluate_negative_kelvin_voigt_residual(Core::LinAlg::Vector<double>& target,
+    void evaluate_kelvin_voigt_residual(Core::LinAlg::Vector<double>& target,
         const KelvinVoigt& kelvin_voigt_model, const TerminalUnitData& data,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs,
         const std::vector<double>& elastic_pressure_p_el)
     {
       for (size_t i = 0; i < data.number_of_elements(); i++)
       {
-        double negative_kelvin_voigt_residual =
-            -1 * (locally_relevant_dofs.local_values_as_span()[data.lid_p1[i]] -
-                     locally_relevant_dofs.local_values_as_span()[data.lid_p2[i]] -
-                     elastic_pressure_p_el[i] -
-                     kelvin_voigt_model.viscosity_eta[i] *
-                         locally_relevant_dofs.local_values_as_span()[data.lid_q[i]] /
-                         data.reference_volume_v0[i]);
-        target.replace_local_value(data.local_row_id[i], negative_kelvin_voigt_residual);
+        double kelvin_voigt_residual =
+            (locally_relevant_dofs.local_values_as_span()[data.lid_p1[i]] -
+                locally_relevant_dofs.local_values_as_span()[data.lid_p2[i]] -
+                elastic_pressure_p_el[i] -
+                kelvin_voigt_model.viscosity_eta[i] *
+                    locally_relevant_dofs.local_values_as_span()[data.lid_q[i]] /
+                    data.reference_volume_v0[i]);
+        target.replace_local_value(data.local_row_id[i], kelvin_voigt_residual);
       }
     }
 
-    void evaluate_negative_four_element_maxwell_residual(Core::LinAlg::Vector<double>& target,
+    void evaluate_four_element_maxwell_residual(Core::LinAlg::Vector<double>& target,
         const FourElementMaxwell& four_element_maxwell_model, const TerminalUnitData& data,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs,
         const std::vector<double>& elastic_pressure_p_el, double dt)
     {
       for (size_t i = 0; i < data.number_of_elements(); i++)
       {
-        double negative_four_element_maxwell_residual =
-            -1 * (locally_relevant_dofs.local_values_as_span()[data.lid_p1[i]] -
-                     locally_relevant_dofs.local_values_as_span()[data.lid_p2[i]] -
-                     elastic_pressure_p_el[i] -
-                     (four_element_maxwell_model.viscosity_eta[i] +
-                         (four_element_maxwell_model.elasticity_E_m[i] * dt *
-                             four_element_maxwell_model.viscosity_eta_m[i]) /
-                             (four_element_maxwell_model.elasticity_E_m[i] * dt +
-                                 four_element_maxwell_model.viscosity_eta_m[i])) /
-                         data.reference_volume_v0[i] *
-                         locally_relevant_dofs.local_values_as_span()[data.lid_q[i]] +
-                     four_element_maxwell_model.viscosity_eta_m[i] /
-                         (four_element_maxwell_model.elasticity_E_m[i] * dt +
-                             four_element_maxwell_model.viscosity_eta_m[i]) *
-                         four_element_maxwell_model.maxwell_pressure_p_m[i]);
-        target.replace_local_value(data.local_row_id[i], negative_four_element_maxwell_residual);
+        double four_element_maxwell_residual =
+            (locally_relevant_dofs.local_values_as_span()[data.lid_p1[i]] -
+                locally_relevant_dofs.local_values_as_span()[data.lid_p2[i]] -
+                elastic_pressure_p_el[i] -
+                (four_element_maxwell_model.viscosity_eta[i] +
+                    (four_element_maxwell_model.elasticity_E_m[i] * dt *
+                        four_element_maxwell_model.viscosity_eta_m[i]) /
+                        (four_element_maxwell_model.elasticity_E_m[i] * dt +
+                            four_element_maxwell_model.viscosity_eta_m[i])) /
+                    data.reference_volume_v0[i] *
+                    locally_relevant_dofs.local_values_as_span()[data.lid_q[i]] +
+                four_element_maxwell_model.viscosity_eta_m[i] /
+                    (four_element_maxwell_model.elasticity_E_m[i] * dt +
+                        four_element_maxwell_model.viscosity_eta_m[i]) *
+                    four_element_maxwell_model.maxwell_pressure_p_m[i]);
+        target.replace_local_value(data.local_row_id[i], four_element_maxwell_residual);
       }
     }
 
@@ -184,13 +184,13 @@ namespace ReducedLung
       }
     }
 
-    void update_negative_residual_vector(Core::LinAlg::Vector<double>& res_vector,
+    void update_residual_vector(Core::LinAlg::Vector<double>& res_vector,
         TerminalUnitContainer& terminal_units,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt)
     {
       for (auto& model : terminal_units.models)
       {
-        model.negative_residual_evaluator(model.data, res_vector, locally_relevant_dofs, dt);
+        model.residual_evaluator(model.data, res_vector, locally_relevant_dofs, dt);
       }
     }
 
@@ -267,8 +267,8 @@ namespace ReducedLung
     {
       for (auto& model : terminal_units.models)
       {
-        model.negative_residual_evaluator = std::visit(
-            MakeNegativeResidualEvaluator{model.elasticity_model}, model.rheological_model);
+        model.residual_evaluator =
+            std::visit(MakeResidualEvaluator{model.elasticity_model}, model.rheological_model);
         model.jacobian_evaluator =
             std::visit(MakeJacobianEvaluator{model.elasticity_model}, model.rheological_model);
         model.internal_state_updater =

@@ -119,7 +119,7 @@ namespace ReducedLung
     void assign_junction_local_dof_ids(const Core::LinAlg::Map& locally_relevant_dof_map,
         ConnectionData& connections, BifurcationData& bifurcations);
 
-    void update_negative_residual_vector(Core::LinAlg::Vector<double>& rhs,
+    void update_residual_vector(Core::LinAlg::Vector<double>& rhs,
         const ConnectionData& connections, const BifurcationData& bifurcations,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs);
 

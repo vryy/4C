@@ -70,7 +70,7 @@ namespace ReducedLung
         for (size_t i = 0; i < model.data.size(); ++i)
         {
           const int local_dof_id = model.data.local_dof_id[i];
-          const double res = -dofs.local_values_as_span()[local_dof_id] + model.values[i];
+          const double res = dofs.local_values_as_span()[local_dof_id] - model.values[i];
           rhs.replace_local_value(model.data.local_equation_id[i], res);
         }
       }
@@ -87,7 +87,7 @@ namespace ReducedLung
         for (size_t i = 0; i < model.data.size(); ++i)
         {
           const int local_dof_id = model.data.local_dof_id[i];
-          const double res = -dofs.local_values_as_span()[local_dof_id] + bc_value;
+          const double res = dofs.local_values_as_span()[local_dof_id] - bc_value;
           rhs.replace_local_value(model.data.local_equation_id[i], res);
         }
       }
@@ -373,23 +373,23 @@ namespace ReducedLung
       {
         if (model.value_source == ValueSource::constant_value)
         {
-          model.negative_residual_evaluator = evaluate_constant_value;
+          model.residual_evaluator = evaluate_constant_value;
         }
         else
         {
-          model.negative_residual_evaluator = evaluate_function_value;
+          model.residual_evaluator = evaluate_function_value;
         }
         model.jacobian_evaluator = assemble_diagonal_jacobian;
       }
     }
 
-    void update_negative_residual_vector(Core::LinAlg::Vector<double>& rhs,
+    void update_residual_vector(Core::LinAlg::Vector<double>& rhs,
         const BoundaryConditionContainer& boundary_conditions,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time)
     {
       for (const auto& model : boundary_conditions.models)
       {
-        model.negative_residual_evaluator(model, rhs, locally_relevant_dofs, time);
+        model.residual_evaluator(model, rhs, locally_relevant_dofs, time);
       }
     }
 

@@ -59,9 +59,8 @@ namespace
           std::vector<double>{0.0, 0.0, 0.0}, std::vector<double>{0.0, 0.0, 0.0}};
       model.internal_state_updater =
           std::visit(TerminalUnits::MakeInternalStateUpdater{}, model.rheological_model);
-      model.negative_residual_evaluator =
-          std::visit(TerminalUnits::MakeNegativeResidualEvaluator{model.elasticity_model},
-              model.rheological_model);
+      model.residual_evaluator = std::visit(
+          TerminalUnits::MakeResidualEvaluator{model.elasticity_model}, model.rheological_model);
       model.jacobian_evaluator = std::visit(
           TerminalUnits::MakeJacobianEvaluator{model.elasticity_model}, model.rheological_model);
       model.jacobian_evaluator(model.data, jac, locally_relevant_dofs, dt);
@@ -83,9 +82,8 @@ namespace
           std::vector<double>{0.0, 0.0, 0.0}};
       model.internal_state_updater =
           std::visit(TerminalUnits::MakeInternalStateUpdater{}, model.rheological_model);
-      model.negative_residual_evaluator =
-          std::visit(TerminalUnits::MakeNegativeResidualEvaluator{model.elasticity_model},
-              model.rheological_model);
+      model.residual_evaluator = std::visit(
+          TerminalUnits::MakeResidualEvaluator{model.elasticity_model}, model.rheological_model);
       model.jacobian_evaluator = std::visit(
           TerminalUnits::MakeJacobianEvaluator{model.elasticity_model}, model.rheological_model);
       model.jacobian_evaluator(model.data, jac, locally_relevant_dofs, dt);
@@ -108,9 +106,8 @@ namespace
           std::vector<double>{0.0, 0.0, 0.0}, std::vector<double>{0.0, 0.0, 0.0}};
       model.internal_state_updater =
           std::visit(TerminalUnits::MakeInternalStateUpdater{}, model.rheological_model);
-      model.negative_residual_evaluator =
-          std::visit(TerminalUnits::MakeNegativeResidualEvaluator{model.elasticity_model},
-              model.rheological_model);
+      model.residual_evaluator = std::visit(
+          TerminalUnits::MakeResidualEvaluator{model.elasticity_model}, model.rheological_model);
       model.jacobian_evaluator = std::visit(
           TerminalUnits::MakeJacobianEvaluator{model.elasticity_model}, model.rheological_model);
       model.jacobian_evaluator(model.data, jac, locally_relevant_dofs, dt);
@@ -143,9 +140,8 @@ namespace
           std::vector<double>{0.0, 0.0, 0.0}};
       model.internal_state_updater =
           std::visit(TerminalUnits::MakeInternalStateUpdater{}, model.rheological_model);
-      model.negative_residual_evaluator =
-          std::visit(TerminalUnits::MakeNegativeResidualEvaluator{model.elasticity_model},
-              model.rheological_model);
+      model.residual_evaluator = std::visit(
+          TerminalUnits::MakeResidualEvaluator{model.elasticity_model}, model.rheological_model);
       model.jacobian_evaluator = std::visit(
           TerminalUnits::MakeJacobianEvaluator{model.elasticity_model}, model.rheological_model);
       model.jacobian_evaluator(model.data, jac, locally_relevant_dofs, dt);

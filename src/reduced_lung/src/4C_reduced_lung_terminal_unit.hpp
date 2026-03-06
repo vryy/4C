@@ -132,8 +132,8 @@ namespace ReducedLung
       std::vector<double> elastic_pressure_grad_dp_el;
     };
 
-    // Function handle for evaluating the negative model residuals.
-    using NegativeResidualEvaluator = std::function<void(TerminalUnitData& model_data,
+    // Function handle for evaluating the model residuals.
+    using ResidualEvaluator = std::function<void(TerminalUnitData& model_data,
         Core::LinAlg::Vector<double>& target_vector,
         const Core::LinAlg::Vector<double>& locally_relevant_dof_vector, double time_step_size_dt)>;
 
@@ -166,7 +166,7 @@ namespace ReducedLung
       TerminalUnitData data;
       RheologicalModel rheological_model;
       ElasticityModel elasticity_model;
-      NegativeResidualEvaluator negative_residual_evaluator;
+      ResidualEvaluator residual_evaluator;
       JacobianEvaluator jacobian_evaluator;
       InternalStateUpdater internal_state_updater;
       EndOfTimestepRoutine end_of_timestep_routine;
@@ -222,7 +222,7 @@ namespace ReducedLung
         const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 
     /**
-     * @brief Assembles the negative residual for a Kelvin-Voigt viscoelastic model.
+     * @brief Assembles the residual for a Kelvin-Voigt viscoelastic model.
      *
      * @param[out] target Target vector to which the residual is written.
      * @param[in] kelvin_voigt_model Model containing viscosity parameters. Must belong to the same
@@ -234,13 +234,13 @@ namespace ReducedLung
      *
      * @note The function writes directly into the `target` vector using the row IDs from `data`.
      */
-    void evaluate_negative_kelvin_voigt_residual(Core::LinAlg::Vector<double>& target,
+    void evaluate_kelvin_voigt_residual(Core::LinAlg::Vector<double>& target,
         const KelvinVoigt& kelvin_voigt_model, const TerminalUnitData& data,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs,
         const std::vector<double>& elastic_pressure_p_el);
 
     /**
-     * @brief Assembles the negative residual for a four-element Maxwell viscoelastic model.
+     * @brief Assembles the residual for a four-element Maxwell viscoelastic model.
      *
      * @param[out] target Target vector to which the residual is written.
      * @param[in] four_element_maxwell_model Model parameters and internal Maxwell body pressure
@@ -256,7 +256,7 @@ namespace ReducedLung
      * relies on an up-to-date internal Maxwell pressure state (p_m updated with DOFs from the last
      * time step).
      */
-    void evaluate_negative_four_element_maxwell_residual(Core::LinAlg::Vector<double>& target,
+    void evaluate_four_element_maxwell_residual(Core::LinAlg::Vector<double>& target,
         const FourElementMaxwell& four_element_maxwell_model, const TerminalUnitData& data,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs,
         const std::vector<double>& elastic_pressure_p_el, double dt);
@@ -330,9 +330,9 @@ namespace ReducedLung
 
 
     /**
-     * Creates the model-specific evaluator function for assembling the negative model residual.
+     * Creates the model-specific evaluator function for assembling the model residual.
      */
-    struct MakeNegativeResidualEvaluator
+    struct MakeResidualEvaluator
     {
       /**
        * Creates a function for evaluating the elastic pressure given a specific elasticity model.
@@ -355,7 +355,7 @@ namespace ReducedLung
         }
       };
 
-      NegativeResidualEvaluator operator()(KelvinVoigt& kelvin_voigt_model)
+      ResidualEvaluator operator()(KelvinVoigt& kelvin_voigt_model)
       {
         auto elastic_pressure_evaluator =
             std::visit(MakeElasticPressureEvaluator{}, elasticity_model);
@@ -364,10 +364,10 @@ namespace ReducedLung
                    double dt)
         {
           auto& p_el = elastic_pressure_evaluator(data, dofs, dt);
-          evaluate_negative_kelvin_voigt_residual(target, kelvin_voigt_model, data, dofs, p_el);
+          evaluate_kelvin_voigt_residual(target, kelvin_voigt_model, data, dofs, p_el);
         };
       }
-      NegativeResidualEvaluator operator()(FourElementMaxwell& four_element_maxwell_model)
+      ResidualEvaluator operator()(FourElementMaxwell& four_element_maxwell_model)
       {
         auto elastic_pressure_evaluator =
             std::visit(MakeElasticPressureEvaluator{}, elasticity_model);
@@ -376,7 +376,7 @@ namespace ReducedLung
                    double dt)
         {
           auto& p_el = elastic_pressure_evaluator(data, dofs, dt);
-          evaluate_negative_four_element_maxwell_residual(
+          evaluate_four_element_maxwell_residual(
               target, four_element_maxwell_model, data, dofs, p_el, dt);
         };
       }
@@ -620,7 +620,7 @@ namespace ReducedLung
     }
 
     /**
-     * @brief Assembles the negative residual vector of all terminal units.
+     * @brief Assembles the residual vector of all terminal units.
      *
      * Applies model-specific logic to compute viscoelastic responses of all terminal units and
      * store them in the residual.
@@ -631,7 +631,7 @@ namespace ReducedLung
      * column map layout.
      * @param dt Current time step size.
      */
-    void update_negative_residual_vector(Core::LinAlg::Vector<double>& res_vector,
+    void update_residual_vector(Core::LinAlg::Vector<double>& res_vector,
         TerminalUnitContainer& terminal_units,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 
