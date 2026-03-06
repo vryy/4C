@@ -18,6 +18,7 @@
 #include <mpi.h>
 
 #include <array>
+#include <functional>
 
 namespace TESTING
 {

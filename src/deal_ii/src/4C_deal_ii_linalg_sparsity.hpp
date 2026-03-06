@@ -43,13 +43,19 @@ namespace DealiiWrappers
       dealii::SparsityPatternBase& sparsity_pattern)
   {
     // Assert that the sparsity pattern is already sized correctly
-    FOUR_C_ASSERT(sparsity_pattern.n_rows() == four_c_is_range
-                      ? static_cast<unsigned int>(context.get_discretization().num_global_nodes())
-                      : dof_handler.n_dofs(),
+    FOUR_C_ASSERT(
+        sparsity_pattern.n_rows() ==
+            (four_c_is_range
+                    ? static_cast<unsigned int>(
+                          context.get_discretization().dof_row_map()->num_global_elements())
+                    : dof_handler.n_dofs()),
         "The sparsity pattern must be sized to the number of dofs in the range discretization.");
-    FOUR_C_ASSERT(sparsity_pattern.n_cols() == four_c_is_range
-                      ? dof_handler.n_dofs()
-                      : static_cast<unsigned int>(context.get_discretization().num_global_nodes()),
+    FOUR_C_ASSERT(
+        sparsity_pattern.n_cols() ==
+            (four_c_is_range
+                    ? dof_handler.n_dofs()
+                    : static_cast<unsigned int>(
+                          context.get_discretization().dof_col_map()->num_global_elements())),
         "The sparsity pattern must be sized to the number of dofs in the domain discretization.");
 
     FOUR_C_ASSERT(&dof_handler.get_triangulation() == &context.get_triangulation(),

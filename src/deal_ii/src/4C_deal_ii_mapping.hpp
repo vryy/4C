@@ -117,7 +117,7 @@ namespace DealiiWrappers
         typename VectorType = dealii::LinearAlgebra::distributed::Vector<double>>
     dealii::MappingFEField<dim, spacedim, VectorType> create_isoparametric_mapping(
         const Context<dim, spacedim>& context, VectorType& position_vector,
-        dealii::DoFHandler<dim>& iso_dof_handler);
+        dealii::DoFHandler<dim, spacedim>& iso_dof_handler);
   }  // namespace Internal
 
 
@@ -168,7 +168,7 @@ namespace DealiiWrappers
     template <int dim, int spacedim, typename VectorType>
     dealii::MappingFEField<dim, spacedim, VectorType> create_isoparametric_mapping(
         const Context<dim, spacedim>& context, VectorType& position_vector,
-        dealii::DoFHandler<dim>& iso_dof_handler)
+        dealii::DoFHandler<dim, spacedim>& iso_dof_handler)
     {
       FOUR_C_ASSERT(context.n_finite_elements() == 1,
           "Currently only supported for the case that there is only one finite element in the "

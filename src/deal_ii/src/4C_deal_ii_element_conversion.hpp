@@ -12,7 +12,6 @@
 
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
-#include "cut/4C_cut_find_cycles.hpp"
 
 #include <deal.II/fe/fe_simplex_p.h>
 #include <deal.II/fe/fe_system.h>
@@ -133,7 +132,7 @@ namespace DealiiWrappers
      */
     template <int spacedim>
     dealii::Point<spacedim> vertices_to_dealii(
-        const Core::Elements::Element* element, std::vector<unsigned>& vertex_gids);
+        const Core::Elements::Element& element, std::vector<unsigned>& vertex_gids);
 
   }  // namespace FourCToDealii
 

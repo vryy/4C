@@ -158,7 +158,7 @@ namespace
 
       EXPECT_EQ(dof_handler.n_dofs(), discret.dof_row_map()->num_global_elements())
           << "The number of dofs in the deal.II DoFHandler does not match the number of dofs in "
-             "the ";
+             "the discretization.";
 
 
       dealii::DynamicSparsityPattern dsp(dof_handler.n_dofs());
