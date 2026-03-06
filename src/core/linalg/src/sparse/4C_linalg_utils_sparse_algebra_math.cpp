@@ -504,25 +504,6 @@ Core::LinAlg::SparseMatrix Core::LinAlg::multiply_multi_vector_multi_vector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::multiply_multi_vectors(Core::LinAlg::MultiVector<double>& multivect1,
-    char multivect1Trans, Core::LinAlg::MultiVector<double>& multivect2, char multivect2Trans,
-    Core::LinAlg::Map& redundant_map, Core::LinAlg::Import& impo,
-    Core::LinAlg::MultiVector<double>& result)
-{
-  // initialize temporary Core::LinAlg::MultiVector<double> (redundant_map: all procs hold all
-  // elements/rows)
-  Core::LinAlg::MultiVector<double> multivect_temp(redundant_map, multivect2.num_vectors(), true);
-
-  // do the multiplication: (all procs hold the full result)
-  multivect_temp.multiply(multivect1Trans, multivect2Trans, 1.0, multivect1, multivect2, 0.0);
-
-  // import the result to a Core::LinAlg::MultiVector<double> whose elements/rows are distributed
-  // over all procs
-  result.import(multivect_temp, impo, Core::LinAlg::CombineMode::insert);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Core::LinAlg::MultiVector<double> Core::LinAlg::orthonormalize_multi_vector(
     const Core::LinAlg::MultiVector<double>& multi_vector)
 {
