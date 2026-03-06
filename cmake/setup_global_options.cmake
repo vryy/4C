@@ -227,6 +227,14 @@ if(FOUR_C_ENABLE_IWYU)
   endif()
 endif()
 
+four_c_process_global_option(
+  FOUR_C_ENABLE_PYTHON_BINDINGS
+  DESCRIPTION
+  "Enable building the 4C Python bindings (py4C) using pybind11."
+  DEFAULT
+  OFF
+  )
+
 ##
 # Optimization flags
 # These flags are reasonable defaults. Users may amend them by setting FOUR_C_CXX_FLAGS and/or FOUR_C_CXX_FLAGS_<CONFIG>.

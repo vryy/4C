@@ -4,6 +4,9 @@ pyvista
 scipy
 numpy
 
+# for py4C
+pytest
+
 # for sphinx documentation:
 jinja2
 matplotlib

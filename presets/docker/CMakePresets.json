@@ -30,7 +30,8 @@
         "FOUR_C_WITH_VTK": "ON",
         "FOUR_C_WITH_GMSH": "ON",
         "FOUR_C_GMSH_ROOT": "/opt/4C-dependencies",
-        "FOUR_C_WITH_FFTW": "ON"
+        "FOUR_C_WITH_FFTW": "ON",
+        "FOUR_C_ENABLE_PYTHON_BINDINGS": "ON"
       }
     },
     {
@@ -123,7 +124,8 @@
         "FOUR_C_ENABLE_DOXYGEN": "OFF",
         "FOUR_C_ENABLE_DOCUMENTATION": "OFF",
         "FOUR_C_DOXYGEN_USE_LOCAL_MATHJAX": "OFF",
-        "FOUR_C_WITH_GMSH": "OFF"
+        "FOUR_C_WITH_GMSH": "OFF",
+        "FOUR_C_ENABLE_PYTHON_BINDINGS": "OFF"
       }
     },
     {
@@ -144,7 +146,8 @@
         "FOUR_C_ENABLE_DOCUMENTATION": "OFF",
         "FOUR_C_WITH_VTK": "OFF",
         "FOUR_C_WITH_GMSH": "OFF",
-        "FOUR_C_WITH_FFTW": "OFF"
+        "FOUR_C_WITH_FFTW": "OFF",
+        "FOUR_C_ENABLE_PYTHON_BINDINGS": "OFF"
       }
     }
   ]

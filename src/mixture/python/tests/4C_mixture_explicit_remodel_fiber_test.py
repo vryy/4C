@@ -1,0 +1,25 @@
+# This file is part of 4C multiphysics licensed under the
+# GNU Lesser General Public License v3.0 or later.
+#
+# See the LICENSE.md file in the top-level for license information.
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+import py4C
+import pytest
+
+
+def test_explicit_remodel_fiber():
+    material = py4C.mixture.ExponentialFiberMaterial(1.0, 1.0, True)
+    gnr = py4C.mixture.LinearGrowthPoissonTurnover(1.0, 10.0)
+    fiber = py4C.mixture.ExplicitRemodelFiber(material, gnr, 1.1)
+
+    fiber.set_state(1.11)
+    fiber.update(0.1)
+    fiber.set_state(1.12)
+
+    assert fiber.cauchy_stress == pytest.approx(1.708552864862754)
+    assert fiber.growth_scalar == pytest.approx(1.2506286967827007)
+    assert fiber.dcauchy_stress_dlambda == pytest.approx(16.814026055923108)
+    assert fiber.dgrowth_scalar_dlambda == pytest.approx(0.0)
+    assert fiber.lambda_r == pytest.approx(0.9244849620838248)
