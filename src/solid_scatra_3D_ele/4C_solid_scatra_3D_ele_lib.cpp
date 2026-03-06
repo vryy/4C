@@ -23,6 +23,8 @@ Inpar::ScaTra::ImplType Discret::Elements::read_scatra_impl_type(
     return Inpar::ScaTra::impltype_advreac;
   else if (impltype == "CardMono")
     return Inpar::ScaTra::impltype_cardiac_monodomain;
+  else if (impltype == "GR")
+    return Inpar::ScaTra::impltype_gr;
   else if (impltype == "Chemo")
     return Inpar::ScaTra::impltype_chemo;
   else if (impltype == "ChemoReac")

@@ -22,6 +22,7 @@
 #include "4C_mat_list_reactions.hpp"
 #include "4C_mat_myocard.hpp"
 #include "4C_mat_scatra_chemotaxis.hpp"
+#include "4C_mat_scatra_growth_remodel.hpp"
 #include "4C_mat_scatra_reaction.hpp"
 #include "4C_scatra_ele_calc_utils.hpp"
 #include "4C_utils_enum.hpp"
@@ -317,6 +318,7 @@ void Discret::Elements::Transport::set_material(
       mat->material_type() == Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based or
       mat->material_type() == Core::Materials::m_scatra_in_solid_porofluid_pressure_based or
       mat->material_type() == Core::Materials::m_scatra_as_temperature_porofluid_pressure_based or
+      mat->material_type() == Core::Materials::m_scatra_gr or
       (mat->material_type() == Core::Materials::m_electrode and
           impltype_ == Inpar::ScaTra::impltype_std))
     numdofpernode_ = 1;  // we only have a single scalar

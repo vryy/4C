@@ -35,6 +35,8 @@ bool Discret::Elements::Transport::read_element(const std::string& eletype,
     impltype_ = Inpar::ScaTra::impltype_aniso;
   else if (impltype == "CardMono")
     impltype_ = Inpar::ScaTra::impltype_cardiac_monodomain;
+  else if (impltype == "GR")
+    impltype_ = Inpar::ScaTra::impltype_gr;
   else if (impltype == "ElchDiffCond")
     impltype_ = Inpar::ScaTra::impltype_elch_diffcond;
   else if (impltype == "ElchDiffCondMultiScale")

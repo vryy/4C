@@ -9,6 +9,7 @@
 
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
+#include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_mat_aaaneohooke.hpp"
 #include "4C_mat_beam3r_plasticity.hpp"
 #include "4C_mat_beam_elasthyper_parameter.hpp"
@@ -125,6 +126,7 @@
 #include "4C_mat_scalardepinterp.hpp"
 #include "4C_mat_scatra.hpp"
 #include "4C_mat_scatra_chemotaxis.hpp"
+#include "4C_mat_scatra_growth_remodel.hpp"
 #include "4C_mat_scatra_multiporo.hpp"
 #include "4C_mat_scatra_multiscale.hpp"
 #include "4C_mat_scatra_poro_ecm.hpp"
@@ -157,6 +159,7 @@
 #include "4C_mixture_constituent_remodelfiber_impl.hpp"
 #include "4C_mixture_constituent_remodelfiber_material_exponential.hpp"
 #include "4C_mixture_constituent_remodelfiber_material_exponential_active.hpp"
+#include "4C_mixture_constituent_remodelfiber_ssi.hpp"
 #include "4C_mixture_constituent_solidmaterial.hpp"
 #include "4C_mixture_growth_strategy_anisotropic.hpp"
 #include "4C_mixture_growth_strategy_isotropic.hpp"
@@ -339,6 +342,10 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     case Core::Materials::m_scatra_chemotaxis:
     {
       return make_parameter_impl<Mat::PAR::ScatraChemotaxisMat>(id, type, input_data);
+    }
+    case Core::Materials::m_scatra_gr:
+    {
+      return make_parameter_impl<Mat::PAR::ScatraGrowthRemodelMat>(id, type, input_data);
     }
     case Core::Materials::m_muscle_combo:
     {
@@ -630,6 +637,11 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     case Core::Materials::mix_elasthyper_elastin_membrane:
     {
       return make_parameter_impl<FourC::Mixture::PAR::MixtureConstituentElastHyperElastinMembrane>(
+          id, type, input_data);
+    }
+    case Core::Materials::mix_remodelfiber_ssi:
+    {
+      return make_parameter_impl<FourC::Mixture::PAR::MixtureConstituentRemodelFiberSsi>(
           id, type, input_data);
     }
     case Core::Materials::mix_remodelfiber_expl:

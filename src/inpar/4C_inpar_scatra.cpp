@@ -725,6 +725,8 @@ std::string Inpar::ScaTra::impltype_to_string(ImplType impltype)
       return "Aniso";
     case Inpar::ScaTra::impltype_cardiac_monodomain:
       return "CardMono";
+    case Inpar::ScaTra::impltype_gr:
+      return "GR";
     case Inpar::ScaTra::impltype_chemo:
       return "Chemotaxis";
     case Inpar::ScaTra::impltype_chemoreac:

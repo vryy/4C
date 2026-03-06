@@ -133,6 +133,7 @@ Discret::Elements::ScaTraBoundaryFactory::define_problem_type(
     case Inpar::ScaTra::impltype_advreac:
     case Inpar::ScaTra::impltype_aniso:
     case Inpar::ScaTra::impltype_cardiac_monodomain:
+    case Inpar::ScaTra::impltype_gr:
     case Inpar::ScaTra::impltype_chemo:
     case Inpar::ScaTra::impltype_chemoreac:
     case Inpar::ScaTra::impltype_levelset:

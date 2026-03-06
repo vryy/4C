@@ -121,7 +121,11 @@ namespace Mixture
        * @param lambda_ext (in) : external inelastic stretch in fiber direction
        */
       void set_state(T lambda_f, T lambda_ext);
+      void set_growth_scalar(T growth_scalar);
+      void set_lambda_r(T lambda_r);
 
+      [[nodiscard]] T evaluate_growth_reaction_coefficient(
+          T lambda_f, T lambda_r, T lambda_ext) const;
       [[nodiscard]] T evaluate_growth_evolution_equation_dt(
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
       [[nodiscard]] T evaluate_d_growth_evolution_equation_dt_d_sig(
@@ -136,6 +140,8 @@ namespace Mixture
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
 
       [[nodiscard]] T evaluate_remodel_evolution_equation_dt(
+          T lambda_f, T lambda_r, T lambda_ext) const;
+      [[nodiscard]] T evaluate_remodeling_reaction_coefficient(
           T lambda_f, T lambda_r, T lambda_ext) const;
       [[nodiscard]] T evaluate_d_remodel_evolution_equation_dt_d_sig(
           T lambda_f, T lambda_r, T lambda_ext) const;
@@ -199,6 +205,8 @@ namespace Mixture
           T dt) const;
       [[nodiscard]] T evaluate_current_growth_scalar() const;
       [[nodiscard]] T evaluate_current_lambda_r() const;
+      [[nodiscard]] T evaluate_growth_reaction_coefficient() const;
+      [[nodiscard]] T evaluate_remodeling_reaction_coefficient() const;
 
       [[nodiscard]] T evaluate_d_current_growth_scalar_d_lambda_f_sq() const;
       [[nodiscard]] T evaluate_d_current_lambda_r_d_lambda_f_sq() const;

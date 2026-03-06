@@ -17,6 +17,7 @@
 #include "4C_mixture_constituent_full_constrained_mixture_fiber.hpp"
 #include "4C_mixture_constituent_remodelfiber_expl.hpp"
 #include "4C_mixture_constituent_remodelfiber_impl.hpp"
+#include "4C_mixture_constituent_remodelfiber_ssi.hpp"
 #include "4C_mixture_constituent_solidmaterial.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -66,6 +67,10 @@ Mixture::PAR::MixtureConstituent* Mixture::PAR::MixtureConstituent::factory(int 
       return dynamic_cast<Mixture::PAR::MixtureConstituent*>(curmat);
     }
     case Core::Materials::mix_elasthyper_elastin_membrane:
+    {
+      return dynamic_cast<Mixture::PAR::MixtureConstituent*>(curmat);
+    }
+    case Core::Materials::mix_remodelfiber_ssi:
     {
       return dynamic_cast<Mixture::PAR::MixtureConstituent*>(curmat);
     }

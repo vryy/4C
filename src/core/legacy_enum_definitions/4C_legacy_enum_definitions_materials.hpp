@@ -166,6 +166,7 @@ namespace Core::Materials
                                 ///< porous ECM
     m_scatra_reaction,          ///< reaction definition and parameters
     m_scatra_chemotaxis,        ///< chemotaxis definition parameters
+    m_scatra_gr,                ///< scalar transport for growth and remodeling
     m_scl,                      ///< material for modeling space charge layers in solid electrolytes
     m_soret,   ///< material for heat transport due to Fourier-type thermal conduction and the
                ///< Soret effect
@@ -279,6 +280,8 @@ namespace Core::Materials
                                          ///< membrane material
     mix_full_constrained_mixture_fiber,  ///< A quasi 1D fiber that growths with the full
                                          ///< constrained mixture model
+    mix_remodelfiber_ssi,  ///< Fiber that remodels with homogenized constrained mixture model
+                           ///< with implicit reaction-diffusion stabilization for the growth scalar
     mix_remodelfiber_expl,  ///< Fiber that remodels with homogenized constrained mixture model
                             ///< with explicit solution of the growth and remodel equations
     mix_remodelfiber_impl,  ///< Fiber that remodels with homogenized constrained mixture model
