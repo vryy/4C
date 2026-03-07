@@ -150,10 +150,12 @@ void Constraints::SubmodelEvaluator::NullspaceConstraintManager::evaluate_coupli
     }
   }
 
+  auto orthonormal_constraint_space = Core::LinAlg::orthonormalize_multi_vector(constraint_space);
+
   auto constraint_matrix = std::make_shared<Core::LinAlg::SparseMatrix>(
-      *dof_condition_map_, constraint_space.num_vectors());
+      *dof_condition_map_, orthonormal_constraint_space.num_vectors());
   Core::LinAlg::multi_vector_to_linalg_sparse_matrix(
-      constraint_space, *dof_condition_map_, *constraint_map_, *constraint_matrix);
+      orthonormal_constraint_space, *dof_condition_map_, *constraint_map_, *constraint_matrix);
 
   Q_dL_ = Core::LinAlg::matrix_row_transform(*constraint_matrix, *dof_map);
   Q_Ld_ = Core::LinAlg::matrix_transpose(*Q_dL_);
