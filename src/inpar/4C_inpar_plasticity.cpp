@@ -82,7 +82,7 @@ Core::IO::InputSpec Inpar::Plasticity::valid_parameters()
 
           parameter<TSI::DissipationMode>(
               "DISSIPATION_MODE", {.description = "method to calculate the plastic dissipation",
-                                      .default_value = TSI::pl_multiplier})},
+                                      .default_value = TSI::DissipationMode::pl_multiplier})},
       {.required = false});
   return spec;
 }

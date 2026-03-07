@@ -53,7 +53,8 @@ TSI::Partitioned::Partitioned(MPI_Comm comm)
   coupling_ = Teuchos::getIntegralValue<TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // coupling variable
-  displacementcoupling_ = tsidynpart.get<std::string>("COUPVARIABLE") == "Displacement";
+  displacementcoupling_ = Teuchos::getIntegralValue<CouplingVariable>(tsidynpart, "COUPVARIABLE") ==
+                          CouplingVariable::Displacement;
   if (displacementcoupling_)
     std::cout << "Coupling variable: displacement" << std::endl;
   else
@@ -1087,7 +1088,7 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
   switch (normtypeinc_)
   {
     // default check:
-    case TSI::convnorm_abs:
+    case TSI::ConvNorm::Abs:
     {
       // print the incremental based convergence check to the screen
       // test here increment
@@ -1150,10 +1151,10 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
           printf("\n");
         }
       }
-    }  // TSI::convnorm_abs
+    }  // TSI::ConvNorm::convnorm_abs
     break;
 
-    case TSI::convnorm_rel:
+    case TSI::ConvNorm::Rel:
     {
       // print the incremental based convergence check to the screen
       // test here increment/variable
@@ -1213,10 +1214,10 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
           printf("\n");
         }
       }
-    }  // TSI::convnorm_rel
+    }  // TSI::ConvNorm::convnorm_rel
     break;
 
-    case TSI::convnorm_mix:
+    case TSI::ConvNorm::Mix:
     default:
       FOUR_C_THROW("Cannot check for convergence of residual values!");
       break;
