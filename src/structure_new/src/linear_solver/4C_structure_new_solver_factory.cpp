@@ -12,12 +12,13 @@
 #include "4C_cardiovascular0d_input.hpp"
 #include "4C_contact_input.hpp"
 #include "4C_fem_condition.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_nullspace.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_krylov_projector.hpp"
-#include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_method_parameters.hpp"
@@ -177,23 +178,43 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_li
           Core::Elements::Element* dwele = actdis.l_row_element(0);
           dwele->element_type().nodal_block_information(dwele, numdof, dimns);
         }
+
+        const auto node_cond_map =
+            Core::Conditions::condition_node_row_map(actdis, "KrylovSpaceProjection");
+
+        std::vector<int> cond_dof_gids;
+
+        for (int i = 0; i < actdis.num_my_row_nodes(); i++)
+        {
+          const Core::Nodes::Node* node = actdis.l_row_node(i);
+          if (node_cond_map->my_gid(node->id())) actdis.dof(node, cond_dof_gids);
+        }
+
+        auto dof_condition_map =
+            Core::LinAlg::Map(-1, cond_dof_gids.size(), cond_dof_gids.data(), 0, actdis.get_comm());
+
         std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
-            Core::FE::compute_null_space(actdis, dimns, nullspace_map);
+            Core::FE::compute_null_space(actdis, dimns, dof_condition_map);
         if (nullspace == nullptr) FOUR_C_THROW("Nullspace could not be computed successfully.");
 
-        // sort vector of nullspace data into kernel vector c_
-        std::vector<int> mode_ids = krylov_projector->modes();
+        Core::LinAlg::MultiVector<double> constraint_space(dof_condition_map, activemodeids.size());
 
-        for (size_t i = 0; i < Teuchos::as<size_t>(mode_ids.size()); i++)
+        // restrict the full nullspace to the actually active modes
+        for (int mode = 0; mode < static_cast<int>(activemodeids.size()); mode++)
         {
-          auto& ci = c->get_vector(i);
-          auto& ni = nullspace->get_vector(mode_ids[i]);
-          const size_t myLength = ci.local_length();
-          for (size_t j = 0; j < myLength; j++)
+          auto& constraint_space_column = constraint_space.get_vector(mode);
+          auto& nullspace_column = nullspace->get_vector(activemodeids[mode]);
+
+          const size_t my_length = constraint_space_column.local_length();
+          for (size_t j = 0; j < my_length; j++)
           {
-            ci.get_values()[j] = ni.get_values()[j];
+            constraint_space_column.get_values()[j] = nullspace_column.get_values()[j];
           }
         }
+
+        // sort vector of nullspace data into kernel vector c
+        Core::LinAlg::export_to(constraint_space, *c);
+
         krylov_projector->fill_complete();
         projector = std::move(krylov_projector);
       }
