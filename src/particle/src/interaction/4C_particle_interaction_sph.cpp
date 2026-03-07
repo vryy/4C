@@ -137,15 +137,10 @@ void Particle::ParticleInteractionSPH::setup(
   // setup boundary particle handler
   if (boundaryparticle_) boundaryparticle_->setup(particleengineinterface, neighborpairs_);
 
-  // setup dirichlet open boundary handler
-  if (dirichletopenboundary_)
-    dirichletopenboundary_->setup(particleengineinterface, kernel_, particlematerial_,
-        equationofstatebundle_, neighborpairs_);
-
-  // setup neumann open boundary handler
-  if (neumannopenboundary_)
-    neumannopenboundary_->setup(particleengineinterface, kernel_, particlematerial_,
-        equationofstatebundle_, neighborpairs_);
+  // setup open boundary handler
+  for (const auto& boundary : openboundaries_)
+    boundary->setup(particleengineinterface, kernel_, particlematerial_, equationofstatebundle_,
+        neighborpairs_);
 
   // setup virtual wall particle handler
   if (virtualwallparticle_)
@@ -165,8 +160,7 @@ void Particle::ParticleInteractionSPH::setup(
   if (peridynamics_) peridynamics_->setup(particleengineinterface, particlematerial_);
 
   // short screen output
-  if ((dirichletopenboundary_ or neumannopenboundary_) and
-      particleengineinterface_->have_periodic_boundary_conditions())
+  if (!openboundaries_.empty() && particleengineinterface_->have_periodic_boundary_conditions())
   {
     if (myrank_ == 0)
       Core::IO::cout << "Warning: periodic boundary and open boundary conditions applied!"
@@ -374,10 +368,7 @@ void Particle::ParticleInteractionSPH::pre_evaluate_time_step()
   TEUCHOS_FUNC_TIME_MONITOR("Particle::ParticleInteractionSPH::pre_evaluate_time_step");
 
   // prescribe open boundary states
-  if (dirichletopenboundary_) dirichletopenboundary_->prescribe_open_boundary_states(time_);
-
-  // prescribe open boundary states
-  if (neumannopenboundary_) neumannopenboundary_->prescribe_open_boundary_states(time_);
+  for (const auto& boundary : openboundaries_) boundary->prescribe_open_boundary_states(time_);
 }
 
 void Particle::ParticleInteractionSPH::evaluate_interactions()
@@ -405,10 +396,7 @@ void Particle::ParticleInteractionSPH::evaluate_interactions()
   if (temperature_) temperature_->compute_temperature();
 
   // interpolate open boundary states
-  if (dirichletopenboundary_) dirichletopenboundary_->interpolate_open_boundary_states();
-
-  // interpolate open boundary states
-  if (neumannopenboundary_) neumannopenboundary_->interpolate_open_boundary_states();
+  for (const auto& boundary : openboundaries_) boundary->interpolate_open_boundary_states();
 
   // init boundary particle states
   if (boundaryparticle_) boundaryparticle_->init_boundary_particle_states(gravity_);
@@ -435,12 +423,8 @@ void Particle::ParticleInteractionSPH::post_evaluate_time_step(
   TEUCHOS_FUNC_TIME_MONITOR("Particle::ParticleInteractionSPH::post_evaluate_time_step");
 
   // check open boundary phase change
-  if (dirichletopenboundary_)
-    dirichletopenboundary_->check_open_boundary_phase_change(max_interaction_distance());
-
-  // check open boundary phase change
-  if (neumannopenboundary_)
-    neumannopenboundary_->check_open_boundary_phase_change(max_interaction_distance());
+  for (const auto& boundary : openboundaries_)
+    boundary->check_open_boundary_phase_change(max_interaction_distance());
 
   // evaluate phase change
   if (phasechange_) phasechange_->evaluate_phase_change(particlesfromphasetophase);
@@ -692,13 +676,11 @@ void Particle::ParticleInteractionSPH::init_dirichlet_open_boundary_handler()
   {
     case Particle::NoDirichletOpenBoundary:
     {
-      dirichletopenboundary_ = std::unique_ptr<Particle::SPHOpenBoundaryBase>(nullptr);
       break;
     }
     case Particle::DirichletNormalToPlane:
     {
-      dirichletopenboundary_ = std::unique_ptr<Particle::SPHOpenBoundaryDirichlet>(
-          new Particle::SPHOpenBoundaryDirichlet(params_sph_));
+      openboundaries_.push_back(std::make_unique<Particle::SPHOpenBoundaryDirichlet>(params_sph_));
       break;
     }
     default:
@@ -720,13 +702,11 @@ void Particle::ParticleInteractionSPH::init_neumann_open_boundary_handler()
   {
     case Particle::NoNeumannOpenBoundary:
     {
-      neumannopenboundary_ = std::unique_ptr<Particle::SPHOpenBoundaryBase>(nullptr);
       break;
     }
     case Particle::NeumannNormalToPlane:
     {
-      neumannopenboundary_ = std::unique_ptr<Particle::SPHOpenBoundaryNeumann>(
-          new Particle::SPHOpenBoundaryNeumann(params_sph_));
+      openboundaries_.push_back(std::make_unique<Particle::SPHOpenBoundaryNeumann>(params_sph_));
       break;
     }
     default:

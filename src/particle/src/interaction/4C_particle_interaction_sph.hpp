@@ -192,11 +192,8 @@ namespace Particle
     //! boundary particle handler
     std::unique_ptr<Particle::SPHBoundaryParticleBase> boundaryparticle_;
 
-    //! dirichlet open boundary handler
-    std::unique_ptr<Particle::SPHOpenBoundaryBase> dirichletopenboundary_;
-
-    //! neumann open boundary handler
-    std::unique_ptr<Particle::SPHOpenBoundaryBase> neumannopenboundary_;
+    //! open boundaries handler
+    std::vector<std::unique_ptr<Particle::SPHOpenBoundaryBase>> openboundaries_;
 
     //! virtual wall particle handler
     std::shared_ptr<Particle::SPHVirtualWallParticle> virtualwallparticle_;
