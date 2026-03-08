@@ -303,11 +303,11 @@ void TSI::Monolithic::solve()
   switch (soltech_)
   {
     // Newton-Raphson iteration
-    case TSI::soltech_newtonfull:
+    case TSI::NlnSolTech::fullnewton:
       newton_full();
       break;
     // Pseudo-transient continuation
-    case TSI::soltech_ptc:
+    case TSI::NlnSolTech::ptc:
       ptc();
       break;
     // catch problems
@@ -450,12 +450,12 @@ void TSI::Monolithic::newton_full()
     // do line search
     switch (ls_strategy_)
     {
-      case TSI::LS_none:
+      case TSI::LineSearch::LS_none:
         break;
-      case TSI::LS_structure:
-      case TSI::LS_thermo:
-      case TSI::LS_and:
-      case TSI::LS_or:
+      case TSI::LineSearch::LS_structure:
+      case TSI::LineSearch::LS_thermo:
+      case TSI::LineSearch::LS_and:
+      case TSI::LineSearch::LS_or:
       {
         normstrrhs_ = calculate_vector_norm(iternormstr_, *structure_field()->rhs());
         normthrrhs_ = calculate_vector_norm(iternormthr_, *thermo_field()->rhs());
@@ -1143,13 +1143,13 @@ bool TSI::Monolithic::converged()
   // residual TSI forces
   switch (normtyperhs_)
   {
-    case TSI::convnorm_abs:
+    case TSI::ConvNorm::Abs:
       convrhs = normrhs_ < tolrhs_;
       break;
-    case TSI::convnorm_rel:
+    case TSI::ConvNorm::Rel:
       convrhs = normrhs_ < std::max(tolrhs_ * normrhsiter0_, 1.0e-15);
       break;
-    case TSI::convnorm_mix:
+    case TSI::ConvNorm::Mix:
       convrhs = ((normrhs_ < tolrhs_) and (normrhs_ < std::max(normrhsiter0_ * tolrhs_, 1.0e-15)));
       break;
     default:
@@ -1160,11 +1160,11 @@ bool TSI::Monolithic::converged()
   // residual TSI increments
   switch (normtypeinc_)
   {
-    case TSI::convnorm_abs:
+    case TSI::ConvNorm::Abs:
       convinc = norminc_ < tolinc_;
       break;
-    case TSI::convnorm_rel:
-    case TSI::convnorm_mix:
+    case TSI::ConvNorm::Rel:
+    case TSI::ConvNorm::Mix:
       convinc = norminc_ < std::max(norminciter0_ * tolinc_, 1e-15);
       break;
     default:
@@ -1249,17 +1249,17 @@ bool TSI::Monolithic::converged()
   // combine increment-like and force-like residuals, combine TSI and single
   // field values
   bool conv = false;
-  if (combincrhs_ == TSI::bop_and)
+  if (combincrhs_ == TSI::BinaryOp::bop_and)
     conv = convinc and convrhs;
-  else if (combincrhs_ == TSI::bop_or)
+  else if (combincrhs_ == TSI::BinaryOp::bop_or)
     conv = convinc or convrhs;
-  else if (combincrhs_ == TSI::bop_coupl_and_single)
+  else if (combincrhs_ == TSI::BinaryOp::bop_coupl_and_single)
     conv = convinc and convrhs and convdisp and convstrrhs and convtemp and convthrrhs;
-  else if (combincrhs_ == TSI::bop_coupl_or_single)
+  else if (combincrhs_ == TSI::BinaryOp::bop_coupl_or_single)
     conv = (convinc and convrhs) or (convdisp and convstrrhs and convtemp and convthrrhs);
-  else if (combincrhs_ == TSI::bop_and_single)
+  else if (combincrhs_ == TSI::BinaryOp::bop_and_single)
     conv = convdisp and convstrrhs and convtemp and convthrrhs;
-  else if (combincrhs_ == TSI::bop_or_single)
+  else if (combincrhs_ == TSI::BinaryOp::bop_or_single)
     conv = (convdisp or convstrrhs or convtemp or convthrrhs);
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -1311,20 +1311,20 @@ void TSI::Monolithic::print_newton_iter_header(FILE* ofile)
   oss << std::setw(5) << "# iter";
 
   // line search
-  if (ls_strategy_) oss << std::setw(11) << " ls_step";
+  if (ls_strategy_ != LineSearch::LS_none) oss << std::setw(11) << " ls_step";
 
   // ---------------------------------------------------------------- TSI
   // different style due relative or absolute error checking
   // displacement
   switch (normtyperhs_)
   {
-    case TSI::convnorm_abs:
+    case TSI::ConvNorm::Abs:
       oss << std::setw(15) << "abs-res-norm";
       break;
-    case TSI::convnorm_rel:
+    case TSI::ConvNorm::Rel:
       oss << std::setw(15) << "rel-res-norm";
       break;
-    case TSI::convnorm_mix:
+    case TSI::ConvNorm::Mix:
       oss << std::setw(15) << "mix-res-norm";
       break;
     default:
@@ -1334,10 +1334,10 @@ void TSI::Monolithic::print_newton_iter_header(FILE* ofile)
 
   switch (normtypeinc_)
   {
-    case TSI::convnorm_abs:
+    case TSI::ConvNorm::Abs:
       oss << std::setw(15) << "abs-inc-norm";
       break;
-    case TSI::convnorm_rel:
+    case TSI::ConvNorm::Rel:
       oss << std::setw(15) << "rel-inc-norm";
       break;
     default:
@@ -1420,7 +1420,7 @@ void TSI::Monolithic::print_newton_iter_header(FILE* ofile)
   }
 
 
-  if (soltech_ == TSI::soltech_ptc)
+  if (soltech_ == TSI::NlnSolTech::ptc)
   {
     oss << std::setw(16) << "        PTC-dti";
   }
@@ -1463,7 +1463,7 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
   oss << std::setw(6) << iter_;
 
   // line search step
-  if (ls_strategy_)
+  if (ls_strategy_ != LineSearch::LS_none)
     oss << std::setw(11) << std::setprecision(3) << std::scientific << ls_step_length_;
 
   // different style due relative or absolute error checking
@@ -1471,13 +1471,13 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
   // ----------------------------------------------- test coupled problem
   switch (normtyperhs_)
   {
-    case TSI::convnorm_abs:
+    case TSI::ConvNorm::Abs:
       oss << std::setw(15) << std::setprecision(5) << std::scientific << normrhs_;
       break;
-    case TSI::convnorm_rel:
+    case TSI::ConvNorm::Rel:
       oss << std::setw(15) << std::setprecision(5) << std::scientific << normrhs_ / normrhsiter0_;
       break;
-    case TSI::convnorm_mix:
+    case TSI::ConvNorm::Mix:
       oss << std::setw(15) << std::setprecision(5) << std::scientific
           << std::min(normrhs_, normrhs_ / normrhsiter0_);
       break;
@@ -1488,13 +1488,13 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
 
   switch (normtypeinc_)
   {
-    case TSI::convnorm_abs:
+    case TSI::ConvNorm::Abs:
       oss << std::setw(15) << std::setprecision(5) << std::scientific << norminc_;
       break;
-    case TSI::convnorm_rel:
+    case TSI::ConvNorm::Rel:
       oss << std::setw(15) << std::setprecision(5) << std::scientific << norminc_ / norminciter0_;
       break;
-    case TSI::convnorm_mix:
+    case TSI::ConvNorm::Mix:
       oss << std::setw(15) << std::setprecision(5) << std::scientific
           << std::min(norminc_, norminc_ / norminciter0_);
       break;
@@ -1589,7 +1589,7 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
         << contact_strategy_lagrange_->thermo_contact_incr_;
   }
 
-  if (soltech_ == TSI::soltech_ptc)
+  if (soltech_ == TSI::NlnSolTech::ptc)
   {
     oss << std::setw(16) << std::setprecision(5) << std::scientific << dti_;
   }
@@ -2010,7 +2010,7 @@ double TSI::Monolithic::calculate_vector_norm(
 {
   // L1 norm
   // norm = sum_0^i vect[i]
-  if (norm == TSI::norm_l1)
+  if (norm == TSI::VectorNorm::L1)
   {
     double vectnorm;
     vect.norm_1(&vectnorm);
@@ -2018,7 +2018,7 @@ double TSI::Monolithic::calculate_vector_norm(
   }
   // L2/Euclidian norm
   // norm = sqrt{sum_0^i vect[i]^2 }
-  else if (norm == TSI::norm_l2)
+  else if (norm == TSI::VectorNorm::L2)
   {
     double vectnorm;
     vect.norm_2(&vectnorm);
@@ -2026,7 +2026,7 @@ double TSI::Monolithic::calculate_vector_norm(
   }
   // RMS norm
   // norm = sqrt{sum_0^i vect[i]^2 }/ sqrt{length_vect}
-  else if (norm == TSI::norm_rms)
+  else if (norm == TSI::VectorNorm::Rms)
   {
     double vectnorm;
     vect.norm_2(&vectnorm);
@@ -2034,14 +2034,14 @@ double TSI::Monolithic::calculate_vector_norm(
   }
   // infinity/maximum norm
   // norm = max( vect[i] )
-  else if (norm == TSI::norm_inf)
+  else if (norm == TSI::VectorNorm::Inf)
   {
     double vectnorm;
     vect.norm_inf(&vectnorm);
     return vectnorm;
   }
   // norm = sum_0^i vect[i]/length_vect
-  else if (norm == TSI::norm_l1_scaled)
+  else if (norm == TSI::VectorNorm::L1_Scaled)
   {
     double vectnorm;
     vect.norm_1(&vectnorm);
@@ -2085,38 +2085,38 @@ void TSI::Monolithic::set_default_parameters()
 
   switch (combincrhs_)
   {
-    case TSI::bop_and:
+    case TSI::BinaryOp::bop_and:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of TSI:\n res, inc with 'AND'.\n";
       break;
     }
-    case TSI::bop_or:
+    case TSI::BinaryOp::bop_or:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of TSI:\n res, inc with 'OR'.\n";
       break;
     }
-    case TSI::bop_coupl_and_single:
+    case TSI::BinaryOp::bop_coupl_and_single:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout
             << "Convergence test of TSI:\n res, inc, str-res, thermo-res, dis, temp with 'AND'.\n";
       break;
     }
-    case TSI::bop_coupl_or_single:
+    case TSI::BinaryOp::bop_coupl_or_single:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of TSI:\n (res, inc) or (str-res, thermo-res, dis, temp).\n";
       break;
     }
-    case TSI::bop_and_single:
+    case TSI::BinaryOp::bop_and_single:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of TSI:\n str-res, thermo-res, dis, temp with 'AND'.\n";
       break;
     }
-    case TSI::bop_or_single:
+    case TSI::BinaryOp::bop_or_single:
     {
       if (Core::Communication::my_mpi_rank(get_comm()) == 0)
         std::cout << "Convergence test of TSI:\n str-res, thermo-res, dis, temp with 'OR'.\n";
@@ -2134,16 +2134,16 @@ void TSI::Monolithic::set_default_parameters()
   switch (striternorm)
   {
     case Inpar::Solid::norm_l1:
-      iternormstr_ = TSI::norm_l1;
+      iternormstr_ = TSI::VectorNorm::L1;
       break;
     case Inpar::Solid::norm_l2:
-      iternormstr_ = TSI::norm_l2;
+      iternormstr_ = TSI::VectorNorm::L2;
       break;
     case Inpar::Solid::norm_rms:
-      iternormstr_ = TSI::norm_rms;
+      iternormstr_ = TSI::VectorNorm::Rms;
       break;
     case Inpar::Solid::norm_inf:
-      iternormstr_ = TSI::norm_inf;
+      iternormstr_ = TSI::VectorNorm::Inf;
       break;
     case Inpar::Solid::norm_vague:
     default:
@@ -2155,16 +2155,16 @@ void TSI::Monolithic::set_default_parameters()
   switch (thriternorm)
   {
     case Thermo::norm_l1:
-      iternormthr_ = TSI::norm_l1;
+      iternormthr_ = TSI::VectorNorm::L1;
       break;
     case Thermo::norm_l2:
-      iternormthr_ = TSI::norm_l2;
+      iternormthr_ = TSI::VectorNorm::L2;
       break;
     case Thermo::norm_rms:
-      iternormthr_ = TSI::norm_rms;
+      iternormthr_ = TSI::VectorNorm::Rms;
       break;
     case Thermo::norm_inf:
-      iternormthr_ = TSI::norm_inf;
+      iternormthr_ = TSI::VectorNorm::Inf;
       break;
     case Thermo::norm_vague:
     default:
@@ -2175,11 +2175,12 @@ void TSI::Monolithic::set_default_parameters()
   }  // switch (thriternorm)
 
   // if scaled L1-norm is wished to be used
-  if ((iternorm_ == TSI::norm_l1_scaled) and
-      ((combincrhs_ == TSI::bop_coupl_and_single) or (combincrhs_ == TSI::bop_coupl_or_single)))
+  if ((iternorm_ == TSI::VectorNorm::L1_Scaled) and
+      ((combincrhs_ == TSI::BinaryOp::bop_coupl_and_single) or
+          (combincrhs_ == TSI::BinaryOp::bop_coupl_or_single)))
   {
-    iternormstr_ = TSI::norm_l1_scaled;
-    iternormthr_ = TSI::norm_l1_scaled;
+    iternormstr_ = TSI::VectorNorm::L1_Scaled;
+    iternormthr_ = TSI::VectorNorm::L1_Scaled;
   }
 
   // test the TSI-residual and the TSI-increment
@@ -2352,15 +2353,15 @@ bool TSI::Monolithic::l_sadmissible()
 {
   switch (ls_strategy_)
   {
-    case TSI::LS_structure:
+    case TSI::LineSearch::LS_structure:
       return normstrrhs_ < last_iter_res_.first;
-    case TSI::LS_thermo:
+    case TSI::LineSearch::LS_thermo:
       return normthrrhs_ < last_iter_res_.second;
-    case TSI::LS_or:
+    case TSI::LineSearch::LS_or:
       return (normstrrhs_ < last_iter_res_.first || normthrrhs_ < last_iter_res_.second);
-    case TSI::LS_and:
+    case TSI::LineSearch::LS_and:
       return (normstrrhs_ < last_iter_res_.first && normthrrhs_ < last_iter_res_.second);
-    case TSI::LS_none:
+    case TSI::LineSearch::LS_none:
     default:
       FOUR_C_THROW("you should not be here");
       return false;

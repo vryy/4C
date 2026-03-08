@@ -31,18 +31,25 @@ namespace TSI
     Monolithic
   };
 
+  //! Type of coupling variable for TSI problems
+  enum class CouplingVariable
+  {
+    Displacement,
+    Temperature
+  };
+
   //! @name Solution technique and related stuff
 
   //! type of norm to check for convergence
-  enum ConvNorm
+  enum class ConvNorm
   {
-    convnorm_abs,  //!< absolute norm
-    convnorm_rel,  //!< relative norm of TSI problem with initial TSI rhs
-    convnorm_mix   //!< mixed absolute-relative norm
+    Abs,  //!< absolute norm
+    Rel,  //!< relative norm of TSI problem with initial TSI rhs
+    Mix   //!< mixed absolute-relative norm
   };
 
   //! type of norm to check for convergence
-  enum BinaryOp
+  enum class BinaryOp
   {
     bop_and,               //!< and
     bop_or,                //!< or
@@ -53,14 +60,14 @@ namespace TSI
   };
 
   //! type of solution techniques
-  enum NlnSolTech
+  enum class NlnSolTech
   {
-    soltech_newtonfull,  //!< full Newton-Raphson iteration
-    soltech_ptc,         //!< pseudo transient continuation nonlinear iteration
+    fullnewton,  //!< full Newton-Raphson iteration
+    ptc,         //!< pseudo transient continuation nonlinear iteration
   };
 
   //! type of line-search strategy
-  enum LineSearch
+  enum class LineSearch
   {
     LS_none = 0,   //!< no line search
     LS_structure,  //!< line-search based on structural residual
@@ -75,18 +82,17 @@ namespace TSI
   //@{
 
   //! type of vector norm used for error/residual vectors
-  enum VectorNorm
+  enum class VectorNorm
   {
-    norm_vague = 0,  //!< undetermined norm
-    norm_l1,         //!< L1/linear norm
-    norm_l1_scaled,  //!< L1/linear norm scaled by length of vector
-    norm_l2,         //!< L2/Euclidean norm
-    norm_rms,        //!< root mean square (RMS) norm
-    norm_inf         //!< Maximum/infinity norm
+    L1,         //!< L1/linear norm
+    L1_Scaled,  //!< L1/linear norm scaled by length of vector
+    L2,         //!< L2/Euclidean norm
+    Rms,        //!< root mean square (RMS) norm
+    Inf         //!< Maximum/infinity norm
   };
 
   //! Method used to calculate plastic dissipation
-  enum DissipationMode
+  enum class DissipationMode
   {
     pl_multiplier,  //!< Dissipation = yield stress times plastic multiplier
     pl_flow,        //!< Dissipation = Mandel stress : sym(L^p)

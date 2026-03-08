@@ -58,14 +58,9 @@ std::vector<Core::IO::InputSpec> TSI::valid_parameters()
           parameter<int>("RESULTSEVERY",
               {.description = "increment for writing solution", .default_value = 1}),
 
-          deprecated_selection<ConvNorm>("NORM_INC",
-              {
-                  {"Abs", convnorm_abs},
-                  {"Rel", convnorm_rel},
-                  {"Mix", convnorm_mix},
-              },
+          parameter<ConvNorm>("NORM_INC",
               {.description = "type of norm for convergence check of primary variables in TSI",
-                  .default_value = convnorm_abs})},
+                  .default_value = ConvNorm::Abs})},
       {.required = false}));
 
   /*----------------------------------------------------------------------*/
@@ -81,45 +76,29 @@ std::vector<Core::IO::InputSpec> TSI::valid_parameters()
               {.description = "tolerance for convergence check of TSI-increment in monolithic TSI",
                   .default_value = 1.0e-6}),
 
-          deprecated_selection<ConvNorm>("NORM_RESF",
-              {
-                  {"Abs", convnorm_abs},
-                  {"Rel", convnorm_rel},
-                  {"Mix", convnorm_mix},
-              },
-              {.description = "type of norm for residual convergence check",
-                  .default_value = convnorm_abs}),
+          parameter<ConvNorm>(
+              "NORM_RESF", {.description = "type of norm for residual convergence check",
+                               .default_value = ConvNorm::Abs}),
 
           deprecated_selection<BinaryOp>("NORMCOMBI_RESFINC",
               {
-                  {"And", bop_and},
-                  {"Or", bop_or},
-                  {"Coupl_Or_Single", bop_coupl_or_single},
-                  {"Coupl_And_Single", bop_coupl_and_single},
-                  {"And_Single", bop_and_single},
-                  {"Or_Single", bop_or_single},
+                  {"And", BinaryOp::bop_and},
+                  {"Or", BinaryOp::bop_or},
+                  {"Coupl_Or_Single", BinaryOp::bop_coupl_or_single},
+                  {"Coupl_And_Single", BinaryOp::bop_coupl_and_single},
+                  {"And_Single", BinaryOp::bop_and_single},
+                  {"Or_Single", BinaryOp::bop_or_single},
               },
               {.description =
                       "binary operator to combine primary variables and residual force values",
-                  .default_value = bop_coupl_and_single}),
+                  .default_value = BinaryOp::bop_coupl_and_single}),
 
-          deprecated_selection<VectorNorm>("ITERNORM",
-              {
-                  {"L1", norm_l1},
-                  {"L1_Scaled", norm_l1_scaled},
-                  {"L2", norm_l2},
-                  {"Rms", norm_rms},
-                  {"Inf", norm_inf},
-              },
-              {.description = "type of norm to be applied to residuals",
-                  .default_value = norm_rms}),
+          parameter<VectorNorm>(
+              "ITERNORM", {.description = "type of norm to be applied to residuals",
+                              .default_value = VectorNorm::Rms}),
 
-          deprecated_selection<NlnSolTech>("NLNSOL",
-              {
-                  {"fullnewton", soltech_newtonfull},
-                  {"ptc", soltech_ptc},
-              },
-              {.description = "Nonlinear solution technique", .default_value = soltech_newtonfull}),
+          parameter<NlnSolTech>("NLNSOL", {.description = "Nonlinear solution technique",
+                                              .default_value = NlnSolTech::fullnewton}),
 
 
           parameter<double>(
@@ -152,13 +131,13 @@ std::vector<Core::IO::InputSpec> TSI::valid_parameters()
 
           deprecated_selection<LineSearch>("TSI_LINE_SEARCH",
               {
-                  {"none", LS_none},
-                  {"structure", LS_structure},
-                  {"thermo", LS_thermo},
-                  {"and", LS_and},
-                  {"or", LS_or},
+                  {"none", LineSearch::LS_none},
+                  {"structure", LineSearch::LS_structure},
+                  {"thermo", LineSearch::LS_thermo},
+                  {"and", LineSearch::LS_and},
+                  {"or", LineSearch::LS_or},
               },
-              {.description = "line-search strategy", .default_value = LS_none})},
+              {.description = "line-search strategy", .default_value = LineSearch::LS_none})},
       {.required = false}));
 
   /*----------------------------------------------------------------------*/
@@ -166,8 +145,9 @@ std::vector<Core::IO::InputSpec> TSI::valid_parameters()
   specs.push_back(group("TSI DYNAMIC/PARTITIONED",
       {
 
-          deprecated_selection<std::string>("COUPVARIABLE", {"Displacement", "Temperature"},
-              {.description = "Coupling variable", .default_value = "Displacement"}),
+          parameter<CouplingVariable>(
+              "COUPVARIABLE", {.description = "Coupling variable",
+                                  .default_value = CouplingVariable::Displacement}),
 
 
           // Solver parameter for relaxation of iterative staggered partitioned TSI
