@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "@FOUR_C_PYTHON_BINDINGS_PROJECT_NAME@"
+version = "@FOUR_C_VERSION_FULL@"
+description = "Python bindings for 4C multiphysics"
+authors = [{name = "The 4C authors"}]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    # any other test dependencies
+]
+
+[tool.setuptools]
+# Tell setuptools to look in the current directory (the staging dir)
+packages = ["@FOUR_C_PYTHON_BINDINGS_PROJECT_NAME@"]
+
+[tool.setuptools.package-data]
+# Tell setuptools to include the compiled binary CMake just put here
+"@FOUR_C_PYTHON_BINDINGS_PROJECT_NAME@" = ["*.so", "*.pyd"]

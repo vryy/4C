@@ -188,6 +188,7 @@ set(FULL_TARGETS post_processor post_monitor create_rtd cut_test)
 add_custom_target(full DEPENDS ${FOUR_C_EXECUTABLE_NAME} ${FULL_TARGETS})
 
 include(cmake/setup_tests.cmake)
+include(cmake/setup_py4C.cmake)
 
 # Create one large library: every module adds itself to this target
 set(FOUR_C_LIBRARY_NAME lib4C)
