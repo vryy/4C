@@ -16,51 +16,52 @@ namespace ReducedLung
 {
   namespace Airways
   {
-    void evaluate_negative_rigid_wall_residual(Core::LinAlg::Vector<double>& target,
-        const AirwayData& data, const Core::LinAlg::Vector<double>& locally_relevant_dofs,
+    void evaluate_rigid_wall_residual(Core::LinAlg::Vector<double>& target, const AirwayData& data,
+        const Core::LinAlg::Vector<double>& locally_relevant_dofs,
         const std::vector<double>& resistance, const std::vector<double>& inertia, double dt)
     {
       for (size_t i = 0; i < data.number_of_elements(); i++)
       {
-        double negative_rigid_wall_residual =
-            -1 *
+        double rigid_wall_residual =
             (locally_relevant_dofs.local_values_as_span()[data.lid_p1[i]] -
                 locally_relevant_dofs.local_values_as_span()[data.lid_p2[i]] -
                 resistance[i] * locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]] -
                 inertia[i] / dt *
                     (locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]] - data.q1_n[i]));
-        target.replace_local_value(data.local_row_id[i], negative_rigid_wall_residual);
+        target.replace_local_value(data.local_row_id[i], rigid_wall_residual);
       }
     }
 
-    void evaluate_negative_kelvin_voigt_wall_residual(Core::LinAlg::Vector<double>& target,
+    void evaluate_kelvin_voigt_wall_residual(Core::LinAlg::Vector<double>& target,
         const KelvinVoigtWall& kelvin_voigt_wall_model, const AirwayData& data,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs,
         const std::vector<double>& resistance, const std::vector<double>& inertia, double dt)
     {
       for (size_t i = 0; i < data.number_of_elements(); i++)
       {
-        double neg_res_momentum =
-            -1 * (locally_relevant_dofs.local_values_as_span()[data.lid_p1[i]] -
-                     locally_relevant_dofs.local_values_as_span()[data.lid_p2[i]] -
-                     (resistance[i] / 2 + inertia[i] / (2 * dt)) *
-                         (locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]] +
-                             locally_relevant_dofs.local_values_as_span()[data.lid_q2[i]]) +
-                     inertia[i] / (2 * dt) * (data.q1_n[i] + data.q2_n[i]));
-        double neg_res_mass =
-            -1 * (locally_relevant_dofs.local_values_as_span()[data.lid_p1[i]] +
-                     locally_relevant_dofs.local_values_as_span()[data.lid_p2[i]] - data.p1_n[i] -
-                     data.p2_n[i] -
-                     2 *
-                         (kelvin_voigt_wall_model.viscous_resistance_Rvisc[i] +
-                             dt / kelvin_voigt_wall_model.compliance_C[i]) *
-                         (locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]] -
-                             locally_relevant_dofs.local_values_as_span()[data.lid_q2[i]]) +
-                     2 * kelvin_voigt_wall_model.viscous_resistance_Rvisc[i] *
-                         (data.q1_n[i] - data.q2_n[i]));  // Pext component not implemented yet.
-        target.replace_local_value(data.local_row_id[i], neg_res_momentum);
-        target.replace_local_value(
-            static_cast<int>(data.local_row_id[i] + data.number_of_elements()), neg_res_mass);
+        const int momentum_row = data.local_row_id[i];
+        const int mass_row = data.local_row_id[i] + 1;
+
+        double res_momentum =
+            (locally_relevant_dofs.local_values_as_span()[data.lid_p1[i]] -
+                locally_relevant_dofs.local_values_as_span()[data.lid_p2[i]] -
+                (resistance[i] / 2 + inertia[i] / (2 * dt)) *
+                    (locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]] +
+                        locally_relevant_dofs.local_values_as_span()[data.lid_q2[i]]) +
+                inertia[i] / (2 * dt) * (data.q1_n[i] + data.q2_n[i]));
+        double res_mass =
+            (locally_relevant_dofs.local_values_as_span()[data.lid_p1[i]] +
+                locally_relevant_dofs.local_values_as_span()[data.lid_p2[i]] - data.p1_n[i] -
+                data.p2_n[i] -
+                2 *
+                    (kelvin_voigt_wall_model.viscous_resistance_Rvisc[i] +
+                        dt / kelvin_voigt_wall_model.compliance_C[i]) *
+                    (locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]] -
+                        locally_relevant_dofs.local_values_as_span()[data.lid_q2[i]]) +
+                2 * kelvin_voigt_wall_model.viscous_resistance_Rvisc[i] *
+                    (data.q1_n[i] - data.q2_n[i]));  // Pext component not implemented yet.
+        target.replace_local_value(momentum_row, res_momentum);
+        target.replace_local_value(mass_row, res_mass);
       }
     }
 
@@ -129,6 +130,9 @@ namespace ReducedLung
       [[maybe_unused]] int err;  // Saves error code of trilinos functions.
       for (size_t i = 0; i < data.number_of_elements(); i++)
       {
+        const int momentum_row = data.local_row_id[i];
+        const int mass_row = data.local_row_id[i] + 1;
+
         if (!target.filled())
         {
           std::array<int, 4> column_indices;
@@ -136,24 +140,20 @@ namespace ReducedLung
           column_indices = {data.lid_p1[i], data.lid_p2[i], data.lid_q1[i], data.lid_q2[i]};
           values = {1.0, -1.0, resistance_derivative.first[i] + inertia_derivative.first[i],
               resistance_derivative.second[i] + inertia_derivative.second[i]};
-          target.insert_my_values(data.local_row_id[i], 4, values.data(), column_indices.data());
+          target.insert_my_values(momentum_row, 4, values.data(), column_indices.data());
           values = {1.0, 1.0, viscous_wall_resistance_derivative.first[i],
               viscous_wall_resistance_derivative.second[i]};
-          target.insert_my_values(
-              static_cast<int>(data.local_row_id[i] + data.number_of_elements()), 4, values.data(),
-              column_indices.data());
+          target.insert_my_values(mass_row, 4, values.data(), column_indices.data());
         }
         else
         {
           std::array<int, 2> q_column_indices{data.lid_q1[i], data.lid_q2[i]};
           std::array<double, 2> grad_q{resistance_derivative.first[i] + inertia_derivative.first[i],
               resistance_derivative.second[i] + inertia_derivative.second[i]};
-          target.replace_my_values(data.local_row_id[i], 2, grad_q.data(), q_column_indices.data());
+          target.replace_my_values(momentum_row, 2, grad_q.data(), q_column_indices.data());
           grad_q = {viscous_wall_resistance_derivative.first[i],
               viscous_wall_resistance_derivative.second[i]};
-          target.replace_my_values(
-              static_cast<int>(data.local_row_id[i] + data.number_of_elements()), 2, grad_q.data(),
-              q_column_indices.data());
+          target.replace_my_values(mass_row, 2, grad_q.data(), q_column_indices.data());
         }
       }
     }
@@ -269,14 +269,12 @@ namespace ReducedLung
 
       for (size_t i = 0; i < data.number_of_elements(); i++)
       {
-        double dRvisc_da =
-            model.viscous_time_constant[i] * std::tan(model.viscous_phase_shift[i]) /
-            (8.0 * M_PI * model.area[i] * std::sqrt(model.area[i]) * data.ref_length[i]) *
-            model.beta_w[i];
+        double dRvisc_da = -model.gamma_w[i] /
+                           (2.0 * model.area[i] * std::sqrt(model.area[i]) * data.ref_length[i]);
         double da_dq1 = dt / data.ref_length[i];
         double da_dq2 = -dt / data.ref_length[i];
-        double dCinv_da = -model.beta_w[i] / (4.0 * data.ref_area[i] * std::sqrt(data.ref_area[i]) *
-                                                 data.ref_length[i]);
+        double dCinv_da = -model.beta_w[i] /
+                          (4.0 * model.area[i] * std::sqrt(model.area[i]) * data.ref_length[i]);
         viscous_resistance_derivative_q1[i] =
             -2 * ((dRvisc_da * da_dq1 + dt * dCinv_da * da_dq1) *
                          (dofs.local_values_as_span()[data.lid_q1[i]] -
@@ -337,13 +335,12 @@ namespace ReducedLung
       }
     }
 
-    void update_negative_residual_vector(Core::LinAlg::Vector<double>& res_vector,
-        AirwayContainer& airways, const Core::LinAlg::Vector<double>& locally_relevant_dofs,
-        double dt)
+    void update_residual_vector(Core::LinAlg::Vector<double>& res_vector, AirwayContainer& airways,
+        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt)
     {
       for (auto& model : airways.models)
       {
-        model.negative_residual_evaluator(model.data, res_vector, locally_relevant_dofs, dt);
+        model.residual_evaluator(model.data, res_vector, locally_relevant_dofs, dt);
       }
     }
 
@@ -413,9 +410,9 @@ namespace ReducedLung
           {
             model.data.q2_n[i] = locally_relevant_dofs.local_values_as_span()[model.data.lid_q2[i]];
           }
-
-          model.end_of_timestep_routine(model.data, locally_relevant_dofs, dt);
         }
+
+        model.end_of_timestep_routine(model.data, locally_relevant_dofs, dt);
       }
     }
 
@@ -423,8 +420,8 @@ namespace ReducedLung
     {
       for (auto& model : airways.models)
       {
-        model.negative_residual_evaluator =
-            std::visit(MakeNegativeResidualEvaluator{model.flow_model}, model.wall_model);
+        model.residual_evaluator =
+            std::visit(MakeResidualEvaluator{model.flow_model}, model.wall_model);
         model.jacobian_evaluator =
             std::visit(MakeJacobianEvaluator{model.flow_model}, model.wall_model);
         model.internal_state_updater =

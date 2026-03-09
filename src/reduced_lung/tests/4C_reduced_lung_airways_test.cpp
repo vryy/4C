@@ -79,8 +79,8 @@ namespace
 
       model.internal_state_updater =
           std::visit(Airways::MakeInternalStateUpdater{model.flow_model}, model.wall_model);
-      model.negative_residual_evaluator =
-          std::visit(Airways::MakeNegativeResidualEvaluator{model.flow_model}, model.wall_model);
+      model.residual_evaluator =
+          std::visit(Airways::MakeResidualEvaluator{model.flow_model}, model.wall_model);
       model.jacobian_evaluator =
           std::visit(Airways::MakeJacobianEvaluator{model.flow_model}, model.wall_model);
 
@@ -103,8 +103,8 @@ namespace
 
       model.internal_state_updater =
           std::visit(Airways::MakeInternalStateUpdater{model.flow_model}, model.wall_model);
-      model.negative_residual_evaluator =
-          std::visit(Airways::MakeNegativeResidualEvaluator{model.flow_model}, model.wall_model);
+      model.residual_evaluator =
+          std::visit(Airways::MakeResidualEvaluator{model.flow_model}, model.wall_model);
       model.jacobian_evaluator =
           std::visit(Airways::MakeJacobianEvaluator{model.flow_model}, model.wall_model);
 
@@ -130,8 +130,8 @@ namespace
 
       model.internal_state_updater =
           std::visit(Airways::MakeInternalStateUpdater{model.flow_model}, model.wall_model);
-      model.negative_residual_evaluator =
-          std::visit(Airways::MakeNegativeResidualEvaluator{model.flow_model}, model.wall_model);
+      model.residual_evaluator =
+          std::visit(Airways::MakeResidualEvaluator{model.flow_model}, model.wall_model);
       model.jacobian_evaluator =
           std::visit(Airways::MakeJacobianEvaluator{model.flow_model}, model.wall_model);
 
@@ -158,8 +158,8 @@ namespace
 
       model.internal_state_updater =
           std::visit(Airways::MakeInternalStateUpdater{model.flow_model}, model.wall_model);
-      model.negative_residual_evaluator =
-          std::visit(Airways::MakeNegativeResidualEvaluator{model.flow_model}, model.wall_model);
+      model.residual_evaluator =
+          std::visit(Airways::MakeResidualEvaluator{model.flow_model}, model.wall_model);
       model.jacobian_evaluator =
           std::visit(Airways::MakeJacobianEvaluator{model.flow_model}, model.wall_model);
 
@@ -182,7 +182,7 @@ namespace
     // Create small airway data for testing (3 elements)
     model.data.global_element_id = {0, 1, 2};
     model.data.local_element_id = {0, 1, 2};
-    model.data.local_row_id = {0, 1, 2};
+    model.data.local_row_id = {0, 2, 4};
     model.data.gid_p1 = {0, 1, 2};
     model.data.gid_p2 = {3, 4, 5};
     model.data.gid_q1 = {6, 7, 8};
@@ -243,8 +243,8 @@ namespace
 
       model.internal_state_updater =
           std::visit(Airways::MakeInternalStateUpdater{model.flow_model}, model.wall_model);
-      model.negative_residual_evaluator =
-          std::visit(Airways::MakeNegativeResidualEvaluator{model.flow_model}, model.wall_model);
+      model.residual_evaluator =
+          std::visit(Airways::MakeResidualEvaluator{model.flow_model}, model.wall_model);
       model.jacobian_evaluator =
           std::visit(Airways::MakeJacobianEvaluator{model.flow_model}, model.wall_model);
       model.internal_state_updater(model.data, locally_relevant_dofs, dt);
@@ -268,8 +268,8 @@ namespace
 
       model.internal_state_updater =
           std::visit(Airways::MakeInternalStateUpdater{model.flow_model}, model.wall_model);
-      model.negative_residual_evaluator =
-          std::visit(Airways::MakeNegativeResidualEvaluator{model.flow_model}, model.wall_model);
+      model.residual_evaluator =
+          std::visit(Airways::MakeResidualEvaluator{model.flow_model}, model.wall_model);
       model.jacobian_evaluator =
           std::visit(Airways::MakeJacobianEvaluator{model.flow_model}, model.wall_model);
       model.internal_state_updater(model.data, locally_relevant_dofs, dt);
@@ -294,8 +294,8 @@ namespace
 
       model.internal_state_updater =
           std::visit(Airways::MakeInternalStateUpdater{model.flow_model}, model.wall_model);
-      model.negative_residual_evaluator =
-          std::visit(Airways::MakeNegativeResidualEvaluator{model.flow_model}, model.wall_model);
+      model.residual_evaluator =
+          std::visit(Airways::MakeResidualEvaluator{model.flow_model}, model.wall_model);
       model.jacobian_evaluator =
           std::visit(Airways::MakeJacobianEvaluator{model.flow_model}, model.wall_model);
       model.internal_state_updater(model.data, locally_relevant_dofs, dt);
@@ -320,8 +320,8 @@ namespace
 
       model.internal_state_updater =
           std::visit(Airways::MakeInternalStateUpdater{model.flow_model}, model.wall_model);
-      model.negative_residual_evaluator =
-          std::visit(Airways::MakeNegativeResidualEvaluator{model.flow_model}, model.wall_model);
+      model.residual_evaluator =
+          std::visit(Airways::MakeResidualEvaluator{model.flow_model}, model.wall_model);
       model.jacobian_evaluator =
           std::visit(Airways::MakeJacobianEvaluator{model.flow_model}, model.wall_model);
       model.internal_state_updater(model.data, locally_relevant_dofs, dt);

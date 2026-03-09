@@ -143,8 +143,8 @@ namespace ReducedLung
 
     // ----- Evaluator function types -----
 
-    // Function handle for evaluating the negative model residuals.
-    using NegativeResidualEvaluator =
+    // Function handle for evaluating the model residuals.
+    using ResidualEvaluator =
         std::function<void(const AirwayData& data, Core::LinAlg::Vector<double>& target_vector,
             const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time_step_size_dt)>;
 
@@ -177,7 +177,7 @@ namespace ReducedLung
       AirwayData data;
       FlowModel flow_model;
       WallModel wall_model;
-      NegativeResidualEvaluator negative_residual_evaluator;
+      ResidualEvaluator residual_evaluator;
       JacobianEvaluatorAW jacobian_evaluator;
       InternalStateUpdaterAW internal_state_updater;
       EndOfTimestepRoutine end_of_timestep_routine;
@@ -251,15 +251,15 @@ namespace ReducedLung
     };
 
     /**
-    * @brief Assembles the negative residual vector of airways with rigid walls.
+    * @brief Assembles the residual vector of airways with rigid walls.
     * Each airway is described by one state equation (momentum conservation).
     *
-    * \f$ -f_1 = -(P_1 - P_2 - R\,Q_1 - \frac{I}{\Delta t} \, (Q_1 - Q_1^n)) = -(P_1 - P_2  +
+    * \f$ f_1 = (P_1 - P_2 - R\,Q_1 - \frac{I}{\Delta t} \, (Q_1 - Q_1^n)) = -(P_1 - P_2  +
     f_{1,QR}
     * + f_{1,QI})\f$ \n
     * with \f$ f_{1,QR} = - R\,Q_1 \f$ and \f$ f_{1,QI} = - \frac{I}{\Delta t} \, (Q_1 - Q_1^n) \f$
 
-    * @param target The target RHS vector to store the negative residuals.
+    * @param target The target RHS vector to store the residuals.
     * @param data The airway data containing element information.
     * @param locally_relevant_dofs The DOF vector containing current flows and pressures in column
     map layout.
@@ -267,18 +267,18 @@ namespace ReducedLung
     * @param inertia The inertia \f$ I \f$ for each airway element.
     * @param dt The time step size.
     */
-    void evaluate_negative_rigid_wall_residual(Core::LinAlg::Vector<double>& target,
-        const AirwayData& data, const Core::LinAlg::Vector<double>& locally_relevant_dofs,
+    void evaluate_rigid_wall_residual(Core::LinAlg::Vector<double>& target, const AirwayData& data,
+        const Core::LinAlg::Vector<double>& locally_relevant_dofs,
         const std::vector<double>& resistance, const std::vector<double>& inertia, double dt);
 
     /**
-     * @brief Assembles the negative residual vector of airways with Kelvin-Voigt walls.
+     * @brief Assembles the residual vector of airways with Kelvin-Voigt walls.
      * Each airway is described by two state equations (momentum and mass conservation).
      *
-     * \f$ -f_1 = -(P_1 - P_2 - ( \frac{R}{2} + \frac{I}{2 \Delta t}) (Q_1 + Q_2) + \frac{I}{2
+     * \f$ f_1 = (P_1 - P_2 - ( \frac{R}{2} + \frac{I}{2 \Delta t}) (Q_1 + Q_2) + \frac{I}{2
      * \Delta t} (Q_1^n + Q_2^n)) = -(P_1 -P_2 + f_{1,QR} + f_{1,QI}) \f$
      *
-     * \f$ -f_2 = -(P_1 + P_2 - P_1^n - P_2^n - 2 (R_{visc} + \frac{\Delta t}{C}) (Q_1 - Q_2) + 2
+     * \f$ f_2 = (P_1 + P_2 - P_1^n - P_2^n - 2 (R_{visc} + \frac{\Delta t}{C}) (Q_1 - Q_2) + 2
      * R_{visc} (Q_1^n - Q_2^n)) = -(P_1 + P_2 - P_1^n - P_2^n + f_{2,QR_{visc}})\f$
      *
      * with \f$ f_{1,QR} = - \frac{R}{2} (Q_1 + Q_2) \f$, \f$ f_{1,QI} = - \frac{I}{2 \Delta t} (Q_1
@@ -286,7 +286,7 @@ namespace ReducedLung
      * and \f$ f_{2,QR_{visc}} = - 2 (R_{visc} + \frac{\Delta t}{C}) (Q_1 - Q_2) + 2 R_{visc} (Q_1^n
      * - Q_2^n) \f$
      *
-     * @param target The target RHS vector to store the negative residuals.
+     * @param target The target RHS vector to store the residuals.
      * @param kelvin_voigt_wall_model The Kelvin-Voigt wall model containing wall parameters and
      * internal states.
      * @param data The airway data containing element information.
@@ -296,7 +296,7 @@ namespace ReducedLung
      * @param inertia The inertia \f$ I \f$ for each airway element.
      * @param dt The time step size.
      */
-    void evaluate_negative_kelvin_voigt_wall_residual(Core::LinAlg::Vector<double>& target,
+    void evaluate_kelvin_voigt_wall_residual(Core::LinAlg::Vector<double>& target,
         const KelvinVoigtWall& kelvin_voigt_wall_model, const AirwayData& data,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs,
         const std::vector<double>& resistance, const std::vector<double>& inertia, double dt);
@@ -541,9 +541,9 @@ namespace ReducedLung
     };
 
     /**
-     * Creates the model-specific negative residual evaluator function for airways.
+     * Creates the model-specific residual evaluator function for airways.
      */
-    struct MakeNegativeResidualEvaluator
+    struct MakeResidualEvaluator
     {
       /**
        * Creates the model-specific flow resistance evaluator.
@@ -615,7 +615,7 @@ namespace ReducedLung
         }
       };
 
-      NegativeResidualEvaluator operator()(RigidWall& rigid_wall_model)
+      ResidualEvaluator operator()(RigidWall& rigid_wall_model)
       {
         auto resistance_factory = MakeFlowResistanceEvaluator{};
         auto resistance_evaluator = std::visit([&resistance_factory](const auto& flow_model)
@@ -631,12 +631,12 @@ namespace ReducedLung
 
           std::vector<double> inertia = inertia_evaluator(airway_data, airway_data.ref_area);
 
-          evaluate_negative_rigid_wall_residual(
+          evaluate_rigid_wall_residual(
               target_vector, airway_data, locally_relevant_dofs, resistance, inertia, dt);
         };
       }
 
-      NegativeResidualEvaluator operator()(KelvinVoigtWall& kelvin_voigt_wall_model)
+      ResidualEvaluator operator()(KelvinVoigtWall& kelvin_voigt_wall_model)
       {
         auto resistance_factory = MakeFlowResistanceEvaluator{};
         auto resistance_evaluator = std::visit(
@@ -657,8 +657,8 @@ namespace ReducedLung
           std::vector<double> inertia =
               inertia_evaluator(airway_data, kelvin_voigt_wall_model.area);
 
-          evaluate_negative_kelvin_voigt_wall_residual(target_vector, kelvin_voigt_wall_model,
-              airway_data, locally_relevant_dofs, resistance, inertia, dt);
+          evaluate_kelvin_voigt_wall_residual(target_vector, kelvin_voigt_wall_model, airway_data,
+              locally_relevant_dofs, resistance, inertia, dt);
         };
       }
       FlowModel& flow_model;
@@ -886,6 +886,11 @@ namespace ReducedLung
           internal_state_updater_flow_model(data, locally_relevant_dofs);
           for (size_t i = 0; i < data.number_of_elements(); i++)
           {
+            kv_model.area[i] =
+                kv_model.area_n[i] +
+                dt / data.ref_length[i] *
+                    (locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]] -
+                        locally_relevant_dofs.local_values_as_span()[data.lid_q2[i]]);
             kv_model.beta_w[i] =
                 std::sqrt(M_PI) * kv_model.wall_thickness[i] * kv_model.wall_elasticity[i] /
                 ((1 - kv_model.wall_poisson_ratio[i] * kv_model.wall_poisson_ratio[i]) *
@@ -893,14 +898,9 @@ namespace ReducedLung
             kv_model.gamma_w[i] = kv_model.beta_w[i] * kv_model.viscous_time_constant[i] *
                                   std::tan(kv_model.viscous_phase_shift[i]) / (4.0 * M_PI);
             kv_model.compliance_C[i] =
-                2 * std::sqrt(data.ref_area[i]) * data.ref_length[i] / kv_model.beta_w[i];
+                2 * std::sqrt(kv_model.area[i]) * data.ref_length[i] / kv_model.beta_w[i];
             kv_model.viscous_resistance_Rvisc[i] =
-                kv_model.gamma_w[i] / (std::sqrt(data.ref_area[i]) * data.ref_length[i]);
-            kv_model.area[i] =
-                kv_model.area_n[i] +
-                dt / data.ref_length[i] *
-                    (locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]] -
-                        locally_relevant_dofs.local_values_as_span()[data.lid_q2[i]]);
+                kv_model.gamma_w[i] / (std::sqrt(kv_model.area[i]) * data.ref_length[i]);
           }
         };
       }
@@ -988,6 +988,7 @@ namespace ReducedLung
                 .at(global_element_id, "turbulence_factor_gamma"));
         model.has_inertia.push_back(params->lung_tree.airways.flow_model.include_inertia.at(
             global_element_id, "include_inertia"));
+        model.k_turb.push_back(1.0);
       }
       int global_element_id;
       const ReducedLungParameters* params;
@@ -1014,6 +1015,13 @@ namespace ReducedLung
         model.viscous_phase_shift.push_back(params->kelvin_voigt.viscosity.viscous_phase_shift.at(
             global_element_id, "viscous_phase_shift"));
         model.area_n.push_back(ref_area);
+
+        // Initialize internal state vectors - will be computed by internal state updater
+        model.area.push_back(ref_area);
+        model.beta_w.push_back(0.0);
+        model.gamma_w.push_back(0.0);
+        model.compliance_C.push_back(0.0);
+        model.viscous_resistance_Rvisc.push_back(0.0);
       }
       int global_element_id;
       const ReducedLungParameters::LungTree::Airways::WallModel* params;
@@ -1074,7 +1082,7 @@ namespace ReducedLung
     }
 
     /**
-     * @brief Assembles the negative residual vector of all airways.
+     * @brief Assembles the residual vector of all airways.
      *
      * Applies model-specific logic and calculates the residuals of each airway element and stores
      * them.
@@ -1085,9 +1093,8 @@ namespace ReducedLung
      * column map layout.
      * @param dt Current time step size.
      */
-    void update_negative_residual_vector(Core::LinAlg::Vector<double>& res_vector,
-        AirwayContainer& airways, const Core::LinAlg::Vector<double>& locally_relevant_dofs,
-        double dt);
+    void update_residual_vector(Core::LinAlg::Vector<double>& res_vector, AirwayContainer& airways,
+        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 
 
     /**

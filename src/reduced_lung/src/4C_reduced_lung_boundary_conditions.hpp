@@ -106,9 +106,9 @@ namespace ReducedLung
     };
 
     /**
-     * @brief Function handle for evaluating the negative residuals.
+     * @brief Function handle for evaluating the residuals.
      */
-    using NegativeResidualEvaluator = std::function<void(const BoundaryConditionModel& model,
+    using ResidualEvaluator = std::function<void(const BoundaryConditionModel& model,
         Core::LinAlg::Vector<double>& rhs, const Core::LinAlg::Vector<double>& dofs, double time)>;
     /**
      * @brief Function handle for evaluating the boundary condition Jacobian.
@@ -133,7 +133,7 @@ namespace ReducedLung
       // conditions in the future).
       std::vector<double> values;
       BoundaryConditionData data;
-      NegativeResidualEvaluator negative_residual_evaluator;
+      ResidualEvaluator residual_evaluator;
       JacobianEvaluator jacobian_evaluator;
 
       /**
@@ -196,7 +196,7 @@ namespace ReducedLung
     /**
      * @brief Assemble the boundary condition residual contributions.
      */
-    void update_negative_residual_vector(Core::LinAlg::Vector<double>& rhs,
+    void update_residual_vector(Core::LinAlg::Vector<double>& rhs,
         const BoundaryConditionContainer& boundary_conditions,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time);
 

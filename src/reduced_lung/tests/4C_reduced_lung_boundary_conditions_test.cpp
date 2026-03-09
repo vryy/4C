@@ -263,7 +263,7 @@ namespace
     dof_values[1] = 4.0;   // global dof 2
     dof_values[2] = 7.0;   // global dof 4
 
-    update_negative_residual_vector(rhs, boundary_conditions, locally_relevant_dofs, 0.0);
+    update_residual_vector(rhs, boundary_conditions, locally_relevant_dofs, 0.0);
 
     for (const auto& model : boundary_conditions.models)
     {
@@ -272,7 +272,7 @@ namespace
         const int eq = model.data.local_equation_id[i];
         const int ldof = model.data.local_dof_id[i];
         const double expected =
-            -locally_relevant_dofs.local_values_as_span()[ldof] + model.values[i];
+            locally_relevant_dofs.local_values_as_span()[ldof] - model.values[i];
         EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[eq], expected);
       }
     }
@@ -386,13 +386,12 @@ namespace
     locally_relevant_dofs.get_values()[0] = 1.0;
 
     const double time = 1.5;
-    update_negative_residual_vector(rhs, boundary_conditions, locally_relevant_dofs, time);
+    update_residual_vector(rhs, boundary_conditions, locally_relevant_dofs, time);
 
     ASSERT_EQ(boundary_conditions.models.size(), 1u);
     const auto& model = boundary_conditions.models.front();
     ASSERT_EQ(model.data.size(), 1u);
-    EXPECT_DOUBLE_EQ(
-        rhs.local_values_as_span()[model.data.local_equation_id[0]], -1.0 + 2.0 * time);
+    EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[model.data.local_equation_id[0]], 1.0 - 2.0 * time);
   }
 
   TEST(BoundaryConditionsTests, CreateBoundaryConditionsDuplicateTypeThrows)

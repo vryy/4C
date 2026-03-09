@@ -28,7 +28,7 @@ namespace ReducedLung::TestUtils
 {
   // Generalized helper to check a Jacobian column against a central finite-difference
   // approximation of the residual. Works for both TerminalUnitModel and AirwayModel as long
-  // as the model exposes `data`, `negative_residual_evaluator` and the data structure
+  // as the model exposes `data`, `residual_evaluator` and the data structure
   // provides `number_of_elements()` and per-element lid vectors passed in `dof_lids`.
   template <typename Model>
   void check_jacobian_column_against_fd(const std::vector<int>& dof_lids, int jac_col, Model& model,
@@ -42,32 +42,59 @@ namespace ReducedLung::TestUtils
     for (int lid : dof_lids) locally_relevant_dofs.get_values()[lid] += eps;
     Core::LinAlg::Vector<double> res_plus(row_map, true);
     model.internal_state_updater(model.data, locally_relevant_dofs, dt);
-    model.negative_residual_evaluator(model.data, res_plus, locally_relevant_dofs, dt);
+    model.residual_evaluator(model.data, res_plus, locally_relevant_dofs, dt);
 
     // Perturb in -epsilon direction
     for (int lid : dof_lids) locally_relevant_dofs.get_values()[lid] -= 2 * eps;
     Core::LinAlg::Vector<double> res_minus(row_map, true);
     model.internal_state_updater(model.data, locally_relevant_dofs, dt);
-    model.negative_residual_evaluator(model.data, res_minus, locally_relevant_dofs, dt);
+    model.residual_evaluator(model.data, res_minus, locally_relevant_dofs, dt);
 
     // Restore original state
     for (int lid : dof_lids) locally_relevant_dofs.get_values()[lid] += eps;
 
     // Compute FD approximation
     Core::LinAlg::Vector<double> fd_derivative(row_map, true);
-    fd_derivative.update(-1.0 / (2 * eps), res_plus, 1.0 / (2 * eps), res_minus, 0.0);
+    fd_derivative.update(1.0 / (2 * eps), res_plus, -1.0 / (2 * eps), res_minus, 0.0);
 
     // Compare with Jacobian column
+    const int n_rows_per_element = []<typename DataType>(const DataType& data)
+    {
+      if constexpr (requires { data.n_state_equations; })
+      {
+        return data.n_state_equations;
+      }
+      else
+      {
+        return 1;
+      }
+    }(model.data);
+
     for (size_t i = 0; i < model.data.number_of_elements(); ++i)
     {
-      int n_entries = 0;
-      double* jac_vals = nullptr;
-      int* col_indices = nullptr;
-      jac.extract_my_row_view(i, n_entries, jac_vals, col_indices);
+      const int row_id = model.data.local_row_id[i];
+      for (int row_offset = 0; row_offset < n_rows_per_element; ++row_offset)
+      {
+        int n_entries = 0;
+        double* jac_vals = nullptr;
+        int* col_indices = nullptr;
+        const int row = row_id + row_offset;
+        jac.extract_my_row_view(row, n_entries, jac_vals, col_indices);
 
-      ASSERT_EQ(col_indices[jac_col], dof_lids[i]);
-      EXPECT_NEAR(jac_vals[jac_col], fd_derivative.local_values_as_span()[i], eps)
-          << "Mismatch at row " << i << ", col " << jac_col;
+        int col_index = -1;
+        for (int entry = 0; entry < n_entries; ++entry)
+        {
+          if (col_indices[entry] == dof_lids[i])
+          {
+            col_index = entry;
+            break;
+          }
+        }
+
+        ASSERT_NE(col_index, -1) << "Column for dof " << dof_lids[i] << " not found in row " << row;
+        EXPECT_NEAR(jac_vals[col_index], fd_derivative.local_values_as_span()[row], eps)
+            << "Mismatch at row " << row << ", col " << jac_col;
+      }
     }
   }
 }  // namespace ReducedLung::TestUtils
