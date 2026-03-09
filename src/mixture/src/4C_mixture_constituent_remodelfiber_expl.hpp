@@ -110,7 +110,7 @@ namespace Mixture
     [[nodiscard]] double evaluate_lambda_ext(
         const Core::LinAlg::Tensor<double, 3, 3>& iFext, int gp, int eleGID) const;
 
-    [[nodiscard]] Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_current_p_k2(
+    [[nodiscard]] Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_current_pk2(
         int gp, int eleGID) const;
     [[nodiscard]] Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> evaluate_current_cmat(
         int gp, int eleGID) const;

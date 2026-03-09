@@ -31,13 +31,13 @@ FOUR_C_NAMESPACE_OPEN
 // anonymous namespace for helper classes and functions
 namespace
 {
-  [[nodiscard]] Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_c(
+  [[nodiscard]] Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_cauchy_green(
       const Core::LinAlg::Tensor<double, 3, 3>& F)
   {
     return Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(F) * F);
   }
 
-  [[nodiscard]] Core::LinAlg::SymmetricTensor<double, 3, 3> evaluatei_cext(
+  [[nodiscard]] Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_inelastic_inv_cauchy_green(
       const Core::LinAlg::Tensor<double, 3, 3>& iFext)
   {
     return Core::LinAlg::assume_symmetry(iFext * Core::LinAlg::transpose(iFext));
@@ -145,16 +145,13 @@ void Mixture::MixtureConstituentRemodelFiberExpl::update_elastic_part(
         "inelastic growth. You have to set INELASTIC_GROWTH to true or use a different growth "
         "rule.");
   }
-  const double lambda_f = evaluate_lambdaf(evaluate_c(F), gp, eleGID);
+  const double lambda_f = evaluate_lambdaf(evaluate_cauchy_green(F), gp, eleGID);
   const double lambda_ext = evaluate_lambda_ext(iFext, gp, eleGID);
   remodel_fiber_[gp].set_state(lambda_f, lambda_ext);
   remodel_fiber_[gp].update();
 
   if (params_->enable_growth_)
   {
-    FOUR_C_ASSERT(context.time_step_size, "Time step size not given in evaluation context.");
-    const double dt = *context.time_step_size;
-
     remodel_fiber_[gp].integrate_local_evolution_equations_explicit(dt);
   }
 }
@@ -165,18 +162,16 @@ void Mixture::MixtureConstituentRemodelFiberExpl::update(
 {
   MixtureConstituent::update(F, params, context, gp, eleGID);
 
-  FOUR_C_ASSERT(context.time_step_size, "Time not given in evaluation context.");
+  FOUR_C_ASSERT(context.total_time, "Time not given in evaluation context.");
   update_homeostatic_values(params, *context.total_time, eleGID);
 
   if (!params_->inelastic_external_deformation_)
   {
     // Update state
-    const double lambda_f = evaluate_lambdaf(evaluate_c(F), gp, eleGID);
+    const double lambda_f = evaluate_lambdaf(evaluate_cauchy_green(F), gp, eleGID);
     remodel_fiber_[gp].set_state(lambda_f, 1.0);
     remodel_fiber_[gp].update();
 
-    FOUR_C_ASSERT(context.total_time, "Time not given in evaluation context.");
-    update_homeostatic_values(params, *context.total_time, eleGID);
     if (params_->enable_growth_)
     {
       FOUR_C_ASSERT(context.time_step_size, "Time step size not given in evaluation context.");
@@ -236,7 +231,7 @@ bool Mixture::MixtureConstituentRemodelFiberExpl::evaluate_output_data(
 }
 
 Core::LinAlg::SymmetricTensor<double, 3, 3>
-Mixture::MixtureConstituentRemodelFiberExpl::evaluate_current_p_k2(int gp, int eleGID) const
+Mixture::MixtureConstituentRemodelFiberExpl::evaluate_current_pk2(int gp, int eleGID) const
 {
   const double fiber_pk2 = remodel_fiber_[gp].evaluate_current_fiber_pk2_stress();
 
@@ -281,12 +276,12 @@ void Mixture::MixtureConstituentRemodelFiberExpl::evaluate(
     structural_tensors_.emplace_back(Core::LinAlg::self_dyadic(orientation));
   }
 
-  Core::LinAlg::SymmetricTensor<double, 3, 3> C = evaluate_c(F);
+  Core::LinAlg::SymmetricTensor<double, 3, 3> C = evaluate_cauchy_green(F);
 
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   remodel_fiber_[gp].set_state(lambda_f, 1.0);
 
-  S_stress = evaluate_current_p_k2(gp, eleGID);
+  S_stress = evaluate_current_pk2(gp, eleGID);
   cmat = evaluate_current_cmat(gp, eleGID);
 }
 
@@ -316,13 +311,13 @@ void Mixture::MixtureConstituentRemodelFiberExpl::evaluate_elastic_part(
     structural_tensors_.emplace_back(Core::LinAlg::self_dyadic(orientation));
   }
 
-  Core::LinAlg::SymmetricTensor<double, 3, 3> C = evaluate_c(FM);
+  Core::LinAlg::SymmetricTensor<double, 3, 3> C = evaluate_cauchy_green(FM);
 
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   const double lambda_ext = evaluate_lambda_ext(iFextin, gp, eleGID);
   remodel_fiber_[gp].set_state(lambda_f, lambda_ext);
 
-  S_stress = evaluate_current_p_k2(gp, eleGID);
+  S_stress = evaluate_current_pk2(gp, eleGID);
   cmat = evaluate_current_cmat(gp, eleGID);
 }
 
@@ -363,6 +358,7 @@ double Mixture::MixtureConstituentRemodelFiberExpl::evaluate_lambdaf(
 double Mixture::MixtureConstituentRemodelFiberExpl::evaluate_lambda_ext(
     const Core::LinAlg::Tensor<double, 3, 3>& iFext, const int gp, const int eleGID) const
 {
-  return 1.0 / std::sqrt(Core::LinAlg::ddot(evaluatei_cext(iFext), structural_tensors_[gp]));
+  return 1.0 / std::sqrt(Core::LinAlg::ddot(
+                   evaluate_inelastic_inv_cauchy_green(iFext), structural_tensors_[gp]));
 }
 FOUR_C_NAMESPACE_CLOSE

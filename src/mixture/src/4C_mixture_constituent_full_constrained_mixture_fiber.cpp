@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 // anonymous namespace for helper classes and functions
 namespace
 {
-  [[nodiscard]] static inline Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_c(
+  [[nodiscard]] static inline Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_cauchy_green(
       const Core::LinAlg::Tensor<double, 3, 3>& F)
   {
     return Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(F) * F);
@@ -189,7 +189,7 @@ void Mixture::MixtureConstituentFullConstrainedMixtureFiber::update(
   const double time = *context.total_time;
   full_constrained_mixture_fiber_[gp].set_deposition_stretch(
       evaluate_initial_deposition_stretch(time));
-  last_lambda_f_[gp] = evaluate_lambdaf(evaluate_c(F), gp, eleGID);
+  last_lambda_f_[gp] = evaluate_lambdaf(evaluate_cauchy_green(F), gp, eleGID);
 
   // Update state
   full_constrained_mixture_fiber_[gp].update();
@@ -254,7 +254,7 @@ Mixture::MixtureConstituentFullConstrainedMixtureFiber::evaluate_d_lambdafsq_dc(
 }
 
 Core::LinAlg::SymmetricTensor<double, 3, 3>
-Mixture::MixtureConstituentFullConstrainedMixtureFiber::evaluate_current_p_k2(
+Mixture::MixtureConstituentFullConstrainedMixtureFiber::evaluate_current_pk2(
     int gp, int eleGID) const
 {
   const double fiber_pk2 = full_constrained_mixture_fiber_[gp].evaluate_current_second_pk_stress();
@@ -296,12 +296,12 @@ void Mixture::MixtureConstituentFullConstrainedMixtureFiber::evaluate(
     structural_tensors_.emplace_back(Core::LinAlg::self_dyadic(orientation));
   }
 
-  Core::LinAlg::SymmetricTensor<double, 3, 3> C = evaluate_c(F);
+  Core::LinAlg::SymmetricTensor<double, 3, 3> C = evaluate_cauchy_green(F);
 
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   full_constrained_mixture_fiber_[gp].recompute_state(lambda_f, time, delta_time);
 
-  S_stress = evaluate_current_p_k2(gp, eleGID);
+  S_stress = evaluate_current_pk2(gp, eleGID);
   cmat = evaluate_current_cmat(gp, eleGID);
 }
 
