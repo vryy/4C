@@ -10,6 +10,7 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include "4C_comm_mpi_utils.hpp"
+#include "4C_comm_utils.hpp"
 #include "4C_linalg_utils_sparse_algebra_io.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
@@ -266,6 +267,42 @@ namespace
       FOUR_C_EXPECT_NEAR(gram_matrix, identity, 1e-12);
     }
   }
+
+  /**
+   * Test rank-1 correction of a singular matrix.
+   *
+   * The test loads the periodic 1D Poisson finite-difference matrix, which is
+   * singular with the constant vector as its nullspace. A basis vector spanning
+   * this nullspace is constructed and orthonormalized. A rank-1 correction is
+   * then applied with shift 1.0 along this direction.
+   *
+   * The test verifies that the corrected operator maps the normalized nullspace
+   * vector to itself, confirming that the rank correction shifts the zero
+   * eigenvalue to one and removes the singularity in this mode.
+   */
+  TEST_F(SparseAlgebraMathTest, MatrixRankmCorrection)
+  {
+    Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
+        TESTING::get_support_file_path("test_matrices/poisson1d_periodic.mm").c_str(), comm_);
+
+    auto basis = Core::LinAlg::MultiVector<double>(A.row_map(), 1);
+    basis.put_scalar(1.0);
+    auto ortho_basis = Core::LinAlg::orthonormalize_multi_vector(basis);
+
+    auto A_projected = Core::LinAlg::matrix_rank_correction(A, basis, {1.0, true});
+
+    auto result = Core::LinAlg::MultiVector<double>(A.row_map(), 1);
+    A_projected->multiply(false, ortho_basis, result);
+
+    for (int my_row = 0; my_row < result.local_length(); my_row++)
+    {
+      const double result_value = result.get_values()[my_row];
+      const double ortho_basis_value = ortho_basis.get_values()[my_row];
+
+      EXPECT_NEAR(result_value, ortho_basis_value, 1e-12);
+    }
+  }
+
 }  // namespace
 
 FOUR_C_NAMESPACE_CLOSE
