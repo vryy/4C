@@ -12,6 +12,7 @@
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_transfer.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -390,6 +391,29 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_sparse_inverse(
   A_inverse->complete();
 
   return A_inverse;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_rank_correction(
+    const SparseMatrix& A, const MultiVector<double>& basis,
+    OptionsSparseMatrixRankCorrection options)
+{
+  auto orthonormal_basis(basis);
+  if (options.orthonormalize) orthonormal_basis = Core::LinAlg::orthonormalize_multi_vector(basis);
+
+  Core::LinAlg::SparseMatrix basis_matrix(A.row_map(), basis.num_vectors());
+  Core::LinAlg::Map coarse_map(basis.num_vectors(), 0, A.get_comm());
+  Core::LinAlg::multi_vector_to_linalg_sparse_matrix(
+      orthonormal_basis, A.row_map(), coarse_map, basis_matrix);
+
+  // Build projection matrix
+  auto projection = Core::LinAlg::matrix_multiply(basis_matrix, false, basis_matrix, true);
+
+  auto projected_A = std::make_shared<Core::LinAlg::SparseMatrix>(A);
+  Core::LinAlg::matrix_add(*projection, false, options.alpha, *projected_A, 1.0);
+
+  return projected_A;
 }
 
 /*----------------------------------------------------------------------*
