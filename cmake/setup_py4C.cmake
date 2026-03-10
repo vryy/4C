@@ -21,6 +21,14 @@ if(FOUR_C_ENABLE_PYTHON_BINDINGS)
       )
   endif()
 
+  # Python bindings are currently not compatible with an address sanitizer build
+  if(FOUR_C_ENABLE_ADDRESS_SANITIZER)
+    message(
+      FATAL_ERROR
+        "4C Python bindings are currently not compatible with an address sanitizer build. Either set FOUR_C_ENABLE_ADDRESS_SANITIZER=OFF or FOUR_C_ENABLE_PYTHON_BINDINGS=OFF."
+      )
+  endif()
+
   # define the name of the python module
   set(FOUR_C_PYTHON_BINDINGS_PROJECT_NAME py4C)
 
