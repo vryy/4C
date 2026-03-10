@@ -71,7 +71,7 @@ SCALAR TRANSPORT DYNAMIC/STABILIZATION:
   DEFINITION_TAU: "Taylor_Hughes_Zarins_wo_dt"
 SOLVER 1:
   SOLVER: "Belos"
-  IFPACK_XML_FILE: "xfluid_ifpack.xml"
+  IFPACK_XML_FILE: "xml/preconditioner/ifpack_level-of-fill_3.xml"
   AZTOL: 1.1e-06
   AZOUTPUT: 50
   THROW_IF_UNCONVERGED: false

@@ -56,7 +56,7 @@ XFLUID DYNAMIC/STABILIZATION:
   IS_PSEUDO_2D: true
 SOLVER 1:
   SOLVER: "Belos"
-  IFPACK_XML_FILE: "xfluid_ifpack.xml"
+  IFPACK_XML_FILE: "xml/preconditioner/ifpack_level-of-fill_3.xml"
   AZTOL: 1e-14
   AZOUTPUT: 50
   AZREUSE: 1
