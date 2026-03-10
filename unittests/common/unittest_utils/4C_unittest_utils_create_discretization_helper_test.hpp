@@ -18,18 +18,25 @@
 #include <mpi.h>
 
 #include <array>
+#include <functional>
 
 namespace TESTING
 {
   using namespace FourC;
 
+  template <int dim>
+  using transformation_function =
+      std::function<std::array<double, dim>(const std::array<double, dim>&)>;
+
   /**
    * Fill the given @p discretization with a hypercube mesh. A total of `subdivisions^3` elements
    * are created and partitioned among all processes in @p comm.
    * */
-  inline void fill_discretization_hyper_cube(
-      Core::FE::Discretization& discretization, int subdivisions, MPI_Comm comm)
+  inline void fill_discretization_hyper_cube(Core::FE::Discretization& discretization,
+      int subdivisions, MPI_Comm comm, bool vector_valued = true,
+      const transformation_function<3>& node_transform = {})
   {
+    constexpr int dim = 3;
     discretization.clear_discret();
 
     const int my_rank = Core::Communication::my_mpi_rank(comm);
@@ -66,7 +73,7 @@ namespace TESTING
                 lid(i, j + 1, k + 1)};
 
             builder.add_element(Core::FE::CellType::hex8, nodeids, ele_id,
-                {.num_dof_per_node = 3, .num_dof_per_element = 0});
+                {.num_dof_per_node = vector_valued ? dim : 1, .num_dof_per_element = 0});
           }
         }
       }
@@ -79,7 +86,11 @@ namespace TESTING
         {
           for (int k = 0; k < subdivisions + 1; ++k)
           {
-            const std::array<double, 3> coords = {i * increment, j * increment, k * increment};
+            std::array<double, 3> coords = {i * increment, j * increment, k * increment};
+            if (node_transform)
+            {
+              coords = node_transform(coords);
+            }
             builder.add_node(coords, lid(i, j, k), nullptr);
           }
         }
@@ -288,7 +299,8 @@ namespace TESTING
     discretization.fill_complete();
   }
 
-  inline void fill_undeformed_hex27(Core::FE::Discretization& discretization, MPI_Comm comm)
+  inline void fill_undeformed_hex27(Core::FE::Discretization& discretization, MPI_Comm comm,
+      const bool vector_valued = true, const transformation_function<3>& node_transform = {})
   {
     Core::FE::DiscretizationBuilder<3> builder(comm);
 
@@ -297,17 +309,23 @@ namespace TESTING
       std::array<int, 27> nodeids{};
       std::iota(nodeids.begin(), nodeids.end(), 0);
 
-      builder.add_element(
-          Core::FE::CellType::hex27, nodeids, 0, {.num_dof_per_node = 3, .num_dof_per_element = 0});
+      builder.add_element(Core::FE::CellType::hex27, nodeids, 0,
+          {.num_dof_per_node = vector_valued ? 3 : 1, .num_dof_per_element = 0});
 
-      const std::vector<std::array<double, 3>> coords{{-1.0, -1.0, -1.0}, {1.0, -1.0, -1.0},
+      std::vector<std::array<double, 3>> coords{{-1.0, -1.0, -1.0}, {1.0, -1.0, -1.0},
           {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0}, {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, 1.0},
           {-1.0, 1.0, 1.0}, {0.0, -1.0, -1.0}, {1.0, 0.0, -1.0}, {0.0, 1.0, -1.0},
           {-1.0, 0.0, -1.0}, {-1.0, -1.0, 0.0}, {1.0, -1.0, 0.0}, {1.0, 1.0, 0.0}, {-1.0, 1.0, 0.0},
           {0.0, -1.0, 1.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0}, {-1.0, 0.0, 1.0}, {0.0, 0.0, -1.0},
           {0.0, -1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0.0, 1.0},
           {0.0, 0.0, 0.0}};
-
+      if (node_transform)
+      {
+        for (auto& coord : coords)
+        {
+          coord = node_transform(coord);
+        }
+      }
       int counter = 0;
       for (const auto& coord : coords) builder.add_node(coord, counter++, nullptr);
     }
