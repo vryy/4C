@@ -30,7 +30,8 @@ namespace NOX
       sol_cardiovascular0d,    ///< 0D cardiovascular problem
       sol_lag_pen_constraint,  ///< Lagrange or/and penalty enforced constraint problem
       sol_scatra,              ///< scalar transport problem
-      sol_beaminteraction_lm   ///< beaminteraction with Lagrange multipliers problem
+      sol_beaminteraction_lm,  ///< beaminteraction with Lagrange multipliers problem
+      sol_generic              ///< generic problem, for generic linear systems
     };
 
     //! Map quantity enum to std::string
@@ -50,6 +51,8 @@ namespace NOX
           return "Lag-Pen-Constraint";
         case sol_scatra:
           return "ScaTra";
+        case sol_generic:
+          return "Generic";
         case sol_unknown:
         default:
           return "Unknown Solution Type";
@@ -72,6 +75,8 @@ namespace NOX
         type = sol_lag_pen_constraint;
       else if (name == "ScaTra")
         type = sol_scatra;
+      else if (name == "Generic")
+        type = sol_generic;
 
       return type;
     };
@@ -144,7 +149,8 @@ namespace NOX
         linear_system_structure_cardiovascular0d,
         linear_system_structure_lag_pen_constraint,
         linear_system_scatra,
-        linear_system_undefined
+        linear_system_undefined,
+        linear_system_generic
       };
 
       //! List of types that can be used for the Jacobian and/or Preconditioner.
@@ -270,6 +276,7 @@ namespace NOX
         quantity_levelset_reinit,     ///< check levelset reinitialization
         quantity_constraints,         ///< check constraint framework quantities
         quantity_beaminteraction_lm,  ///< check lagrange multiplier quantities for beaminteraction
+        quantity_generic,             ///< generic quantity
       };
 
       /// Map quantity name to std::string
@@ -299,6 +306,8 @@ namespace NOX
             return "Constraints";
           case quantity_beaminteraction_lm:
             return "Beaminteraction-LM";
+          case quantity_generic:
+            return "Generic";
           case quantity_unknown:
           default:
             return "unknown quantity type";
@@ -332,6 +341,8 @@ namespace NOX
           type = quantity_constraints;
         else if (name == "Beaminteraction-LM")
           type = quantity_beaminteraction_lm;
+        else if (name == "Generic")
+          type = quantity_generic;
 
         return type;
       };
