@@ -48,7 +48,6 @@ std::shared_ptr<Solid::SOLVER::Factory::LinSolMap> Solid::SOLVER::Factory::build
       case Inpar::Solid::model_structure:
       case Inpar::Solid::model_springdashpot:
       case Inpar::Solid::model_browniandyn:
-      case Inpar::Solid::model_beaminteraction:
       case Inpar::Solid::model_basic_coupling:
       case Inpar::Solid::model_monolithic_coupling:
       case Inpar::Solid::model_partitioned_coupling:
@@ -75,6 +74,10 @@ std::shared_ptr<Solid::SOLVER::Factory::LinSolMap> Solid::SOLVER::Factory::build
         break;
       case Inpar::Solid::model_cardiovascular0d:
         (*linsolvers)[*mt_iter] = build_cardiovascular0_d_lin_solver(sdyn, actdis);
+        break;
+      case Inpar::Solid::model_beaminteraction:
+        (*linsolvers)[Inpar::Solid::model_structure] =
+            build_beam_interaction_lin_solver(sdyn, actdis);
         break;
       default:
         FOUR_C_THROW("No idea which solver to use for the given model type {}", *mt_iter);
@@ -239,56 +242,6 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_li
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
     {
       compute_null_space_if_necessary(actdis, linsolver->params());
-      break;
-    }
-    case Core::LinearSolver::PreconditionerType::block_teko:
-    {
-      const unsigned solid_dofset(0u);
-      // Create the beam and solid maps
-      std::vector<int> solid_dof_gids;
-      std::vector<int> solid_node_gids;
-      std::vector<int> beam_dof_gids;
-
-      for (int i = 0; i < actdis.num_my_row_nodes(); i++)
-      {
-        if (const Core::Nodes::Node* node = actdis.l_row_node(i);
-            BeamInteraction::Utils::is_beam_node(*node))
-        {
-          actdis.dof(solid_dofset, node, beam_dof_gids);
-        }
-        else
-        {
-          actdis.dof(solid_dofset, node, solid_dof_gids);
-          solid_node_gids.push_back(node->id());
-        }
-      }
-
-      const auto dof_row_map_solid = std::make_shared<Core::LinAlg::Map>(
-          -1, solid_dof_gids.size(), solid_dof_gids.data(), 0, actdis.get_comm());
-      const auto node_row_map_solid = std::make_shared<Core::LinAlg::Map>(
-          -1, solid_node_gids.size(), solid_node_gids.data(), 0, actdis.get_comm());
-      const auto dof_row_map_beams = std::make_shared<Core::LinAlg::Map>(
-          -1, beam_dof_gids.size(), beam_dof_gids.data(), 0, actdis.get_comm());
-
-      std::vector<std::shared_ptr<const Core::LinAlg::Map>> maps;
-      maps.emplace_back(dof_row_map_solid);
-      maps.emplace_back(dof_row_map_beams);
-
-      const std::shared_ptr<Core::LinAlg::MultiMapExtractor> extractor(
-          new Core::LinAlg::MultiMapExtractor(*actdis.dof_row_map(), maps));
-      linsolver->params()
-          .sublist("Teko Parameters")
-          .set<std::shared_ptr<Core::LinAlg::MultiMapExtractor>>("extractor", extractor);
-
-      linsolver->params()
-          .sublist("Inverse1")
-          .set<std::shared_ptr<Core::LinAlg::Map>>("null space: node map", node_row_map_solid);
-      linsolver->params()
-          .sublist("Inverse1")
-          .set<std::shared_ptr<Core::LinAlg::Map>>("null space: dof map", dof_row_map_solid);
-      Core::LinearSolver::Parameters::compute_solver_parameters(
-          actdis, linsolver->params().sublist("Inverse1"));
-
       break;
     }
     default:
@@ -571,6 +524,90 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascul
   return linsolver;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_beam_interaction_lin_solver(
+    const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const
+{
+  // get the linear solver number used for structural problems
+  const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
+
+  // check if the structural solver has a valid solver number
+  if (linsolvernumber == (-1))
+    FOUR_C_THROW(
+        "no linear solver defined for structural field. "
+        "Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+
+  const Teuchos::ParameterList& linsolverparams =
+      Global::Problem::instance()->solver_params(linsolvernumber);
+
+  std::shared_ptr<Core::LinAlg::Solver> linsolver = std::make_shared<Core::LinAlg::Solver>(
+      linsolverparams, actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
+
+  const auto azprectype =
+      Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(linsolverparams, "AZPREC");
+
+  switch (azprectype)
+  {
+    case Core::LinearSolver::PreconditionerType::block_teko:
+    {
+      const unsigned solid_dofset(0u);
+      // Create the beam and solid maps
+      std::vector<int> solid_dof_gids;
+      std::vector<int> solid_node_gids;
+      std::vector<int> beam_dof_gids;
+
+      for (int i = 0; i < actdis.num_my_row_nodes(); i++)
+      {
+        if (const Core::Nodes::Node* node = actdis.l_row_node(i);
+            BeamInteraction::Utils::is_beam_node(*node))
+        {
+          actdis.dof(solid_dofset, node, beam_dof_gids);
+        }
+        else
+        {
+          actdis.dof(solid_dofset, node, solid_dof_gids);
+          solid_node_gids.push_back(node->id());
+        }
+      }
+
+      const auto dof_row_map_solid = std::make_shared<Core::LinAlg::Map>(
+          -1, solid_dof_gids.size(), solid_dof_gids.data(), 0, actdis.get_comm());
+      const auto node_row_map_solid = std::make_shared<Core::LinAlg::Map>(
+          -1, solid_node_gids.size(), solid_node_gids.data(), 0, actdis.get_comm());
+      const auto dof_row_map_beams = std::make_shared<Core::LinAlg::Map>(
+          -1, beam_dof_gids.size(), beam_dof_gids.data(), 0, actdis.get_comm());
+
+      std::vector<std::shared_ptr<const Core::LinAlg::Map>> maps;
+      maps.emplace_back(dof_row_map_solid);
+      maps.emplace_back(dof_row_map_beams);
+
+      const std::shared_ptr<Core::LinAlg::MultiMapExtractor> extractor(
+          new Core::LinAlg::MultiMapExtractor(*actdis.dof_row_map(), maps));
+      linsolver->params()
+          .sublist("Teko Parameters")
+          .set<std::shared_ptr<Core::LinAlg::MultiMapExtractor>>("extractor", extractor);
+
+      linsolver->params()
+          .sublist("Inverse1")
+          .set<std::shared_ptr<Core::LinAlg::Map>>("null space: node map", node_row_map_solid);
+      linsolver->params()
+          .sublist("Inverse1")
+          .set<std::shared_ptr<Core::LinAlg::Map>>("null space: dof map", dof_row_map_solid);
+      Core::LinearSolver::Parameters::compute_solver_parameters(
+          actdis, linsolver->params().sublist("Inverse1"));
+
+      break;
+    }
+    default:
+    {
+    }
+  }
+
+  return linsolver;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
