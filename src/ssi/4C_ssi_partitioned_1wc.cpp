@@ -209,7 +209,7 @@ void SSI::SSIPart1WCSolidToScatra::timeloop()
 
   const int diffsteps = scatra_field()->dt() / structure_field()->dt();
 
-  while (not_finished())
+  while (not_finished() and (structure_field()->not_finished()))
   {
     prepare_time_step(false);
     do_struct_step();  // It has its own time and timestep variables, and it increments them by
@@ -274,12 +274,12 @@ void SSI::SSIPart1WCScatraToSolid::timeloop()
   scatra_field()->prepare_time_loop();
 
   const int diffsteps = structure_field()->dt() / scatra_field()->dt();
-  while (!finished())
+  while (not_finished() and (scatra_field()->not_finished()))
   {
     prepare_time_step();
     do_scatra_step();  // It has its own time and timestep variables, and it increments them by
                        // itself.
-    if (scatra_field()->step() % diffsteps == 0)
+    if (scatra_field()->step() % diffsteps == 0 and (structure_field()->not_finished()))
     {
       set_scatra_solution(scatra_field()->phinp());
 
@@ -313,14 +313,6 @@ void SSI::SSIPart1WCScatraToSolid::prepare_time_step(bool printheader)
   if (scatra_field()->time_step_adapted()) set_dt_from_scatra_to_ssi();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool SSI::SSIPart1WCScatraToSolid::finished() const
-{
-  if (diff_time_step_size())
-    return !not_finished();
-  else
-    return !(not_finished() and scatra_field()->not_finished());
-}
+
 
 FOUR_C_NAMESPACE_CLOSE

@@ -18,9 +18,6 @@ STRUCT NOX/Printing:
   Outer Iteration StatusTest: false
 SCALAR TRANSPORT DYNAMIC:
   SOLVERTYPE: "nonlinear"
-  MAXTIME: 2
-  NUMSTEP: 10000
-  TIMESTEP: 1
   RESTARTEVERY: 20
   VELOCITYFIELD: "Navier_Stokes"
   INITIALFIELD: "field_by_function"
