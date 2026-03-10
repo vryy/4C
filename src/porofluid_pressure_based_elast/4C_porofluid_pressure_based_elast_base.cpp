@@ -81,8 +81,7 @@ void PoroPressureBased::PorofluidElastAlgorithm::init(
       porofluid_elast_params.sublist("nonlinear_solver").get<int>("linear_solver_id");
 
   // access the fluid discretization
-  std::shared_ptr<Core::FE::Discretization> porofluid_dis =
-      Global::Problem::instance()->get_dis(porofluid_disname);
+  std::shared_ptr<Core::FE::Discretization> porofluid_dis = problem->get_dis(porofluid_disname);
 
   // set degrees of freedom in the discretization
   if (!porofluid_dis->filled()) porofluid_dis->fill_complete();
@@ -96,10 +95,13 @@ void PoroPressureBased::PorofluidElastAlgorithm::init(
       Teuchos::getIntegralValue<PoroPressureBased::TimeIntegrationScheme>(
           porofluid_params.sublist("time_integration"), "scheme");
 
+  const PoroPressureBased::PorofluidAlgorithmDeps algorithm_deps =
+      PoroPressureBased::make_algorithm_deps_from_problem(*problem);
+
   // build porofluid algorithm
   std::shared_ptr<Adapter::PoroFluidMultiphase> porofluid_algo =
       PoroPressureBased::create_algorithm(time_integration_scheme, porofluid_dis, linsolvernumber,
-          global_time_params, porofluid_params, output);
+          global_time_params, porofluid_params, output, algorithm_deps);
 
   porofluid_algo_ = std::make_shared<Adapter::PoroFluidMultiphaseWrapper>(porofluid_algo);
   porofluid_algo_->init(
