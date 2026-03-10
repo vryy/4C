@@ -22,6 +22,7 @@
 
 #include <map>
 #include <memory>
+#include <variant>
 
 FOUR_C_NAMESPACE_OPEN
 
