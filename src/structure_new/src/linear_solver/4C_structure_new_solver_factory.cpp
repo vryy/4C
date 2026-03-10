@@ -558,6 +558,7 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_beam_interac
       std::vector<int> solid_dof_gids;
       std::vector<int> solid_node_gids;
       std::vector<int> beam_dof_gids;
+      std::vector<int> beam_node_gids;
 
       for (int i = 0; i < actdis.num_my_row_nodes(); i++)
       {
@@ -565,6 +566,7 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_beam_interac
             BeamInteraction::Utils::is_beam_node(*node))
         {
           actdis.dof(solid_dofset, node, beam_dof_gids);
+          beam_node_gids.push_back(node->id());
         }
         else
         {
@@ -577,8 +579,11 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_beam_interac
           -1, solid_dof_gids.size(), solid_dof_gids.data(), 0, actdis.get_comm());
       const auto node_row_map_solid = std::make_shared<Core::LinAlg::Map>(
           -1, solid_node_gids.size(), solid_node_gids.data(), 0, actdis.get_comm());
+
       const auto dof_row_map_beams = std::make_shared<Core::LinAlg::Map>(
           -1, beam_dof_gids.size(), beam_dof_gids.data(), 0, actdis.get_comm());
+      const auto node_row_map_beam = std::make_shared<Core::LinAlg::Map>(
+          -1, beam_node_gids.size(), beam_node_gids.data(), 0, actdis.get_comm());
 
       std::vector<std::shared_ptr<const Core::LinAlg::Map>> maps;
       maps.emplace_back(dof_row_map_solid);
@@ -598,6 +603,15 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_beam_interac
           .set<std::shared_ptr<Core::LinAlg::Map>>("null space: dof map", dof_row_map_solid);
       Core::LinearSolver::Parameters::compute_solver_parameters(
           actdis, linsolver->params().sublist("Inverse1"));
+
+      linsolver->params()
+          .sublist("Inverse2")
+          .set<std::shared_ptr<Core::LinAlg::Map>>("null space: node map", node_row_map_beam);
+      linsolver->params()
+          .sublist("Inverse2")
+          .set<std::shared_ptr<Core::LinAlg::Map>>("null space: dof map", dof_row_map_beams);
+      Core::LinearSolver::Parameters::compute_solver_parameters(
+          actdis, linsolver->params().sublist("Inverse2"));
 
       break;
     }
