@@ -732,7 +732,7 @@ void VtkWriterBase::create_restarted_initial_collection_file_mid_section(
         const std::filesystem::path base_dir =
             p_restart.is_absolute()
                 ? p_restart.parent_path()
-                : std::filesystem::relative(std::filesystem::absolute(p_restart.parent_path()),
+                : std::filesystem::relative(std::filesystem::absolute(p_restart).parent_path(),
                       std::filesystem::absolute(path_existing_working_directory_));
 
         // Resolve final path: select absolute file paths, otherwise anchor at base directory
