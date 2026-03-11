@@ -232,6 +232,62 @@ namespace
     }
   }
 
+  TEST_F(SparseAlgebraMathTest, MultiplyMultiVectorDenseMatrix)
+  {
+    auto map = Core::LinAlg::Map(10, 0, comm_);
+    auto multi_vector = Core::LinAlg::MultiVector<double>(map, 3, true);
+    multi_vector.put_scalar(1.0);
+
+    // Test with a square dense matrix
+    {
+      auto matrix = Core::LinAlg::SerialDenseMatrix(3, 3, true);
+      matrix(0, 0) = 1.0;
+      matrix(1, 1) = 2.0;
+      matrix(2, 2) = 3.0;
+
+      auto result = Core::LinAlg::multiply_multi_vector_dense_matrix(multi_vector, matrix);
+
+      for (int col = 0; col < result.num_vectors(); col++)
+        for (int my_row = 0; my_row < result.local_length(); my_row++)
+          EXPECT_NEAR(result.get_vector(col).get_values()[my_row], matrix(col, col), 1e-12);
+    }
+
+    // Test with a tall-and-skinny matrix
+    {
+      auto matrix = Core::LinAlg::SerialDenseMatrix(3, 4, true);
+      matrix(0, 0) = 1.0;
+      matrix(0, 3) = 1.0;
+      matrix(1, 1) = 2.0;
+      matrix(1, 3) = 2.0;
+      matrix(2, 2) = 3.0;
+      matrix(2, 3) = 3.0;
+
+      std::array<double, 4> result_values = {1.0, 2.0, 3.0, 6.0};
+      auto result = Core::LinAlg::multiply_multi_vector_dense_matrix(multi_vector, matrix);
+
+      EXPECT_EQ(result.num_vectors(), 4);
+
+      for (int col = 0; col < result.num_vectors(); col++)
+        for (int my_row = 0; my_row < result.local_length(); my_row++)
+          EXPECT_NEAR(result.get_vector(col).get_values()[my_row], result_values[col], 1e-12);
+    }
+
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    // Test with a tall-and-skinny matrix (wrong dimensions)
+    {
+      auto matrix = Core::LinAlg::SerialDenseMatrix(4, 3, true);
+      matrix(0, 0) = 1.0;
+      matrix(1, 1) = 2.0;
+      matrix(2, 2) = 3.0;
+      matrix(3, 0) = 2.0;
+      matrix(3, 1) = 1.0;
+      matrix(3, 2) = 3.0;
+
+      EXPECT_ANY_THROW(Core::LinAlg::multiply_multi_vector_dense_matrix(multi_vector, matrix));
+    }
+#endif
+  }
+
   /**
    * This test generates a random multi vector with three basis vectors
    * and applies an orthonormalization procedure to it.
