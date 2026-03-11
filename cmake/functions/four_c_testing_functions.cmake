@@ -906,7 +906,7 @@ endfunction()
 #   TESTNAME name_of_test
 #   FILE <input_in_tests/input_files>
 #   RESTART_STEP <step>
-#   RESTARTFROM_PATHTYPE <absolute|relative|relative_from_parent>
+#   RESTARTFROM_PATHTYPE <absolute|relative|relative_from_parent|same_directory>
 #   PVD_RESULTFILENAME <subdir_with_pvd_under_sim2>
 #   PVD_REFERENCEFILENAME <reference_file_under_tests/input_files>
 #   TOLERANCE <tol>
@@ -954,10 +954,11 @@ function(four_c_test_restarted_vtk)
   if(NOT _parsed_RESTARTFROM_PATHTYPE STREQUAL "absolute"
      AND NOT _parsed_RESTARTFROM_PATHTYPE STREQUAL "relative"
      AND NOT _parsed_RESTARTFROM_PATHTYPE STREQUAL "relative_from_parent"
+     AND NOT _parsed_RESTARTFROM_PATHTYPE STREQUAL "same_directory"
      )
     message(
       FATAL_ERROR
-        "four_c_test_restarted_vtk: RESTARTFROM_PATHTYPE must be either 'absolute', relative' or 'relative_from_parent'"
+        "four_c_test_restarted_vtk: RESTARTFROM_PATHTYPE must be either 'absolute', 'relative', 'relative_from_parent' or 'same_directory'"
       )
   endif()
 
@@ -1032,6 +1033,13 @@ function(four_c_test_restarted_vtk)
         "mkdir -p ${sim2_dir} && cd ${root_dir} && echo changing pwd to: && pwd \
       && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${base_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
       ${input_path} ${sim2_dir}/xxx restartfrom=${folder_name_sim1}/xxx restart=${_parsed_RESTART_STEP}"
+        )
+  elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "same_directory")
+    # restartfrom sim1_dir (same directory), output is still written in sim2_dir for later vtk comparison
+    set(run2_cmd
+        "mkdir -p ${sim2_dir} && cd ${sim1_dir} && echo staying in: && pwd \
+      && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${base_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
+      ${input_path} ${sim2_dir}/xxx restartfrom=xxx restart=${_parsed_RESTART_STEP}"
         )
   endif()
   _add_test_with_options(
