@@ -57,6 +57,104 @@ namespace
     EXPECT_NEAR(length, correct_length, ElementVolumeTest::TOL);
   }
 
+  TEST_F(ElementVolumeTest, TestElementLength_nurbs2)
+  {
+    Core::LinAlg::Matrix<3, 2> xyz(Core::LinAlg::Initialization::zero);
+    xyz(0, 0) = 0.0;
+    xyz(1, 0) = 0.0;
+    xyz(2, 0) = 0.0;  // node 1
+    xyz(0, 1) = 2.0;
+    xyz(1, 1) = 1.0;
+    xyz(2, 1) = 2.0;  // node 2
+
+    std::vector<Core::LinAlg::SerialDenseVector> knots(1);
+    knots[0].reshape(4, 1);
+    knots[0][0] = 0;
+    knots[0][1] = 0;
+    knots[0][2] = 1;
+    knots[0][3] = 1;
+
+    Core::LinAlg::SerialDenseVector weights(2);
+    weights(0) = 1.0;
+    weights(1) = 1.0;
+
+    double length = Core::Geo::element_length<Core::FE::CellType::nurbs2>(xyz, knots, weights);
+
+    double correct_length = 3.0;
+    EXPECT_NEAR(length, correct_length, ElementVolumeTest::TOL);
+  }
+
+  TEST_F(ElementVolumeTest, TestElementLength_nurbs3)
+  {
+    // straight line
+    {
+      Core::LinAlg::Matrix<3, 3> xyz(Core::LinAlg::Initialization::zero);
+      xyz(0, 0) = 0.0;
+      xyz(1, 0) = 0.0;
+      xyz(2, 0) = 0.0;  // node 1
+      xyz(0, 1) = 1.0;
+      xyz(1, 1) = 0.5;
+      xyz(2, 1) = 1.0;  // node 2
+      xyz(0, 2) = 2.0;
+      xyz(1, 2) = 1.0;
+      xyz(2, 2) = 2.0;  // node 3
+
+      std::vector<Core::LinAlg::SerialDenseVector> knots(1);
+      knots[0].reshape(6, 1);
+      knots[0][0] = 0;
+      knots[0][1] = 0;
+      knots[0][2] = 0;
+      knots[0][3] = 1;
+      knots[0][4] = 1;
+      knots[0][5] = 1;
+
+      Core::LinAlg::SerialDenseVector weights(3);
+      weights(0) = 1.0;
+      weights(1) = 1.0;
+      weights(2) = 1.0;
+
+      double length = Core::Geo::element_length<Core::FE::CellType::nurbs3>(xyz, knots, weights);
+
+      double correct_length = 3.0;
+      EXPECT_NEAR(length, correct_length, ElementVolumeTest::TOL);
+    }
+
+    // quarter circle
+    {
+      Core::LinAlg::Matrix<3, 3> xyz(Core::LinAlg::Initialization::zero);
+      xyz(0, 0) = 0.0;
+      xyz(1, 0) = 0.0;
+      xyz(2, 0) = 0.0;  // node 1
+      xyz(0, 1) = 0.0;
+      xyz(1, 1) = 0.0;
+      xyz(2, 1) = 1.0;  // node 2
+      xyz(0, 2) = 0.5 * std::numbers::sqrt2;
+      xyz(1, 2) = 0.5 * std::numbers::sqrt2;
+      xyz(2, 2) = 1.0;  // node 3
+
+      std::vector<Core::LinAlg::SerialDenseVector> knots(1);
+      knots[0].reshape(6, 1);
+      knots[0][0] = 0;
+      knots[0][1] = 0;
+      knots[0][2] = 0;
+      knots[0][3] = 1;
+      knots[0][4] = 1;
+      knots[0][5] = 1;
+
+      Core::LinAlg::SerialDenseVector weights(3);
+      weights(0) = 1.0;
+      weights(1) = 0.5 * std::numbers::sqrt2;
+      weights(2) = 1.0;
+
+      double length = Core::Geo::element_length<Core::FE::CellType::nurbs3>(xyz, knots, weights);
+
+      double correct_length = 0.5 * std::numbers::pi;
+      // The quadrature rule defines the accuracy, we use the default ones, so a rather coarse
+      // approximation of the true length, which is still sufficient.
+      EXPECT_NEAR(length, correct_length, 1e-3);
+    }
+  }
+
   TEST_F(ElementVolumeTest, TestElementArea_tri3)
   {
     Core::LinAlg::Matrix<3, 3> xyz(Core::LinAlg::Initialization::zero);

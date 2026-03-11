@@ -13,6 +13,7 @@
 
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -20,12 +21,15 @@ namespace Core::Geo
 {
   //! calculates the length of an element in given configuration
   template <Core::FE::CellType distype, class Matrixtype>
-  double element_length(const Matrixtype& xyze)
+  double element_length(const Matrixtype& xyze,
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots = {},
+      const Core::LinAlg::SerialDenseVector& weights = Core::LinAlg::SerialDenseVector{})
   {
     static constexpr int numnode = Core::FE::num_nodes(distype);
     const Core::FE::GaussIntegration intpoints(distype);
 
-    Core::LinAlg::Matrix<1, 1> eleCoord;
+    Core::LinAlg::SerialDenseVector eleCoord(1);
+    Core::LinAlg::Matrix<numnode, 1> funct;
     Core::LinAlg::Matrix<1, numnode> deriv;
     Core::LinAlg::Matrix<1, 3> xjm;
 
@@ -37,7 +41,15 @@ namespace Core::Geo
       eleCoord(0) = intpoints.point(iquad)[0];
 
       // shape functions and their first derivatives
-      Core::FE::shape_function_1d_deriv1(deriv, eleCoord(0), distype);
+      if (distype != FE::CellType::nurbs2 and distype != FE::CellType::nurbs3)
+      {
+        Core::FE::shape_function_1d_deriv1(deriv, eleCoord(0), distype);
+      }
+      else
+      {
+        Core::FE::Nurbs::nurbs_get_1d_funct_deriv(
+            funct, deriv, eleCoord(0), knots[0], weights, distype);
+      }
 
       // get transposed of the jacobian matrix d x / d \xi
       xjm = 0;
@@ -139,7 +151,9 @@ namespace Core::Geo
 
   //! calculates the volume of an element in given configuration
   template <class Matrixtype>
-  double element_volume(const Core::FE::CellType distype, const Matrixtype& xyze)
+  double element_volume(const Core::FE::CellType distype, const Matrixtype& xyze,
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots = {},
+      const Core::LinAlg::SerialDenseVector& weights = Core::LinAlg::SerialDenseVector{})
   {
     switch (distype)
     {
@@ -147,6 +161,10 @@ namespace Core::Geo
         return element_length<Core::FE::CellType::line2>(xyze);
       case Core::FE::CellType::line3:
         return element_length<Core::FE::CellType::line3>(xyze);
+      case Core::FE::CellType::nurbs2:
+        return element_length<Core::FE::CellType::nurbs2>(xyze, knots, weights);
+      case Core::FE::CellType::nurbs3:
+        return element_length<Core::FE::CellType::nurbs3>(xyze, knots, weights);
       case Core::FE::CellType::tri3:
         return element_area<Core::FE::CellType::tri3>(xyze);
       case Core::FE::CellType::tri6:
