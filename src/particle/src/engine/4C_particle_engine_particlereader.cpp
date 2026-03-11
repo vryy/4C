@@ -61,46 +61,22 @@ void Particle::read_particles(Core::IO::InputFile& input, const std::string& sec
         Particle::StateEnum particlestate;
         std::vector<double> state;
 
+        // optional particle parameters
+        const std::unordered_map<std::string, Particle::ParticleState> additional_states = {
+            {"RAD", Particle::Radius}, {"RIGIDCOLOR", Particle::RigidBodyColor},
+            {"PDBODYID", Particle::PDBodyId}};
+
         while (!parser.at_end())
         {
-          auto next = parser.peek();
-          // optional particle radius
-          if (next == "RAD")
-          {
-            particlestate = Particle::Radius;
-            parser.consume("RAD");
+          const auto next = parser.peek();
+          statelabel = next;
 
-            if (auto val = parser.read<std::optional<double>>())
-            {
-              state.resize(1);
-              state[0] = *val;
-            }
-            else
-            {
-              continue;
-            }
-          }
-          // optional rigid body color
-          else if (next == "RIGIDCOLOR")
-          {
-            particlestate = Particle::RigidBodyColor;
-            parser.consume("RIGIDCOLOR");
+          const auto it_state = additional_states.find(statelabel);
 
-            if (auto val = parser.read<std::optional<double>>())
-            {
-              state.resize(1);
-              state[0] = *val;
-            }
-            else
-            {
-              continue;
-            }
-          }
-          // optional pd body id
-          else if (next == "PDBODYID")
+          if (it_state != additional_states.end())
           {
-            particlestate = Particle::PDBodyId;
-            parser.consume("PDBODYID");
+            particlestate = it_state->second;
+            parser.consume(it_state->first);
 
             if (auto val = parser.read<std::optional<double>>())
             {
