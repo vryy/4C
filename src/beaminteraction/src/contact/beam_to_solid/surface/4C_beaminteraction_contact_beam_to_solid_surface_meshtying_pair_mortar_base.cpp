@@ -108,11 +108,9 @@ void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
         std::vector<double>& lambda_vis = visualization_data.get_point_data<double>("lambda");
 
         std::vector<int>* pair_beam_id = nullptr;
-        std::vector<int>* pair_solid_id = nullptr;
         if (write_unique_ids)
         {
           pair_beam_id = &(visualization_data.get_point_data<int>("uid_0_pair_beam_id"));
-          pair_solid_id = &(visualization_data.get_point_data<int>("uid_1_pair_solid_id"));
         }
 
         for (unsigned int i_node = 0; i_node < Mortar::n_nodes_; i_node++)
@@ -139,8 +137,9 @@ void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
 
           if (write_unique_ids)
           {
+            // Since we create this output once for each beam element, we only need the beam GID as
+            // unique identifier.
             pair_beam_id->push_back(this->element1()->id());
-            pair_solid_id->push_back(this->element2()->id());
           }
         }
       }
