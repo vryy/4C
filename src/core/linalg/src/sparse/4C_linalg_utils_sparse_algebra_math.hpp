@@ -174,6 +174,45 @@ namespace Core::LinAlg
       std::shared_ptr<Core::LinAlg::Graph> sparsity_pattern,
       OptionsSparseMatrixInverse options = {});
 
+  struct OptionsSparseMatrixRankCorrection
+  {
+    //! Absolute diagonal scaling factor
+    double alpha = 1.0;
+
+    //! Flag indicating if the basis vectors should be orthonormalized during rank correction
+    bool orthonormalize = true;
+  };
+
+  /**
+   * @brief Applies a rank correction to a sparse matrix using a given basis.
+   *
+   * This function constructs a low-rank projection matrix from the provided
+   * basis vectors and adds a scaled version of this projection to the input
+   * matrix. The correction has the form
+   *
+   * \f[
+   * A' = A + \alpha \, (B B^T)
+   * \f]
+   *
+   * where \f$A\f$ is the input matrix, \f$B\f$ is the matrix whose columns are
+   * the provided basis vectors, and \f$\alpha\f$ is a scaling factor specified
+   * in the options.
+   *
+   * Optionally, the basis vectors can be orthonormalized prior to constructing
+   * the projection matrix. The projection matrix \f$B B^T\f$ is assembled using
+   * sparse matrix operations.
+   *
+   * @param A       (in): Input sparse matrix to which the rank correction is applied.
+   * @param basis   (in): Multi-vector whose columns define the basis used to construct the low-rank
+   *                      correction.
+   * @param options (in): Options controlling the rank correction, including the scaling factor
+   * \f$\alpha\f$ and whether the basis should be orthonormalized.
+   *
+   * @return A unique pointer to a new sparse matrix containing the corrected matrix
+   */
+  std::unique_ptr<SparseMatrix> matrix_rank_correction(const SparseMatrix& A,
+      const MultiVector<double>& basis, OptionsSparseMatrixRankCorrection options = {});
+
   /**
    * \brief Computes multiplication of a MultiVector times a SerialDenseMatrix
    *
