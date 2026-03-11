@@ -10,7 +10,6 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
-#include "4C_global_data.hpp"
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_porofluid_pressure_based_algorithm.hpp"
 #include "4C_porofluid_pressure_based_meshtying_strategy_artery.hpp"
@@ -266,7 +265,7 @@ double PoroPressureBased::ResultTest::result_element(
   }
   else if (!quantity.compare(0, 13, "phasevelocity"))
   {
-    const int num_dim = Global::Problem::instance()->n_dim();
+    const int num_dim = static_cast<int>(porofluid_algorithm_.discretization()->n_dim());
     // get phase ID
     // example: "phasevelocity3x" -> k = 2 (phase IDs start at index 0)
     std::string k_string = quantity.substr(13);

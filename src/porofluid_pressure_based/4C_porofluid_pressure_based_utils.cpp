@@ -15,7 +15,6 @@
 #include "4C_fem_geometry_position_array.hpp"
 #include "4C_fem_geometry_searchtree.hpp"
 #include "4C_fem_geometry_searchtree_service.hpp"
-#include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_mat_cnst_1d_art.hpp"
 #include "4C_mat_material_factory.hpp"
@@ -64,25 +63,25 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PoroPressureBased::setup_material(
-    MPI_Comm comm, const std::string& struct_disname, const std::string& fluid_disname)
+void PoroPressureBased::setup_material(MPI_Comm comm,
+    Core::FE::Discretization& fluid_discretization,
+    const std::map<std::pair<std::string, std::string>, std::map<int, int>>& cloning_material_map,
+    const std::string& struct_disname, const std::string& fluid_disname)
 {
-  // get the fluid discretization
-  std::shared_ptr<Core::FE::Discretization> fluiddis =
-      Global::Problem::instance()->get_dis(fluid_disname);
-
   // initialize material map
   std::map<int, int> matmap;
   {
-    // get the cloning material map from the input file
-    std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap =
-        Global::Problem::instance()->cloning_material_map();
-    if (clonefieldmatmap.size() < 1)
+    if (cloning_material_map.size() < 1)
       FOUR_C_THROW("At least one material pairing required in --CLONING MATERIAL MAP.");
 
     // check if the current discretization is included in the material map
     std::pair<std::string, std::string> key(fluid_disname, struct_disname);
-    matmap = clonefieldmatmap[key];
+    const auto clone_field_mat_map_it = cloning_material_map.find(key);
+    if (clone_field_mat_map_it == cloning_material_map.end())
+      FOUR_C_THROW(
+          "Key pair '{}/{}' not defined in --CLONING MATERIAL MAP.", fluid_disname, struct_disname);
+
+    matmap = clone_field_mat_map_it->second;
     if (matmap.size() < 1)
       FOUR_C_THROW(
           "Key pair '{}/{}' not defined in --CLONING MATERIAL MAP.", fluid_disname, struct_disname);
@@ -90,13 +89,13 @@ void PoroPressureBased::setup_material(
 
 
   // number of column elements within fluid discretization
-  const int numelements = fluiddis->num_my_col_elements();
+  const int numelements = fluid_discretization.num_my_col_elements();
 
   // loop over column elements
   for (int i = 0; i < numelements; ++i)
   {
     // get current element
-    Core::Elements::Element* ele = fluiddis->l_col_element(i);
+    Core::Elements::Element* ele = fluid_discretization.l_col_element(i);
 
     // find the corresponding material in the matmap
     int src_matid = ele->material()->parameter()->id();
@@ -135,7 +134,7 @@ std::shared_ptr<Adapter::PoroFluidMultiphase> PoroPressureBased::create_algorith
     PoroPressureBased::TimeIntegrationScheme timintscheme,
     std::shared_ptr<Core::FE::Discretization> dis, const int linsolvernumber,
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
-    std::shared_ptr<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::IO::DiscretizationWriter> output, PorofluidAlgorithmDeps algorithm_deps)
 {
   // Creation of Coupled Problem algorithm.
   std::shared_ptr<Adapter::PoroFluidMultiphase> algo = nullptr;
@@ -151,7 +150,7 @@ std::shared_ptr<Adapter::PoroFluidMultiphase> PoroPressureBased::create_algorith
     {
       // create algorithm
       algo = std::make_shared<PorofluidAlgorithm>(
-          dis, linsolvernumber, probparams, poroparams, output);
+          dis, linsolvernumber, probparams, poroparams, output, std::move(algorithm_deps));
       break;
     }
     default:

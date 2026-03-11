@@ -14,6 +14,7 @@
 #include "4C_io.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_porofluid_pressure_based_algorithm_dependencies.hpp"
 #include "4C_porofluid_pressure_based_input.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -40,17 +41,19 @@ namespace Adapter
 namespace PoroPressureBased
 {
   /// setup second materials for porosity evaluation within solid phase
-  void setup_material(
-      MPI_Comm comm, const std::string& struct_disname, const std::string& fluid_disname);
+  void setup_material(MPI_Comm comm, Core::FE::Discretization& fluid_discretization,
+      const std::map<std::pair<std::string, std::string>, std::map<int, int>>& cloning_material_map,
+      const std::string& struct_disname, const std::string& fluid_disname);
 
   /// create solution algorithm depending on input file
   std::shared_ptr<Adapter::PoroFluidMultiphase> create_algorithm(
-      PoroPressureBased::TimeIntegrationScheme timintscheme,  //!< time discretization scheme
-      std::shared_ptr<Core::FE::Discretization> dis,          //!< discretization
-      const int linsolvernumber,                              //!< number of linear solver
-      const Teuchos::ParameterList& probparams,               //!< parameter list of global problem
-      const Teuchos::ParameterList& poroparams,               //!< parameter list of poro problem
-      std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< output writer
+      PoroPressureBased::TimeIntegrationScheme timintscheme,   //!< time discretization scheme
+      std::shared_ptr<Core::FE::Discretization> dis,           //!< discretization
+      const int linsolvernumber,                               //!< number of linear solver
+      const Teuchos::ParameterList& probparams,                //!< parameter list of global problem
+      const Teuchos::ParameterList& poroparams,                //!< parameter list of poro problem
+      std::shared_ptr<Core::IO::DiscretizationWriter> output,  //!< output writer
+      PorofluidAlgorithmDeps algorithm_deps                    //!< algorithm dependencies
   );
 
   /**

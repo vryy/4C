@@ -11,7 +11,6 @@
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fem_general_l2_projection.hpp"
 #include "4C_fem_general_node.hpp"
-#include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
@@ -28,6 +27,7 @@
 #include "4C_porofluid_pressure_based_utils.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_function.hpp"
+#include "4C_utils_function_manager.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -37,14 +37,16 @@ FOUR_C_NAMESPACE_OPEN
 PoroPressureBased::PorofluidAlgorithm::PorofluidAlgorithm(
     std::shared_ptr<Core::FE::Discretization> actdis, const int linsolvernumber,
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
-    std::shared_ptr<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::IO::DiscretizationWriter> output,
+    PorofluidAlgorithmDeps algorithm_deps)
     :  // call constructor for "nontrivial" objects
       solver_(nullptr),
       linsolvernumber_(linsolvernumber),
       params_(probparams),
       poroparams_(poroparams),
+      algorithm_deps_(std::move(algorithm_deps)),
       myrank_(Core::Communication::my_mpi_rank(actdis->get_comm())),
-      nsd_(Global::Problem::instance()->n_dim()),
+      nsd_(algorithm_deps_.spatial_dimension),
       isale_(false),
       skipinitder_(poroparams_.get<bool>("skip_initial_time_derivative")),
       output_satpress_(poroparams_.sublist("output").get<bool>("saturation_and_pressure")),
@@ -122,6 +124,15 @@ PoroPressureBased::PorofluidAlgorithm::PorofluidAlgorithm(
       theta_(params_.sublist("time_integration").get<double>("theta")),
       visualization_writer_(nullptr)
 {
+  FOUR_C_ASSERT_ALWAYS(algorithm_deps_.runtime_vtk_output_parameters != nullptr,
+      "Runtime VTK output parameters are required.");
+  FOUR_C_ASSERT_ALWAYS(
+      algorithm_deps_.output_control_file != nullptr, "Output control file is required.");
+  FOUR_C_ASSERT_ALWAYS(algorithm_deps_.function_manager != nullptr,
+      "Function manager is required for porofluid algorithm.");
+  FOUR_C_ASSERT_ALWAYS(algorithm_deps_.solver_params_by_id,
+      "Solver parameter callback is required for porofluid algorithm.");
+
   // safety check
   if (has_bodyforce_contribution_)
   {
@@ -129,24 +140,25 @@ PoroPressureBased::PorofluidAlgorithm::PorofluidAlgorithm(
     bodyforce_contribution_values_ =
         (poroparams_.get<std::optional<std::vector<double>>>("body_force")).value();
     // safety check
-    FOUR_C_ASSERT_ALWAYS(static_cast<int>(bodyforce_contribution_values_.size()) ==
-                             Global::Problem::instance()->n_dim(),
+    FOUR_C_ASSERT_ALWAYS(static_cast<int>(bodyforce_contribution_values_.size()) == nsd_,
         "The dimension of your bodyforce vector and the dimension of the problem must be equal!");
   }
 
-  const int restart_step = Global::Problem::instance()->restart();
+  const int restart_step = algorithm_deps_.restart_step;
   if (restart_step > 0)
   {
+    FOUR_C_ASSERT_ALWAYS(algorithm_deps_.input_control_file != nullptr,
+        "Input control file is required for restart.");
+
     Core::IO::DiscretizationReader reader(
-        *discret_, Global::Problem::instance()->input_control_file(), restart_step);
+        *discret_, algorithm_deps_.input_control_file, restart_step);
 
     time_ = reader.read_double("time");
   }
 
-  visualization_writer_ = std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(
-      actdis, Core::IO::visualization_parameters_factory(
-                  Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
-                  *Global::Problem::instance()->output_control_file(), time_));
+  visualization_writer_ = std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(actdis,
+      Core::IO::visualization_parameters_factory(*algorithm_deps_.runtime_vtk_output_parameters,
+          *algorithm_deps_.output_control_file, time_));
 }
 
 
@@ -265,7 +277,7 @@ void PoroPressureBased::PorofluidAlgorithm::init(bool isale, int nds_disp, int n
     // other parameters needed by the elements
     eleparams.set("total time", time_);
     eleparams.set<const Core::Utils::FunctionManager*>(
-        "function_manager", &Global::Problem::instance()->function_manager());
+        "function_manager", algorithm_deps_.function_manager);
     discret_->evaluate_dirichlet(eleparams, zeros_, nullptr, nullptr, nullptr, dbcmaps_);
     discret_->evaluate_dirichlet(
         eleparams, zeros_, nullptr, nullptr, nullptr, dbcmaps_with_volfracpress_);
@@ -305,7 +317,7 @@ void PoroPressureBased::PorofluidAlgorithm::init(bool isale, int nds_disp, int n
   {
     // setup csv writer for domain integrals
     runtime_csvwriter_domain_integrals_.emplace(
-        myrank_, *Global::Problem::instance()->output_control_file(), "domain_integrals");
+        myrank_, *algorithm_deps_.output_control_file, "domain_integrals");
     for (int funct_i = 0; funct_i < num_domainint_funct_; funct_i++)
     {
       runtime_csvwriter_domain_integrals_->register_data_vector(
@@ -320,17 +332,24 @@ void PoroPressureBased::PorofluidAlgorithm::init(bool isale, int nds_disp, int n
   {
     output_bloodvesselvolfrac_ =
         poroparams_.sublist("artery_coupling").get<bool>("output_blood_vessel_volume_fraction");
-    meshtying_ = std::make_shared<PoroPressureBased::MeshtyingArtery>(this, params_, poroparams_);
+    FOUR_C_ASSERT_ALWAYS(algorithm_deps_.artery_discretization != nullptr,
+        "Artery discretization must be provided when artery coupling is active.");
+    FOUR_C_ASSERT_ALWAYS(algorithm_deps_.artery_dynamic_parameters != nullptr,
+        "Artery dynamic parameters must be provided when artery coupling is active.");
+    FOUR_C_ASSERT_ALWAYS(algorithm_deps_.add_field_test,
+        "Result test registration callback must be provided when artery coupling is active.");
+
+    meshtying_ = std::make_shared<PoroPressureBased::MeshtyingArtery>(this, params_, poroparams_,
+        algorithm_deps_.artery_discretization, *algorithm_deps_.artery_dynamic_parameters,
+        algorithm_deps_.solver_params_by_id, algorithm_deps_.add_field_test);
     meshtying_->check_initial_fields(phinp_);
     meshtying_->set_nearby_ele_pairs(nearby_ele_pairs);
     meshtying_->setup();
   }
 
-  solver_ = std::make_shared<Core::LinAlg::Solver>(
-      Global::Problem::instance()->solver_params(linsolvernumber_), discret_->get_comm(),
-      Global::Problem::instance()->solver_params_callback(),
-      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY"));
+  solver_ =
+      std::make_shared<Core::LinAlg::Solver>(algorithm_deps_.solver_params_by_id(linsolvernumber_),
+          discret_->get_comm(), algorithm_deps_.solver_params_by_id, algorithm_deps_.verbosity);
   if (artery_coupling_active_)
   {
     meshtying_->initialize_linear_solver(*solver_);
@@ -690,7 +709,7 @@ void PoroPressureBased::PorofluidAlgorithm::collect_runtime_output_data()
   // fluxes
   if (flux_ != nullptr)
   {
-    const int dim = Global::Problem::instance()->n_dim();
+    const int dim = nsd_;
     const int numdof = discret_->num_dof(0, discret_->l_row_node(0));
     // get the noderowmap
     const Core::LinAlg::Map* noderowmap = discret_->node_row_map();
@@ -716,7 +735,7 @@ void PoroPressureBased::PorofluidAlgorithm::collect_runtime_output_data()
 
   if (output_phase_velocities_)
   {
-    const int num_dim = Global::Problem::instance()->n_dim();
+    const int num_dim = nsd_;
     const int num_poro_dof = discret_->num_dof(0, discret_->l_row_node(0));
 
     const Core::LinAlg::Map* element_row_map = discret_->element_row_map();
@@ -875,8 +894,7 @@ void PoroPressureBased::PorofluidAlgorithm::apply_dirichlet_bc(const double time
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // actual time t_{n+1}
-  p.set<const Core::Utils::FunctionManager*>(
-      "function_manager", &Global::Problem::instance()->function_manager());
+  p.set<const Core::Utils::FunctionManager*>("function_manager", algorithm_deps_.function_manager);
 
   // predicted Dirichlet values
   // \c  prenp then also holds prescribed new Dirichlet values
@@ -1099,10 +1117,11 @@ void PoroPressureBased::PorofluidAlgorithm::apply_starting_dbc()
               {
                 dirichlet_dofs.push_back(gid);
               }
-              const double dbc_value = Global::Problem::instance()
-                                           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
-                                               starting_dbc_funct_[dof_idx])
-                                           .evaluate(current_node->x(), time_, 0);
+              FOUR_C_ASSERT_ALWAYS(algorithm_deps_.function_of_space_time_by_id,
+                  "Function callback is required for starting Dirichlet boundary conditions.");
+              const double dbc_value =
+                  algorithm_deps_.function_of_space_time_by_id(starting_dbc_funct_[dof_idx])
+                      .evaluate(current_node->x(), time_, 0);
               phinp_->replace_global_value(gid, dbc_value);
             }
           }
@@ -1529,16 +1548,16 @@ void PoroPressureBased::PorofluidAlgorithm::reconstruct_flux()
     // action for elements
     eleparams.set<PoroPressureBased::Action>("action", PoroPressureBased::recon_flux_at_nodes);
 
-    const int dim = Global::Problem::instance()->n_dim();
+    const int dim = nsd_;
     // we assume same number of dofs per node in the whole dis here
     const int totalnumdof = discret_->num_dof(0, discret_->l_row_node(0));
     const int numvec = totalnumdof * dim;
 
     // add state vectors according to time-integration scheme
     add_time_integration_specific_vectors();
-    const auto& solverparams = Global::Problem::instance()->solver_params(fluxreconsolvernum_);
+    const auto& solverparams = algorithm_deps_.solver_params_by_id(fluxreconsolvernum_);
     flux_ = Core::FE::compute_nodal_l2_projection(*discret_, "phinp_fluid", numvec, eleparams,
-        solverparams, Global::Problem::instance()->solver_params_callback());
+        solverparams, algorithm_deps_.solver_params_by_id);
   }
 }
 
@@ -1880,7 +1899,7 @@ void PoroPressureBased::PorofluidAlgorithm::evaluate_error_compared_to_analytica
   {
     // print last error in a separate file
 
-    const std::string simulation = Global::Problem::instance()->output_control_file()->file_name();
+    const std::string simulation = algorithm_deps_.output_control_file->file_name();
     const std::string fname = simulation + "_pressure_time.relerror";
 
     if (step_ == 0)
@@ -2037,8 +2056,9 @@ void PoroPressureBased::PorofluidAlgorithm::set_initial_field(
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->lid(dofgid);
           // evaluate component k of spatial function
-          double initialval = Global::Problem::instance()
-                                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
+          FOUR_C_ASSERT_ALWAYS(algorithm_deps_.function_of_space_time_by_id,
+              "Function callback is required for initial field by function.");
+          double initialval = algorithm_deps_.function_of_space_time_by_id(startfuncno)
                                   .evaluate(lnode.x(), time_, k);
           phin_->replace_local_value(doflid, initialval);
           ;
@@ -2083,8 +2103,7 @@ void PoroPressureBased::PorofluidAlgorithm::set_initial_field(
       {
         localdofs[i] = i;
       }
-      discret_->evaluate_initial_field(
-          Global::Problem::instance()->function_manager(), field, *phin_, localdofs);
+      discret_->evaluate_initial_field(*algorithm_deps_.function_manager, field, *phin_, localdofs);
 
       // initialize also the solution vector. These values are a pretty good guess for the
       // solution after the first time step (much better than starting with a zero vector)
@@ -2118,7 +2137,7 @@ void PoroPressureBased::PorofluidAlgorithm::read_restart(const int step)
 
   std::shared_ptr<Core::IO::DiscretizationReader> reader(nullptr);
   reader = std::make_shared<Core::IO::DiscretizationReader>(
-      *discret_, Global::Problem::instance()->input_control_file(), step);
+      *discret_, algorithm_deps_.input_control_file, step);
 
   time_ = reader->read_double("time");
   step_ = reader->read_int("step");

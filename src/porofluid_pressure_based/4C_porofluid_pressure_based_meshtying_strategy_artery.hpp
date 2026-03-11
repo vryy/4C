@@ -13,6 +13,8 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_porofluid_pressure_based_algorithm.hpp"
 
+#include <functional>
+
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
@@ -21,15 +23,24 @@ namespace PoroPressureBased
   class PorofluidElastScatraArteryCouplingBaseAlgorithm;
 }
 
+namespace Core::Utils
+{
+  class ResultTest;
+}
+
 namespace PoroPressureBased
 {
   class MeshtyingArtery
   {
    public:
     //! constructor
-    explicit MeshtyingArtery(PorofluidAlgorithm* porofluid_algorithm,
+    MeshtyingArtery(PorofluidAlgorithm* porofluid_algorithm,
         const Teuchos::ParameterList& problem_params,
-        const Teuchos::ParameterList& porofluid_params);
+        const Teuchos::ParameterList& porofluid_params,
+        std::shared_ptr<Core::FE::Discretization> artery_discretization,
+        const Teuchos::ParameterList& artery_params,
+        std::function<const Teuchos::ParameterList&(int)> solver_params_by_id,
+        std::function<void(std::shared_ptr<Core::Utils::ResultTest>)> add_field_test);
 
 
     //! prepare time loop
@@ -108,6 +119,12 @@ namespace PoroPressureBased
 
     //! parameter list of porofluid algorithm
     const Teuchos::ParameterList& porofluid_params_;
+
+    //! callback to access solver parameters by solver id
+    std::function<const Teuchos::ParameterList&(int)> solver_params_by_id_;
+
+    //! callback to register field tests
+    std::function<void(std::shared_ptr<Core::Utils::ResultTest>)> add_field_test_;
 
     //! vector norm for residuals
     VectorNorm vector_norm_res_;

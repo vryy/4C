@@ -9,7 +9,6 @@
 
 #include "4C_art_net_input.hpp"
 #include "4C_art_net_utils.hpp"
-#include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_io.hpp"
@@ -23,25 +22,30 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include <utility>
+
 FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroPressureBased::MeshtyingArtery::MeshtyingArtery(PorofluidAlgorithm* porofluid_algorithm,
-    const Teuchos::ParameterList& problem_params, const Teuchos::ParameterList& porofluid_params)
+    const Teuchos::ParameterList& problem_params, const Teuchos::ParameterList& porofluid_params,
+    std::shared_ptr<Core::FE::Discretization> artery_discretization,
+    const Teuchos::ParameterList& artery_params,
+    std::function<const Teuchos::ParameterList&(int)> solver_params_by_id,
+    std::function<void(std::shared_ptr<Core::Utils::ResultTest>)> add_field_test)
     : porofluid_algorithm_(porofluid_algorithm),
       params_(problem_params),
       porofluid_params_(porofluid_params),
+      solver_params_by_id_(std::move(solver_params_by_id)),
+      add_field_test_(std::move(add_field_test)),
       vector_norm_res_(Teuchos::getIntegralValue<VectorNorm>(
           porofluid_params_.sublist("nonlinear_solver").sublist("residual"), "vector_norm")),
       vector_norm_inc_(Teuchos::getIntegralValue<VectorNorm>(
           porofluid_params_.sublist("nonlinear_solver").sublist("increment"), "vector_norm"))
 {
-  const Teuchos::ParameterList& artery_params =
-      Global::Problem::instance()->arterial_dynamic_params();
-
-  artery_dis_ = Global::Problem::instance()->get_dis("artery");
+  artery_dis_ = std::move(artery_discretization);
 
   if (!artery_dis_->filled()) artery_dis_->fill_complete();
 
@@ -89,9 +93,7 @@ PoroPressureBased::MeshtyingArtery::MeshtyingArtery(PorofluidAlgorithm* poroflui
       [&]()
       {
         if (Teuchos::getIntegralValue<ArteryNetwork::ArteryPorofluidElastScatraCouplingMethod>(
-                Global::Problem::instance()->porofluid_pressure_based_dynamic_params().sublist(
-                    "artery_coupling"),
-                "coupling_method") ==
+                porofluid_params_.sublist("artery_coupling"), "coupling_method") ==
             ArteryNetwork::ArteryPorofluidElastScatraCouplingMethod::node_to_point)
         {
           return "ArtPorofluidCouplConNodeToPoint";
@@ -150,12 +152,9 @@ void PoroPressureBased::MeshtyingArtery::update() const { artery_algorithm_->tim
 void PoroPressureBased::MeshtyingArtery::initialize_linear_solver(
     Core::LinAlg::Solver& solver) const
 {
-  const Teuchos::ParameterList& porofluid_params =
-      Global::Problem::instance()->porofluid_pressure_based_dynamic_params();
   const int linear_solver_num =
-      porofluid_params.sublist("nonlinear_solver").get<int>("linear_solver_id");
-  const Teuchos::ParameterList& solver_params =
-      Global::Problem::instance()->solver_params(linear_solver_num);
+      porofluid_params_.sublist("nonlinear_solver").get<int>("linear_solver_id");
+  const Teuchos::ParameterList& solver_params = solver_params_by_id_(linear_solver_num);
   const auto solver_type =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solver_params, "SOLVER");
   // no need to do the rest for direct solvers
@@ -243,7 +242,7 @@ void PoroPressureBased::MeshtyingArtery::create_result_test() const
 {
   const std::shared_ptr<Core::Utils::ResultTest> artery_result_test =
       artery_algorithm_->create_field_test();
-  Global::Problem::instance()->add_field_test(artery_result_test);
+  add_field_test_(artery_result_test);
 }
 
 /*----------------------------------------------------------------------*

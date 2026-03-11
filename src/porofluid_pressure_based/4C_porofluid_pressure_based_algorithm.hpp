@@ -19,6 +19,7 @@
 #include "4C_io_runtime_csv_writer.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_porofluid_pressure_based_algorithm_dependencies.hpp"
 #include "4C_porofluid_pressure_based_input.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -80,7 +81,8 @@ namespace PoroPressureBased
     //! Standard Constructor
     PorofluidAlgorithm(std::shared_ptr<Core::FE::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
-        std::shared_ptr<Core::IO::DiscretizationWriter> output);
+        std::shared_ptr<Core::IO::DiscretizationWriter> output,
+        PorofluidAlgorithmDeps algorithm_deps);
 
 
     //! initialize time integration
@@ -477,6 +479,9 @@ namespace PoroPressureBased
 
     //! parameter list of poro fluid multiphase problem
     const Teuchos::ParameterList& poroparams_;
+
+    //! externally provided dependencies to decouple from global problem singleton
+    PorofluidAlgorithmDeps algorithm_deps_;
 
     //! processor id
     int myrank_;
