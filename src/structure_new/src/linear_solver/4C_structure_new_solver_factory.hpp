@@ -86,6 +86,10 @@ namespace Solid
       std::shared_ptr<Core::LinAlg::Solver> build_cardiovascular0_d_lin_solver(
           const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const;
 
+      //! create the beaminteraction linear solver
+      std::shared_ptr<Core::LinAlg::Solver> build_beam_interaction_lin_solver(
+          const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const;
+
     };  // class Factory
 
     /*! Non-member function, which relates to the Solid::SOLVER::Factory class
