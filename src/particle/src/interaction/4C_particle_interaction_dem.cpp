@@ -23,6 +23,7 @@
 #include "4C_particle_interaction_runtime_writer.hpp"
 #include "4C_particle_interaction_utils.hpp"
 #include "4C_particle_wall_interface.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -220,14 +221,11 @@ void Particle::ParticleInteractionDEM::setup_particle_interaction_writer()
 void Particle::ParticleInteractionDEM::set_initial_radius()
 {
   // get allowed bounds for particle radius
-  double r_min = params_dem_.get<double>("MIN_RADIUS");
   double r_max = params_dem_.get<double>("MAX_RADIUS");
 
   // safety checks
-  if (r_min < 0.0) FOUR_C_THROW("negative minimum allowed particle radius!");
-  if (not(r_max > 0.0)) FOUR_C_THROW("non-positive maximum allowed particle radius!");
-  if (r_min > r_max)
-    FOUR_C_THROW("minimum allowed particle radius larger than maximum allowed particle radius!");
+  FOUR_C_ASSERT_ALWAYS(
+      r_max > 0, "maximum allowed particle radius MAX_RADIUS is not greater zero!");
 
   // get type of initial particle radius assignment
   auto radiusdistributiontype =
@@ -256,11 +254,11 @@ void Particle::ParticleInteractionDEM::set_initial_radius()
             particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
         // safety checks
-        if (material->initRadius_ < r_min)
-          FOUR_C_THROW("material particle radius smaller than minimum allowed particle radius!");
+        FOUR_C_ASSERT_ALWAYS(
+            material->initRadius_ > 0, "the material particle radius is smaller than zero");
 
-        if (material->initRadius_ > r_max)
-          FOUR_C_THROW("material particle radius larger than maximum allowed particle radius!");
+        FOUR_C_ASSERT_ALWAYS(material->initRadius_ <= r_max,
+            "the material particle radius is larger than the maximum allowed particle radius!");
 
         // (initial) radius of current phase
         std::vector<double> initradius(1);
@@ -291,11 +289,11 @@ void Particle::ParticleInteractionDEM::set_initial_radius()
         if (particlestored <= 0) continue;
 
         // safety checks
-        if (container->get_min_value_of_state(Particle::Radius) < r_min)
-          FOUR_C_THROW("minimum particle radius smaller than minimum allowed particle radius!");
+        FOUR_C_ASSERT_ALWAYS(container->get_min_value_of_state(Particle::Radius) > 0,
+            "the minimum particle radius is smaller than zero. Fix the particle input.");
 
-        if (container->get_max_value_of_state(Particle::Radius) > r_max)
-          FOUR_C_THROW("maximum particle radius larger than maximum allowed particle radius!");
+        FOUR_C_ASSERT_ALWAYS(container->get_max_value_of_state(Particle::Radius) <= r_max,
+            "the maximum particle radius is larger than the maximum allowed particle radius!");
       }
 
       break;
@@ -304,6 +302,16 @@ void Particle::ParticleInteractionDEM::set_initial_radius()
     case Particle::NormalRadiusDistribution:
     case Particle::LogNormalRadiusDistribution:
     {
+      auto optional_r_min = params_dem_.get<std::optional<double>>("MIN_RADIUS");
+      FOUR_C_ASSERT_ALWAYS(
+          optional_r_min.has_value(), "MIN_RADIUS is required for a radius distribution.");
+      const double r_min = optional_r_min.value();
+      FOUR_C_ASSERT_ALWAYS(
+          r_min > 0, "the minimum allowed particle radius MIN_RADIUS is smaller than zero.");
+      FOUR_C_ASSERT_ALWAYS(r_min <= r_max,
+          "the minimum allowed particle radius MIN_RADIUS is larger than maximum allowed particle "
+          "radius MAX_RADIUS!");
+
       // get sigma of random particle radius distribution
       auto sigma = params_dem_.get<std::optional<double>>("RADIUSDISTRIBUTION_SIGMA");
 

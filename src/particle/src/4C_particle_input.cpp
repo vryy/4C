@@ -9,6 +9,7 @@
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_io_input_spec_builders.hpp"
+#include "4C_io_input_spec_validators.hpp"
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
@@ -484,10 +485,14 @@ std::vector<Core::IO::InputSpec> Particle::valid_parameters()
               {.description = "type of (random) surface energy distribution",
                   .default_value = SurfaceEnergyDistribution::Constant}),
 
-          parameter<double>("MIN_RADIUS",
-              {.description = "minimum allowed particle radius", .default_value = 0.0}),
+          parameter<std::optional<double>>(
+              "MIN_RADIUS", {.description = "minimum allowed particle radius: used as lower cutoff "
+                                            "for a radius distribution",
+                                .validator = null_or(positive<double>())}),
           parameter<double>("MAX_RADIUS",
-              {.description = "maximum allowed particle radius", .default_value = 0.0}),
+              {.description = "maximum allowed particle radius: used as upper cutoff for a radius "
+                              "distribution and to calculate the contact stiffness.",
+                  .default_value = 0.0}),
           parameter<double>("MAX_VELOCITY",
               {.description = "maximum expected particle velocity", .default_value = -1.0}),
 
