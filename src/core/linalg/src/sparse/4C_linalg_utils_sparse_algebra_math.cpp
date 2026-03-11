@@ -395,12 +395,12 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_sparse_inverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_rank_correction(
+std::unique_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_rank_correction(
     const SparseMatrix& A, const MultiVector<double>& basis,
     OptionsSparseMatrixRankCorrection options)
 {
-  auto orthonormal_basis(basis);
-  if (options.orthonormalize) orthonormal_basis = Core::LinAlg::orthonormalize_multi_vector(basis);
+  const MultiVector<double>& orthonormal_basis =
+      options.orthonormalize ? Core::LinAlg::orthonormalize_multi_vector(basis) : basis;
 
   Core::LinAlg::SparseMatrix basis_matrix(A.row_map(), basis.num_vectors());
   Core::LinAlg::Map coarse_map(basis.num_vectors(), 0, A.get_comm());
@@ -410,7 +410,7 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_rank_correction
   // Build projection matrix
   auto projection = Core::LinAlg::matrix_multiply(basis_matrix, false, basis_matrix, true);
 
-  auto projected_A = std::make_shared<Core::LinAlg::SparseMatrix>(A);
+  auto projected_A = std::make_unique<Core::LinAlg::SparseMatrix>(A);
   Core::LinAlg::matrix_add(*projection, false, options.alpha, *projected_A, 1.0);
 
   return projected_A;

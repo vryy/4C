@@ -208,9 +208,9 @@ namespace Core::LinAlg
    * @param options (in): Options controlling the rank correction, including the scaling factor
    * \f$\alpha\f$ and whether the basis should be orthonormalized.
    *
-   * @return A shared pointer to a new sparse matrix containing the corrected matrix
+   * @return A unique pointer to a new sparse matrix containing the corrected matrix
    */
-  std::shared_ptr<SparseMatrix> matrix_rank_correction(const SparseMatrix& A,
+  std::unique_ptr<SparseMatrix> matrix_rank_correction(const SparseMatrix& A,
       const MultiVector<double>& basis, OptionsSparseMatrixRankCorrection options = {});
 
   /**
