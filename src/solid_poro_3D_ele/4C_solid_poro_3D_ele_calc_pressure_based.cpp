@@ -155,9 +155,7 @@ void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::
             const double fluidpress = solidpressure;
 
             solidpressure = recalculate_solidpressure_at_gp(fluidpress, porosity,
-                solidporo_fluid_properties.number_of_fluid_dofs_per_node_,
-                solidporo_fluid_properties.number_of_fluid_phases_in_multiphase_porespace_,
-                solidporo_fluid_properties.number_of_volfracs_, fluid_phase_phi_at_gp,
+                solidporo_fluid_properties.number_of_volfracs_,
                 additional_porespace_variables_at_gp);
 
             recalculate_linearization_of_solpress_wrt_disp<celltype>(fluidpress, porosity,
@@ -182,9 +180,7 @@ void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::
             const double fluidpress = solidpressure;
 
             solidpressure = recalculate_solidpressure_at_gp(fluidpress, porosity,
-                solidporo_fluid_properties.number_of_fluid_dofs_per_node_,
-                solidporo_fluid_properties.number_of_fluid_phases_in_multiphase_porespace_,
-                solidporo_fluid_properties.number_of_volfracs_, fluid_phase_phi_at_gp,
+                solidporo_fluid_properties.number_of_volfracs_,
                 additional_porespace_variables_at_gp);
 
             recalculate_linearization_of_solpress_wrt_disp<celltype>(fluidpress, porosity,
@@ -240,7 +236,7 @@ void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::
     add_bodyforce_contribution_to_nonlinear_force_stiffness(const Core::Elements::Element& ele,
         Mat::StructPoro& porostructmat, Mat::FluidPoroMultiPhase& porofluidmat,
         const Inpar::Solid::KinemType& kinematictype,
-        const std::optional<Core::LinAlg::Tensor<double, 3>>& bodyforce_contribution,
+        const Core::LinAlg::Tensor<double, 3>& bodyforce_contribution,
         const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
         Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
         Core::LinAlg::SerialDenseMatrix* stiffness_matrix)
@@ -375,7 +371,7 @@ void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::
           for (int i_node = 0; i_node < num_nodes_; ++i_node)
           {
             bodyforce(i_node * num_dim_ + j, 0) +=
-                shape_functions.shapefunctions_(i_node) * bodyforce_contribution.value()(j);
+                shape_functions.shapefunctions_(i_node) * bodyforce_contribution(j);
           }
         }
 

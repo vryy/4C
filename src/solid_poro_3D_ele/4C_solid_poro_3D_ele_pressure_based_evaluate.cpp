@@ -71,8 +71,9 @@ int Discret::Elements::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& 
                 {
                   interface->add_bodyforce_contribution_to_nonlinear_force_stiffness(*this,
                       this->struct_poro_material(), this->fluid_poro_material(),
-                      this->get_ele_kinematic_type(), this->get_possible_bodyforce_contribution(),
-                      discretization, la, params, &elevec1, &elemat1);
+                      this->get_ele_kinematic_type(),
+                      this->get_possible_bodyforce_contribution().value(), discretization, la,
+                      params, &elevec1, &elemat1);
                 },
                 solidporo_press_based_calc_variant_);
           }
@@ -109,8 +110,9 @@ int Discret::Elements::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& 
                 {
                   interface->add_bodyforce_contribution_to_nonlinear_force_stiffness(*this,
                       this->struct_poro_material(), this->fluid_poro_material(),
-                      this->get_ele_kinematic_type(), this->get_possible_bodyforce_contribution(),
-                      discretization, la, params, &elevec1, &elemat1);
+                      this->get_ele_kinematic_type(),
+                      this->get_possible_bodyforce_contribution().value(), discretization, la,
+                      params, &elevec1, &elemat1);
                 },
                 solidporo_press_based_calc_variant_);
           }
@@ -152,8 +154,9 @@ int Discret::Elements::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& 
                 {
                   interface->add_bodyforce_contribution_to_nonlinear_force_stiffness(*this,
                       this->struct_poro_material(), this->fluid_poro_material(),
-                      this->get_ele_kinematic_type(), this->get_possible_bodyforce_contribution(),
-                      discretization, la, params, &elevec1, &elemat1);
+                      this->get_ele_kinematic_type(),
+                      this->get_possible_bodyforce_contribution().value(), discretization, la,
+                      params, &elevec1, &elemat1);
                 },
                 solidporo_press_based_calc_variant_);
           }

@@ -371,7 +371,7 @@ std::vector<double> Mat::FluidPoroMultiPhase::get_phase_densities() const
  *  Evaluate generalized pressure of all phases            vuong 08/16 |
  *----------------------------------------------------------------------*/
 void Mat::FluidPoroMultiPhase::evaluate_gen_pressure(
-    std::vector<double>& genpressure, const std::vector<double>& phinp) const
+    std::vector<double>& genpressure, const std::span<const double> phinp) const
 {
   // evaluate the pressures
   for (int iphase = 0; iphase < num_fluid_phases(); iphase++)
@@ -390,7 +390,7 @@ void Mat::FluidPoroMultiPhase::evaluate_gen_pressure(
  *   Evaluate saturation of the phase                       vuong 08/16 |
  *----------------------------------------------------------------------*/
 void Mat::FluidPoroMultiPhase::evaluate_saturation(std::vector<double>& saturation,
-    const std::vector<double>& phinp, const std::vector<double>& pressure) const
+    const std::span<const double> phinp, const std::span<const double> pressure) const
 {
   // get the number of the phase, which saturation is calculated by the saturation constraint
   const int constraintsaturationphase = paramsporo_->constraintphaseID_;
@@ -432,7 +432,7 @@ void Mat::FluidPoroMultiPhase::transform_gen_pres_to_true_pres(
  * Evaluate derivative of degree of freedom with respect to pressure          vuong 08/16 |
  *----------------------------------------------------------------------------------------*/
 void Mat::FluidPoroMultiPhase::evaluate_deriv_of_dof_wrt_pressure(
-    Core::LinAlg::SerialDenseMatrix& derivs, const std::vector<double>& state) const
+    Core::LinAlg::SerialDenseMatrix& derivs, const std::span<const double> state) const
 {
   for (int iphase = 0; iphase < num_fluid_phases(); iphase++)
   {
