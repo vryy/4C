@@ -895,8 +895,7 @@ bool BeamInteraction::SubmodelEvaluator::BeamContact::have_contact_type(
     Core::Binstrategy::Utils::BinContentType const& contacttype) const
 {
   check_init();
-  return (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contacttype) !=
-          contactelementtypes_.end());
+  return std::ranges::find(contactelementtypes_, contacttype) != contactelementtypes_.end();
 }
 
 /*----------------------------------------------------------------------------*
@@ -914,15 +913,18 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::find_and_store_neighboring
 
   // Get vector of all beam element bounding boxes.
   int const numroweles = ele_type_map_extractor_ptr()->beam_map()->num_my_elements();
-  std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> beam_bounding_boxes;
+  std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> beam_bounding_boxes(
+      numroweles);
   for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
   {
     int const elegid = ele_type_map_extractor_ptr()->beam_map()->gid(rowele_i);
     Core::Elements::Element* currele = discret().g_element(elegid);
+    const auto bounding_volume = currele->get_bounding_volume(discret(),
+        *beam_interaction_data_state_ptr()->get_dis_col_np(), *geometric_search_params_ptr_);
 
-    beam_bounding_boxes.emplace_back(std::make_pair(elegid,
-        currele->get_bounding_volume(discret(),
-            *beam_interaction_data_state_ptr()->get_dis_col_np(), *geometric_search_params_ptr_)));
+    auto& bounding_volume_pair = beam_bounding_boxes.at(rowele_i);
+    bounding_volume_pair.first = elegid;
+    bounding_volume_pair.second = bounding_volume;
   }
 
   // Get vector of the bounding boxes of all possible interacting elements (also including beams
@@ -935,13 +937,12 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::find_and_store_neighboring
     Core::Elements::Element* currele = discret().l_col_element(colele_i);
     const Core::Binstrategy::Utils::BinContentType contact_type =
         BeamInteraction::Utils::convert_element_to_bin_content_type(currele);
-    if (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contact_type) !=
-        contactelementtypes_.end())
+    if (have_contact_type(contact_type))
     {
-      other_bounding_boxes.emplace_back(
-          std::make_pair(currele->id(), currele->get_bounding_volume(discret(),
-                                            *beam_interaction_data_state_ptr()->get_dis_col_np(),
-                                            *geometric_search_params_ptr_)));
+      const auto bounding_volume = currele->get_bounding_volume(discret(),
+          *beam_interaction_data_state_ptr()->get_dis_col_np(), *geometric_search_params_ptr_);
+
+      other_bounding_boxes.emplace_back(std::make_pair(currele->id(), bounding_volume));
     }
   }
 
