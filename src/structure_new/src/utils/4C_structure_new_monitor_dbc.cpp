@@ -524,8 +524,8 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
       }
     }
 
-    larea[AreaType::ref] += Core::Geo::element_area(fele->shape(), xyze_ref);
-    larea[AreaType::curr] += Core::Geo::element_area(fele->shape(), xyze_curr);
+    larea[AreaType::ref] += Core::Geo::element_volume(fele->shape(), xyze_ref);
+    larea[AreaType::curr] += Core::Geo::element_volume(fele->shape(), xyze_curr);
   }
 
   std::array<double, 2> garea = Core::Communication::sum_all(larea, discret.get_comm());

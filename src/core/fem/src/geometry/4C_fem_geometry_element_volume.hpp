@@ -20,9 +20,8 @@ namespace Core::Geo
 {
   //! calculates the length of an element in given configuration
   template <Core::FE::CellType distype, class Matrixtype>
-  double element_length_t(const Matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
+  double element_length(const Matrixtype& xyze)
   {
-    // gaussian points
     static constexpr int numnode = Core::FE::num_nodes(distype);
     const Core::FE::GaussIntegration intpoints(distype);
 
@@ -32,7 +31,6 @@ namespace Core::Geo
 
     double length = 0.0;
 
-    // integration loop
     for (int iquad = 0; iquad < intpoints.num_points(); ++iquad)
     {
       // coordinates of the current integration point in element coordinates \xi
@@ -51,16 +49,15 @@ namespace Core::Geo
       const double fac = intpoints.weight(iquad) * xjm.norm2();
 
       length += fac;
-    }  // end loop over gauss points
+    }
 
     return length;
   }
 
   //! calculates the area of an element in given configuration
   template <Core::FE::CellType distype, class Matrixtype>
-  double element_area_t(const Matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
+  double element_area(const Matrixtype& xyze)
   {
-    // gaussian points
     static constexpr int numnode = Core::FE::num_nodes(distype);
     const Core::FE::GaussIntegration intpoints(distype);
 
@@ -71,7 +68,6 @@ namespace Core::Geo
 
     double area = 0.0;
 
-    // integration loop
     for (int iquad = 0; iquad < intpoints.num_points(); ++iquad)
     {
       // coordinates of the current integration point in element coordinates \xi
@@ -94,19 +90,16 @@ namespace Core::Geo
       const double fac = intpoints.weight(iquad) * std::sqrt(det);
 
       area += fac;
-    }  // end loop over gauss points
+    }
 
     return area;
   }
 
-  //! calculates the volume of an element in given configuration          u.may
+  //! calculates the volume of an element in given configuration
   template <Core::FE::CellType distype, class Matrixtype>
-  double element_volume_t(const Matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes)
-  )
+  double element_volume(const Matrixtype& xyze)
   {
-    // number of nodes for element
     const int numnode = Core::FE::num_nodes(distype);
-    // gaussian points
     const Core::FE::GaussIntegration intpoints(distype);
 
     Core::LinAlg::Matrix<3, 1> eleCoord;
@@ -115,7 +108,6 @@ namespace Core::Geo
 
     double vol = 0.0;
 
-    // integration loop
     for (int iquad = 0; iquad < intpoints.num_points(); ++iquad)
     {
       // coordinates of the current integration point in element coordinates \xi
@@ -139,98 +131,52 @@ namespace Core::Geo
       if (det <= 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT: {}", det);
 
       vol += fac;
-    }  // end loop over gauss points
+    }
+
     return vol;
   }
 
-  /** \brief calculates the length of a edge element in given configuration
-   *
-   *  \param distype (in) : discretization type of the given element
-   *  \param xyze    (in) : spatial coordinates of the elememnt nodes
-   *                         (row = dim, col = number of nodes)
-   */
+
+  //! calculates the volume of an element in given configuration
   template <class Matrixtype>
-  double element_length(const Core::FE::CellType& distype, const Matrixtype& xyze)
-  {
-    if (distype != Core::FE::CellType::line2 or xyze.numCols() != 2)
-      FOUR_C_THROW("Currently only line2 elements are supported!");
-
-    // calculate the distance between the two given nodes and return
-    // the value
-    Core::LinAlg::Matrix<3, 1> d(&xyze(0, 0));
-    const Core::LinAlg::Matrix<3, 1> x1(&xyze(0, 1));
-
-    d.update(1.0, x1, -1.0);
-    return d.norm2();
-  }
-
-
-  /** \brief calculates the area of a surface element in given configuration
-   */
-  template <class Matrixtype>
-  double element_area(const Core::FE::CellType distype, const Matrixtype& xyze)
+  double element_volume(const Core::FE::CellType distype, const Matrixtype& xyze)
   {
     switch (distype)
     {
-      // --- 2-D boundary elements
       case Core::FE::CellType::line2:
-        return element_length(distype, xyze);
+        return element_length<Core::FE::CellType::line2>(xyze);
       case Core::FE::CellType::line3:
-        return element_length_t<Core::FE::CellType::line3>(xyze);
-      // --- 3-D boundary elements
+        return element_length<Core::FE::CellType::line3>(xyze);
       case Core::FE::CellType::tri3:
-        return element_area_t<Core::FE::CellType::tri3>(xyze);
+        return element_area<Core::FE::CellType::tri3>(xyze);
       case Core::FE::CellType::tri6:
-        return element_area_t<Core::FE::CellType::tri6>(xyze);
+        return element_area<Core::FE::CellType::tri6>(xyze);
       case Core::FE::CellType::quad4:
-        return element_area_t<Core::FE::CellType::quad4>(xyze);
+        return element_area<Core::FE::CellType::quad4>(xyze);
       case Core::FE::CellType::quad8:
-        return element_area_t<Core::FE::CellType::quad8>(xyze);
+        return element_area<Core::FE::CellType::quad8>(xyze);
       case Core::FE::CellType::quad9:
-        return element_area_t<Core::FE::CellType::quad9>(xyze);
-      default:
-        FOUR_C_THROW("Unsupported surface element type!");
-    }
-
-    return -1.0;
-  }
-
-  //! calculates the volume of an element in given configuration          u.may
-  template <class Matrixtype>
-  double element_volume(const Core::FE::CellType distype,
-      const Matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes
-  )
-  {
-    switch (distype)
-    {
-      // --- 1-D elements -----------------------------------------------------
-      case Core::FE::CellType::line2:
-        return element_length(distype, xyze);
-      // --- 2-D elements -----------------------------------------------------
-      case Core::FE::CellType::quad4:
-      case Core::FE::CellType::tri3:
-        return element_area(distype, xyze);
-      // --- 3-D elements -----------------------------------------------------
+        return element_area<Core::FE::CellType::quad9>(xyze);
       case Core::FE::CellType::hex8:
-        return element_volume_t<Core::FE::CellType::hex8>(xyze);
+        return element_volume<Core::FE::CellType::hex8>(xyze);
       case Core::FE::CellType::hex20:
-        return element_volume_t<Core::FE::CellType::hex20>(xyze);
+        return element_volume<Core::FE::CellType::hex20>(xyze);
       case Core::FE::CellType::hex27:
-        return element_volume_t<Core::FE::CellType::hex27>(xyze);
+        return element_volume<Core::FE::CellType::hex27>(xyze);
       case Core::FE::CellType::tet4:
-        return element_volume_t<Core::FE::CellType::tet4>(xyze);
+        return element_volume<Core::FE::CellType::tet4>(xyze);
       case Core::FE::CellType::tet10:
-        return element_volume_t<Core::FE::CellType::tet10>(xyze);
+        return element_volume<Core::FE::CellType::tet10>(xyze);
       case Core::FE::CellType::wedge6:
-        return element_volume_t<Core::FE::CellType::wedge6>(xyze);
+        return element_volume<Core::FE::CellType::wedge6>(xyze);
       case Core::FE::CellType::wedge15:
-        return element_volume_t<Core::FE::CellType::wedge15>(xyze);
+        return element_volume<Core::FE::CellType::wedge15>(xyze);
       case Core::FE::CellType::pyramid5:
-        return element_volume_t<Core::FE::CellType::pyramid5>(xyze);
+        return element_volume<Core::FE::CellType::pyramid5>(xyze);
       default:
-        FOUR_C_THROW("add you distype here");
+        FOUR_C_THROW(
+            "Element volume calculation is current not implemented for the given cell type.");
     }
-    return -1.0;
   }
 
 }  // namespace Core::Geo

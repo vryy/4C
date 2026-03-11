@@ -32,7 +32,7 @@ namespace
     xyz(1, 1) = 1.0;
     xyz(2, 1) = 2.0;  // node 2
 
-    double length = Core::Geo::element_length_t<Core::FE::CellType::line2>(xyz);
+    double length = Core::Geo::element_length<Core::FE::CellType::line2>(xyz);
 
     double correct_length = 3.0;
     EXPECT_NEAR(length, correct_length, ElementVolumeTest::TOL);
@@ -51,7 +51,7 @@ namespace
     xyz(1, 2) = 0.5;
     xyz(2, 2) = 1.0;  // node 3
 
-    double length = Core::Geo::element_length_t<Core::FE::CellType::line3>(xyz);
+    double length = Core::Geo::element_length<Core::FE::CellType::line3>(xyz);
 
     double correct_length = 3.0;
     EXPECT_NEAR(length, correct_length, ElementVolumeTest::TOL);
@@ -70,7 +70,7 @@ namespace
     xyz(1, 2) = 1.0;
     xyz(2, 2) = 0.0;  // node 3
 
-    double area = Core::Geo::element_area_t<Core::FE::CellType::tri3>(xyz);
+    double area = Core::Geo::element_area<Core::FE::CellType::tri3>(xyz);
 
     double correct_area = 0.5;
     EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
@@ -98,7 +98,7 @@ namespace
     xyz(1, 5) = 0.5;
     xyz(2, 5) = 0.0;  // node 6
 
-    double area = Core::Geo::element_area_t<Core::FE::CellType::tri6>(xyz);
+    double area = Core::Geo::element_area<Core::FE::CellType::tri6>(xyz);
 
     double correct_area = 0.5;
     EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
@@ -120,7 +120,7 @@ namespace
     xyz(1, 3) = 1.0;
     xyz(2, 3) = 0.0;  // node 4
 
-    double area = Core::Geo::element_area_t<Core::FE::CellType::quad4>(xyz);
+    double area = Core::Geo::element_area<Core::FE::CellType::quad4>(xyz);
 
     double correct_area = 1.5;
     EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
@@ -154,7 +154,7 @@ namespace
     xyz(1, 7) = 0.5;
     xyz(2, 7) = 0.0;  // node 8
 
-    double area = Core::Geo::element_area_t<Core::FE::CellType::quad8>(xyz);
+    double area = Core::Geo::element_area<Core::FE::CellType::quad8>(xyz);
 
     double correct_area = 1.5;
     EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
@@ -191,7 +191,7 @@ namespace
     xyz(1, 8) = 0.5;
     xyz(2, 8) = 0.0;  // node 9
 
-    double area = Core::Geo::element_area_t<Core::FE::CellType::quad9>(xyz);
+    double area = Core::Geo::element_area<Core::FE::CellType::quad9>(xyz);
 
     double correct_area = 1.5;
     EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
@@ -213,7 +213,7 @@ namespace
     xyz(1, 3) = 0.0;
     xyz(2, 3) = 1.0;  // node 4
 
-    double volume = Core::Geo::element_volume_t<Core::FE::CellType::tet4>(xyz);
+    double volume = Core::Geo::element_volume<Core::FE::CellType::tet4>(xyz);
 
     double correct_volume = 0.5 / 3;
     EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);
@@ -253,7 +253,7 @@ namespace
     xyz(1, 9) = 0.5;
     xyz(2, 9) = 0.5;  // node 10
 
-    double volume = Core::Geo::element_volume_t<Core::FE::CellType::tet10>(xyz);
+    double volume = Core::Geo::element_volume<Core::FE::CellType::tet10>(xyz);
 
     double correct_volume = 0.5 / 3;
     EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);
@@ -287,7 +287,7 @@ namespace
     xyz(1, 7) = 1.0;
     xyz(2, 7) = 1.0;  // node 8
 
-    double volume = Core::Geo::element_volume_t<Core::FE::CellType::hex8>(xyz);
+    double volume = Core::Geo::element_volume<Core::FE::CellType::hex8>(xyz);
 
     double correct_volume = 1.25;
     EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);
@@ -362,7 +362,7 @@ namespace
     xyz(1, 19) = 0.5 * (y8 + y5);
     xyz(2, 19) = 0.5 * (z8 + z5);  // node 20
 
-    double volume = Core::Geo::element_volume_t<Core::FE::CellType::hex20>(xyz);
+    double volume = Core::Geo::element_volume<Core::FE::CellType::hex20>(xyz);
 
     double correct_volume = 1.25;
     EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);
@@ -460,7 +460,7 @@ namespace
     xyz(1, 26) = 0.125 * (y1 + y2 + y3 + y4 + y5 + y6 + y7 + y8);
     xyz(2, 26) = 0.125 * (z1 + z2 + z3 + z4 + z5 + z6 + z7 + z8);  // node 27
 
-    double volume = Core::Geo::element_volume_t<Core::FE::CellType::hex27>(xyz);
+    double volume = Core::Geo::element_volume<Core::FE::CellType::hex27>(xyz);
 
     double correct_volume = 1.25;
     EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);

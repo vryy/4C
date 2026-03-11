@@ -103,7 +103,7 @@ const std::vector<Cut::Point*>& Cut::BoundaryCell::points() const { return (*poi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Cut::Line2BoundaryCell::area() { return Core::Geo::element_area(shape(), xyz_); }
+double Cut::Line2BoundaryCell::area() { return Core::Geo::element_volume(shape(), xyz_); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
