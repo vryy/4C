@@ -60,6 +60,8 @@ void PoroPressureBased::PorofluidElastScatraBaseAlgorithm::init(
 
   // access the global problem
   Global::Problem* problem = Global::Problem::instance();
+  const PoroPressureBased::PorofluidElastAlgorithmDeps porofluid_elast_algorithm_deps =
+      PoroPressureBased::make_elast_algorithm_deps_from_problem(*problem);
 
   // Create the two uncoupled subproblems.
 
@@ -111,8 +113,9 @@ void PoroPressureBased::PorofluidElastScatraBaseAlgorithm::init(
         "approach instead.");
   }
 
-  porofluid_elast_algo_ = PoroPressureBased::create_algorithm_porofluid_elast(
-      solution_scheme_porofluid_elast, global_time_params, get_comm());
+  porofluid_elast_algo_ =
+      PoroPressureBased::create_algorithm_porofluid_elast(solution_scheme_porofluid_elast,
+          global_time_params, get_comm(), porofluid_elast_algorithm_deps);
 
   // initialize
   porofluid_elast_algo_->init(global_time_params, porofluid_elast_params, structure_params,
