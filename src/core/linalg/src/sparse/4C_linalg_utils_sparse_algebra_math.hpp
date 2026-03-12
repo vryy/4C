@@ -216,13 +216,14 @@ namespace Core::LinAlg
   /**
    * \brief Computes multiplication of a MultiVector times a SerialDenseMatrix
    *
-   * \param mv (in): MultiVector to be used for multiplication
-   * \param dm (in): SerialDenseMatrix to be used for multiplication
+   * \param multi_vector (in): MultiVector to be used for multiplication
+   * \param matrix (in): SerialDenseMatrix to be used for multiplication
    *
-   * \return MultiVector times SerialDenseMatrix MV*SerialDenseMatrix
+   * \return MultiVector containing multi_vector*matrix
    */
   MultiVector<double> multiply_multi_vector_dense_matrix(
-      const Core::LinAlg::MultiVector<double>& mv, const Core::LinAlg::SerialDenseMatrix& dm);
+      const Core::LinAlg::MultiVector<double>& multi_vector,
+      const Core::LinAlg::SerialDenseMatrix& matrix);
 
   /**
    * \brief Computes the outer product of two MultiVectors

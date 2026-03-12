@@ -419,21 +419,26 @@ std::unique_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_rank_correction
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::LinAlg::MultiVector<double> Core::LinAlg::multiply_multi_vector_dense_matrix(
-    const Core::LinAlg::MultiVector<double>& mv, const Core::LinAlg::SerialDenseMatrix& dm)
+    const Core::LinAlg::MultiVector<double>& multi_vector,
+    const Core::LinAlg::SerialDenseMatrix& matrix)
 {
-  Core::LinAlg::MultiVector<double> mvout(mv.get_map(), mv.num_vectors());
+  const int columns = multi_vector.num_vectors();
 
-  for (int rr = 0; rr < mv.num_vectors(); ++rr)
+  FOUR_C_ASSERT(matrix.num_rows() == columns,
+      "The matrix row count ({}) must match the number of columns in the multivector ({})",
+      matrix.num_rows(), columns);
+
+  Core::LinAlg::MultiVector<double> result(multi_vector.get_map(), matrix.num_cols(), true);
+
+  for (int matrix_col = 0; matrix_col < matrix.num_cols(); ++matrix_col)
   {
-    auto& mvouti = mvout.get_vector(rr);
+    auto& result_vec = result.get_vector(matrix_col);
 
-    for (int mm = 0; mm < mv.num_vectors(); ++mm)
-    {
-      mvouti.update(dm(mm, rr), mv.get_vector(mm), 1.0);
-    }
+    for (int vector_col = 0; vector_col < columns; ++vector_col)
+      result_vec.update(matrix(vector_col, matrix_col), multi_vector.get_vector(vector_col), 1.0);
   }
 
-  return mvout;
+  return result;
 }
 
 /*----------------------------------------------------------------------*
