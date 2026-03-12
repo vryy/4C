@@ -589,11 +589,9 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_beam_interac
       maps.emplace_back(dof_row_map_solid);
       maps.emplace_back(dof_row_map_beams);
 
-      const std::shared_ptr<Core::LinAlg::MultiMapExtractor> extractor(
-          new Core::LinAlg::MultiMapExtractor(*actdis.dof_row_map(), maps));
       linsolver->params()
           .sublist("Teko Parameters")
-          .set<std::shared_ptr<Core::LinAlg::MultiMapExtractor>>("extractor", extractor);
+          .set<std::vector<std::shared_ptr<const Core::LinAlg::Map>>>("reorder: maps", maps);
 
       linsolver->params()
           .sublist("Inverse1")

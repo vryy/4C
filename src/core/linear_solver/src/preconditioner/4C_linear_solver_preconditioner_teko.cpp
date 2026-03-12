@@ -55,22 +55,30 @@ void Core::LinearSolver::TekoPreconditioner::setup(
   auto A = std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(
       Core::Utils::shared_ptr_from_ref(matrix));
 
-  if (!A)
+  // Reorder/split the linear operator into the block structure desired
+  if (tekolist_.sublist("Teko Parameters").isParameter("reorder: maps"))
   {
-    if (tekolist_.sublist("Teko Parameters").isParameter("extractor"))
+    auto maps = tekolist_.sublist("Teko Parameters")
+                    .get<std::vector<std::shared_ptr<const Core::LinAlg::Map>>>("reorder: maps");
+    Core::LinAlg::MultiMapExtractor extractor;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> A_sparse;
+
+    // If we have a sparse matrix at hand and given reorder maps, we try to split the linear
+    // operator into a block matrix. If it is a block matrix, we first merge and split afterwards.
+    if (!A)
     {
-      std::shared_ptr<Core::LinAlg::MultiMapExtractor> extractor =
-          tekolist_.sublist("Teko Parameters")
-              .get<std::shared_ptr<Core::LinAlg::MultiMapExtractor>>("extractor");
-
-      auto A_sparse = std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(
+      A_sparse = std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(
           Core::Utils::shared_ptr_from_ref(matrix));
-
-      A = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *A_sparse, *extractor, *extractor);
-
-      A->complete();
     }
+    else
+    {
+      A_sparse = A->merge();
+    }
+
+    extractor = Core::LinAlg::MultiMapExtractor(A_sparse->row_map(), maps);
+    A = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+        *A_sparse, extractor, extractor);
+    A->complete();
   }
 
   // wrap linear operators
