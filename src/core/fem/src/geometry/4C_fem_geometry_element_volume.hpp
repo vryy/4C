@@ -292,7 +292,7 @@ namespace Core::Geo
         return element_volume<Core::FE::CellType::nurbs27>(xyze, knots, weights);
       default:
         FOUR_C_THROW(
-            "Element volume calculation is current not implemented for the given cell type.");
+            "Element volume calculation is currently not implemented for the given cell type.");
     }
   }
 
