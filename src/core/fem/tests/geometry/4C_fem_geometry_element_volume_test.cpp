@@ -295,6 +295,188 @@ namespace
     EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
   }
 
+  TEST_F(ElementVolumeTest, TestElementArea_nurbs4)
+  {
+    Core::LinAlg::Matrix<3, 4> xyz(Core::LinAlg::Initialization::zero);
+    xyz(0, 0) = 0.0;
+    xyz(1, 0) = 0.0;
+    xyz(2, 0) = 0.0;  // node 1
+    xyz(0, 1) = 2.0;
+    xyz(1, 1) = 0.0;
+    xyz(2, 1) = 0.0;  // node 2
+    xyz(0, 2) = 0.0;
+    xyz(1, 2) = 1.0;
+    xyz(2, 2) = 0.0;  // node 3
+    xyz(0, 3) = 1.0;
+    xyz(1, 3) = 1.0;
+    xyz(2, 3) = 0.0;  // node 4
+
+    std::vector<Core::LinAlg::SerialDenseVector> knots(2);
+    knots[0].reshape(4, 1);
+    knots[0][0] = 0;
+    knots[0][1] = 0;
+    knots[0][2] = 1;
+    knots[0][3] = 1;
+    knots[1].reshape(4, 1);
+    knots[1][0] = 0;
+    knots[1][1] = 0;
+    knots[1][2] = 1;
+    knots[1][3] = 1;
+
+    Core::LinAlg::SerialDenseVector weights(4);
+    weights(0) = 1.0;
+    weights(1) = 1.0;
+    weights(2) = 1.0;
+    weights(3) = 1.0;
+
+    double area = Core::Geo::element_area<Core::FE::CellType::nurbs4>(xyz, knots, weights);
+
+    double correct_area = 1.5;
+    EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
+  }
+
+  TEST_F(ElementVolumeTest, TestElementArea_nurbs9)
+  {
+    // square surface
+    {
+      Core::LinAlg::Matrix<3, 9> xyz(Core::LinAlg::Initialization::zero);
+      xyz(0, 0) = 0.0;
+      xyz(1, 0) = 0.0;
+      xyz(2, 0) = 0.0;  // node 1
+      xyz(0, 1) = 1.0;
+      xyz(1, 1) = 0.0;
+      xyz(2, 1) = 0.0;  // node 2
+      xyz(0, 2) = 2.0;
+      xyz(1, 2) = 0.0;
+      xyz(2, 2) = 0.0;  // node 3
+      xyz(0, 3) = 0.0;
+      xyz(1, 3) = 1.0;
+      xyz(2, 3) = 0.0;  // node 4
+      xyz(0, 4) = 1.0;
+      xyz(1, 4) = 1.0;
+      xyz(2, 4) = 0.0;  // node 5
+      xyz(0, 5) = 2.0;
+      xyz(1, 5) = 1.0;
+      xyz(2, 5) = 0.0;  // node 6
+      xyz(0, 6) = 0.0;
+      xyz(1, 6) = 2.0;
+      xyz(2, 6) = 0.0;  // node 7
+      xyz(0, 7) = 1.0;
+      xyz(1, 7) = 2.0;
+      xyz(2, 7) = 0.0;  // node 8
+      xyz(0, 8) = 2.0;
+      xyz(1, 8) = 2.0;
+      xyz(2, 8) = 0.0;  // node 9
+
+      std::vector<Core::LinAlg::SerialDenseVector> knots(2);
+      knots[0].reshape(6, 1);
+      knots[0][0] = 0;
+      knots[0][1] = 0;
+      knots[0][2] = 0;
+      knots[0][3] = 1;
+      knots[0][4] = 1;
+      knots[0][5] = 1;
+      knots[1].reshape(6, 1);
+      knots[1][0] = 0;
+      knots[1][1] = 0;
+      knots[1][2] = 0;
+      knots[1][3] = 1;
+      knots[1][4] = 1;
+      knots[1][5] = 1;
+
+      Core::LinAlg::SerialDenseVector weights(9);
+      weights(0) = 1.0;
+      weights(1) = 1.0;
+      weights(2) = 1.0;
+      weights(3) = 1.0;
+      weights(4) = 1.0;
+      weights(5) = 1.0;
+      weights(6) = 1.0;
+      weights(7) = 1.0;
+      weights(8) = 1.0;
+
+      double area = Core::Geo::element_area<Core::FE::CellType::nurbs9>(xyz, knots, weights);
+
+      double correct_area = 4.0;
+      EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
+    }
+
+    // octant surface of a sphere
+    {
+      Core::LinAlg::Matrix<3, 9> xyz(Core::LinAlg::Initialization::zero);
+      xyz(0, 0) = 1.0;
+      xyz(1, 0) = 0.0;
+      xyz(2, 0) = 0.0;  // node 1
+
+      xyz(0, 1) = 1.0;
+      xyz(1, 1) = 1.0;
+      xyz(2, 1) = 0.0;  // node 2
+
+      xyz(0, 2) = 0.0;
+      xyz(1, 2) = 1.0;
+      xyz(2, 2) = 0.0;  // node 3
+
+      xyz(0, 3) = 1.0;
+      xyz(1, 3) = 0.0;
+      xyz(2, 3) = 1.0;  // node 4
+
+      xyz(0, 4) = 1.0;
+      xyz(1, 4) = 1.0;
+      xyz(2, 4) = 1.0;  // node 5
+
+      xyz(0, 5) = 0.0;
+      xyz(1, 5) = 1.0;
+      xyz(2, 5) = 1.0;
+      ;  // node 6
+
+      xyz(0, 6) = 0.0;
+      xyz(1, 6) = 0.0;
+      xyz(2, 6) = 1.0;  // node 7
+
+      xyz(0, 7) = 0.0;
+      xyz(1, 7) = 0.0;
+      xyz(2, 7) = 1.0;  // node 8
+
+      xyz(0, 8) = 0.0;
+      xyz(1, 8) = 0.0;
+      xyz(2, 8) = 1.0;  // node 9
+
+      std::vector<Core::LinAlg::SerialDenseVector> knots(2);
+      knots[0].reshape(6, 1);
+      knots[0][0] = 0;
+      knots[0][1] = 0;
+      knots[0][2] = 0;
+      knots[0][3] = 1;
+      knots[0][4] = 1;
+      knots[0][5] = 1;
+      knots[1].reshape(6, 1);
+      knots[1][0] = 0;
+      knots[1][1] = 0;
+      knots[1][2] = 0;
+      knots[1][3] = 1;
+      knots[1][4] = 1;
+      knots[1][5] = 1;
+
+      Core::LinAlg::SerialDenseVector weights(9);
+      weights(0) = 1.0;
+      weights(1) = 0.5 * std::numbers::sqrt2;
+      weights(2) = 1.0;
+      weights(3) = 0.5 * std::numbers::sqrt2;
+      weights(4) = 0.5;
+      weights(5) = 0.5 * std::numbers::sqrt2;
+      weights(6) = 1.0;
+      weights(7) = 0.5 * std::numbers::sqrt2;
+      weights(8) = 1.0;
+
+      double area = Core::Geo::element_area<Core::FE::CellType::nurbs9>(xyz, knots, weights);
+
+      double correct_area = 0.5 * std::numbers::pi;
+      // The quadrature rule defines the accuracy, we use the default ones, so a rather coarse
+      // approximation of the true length, which is still sufficient.
+      EXPECT_NEAR(area, correct_area, 1e-2);
+    }
+  }
+
   TEST_F(ElementVolumeTest, TestElementVolume_tet4)
   {
     Core::LinAlg::Matrix<3, 4> xyz(Core::LinAlg::Initialization::zero);

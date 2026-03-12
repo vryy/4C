@@ -68,12 +68,15 @@ namespace Core::Geo
 
   //! calculates the area of an element in given configuration
   template <Core::FE::CellType distype, class Matrixtype>
-  double element_area(const Matrixtype& xyze)
+  double element_area(const Matrixtype& xyze,
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots = {},
+      const Core::LinAlg::SerialDenseVector& weights = Core::LinAlg::SerialDenseVector{})
   {
     static constexpr int numnode = Core::FE::num_nodes(distype);
     const Core::FE::GaussIntegration intpoints(distype);
 
-    Core::LinAlg::Matrix<2, 1> eleCoord;
+    Core::LinAlg::SerialDenseVector eleCoord(2);
+    Core::LinAlg::Matrix<numnode, 1> funct;
     Core::LinAlg::Matrix<2, numnode> deriv;
     Core::LinAlg::Matrix<2, 3> xjm;
     Core::LinAlg::Matrix<2, 2> xjm_xjmt;
@@ -87,7 +90,14 @@ namespace Core::Geo
       eleCoord(1) = intpoints.point(iquad)[1];
 
       // shape functions and their first derivatives
-      Core::FE::shape_function_2d_deriv1(deriv, eleCoord(0), eleCoord(1), distype);
+      if (distype != FE::CellType::nurbs4 and distype != FE::CellType::nurbs9)
+      {
+        Core::FE::shape_function_2d_deriv1(deriv, eleCoord(0), eleCoord(1), distype);
+      }
+      else
+      {
+        Core::FE::Nurbs::nurbs_get_2d_funct_deriv(funct, deriv, eleCoord, knots, weights, distype);
+      }
 
       // get transposed of the jacobian matrix d x / d \xi
       xjm = 0;
@@ -175,6 +185,10 @@ namespace Core::Geo
         return element_area<Core::FE::CellType::quad8>(xyze);
       case Core::FE::CellType::quad9:
         return element_area<Core::FE::CellType::quad9>(xyze);
+      case Core::FE::CellType::nurbs4:
+        return element_area<Core::FE::CellType::nurbs4>(xyze, knots, weights);
+      case Core::FE::CellType::nurbs9:
+        return element_area<Core::FE::CellType::nurbs9>(xyze, knots, weights);
       case Core::FE::CellType::hex8:
         return element_volume<Core::FE::CellType::hex8>(xyze);
       case Core::FE::CellType::hex20:
