@@ -88,6 +88,8 @@ See the `ArborX repository <https://github.com/arborx/ArborX>`_ for details and 
 
 Building |FOURC| with ArborX enabled automatically fetches the repository during the configure stage and later builds the library as dependency.
 
+Note: For contact based beaminteraction simulations ArborX is a mandatory dependency.
+
 .. _trilinos:
 
 **Trilinos**
