@@ -407,36 +407,27 @@ namespace
       xyz(0, 0) = 1.0;
       xyz(1, 0) = 0.0;
       xyz(2, 0) = 0.0;  // node 1
-
       xyz(0, 1) = 1.0;
       xyz(1, 1) = 1.0;
       xyz(2, 1) = 0.0;  // node 2
-
       xyz(0, 2) = 0.0;
       xyz(1, 2) = 1.0;
       xyz(2, 2) = 0.0;  // node 3
-
       xyz(0, 3) = 1.0;
       xyz(1, 3) = 0.0;
       xyz(2, 3) = 1.0;  // node 4
-
       xyz(0, 4) = 1.0;
       xyz(1, 4) = 1.0;
       xyz(2, 4) = 1.0;  // node 5
-
       xyz(0, 5) = 0.0;
       xyz(1, 5) = 1.0;
-      xyz(2, 5) = 1.0;
-      ;  // node 6
-
+      xyz(2, 5) = 1.0;  // node 6
       xyz(0, 6) = 0.0;
       xyz(1, 6) = 0.0;
       xyz(2, 6) = 1.0;  // node 7
-
       xyz(0, 7) = 0.0;
       xyz(1, 7) = 0.0;
       xyz(2, 7) = 1.0;  // node 8
-
       xyz(0, 8) = 0.0;
       xyz(1, 8) = 0.0;
       xyz(2, 8) = 1.0;  // node 9
@@ -744,6 +735,312 @@ namespace
 
     double correct_volume = 1.25;
     EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);
+  }
+
+  TEST_F(ElementVolumeTest, TestElementVolume_nurbs8)
+  {
+    Core::LinAlg::Matrix<3, 8> xyz(Core::LinAlg::Initialization::zero);
+    xyz(0, 0) = 0.0;
+    xyz(1, 0) = 0.0;
+    xyz(2, 0) = 0.0;  // node 1
+    xyz(0, 1) = 1.5;
+    xyz(1, 1) = 0.0;
+    xyz(2, 1) = 0.0;  // node 2
+    xyz(0, 2) = 0.0;
+    xyz(1, 2) = 1.0;
+    xyz(2, 2) = 0.0;  // node 3
+    xyz(0, 3) = 1.5;
+    xyz(1, 3) = 1.0;
+    xyz(2, 3) = 0.0;  // node 4
+    xyz(0, 4) = 0.0;
+    xyz(1, 4) = 0.0;
+    xyz(2, 4) = 1.0;  // node 5
+    xyz(0, 5) = 1.0;
+    xyz(1, 5) = 0.0;
+    xyz(2, 5) = 1.0;  // node 6
+    xyz(0, 6) = 0.0;
+    xyz(1, 6) = 1.0;
+    xyz(2, 6) = 1.0;  // node 7
+    xyz(0, 7) = 1.0;
+    xyz(1, 7) = 1.0;
+    xyz(2, 7) = 1.0;  // node 8
+
+    std::vector<Core::LinAlg::SerialDenseVector> knots(3);
+    knots[0].reshape(4, 1);
+    knots[0][0] = 0;
+    knots[0][1] = 0;
+    knots[0][2] = 1;
+    knots[0][3] = 1;
+    knots[1].reshape(4, 1);
+    knots[1][0] = 0;
+    knots[1][1] = 0;
+    knots[1][2] = 1;
+    knots[1][3] = 1;
+    knots[2].reshape(4, 1);
+    knots[2][0] = 0;
+    knots[2][1] = 0;
+    knots[2][2] = 1;
+    knots[2][3] = 1;
+
+    Core::LinAlg::SerialDenseVector weights(8);
+    weights(0) = 1.0;
+    weights(1) = 1.0;
+    weights(2) = 1.0;
+    weights(3) = 1.0;
+    weights(4) = 1.0;
+    weights(5) = 1.0;
+    weights(6) = 1.0;
+    weights(7) = 1.0;
+
+    double volume = Core::Geo::element_volume<Core::FE::CellType::nurbs8>(xyz, knots, weights);
+
+    double correct_volume = 1.25;
+    EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);
+  }
+
+  TEST_F(ElementVolumeTest, TestElementVolume_nurbs27)
+  {
+    // unit-cube volume
+    {
+      Core::LinAlg::Matrix<3, 27> xyz(Core::LinAlg::Initialization::zero);
+      xyz(0, 0) = 0.0;
+      xyz(1, 0) = 0.0;
+      xyz(2, 0) = 0.0;
+      xyz(0, 1) = 0.5;
+      xyz(1, 1) = 0.0;
+      xyz(2, 1) = 0.0;
+      xyz(0, 2) = 1.0;
+      xyz(1, 2) = 0.0;
+      xyz(2, 2) = 0.0;
+      xyz(0, 3) = 0.0;
+      xyz(1, 3) = 0.5;
+      xyz(2, 3) = 0.0;
+      xyz(0, 4) = 0.5;
+      xyz(1, 4) = 0.5;
+      xyz(2, 4) = 0.0;
+      xyz(0, 5) = 1.0;
+      xyz(1, 5) = 0.5;
+      xyz(2, 5) = 0.0;
+      xyz(0, 6) = 0.0;
+      xyz(1, 6) = 1.0;
+      xyz(2, 6) = 0.0;
+      xyz(0, 7) = 0.5;
+      xyz(1, 7) = 1.0;
+      xyz(2, 7) = 0.0;
+      xyz(0, 8) = 1.0;
+      xyz(1, 8) = 1.0;
+      xyz(2, 8) = 0.0;
+      xyz(0, 9) = 0.0;
+      xyz(1, 9) = 0.0;
+      xyz(2, 9) = 0.5;
+      xyz(0, 10) = 0.5;
+      xyz(1, 10) = 0.0;
+      xyz(2, 10) = 0.5;
+      xyz(0, 11) = 1.0;
+      xyz(1, 11) = 0.0;
+      xyz(2, 11) = 0.5;
+      xyz(0, 12) = 0.0;
+      xyz(1, 12) = 0.5;
+      xyz(2, 12) = 0.5;
+      xyz(0, 13) = 0.5;
+      xyz(1, 13) = 0.5;
+      xyz(2, 13) = 0.5;
+      xyz(0, 14) = 1.0;
+      xyz(1, 14) = 0.5;
+      xyz(2, 14) = 0.5;
+      xyz(0, 15) = 0.0;
+      xyz(1, 15) = 1.0;
+      xyz(2, 15) = 0.5;
+      xyz(0, 16) = 0.5;
+      xyz(1, 16) = 1.0;
+      xyz(2, 16) = 0.5;
+      xyz(0, 17) = 1.0;
+      xyz(1, 17) = 1.0;
+      xyz(2, 17) = 0.5;
+      xyz(0, 18) = 0.0;
+      xyz(1, 18) = 0.0;
+      xyz(2, 18) = 1.0;
+      xyz(0, 19) = 0.5;
+      xyz(1, 19) = 0.0;
+      xyz(2, 19) = 1.0;
+      xyz(0, 20) = 1.0;
+      xyz(1, 20) = 0.0;
+      xyz(2, 20) = 1.0;
+      xyz(0, 21) = 0.0;
+      xyz(1, 21) = 0.5;
+      xyz(2, 21) = 1.0;
+      xyz(0, 22) = 0.5;
+      xyz(1, 22) = 0.5;
+      xyz(2, 22) = 1.0;
+      xyz(0, 23) = 1.0;
+      xyz(1, 23) = 0.5;
+      xyz(2, 23) = 1.0;
+      xyz(0, 24) = 0.0;
+      xyz(1, 24) = 1.0;
+      xyz(2, 24) = 1.0;
+      xyz(0, 25) = 0.5;
+      xyz(1, 25) = 1.0;
+      xyz(2, 25) = 1.0;
+      xyz(0, 26) = 1.0;
+      xyz(1, 26) = 1.0;
+      xyz(2, 26) = 1.0;
+
+      std::vector<Core::LinAlg::SerialDenseVector> knots(3);
+      for (int idir = 0; idir < 3; ++idir)
+      {
+        knots[idir].reshape(6, 1);
+        knots[idir][0] = 0.0;
+        knots[idir][1] = 0.0;
+        knots[idir][2] = 0.0;
+        knots[idir][3] = 1.0;
+        knots[idir][4] = 1.0;
+        knots[idir][5] = 1.0;
+      }
+
+      Core::LinAlg::SerialDenseVector weights(27);
+      weights.putScalar(1.0);
+
+      double volume = Core::Geo::element_volume<Core::FE::CellType::nurbs27>(xyz, knots, weights);
+
+      double correct_volume = 1.0;
+      EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);
+    }
+
+    // octant volume of a sphere
+    {
+      Core::LinAlg::Matrix<3, 27> xyz(Core::LinAlg::Initialization::zero);
+      xyz(0, 0) = 0.0;
+      xyz(1, 0) = 0.0;
+      xyz(2, 0) = 1.0;
+      xyz(0, 1) = 0.0;
+      xyz(1, 1) = 0.0;
+      xyz(2, 1) = 1.0;
+      xyz(0, 2) = 0.0;
+      xyz(1, 2) = 0.0;
+      xyz(2, 2) = 1.0;
+      xyz(0, 3) = 1.0;
+      xyz(1, 3) = 0.0;
+      xyz(2, 3) = 1.0;
+      xyz(0, 4) = 1.0;
+      xyz(1, 4) = 1.0;
+      xyz(2, 4) = 1.0;
+      xyz(0, 5) = 0.0;
+      xyz(1, 5) = 1.0;
+      xyz(2, 5) = 1.0;
+      xyz(0, 6) = 1.0;
+      xyz(1, 6) = 0.0;
+      xyz(2, 6) = 0.0;
+      xyz(0, 7) = 1.0;
+      xyz(1, 7) = 1.0;
+      xyz(2, 7) = 0.0;
+      xyz(0, 8) = 0.0;
+      xyz(1, 8) = 1.0;
+      xyz(2, 8) = 0.0;
+      xyz(0, 9) = 0.0;
+      xyz(1, 9) = 0.0;
+      xyz(2, 9) = 0.5;
+      xyz(0, 10) = 0.0;
+      xyz(1, 10) = 0.0;
+      xyz(2, 10) = 0.5;
+      xyz(0, 11) = 0.0;
+      xyz(1, 11) = 0.0;
+      xyz(2, 11) = 0.5;
+      xyz(0, 12) = 0.5;
+      xyz(1, 12) = 0.0;
+      xyz(2, 12) = 0.5;
+      xyz(0, 13) = 0.5;
+      xyz(1, 13) = 0.5;
+      xyz(2, 13) = 0.5;
+      xyz(0, 14) = 0.0;
+      xyz(1, 14) = 0.5;
+      xyz(2, 14) = 0.5;
+      xyz(0, 15) = 0.5;
+      xyz(1, 15) = 0.0;
+      xyz(2, 15) = 0.0;
+      xyz(0, 16) = 0.5;
+      xyz(1, 16) = 0.5;
+      xyz(2, 16) = 0.0;
+      xyz(0, 17) = 0.0;
+      xyz(1, 17) = 0.5;
+      xyz(2, 17) = 0.0;
+      xyz(0, 18) = 0.0;
+      xyz(1, 18) = 0.0;
+      xyz(2, 18) = 0.0;
+      xyz(0, 19) = 0.0;
+      xyz(1, 19) = 0.0;
+      xyz(2, 19) = 0.0;
+      xyz(0, 20) = 0.0;
+      xyz(1, 20) = 0.0;
+      xyz(2, 20) = 0.0;
+      xyz(0, 21) = 0.0;
+      xyz(1, 21) = 0.0;
+      xyz(2, 21) = 0.0;
+      xyz(0, 22) = 0.0;
+      xyz(1, 22) = 0.0;
+      xyz(2, 22) = 0.0;
+      xyz(0, 23) = 0.0;
+      xyz(1, 23) = 0.0;
+      xyz(2, 23) = 0.0;
+      xyz(0, 24) = 0.0;
+      xyz(1, 24) = 0.0;
+      xyz(2, 24) = 0.0;
+      xyz(0, 25) = 0.0;
+      xyz(1, 25) = 0.0;
+      xyz(2, 25) = 0.0;
+      xyz(0, 26) = 0.0;
+      xyz(1, 26) = 0.0;
+      xyz(2, 26) = 0.0;
+
+      std::vector<Core::LinAlg::SerialDenseVector> knots(3);
+      for (int idir = 0; idir < 3; ++idir)
+      {
+        knots[idir].reshape(6, 1);
+        knots[idir][0] = 0.0;
+        knots[idir][1] = 0.0;
+        knots[idir][2] = 0.0;
+        knots[idir][3] = 1.0;
+        knots[idir][4] = 1.0;
+        knots[idir][5] = 1.0;
+      }
+
+      const double w = 0.5 * std::numbers::sqrt2;
+
+      Core::LinAlg::SerialDenseVector weights(27);
+      weights(0) = 1.0;
+      weights(1) = w;
+      weights(2) = 1.0;
+      weights(3) = w;
+      weights(4) = w * w;
+      weights(5) = w;
+      weights(6) = 1.0;
+      weights(7) = w;
+      weights(8) = 1.0;
+      weights(9) = 1.0;
+      weights(10) = w;
+      weights(11) = 1.0;
+      weights(12) = w;
+      weights(13) = w * w;
+      weights(14) = w;
+      weights(15) = 1.0;
+      weights(16) = w;
+      weights(17) = 1.0;
+      weights(18) = 1.0;
+      weights(19) = w;
+      weights(20) = 1.0;
+      weights(21) = w;
+      weights(22) = w * w;
+      weights(23) = w;
+      weights(24) = 1.0;
+      weights(25) = w;
+      weights(26) = 1.0;
+
+      double volume = Core::Geo::element_volume<Core::FE::CellType::nurbs27>(xyz, knots, weights);
+
+      double correct_volume = std::numbers::pi / 6.0;
+      // The quadrature rule defines the accuracy, we use the default ones, so a rather coarse
+      // approximation of the true length, which is still sufficient.
+      EXPECT_NEAR(volume, correct_volume, 1e-3);
+    }
   }
 
 }  // namespace

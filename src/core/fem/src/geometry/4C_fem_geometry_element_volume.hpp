@@ -19,7 +19,24 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Geo
 {
-  //! calculates the length of an element in given configuration
+  /**
+   * @brief Compute the length of a 1D finite element or NURBS element.
+   *
+   * The element length is evaluated by Gauss integration of the Jacobian
+   * \( \| \partial \mathbf{x} / \partial \xi \| \) over the parametric domain.
+   * Standard finite elements use polynomial shape functions, while NURBS
+   * elements use rational basis functions defined by the supplied knot vector
+   * and weights.
+   *
+   * @tparam distype Element cell type (e.g. line2, line3, nurbs2, nurbs3).
+   * @tparam Matrixtype Matrix-like type containing the element coordinates.
+   *
+   * @param xyze Nodal or control-point coordinates of the element.
+   * @param knots Knot vectors for NURBS elements (unused for standard elements).
+   * @param weights Control-point weights for NURBS elements (unused otherwise).
+   *
+   * @return The physical length of the element.
+   */
   template <Core::FE::CellType distype, class Matrixtype>
   double element_length(const Matrixtype& xyze,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots = {},
@@ -66,7 +83,24 @@ namespace Core::Geo
     return length;
   }
 
-  //! calculates the area of an element in given configuration
+  /**
+   * @brief Compute the area of a 2D finite element or NURBS element.
+   *
+   * The element area is evaluated by Gauss integration of the surface Jacobian
+   * \( \sqrt{\det(\mathbf{J}\mathbf{J}^\mathsf{T})} \) over the parametric domain.
+   * Standard finite elements use polynomial shape functions, while NURBS
+   * elements use rational basis functions defined by the supplied knot vectors
+   * and weights.
+   *
+   * @tparam distype Element cell type (e.g. tri3, tri6, quad4, quad8, quad9, nurbs4, nurbs9).
+   * @tparam Matrixtype Matrix-like type containing the element coordinates.
+   *
+   * @param xyze Nodal or control-point coordinates of the element.
+   * @param knots Knot vectors for NURBS elements (unused for standard elements).
+   * @param weights Control-point weights for NURBS elements (unused otherwise).
+   *
+   * @return The physical area of the element.
+   */
   template <Core::FE::CellType distype, class Matrixtype>
   double element_area(const Matrixtype& xyze,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots = {},
@@ -117,14 +151,37 @@ namespace Core::Geo
     return area;
   }
 
-  //! calculates the volume of an element in given configuration
+  /**
+   * @brief Compute the volume of a 3D finite element or NURBS element.
+   *
+   * The element volume is evaluated by Gauss integration of the Jacobian
+   * determinant \( \det(\partial \mathbf{x} / \partial \boldsymbol{\xi}) \)
+   * over the parametric domain. Standard finite elements use polynomial
+   * shape functions, while NURBS elements use rational basis functions
+   * defined by the supplied knot vectors and weights.
+   *
+   * @tparam distype Element cell type (e.g. tet4, tet10, hex8, hex20, hex27,
+   *                 wedge6, wedge15, pyramid5, nurbs8, nurbs27).
+   * @tparam Matrixtype Matrix-like type containing the element coordinates.
+   *
+   * @param xyze Nodal or control-point coordinates of the element.
+   * @param knots Knot vectors for NURBS elements (unused for standard elements).
+   * @param weights Control-point weights for NURBS elements (unused otherwise).
+   *
+   * @return The physical volume of the element.
+   *
+   * @throws FOUR_C_THROW If the Jacobian determinant is non-positive.
+   */
   template <Core::FE::CellType distype, class Matrixtype>
-  double element_volume(const Matrixtype& xyze)
+  double element_volume(const Matrixtype& xyze,
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots = {},
+      const Core::LinAlg::SerialDenseVector& weights = Core::LinAlg::SerialDenseVector{})
   {
     const int numnode = Core::FE::num_nodes(distype);
     const Core::FE::GaussIntegration intpoints(distype);
 
-    Core::LinAlg::Matrix<3, 1> eleCoord;
+    Core::LinAlg::SerialDenseVector eleCoord(3);
+    Core::LinAlg::Matrix<numnode, 1> funct;
     Core::LinAlg::Matrix<3, numnode> deriv;
     Core::LinAlg::Matrix<3, 3> xjm;
 
@@ -138,7 +195,14 @@ namespace Core::Geo
       eleCoord(2) = intpoints.point(iquad)[2];
 
       // shape functions and their first derivatives
-      Core::FE::shape_function_3d_deriv1(deriv, eleCoord(0), eleCoord(1), eleCoord(2), distype);
+      if (distype != FE::CellType::nurbs8 and distype != FE::CellType::nurbs27)
+      {
+        Core::FE::shape_function_3d_deriv1(deriv, eleCoord(0), eleCoord(1), eleCoord(2), distype);
+      }
+      else
+      {
+        Core::FE::Nurbs::nurbs_get_3d_funct_deriv(funct, deriv, eleCoord, knots, weights, distype);
+      }
 
       // get transposed of the jacobian matrix d x / d \xi
       xjm = 0;
@@ -158,8 +222,25 @@ namespace Core::Geo
     return vol;
   }
 
-
-  //! calculates the volume of an element in given configuration
+  /**
+   * @brief Compute the geometric measure of an element.
+   *
+   * Returns the element length, area, or volume depending on the given
+   * @p distype. The function dispatches to the corresponding element-specific
+   * implementation for standard finite elements and NURBS elements.
+   *
+   * @tparam Matrixtype Matrix-like type containing nodal or control-point coordinates.
+   *
+   * @param distype Element cell type.
+   * @param xyze Element coordinates.
+   * @param knots Knot vectors for NURBS elements only.
+   * @param weights Control-point weights for NURBS elements only.
+   *
+   * @return Length for 1D elements, area for 2D elements, or volume for 3D elements.
+   *
+   * @note Despite its name, this function also returns lengths and areas for
+   * 1D and 2D element types.
+   */
   template <class Matrixtype>
   double element_volume(const Core::FE::CellType distype, const Matrixtype& xyze,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots = {},
@@ -205,6 +286,10 @@ namespace Core::Geo
         return element_volume<Core::FE::CellType::wedge15>(xyze);
       case Core::FE::CellType::pyramid5:
         return element_volume<Core::FE::CellType::pyramid5>(xyze);
+      case Core::FE::CellType::nurbs8:
+        return element_volume<Core::FE::CellType::nurbs8>(xyze, knots, weights);
+      case Core::FE::CellType::nurbs27:
+        return element_volume<Core::FE::CellType::nurbs27>(xyze, knots, weights);
       default:
         FOUR_C_THROW(
             "Element volume calculation is current not implemented for the given cell type.");
