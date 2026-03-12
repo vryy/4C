@@ -106,17 +106,18 @@ namespace SSI
 
     /*!
      * @brief solves the linear system
+     * @param[in] solver solver used to solve the linear system
      *
      * @note in case an equilibration method (scaling of rows and columns) is defined, this is also
      * performed within this call
      */
-    void solve_linear_system() const;
+    void solve_linear_system(Core::LinAlg::Solver& solver) const;
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
     [[nodiscard]] std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps() const { return ssi_maps_; }
 
     //! return algebraic solver for the global system of equations
-    [[nodiscard]] const Core::LinAlg::Solver& solver() const { return *solver_; };
+    [[nodiscard]] const Core::LinAlg::Solver& solver() const { return *solver_; }
 
     void timeloop() override;
 
@@ -151,8 +152,12 @@ namespace SSI
     //! assemble linearization of structural residuals to system matrix
     void assemble_mat_structure() const;
 
-    //! build null spaces associated with blocks of global system matrix
-    void build_null_spaces() const;
+    /*!
+     * @brief build null spaces associated with blocks of global system matrix
+     *
+     * @param[in] solver solver used to solve the linear system
+     */
+    void build_null_spaces(Core::LinAlg::Solver& solver) const;
 
     //! calc initial potential field for the monolithic SSI problem including scatra and scatra
     //! manifold fields
@@ -253,6 +258,10 @@ namespace SSI
 
     //! all OD evaluation is in here
     std::shared_ptr<SSI::ScatraStructureOffDiagCoupling> scatrastructure_off_diagcoupling_;
+
+    //! algebraic solver for the global system of equations during calculation of the initial
+    //! potential field
+    std::shared_ptr<Core::LinAlg::Solver> init_pot_calc_solver_;
 
     //! algebraic solver for global system of equations
     std::shared_ptr<Core::LinAlg::Solver> solver_;
