@@ -1643,6 +1643,9 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pre_evaluate(
     const Teuchos::ParameterList& params, const EvaluationContext& context, const int gp,
     const int eleGID)
 {
+  // save parameter list
+  params_ = params;
+
   // set Gauss Point
   gp_ = gp;
 
@@ -1662,7 +1665,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pre_evaluate(
   // call pre_evaluate method of the time step quantities
   time_step_quantities_.pre_evaluate(gp);
   // call preevaluate method of the viscoplastic law
-  viscoplastic_law_->pre_evaluate(gp);
+  viscoplastic_law_->pre_evaluate(params, gp);
 }
 
 /*--------------------------------------------------------------------*
@@ -2231,7 +2234,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
   dNpdMe_sym_dev = Core::LinAlg::Voigt::modify_voigt_representation(temp6x6, 1.0, 2.0);
 
   // compute the relevant derivatives of the plastic strain rate
-  Core::LinAlg::Matrix<2, 1> evoEqFunctionDers =
+  InelasticDefgradTransvIsotropElastViscoplastUtils::PlasticStrainRateDerivs evoEqFunctionDers =
       viscoplastic_law_->evaluate_derivatives_of_plastic_strain_rate(equiv_stress, plastic_strain,
           dt, parameter()->max_plastic_strain_deriv_incr(), err_status);
 
@@ -2249,8 +2252,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
   }
 
   // compute derivatives of the plastic strain rate
-  state_quantity_derivatives.curr_dpsr_dequiv_stress = evoEqFunctionDers(0);
-  state_quantity_derivatives.curr_dpsr_depsp = evoEqFunctionDers(1);
+  state_quantity_derivatives.curr_dpsr_dequiv_stress = evoEqFunctionDers.deriv_equiv_stress;
+  state_quantity_derivatives.curr_dpsr_depsp = evoEqFunctionDers.deriv_plastic_strain;
 
 
   if (eval_type == ViscoplastUtils::StateQuantityDerivEvalType::PlasticStrainRateDerivsOnly)
@@ -2427,7 +2430,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
             time_step_quantities_.current_plastic_strain[gp_]);
 
     Core::LinAlg::Matrix<10, 10> jacMat(Core::LinAlg::Initialization::zero);
-    viscoplastic_law_->pre_evaluate(gp_);  // set last_substep <- last_
+    viscoplastic_law_->pre_evaluate(params_, gp_);  // set last_substep <- last_
     jacMat = calculate_jacobian(CredM, current_sol,
         time_step_quantities_.last_plastic_defgrad_inverse[gp_],
         time_step_quantities_.last_plastic_strain[gp_], time_step_tracker_.dt, err_status);
@@ -2565,6 +2568,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
     {
       time_step_quantities_.current_plastic_defgrad_inverse[gp_] = iFinM;
       time_step_quantities_.current_plastic_strain[gp_] = plastic_strain_pred;
+      time_step_quantities_.current_equiv_stress[gp_] = state_quantities_.curr_equiv_stress;
       time_step_quantities_.current_rightCG[gp_] = CredM;
       time_step_quantities_.current_defgrad[gp_] = FredM;
     }
@@ -2596,6 +2600,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
     {
       time_step_quantities_.current_plastic_defgrad_inverse[gp_] = iFinM;
       time_step_quantities_.current_plastic_strain[gp_] = sol(9);
+      time_step_quantities_.current_equiv_stress[gp_] = state_quantities_.curr_equiv_stress;
       time_step_quantities_.current_rightCG[gp_] = CredM;
       time_step_quantities_.current_defgrad[gp_] = FredM;
     }
@@ -2714,7 +2719,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::calculate_local_newton_loop_r
   Core::LinAlg::Matrix<3, 3> resFM(Core::LinAlg::Initialization::zero);
   double resepsp = 0.0;
 
-  // compute residuals (standard substepping)
+  // compute residuals (standard time integration)
   if (parameter()->timint_type() == ViscoplastUtils::TimIntType::standard)
   {
     // calculate residual of the equation for inelastic defgrad
@@ -2733,11 +2738,31 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::calculate_local_newton_loop_r
     last_FinM.invert(last_iFinM);
     Core::LinAlg::Matrix<3, 3> T(Core::LinAlg::Initialization::zero);
     T.multiply_nn(1.0, last_FinM, iFinM, 0.0);
-    Core::LinAlg::MatrixFunctErrorType log_err_status{
-        Core::LinAlg::MatrixFunctErrorType::no_errors};
-    Core::LinAlg::Matrix<3, 3> logT = Core::LinAlg::matrix_log(T, log_err_status);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
-        "Matrix logarithm evaluation failed!");
+    Core::LinAlg::MatrixFunctErrorType log_err_status =
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
+    Core::LinAlg::Matrix<3, 3> logT{Core::LinAlg::Initialization::zero};
+    if (parameter()->mat_log_calc_method() ==
+        Core::LinAlg::MatrixLogCalcMethod::inv_scal_square)  // evaluation using the inverse
+                                                             // scaling and squaring
+                                                             // method
+    {
+      // when computing the matrix logarithm with the inverse scaling
+      // and squaring, we also save the resulting Pade
+      // order via the dedicated pointer. This will be helpful when we
+      // compute the derivative - we want consistent Pade orders for the
+      // evaluations of functions and their derivatives.
+      logT = Core::LinAlg::matrix_log(
+          T, log_err_status, matrix_exp_log_utils_.pade_order, parameter()->mat_log_calc_method());
+    }
+    else  // evaluation using other provided methods
+    {
+      logT = Core::LinAlg::matrix_log(T, log_err_status, parameter()->mat_log_calc_method());
+    }
+    if (log_err_status != Core::LinAlg::MatrixFunctErrorType::no_errors)
+    {
+      err_status = ViscoplastUtils::ErrorType::failed_matrix_log_evaluation;
+      return Core::LinAlg::Matrix<10, 1>{Core::LinAlg::Initialization::zero};
+    }
 
     // calculate residual of the equation for inelastic defgrad
     resFM.update(1.0, logT, dt, state_quantities_.curr_lpM, 0.0);
@@ -3313,5 +3338,88 @@ std::string Mat::InelasticDefgradTransvIsotropElastViscoplast::get_error_info(
 }
 
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplast::register_output_data_names(
+    std::unordered_map<std::string, int>& names_and_size) const
+{
+  names_and_size["inverse_plastic_defgrad"] = 9;
+  names_and_size["plastic_strain"] = 1;
+  names_and_size["equiv_stress"] = 1;
+  names_and_size["defgrad"] = 9;
+  names_and_size["rightCG"] = 9;
+  viscoplastic_law_->register_output_data_names(names_and_size);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+bool Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_output_data(
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
+{
+  // auxiliaries
+  Core::LinAlg::Matrix<9, 1> temp9x1{Core::LinAlg::Initialization::zero};
+
+  if (name == "inverse_plastic_defgrad")
+  {
+    for (int gp = 0;
+        gp < static_cast<int>(time_step_quantities_.current_plastic_defgrad_inverse.size()); ++gp)
+    {
+      Core::LinAlg::Voigt::matrix_3x3_to_9x1(
+          time_step_quantities_.current_plastic_defgrad_inverse[gp], temp9x1);
+
+      for (int col = 0; col < 9; ++col)
+      {
+        data(gp, col) = temp9x1(col);
+      }
+    }
+    return true;
+  }
+  else if (name == "plastic_strain")
+  {
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_plastic_strain.size());
+        ++gp)
+    {
+      data(gp, 0) = time_step_quantities_.current_plastic_strain[gp];
+    }
+    return true;
+  }
+  else if (name == "equiv_stress")
+  {
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_equiv_stress.size()); ++gp)
+    {
+      data(gp, 0) = time_step_quantities_.current_equiv_stress[gp];
+    }
+    return true;
+  }
+  else if (name == "defgrad")
+  {
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_defgrad.size()); ++gp)
+    {
+      Core::LinAlg::Voigt::matrix_3x3_to_9x1(time_step_quantities_.current_defgrad[gp], temp9x1);
+
+      for (int col = 0; col < 9; ++col)
+      {
+        data(gp, col) = temp9x1(col);
+      }
+    }
+    return true;
+  }
+  else if (name == "rightCG")
+  {
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_rightCG.size()); ++gp)
+    {
+      Core::LinAlg::Voigt::matrix_3x3_to_9x1(time_step_quantities_.current_rightCG[gp], temp9x1);
+
+
+      for (int col = 0; col < 9; ++col)
+      {
+        data(gp, col) = temp9x1(col);
+      }
+    }
+    return true;
+  }
+
+  return viscoplastic_law_->evaluate_output_data(name, data);
+}
 
 FOUR_C_NAMESPACE_CLOSE

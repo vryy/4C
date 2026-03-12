@@ -2873,23 +2873,45 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
 
   /*----------------------------------------------------------------------*/
   {
+    using namespace Core::IO::InputSpecBuilders::Validators;
+
     known_materials[Core::Materials::mvl_reformulated_Johnson_Cook] =
         group("MAT_ViscoplasticLawReformulatedJohnsonCook",
             {
                 parameter<double>("STRAIN_RATE_PREFAC",
-                    {.description = "reference plastic strain rate $\\dot{P}_0$ "}),
+                    {.description = "reference plastic strain rate $\\dot{P}_0$",
+                        .validator = positive<double>()}),
                 parameter<double>("STRAIN_RATE_EXP_FAC",
-                    {.description = "exponential factor of plastic strain rate $C$"}),
+                    {.description = "exponential factor of plastic strain rate $C$",
+                        .validator = positive<double>()}),
                 parameter<double>("INIT_YIELD_STRENGTH",
-                    {.description = "initial yield strength of the material $A_0$"}),
+                    {.description = "initial yield strength of the material $A_0$",
+                        .validator = positive<double>()}),
                 parameter<double>("ISOTROP_HARDEN_PREFAC",
-                    {.description = "prefactor of the isotropic hardening stress $B_0$"}),
+                    {.description =
+                            "prefactor of the isotropic hardening stress / hardening modulus $B_0$",
+                        .validator = positive_or_zero<double>()}),
                 parameter<double>("ISOTROP_HARDEN_EXP",
-                    {.description = "exponent of the isotropic hardening stress $n$"}),
+                    {.description = "exponent of the isotropic hardening stress $n$",
+                        .validator = positive_or_zero<double>()}),
+                parameter<double>("REF_TEMPERATURE",
+                    {.description = "reference temperature $T_0$ for evaluating the "
+                                    "yield strength $A_0$ and the hardening "
+                                    "modulus $B_0$",
+                        .validator = positive<double>()}),
+                parameter<double>(
+                    "MELT_TEMPERATURE", {.description = "melting temperature $T_{\\mathrm{melt}}$",
+                                            .validator = positive<double>()}),
+                parameter<double>("TEMPERATURE_SENS", {.description = "temperature sensitivity $m$",
+                                                          .validator = positive_or_zero<double>()}),
+
             },
             {.description = "Reformulation of the Johnson-Cook viscoplastic law (comprising flow "
-                            "rule $\\dot{P} = \\dot{P}_0 \\exp \\left( \\frac{ \\Sigma_{eq}}{C "
-                            "\\Sigma_y} - \\frac{1}{C} \\right) - \\dot{P}_0$ and hardening law), "
+                            "rule $\\dot{P} = \\dot{P}_0 \\exp \\left( \\frac{ \\sigma_{eq}}{C "
+                            "\\sigma_{\\mathrm{Y}}} - \\frac{1}{C} \\right) - \\dot{P}_0$ and "
+                            "hardening law $\\sigma_{\\mathrm{Y}} = (A_0 + "
+                            "B_0 \\cdot P^{n}) \\cdot (1 - \\frac{T^m - "
+                            "T_{0}^m}{T_{\\mathrm{melt}}^m - T_{0}^m})$), "
                             "as shown in Mareau et al. (Mechanics of Materials 143, 2020)"});
   }
 

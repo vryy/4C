@@ -654,6 +654,32 @@ namespace Mat
 
     virtual void unpack_inelastic(Core::Communication::UnpackBuffer& data) = 0;
 
+    /*!
+     * @brief Register names of the internal data that should be saved during runtime output
+     *
+     * @param[out] name_and_size Unordered map of names of the data with the respective vector size
+     */
+    virtual void register_output_data_names(
+        std::unordered_map<std::string, int>& names_and_size) const
+    {
+    }
+
+    /*!
+     * @brief Evaluate internal data for every Gauss point saved for output during runtime
+     * output
+     *
+     * @param[in] name  Name of the data to export
+     * @param[out] data NUMGPxNUMDATA Matrix holding the data
+     *
+     * @return true if data is set by the material, otherwise false
+     */
+    virtual bool evaluate_output_data(
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
+    {
+      return false;
+    }
+
+
    private:
     /// material parameters
     Core::Mat::PAR::Parameter* params_;
@@ -1325,6 +1351,12 @@ namespace Mat
     void pack_inelastic(Core::Communication::PackBuffer& data) const override;
 
     void unpack_inelastic(Core::Communication::UnpackBuffer& buffer) override;
+
+    void register_output_data_names(
+        std::unordered_map<std::string, int>& names_and_size) const override;
+
+    bool evaluate_output_data(
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
     /*! @brief Evaluate the current state variables based on a given right Cauchy-Green
      * deformation tensor, given inverse plastic deformation gradient and given equivalent
