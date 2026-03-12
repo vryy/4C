@@ -94,7 +94,6 @@ BeamInteraction::BeamToSolidSurfaceVisualizationOutputWriter::
       if (write_unique_ids)
       {
         visualization_data.register_point_data<int>("uid_0_pair_beam_id", 1);
-        visualization_data.register_point_data<int>("uid_1_pair_solid_id", 1);
       }
     }
 

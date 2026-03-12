@@ -119,29 +119,6 @@
 16
 16
         </DataArray>
-		<DataArray type="Int32" Name="uid_1_pair_solid_id" format="ascii">
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-2
-2
-2
-2
-2
-2
-4
-4
-4
-        </DataArray>
       </PointData>
 
     </Piece>

@@ -47,11 +47,6 @@
 2
 2
         </DataArray>
-		<DataArray type="Int32" Name="uid_1_pair_solid_id" format="ascii">
-0
-0
-0
-        </DataArray>
       </PointData>
 
     </Piece>
