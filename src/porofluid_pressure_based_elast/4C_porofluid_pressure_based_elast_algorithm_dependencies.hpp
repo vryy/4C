@@ -49,11 +49,12 @@ namespace PoroPressureBased
   {
     std::function<std::shared_ptr<Core::FE::Discretization>(const std::string&)>
         discretization_by_name;
-    const std::map<std::pair<std::string, std::string>, std::map<int, int>>* cloning_material_map;
-    const ::Teuchos::ParameterList* porofluid_pressure_based_dynamic_parameters;
+    const std::map<std::pair<std::string, std::string>, std::map<int, int>>* cloning_material_map =
+        nullptr;
+    const ::Teuchos::ParameterList* porofluid_pressure_based_dynamic_parameters = nullptr;
     std::function<void(int)> validate_porofluid_material_id;
     std::function<const ::Teuchos::ParameterList&(int)> solver_params_by_id;
-    Core::IO::Verbositylevel verbosity;
+    Core::IO::Verbositylevel verbosity{};
     std::shared_ptr<Core::IO::InputControl> input_control_file;
     std::function<void(std::shared_ptr<Core::Utils::ResultTest>)> add_field_test;
     PorofluidAlgorithmDeps porofluid_algorithm_deps;
