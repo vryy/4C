@@ -50,7 +50,7 @@ SOLVER 1:
   THROW_IF_UNCONVERGED: false
   MUELU_XML_FILE: "xml/multigrid/sti_template.xml"
 SOLVER 2:
-  SOLVER: "UMFPACK"
+  SOLVER: MUMPS
 MATERIALS:
   - MAT: 1
     MAT_elchmat:

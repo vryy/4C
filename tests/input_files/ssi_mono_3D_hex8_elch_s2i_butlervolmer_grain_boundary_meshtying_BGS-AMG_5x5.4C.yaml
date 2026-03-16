@@ -60,7 +60,7 @@ SSI CONTROL/ELCH:
   INITPOTCALC: true
   INIT_POT_CALC_LINEAR_SOLVER: 5
 SOLVER 1:
-  SOLVER: UMFPACK
+  SOLVER: MUMPS
 SOLVER 2:
   SOLVER: Belos
   SOLVER_XML_FILE: "xml/linear_solver/iterative_gmres_template.xml"

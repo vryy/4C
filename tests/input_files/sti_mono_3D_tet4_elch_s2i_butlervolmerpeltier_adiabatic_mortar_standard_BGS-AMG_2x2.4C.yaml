@@ -49,7 +49,7 @@ SOLVER 1:
   AZPREC: Teko
   TEKO_XML_FILE: "xml/block_preconditioner/electrochemistry_BGS-AMG_2x2.xml"
 SOLVER 2:
-  SOLVER: UMFPACK
+  SOLVER: MUMPS
 MATERIALS:
   - MAT: 1
     MAT_electrode:

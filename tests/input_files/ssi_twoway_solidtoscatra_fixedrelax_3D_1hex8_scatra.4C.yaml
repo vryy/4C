@@ -27,7 +27,7 @@ SSI CONTROL:
   TIMESTEP: 0.1
   COUPALGO: ssi_IterStaggFixedRel_SolidToScatra
 SOLVER 1:
-  SOLVER: "UMFPACK"
+  SOLVER: MUMPS
 MATERIALS:
   - MAT: 1
     MAT_scatra:
