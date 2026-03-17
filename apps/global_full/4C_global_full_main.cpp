@@ -59,17 +59,36 @@ int main(int argc, char* argv[])
   // Kokkos should be initialized right after MPI.
   Kokkos::ScopeGuard kokkos_guard{};
 
-  // Initialize our own singleton registry to ensure we clean up all singletons properly.
-  Core::Utils::SingletonOwnerRegistry::ScopeGuard singleton_owner_guard{};
-
   auto arguments = parse_command_line(argc, argv);
-
   Core::Communication::CommConfig config{
       .group_layout = arguments.group_layout,
       .np_type = arguments.nptype,
       .diffgroup = arguments.diffgroup,
   };
+
+  // Initialize communicators and use RAII to ensure that they are finalized properly in the end.
+  // Note: Communicators must be finalized after singleton cleanup and before MPI finalization
   Core::Communication::Communicators communicators = Core::Communication::create_comm(config);
+  struct FinalizeCommunicators
+  {
+    explicit FinalizeCommunicators(Core::Communication::Communicators& communicators)
+        : communicators_(communicators)
+    {
+    }
+    FinalizeCommunicators(const FinalizeCommunicators&) = delete;
+    FinalizeCommunicators& operator=(const FinalizeCommunicators&) = delete;
+    FinalizeCommunicators(FinalizeCommunicators&&) = delete;
+    FinalizeCommunicators& operator=(FinalizeCommunicators&&) = delete;
+    ~FinalizeCommunicators() noexcept { communicators_.finalize(); }
+
+   private:
+    Core::Communication::Communicators& communicators_;
+  } finalize_communicators(communicators);
+
+  // Initialize our own singleton registry to ensure we clean up all singletons properly.
+  Core::Utils::SingletonOwnerRegistry::ScopeGuard singleton_owner_guard{};
+
+
 
   if (arguments.interactive)
   {
@@ -193,7 +212,6 @@ int main(int argc, char* argv[])
     }
   }
 
-  communicators.finalize();
   return (0);
 }
 
