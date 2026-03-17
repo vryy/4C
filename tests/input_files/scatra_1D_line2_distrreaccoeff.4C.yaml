@@ -32,7 +32,7 @@ SCALAR TRANSPORT DYNAMIC/STABILIZATION:
   EVALUATION_TAU: "integration_point"
   EVALUATION_MAT: "integration_point"
 SOLVER 1:
-  SOLVER: "UMFPACK"
+  SOLVER: Superlu
   NAME: "Sca_Tra_Solver"
 MATERIALS:
   - MAT: 1

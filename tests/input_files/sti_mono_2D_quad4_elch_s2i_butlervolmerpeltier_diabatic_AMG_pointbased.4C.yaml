@@ -47,7 +47,7 @@ SOLVER 1:
   AZSUB: 100
   MUELU_XML_FILE: "sti_mono_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_AMG_pointbased.xml"
 SOLVER 2:
-  SOLVER: "UMFPACK"
+  SOLVER: MUMPS
 MATERIALS:
   - MAT: 1
     MAT_elchmat:

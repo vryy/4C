@@ -66,7 +66,7 @@ SOLVER 1:
   AZPREC: Teko
   TEKO_XML_FILE: "xml/block_preconditioner/solid_scatra_manifold_BGS-AMG_3x3.xml"
 SOLVER 2:
-  SOLVER: UMFPACK
+  SOLVER: MUMPS
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
