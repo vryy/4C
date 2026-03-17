@@ -141,12 +141,6 @@ namespace Particle
     //! init boundary particle handler
     void init_boundary_particle_handler();
 
-    //! init dirichlet open boundary handler
-    void init_dirichlet_open_boundary_handler();
-
-    //! init neumann open boundary handler
-    void init_neumann_open_boundary_handler();
-
     //! init virtual wall particle handler
     void init_virtual_wall_particle_handler();
 
@@ -158,6 +152,17 @@ namespace Particle
 
     //! init peridynamic interaction handler
     void init_peridynamic_interaction_handler();
+
+    //! init open boundaries handler
+    void init_open_boundary_handler();
+
+    //! init open boundaries of a specific type
+    template <typename OpenBoundaryEnum, typename OpenBoundaryClass>
+    void init_open_boundary(const Teuchos::ParameterList& params_bcs, const std::string& root_name,
+        const OpenBoundaryEnum enum_value);
+
+    //! check if all particle boundary ids have been provided with an open boundary
+    void check_open_boundaries() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;

@@ -79,11 +79,8 @@ void Particle::ParticleInteractionSPH::initialize_members()
   // init boundary particle handler
   init_boundary_particle_handler();
 
-  // init dirichlet open boundary handler
-  init_dirichlet_open_boundary_handler();
-
-  // init neumann open boundary handler
-  init_neumann_open_boundary_handler();
+  // init open boundary handler
+  init_open_boundary_handler();
 
   // init virtual wall particle handler
   init_virtual_wall_particle_handler();
@@ -168,6 +165,57 @@ void Particle::ParticleInteractionSPH::setup(
   }
 }
 
+void Particle::ParticleInteractionSPH::check_open_boundaries() const
+{
+  // types of particles to check
+  const std::unordered_map<Particle::ParticleType, std::string> types_to_check{
+      {{Particle::DirichletPhase, "Dirichlet"}, {Particle::NeumannPhase, "Neumann"}}};
+
+  // get all available boundary ids
+  std::vector<int> available_boundary_ids(openboundaries_.size());
+  std::transform(openboundaries_.begin(), openboundaries_.end(), available_boundary_ids.begin(),
+      [](const auto& boundary) { return boundary->get_boundary_id(); });
+
+  for (const auto& type_id : particlecontainerbundle_->get_particle_types())
+  {
+    // skip if this is not an open boundary type
+    if (types_to_check.find(type_id) == types_to_check.end()) continue;
+
+    // vector of missing boundary ids
+    std::set<int> missing_boundary_ids;
+
+    // get container of owned particles of open boundary phase
+    Particle::ParticleContainer* container_i =
+        particlecontainerbundle_->get_specific_container(type_id, Particle::Owned);
+
+    // get number of particles stored in container
+    const int particlestored = container_i->particles_stored();
+
+    // no owned particles of current particle type
+    if (particlestored <= 0) continue;
+
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < particlestored; ++particle_i)
+    {
+      const auto particle_boundary_id =
+          static_cast<int>(*container_i->get_ptr_to_state(Particle::OpenBoundaryId, particle_i));
+
+      if (std::find(available_boundary_ids.begin(), available_boundary_ids.end(),
+              particle_boundary_id) == available_boundary_ids.end())
+        missing_boundary_ids.insert(particle_boundary_id);
+    }
+
+    // check if any missing boundary id was detected
+    std::stringstream output_missing;
+    std::ranges::copy(missing_boundary_ids, std::ostream_iterator<int>(output_missing, " "));
+
+    FOUR_C_ASSERT_ALWAYS(missing_boundary_ids.empty(),
+        "Some {} particles have boundary ids = [ {}] but the corresponding open boundary is not "
+        "defined",
+        types_to_check.at(type_id), output_missing.str());
+  }
+}
+
 void Particle::ParticleInteractionSPH::write_restart() const
 {
   // call base class function
@@ -209,8 +257,8 @@ void Particle::ParticleInteractionSPH::insert_particle_states_of_particle_types(
     else if (type == Particle::DirichletPhase or type == Particle::NeumannPhase)
     {
       // insert states of open boundary particles
-      particlestates.insert(
-          {Particle::Mass, Particle::Radius, Particle::Density, Particle::Pressure});
+      particlestates.insert({Particle::Mass, Particle::Radius, Particle::Density,
+          Particle::Pressure, Particle::OpenBoundaryId});
     }
     else
     {
@@ -361,6 +409,9 @@ void Particle::ParticleInteractionSPH::set_initial_states()
       peridynamics_->init_peridynamic_bondlist();
     }
   }
+
+  // check if all particle boundary ids have been provided with an open boundary
+  check_open_boundaries();
 }
 
 void Particle::ParticleInteractionSPH::pre_evaluate_time_step()
@@ -665,57 +716,55 @@ void Particle::ParticleInteractionSPH::init_boundary_particle_handler()
   }
 }
 
-void Particle::ParticleInteractionSPH::init_dirichlet_open_boundary_handler()
+void Particle::ParticleInteractionSPH::init_open_boundary_handler()
 {
-  // get type of dirichlet open boundary
-  auto dirichletopenboundarytype = Teuchos::getIntegralValue<Particle::DirichletOpenBoundaryType>(
-      params_sph_, "DIRICHLETBOUNDARYTYPE");
+  const Teuchos::ParameterList& params_bcs = params_.isSublist("OPEN BOUNDARIES")
+                                                 ? params_.sublist("OPEN BOUNDARIES")
+                                                 : Teuchos::ParameterList();
 
-  // create open boundary handler
-  switch (dirichletopenboundarytype)
+  init_open_boundary<Particle::DirichletOpenBoundaryType, Particle::SPHOpenBoundaryDirichlet>(
+      params_bcs, "DIRICHLET_BOUNDARIES", Particle::DirichletNormalToPlane);
+
+  init_open_boundary<Particle::NeumannOpenBoundaryType, Particle::SPHOpenBoundaryNeumann>(
+      params_bcs, "NEUMANN_BOUNDARIES", Particle::NeumannNormalToPlane);
+}
+
+template <typename OpenBoundaryEnum, typename OpenBoundaryClass>
+void Particle::ParticleInteractionSPH::init_open_boundary(const Teuchos::ParameterList& params_bcs,
+    const std::string& root_name, const OpenBoundaryEnum enum_value)
+{
+  const double initial_particle_spacing = params_sph_.get<double>("INITIALPARTICLESPACING");
+
+  if (params_bcs.isParameter(root_name))
   {
-    case Particle::NoDirichletOpenBoundary:
+    // open boundaries within the specified root
+    const auto& boundaries = params_bcs.get<std::vector<Teuchos::ParameterList>>(root_name);
+
+    for (const auto& boundary_data : boundaries)
     {
-      break;
-    }
-    case Particle::DirichletNormalToPlane:
-    {
-      openboundaries_.push_back(std::make_unique<Particle::SPHOpenBoundaryDirichlet>(params_sph_));
-      break;
-    }
-    default:
-    {
-      FOUR_C_THROW("unknown dirichlet open boundary type!");
-      break;
+      const int boundary_id = boundary_data.get<int>("BOUNDARY");
+
+      const auto boundary_type = boundary_data.get<OpenBoundaryEnum>("_boundary_type");
+
+      const auto param_name =
+          Particle::open_boundary_type_to_string<OpenBoundaryEnum>(boundary_type);
+
+      if (boundary_type == enum_value)
+        openboundaries_.push_back(std::make_unique<OpenBoundaryClass>(
+            boundary_data.sublist(param_name), initial_particle_spacing, boundary_id));
     }
   }
 }
 
-void Particle::ParticleInteractionSPH::init_neumann_open_boundary_handler()
-{
-  // get type of neumann open boundary
-  auto neumannopenboundarytype = Teuchos::getIntegralValue<Particle::NeumannOpenBoundaryType>(
-      params_sph_, "NEUMANNBOUNDARYTYPE");
+template void Particle::ParticleInteractionSPH::init_open_boundary<
+    Particle::DirichletOpenBoundaryType, Particle::SPHOpenBoundaryDirichlet>(
+    const Teuchos::ParameterList& params_bcs, const std::string& root_name,
+    const Particle::DirichletOpenBoundaryType enum_value);
 
-  // create open boundary handler
-  switch (neumannopenboundarytype)
-  {
-    case Particle::NoNeumannOpenBoundary:
-    {
-      break;
-    }
-    case Particle::NeumannNormalToPlane:
-    {
-      openboundaries_.push_back(std::make_unique<Particle::SPHOpenBoundaryNeumann>(params_sph_));
-      break;
-    }
-    default:
-    {
-      FOUR_C_THROW("unknown neumann open boundary type!");
-      break;
-    }
-  }
-}
+template void Particle::ParticleInteractionSPH::init_open_boundary<
+    Particle::NeumannOpenBoundaryType, Particle::SPHOpenBoundaryNeumann>(
+    const Teuchos::ParameterList& params_bcs, const std::string& root_name,
+    const Particle::NeumannOpenBoundaryType enum_value);
 
 void Particle::ParticleInteractionSPH::init_virtual_wall_particle_handler()
 {
