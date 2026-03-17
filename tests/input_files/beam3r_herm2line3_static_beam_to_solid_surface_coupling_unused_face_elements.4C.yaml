@@ -3,6 +3,7 @@ TITLE:
   - "because this would lead to floating point errors."
 IO/RUNTIME VTK OUTPUT:
   INTERVAL_STEPS: 1
+  OUTPUT_DATA_FORMAT: ascii
 IO/RUNTIME VTK OUTPUT/STRUCTURE:
   OUTPUT_STRUCTURE: true
   DISPLACEMENT: true
