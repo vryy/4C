@@ -30,7 +30,7 @@ External solver and linear algebra:
 
 - :ref:`Trilinos <trilinos>` (supported versions are listed in ``dependencies/supported_version/Trilinos.txt``, currently only supported version: 16.2.0)
 - :ref:`SuiteSparse <suitesparse>`
-- :ref:`SuperLUDist <superludist>` (recommended version: 7.2.0)
+- :ref:`SuperLUDist <superludist>` (recommended version: 9.2.1)
 - BLAS
 - LAPACK
 - Mumps
