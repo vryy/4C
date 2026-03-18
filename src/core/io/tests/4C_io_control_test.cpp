@@ -144,4 +144,26 @@ namespace
     EXPECT_EQ("", stream.str());
   }
 
+  // Verify that each write() immediately places data in the stream, even before end_group() is
+  // called. This is the core crash-safety guarantee: if end_group() is never reached (e.g. due to
+  // a floating-point exception), all previously written key-value pairs are already in the kernel
+  // buffer and will survive the crash.
+  TEST(ControlFileWriterTest, FPESafetyDataInStreamBeforeEndGroup)
+  {
+    std::stringstream stream;
+    Core::IO::ControlFileWriter writer(true, stream);
+    writer.start_group("field");
+
+    writer.write("step", 1);
+    EXPECT_THAT(stream.str(), testing::HasSubstr("step: 1"));
+
+    writer.write("time", 0.5);
+    EXPECT_THAT(stream.str(), testing::HasSubstr("step: 1"));
+    EXPECT_THAT(stream.str(), testing::HasSubstr("time:"));
+
+    // end_group() is intentionally never called; the assertions above already verified that all
+    // written keys are in the stream. In a real crash the destructor would not run either, but
+    // the data is already in the kernel buffer at each write() call.
+  }
+
 }  // namespace
