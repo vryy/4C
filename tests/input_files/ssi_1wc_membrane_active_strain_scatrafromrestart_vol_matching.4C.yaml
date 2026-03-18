@@ -8,7 +8,6 @@ PROBLEM TYPE:
   PROBLEMTYPE: "Structure_Scalar_Interaction"
 STRUCTURAL DYNAMIC:
   DYNAMICTYPE: "Statics"
-  TIMESTEP: 0.1
   TOLDISP: 1e-06
   TOLRES: 1e-06
   LINEAR_SOLVER: 1
@@ -28,7 +27,6 @@ SSI CONTROL:
   NUMSTEP: 50
   MAXTIME: 5
   TIMESTEP: 0.1
-  DIFFTIMESTEPSIZE: true
   ITEMAX: 5
   SCATRA_FROM_RESTART_FILE: true
   SCATRA_FILENAME: "framework_test_output/ssi_1wc_membrane_active_strain_scatra_only.4C.yaml-p2/xxx"

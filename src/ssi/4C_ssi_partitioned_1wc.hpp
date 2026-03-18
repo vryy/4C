@@ -114,9 +114,6 @@ namespace SSI
 
     //! prepare time step for single fields
     void prepare_time_step(bool printheader = true) override;
-
-    //! return, if time loop has finished
-    bool finished() const;
   };
 
 }  // namespace SSI
