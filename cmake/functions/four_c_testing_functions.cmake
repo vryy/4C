@@ -906,7 +906,7 @@ endfunction()
 #   TESTNAME name_of_test
 #   FILE <input_in_tests/input_files>
 #   RESTART_STEP <step>
-#   RESTARTFROM_PATHTYPE <absolute|relative|relative_from_parent|same_directory>
+#   RESTARTFROM_PATHTYPE <absolute|relative|relative_from_parent|same_directory|same_directory_implicit>
 #   PVD_RESULTFILENAME <subdir_with_pvd_under_sim2>
 #   PVD_REFERENCEFILENAME <reference_file_under_tests/input_files>
 #   TOLERANCE <tol>
@@ -951,14 +951,19 @@ function(four_c_test_restarted_vtk)
     endif()
   endforeach()
 
-  if(NOT _parsed_RESTARTFROM_PATHTYPE STREQUAL "absolute"
-     AND NOT _parsed_RESTARTFROM_PATHTYPE STREQUAL "relative"
-     AND NOT _parsed_RESTARTFROM_PATHTYPE STREQUAL "relative_from_parent"
-     AND NOT _parsed_RESTARTFROM_PATHTYPE STREQUAL "same_directory"
-     )
+  # List of allowed values for RESTARTFROM_PATHTYPE
+  set(allowed_restartfrom_pathtypes
+      absolute
+      relative
+      relative_from_parent
+      same_directory
+      same_directory_implicit
+      )
+  if(NOT _parsed_RESTARTFROM_PATHTYPE IN_LIST allowed_restartfrom_pathtypes)
+    list(JOIN allowed_restartfrom_pathtypes "', '" _allowed_restartfrom_pathtypes_joined)
     message(
       FATAL_ERROR
-        "four_c_test_restarted_vtk: RESTARTFROM_PATHTYPE must be either 'absolute', 'relative', 'relative_from_parent' or 'same_directory'"
+        "four_c_test_restarted_vtk: RESTARTFROM_PATHTYPE must be one of '${_allowed_restartfrom_pathtypes_joined}'"
       )
   endif()
 
@@ -1018,28 +1023,37 @@ function(four_c_test_restarted_vtk)
     set(run2_cmd
         "mkdir -p ${sim2_dir} \
       && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${base_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
-      ${input_path} ${sim2_dir}/xxx restartfrom=${sim1_dir}/xxx restart=${_parsed_RESTART_STEP}"
+      ${input_path} ${sim2_dir}/xxx --restartfrom=${sim1_dir}/xxx --restart=${_parsed_RESTART_STEP}"
         )
   elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "relative"
          )# change into sim2_dir, then restartfrom relative_path_from_sim2_to_sim1
     set(run2_cmd
         "mkdir -p ${sim2_dir} && cd ${sim2_dir} && echo changing pwd to: && pwd \
       && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${base_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
-      ${input_path} ${sim2_dir}/xxx restartfrom=${relative_path_from_sim2_to_sim1}/xxx restart=${_parsed_RESTART_STEP}"
+      ${input_path} ${sim2_dir}/xxx --restartfrom=${relative_path_from_sim2_to_sim1}/xxx --restart=${_parsed_RESTART_STEP}"
         )
   elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "relative_from_parent"
          )# change into root_dir, then restartfrom folder_name_sim1
     set(run2_cmd
         "mkdir -p ${sim2_dir} && cd ${root_dir} && echo changing pwd to: && pwd \
       && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${base_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
-      ${input_path} ${sim2_dir}/xxx restartfrom=${folder_name_sim1}/xxx restart=${_parsed_RESTART_STEP}"
+      ${input_path} ${sim2_dir}/xxx --restartfrom=${folder_name_sim1}/xxx --restart=${_parsed_RESTART_STEP}"
         )
   elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "same_directory")
     # restartfrom sim1_dir (same directory), output is still written in sim2_dir for later vtk comparison
     set(run2_cmd
         "mkdir -p ${sim2_dir} && cd ${sim1_dir} && echo staying in: && pwd \
       && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${base_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
-      ${input_path} ${sim2_dir}/xxx restartfrom=xxx restart=${_parsed_RESTART_STEP}"
+      ${input_path} ${sim2_dir}/xxx --restartfrom=xxx --restart=${_parsed_RESTART_STEP}"
+        )
+  elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "same_directory_implicit")
+    # restartfrom sim1_dir (same directory) and write output in same directory while not specifying restartfrom path. Note: Output is written in sim1_dir now.
+    # Hence it is convenient to set sim2_dir to sim1_dir for the rest of the test such that the vtk comparison works later on.
+    set(sim2_dir ${sim1_dir})
+    set(run2_cmd
+        "cd ${sim1_dir} && echo staying in: && pwd \
+      && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${base_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
+      ${input_path} xxx --restart=${_parsed_RESTART_STEP}"
         )
   endif()
   _add_test_with_options(
