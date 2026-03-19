@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::GeometricSearch
 {
   void print_geometric_search_details(
-      const MPI_Comm comm, const GeometricSearchInfo info, const Core::IO::Verbositylevel verbosity)
+      const MPI_Comm comm, const GeometricSearchInfo info, const GeometricSearchOutput options)
   {
-    if (verbosity == Core::IO::verbose)
+    if (options.verbosity_Level == Core::IO::verbose)
     {
       const int numproc = Core::Communication::num_mpi_ranks(comm);
       const int myrank = Core::Communication::my_mpi_rank(comm);
@@ -41,7 +41,8 @@ namespace Core::GeometricSearch
 
       if (myrank == 0)
       {
-        Core::IO::cout(Core::IO::verbose) << "\n   Collision search:" << Core::IO::endl;
+        Core::IO::cout(Core::IO::verbose)
+            << "\n   Collision search (" << options.search_type_label << "):" << Core::IO::endl;
         Core::IO::cout(Core::IO::verbose)
             << "   +-----+------------+------------+--------------+" << Core::IO::endl;
         Core::IO::cout(Core::IO::verbose)

@@ -90,7 +90,7 @@ namespace Core::GeometricSearch
         {.primitive_size = primitives.size(),
             .predicate_size = predicates.size(),
             .coupling_pair_size = pairs.size()},
-        verbosity);
+        {.verbosity_Level = verbosity, .search_type_label = "global"});
     return pairs;
   }
 }  // namespace Core::GeometricSearch
