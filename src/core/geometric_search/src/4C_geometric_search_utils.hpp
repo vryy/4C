@@ -30,10 +30,18 @@ namespace Core::GeometricSearch
     size_t coupling_pair_size;
   };
 
+  /*! \brief Options to steer the output of the geometric search
+   */
+  struct GeometricSearchOutput
+  {
+    Core::IO::Verbositylevel verbosity_Level;
+    std::string search_type_label;
+  };
+
   /*! \brief Prints details on the geometric search algorithm
    */
-  void print_geometric_search_details(const MPI_Comm comm, const GeometricSearchInfo info,
-      const Core::IO::Verbositylevel verbosity);
+  void print_geometric_search_details(
+      const MPI_Comm comm, const GeometricSearchInfo info, const GeometricSearchOutput options);
 
   /*! \brief Get the polyhedron representation of a k-DOP
    *
