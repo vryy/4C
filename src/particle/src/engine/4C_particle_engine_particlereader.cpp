@@ -118,8 +118,8 @@ Core::IO::InputSpec Particle::create_particle_spec()
 
   return all_of({deprecated_selection<std::string>("TYPE", get_particle_type_names()),
       parameter<std::vector<double>>("POS", {.size = 3}), parameter<std::optional<double>>("RAD"),
-      parameter<std::optional<double>>("RIGIDCOLOR"),
-      parameter<std::optional<double>>("PDBODYID")});
+      parameter<std::optional<double>>("RIGIDCOLOR"), parameter<std::optional<double>>("PDBODYID"),
+      parameter<std::optional<double>>("BOUNDARYID")});
 }
 
 
