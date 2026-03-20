@@ -49,12 +49,9 @@ MATERIALS:
     MAT_InelasticDefgradTransvIsotropElastViscoplast:
       VISCOPLAST_LAW_ID: 4
       FIBER_READER_ID: 5
-      YIELD_COND_A: 0
-      YIELD_COND_B: 0
-      YIELD_COND_F: 0
-      ANISOTROPY: "isotrop"
-      LOG_SUBSTEP: true
-      MAX_HALVE_NUM_SUBSTEP: 10
+      MAT_BEHAVIOR: "isotropic"
+      TIME_INTEGRATION_HIST_VARS: logarithmic
+      MAX_SUBSTEPPING_HALVE_NUM: 10
   - MAT: 4
     MAT_ViscoplasticLawReformulatedJohnsonCook:
       STRAIN_RATE_PREFAC: 1
