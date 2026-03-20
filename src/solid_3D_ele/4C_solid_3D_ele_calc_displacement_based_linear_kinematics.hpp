@@ -58,8 +58,7 @@ namespace Discret::Elements
       const DisplacementBasedLinearKinematicsLinearizationContainer<celltype> linearization{};
 
       Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>
-          gl_strain = evaluate_linear_gl_strain(nodal_coordinates,
-              Discret::Elements::evaluate_linear_strain_gradient(jacobian_mapping));
+          gl_strain = evaluate_linear_gl_strain(nodal_coordinates, jacobian_mapping);
 
       return evaluator(Core::LinAlg::get_full(Core::LinAlg::TensorGenerators::identity<double,
                            Core::FE::dim<celltype>, Core::FE::dim<celltype>>),

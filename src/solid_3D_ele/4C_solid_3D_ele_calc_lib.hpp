@@ -681,6 +681,22 @@ namespace Discret::Elements
   }
 
   /*!
+   * @brief Evaluate the Green-Lagrange strain tensor from small displacement assumptions
+   */
+  template <Core::FE::CellType celltype>
+  Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>
+  evaluate_linear_gl_strain(const ElementNodes<celltype>& nodal_coordinates,
+      const JacobianMapping<celltype>& jacobian_mapping)
+  {
+    Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>> H;
+
+    Core::LinAlg::make_matrix_view(H).multiply_nt(
+        nodal_coordinates.displacements, Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ));
+
+    return 0.5 * Core::LinAlg::assume_symmetry(H + Core::LinAlg::transpose(H));
+  }
+
+  /*!
    * @brief Evaluates the strain gradient (B-Operator) of the specified element
    *
    * @tparam celltype : Cell type
