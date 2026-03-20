@@ -24,6 +24,7 @@
 #include "4C_porofluid_pressure_based_elast_scatra_input.hpp"
 
 #include <filesystem>
+#include <optional>
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN
@@ -2795,19 +2796,19 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<int>(
                 "FIBER_READER_ID", {.description = "MAT ID of the used fiber direction reader for "
                                                    "transversely isotropic behavior"}),
-            parameter<double>(
+            parameter<std::optional<double>>(
                 "YIELD_COND_A", {.description = "transversely isotropic version of the Hill(1948) "
                                                 "yield condition: parameter A, "
                                                 "following "
                                                 "the notation in Dafalias 1989, International "
                                                 "Journal of Plasticity, Vol. 5"}),
-            parameter<double>(
+            parameter<std::optional<double>>(
                 "YIELD_COND_B", {.description = "transversely isotropic version of the Hill(1948) "
                                                 "yield condition: parameter B, "
                                                 "following "
                                                 "the notation in Dafalias 1989, International "
                                                 "Journal of Plasticity, Vol. 5"}),
-            parameter<double>(
+            parameter<std::optional<double>>(
                 "YIELD_COND_F", {.description = "transversely isotropic version of the Hill(1948) "
                                                 "yield condition: parameter F, "
                                                 "following "

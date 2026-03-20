@@ -78,8 +78,8 @@ namespace Mat
     /// enum class for material behavior types
     enum class MatBehavior
     {
-      isotrop,         ///< isotropic material behavior
-      transv_isotrop,  ///< transversely isotropic material behavior
+      isotropic,         ///< isotropic material behavior
+      transv_isotropic,  ///< transversely isotropic material behavior
     };
 
     /// enum class for time integration types (Local Newton integration)
@@ -153,6 +153,43 @@ namespace Mat
       std::vector<Core::LinAlg::Matrix<3, 3>> last_substep_plastic_defgrad_inverse;
       //! plastic strain at the last computed time instant (after the last converged substep)
       std::vector<double> last_substep_plastic_strain;
+
+      /*!
+       * @brief Set meaningful initial values. Done first for one single Gauss point (extended later
+       * on using the resizing function).
+       *
+       */
+      void init();
+
+      /*!
+       * @brief Resizing based on a given number of Gauss points
+       *
+       * @note The value saved within the first item is taken for all items during resizing. We only
+       * enable resizing if the current sizes of the involved vectors are 1
+       *
+       * @param[in] numgp Number of Gauss points
+       */
+      void resize(const unsigned int numgp);
+
+      /*!
+       * @brief Perform pre-evaluation tasks at a given Gauss point
+       *
+       * @param[in] gp Gauss point index
+       */
+      void pre_evaluate(const unsigned int gp);
+
+      //!  Update values between time steps: last <- current
+      void update();
+
+      //! Pack values
+      void pack(Core::Communication::PackBuffer& data) const;
+
+      //! Unpack values
+      void unpack(Core::Communication::UnpackBuffer& buffer);
+
+      //! tracks whether the resizing function has been called, to set the current number of
+      //! Gauss points exactly once!
+      const bool resize_called_{false};
     };
 
 
@@ -239,6 +276,21 @@ namespace Mat
       void reset();
     };
 
+    /// enum class for state quantity evaluations in
+    /// InelasticDefgradTransvIsotropElastViscoplast: what is the aim of
+    /// the evaluation? (full evaluation, or only partial, e.g. only the
+    /// plastic strain rate,...)
+    enum class StateQuantityEvalType
+    {
+      FullEval,  ///< full evaluation (full call of the evaluate_state_quantities method)
+      PlasticStrainRateOnly,  ///< return in evaluate_state_quantities once the plastic strain
+                              ///< rate has been evaluated
+      EquivStressOnly,        ///< return in evaluate_state_quantities once the
+                              ///< equivalent stress has been evaluated
+    };
+
+
+
     //! struct containing quantities computed from a given elasticity/plasticity state;
     //! given: current right Cauchy-Green deformation tensor, inelastic deformation gradient and
     //! plastic strain at the previous time instant
@@ -281,7 +333,26 @@ namespace Mat
 
       //! plastic update tensor
       Core::LinAlg::Matrix<3, 3> curr_EpM{Core::LinAlg::Initialization::zero};
+
+      //! evaluation type
+      StateQuantityEvalType eval_type;
     };
+
+    /// enum class for evaluations of the state quantity derivatives in
+    /// InelasticDefgradTransvIsotropElastViscoplast: what is the aim of
+    /// the evaluation? (full evaluation, or only partial, e.g. only the
+    /// derivatives of the plastic strain rate,...)
+    enum class StateQuantityDerivEvalType
+    {
+      FullEval,  ///< full evaluation (full call of the evaluate_state_quantity_derivatives
+                 ///< method)
+      PlasticStrainRateDerivsOnly,  ///< return in evaluate_state_quantity_derivatives once the
+                                    ///< derivatives of the plastic strain rate have been
+                                    ///< evaluated
+      EquivStressDerivsOnly,  ///< return in evaluate_state_quantities once the derivatives of the
+                              ///< equivalent stress has been evaluated
+    };
+
 
 
     //! struct containing specific derivatives of quantities computed from a given
@@ -346,37 +417,12 @@ namespace Mat
       //! derivative of the plastic update tensor w.r.t. the right Cauchy-Green deformation tensor
       //! (Voigt stress form)
       Core::LinAlg::Matrix<9, 6> curr_dEpdC{Core::LinAlg::Initialization::zero};
+
+      //! evaluation type
+      StateQuantityDerivEvalType eval_type;
     };
 
 
-
-    /// enum class for state quantity evaluations in
-    /// InelasticDefgradTransvIsotropElastViscoplast: what is the aim of
-    /// the evaluation? (full evaluation, or only partial, e.g. only the
-    /// plastic strain rate,...)
-    enum class StateQuantityEvalType
-    {
-      FullEval,  ///< full evaluation (full call of the evaluate_state_quantities method)
-      PlasticStrainRateOnly,  ///< return in evaluate_state_quantities once the plastic strain
-                              ///< rate has been evaluated
-      EquivStressOnly,        ///< return in evaluate_state_quantities once the
-                              ///< equivalent stress has been evaluated
-    };
-
-    /// enum class for evaluations of the state quantity derivatives in
-    /// InelasticDefgradTransvIsotropElastViscoplast: what is the aim of
-    /// the evaluation? (full evaluation, or only partial, e.g. only the
-    /// derivatives of the plastic strain rate,...)
-    enum class StateQuantityDerivEvalType
-    {
-      FullEval,  ///< full evaluation (full call of the evaluate_state_quantity_derivatives
-                 ///< method)
-      PlasticStrainRateDerivsOnly,  ///< return in evaluate_state_quantity_derivatives once the
-                                    ///< derivatives of the plastic strain rate have been
-                                    ///< evaluated
-      EquivStressDerivsOnly,  ///< return in evaluate_state_quantities once the derivatives of the
-                              ///< equivalent stress has been evaluated
-    };
 
   }  // namespace InelasticDefgradTransvIsotropElastViscoplastUtils
 

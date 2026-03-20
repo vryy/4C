@@ -144,4 +144,132 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalSubsteppingUti
   iter = 0;
 }
 
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::init()
+{
+  // auxiliaries
+  Core::LinAlg::Matrix<3, 3> id3x3{Core::LinAlg::Initialization::zero};
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    id3x3(i, i) = 1.0;
+  }
+
+  // ----- set last_ and current_ variables referring to values at different time instants
+  // ----- for now: the number of Gauss points is unknown -> we set the values only for 1
+  // Gauss point and update the number of Gauss points in the setup method
+
+  // default values of the inverse plastic deformation gradient: unit tensor
+  last_plastic_defgrad_inverse.resize(1, id3x3);
+  current_plastic_defgrad_inverse.resize(1, id3x3);  // value irrelevant at this point
+  last_substep_plastic_defgrad_inverse.resize(1, id3x3);
+
+  // update last_ and current_ values of the plastic strain
+  last_plastic_strain.resize(1, 0.0);
+  current_plastic_strain.resize(1, 0.0);  // value irrelevant at this point
+  last_substep_plastic_strain.resize(1, 0.0);
+
+  // default values of the right CG tensor: unit tensor
+  last_rightCG.resize(1, id3x3);
+  current_rightCG.resize(1, id3x3);  // value irrelevant at this point
+
+  // default value for the current deformation gradient: zero tensor \f$ \boldsymbol{0} f$ (to make
+  // sure that the inverse inelastic deformation gradient is evaluated in the first method call)
+  current_defgrad.resize(1, Core::LinAlg::Matrix<3, 3>{Core::LinAlg::Initialization::zero});
+}
+
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::resize(
+    const unsigned int numgp)
+{
+  FOUR_C_ASSERT_ALWAYS(!resize_called_,
+      "You already called resize for the time step quantities! The number of current GP is {} and "
+      "you attempt to set it to {}",
+      last_plastic_strain.size(), numgp);
+
+  // default values of the inverse plastic deformation gradient for ALL Gauss Points
+  last_plastic_defgrad_inverse.resize(numgp, last_plastic_defgrad_inverse[0]);
+  current_plastic_defgrad_inverse.resize(numgp,
+      last_plastic_defgrad_inverse[0]);  // value irrelevant at this point
+  last_substep_plastic_defgrad_inverse.resize(numgp, last_substep_plastic_defgrad_inverse[0]);
+
+  // default values of the plastic strain for ALL Gauss Points
+  last_plastic_strain.resize(numgp, last_plastic_strain[0]);
+  current_plastic_strain.resize(numgp, last_plastic_strain[0]);  // value irrelevant at this point
+  last_substep_plastic_strain.resize(numgp, last_substep_plastic_strain[0]);
+
+  // default values of the right CG deformation tensor for ALL Gauss Points
+  last_rightCG.resize(numgp, last_rightCG[0]);
+  current_rightCG.resize(numgp, last_rightCG[0]);  // value irrelevant at this point
+
+  // default values of the deformation gradient
+  current_defgrad.resize(numgp, current_defgrad[0]);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::pre_evaluate(
+    const unsigned int gp)
+{
+  // set consistent last substep values
+  last_substep_plastic_defgrad_inverse[gp] = last_plastic_defgrad_inverse[gp];
+  last_substep_plastic_strain[gp] = last_plastic_strain[gp];
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::update()
+{
+  // update history variables for the next time step
+  last_rightCG = current_rightCG;
+  last_plastic_defgrad_inverse = current_plastic_defgrad_inverse;
+  last_substep_plastic_defgrad_inverse = current_plastic_defgrad_inverse;
+  last_plastic_strain = current_plastic_strain;
+  last_substep_plastic_strain = current_plastic_strain;
+}
+
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::pack(
+    Core::Communication::PackBuffer& data) const
+{
+  add_to_pack(data, last_rightCG);
+  add_to_pack(data, last_plastic_defgrad_inverse);
+  add_to_pack(data, last_plastic_strain);
+  add_to_pack(data, last_substep_plastic_defgrad_inverse);
+  add_to_pack(data, last_substep_plastic_strain);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::unpack(
+    Core::Communication::UnpackBuffer& buffer)
+{
+  // extract last values
+  extract_from_pack(buffer, last_rightCG);
+  extract_from_pack(buffer, last_plastic_defgrad_inverse);
+  extract_from_pack(buffer, last_plastic_strain);
+  extract_from_pack(buffer, last_substep_plastic_defgrad_inverse);
+  extract_from_pack(buffer, last_substep_plastic_strain);
+
+  // fill current_ values with the last_ values
+  current_rightCG.resize(last_rightCG.size(),
+      last_rightCG[0]);  // value irrelevant
+  current_plastic_defgrad_inverse.resize(last_plastic_defgrad_inverse.size(),
+      last_plastic_defgrad_inverse[0]);  // value irrelevant
+  current_plastic_strain.resize(last_plastic_strain.size(),
+      last_plastic_strain[0]);  // value irrelevant
+
+  // set evaluated deformation gradient to 0, to make sure that the inverse inelastic deformation
+  // gradient is evaluated fully after the restart
+  current_defgrad.resize(last_substep_plastic_defgrad_inverse.size(),
+      Core::LinAlg::Matrix<3, 3>{Core::LinAlg::Initialization::zero});
+}
+
+
+
 FOUR_C_NAMESPACE_CLOSE

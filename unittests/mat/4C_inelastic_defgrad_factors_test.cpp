@@ -25,6 +25,8 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
+#include <optional>
+
 
 
 namespace
@@ -301,7 +303,7 @@ namespace
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MATRIX_LOG_DERIV_CALC_METHOD",
           Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MAT_BEHAVIOR",
-          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::MatBehavior::transv_isotrop);
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::MatBehavior::transv_isotropic);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
           "MAX_PLASTIC_STRAIN_DERIV_INCR", std::exp(30.0));
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
@@ -310,9 +312,12 @@ namespace
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("TIME_INTEGRATION_HIST_VARS",
           Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimIntType::logarithmic);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("VISCOPLAST_LAW_ID", 4);
-      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("YIELD_COND_A", 1.0);
-      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("YIELD_COND_B", 2.0);
-      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("YIELD_COND_F", 2.5);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add<std::optional<double>>(
+          "YIELD_COND_A", 1.0);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add<std::optional<double>>(
+          "YIELD_COND_B", 2.0);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add<std::optional<double>>(
+          "YIELD_COND_F", 2.5);
 
       // get pointer to parameter class
       params_transv_isotrop_vplast_refJC_ =
@@ -335,7 +340,7 @@ namespace
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MATRIX_LOG_DERIV_CALC_METHOD",
           Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MAT_BEHAVIOR",
-          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::MatBehavior::isotrop);
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::MatBehavior::isotropic);
       inelastic_defgrad_isotrop_vplast_refJC_data.add(
           "MAX_PLASTIC_STRAIN_DERIV_INCR", std::exp(30.0));
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_PLASTIC_STRAIN_INCR", std::exp(30.0));
@@ -343,10 +348,12 @@ namespace
       inelastic_defgrad_isotrop_vplast_refJC_data.add("TIME_INTEGRATION_HIST_VARS",
           Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimIntType::logarithmic);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("VISCOPLAST_LAW_ID", 4);
-      inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_A", 1.0);
-      inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_B", 2.0);
-      inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_F", 2.5);
-
+      inelastic_defgrad_isotrop_vplast_refJC_data.add<std::optional<double>>(
+          "YIELD_COND_A", std::nullopt);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add<std::optional<double>>(
+          "YIELD_COND_B", std::nullopt);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add<std::optional<double>>(
+          "YIELD_COND_F", std::nullopt);
 
 
       params_isotrop_vplast_refJC_ =

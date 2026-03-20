@@ -1344,7 +1344,8 @@ namespace Mat
         const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<3, 3>& iFinM,
         const double plastic_strain,
         InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status, const double dt,
-        const InelasticDefgradTransvIsotropElastViscoplastUtils::StateQuantityEvalType& eval_type);
+        const InelasticDefgradTransvIsotropElastViscoplastUtils::StateQuantityEvalType& eval_type)
+        const;
 
     /*! @brief Evaluate the current state variable derivatives with respect to the right
      * Cauchy-Green deformation tensor, the inverse plastic deformation gradient and the equivalent
@@ -1370,7 +1371,7 @@ namespace Mat
         InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status, const double dt,
         const InelasticDefgradTransvIsotropElastViscoplastUtils::StateQuantityDerivEvalType&
             eval_type,
-        const bool eval_state = false);
+        const bool eval_state = false) const;
 
     //! return the fiber direction of transverse isotropy for the considered element
     Core::LinAlg::Matrix<3, 1> get_fiber_direction() { return m_; }
@@ -1450,7 +1451,7 @@ namespace Mat
      *                   in Holzapfel - Nonlinear Solid Mechanics(2000)
      */
     void calculate_gamma_delta(const Core::LinAlg::Matrix<3, 3>& CeM,
-        Core::LinAlg::Matrix<3, 1>& gamma, Core::LinAlg::Matrix<8, 1>& delta);
+        Core::LinAlg::Matrix<3, 1>& gamma, Core::LinAlg::Matrix<8, 1>& delta) const;
 
     /*!
      * @brief Check if the elastic predictor provides the solution for the current time step,

@@ -37,6 +37,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -413,7 +414,6 @@ namespace
         Core::LinAlg::EigenvalInterpolationType::LOG, interp_param_list};
   }
 
-
 }  // namespace
 
 
@@ -589,9 +589,9 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
     : Parameter(matdata),
       viscoplastic_law_id_(matdata.parameters.get<int>("VISCOPLAST_LAW_ID")),
       fiber_reader_gid_(matdata.parameters.get<int>("FIBER_READER_ID")),
-      yield_cond_a_(matdata.parameters.get<double>("YIELD_COND_A")),
-      yield_cond_b_(matdata.parameters.get<double>("YIELD_COND_B")),
-      yield_cond_f_(matdata.parameters.get<double>("YIELD_COND_F")),
+      yield_cond_a_(matdata.parameters.get<std::optional<double>>("YIELD_COND_A").value_or(0.0)),
+      yield_cond_b_(matdata.parameters.get<std::optional<double>>("YIELD_COND_B").value_or(0.0)),
+      yield_cond_f_(matdata.parameters.get<std::optional<double>>("YIELD_COND_F").value_or(0.0)),
       mat_behavior_(matdata.parameters.get<ViscoplastUtils::MatBehavior>("MAT_BEHAVIOR")),
       timint_type_(
           matdata.parameters.get<ViscoplastUtils::TimIntType>("TIME_INTEGRATION_HIST_VARS")),
@@ -612,11 +612,25 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
           matdata.parameters.get<Core::LinAlg::GenMatrixLogFirstDerivCalcMethod>(
               "MATRIX_LOG_DERIV_CALC_METHOD"))
 {
-  // consistency checks
+  // consistency check: number of substepping halving procedures
   if (max_substepping_halve_num_ < 0)
     FOUR_C_THROW(
         "Maximum number of times the global time step can be halved in the substepping procedure "
         "must be >= 0!");
+
+  // consistency check: yield parameters in case of transversely-isotropic behavior
+  const bool all_yield_cond_param_specified =
+      matdata.parameters.get<std::optional<double>>("YIELD_COND_A").has_value() &&
+      matdata.parameters.get<std::optional<double>>("YIELD_COND_B").has_value() &&
+      matdata.parameters.get<std::optional<double>>("YIELD_COND_F").has_value();
+  if (mat_behavior_ ==
+          InelasticDefgradTransvIsotropElastViscoplastUtils::MatBehavior::transv_isotropic &&
+      !all_yield_cond_param_specified)
+  {
+    FOUR_C_THROW(
+        "You are attempting to simulate transversely isotropic behavior but have not specified all "
+        "yield function parameters!");
+  }
 }
 
 
@@ -1618,30 +1632,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
   // set minimum substep length
   time_step_tracker_.min_dt = 0.0;
 
-  // ----- set last_ and current_ variables referring to values at different time instants
-  // ----- for now: the number of Gauss points is unknown -> we set the values only for 1
-  // Gauss point and update the number of Gauss points in the setup method
-
-  // default values of the inverse plastic deformation gradient: unit tensor
-  time_step_quantities_.last_plastic_defgrad_inverse.resize(1, const_non_mat_tensors.id3x3);
-  time_step_quantities_.current_plastic_defgrad_inverse.resize(
-      1, const_non_mat_tensors.id3x3);  // value irrelevant at this point
-  time_step_quantities_.last_substep_plastic_defgrad_inverse.resize(1, const_non_mat_tensors.id3x3);
-
-  // update last_ and current_ values of the plastic strain
-  time_step_quantities_.last_plastic_strain.resize(1, 0.0);
-  time_step_quantities_.current_plastic_strain.resize(1, 0.0);  // value irrelevant at this point
-  time_step_quantities_.last_substep_plastic_strain.resize(1, 0.0);
-
-  // default values of the right CG tensor: unit tensor
-  time_step_quantities_.last_rightCG.resize(1, const_non_mat_tensors.id3x3);
-  time_step_quantities_.current_rightCG.resize(
-      1, const_non_mat_tensors.id3x3);  // value irrelevant at this point
-
-  // default value for the current deformation gradient: zero tensor \f$ \boldsymbol{0} f$ (to make
-  // sure that the inverse inelastic deformation gradient is evaluated in the first method call)
-  time_step_quantities_.current_defgrad.resize(
-      1, Core::LinAlg::Matrix<3, 3>{Core::LinAlg::Initialization::zero});
+  // initialize time step quantities
+  time_step_quantities_.init();
 }
 
 
@@ -1667,14 +1659,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pre_evaluate(
   time_step_tracker_.min_dt =
       time_step_tracker_.dt / std::pow(2.0, parameter()->max_halve_number());
 
-  // set last substep values (last converged state) as the last time step values --> required, as
-  // these are used in the EvaluateAdditionalCMat method (in the case where there is no plastic
-  // deformation, these would not be updated correctly otherwise)
-  time_step_quantities_.last_substep_plastic_defgrad_inverse[gp_] =
-      time_step_quantities_.last_plastic_defgrad_inverse[gp_];
-  time_step_quantities_.last_substep_plastic_strain[gp_] =
-      time_step_quantities_.last_plastic_strain[gp_];
-
+  // call pre_evaluate method of the time step quantities
+  time_step_quantities_.pre_evaluate(gp);
   // call preevaluate method of the viscoplastic law
   viscoplastic_law_->pre_evaluate(gp);
 }
@@ -1683,7 +1669,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pre_evaluate(
  *--------------------------------------------------------------------*/
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::calculate_gamma_delta(
     const Core::LinAlg::Matrix<3, 3>& CeM, Core::LinAlg::Matrix<3, 1>& gamma,
-    Core::LinAlg::Matrix<8, 1>& delta)
+    Core::LinAlg::Matrix<8, 1>& delta) const
 {
   // compute principal values
   Core::LinAlg::Matrix<3, 1> prinv(Core::LinAlg::Initialization::zero);
@@ -1715,9 +1701,11 @@ ViscoplastUtils::StateQuantities
 Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
     const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<3, 3>& iFinM,
     const double plastic_strain, ViscoplastUtils::ErrorType& err_status, const double dt,
-    const ViscoplastUtils::StateQuantityEvalType& eval_type)
+    const ViscoplastUtils::StateQuantityEvalType& eval_type) const
 {
   ViscoplastUtils::StateQuantities state_quantities{};
+  state_quantities.eval_type = eval_type;
+
 
   // auxiliaries
   Core::LinAlg::Matrix<1, 1> temp1x1(Core::LinAlg::Initialization::zero);
@@ -1737,7 +1725,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   state_quantities.curr_dSedCe.clear();
   // compute additional 2nd elastic PK stress and elastic stiffness for the transversely
   // isotropic components (additive split assumed, as for CoupTransverselyIsotropic)
-  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotrop)
+  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
   {
     // initialize empty parameter list
     Teuchos::ParameterList param_list{};
@@ -1765,7 +1753,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   Me_sym_M.update(state_quantities.curr_gamma(0), state_quantities.curr_CeM,
       state_quantities.curr_gamma(1), CeCeM, 0.0);
   Me_sym_M.update(state_quantities.curr_gamma(2), const_non_mat_tensors.id3x3, 1.0);
-  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotrop)
+  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
   {
     Core::LinAlg::Matrix<3, 3> addMeM(Core::LinAlg::Initialization::zero);
     temp3x3.multiply_nn(1.0, state_quantities.curr_CeM, state_quantities.curr_SeM, 0.0);
@@ -1803,14 +1791,14 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   double mTMe_dev_sym_m = temp1x1(0);
 
   // calculate equivalent tensile stress
-  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotrop)
+  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
   {
     state_quantities.curr_equiv_stress =
         std::sqrt((A + 2 * B) * Me_dev_sym_contract_Me_dev_sym +
                   2 * (F - A - 2 * B) * mTMe_dev_sym_squared_m +
                   (5 * A + B - 2 * F) * std::pow(mTMe_dev_sym_m, 2.0));
   }
-  else if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::isotrop)
+  else if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::isotropic)
   {
     state_quantities.curr_equiv_stress = std::sqrt(3.0 / 2.0 * Me_dev_sym_contract_Me_dev_sym);
   }
@@ -1854,7 +1842,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   }
 
   // calculate plastic flow direction
-  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotrop)
+  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
   {
     // determine required components for the computation of the plastic flow direction
     Core::LinAlg::Matrix<3, 1> Me_dev_sym_m(Core::LinAlg::Initialization::zero);
@@ -1896,7 +1884,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
     state_quantities.curr_lpM.multiply_nn(
         -1.0, state_quantities.curr_dpM, const_mat_tensors_.mm, 1.0);
   }
-  else if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::isotrop)
+  else if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::isotropic)
   {
     state_quantities.curr_NpM.clear();
     state_quantities.curr_dpM.clear();
@@ -1956,9 +1944,10 @@ ViscoplastUtils::StateQuantityDerivatives
 Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_derivatives(
     const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<3, 3>& iFinM,
     const double plastic_strain, ViscoplastUtils::ErrorType& err_status, const double dt,
-    const ViscoplastUtils::StateQuantityDerivEvalType& eval_type, const bool eval_state)
+    const ViscoplastUtils::StateQuantityDerivEvalType& eval_type, const bool eval_state) const
 {
   ViscoplastUtils::StateQuantityDerivatives state_quantity_derivatives{};
+  state_quantity_derivatives.eval_type = eval_type;
 
   // auxiliaries
   Core::LinAlg::Matrix<3, 3> temp3x3(Core::LinAlg::Initialization::zero);
@@ -2127,7 +2116,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
 
   // compute additional components of the elastic transversely isotropic components for the
   // derivatives of the symmetric Mandel stress
-  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotrop)
+  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
   {
     Core::LinAlg::FourTensor<3> CedSediFin_FourTensor(true);
     Core::LinAlg::FourTensorOperations::multiply_matrix_four_tensor<3>(
@@ -2210,7 +2199,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
   // \f$ \frac{\partial \boldsymbol{N}^{\text{p}}_{} }{\partial
   // \partial \boldsymbol{M}^{\text{e}}_{\text{dev,sym}}} \f$ (Voigt stress-stress form)
   Core::LinAlg::Matrix<6, 6> dNpdMe_sym_dev(Core::LinAlg::Initialization::zero);
-  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotrop)
+  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
   {
     dNpdMe_sym_dev.multiply_nt(-1.0 / equiv_stress, NpV, NpV, 0.0);
     dNpdMe_sym_dev.update(-1.0 / 2.0 * 1.0 / equiv_stress * 4.0 / 3.0 * (F - A - 2.0 * B),
@@ -2226,7 +2215,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
     dNpdMe_sym_dev.update(
         1.0 / equiv_stress * (5 * A + B - 2 * F), const_mat_tensors_.mm_dev_dyad_mm, 1.0);
   }
-  else if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::isotrop)
+  else if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::isotropic)
   {
     dNpdMe_sym_dev.multiply_nt(-1.0 / equiv_stress, NpV, NpV, 0.0);
     dNpdMe_sym_dev.update(1.0 / equiv_stress * 3.0 / 2.0, const_non_mat_tensors.id4_6x6, 1.0);
@@ -2619,11 +2608,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
 {
   // update history variables for the next time step
-  time_step_quantities_.last_rightCG = time_step_quantities_.current_rightCG;
-  time_step_quantities_.last_plastic_defgrad_inverse =
-      time_step_quantities_.current_plastic_defgrad_inverse;
-  time_step_quantities_.last_plastic_strain = time_step_quantities_.current_plastic_strain;
-
+  time_step_quantities_.update();
   // call update method of the viscoplastic law
   viscoplastic_law_->update();
 }
@@ -2639,35 +2624,14 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(const int numgp,
   std::vector<Core::LinAlg::Tensor<double, 3>> temp_vec;
   Core::LinAlg::Matrix<6, 1> temp_6x1(Core::LinAlg::Initialization::zero);
 
-  // default values of the inverse plastic deformation gradient for ALL Gauss Points
-  time_step_quantities_.last_plastic_defgrad_inverse.resize(
-      numgp, time_step_quantities_.last_plastic_defgrad_inverse[0]);
-  time_step_quantities_.current_plastic_defgrad_inverse.resize(numgp,
-      time_step_quantities_.last_plastic_defgrad_inverse[0]);  // value irrelevant at this point
-  time_step_quantities_.last_substep_plastic_defgrad_inverse.resize(
-      numgp, time_step_quantities_.last_substep_plastic_defgrad_inverse[0]);
-
-  // default values of the plastic strain for ALL Gauss Points
-  time_step_quantities_.last_plastic_strain.resize(
-      numgp, time_step_quantities_.last_plastic_strain[0]);
-  time_step_quantities_.current_plastic_strain.resize(
-      numgp, time_step_quantities_.last_plastic_strain[0]);  // value irrelevant at this point
-  time_step_quantities_.last_substep_plastic_strain.resize(
-      numgp, time_step_quantities_.last_substep_plastic_strain[0]);
-
-  // default values of the right CG deformation tensor for ALL Gauss Points
-  time_step_quantities_.last_rightCG.resize(numgp, time_step_quantities_.last_rightCG[0]);
-  time_step_quantities_.current_rightCG.resize(
-      numgp, time_step_quantities_.last_rightCG[0]);  // value irrelevant at this point
-
-  // default values of the deformation gradient
-  time_step_quantities_.current_defgrad.resize(numgp, time_step_quantities_.current_defgrad[0]);
+  // resize time step quantities according to the number of Gauss points
+  time_step_quantities_.resize(numgp);
 
   // call corresponding method of the viscoplastic law
   viscoplastic_law_->setup(numgp, fibers, coord_system);
 
   // read fiber and structural tensor in the case of transverse isotropy
-  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotrop)
+  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
   {
     // read fiber via the fiber reader (hyperelastic transversely isotropic material)
     fiber_reader_.setup(numgp, fibers, coord_system);
@@ -2697,12 +2661,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pack_inelastic(
     // pack fiber direction
     add_to_pack(data, m_);
 
-    // pack last_ values inside time_step_quantities_
-    add_to_pack(data, time_step_quantities_.last_rightCG);
-    add_to_pack(data, time_step_quantities_.last_plastic_defgrad_inverse);
-    add_to_pack(data, time_step_quantities_.last_plastic_strain);
-    add_to_pack(data, time_step_quantities_.last_substep_plastic_defgrad_inverse);
-    add_to_pack(data, time_step_quantities_.last_substep_plastic_strain);
+    // pack time_step_quantities_
+    time_step_quantities_.pack(data);
   }
 }
 
@@ -2721,31 +2681,9 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
     viscoplastic_law_->unpack_viscoplastic_law(buffer);
     // unpack fiber direction
     extract_from_pack(buffer, m_);
-
-    // unpack last_ values inside time_step_quantities_
-    extract_from_pack(buffer, time_step_quantities_.last_rightCG);
-    extract_from_pack(buffer, time_step_quantities_.last_plastic_defgrad_inverse);
-    extract_from_pack(buffer, time_step_quantities_.last_plastic_strain);
-    extract_from_pack(buffer, time_step_quantities_.last_substep_plastic_defgrad_inverse);
-    extract_from_pack(buffer, time_step_quantities_.last_substep_plastic_strain);
+    // unpack time step quantities
+    time_step_quantities_.unpack(buffer);
   }
-
-  // fill current_ values with the last_ values
-  time_step_quantities_.current_rightCG.resize(time_step_quantities_.last_rightCG.size(),
-      time_step_quantities_.last_rightCG[0]);  // value irrelevant
-  time_step_quantities_.current_plastic_defgrad_inverse.resize(
-      time_step_quantities_.last_plastic_defgrad_inverse.size(),
-      time_step_quantities_.last_plastic_defgrad_inverse[0]);  // value irrelevant
-  time_step_quantities_.current_plastic_strain.resize(
-      time_step_quantities_.last_plastic_strain.size(),
-      time_step_quantities_.last_plastic_strain[0]);  // value irrelevant
-
-  // set evaluated deformation gradient to 0, to make sure that the inverse inelastic deformation
-  // gradient is evaluated fully after the restart
-  time_step_quantities_.current_defgrad.resize(
-      time_step_quantities_.last_substep_plastic_defgrad_inverse.size(),
-      Core::LinAlg::Matrix<3, 3>{Core::LinAlg::Initialization::zero});
-
 
   // now that the fiber direction is available, we set the material-dependent constant tensors
   // with it
