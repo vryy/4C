@@ -12,6 +12,7 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
+#include "4C_linalg_tensor.hpp"
 #include "4C_utils_fad.hpp"
 
 #include <functional>
@@ -52,6 +53,14 @@ namespace Core::Utils
     }
     x.multiply_nn(-1, jacobian, residuum, 1.0);
   }
+
+  template <typename Tensor1, typename Tensor2, typename Tensor3>
+    requires(Core::LinAlg::is_tensor<Tensor1> && Core::LinAlg::is_tensor<Tensor2> &&
+             Core::LinAlg::is_tensor<Tensor3>)
+  void local_newton_iteration(Tensor1& x, const Tensor2& residuum, Tensor3&& jacobian)
+  {
+    x -= Core::LinAlg::inv(jacobian) * residuum;
+  }
   /// @}
 
   /// @brief Free functions defining a to compute the L2-norm of the used Vector Type
@@ -69,6 +78,12 @@ namespace Core::Utils
   ScalarType l2_norm(const Core::LinAlg::Matrix<n, 1, ScalarType>& x)
   {
     return Core::FADUtils::vector_norm(x);
+  }
+
+  template <std::size_t n, typename ScalarType>
+  ScalarType l2_norm(const Core::LinAlg::Tensor<ScalarType, n>& x)
+  {
+    return Core::LinAlg::norm2(x);
   }
   /// @}
 

@@ -64,7 +64,12 @@ namespace Discret::Elements
   class SolidEleCalc
   {
    public:
-    SolidEleCalc(const SolidIntegrationRules<Core::FE::dim<celltype>>& integration_rules);
+    explicit SolidEleCalc(const SolidIntegrationRules<Core::FE::dim<celltype>>& integration_rules)
+      requires(Core::FE::dim<celltype> == 3);
+
+    SolidEleCalc(SolidIntegrationRules<Core::FE::dim<celltype>> integration_rules,
+        double reference_thickness, PlaneAssumption plane_assumption)
+      requires(Core::FE::dim<celltype> == 2);
 
     void pack(Core::Communication::PackBuffer& data) const;
 
@@ -143,6 +148,8 @@ namespace Discret::Elements
 
     Core::FE::GaussIntegration stiffness_matrix_integration_;
     Core::FE::GaussIntegration mass_matrix_integration_;
+
+    ElementProperties<celltype> element_properties_;
 
     SolidFormulationHistory<ElementFormulation> history_data_{};
     SolidFormulationHistory<ElementFormulation> old_history_data_{};

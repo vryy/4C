@@ -199,7 +199,7 @@ bool Discret::Elements::SolidPoroPressureBased::read_element(const std::string& 
 
 
   SolidIntegrationRules<3> rules =
-      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
+      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<3>>(celltype_,
           [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_, rules);
@@ -268,7 +268,7 @@ void Discret::Elements::SolidPoroPressureBased::unpack(Core::Communication::Unpa
 
   // reset solid and poro interfaces
   SolidIntegrationRules<3> rules =
-      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
+      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<3>>(celltype_,
           [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_, rules);

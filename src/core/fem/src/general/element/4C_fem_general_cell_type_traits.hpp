@@ -126,6 +126,25 @@ namespace Core::FE
   using apply_celltype_sequence =
       typename Internal::apply_celltype_sequence<BaseTypeList, Base, CellTypeSequence>::type;
 
+  /**
+   * @brief Join multiple cell type sequences into one
+   *
+   * @tparam CellTypeSequences The cell type sequences to join
+   *
+   * Example:
+   * @code{.cpp}
+   * using CellTypes3D = Core::FE::celltype_sequence<CellType::hex8, CellType::hex27>
+   * using CellTypes2D = Core::FE::celltype_sequence<CellType::quad4, CellType::tri3>
+   *
+   * // results in Core::FE::celltype_sequence<CellType::hex8, CellType::hex27, CellType::quad4,
+   * CellType::tri3> using CellTypes = join_celltype_sequences<CellTypes3D, CellTypes2D>;
+   *
+   * @endcode
+   */
+  template <typename... CellTypeSequences>
+  using join_celltype_sequences =
+      typename Internal::join_celltype_sequences<CellTypeSequences...>::type;
+
   /*!
    * @brief Returns a std::array of celltypes defined in the given integer sequence
    *

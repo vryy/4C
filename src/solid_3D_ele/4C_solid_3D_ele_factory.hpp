@@ -32,23 +32,33 @@ namespace Solid::Elements
 }
 namespace Discret::Elements
 {
-  using ImplementedSolidCellTypes = Core::FE::CelltypeSequence<Core::FE::CellType::hex8,
+  using ImplementedSolidCellTypes3D = Core::FE::CelltypeSequence<Core::FE::CellType::hex8,
       Core::FE::CellType::hex18, Core::FE::CellType::hex20, Core::FE::CellType::hex27,
       Core::FE::CellType::nurbs27, Core::FE::CellType::tet4, Core::FE::CellType::tet10,
       Core::FE::CellType::wedge6, Core::FE::CellType::pyramid5>;
+
+  using ImplementedSolidCellTypes2D =
+      Core::FE::CelltypeSequence<Core::FE::CellType::quad4, Core::FE::CellType::quad8,
+          Core::FE::CellType::quad9, Core::FE::CellType::tri3, Core::FE::CellType::tri6>;
+
+  template <unsigned dim>
+  using ImplementedSolidCellTypes =
+      std::conditional_t<dim == 3, ImplementedSolidCellTypes3D, ImplementedSolidCellTypes2D>;
   namespace Internal
   {
-
+    template <unsigned dim>
     using DisplacementBasedEvaluators =
         Core::FE::apply_celltype_sequence<DisplacementBasedSolidIntegrator,
-            ImplementedSolidCellTypes>;
+            ImplementedSolidCellTypes<dim>>;
 
+    template <unsigned dim>
     using DisplacementBasedLinearKinematicsEvaluators =
         Core::FE::apply_celltype_sequence<DisplacementBasedLinearKinematicsSolidIntegrator,
-            ImplementedSolidCellTypes>;
+            ImplementedSolidCellTypes<dim>>;
 
     using FbarEvaluators = Core::FE::apply_celltype_sequence<FBarSolidIntegrator,
         Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>>;
+
     using EASEvaluators = Core::FE::BaseTypeList<
         EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
             Inpar::Solid::KinemType::nonlinearTotLag>,
@@ -62,7 +72,7 @@ namespace Discret::Elements
             Inpar::Solid::KinemType::linear>>;
 
     using MulfEvaluators =
-        Core::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes>;
+        Core::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes<3>>;
     using FBarMulfEvaluators = Core::FE::apply_celltype_sequence<MulfFBarSolidIntegrator,
         Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>>;
 
@@ -75,15 +85,20 @@ namespace Discret::Elements
             EasAnsSolidShellIntegrator<Core::FE::CellType::wedge6,
                 Discret::Elements::EasType::eastype_sw6_1>>;
 
-    using SolidEvaluators = Core::FE::Join<DisplacementBasedEvaluators,
-        DisplacementBasedLinearKinematicsEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators,
-        FBarMulfEvaluators, SolidShellEvaluators, SolidShellEasEvaluators>;
+    template <unsigned dim>
+    using SolidEvaluators = std::conditional_t<dim == 3,
+        Core::FE::Join<DisplacementBasedEvaluators<dim>,
+            DisplacementBasedLinearKinematicsEvaluators<dim>, FbarEvaluators, EASEvaluators,
+            MulfEvaluators, FBarMulfEvaluators, SolidShellEvaluators, SolidShellEasEvaluators>,
+        Core::FE::Join<DisplacementBasedEvaluators<dim>,
+            DisplacementBasedLinearKinematicsEvaluators<dim>>>;
   }  // namespace Internal
 
-  using SolidCalcVariant = CreateVariantType<Internal::SolidEvaluators>;
+  template <unsigned dim>
+  using SolidCalcVariant = CreateVariantType<Internal::SolidEvaluators<dim>>;
 
   template <unsigned dim>
-  SolidCalcVariant create_solid_calculation_interface(Core::FE::CellType celltype,
+  SolidCalcVariant<dim> create_solid_calculation_interface(Core::FE::CellType celltype,
       const Discret::Elements::SolidElementProperties<dim>& element_properties,
       const SolidIntegrationRules<dim>& integration_rules);
 

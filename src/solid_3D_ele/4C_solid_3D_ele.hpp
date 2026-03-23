@@ -117,14 +117,14 @@ namespace Discret::Elements
 
     [[nodiscard]] const Core::FE::GaussIntegration& get_gauss_rule() const;
 
-    [[nodiscard]] const SolidCalcVariant& get_solid_element_evaluator() const
+    [[nodiscard]] const SolidCalcVariant<dim>& get_solid_element_evaluator() const
     {
       FOUR_C_ASSERT(solid_calc_variant_.has_value(),
           "The solid calculation interface is not initialized for element id {}.", id());
       return *solid_calc_variant_;
     }
 
-    [[nodiscard]] SolidCalcVariant& get_solid_element_evaluator()
+    [[nodiscard]] SolidCalcVariant<dim>& get_solid_element_evaluator()
     {
       FOUR_C_ASSERT(solid_calc_variant_.has_value(),
           "The solid calculation interface is not initialized for element id {}.", id());
@@ -230,7 +230,7 @@ namespace Discret::Elements
 
     //! element calculation holding one of the implemented variants (note: variant might not be
     //! initialized before the element is read)
-    std::optional<SolidCalcVariant> solid_calc_variant_;
+    std::optional<SolidCalcVariant<dim>> solid_calc_variant_;
 
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;

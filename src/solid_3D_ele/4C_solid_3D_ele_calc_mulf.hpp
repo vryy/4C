@@ -69,10 +69,6 @@ namespace Discret::Elements
       const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>
           gl_strain = evaluate_green_lagrange_strain(cauchygreen);
 
-      Core::LinAlg::Matrix<Internal::num_str<celltype>,
-          Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>>
-          Bop = evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
-
       const MulfLinearizationContainer<celltype> linearization = std::invoke(
           [&]()
           {

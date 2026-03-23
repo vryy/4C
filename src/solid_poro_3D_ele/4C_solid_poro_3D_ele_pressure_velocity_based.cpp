@@ -229,7 +229,7 @@ bool Discret::Elements::SolidPoroPressureVelocityBased::read_element(const std::
   const bool with_scatra =
       poro_ele_property_.impltype != Inpar::ScaTra::ImplType::impltype_undefined;
   SolidIntegrationRules<3> rules =
-      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
+      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<3>>(celltype_,
           [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_or_solid_scatra_calculation_interface(
@@ -354,7 +354,7 @@ void Discret::Elements::SolidPoroPressureVelocityBased::unpack(
   const bool with_scatra =
       poro_ele_property_.impltype != Inpar::ScaTra::ImplType::impltype_undefined;
   SolidIntegrationRules<3> rules =
-      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
+      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<3>>(celltype_,
           [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_or_solid_scatra_calculation_interface(

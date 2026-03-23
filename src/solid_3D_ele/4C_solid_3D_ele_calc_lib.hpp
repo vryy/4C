@@ -223,7 +223,14 @@ namespace Discret::Elements
       const Core::FE::GaussIntegration& intpoints, const int gp)
   {
     const auto* point = intpoints.point(gp);
-    return Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>{{point[0], point[1], point[2]}};
+    if constexpr (Core::FE::dim<celltype> == 2)
+    {
+      return Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>{{point[0], point[1]}};
+    }
+    else if constexpr (Core::FE::dim<celltype> == 3)
+    {
+      return Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>{{point[0], point[1], point[2]}};
+    }
   }
 
   /*!
@@ -290,6 +297,20 @@ namespace Discret::Elements
     return {{1.0 / 3.0, 1.0 / 3.0, 0.0}};
   }
 
+  template <Core::FE::CellType celltype>
+  Core::LinAlg::Tensor<double, Internal::num_dim<celltype>> evaluate_parameter_coordinate_centroid()
+    requires(Core::FE::is_quad<celltype>)
+  {
+    return {{0.0, 0.0}};
+  }
+
+  template <Core::FE::CellType celltype>
+  Core::LinAlg::Tensor<double, Internal::num_dim<celltype>> evaluate_parameter_coordinate_centroid()
+    requires(Core::FE::is_tri<celltype>)
+  {
+    return {{1.0 / 3.0, 1.0 / 3.0}};
+  }
+
   /*!
    * @brief Evaluates a point's coordinates in reference configuration
    *
@@ -305,7 +326,7 @@ namespace Discret::Elements
       const Core::LinAlg::Matrix<Internal::num_nodes<celltype>, 1>& shape_functions_point)
   {
     Core::LinAlg::Tensor<double, Internal::num_dim<celltype>> coordinates_reference;
-    Core::LinAlg::make_matrix_view<3, 1>(coordinates_reference)
+    Core::LinAlg::make_matrix_view<Core::FE::dim<celltype>, 1>(coordinates_reference)
         .multiply_nn(nodal_coordinates_reference, shape_functions_point);
 
     return coordinates_reference;
@@ -584,11 +605,11 @@ namespace Discret::Elements
    * @return Core::LinAlg::Tensor<double, 3, 3>
    */
   template <Core::FE::CellType celltype>
-  Core::LinAlg::Tensor<double, 3, 3> evaluate_deformation_gradient(
-      const JacobianMapping<celltype>& jacobian_mapping,
+  Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>
+  evaluate_deformation_gradient(const JacobianMapping<celltype>& jacobian_mapping,
       const ElementNodes<celltype>& element_nodes, const double scale_defgrd = 1.0)
   {
-    Core::LinAlg::Tensor<double, 3, 3> defgrd =
+    Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>> defgrd =
         Core::LinAlg::get_full(Core::LinAlg::TensorGenerators::identity<double,
             Core::FE::dim<celltype>, Core::FE::dim<celltype>>);
 
@@ -630,10 +651,11 @@ namespace Discret::Elements
    * @return Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> : Green-Lagrange strain tensor in
    * strain-like Voigt notation
    */
-  inline Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_green_lagrange_strain(
-      const Core::LinAlg::SymmetricTensor<double, 3, 3>& cauchygreen)
+  template <std::size_t dim>
+  inline Core::LinAlg::SymmetricTensor<double, dim, dim> evaluate_green_lagrange_strain(
+      const Core::LinAlg::SymmetricTensor<double, dim, dim>& cauchygreen)
   {
-    return 0.5 * (cauchygreen - Core::LinAlg::TensorGenerators::identity<double, 3, 3>);
+    return 0.5 * (cauchygreen - Core::LinAlg::TensorGenerators::identity<double, dim, dim>);
   }
 
   /*!
@@ -649,7 +671,6 @@ namespace Discret::Elements
   template <Core::FE::CellType celltype>
   Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>
   evaluate_cauchy_green(const SpatialMaterialMapping<celltype>& spatial_material_mapping)
-    requires(Internal::num_dim<celltype> == 3)
   {
     // The resulting tensor is symmetric
     return Core::LinAlg::assume_symmetry(
@@ -812,6 +833,29 @@ namespace Discret::Elements
         cmat_;
   };
 
+  template <Core::FE::CellType celltype>
+  struct ElementProperties
+  {
+    // In the general 3D case we do not need any element properties
+  };
+
+  enum class PlaneAssumption
+  {
+    plane_stress,
+    plane_strain
+  };
+
+  template <Core::FE::CellType celltype>
+    requires(Core::FE::dim<celltype> == 2)
+  struct ElementProperties<celltype>
+  {
+    /// Thickness of the 2D element in the third dimension
+    double reference_thickness = 1.0;
+
+    /// Plane assumption for the 2D element, either plane stress or plane strain
+    PlaneAssumption plane_assumption = PlaneAssumption::plane_strain;
+  };
+
   /*!
    * @brief Evaluates the material stress (2. Piola-Kirchhoff stress tensor and the linearization
    * w.r.t. Green-Lagrange strain)
@@ -830,7 +874,9 @@ namespace Discret::Elements
    * linearization w.r.t. Green-Lagrange strain tensor
    */
   template <Core::FE::CellType celltype>
+    requires(Core::FE::dim<celltype> == 3)
   Stress<celltype> evaluate_material_stress(Mat::So3Material& material,
+      const ElementProperties<celltype>& element_properties,
       const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
       const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
           gl_strain,
@@ -840,6 +886,29 @@ namespace Discret::Elements
     Stress<celltype> stress{};
     material.evaluate(&defgrd, gl_strain, params, context, stress.pk2_, stress.cmat_, gp, eleGID);
     return stress;
+  }
+
+  template <Core::FE::CellType celltype>
+    requires(Core::FE::dim<celltype> == 3)
+  void update_material(Mat::So3Material& material,
+      const ElementProperties<celltype>& element_properties,
+      const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
+      Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, const int gp,
+      const int eleGID)
+  {
+    material.update(defgrd, gp, params, context, eleGID);
+  }
+
+  template <Core::FE::CellType celltype>
+    requires(Core::FE::dim<celltype> == 3)
+  [[nodiscard]] double evaluate_material_strain_energy(Mat::So3Material& material,
+      const ElementProperties<celltype>& element_properties,
+      const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
+          gl_strain,
+      Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, const int gp,
+      const int eleGID)
+  {
+    return material.strain_energy(gl_strain, context, gp, eleGID);
   }
 
   /*!
@@ -853,7 +922,7 @@ namespace Discret::Elements
    */
   template <Core::FE::CellType celltype>
   static inline void add_nodal_contribution(std::size_t element_node_id,
-      const Core::LinAlg::Tensor<double, 3>& nodal_contribution,
+      const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>& nodal_contribution,
       Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes(celltype), 1>&
           element_vector)
   {
@@ -875,7 +944,8 @@ namespace Discret::Elements
    */
   template <Core::FE::CellType celltype>
   static inline void add_nodal_contribution(std::size_t row_node_id, std::size_t column_node_id,
-      const Core::LinAlg::Tensor<double, 3, 3>& nodal_contribution,
+      const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
+          nodal_contribution,
       Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes(celltype),
           Core::FE::dim<celltype> * Core::FE::num_nodes(celltype)>& element_matrix)
   {
@@ -958,7 +1028,8 @@ namespace Discret::Elements
       Core::LinAlg::Matrix<Internal::num_dim<celltype> * Internal::num_nodes<celltype>,
           Internal::num_dim<celltype> * Internal::num_nodes<celltype>>& stiffness_matrix)
   {
-    const Core::LinAlg::Tensor<double, 3, 3, 3, 3> FCFTw =
+    constexpr std::size_t dim = Core::FE::dim<celltype>;
+    const Core::LinAlg::Tensor<double, dim, dim, dim, dim> FCFTw =
         Core::LinAlg::einsum<"bi", "aijd", "cj">(F, stress.cmat_, F * integration_fac);
 
     for (std::size_t i = 0; i < Core::FE::num_nodes(celltype); ++i)
@@ -1080,7 +1151,8 @@ namespace Discret::Elements
    */
   template <Core::FE::CellType celltype, typename GaussPointEvaluator>
   inline void for_each_gauss_point(const ElementNodes<celltype>& nodal_coordinates,
-      const Core::FE::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
+      ElementProperties<celltype> element_properties, const Core::FE::GaussIntegration& integration,
+      GaussPointEvaluator gp_evaluator)
   {
     for (int gp = 0; gp < integration.num_points(); ++gp)
     {
@@ -1093,7 +1165,19 @@ namespace Discret::Elements
       const JacobianMapping<celltype> jacobian_mapping =
           evaluate_jacobian_mapping(shape_functions, nodal_coordinates);
 
-      const double integration_factor = jacobian_mapping.determinant_ * integration.weight(gp);
+      const double integration_factor = [&]()
+      {
+        double integration_factor = jacobian_mapping.determinant_ * integration.weight(gp);
+        if constexpr (Core::FE::dim<celltype> == 2)
+        {
+          // In the 2D case, we also have a thickness of the element
+          integration_factor *= element_properties.reference_thickness;
+        }
+
+        return integration_factor;
+      }();
+
+
 
       gp_evaluator(xi, shape_functions, jacobian_mapping, integration_factor, gp);
     }
@@ -1120,33 +1204,33 @@ namespace Discret::Elements
 
   template <Core::FE::CellType celltype>
   AnalyticalDisplacementErrorIntegrationResults compute_analytical_displacement_error_integration(
-      Core::Elements::Element& element, const Core::FE::Discretization& discretization,
-      const std::vector<int>& lm,
+      Core::Elements::Element& element, const ElementProperties<celltype>& element_properties,
+      const Core::FE::Discretization& discretization, const std::vector<int>& lm,
       const Core::Utils::FunctionOfSpaceTime& analytical_displacements_function)
   {
-    constexpr auto numdim = Core::FE::dim<celltype>;
     const ElementNodes<celltype> nodal_coordinates =
         evaluate_element_nodes<celltype>(element, discretization, lm);
     Core::FE::GaussIntegration gauss_integration = Core::FE::create_gauss_integration<celltype>(
         Discret::Elements::get_gauss_rule_stiffness_matrix<celltype>());
 
     AnalyticalDisplacementErrorIntegrationResults error_result;
-    Discret::Elements::for_each_gauss_point<celltype>(nodal_coordinates, gauss_integration,
+    Discret::Elements::for_each_gauss_point<celltype>(nodal_coordinates, element_properties,
+        gauss_integration,
         [&](const Core::LinAlg::Tensor<double, Internal::num_dim<celltype>>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
             const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
         {
-          Core::LinAlg::Matrix<numdim, 1> gauss_point_reference_coordinates;
+          Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1> gauss_point_reference_coordinates;
           gauss_point_reference_coordinates.multiply_nn(
               nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-          Core::LinAlg::Matrix<numdim, 1> gauss_point_disp;
+          Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1> gauss_point_disp;
           gauss_point_disp.multiply(
               nodal_coordinates.displacements, shape_functions.shapefunctions_);
 
-          Core::LinAlg::Matrix<3, 1> analytical_solution;
+          Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1> analytical_solution;
           // Calculate the analytical solution for each dimension
-          for (int i_dim = 0; i_dim < 3; i_dim++)
+          for (int i_dim = 0; i_dim < Core::FE::dim<celltype>; i_dim++)
           {
             analytical_solution(i_dim) = analytical_displacements_function.evaluate(
                 gauss_point_reference_coordinates.as_span(), 0.0, i_dim);
@@ -1154,7 +1238,7 @@ namespace Discret::Elements
 
           // The data that will be added to the element_force_vector will be summed up for all
           // elements
-          Core::LinAlg::Matrix<3, 1> error_pointwise = analytical_solution;
+          Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1> error_pointwise = analytical_solution;
           error_pointwise -= gauss_point_disp;
           // Calculate the error squared integral
           error_result.integrated_squared_error +=

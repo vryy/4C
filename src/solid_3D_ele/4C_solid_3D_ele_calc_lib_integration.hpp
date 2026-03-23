@@ -124,6 +124,47 @@ namespace Discret::Elements
       };
     };
 
+
+
+    template <Core::FE::CellType celltype>
+      requires Core::FE::is_quad<celltype>
+    struct ApplicableIntegrationRules<celltype>
+    {
+      static constexpr std::array value = {
+          Core::FE::GaussRule2D::quad_1point,
+          Core::FE::GaussRule2D::quad_4point,
+          Core::FE::GaussRule2D::quad_6point,
+          Core::FE::GaussRule2D::quad_9point,
+          Core::FE::GaussRule2D::quad_16point,
+          Core::FE::GaussRule2D::quad_25point,
+          Core::FE::GaussRule2D::quad_36point,
+          Core::FE::GaussRule2D::quad_49point,
+          Core::FE::GaussRule2D::quad_64point,
+          Core::FE::GaussRule2D::quad_81point,
+          Core::FE::GaussRule2D::quad_100point,
+          Core::FE::GaussRule2D::quad_256point,
+          Core::FE::GaussRule2D::quad_400point,
+          Core::FE::GaussRule2D::quad_1024point,
+      };
+    };
+
+    template <Core::FE::CellType celltype>
+      requires Core::FE::is_tri<celltype>
+    struct ApplicableIntegrationRules<celltype>
+    {
+      static constexpr std::array value = {
+          Core::FE::GaussRule2D::tri_1point,
+          Core::FE::GaussRule2D::tri_3point,
+          Core::FE::GaussRule2D::tri_4point,
+          Core::FE::GaussRule2D::tri_6point,
+          Core::FE::GaussRule2D::tri_7point,
+          Core::FE::GaussRule2D::tri_12point,
+          Core::FE::GaussRule2D::tri_16point,
+          Core::FE::GaussRule2D::tri_37point,
+          Core::FE::GaussRule2D::tri_64point,
+      };
+    };
+
     template <Core::FE::CellType celltype>
       requires(celltype == Core::FE::CellType::nurbs27)
     struct ApplicableIntegrationRules<celltype>
@@ -147,8 +188,15 @@ namespace Discret::Elements
     Core::FE::GaussRule3D rule_mass;
   };
 
+  template <>
+  struct SolidIntegrationRules<2>
+  {
+    Core::FE::GaussRule2D rule_residuum;
+    Core::FE::GaussRule2D rule_mass;
+  };
+
   template <Core::FE::CellType celltype>
-  SolidIntegrationRules<3> make_default_solid_integration_rules()
+  SolidIntegrationRules<Core::FE::dim<celltype>> make_default_solid_integration_rules()
   {
     return {
         .rule_residuum = get_gauss_rule_stiffness_matrix<celltype>(),

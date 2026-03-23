@@ -15,7 +15,12 @@
 #include "4C_io_input_spec.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
+#include "4C_linalg_symmetric_tensor_eigen.hpp"
+#include "4C_linalg_tensor_generators.hpp"
 #include "4C_solid_3D_ele_properties.hpp"
+
+#include <cmath>
+#include <ranges>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -31,9 +36,15 @@ namespace Solid::Utils
    * @param defgrd (in) : Deformation gradient
    * @return Cauchy stress tensor
    */
-  Core::LinAlg::SymmetricTensor<double, 3, 3> pk2_to_cauchy(
-      const Core::LinAlg::SymmetricTensor<double, 3, 3>& pk2,
-      const Core::LinAlg::Tensor<double, 3, 3>& defgrd);
+  template <std::size_t dim>
+  Core::LinAlg::SymmetricTensor<double, dim, dim> pk2_to_cauchy(
+      const Core::LinAlg::SymmetricTensor<double, dim, dim>& pk2,
+      const Core::LinAlg::Tensor<double, dim, dim>& defgrd)
+  {
+    FOUR_C_ASSERT_ALWAYS(dim == 3, "Converting stress measures is only available in 3D");
+    return Core::LinAlg::assume_symmetry(defgrd * pk2 * Core::LinAlg::transpose(defgrd)) /
+           Core::LinAlg::det(defgrd);
+  }
 
   /*!
    * @brief Convert Green Lagrange strain tensor to Euler-Almansi
@@ -42,9 +53,16 @@ namespace Solid::Utils
    * @param gl (in) : Green Lagrange strain tensor
    * @return Core::LinAlg::Matrix<6, 1> : Euler-Almansi strain tensor
    */
-  Core::LinAlg::SymmetricTensor<double, 3, 3> green_lagrange_to_euler_almansi(
-      const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl,
-      const Core::LinAlg::Tensor<double, 3, 3>& defgrd);
+  template <std::size_t dim>
+  Core::LinAlg::SymmetricTensor<double, dim, dim> green_lagrange_to_euler_almansi(
+      const Core::LinAlg::SymmetricTensor<double, dim, dim>& gl,
+      const Core::LinAlg::Tensor<double, dim, dim>& defgrd)
+  {
+    FOUR_C_ASSERT_ALWAYS(dim == 3, "Converting strain measures is only available in 3D");
+    Core::LinAlg::Tensor<double, dim, dim> invdefgrd = Core::LinAlg::inv(defgrd);
+
+    return Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(invdefgrd) * gl * invdefgrd);
+  }
 
   /*!
    * @brief Convert Green Lagrange strain tensor in strain to Lograithmic strain
@@ -53,8 +71,21 @@ namespace Solid::Utils
    * @param gl (in) : Green Lagrange strain tensor
    * @return Core::LinAlg::Matrix<6, 1> : Logarithmic strain tensor
    */
-  Core::LinAlg::SymmetricTensor<double, 3, 3> green_lagrange_to_log_strain(
-      const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl);
+  template <std::size_t dim>
+  Core::LinAlg::SymmetricTensor<double, dim, dim> green_lagrange_to_log_strain(
+      const Core::LinAlg::SymmetricTensor<double, dim, dim>& gl)
+  {
+    FOUR_C_ASSERT_ALWAYS(dim == 3, "Converting strain measures is only available in 3D");
+    auto [eigenvalues, eigenvectors] = Core::LinAlg::eig(gl);
+
+    // compute principal logarithmic strains
+    std::ranges::for_each(
+        eigenvalues, [](double& value) { value = std::log(std::sqrt(2 * value + 1.0)); });
+
+    const auto eig = Core::LinAlg::TensorGenerators::diagonal(eigenvalues);
+    return Core::LinAlg::assume_symmetry(
+        eigenvectors * eig * Core::LinAlg::transpose(eigenvectors));
+  }
 
   namespace ReadElement
   {
