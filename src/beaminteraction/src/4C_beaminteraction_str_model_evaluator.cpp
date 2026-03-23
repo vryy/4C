@@ -51,8 +51,6 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include <thread>
-
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
@@ -199,10 +197,7 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::setup()
       return Core::Binstrategy::DefaultRelevantPoints{}(discret, ele, disnp);
   };
 
-  if (!have_sub_model_type(BeamInteraction::SubModelType::submodel_beamcontact) or
-      have_sub_model_type(BeamInteraction::SubModelType::submodel_potential) or
-      have_sub_model_type(BeamInteraction::SubModelType::submodel_crosslinking) or
-      have_sub_model_type(BeamInteraction::SubModelType::submodel_spherebeamlink))
+  if (use_binning_based_partitioning())
   {
     binstrategy_ = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
         Global::Problem::instance()->output_control_file(), ia_discret_->get_comm(),
@@ -247,10 +242,7 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::setup()
   // some screen output
   Core::Rebalance::print_parallel_distribution(*ia_discret_);
 
-  if (!have_sub_model_type(BeamInteraction::SubModelType::submodel_beamcontact) or
-      have_sub_model_type(BeamInteraction::SubModelType::submodel_potential) or
-      have_sub_model_type(BeamInteraction::SubModelType::submodel_crosslinking) or
-      have_sub_model_type(BeamInteraction::SubModelType::submodel_spherebeamlink))
+  if (use_binning_based_partitioning())
   {
     Core::Rebalance::print_parallel_distribution(*bindis_);
   }
