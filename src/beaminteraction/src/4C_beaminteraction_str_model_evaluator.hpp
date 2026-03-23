@@ -192,6 +192,10 @@ namespace Solid
       //! set beaminteraction sub models
       void set_sub_model_types();
 
+      /** check which type of partitioning is used for the rebalancing of the interaction pair
+       * evaluation discretization based on model evaluators.
+       */
+      bool use_binning_based_partitioning() const;
 
       //! build, init and setup submodel evaluator
       void init_and_setup_sub_model_evaluators();
