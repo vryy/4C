@@ -58,7 +58,12 @@ struct Core::IO::ControlFileWriter::Impl
   void flush_and_reset_tree()
   {
     // Only write if there is anything to write. Otherwise, we get an ugly "[]" in the output.
-    if (tree_.rootref().num_children() > 0) out_ << tree_ << "\n" << std::flush;
+    if (tree_.rootref().num_children() > 0)
+    {
+      // Seek back to where this group started to overwrite the last partial snapshot written
+      if (group_write_start_ >= 0) out_.seekp(group_write_start_);
+      out_ << tree_ << "\n" << std::flush;
+    }
 
     // Clear the tree and reset the current node to the root
     tree_.clear();
@@ -66,6 +71,7 @@ struct Core::IO::ControlFileWriter::Impl
     current_node_id_ = tree_.rootref().id();
     group_level = 0;
     tree_.rootref() |= ryml::SEQ;
+    group_write_start_ = -1;
   }
 
   template <typename T>
@@ -77,10 +83,18 @@ struct Core::IO::ControlFileWriter::Impl
     node << ryml::key(key_str);
 
     emit_value_as_yaml(YamlNodeRef{node, ""}, value);
+
+    // Seek back to where this group started and rewrite the entire (now larger) tree snapshot
+    if (group_write_start_ >= 0) out_.seekp(group_write_start_);
+    out_ << tree_ << std::flush;
   }
 
   void start_group(std::string_view key)
   {
+    // Record the stream position before the outermost group's first byte so write() can seek
+    // back here and overwrite the previous partial snapshot with the latest (larger) one.
+    if (group_level == 0) group_write_start_ = out_.tellp();
+
     ++group_level;
 
     ryml::NodeRef outer = (current().is_seq()) ? current().append_child() : current();
@@ -117,6 +131,10 @@ struct Core::IO::ControlFileWriter::Impl
 
   //! output stream for the control file
   std::ostream& out_;
+
+  //! Stream position of the start of the current outermost group, used for seek-and-overwrite.
+  //! -1 means no group is currently open.
+  std::streamoff group_write_start_{-1};
 };
 
 
