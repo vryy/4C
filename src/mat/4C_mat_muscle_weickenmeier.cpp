@@ -143,7 +143,7 @@ void Mat::MuscleWeickenmeier::setup(int numgp, const Discret::Elements::Fibers& 
 }
 
 void Mat::MuscleWeickenmeier::update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd, int const gp,
-    const Teuchos::ParameterList& params, const EvaluationContext& context, int const eleGID)
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int const eleGID)
 {
   // compute the current fibre stretch using the deformation gradient and the structural tensor
   // right Cauchy Green tensor C= F^T F
@@ -163,7 +163,7 @@ void Mat::MuscleWeickenmeier::update(Core::LinAlg::Tensor<double, 3, 3> const& d
 
 void Mat::MuscleWeickenmeier::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -262,7 +262,7 @@ void Mat::MuscleWeickenmeier::evaluate(const Core::LinAlg::Tensor<double, 3, 3>*
 }
 
 void Mat::MuscleWeickenmeier::evaluate_active_nominal_stress(const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, const double lambdaM, double& Pa, double& derivPa)
+    const Mat::EvaluationContext<3>& context, const double lambdaM, double& Pa, double& derivPa)
 {
   // save current simulation time
   FOUR_C_ASSERT(context.total_time, "Time not given in evaluation context.");

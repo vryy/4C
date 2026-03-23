@@ -28,6 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Mat
 {
   class Anisotropy;
+  template <std::size_t dim>
   struct EvaluationContext;
 }  // namespace Mat
 
@@ -152,8 +153,8 @@ namespace Mixture
      * @param eleGID Global element identifier
      */
     virtual void update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, const int gp,
-        const int eleGID)
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
+        const int gp, const int eleGID)
     {
     }
 
@@ -179,7 +180,7 @@ namespace Mixture
      */
     virtual void update_elastic_part(const Core::LinAlg::Tensor<double, 3, 3>& F,
         const Core::LinAlg::Tensor<double, 3, 3>& iFext, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context, const double dt, const int gp, const int eleGID)
+        const Mat::EvaluationContext<3>& context, const double dt, const int gp, const int eleGID)
     {
       // do nothing
     }
@@ -193,7 +194,7 @@ namespace Mixture
      * @param eleGID (in) : Global element id
      */
     virtual void pre_evaluate(MixtureRule& mixtureRule, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context, int gp, int eleGID)
+        const Mat::EvaluationContext<3>& context, int gp, int eleGID)
     {
       // do nothing in the default case
     }
@@ -247,7 +248,7 @@ namespace Mixture
      */
     virtual void evaluate_elastic_part(const Core::LinAlg::Tensor<double, 3, 3>& F,
         const Core::LinAlg::Tensor<double, 3, 3>& iF_in, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context,
+        const Mat::EvaluationContext<3>& context,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID);
 
@@ -269,7 +270,7 @@ namespace Mixture
      */
     virtual void evaluate(const Core::LinAlg::Tensor<double, 3, 3>& F,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& E_strain,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) = 0;
 

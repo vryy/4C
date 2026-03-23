@@ -676,7 +676,7 @@ void Discret::Elements::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     b_op_lin_cure(b_cure, boplin, F, numeps, nd);
 
     Core::LinAlg::Tensor<double, 3> xi = {{e1, e2, 0.0}};
-    Mat::EvaluationContext context{.total_time = total_time,
+    Mat::EvaluationContext<3> context{.total_time = total_time,
         .time_step_size = time_step_size,
         .xi = &xi,
         .ref_coords = nullptr};
@@ -1063,7 +1063,7 @@ void Discret::Elements::Ale2::call_mat_geo_nonl(
     const int numeps,                                     ///< number of strains
     std::shared_ptr<const Core::Mat::Material> material,  ///< the material data
     Teuchos::ParameterList& params,                       ///< element parameter list
-    const Mat::EvaluationContext& context,                ///< context for material evaluation
+    const Mat::EvaluationContext<3>& context,             ///< context for material evaluation
     const int gp)
 {
   /*--------------------------- call material law -> get tangent modulus--*/
@@ -1148,7 +1148,7 @@ void Discret::Elements::Ale2::call_mat_geo_nonl(
 /*----------------------------------------------------------------------*/
 void Discret::Elements::Ale2::material_response3d_plane(Core::LinAlg::SerialDenseMatrix& stress,
     Core::LinAlg::SerialDenseMatrix& C, const Core::LinAlg::SerialDenseVector& strain,
-    Teuchos::ParameterList& params, const Mat::EvaluationContext& context, const int gp)
+    Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, const int gp)
 {
   // make 3d equivalent of Green-Lagrange strain
   Core::LinAlg::Matrix<6, 1> gl(Core::LinAlg::Initialization::uninitialized);
@@ -1196,7 +1196,7 @@ void Discret::Elements::Ale2::material_response3d_plane(Core::LinAlg::SerialDens
 /*----------------------------------------------------------------------*/
 void Discret::Elements::Ale2::material_response3d(Core::LinAlg::Matrix<6, 1>* stress,
     Core::LinAlg::Matrix<6, 6>* cmat, const Core::LinAlg::Matrix<6, 1>* glstrain,
-    Teuchos::ParameterList& params, const Mat::EvaluationContext& context, const int gp)
+    Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, const int gp)
 {
   std::shared_ptr<Mat::So3Material> so3mat =
       std::dynamic_pointer_cast<Mat::So3Material>(material());

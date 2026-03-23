@@ -799,7 +799,7 @@ void Discret::Elements::Membrane<distype>::mem_nlnstiffmass(
     }
 
     Core::LinAlg::Tensor<double, 3> xi = {{xi_gp, eta_gp, 0.0}};
-    Mat::EvaluationContext context{.total_time = total_time,
+    Mat::EvaluationContext<3> context{.total_time = total_time,
         .time_step_size = time_step_size,
         .xi = &xi,
         .ref_coords = &gprefecoord};
@@ -1608,7 +1608,7 @@ void Discret::Elements::Membrane<distype>::update_element(
           std::dynamic_pointer_cast<Mat::MembraneMaterialGlobalCoordinates>(
               Core::Elements::Element::material());
       Core::LinAlg::Tensor<double, 3> xi = {{xi_gp, eta_gp, 0.0}};
-      Mat::EvaluationContext context{.total_time = total_time,
+      Mat::EvaluationContext<3> context{.total_time = total_time,
           .time_step_size = time_step_size,
           .xi = &xi,
           .ref_coords = nullptr};

@@ -64,7 +64,7 @@ namespace Mixture
      */
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>& F,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& E_strain,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) override;
 
@@ -89,7 +89,7 @@ namespace Mixture
      */
     void evaluate_elastic_part(const Core::LinAlg::Tensor<double, 3, 3>& F,
         const Core::LinAlg::Tensor<double, 3, 3>& iFextin, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context,
+        const Mat::EvaluationContext<3>& context,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) override;
   };

@@ -165,7 +165,7 @@ namespace Discret::Elements::Shell
   Stress evaluate_material_stress_cartesian_system(Mat::So3Material& material,
       const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl_strain, Teuchos::ParameterList& params,
-      const Mat::EvaluationContext& context, int gp, int eleGID)
+      const Mat::EvaluationContext<3>& context, int gp, int eleGID)
   {
     Stress stress{};
 

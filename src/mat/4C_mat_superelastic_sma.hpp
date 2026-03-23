@@ -206,13 +206,13 @@ namespace Mat
     //! evaluate material law
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-        const Teuchos::ParameterList& params, const EvaluationContext& context,
+        const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) override;
 
     /// evaluate strain energy function
     [[nodiscard]] double strain_energy(const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-        const EvaluationContext& context, int gp, int eleGID) const override;
+        const EvaluationContext<3>& context, int gp, int eleGID) const override;
 
     //@}
 

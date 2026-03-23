@@ -43,7 +43,7 @@ namespace Mat
    */
   void elast_hyper_evaluate(const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-      const Teuchos::ParameterList& params, const EvaluationContext& context,
+      const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
       Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
       Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID,
       const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
@@ -243,7 +243,8 @@ namespace Mat
       Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& C_strain,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& iC_strain,
-      const Core::LinAlg::Matrix<3, 1>& prinv, int gp, int eleGID, const EvaluationContext& context,
+      const Core::LinAlg::Matrix<3, 1>& prinv, int gp, int eleGID,
+      const EvaluationContext<3>& context,
       const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum);
 
   /*!

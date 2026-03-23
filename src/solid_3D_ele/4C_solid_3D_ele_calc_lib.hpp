@@ -818,7 +818,7 @@ namespace Discret::Elements
       const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
       const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
           gl_strain,
-      Teuchos::ParameterList& params, const Mat::EvaluationContext& context, const int gp,
+      Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, const int gp,
       const int eleGID)
   {
     Stress<celltype> stress{};

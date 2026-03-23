@@ -236,7 +236,7 @@ void Mat::MembraneActiveStrain::setup(int numgp, const Discret::Elements::Fibers
  *----------------------------------------------------------------------*/
 void Mat::MembraneActiveStrain::evaluate_membrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
     const Core::LinAlg::Matrix<3, 3>& cauchygreen, const Teuchos::ParameterList& params,
-    const EvaluationContext& context, const Core::LinAlg::Matrix<3, 3>& Q_trafo,
+    const EvaluationContext<3>& context, const Core::LinAlg::Matrix<3, 3>& Q_trafo,
     Core::LinAlg::Matrix<3, 1>& stress, Core::LinAlg::Matrix<3, 3>& cmat, const int gp,
     const int eleGID)
 {

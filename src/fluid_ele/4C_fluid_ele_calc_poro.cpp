@@ -6539,7 +6539,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_mixture_strong_residu
     Core::LinAlg::Matrix<6, 1> stress_view = Core::LinAlg::make_stress_like_voigt_view(stress);
     Core::LinAlg::Matrix<6, 6> cmat_view = Core::LinAlg::make_stress_like_voigt_view(cmat);
 
-    Mat::EvaluationContext context{};  // We have nothing available
+    Mat::EvaluationContext<3> context{};  // We have nothing available
     struct_mat_->evaluate(nullptr, glstrain, params, context, stress, cmat, gp, Base::eid_);
 
     static Core::LinAlg::Matrix<6, nsd_> E_X(Core::LinAlg::Initialization::zero);

@@ -104,7 +104,7 @@ void Mat::StVenantKirchhoffOrthotropic::unpack(Core::Communication::UnpackBuffer
  *----------------------------------------------------------------------*/
 void Mat::StVenantKirchhoffOrthotropic::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -118,8 +118,8 @@ void Mat::StVenantKirchhoffOrthotropic::evaluate(const Core::LinAlg::Tensor<doub
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double Mat::StVenantKirchhoffOrthotropic::strain_energy(
-    const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain, const EvaluationContext& context,
-    const int gp, const int eleGID) const
+    const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
+    const EvaluationContext<3>& context, const int gp, const int eleGID) const
 {
   auto cmat = StVenantKirchhoffOrthotropic::evaluate_stress_linearization(
       params_->youngs_.at(eleGID), params_->shear_.at(eleGID), params_->poissonratio_.at(eleGID));

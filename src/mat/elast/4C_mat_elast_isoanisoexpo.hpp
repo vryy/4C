@@ -123,7 +123,7 @@ namespace Mat
           double I3,                                                ///< third principal invariant
           int gp,                                                   ///< Gauss point
           int eleGID,                                               ///< element GID
-          const EvaluationContext& context  ///< Container for additional information
+          const EvaluationContext<3>& context  ///< Container for additional information
           ) override;
 
       /// retrieve coefficients of first, second and third derivative

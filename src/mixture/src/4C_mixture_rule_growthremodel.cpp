@@ -86,7 +86,7 @@ void Mixture::GrowthRemodelMixtureRule::setup(
 }
 
 void Mixture::GrowthRemodelMixtureRule::update(Core::LinAlg::Tensor<double, 3, 3> const& F,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, const int gp,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, const int gp,
     const int eleGID)
 {
   // Update base mixture rule, which also updates the constituents.
@@ -113,7 +113,7 @@ void Mixture::GrowthRemodelMixtureRule::update(Core::LinAlg::Tensor<double, 3, 3
 
 void Mixture::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Tensor<double, 3, 3>& F,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& E_strain,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, const int gp, const int eleGID)
 {

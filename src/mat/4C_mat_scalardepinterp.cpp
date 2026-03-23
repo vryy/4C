@@ -95,7 +95,7 @@ void Mat::ScalarDepInterp::setup(int numgp, const Discret::Elements::Fibers& fib
 /*----------------------------------------------------------------------*/
 void Mat::ScalarDepInterp::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -329,8 +329,8 @@ bool Mat::ScalarDepInterp::vis_data(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double Mat::ScalarDepInterp::strain_energy(
-    const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain, const EvaluationContext& context,
-    const int gp, const int eleGID) const
+    const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
+    const EvaluationContext<3>& context, const int gp, const int eleGID) const
 {
   // evaluate strain energy functions
   double psi_lambda_zero = lambda_zero_mat_->strain_energy(glstrain, context, gp, eleGID);

@@ -1641,7 +1641,7 @@ void Mortar::Element::node_linearization(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::Element::estimate_nitsche_trace_max_eigenvalue(
-    const Mat::EvaluationContext& mat_eval_context)
+    const Mat::EvaluationContext<3>& mat_eval_context)
 {
   FOUR_C_ASSERT(n_dim() == 3,
       "Contact using Nitsche's method is only supported for 3D problems. We do not intend to "

@@ -187,7 +187,7 @@ void Mixture::MixtureConstituentElastHyperBase::read_element(int numgp,
 // Updates all summands
 void Mixture::MixtureConstituentElastHyperBase::update(
     Core::LinAlg::Tensor<double, 3, 3> const& defgrd, const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, const int gp, const int eleGID)
+    const Mat::EvaluationContext<3>& context, const int gp, const int eleGID)
 {
   MixtureConstituent::update(defgrd, params, context, gp, eleGID);
 
@@ -215,7 +215,8 @@ void Mixture::MixtureConstituentElastHyperBase::setup(
 }
 
 void Mixture::MixtureConstituentElastHyperBase::pre_evaluate(MixtureRule& mixtureRule,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, int gp, int eleGID)
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
+    int eleGID)
 {
   // do nothing in the default case
   if (params_->get_prestressing_mat_id() > 0)

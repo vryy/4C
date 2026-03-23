@@ -148,7 +148,7 @@ void Mixture::MixtureConstituent::unpack_constituent(Core::Communication::Unpack
 
 void Mixture::MixtureConstituent::evaluate_elastic_part(const Core::LinAlg::Tensor<double, 3, 3>& F,
     const Core::LinAlg::Tensor<double, 3, 3>& F_in, const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
+    const Mat::EvaluationContext<3>& context, Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
   FOUR_C_THROW("This constituent cannot handle an additional inelastic part.");

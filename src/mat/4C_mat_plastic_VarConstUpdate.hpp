@@ -139,7 +139,7 @@ namespace Mat
     /// (pure virtual in material base class. Not allowed here)
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-        const Teuchos::ParameterList& params, const EvaluationContext& context,
+        const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp,
         int eleGID) override;  ///< Element GID
@@ -334,7 +334,8 @@ namespace Mat
         const Core::LinAlg::Matrix<3, 3> defgrd, Core::LinAlg::SymmetricTensor<double, 3, 3>& eeOut,
         Core::LinAlg::Matrix<5, 1>& rhs, Core::LinAlg::Matrix<5, 1>& rhsElast,
         Core::LinAlg::Matrix<6, 6>& dcedlp, Core::LinAlg::Matrix<9, 6>& dFpiDdeltaDp,
-        const Teuchos::ParameterList& params, const EvaluationContext& context, const int eleGID);
+        const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
+        const int eleGID);
 
 
     virtual void yield_function(const double last_ai, const double norm_dLp,

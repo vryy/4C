@@ -176,7 +176,7 @@ void Mat::IterativePrestressMaterial::post_setup(const Teuchos::ParameterList& p
 void Mat::IterativePrestressMaterial::update() { child_material_->update(); }
 
 void Mat::IterativePrestressMaterial::update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd,
-    const int gp, const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const int gp, const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     const int eleGID)
 {
   if (params_->is_prestress_active_)
@@ -223,15 +223,15 @@ bool Mat::IterativePrestressMaterial::evaluate_output_data(
 }
 
 double Mat::IterativePrestressMaterial::strain_energy(
-    const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain, const EvaluationContext& context,
-    int gp, int eleGID) const
+    const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
+    const EvaluationContext<3>& context, int gp, int eleGID) const
 {
   FOUR_C_THROW("Strain energy computation is currently not implemented for prestressing materials");
 }
 
 void Mat::IterativePrestressMaterial::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {

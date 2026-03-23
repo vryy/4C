@@ -1055,7 +1055,7 @@ namespace Mortar
     \param[in] mat_eval_context Material evaluation context (further specified in the surface
     elements)
       */
-    void estimate_nitsche_trace_max_eigenvalue(const Mat::EvaluationContext& mat_eval_context);
+    void estimate_nitsche_trace_max_eigenvalue(const Mat::EvaluationContext<3>& mat_eval_context);
 
     /*!
     \brief Estimated mesh size and stiffness parameter h/E via Eigenvalues of the trace inequality.

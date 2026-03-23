@@ -48,7 +48,8 @@ void Mixture::PrescribedPrestressStrategy::setup(Mixture::MixtureConstituent& co
 void Mixture::PrescribedPrestressStrategy::evaluate_prestress(const MixtureRule& mixtureRule,
     const std::shared_ptr<const Mat::CoordinateSystemProvider> cosy,
     Mixture::MixtureConstituent& constituent, Core::LinAlg::SymmetricTensor<double, 3, 3>& G,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, int gp, int eleGID)
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
+    int eleGID)
 {
   G = params_->prestretch_.interpolate(eleGID, context.xi->as_span());
 }
@@ -57,7 +58,7 @@ void Mixture::PrescribedPrestressStrategy::update(
     const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
     Mixture::MixtureConstituent& constituent, const Core::LinAlg::Tensor<double, 3, 3>& F,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& G, const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, int gp, int eleGID)
+    const Mat::EvaluationContext<3>& context, int gp, int eleGID)
 {
 }
 FOUR_C_NAMESPACE_CLOSE

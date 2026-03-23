@@ -129,7 +129,7 @@ void Mixture::MixtureConstituentRemodelFiberSsi::setup(
 
 void Mixture::MixtureConstituentRemodelFiberSsi::update_elastic_part(
     const Core::LinAlg::Tensor<double, 3, 3>& F, const Core::LinAlg::Tensor<double, 3, 3>& iFext,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, const double dt,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, const double dt,
     const int gp, const int eleGID)
 {
   MixtureConstituent::update_elastic_part(F, iFext, params, context, dt, gp, eleGID);
@@ -155,7 +155,7 @@ void Mixture::MixtureConstituentRemodelFiberSsi::update_elastic_part(
 }
 
 void Mixture::MixtureConstituentRemodelFiberSsi::update(const Core::LinAlg::Tensor<double, 3, 3>& F,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, const int gp,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, const int gp,
     const int eleGID)
 {
   MixtureConstituent::update(F, params, context, gp, eleGID);
@@ -247,7 +247,7 @@ Mixture::MixtureConstituentRemodelFiberSsi::evaluate_current_cmat(
 void Mixture::MixtureConstituentRemodelFiberSsi::evaluate(
     const Core::LinAlg::Tensor<double, 3, 3>& F,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& E_strain,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -281,7 +281,7 @@ void Mixture::MixtureConstituentRemodelFiberSsi::evaluate(
 
 void Mixture::MixtureConstituentRemodelFiberSsi::evaluate_elastic_part(
     const Core::LinAlg::Tensor<double, 3, 3>& FM, const Core::LinAlg::Tensor<double, 3, 3>& iFextin,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {

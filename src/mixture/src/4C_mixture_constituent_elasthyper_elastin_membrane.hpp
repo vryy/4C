@@ -133,7 +133,7 @@ namespace Mixture
      * @param eleGID Global element identifier
      */
     void update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, int gp,
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
         int eleGID) override;
 
     /*!
@@ -146,7 +146,7 @@ namespace Mixture
      * \param eleGID Global element id
      */
     void pre_evaluate(MixtureRule& mixtureRule, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context, int gp, int eleGID) override;
+        const Mat::EvaluationContext<3>& context, int gp, int eleGID) override;
 
 
     [[nodiscard]] double get_growth_scalar(int gp) const override;
@@ -165,7 +165,7 @@ namespace Mixture
      */
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>& F,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& E_strain,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) override;
 
@@ -182,7 +182,7 @@ namespace Mixture
      */
     void evaluate_elastic_part(const Core::LinAlg::Tensor<double, 3, 3>& F,
         const Core::LinAlg::Tensor<double, 3, 3>& iFextin, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context,
+        const Mat::EvaluationContext<3>& context,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) override;
 
@@ -195,7 +195,7 @@ namespace Mixture
      * \param eleGID Global element id
      */
     void evaluate_membrane_stress(Core::LinAlg::SymmetricTensor<double, 3, 3>& S,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, int gp,
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
         int eleGID) override;
 
    protected:
@@ -214,7 +214,7 @@ namespace Mixture
         const Core::LinAlg::Tensor<double, 3, 3>& iFin, const Teuchos::ParameterList& params,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
-        const Mat::EvaluationContext& context, int gp, int eleGID) const;
+        const Mat::EvaluationContext<3>& context, int gp, int eleGID) const;
 
     /*!
      * \brief Evaluates the structural tensors of the radial and membrane plane direction in the
@@ -228,7 +228,7 @@ namespace Mixture
      */
     void evaluate_structural_tensors_in_grown_configuration(Core::LinAlg::Matrix<3, 3>& Aradgr,
         Core::LinAlg::Matrix<3, 3>& Aorthgr, const Core::LinAlg::Matrix<3, 3>& iFin,
-        const Mat::EvaluationContext& context, int gp, int eleGID) const;
+        const Mat::EvaluationContext<3>& context, int gp, int eleGID) const;
 
     /*!
      * \brief Evaluate the matrix Product \[

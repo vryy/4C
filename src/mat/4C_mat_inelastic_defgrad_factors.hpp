@@ -567,7 +567,7 @@ namespace Mat
      * @param[in] eleGID  Element ID
      */
     virtual void pre_evaluate(const Teuchos::ParameterList& params,
-        const EvaluationContext& context, int gp, int eleGID) = 0;
+        const EvaluationContext<3>& context, int gp, int eleGID) = 0;
 
     /*!
      * @brief set gauss point concentration to parameter class
@@ -648,7 +648,7 @@ namespace Mat
       return Core::Materials::mfi_no_growth;
     }
 
-    void pre_evaluate(const Teuchos::ParameterList& params, const EvaluationContext& context,
+    void pre_evaluate(const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
         int gp, int eleGID) override;
 
     void update() override {};
@@ -705,7 +705,7 @@ namespace Mat
           Mat::InelasticDefgradFactors::parameter());
     }
 
-    void pre_evaluate(const Teuchos::ParameterList& params, const EvaluationContext& context,
+    void pre_evaluate(const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
         int gp, int eleGID) override;
 
     void update() override {};
@@ -752,7 +752,7 @@ namespace Mat
 
     Core::Materials::MaterialType material_type() const override = 0;
 
-    void pre_evaluate(const Teuchos::ParameterList& params, const EvaluationContext& context,
+    void pre_evaluate(const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
         int gp, int eleGID) override;
 
     void set_concentration_gp(double concentration) override;
@@ -1165,7 +1165,7 @@ namespace Mat
           Mat::InelasticDefgradFactors::parameter());
     }
 
-    void pre_evaluate(const Teuchos::ParameterList& params, const EvaluationContext& context,
+    void pre_evaluate(const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
         int gp, int eleGID) override;
 
     void update() override {};
@@ -1376,7 +1376,7 @@ namespace Mat
     void setup(const int numgp, const Discret::Elements::Fibers& fibers,
         const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
-    void pre_evaluate(const Teuchos::ParameterList& params, const EvaluationContext& context,
+    void pre_evaluate(const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
         int gp, int eleGID) override;
 
     void update() override;

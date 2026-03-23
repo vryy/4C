@@ -98,7 +98,7 @@ namespace
 
     const double total_time = 0.0;
     const double time_step_size = 1.0;
-    Mat::EvaluationContext context{.total_time = &total_time,
+    Mat::EvaluationContext<3> context{.total_time = &total_time,
         .time_step_size = &time_step_size,
         .xi = {},
         .ref_coords = nullptr};
@@ -121,7 +121,7 @@ namespace
     const int eleGID = 1;
     const double total_time = 0.0;
     const double time_step_size = 1.0;
-    Mat::EvaluationContext context{.total_time = &total_time,
+    Mat::EvaluationContext<3> context{.total_time = &total_time,
         .time_step_size = &time_step_size,
         .xi = {},
         .ref_coords = nullptr};

@@ -26,7 +26,7 @@ Mixture::PAR::IsotropicGrowthStrategy::create_growth_strategy()
 
 void Mixture::IsotropicGrowthStrategy::evaluate_inverse_growth_deformation_gradient(
     Core::LinAlg::Tensor<double, 3, 3>& iFgM, const Mixture::MixtureRule& mixtureRule,
-    double currentReferenceGrowthScalar, const Mat::EvaluationContext& context, int gp,
+    double currentReferenceGrowthScalar, const Mat::EvaluationContext<3>& context, int gp,
     int eleGID) const
 {
   iFgM = std::pow(currentReferenceGrowthScalar, -1.0 / 3.0) *

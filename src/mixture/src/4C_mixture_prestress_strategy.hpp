@@ -46,6 +46,7 @@ namespace Mat
 namespace Mat
 {
   class CoordinateSystemProvider;
+  template <std::size_t dim>
   struct EvaluationContext;
 }  // namespace Mat
 
@@ -155,7 +156,7 @@ namespace Mixture
     virtual void evaluate_prestress(const MixtureRule& mixtureRule,
         const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
         Mixture::MixtureConstituent& constituent, Core::LinAlg::SymmetricTensor<double, 3, 3>& G,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, int gp,
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
         int eleGID) = 0;
 
     /*!
@@ -172,7 +173,7 @@ namespace Mixture
     virtual void update(const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
         Mixture::MixtureConstituent& constituent, const Core::LinAlg::Tensor<double, 3, 3>& F,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& G, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context, int gp, int eleGID) = 0;
+        const Mat::EvaluationContext<3>& context, int gp, int eleGID) = 0;
   };
 }  // namespace Mixture
 

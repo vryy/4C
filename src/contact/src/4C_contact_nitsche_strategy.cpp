@@ -397,7 +397,7 @@ void CONTACT::NitscheStrategy::update_trace_ineq_estimates()
   auto NitWgt = Teuchos::getIntegralValue<CONTACT::NitscheWeighting>(params(), "NITSCHE_WEIGHTING");
 
   // create material evaluation context
-  Mat::EvaluationContext mat_eval_context{.total_time = &total_time_,
+  Mat::EvaluationContext<3> mat_eval_context{.total_time = &total_time_,
       .time_step_size = &time_step_size_,
       .xi = nullptr,
       .ref_coords = nullptr};

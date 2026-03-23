@@ -2436,7 +2436,7 @@ void XFEM::MeshCouplingFSI::estimate_nitsche_trace_max_eigenvalue(Core::Elements
   eledisp = Core::FE::extract_values(*dispnp, la[0].lm_);
 
 
-  Mat::EvaluationContext mat_eval_context{
+  Mat::EvaluationContext<3> mat_eval_context{
       .total_time = &time_,
       .time_step_size = &dt_,
       .xi = nullptr,

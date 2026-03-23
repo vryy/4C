@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 void Mat::elast_hyper_evaluate(const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, const int gp, int eleGID,
     const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
@@ -402,7 +402,7 @@ void Mat::elast_hyper_add_anisotropic_mod(Core::LinAlg::SymmetricTensor<double, 
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& C_strain,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& iC_strain,
     const Core::LinAlg::Matrix<3, 1>& prinv, const int gp, int eleGID,
-    const EvaluationContext& context,
+    const EvaluationContext<3>& context,
     const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum)
 {
   // Loop over all summands and add aniso stress

@@ -72,13 +72,13 @@ namespace Mixture
     void evaluate_prestress(const MixtureRule& mixtureRule,
         const std::shared_ptr<const Mat::CoordinateSystemProvider> cosy,
         Mixture::MixtureConstituent& constituent, Core::LinAlg::SymmetricTensor<double, 3, 3>& G,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, int gp,
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
         int eleGID) override;
 
     void update(const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
         Mixture::MixtureConstituent& constituent, const Core::LinAlg::Tensor<double, 3, 3>& F,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& G, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context, int gp, int eleGID) override;
+        const Mat::EvaluationContext<3>& context, int gp, int eleGID) override;
 
    private:
     /// Holder for internal parameters

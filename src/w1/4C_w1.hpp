@@ -646,7 +646,7 @@ namespace Discret
           const int numeps,                                     ///< number of strains
           std::shared_ptr<const Core::Mat::Material> material,  ///< the material data
           Teuchos::ParameterList& params,                       ///< element parameter list
-          const Mat::EvaluationContext& context,
+          const Mat::EvaluationContext<3>& context,
           int gp  ///< Gauss point
       );
 
@@ -657,7 +657,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix& C,             ///< elasticity matrix
           const Core::LinAlg::SerialDenseVector& strain,  ///< Green-Lagrange strain vector
           Teuchos::ParameterList& params,                 ///< element parameter list
-          const Mat::EvaluationContext& context,
+          const Mat::EvaluationContext<3>& context,
           int gp  ///< Gauss point
       );
 
@@ -669,7 +669,7 @@ namespace Discret
           const Core::LinAlg::SymmetricTensor<double, 3, 3>&
               glstrain,                    ///< 3D Green-Lagrange strain vector
           Teuchos::ParameterList& params,  ///< element parameter list
-          const Mat::EvaluationContext& context,
+          const Mat::EvaluationContext<3>& context,
           int gp  ///< Gauss point
       );
 
@@ -684,7 +684,7 @@ namespace Discret
       double energy_internal(
           std::shared_ptr<const Core::Mat::Material> material,  ///< element material
           Teuchos::ParameterList& params,                       ///< element parameter list
-          const Mat::EvaluationContext& context,
+          const Mat::EvaluationContext<3>& context,
           const Core::LinAlg::SerialDenseVector& Ev,  ///< Green-Lagrange strain vector
           int gp                                      ///< Gauss point
       );

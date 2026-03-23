@@ -97,7 +97,7 @@ void Mat::Elastic::IsoAnisoExpo::add_stress_aniso_modified(
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& icg,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress, double I3, const int gp, const int eleGID,
-    const EvaluationContext& context)
+    const EvaluationContext<3>& context)
 {
   double incJ = std::pow(I3, -1.0 / 3.0);  // J^{-2/3}
 

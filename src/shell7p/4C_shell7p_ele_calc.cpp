@@ -184,7 +184,7 @@ double Discret::Elements::Shell7pEleCalc<distype>::calculate_internal_energy(
 
           // call material for evaluation of strain energy function
           Core::LinAlg::Tensor<double, 3> xi = {{xi_gp[0], xi_gp[1], 0.0}};
-          Mat::EvaluationContext context{.total_time = total_time,
+          Mat::EvaluationContext<3> context{.total_time = total_time,
               .time_step_size = time_step_size,
               .xi = &xi,
               .ref_coords = nullptr};
@@ -296,7 +296,7 @@ void Discret::Elements::Shell7pEleCalc<distype>::calculate_stresses_strains(
               Shell::transform_green_lagrange_strain_to_cartesian(strains.gl_strain_, g_reference);
 
           Core::LinAlg::Tensor<double, 3> xi = {{xi_gp[0], xi_gp[1], 0.0}};
-          Mat::EvaluationContext context{.total_time = total_time,
+          Mat::EvaluationContext<3> context{.total_time = total_time,
               .time_step_size = time_step_size,
               .xi = &xi,
               .ref_coords = nullptr};
@@ -435,7 +435,7 @@ void Discret::Elements::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
               Shell::transform_green_lagrange_strain_to_cartesian(strains.gl_strain_, g_reference);
 
           Core::LinAlg::Tensor<double, 3> xi = {{xi_gp[0], xi_gp[1], 0.0}};
-          Mat::EvaluationContext context{.total_time = total_time,
+          Mat::EvaluationContext<3> context{.total_time = total_time,
               .time_step_size = time_step_size,
               .xi = &xi,
               .ref_coords = nullptr};
@@ -575,7 +575,7 @@ void Discret::Elements::Shell7pEleCalc<distype>::update(Core::Elements::Element&
                 strains.gl_strain_, g_reference);
 
             Core::LinAlg::Tensor<double, 3> xi = {{xi_gp[0], xi_gp[1], 0.0}};
-            Mat::EvaluationContext context{.total_time = total_time,
+            Mat::EvaluationContext<3> context{.total_time = total_time,
                 .time_step_size = time_step_size,
                 .xi = &xi,
                 .ref_coords = nullptr};
