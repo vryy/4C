@@ -220,7 +220,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(Core::Communication::Unpa
 void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
     const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -274,7 +274,7 @@ Core::LinAlg::SymmetricTensor<double, 3, 3>
 Mat::MultiplicativeSplitDefgradElastHyper::evaluate_d_stress_d_scalar(
     const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context, int gp, int eleGID)
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int gp, int eleGID)
 {
   Core::LinAlg::Matrix<3, 3> defgrad_mat = Core::LinAlg::make_matrix_view(defgrad);
   // do all stuff that only has to be done once per evaluate() call
@@ -314,8 +314,8 @@ double Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deri
     const Core::LinAlg::Tensor<double, 3>& dir, Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dn,
     Core::LinAlg::Matrix<3, 1>* d_cauchyndir_ddir, Core::LinAlg::Matrix<9, 1>* d_cauchyndir_dF,
     Core::LinAlg::Matrix<9, 9>* d2_cauchyndir_dF2, Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_dn,
-    Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_ddir, const EvaluationContext& context, int eleGID,
-    const double* concentration, const double* temp, double* d_cauchyndir_dT,
+    Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_ddir, const EvaluationContext<3>& context,
+    int eleGID, const double* concentration, const double* temp, double* d_cauchyndir_dT,
     Core::LinAlg::Matrix<9, 1>* d2_cauchyndir_dF_dT)
 {
   if (concentration != nullptr) set_concentration_gp(*concentration);
@@ -1062,7 +1062,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_od_stiff_mat(PAR::Inela
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void Mat::MultiplicativeSplitDefgradElastHyper::pre_evaluate(const Teuchos::ParameterList& params,
-    const EvaluationContext& context, const int gp, const int eleGID) const
+    const EvaluationContext<3>& context, const int gp, const int eleGID) const
 {
   // loop over all inelastic contributions
   for (int p = 0; p < inelastic_->num_inelastic_def_grad(); ++p)

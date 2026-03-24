@@ -258,7 +258,7 @@ double Discret::Elements::Shell7pEleCalcEas<distype>::calculate_internal_energy(
               Shell::calc_consistent_defgrd(strains.defgrd_, eas_kinematics.enhanced_gl_strain_);
 
           Core::LinAlg::Tensor<double, 3> xi = {{xi_gp[0], xi_gp[1], 0.0}};
-          Mat::EvaluationContext context{.total_time = total_time,
+          Mat::EvaluationContext<3> context{.total_time = total_time,
               .time_step_size = time_step_size,
               .xi = &xi,
               .ref_coords = nullptr};
@@ -403,7 +403,7 @@ void Discret::Elements::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
               Shell::calc_consistent_defgrd(strains.defgrd_, eas_kinematics.enhanced_gl_strain_);
 
           Core::LinAlg::Tensor<double, 3> xi = {{xi_gp[0], xi_gp[1], 0.0}};
-          Mat::EvaluationContext context{.total_time = total_time,
+          Mat::EvaluationContext<3> context{.total_time = total_time,
               .time_step_size = time_step_size,
               .xi = &xi,
               .ref_coords = nullptr};
@@ -582,7 +582,7 @@ void Discret::Elements::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
               Shell::calc_consistent_defgrd(strains.defgrd_, eas_kinematics.enhanced_gl_strain_);
 
           Core::LinAlg::Tensor<double, 3> xi = {{xi_gp[0], xi_gp[1], 0.0}};
-          Mat::EvaluationContext context{.total_time = total_time,
+          Mat::EvaluationContext<3> context{.total_time = total_time,
               .time_step_size = time_step_size,
               .xi = &xi,
               .ref_coords = nullptr};
@@ -830,7 +830,7 @@ void Discret::Elements::Shell7pEleCalcEas<distype>::update(Core::Elements::Eleme
                 Shell::calc_consistent_defgrd(strains.defgrd_, eas_kinematics.enhanced_gl_strain_);
 
             Core::LinAlg::Tensor<double, 3> xi = {{xi_gp[0], xi_gp[1], 0.0}};
-            Mat::EvaluationContext context{.total_time = total_time,
+            Mat::EvaluationContext<3> context{.total_time = total_time,
                 .time_step_size = time_step_size,
                 .xi = &xi,
                 .ref_coords = nullptr};

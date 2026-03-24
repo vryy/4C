@@ -28,6 +28,7 @@ namespace Mat
   /**
    * @brief Context information for material evaluation
    */
+  template <std::size_t dim>
   struct EvaluationContext
   {
     /// Total time (nullptr if not available)
@@ -37,11 +38,11 @@ namespace Mat
     const double* time_step_size;
 
     /// Parameter coordinates if the evaluation point (nullptr if not available)
-    const Core::LinAlg::Tensor<double, 3>* xi;
+    const Core::LinAlg::Tensor<double, dim>* xi;
 
     /// Coordinates of the evaluation point in the reference configuration (nullptr if not
     /// available)
-    const Core::LinAlg::Tensor<double, 3>* ref_coords;
+    const Core::LinAlg::Tensor<double, dim>* ref_coords;
   };
 
   class So3Material : public Core::Mat::Material
@@ -67,7 +68,7 @@ namespace Mat
      */
     virtual void evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-        const Teuchos::ParameterList& params, const EvaluationContext& context,
+        const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) = 0;
 
@@ -81,7 +82,7 @@ namespace Mat
      */
     [[nodiscard]] virtual double strain_energy(
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-        const EvaluationContext& context, int gp, int eleGID) const;
+        const EvaluationContext<3>& context, int gp, int eleGID) const;
 
     /*!
      * @brief Evaluate the Cauchy stress contracted with normal and direction vector and
@@ -138,7 +139,7 @@ namespace Mat
         Core::LinAlg::Matrix<3, 1>* d_cauchyndir_ddir, Core::LinAlg::Matrix<9, 1>* d_cauchyndir_dF,
         Core::LinAlg::Matrix<9, 9>* d2_cauchyndir_dF2,
         Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_dn,
-        Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_ddir, const EvaluationContext& context,
+        Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_ddir, const EvaluationContext<3>& context,
         int eleGID, const double* concentration, const double* temp, double* d_cauchyndir_dT,
         Core::LinAlg::Matrix<9, 1>* d2_cauchyndir_dF_dT);
 
@@ -216,7 +217,7 @@ namespace Mat
      * @param[in] eleGID Global element ID
      */
     virtual void update(const Core::LinAlg::Tensor<double, 3, 3>& defgrd, int const gp,
-        const Teuchos::ParameterList& params, const EvaluationContext& context, int const eleGID)
+        const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int const eleGID)
     {
     }
 

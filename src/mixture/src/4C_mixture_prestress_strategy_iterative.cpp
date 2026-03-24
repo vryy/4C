@@ -52,7 +52,8 @@ void Mixture::IterativePrestressStrategy::setup(Mixture::MixtureConstituent& con
 void Mixture::IterativePrestressStrategy::evaluate_prestress(const MixtureRule& mixtureRule,
     const std::shared_ptr<const Mat::CoordinateSystemProvider> cosy,
     Mixture::MixtureConstituent& constituent, Core::LinAlg::SymmetricTensor<double, 3, 3>& G,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, int gp, int eleGID)
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
+    int eleGID)
 {
   // Start with zero prestretch
   G = Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
@@ -62,7 +63,7 @@ void Mixture::IterativePrestressStrategy::update(
     const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
     Mixture::MixtureConstituent& constituent, const Core::LinAlg::Tensor<double, 3, 3>& F,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& G, const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, int gp, int eleGID)
+    const Mat::EvaluationContext<3>& context, int gp, int eleGID)
 {
   // only update prestress if it is active
   if (!params_->is_active_) return;

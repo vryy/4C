@@ -30,6 +30,7 @@ namespace Core::FE
 }  // namespace Core::FE
 namespace Mat
 {
+  template <std::size_t dim>
   struct EvaluationContext;
 }  // namespace Mat
 namespace Discret
@@ -367,7 +368,7 @@ namespace Discret
           const int numeps,                                     ///< number of strains
           std::shared_ptr<const Core::Mat::Material> material,  ///< the material data
           Teuchos::ParameterList& params,                       ///< element parameter list
-          const Mat::EvaluationContext& context,                ///< context for material evaluation
+          const Mat::EvaluationContext<3>& context,             ///< context for material evaluation
           int gp                                                ///< Integration point
       );
 
@@ -376,7 +377,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix& C,             ///< material tensor (output)
           const Core::LinAlg::SerialDenseVector& strain,  ///< strain state (input)
           Teuchos::ParameterList& params,                 ///< parameter list
-          const Mat::EvaluationContext& context,          ///< context for material evaluation
+          const Mat::EvaluationContext<3>& context,       ///< context for material evaluation
           int gp                                          ///< Integration point
       );
 
@@ -384,8 +385,8 @@ namespace Discret
           Core::LinAlg::Matrix<6, 6>* cmat,                         ///< material tensor (output)
           const Core::LinAlg::Matrix<6, 1>* glstrain,               ///< strain state (input)
           Teuchos::ParameterList& params,                           ///< parameter list
-          const Mat::EvaluationContext& context,  ///< context for material evaluation
-          int gp                                  ///< Integration point
+          const Mat::EvaluationContext<3>& context,  ///< context for material evaluation
+          int gp                                     ///< Integration point
       );
 
       //! Transform Green-Lagrange notation from 2D to 3D

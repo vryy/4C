@@ -114,7 +114,7 @@ namespace Mixture
      * @param eleGID Global element identifier
      */
     void update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, int gp,
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
         int eleGID) override;
 
     /*!
@@ -151,7 +151,7 @@ namespace Mixture
      * \param eleGID Global element id
      */
     void pre_evaluate(MixtureRule& mixtureRule, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context, int gp, int eleGID) override;
+        const Mat::EvaluationContext<3>& context, int gp, int eleGID) override;
 
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;

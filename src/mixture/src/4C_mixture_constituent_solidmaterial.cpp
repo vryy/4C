@@ -144,14 +144,14 @@ void Mixture::MixtureConstituentSolidMaterial::update() { material_->update(); }
 
 void Mixture::MixtureConstituentSolidMaterial::update(
     Core::LinAlg::Tensor<double, 3, 3> const& defgrd, const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, const int gp, const int eleGID)
+    const Mat::EvaluationContext<3>& context, const int gp, const int eleGID)
 {
   material_->update(defgrd, gp, params, context, eleGID);
 }
 
 void Mixture::MixtureConstituentSolidMaterial::evaluate(const Core::LinAlg::Tensor<double, 3, 3>& F,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& E_strain,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, const int gp, const int eleGID)
 {

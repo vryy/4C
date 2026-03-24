@@ -36,7 +36,7 @@ void Discret::Elements::Wall1::w1_call_matgeononl(
     const int numeps,                                     ///< number of strains
     std::shared_ptr<const Core::Mat::Material> material,  ///< the material data
     Teuchos::ParameterList& params,                       ///< element parameter list
-    const Mat::EvaluationContext& context,                ///< evaluation context
+    const Mat::EvaluationContext<3>& context,             ///< evaluation context
     const int gp                                          ///< Gauss point
 )
 {
@@ -188,7 +188,7 @@ void Discret::Elements::Wall1::w1_call_matgeononl(
 /*----------------------------------------------------------------------*/
 void Discret::Elements::Wall1::material_response3d_plane(Core::LinAlg::SerialDenseMatrix& stress,
     Core::LinAlg::SerialDenseMatrix& C, const Core::LinAlg::SerialDenseVector& strain,
-    Teuchos::ParameterList& params, const Mat::EvaluationContext& context, const int gp)
+    Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, const int gp)
 {
   // make 3d equivalent of Green-Lagrange strain
   Core::LinAlg::SymmetricTensor<double, 3, 3> gl{};
@@ -346,7 +346,7 @@ void Discret::Elements::Wall1::material_response3d(
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain, Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, const int gp)
+    const Mat::EvaluationContext<3>& context, const int gp)
 {
   solid_material()->evaluate(nullptr, glstrain, params, context, stress, cmat, gp, id());
 
@@ -358,7 +358,8 @@ void Discret::Elements::Wall1::material_response3d(
 *-----------------------------------------------------------------------------*/
 double Discret::Elements::Wall1::energy_internal(
     std::shared_ptr<const Core::Mat::Material> material, Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, const Core::LinAlg::SerialDenseVector& Ev, const int gp)
+    const Mat::EvaluationContext<3>& context, const Core::LinAlg::SerialDenseVector& Ev,
+    const int gp)
 {
   // switch material type
   switch (material->material_type())

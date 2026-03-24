@@ -55,7 +55,7 @@ namespace
           deformation_gradient,
       const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
           gl_strain,
-      Teuchos::ParameterList& params, const Mat::EvaluationContext& context, const int gp,
+      Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, const int gp,
       const int eleGID)
   {
     auto* monolithic_material = dynamic_cast<Mat::MonolithicSolidScalarMaterial*>(&solid_material);
@@ -213,7 +213,7 @@ namespace
         Discret::Elements::get_initialized_cauchy_n_dir_linearization_dependencies(
             evaluator, linearizations);
 
-    Mat::EvaluationContext context{.total_time = nullptr,
+    Mat::EvaluationContext<3> context{.total_time = nullptr,
         .time_step_size = nullptr,
         .xi = &xi,
         .ref_coords = nullptr};  // maybe compute ref_coords?
@@ -339,7 +339,7 @@ void Discret::Elements::SolidScatraEleCalc<celltype,
               auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
                   nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-              Mat::EvaluationContext context{.total_time = total_time,
+              Mat::EvaluationContext<3> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
@@ -473,10 +473,12 @@ void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
                     Core::FE::dim<celltype>>& gl_strain,
                 const auto& linearization)
             {
-              Mat::EvaluationContext context{.total_time = total_time,
+              auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
+                  nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
+              Mat::EvaluationContext<3> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
-                  .ref_coords = &xi};
+                  .ref_coords = &gp_ref_coord};
 
               Core::LinAlg::SymmetricTensor<double, 3, 3> dSdc =
                   evaluate_d_material_stress_d_scalar<celltype>(solid_material,
@@ -579,7 +581,7 @@ void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::update(
         auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
             nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-        Mat::EvaluationContext context{.total_time = total_time,
+        Mat::EvaluationContext<3> context{.total_time = total_time,
             .time_step_size = time_step_size,
             .xi = &xi,
             .ref_coords = &gp_ref_coord};
@@ -644,7 +646,7 @@ double Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::calcul
               auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
                   nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-              Mat::EvaluationContext context{.total_time = total_time,
+              Mat::EvaluationContext<3> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
@@ -709,7 +711,7 @@ void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::calculat
               auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
                   nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-              Mat::EvaluationContext context{.total_time = total_time,
+              Mat::EvaluationContext<3> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};

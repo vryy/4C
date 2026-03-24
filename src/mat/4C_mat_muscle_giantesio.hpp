@@ -174,12 +174,12 @@ namespace Mat
     bool uses_extended_update() override { return true; };
 
     void update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd, int const gp,
-        const Teuchos::ParameterList& params, const EvaluationContext& context,
+        const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
         int const eleGID) override;
 
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrd,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-        const Teuchos::ParameterList& params, const EvaluationContext& context,
+        const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) override;
 

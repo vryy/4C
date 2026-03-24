@@ -313,7 +313,7 @@ void Mat::ElastHyper::evaluate_fiber_vecs(const double newgamma,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double Mat::ElastHyper::strain_energy(const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const EvaluationContext& context, const int gp, const int eleGID) const
+    const EvaluationContext<3>& context, const int gp, const int eleGID) const
 {
   Core::LinAlg::SymmetricTensor<double, 3, 3> C_strain{};
   static Core::LinAlg::Matrix<3, 1> prinv(Core::LinAlg::Initialization::zero);
@@ -342,7 +342,7 @@ double Mat::ElastHyper::strain_energy(const Core::LinAlg::SymmetricTensor<double
 /*----------------------------------------------------------------------*/
 void Mat::ElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -377,8 +377,8 @@ double Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
     const Core::LinAlg::Tensor<double, 3>& dir, Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dn,
     Core::LinAlg::Matrix<3, 1>* d_cauchyndir_ddir, Core::LinAlg::Matrix<9, 1>* d_cauchyndir_dF,
     Core::LinAlg::Matrix<9, 9>* d2_cauchyndir_dF2, Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_dn,
-    Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_ddir, const EvaluationContext& context, int eleGID,
-    const double* concentration, const double* temp, double* d_cauchyndir_dT,
+    Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_ddir, const EvaluationContext<3>& context,
+    int eleGID, const double* concentration, const double* temp, double* d_cauchyndir_dT,
     Core::LinAlg::Matrix<9, 1>* d2_cauchyndir_dF_dT)
 {
   double cauchy_n_dir = 0.0;

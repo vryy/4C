@@ -44,6 +44,7 @@ namespace Mat
 {
   class Anisotropy;
   class Material;
+  template <std::size_t dim>
   struct EvaluationContext;
   namespace PAR
   {
@@ -173,8 +174,8 @@ namespace Mixture
      * @param eleGID (in) : Global element id
      */
     virtual void update(Core::LinAlg::Tensor<double, 3, 3> const& F,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, const int gp,
-        const int eleGID)
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
+        const int gp, const int eleGID)
     {
       // Nothing needs to be updated in this simple mixture rule
     }
@@ -196,7 +197,7 @@ namespace Mixture
      * @param eleGID (in) : Global element id
      */
     virtual void pre_evaluate(const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context, const int gp, const int eleGID)
+        const Mat::EvaluationContext<3>& context, const int gp, const int eleGID)
     {
       // do nothing in the default case
     }
@@ -215,7 +216,7 @@ namespace Mixture
      */
     virtual void evaluate(const Core::LinAlg::Tensor<double, 3, 3>& F,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& E, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context, Core::LinAlg::SymmetricTensor<double, 3, 3>& S,
+        const Mat::EvaluationContext<3>& context, Core::LinAlg::SymmetricTensor<double, 3, 3>& S,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) = 0;
 
     /*!

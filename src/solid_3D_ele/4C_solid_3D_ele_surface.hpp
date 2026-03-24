@@ -134,7 +134,7 @@ namespace Discret::Elements
     //! \param[in] mat_eval_context material evaluation context (recreated and further specified in
     //! the functions)
     double estimate_nitsche_trace_max_eigenvalue(
-        const std::vector<double>& parent_disp, const Mat::EvaluationContext& mat_eval_context);
+        const std::vector<double>& parent_disp, const Mat::EvaluationContext<3>& mat_eval_context);
 
     //! \brief Evaluate trace inequality and return the maximal eigenvalue
     //!
@@ -144,7 +144,8 @@ namespace Discret::Elements
     //! \param[in] mat_eval_context material evaluation context (recreated and further specified in
     //! the functions)
     double estimate_nitsche_trace_max_eigenvalue(const std::vector<double>& parent_disp,
-        const std::vector<double>& parent_scalar, const Mat::EvaluationContext& mat_eval_context);
+        const std::vector<double>& parent_scalar,
+        const Mat::EvaluationContext<3>& mat_eval_context);
 
     //! \brief Evaluate trace inequality and return the maximal eigenvalue
     //!
@@ -152,7 +153,7 @@ namespace Discret::Elements
     //! the functions)
     //! \param[in] parent_disp    displacement values on corresponding parent element
     double estimate_nitsche_trace_max_eigenvalue_tsi(
-        const Mat::EvaluationContext& mat_eval_context, std::vector<double>& parent_disp);
+        const Mat::EvaluationContext<3>& mat_eval_context, std::vector<double>& parent_disp);
 
     [[nodiscard]] Core::Elements::Element* parent_element() const override
     {
@@ -338,7 +339,8 @@ namespace Discret::Elements
     //! Templated version: parent and surface discretization type
     template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
     double estimate_nitsche_trace_max_eigenvalue(const std::vector<double>& parent_disp,
-        const std::vector<double>& parent_scalar, const Mat::EvaluationContext& mat_eval_context);
+        const std::vector<double>& parent_scalar,
+        const Mat::EvaluationContext<3>& mat_eval_context);
 
     //! the volume stiffness matrix
     //! unlike the "full" stiffness matrix we don't use the geometric term here
@@ -346,7 +348,7 @@ namespace Discret::Elements
     void trace_estimate_vol_matrix(
         const Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol), 3>& xrefe,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol), 3>& xcurr,
-        const std::vector<double>& parent_scalar, const Mat::EvaluationContext& mat_eval_context,
+        const std::vector<double>& parent_scalar, const Mat::EvaluationContext<3>& mat_eval_context,
         Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol) * 3, Core::FE::num_nodes(dt_vol) * 3>&
             vol);
 
@@ -355,7 +357,7 @@ namespace Discret::Elements
     void trace_estimate_surf_matrix(
         const Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol), 3>& xrefe,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol), 3>& xcurr,
-        const std::vector<double>& parent_scalar, const Mat::EvaluationContext& mat_eval_context,
+        const std::vector<double>& parent_scalar, const Mat::EvaluationContext<3>& mat_eval_context,
         Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol) * 3, Core::FE::num_nodes(dt_vol) * 3>&
             surf);
 
@@ -382,7 +384,7 @@ namespace Discret::Elements
     //! Templated version: parent and surface discretization type
     template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
     double estimate_nitsche_trace_max_eigenvalue_tsi(
-        const Mat::EvaluationContext& mat_eval_context, std::vector<double>& parent_disp);
+        const Mat::EvaluationContext<3>& mat_eval_context, std::vector<double>& parent_disp);
 
     //! the volume stiffness matrix
     //! unlike the "full" stiffness matrix we don't use the geometric term here
@@ -390,7 +392,7 @@ namespace Discret::Elements
     void trace_estimate_vol_matrix_tsi(
         const Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol), 3>& xrefe,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol), 3>& xcurr,
-        const Mat::EvaluationContext& mat_eval_context,
+        const Mat::EvaluationContext<3>& mat_eval_context,
         Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol), Core::FE::num_nodes(dt_vol)>& vol);
 
     //! the surface stiffness matrix
@@ -398,7 +400,7 @@ namespace Discret::Elements
     void trace_estimate_surf_matrix_tsi(
         const Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol), 3>& xrefe,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol), 3>& xcurr,
-        const Mat::EvaluationContext& mat_eval_context,
+        const Mat::EvaluationContext<3>& mat_eval_context,
         Core::LinAlg::Matrix<Core::FE::num_nodes(dt_vol), Core::FE::num_nodes(dt_vol)>& surf);
 
 

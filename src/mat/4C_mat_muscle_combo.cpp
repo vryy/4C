@@ -188,13 +188,13 @@ void Mat::MuscleCombo::setup(int numgp, const Discret::Elements::Fibers& fibers,
 }
 
 void Mat::MuscleCombo::update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd, int const gp,
-    const Teuchos::ParameterList& params, const EvaluationContext& context, int const eleGID)
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int const eleGID)
 {
 }
 
 void Mat::MuscleCombo::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -316,7 +316,7 @@ void Mat::MuscleCombo::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgra
 }
 
 void Mat::MuscleCombo::evaluate_active_nominal_stress(const Teuchos::ParameterList& params,
-    const EvaluationContext& context, const int eleGID, const double lambdaM, double& intPa,
+    const EvaluationContext<3>& context, const int eleGID, const double lambdaM, double& intPa,
     double& Pa, double& derivPa)
 {
   // save current simulation time

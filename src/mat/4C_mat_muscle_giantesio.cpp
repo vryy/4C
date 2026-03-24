@@ -227,7 +227,7 @@ void Mat::MuscleGiantesio::setup(int numgp, const Discret::Elements::Fibers& fib
 }
 
 void Mat::MuscleGiantesio::update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd, int const gp,
-    const Teuchos::ParameterList& params, const EvaluationContext& context, int const eleGID)
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int const eleGID)
 {
   // compute the current fibre stretch using the deformation gradient and the structural tensor
   // right Cauchy Green tensor C= F^T F
@@ -247,7 +247,7 @@ void Mat::MuscleGiantesio::update(Core::LinAlg::Tensor<double, 3, 3> const& defg
 
 void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrd,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, const int gp, const int eleGID)
 {

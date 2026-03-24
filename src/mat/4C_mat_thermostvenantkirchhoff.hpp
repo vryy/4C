@@ -148,14 +148,14 @@ namespace Mat
     //! evaluates stresses for 3d
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-        const Teuchos::ParameterList& params, const EvaluationContext& context,
+        const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) override;
 
     /// add strain energy
     [[nodiscard]] double strain_energy(
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,  ///< Green-Lagrange strain
-        const EvaluationContext& context,                             ///< evaluation context
+        const EvaluationContext<3>& context,                          ///< evaluation context
         int gp,                                                       ///< Gauss point
         int eleGID                                                    ///< element GID
     ) const override;
@@ -206,7 +206,7 @@ namespace Mat
     Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_d_stress_d_scalar(
         const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-        const Teuchos::ParameterList& params, const EvaluationContext& context, int gp,
+        const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int gp,
         int eleGID) override;
 
     void stress_temperature_modulus_and_deriv(Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,

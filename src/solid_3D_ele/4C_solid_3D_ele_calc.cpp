@@ -69,8 +69,9 @@ namespace
     Discret::Elements::CauchyNDirLinearizationDependencies<celltype> linearization_dependencies =
         Discret::Elements::get_initialized_cauchy_n_dir_linearization_dependencies(
             evaluator, linearizations);
-    Mat::EvaluationContext context{.total_time = nullptr,  // Do not have the time here
-        .time_step_size = nullptr,                         // Do not have the time-step here
+    Mat::EvaluationContext<Core::FE::dim<celltype>> context{
+        .total_time = nullptr,      // Do not have the time here
+        .time_step_size = nullptr,  // Do not have the time-step here
         .xi = &xi,
         .ref_coords = nullptr};
     double cauchy_n_dir = mat.evaluate_cauchy_n_dir_and_derivatives(deformation_gradient, n, dir,
@@ -325,7 +326,7 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::update(
               auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
                   nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-              Mat::EvaluationContext context{.total_time = total_time,
+              Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
@@ -371,7 +372,7 @@ double Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_
               auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
                   nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-              Mat::EvaluationContext context{.total_time = total_time,
+              Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
@@ -423,7 +424,7 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_st
               auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
                   nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-              Mat::EvaluationContext context{.total_time = total_time,
+              Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};

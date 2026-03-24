@@ -82,7 +82,7 @@ void Mixture::MixtureConstituentElastHyperDamage::read_element(int numgp,
 // Updates all summands
 void Mixture::MixtureConstituentElastHyperDamage::update(
     Core::LinAlg::Tensor<double, 3, 3> const& defgrd, const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, const int gp, const int eleGID)
+    const Mat::EvaluationContext<3>& context, const int gp, const int eleGID)
 {
   FOUR_C_ASSERT(context.ref_coords,
       "Reference coordinates not set in EvaluationContext, but required for function-based "
@@ -108,7 +108,7 @@ double Mixture::MixtureConstituentElastHyperDamage::get_growth_scalar(int gp) co
 void Mixture::MixtureConstituentElastHyperDamage::evaluate(
     const Core::LinAlg::Tensor<double, 3, 3>& F,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& E_strain,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -117,7 +117,7 @@ void Mixture::MixtureConstituentElastHyperDamage::evaluate(
 
 void Mixture::MixtureConstituentElastHyperDamage::evaluate_elastic_part(
     const Core::LinAlg::Tensor<double, 3, 3>& F, const Core::LinAlg::Tensor<double, 3, 3>& iFextin,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {

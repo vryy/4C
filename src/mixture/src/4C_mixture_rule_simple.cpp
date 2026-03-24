@@ -54,7 +54,7 @@ void Mixture::SimpleMixtureRule::setup(const Teuchos::ParameterList& params, int
 
 void Mixture::SimpleMixtureRule::evaluate(const Core::LinAlg::Tensor<double, 3, 3>& F,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& E_strain,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, const int gp, const int eleGID)
 {

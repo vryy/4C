@@ -460,7 +460,7 @@ namespace
       Teuchos::ParameterList param_list_transv_isotrop_vplast_refJC{};
       double total_time = 1.0e-6;
       double time_step_size = 1e-6;
-      Mat::EvaluationContext context{.total_time = &total_time,
+      Mat::EvaluationContext<3> context{.total_time = &total_time,
           .time_step_size = &time_step_size,
           .xi = {},
           .ref_coords = nullptr};

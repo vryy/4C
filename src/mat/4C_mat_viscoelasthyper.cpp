@@ -509,7 +509,7 @@ void Mat::ViscoElastHyper::update()
 /*----------------------------------------------------------------------*/
 void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -681,7 +681,7 @@ void Mat::ViscoElastHyper::evaluate_kin_quant_vis(Core::LinAlg::Matrix<6, 1>& rc
     Core::LinAlg::Matrix<6, 1>& scg, Core::LinAlg::Matrix<6, 1>& icg,
     Core::LinAlg::Matrix<3, 1>& prinv, Core::LinAlg::Matrix<7, 1>& rateinv,
     Core::LinAlg::Matrix<6, 1>& modrcg, const Teuchos::ParameterList& params,
-    const EvaluationContext& context, Core::LinAlg::Matrix<6, 1>& scgrate,
+    const EvaluationContext<3>& context, Core::LinAlg::Matrix<6, 1>& scgrate,
     Core::LinAlg::Matrix<6, 1>& modrcgrate, Core::LinAlg::Matrix<7, 1>& modrateinv, const int gp)
 {
   // time derivative
@@ -868,7 +868,7 @@ void Mat::ViscoElastHyper::evaluate_iso_visco_modified(
 void Mat::ViscoElastHyper::evaluate_visco_gen_max(Core::LinAlg::Matrix<6, 1>* stress,
     Core::LinAlg::Matrix<6, 6>* cmat, Core::LinAlg::Matrix<6, 1>& Q,
     Core::LinAlg::Matrix<6, 6>& cmatq, const Teuchos::ParameterList& params,
-    const EvaluationContext& context, const int gp)
+    const EvaluationContext<3>& context, const int gp)
 {
   // initialize material parameters
   double tau = -1.0;
@@ -980,8 +980,8 @@ void Mat::ViscoElastHyper::evaluate_visco_gen_max(Core::LinAlg::Matrix<6, 1>* st
 /*----------------------------------------------------------------------*/
 void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matrix<6, 1>& Q,
     Core::LinAlg::Matrix<6, 6>& cmatq, const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, const Core::LinAlg::Matrix<6, 1>* glstrain, const int gp,
-    const int eleGID)
+    const Mat::EvaluationContext<3>& context, const Core::LinAlg::Matrix<6, 1>* glstrain,
+    const int gp, const int eleGID)
 {
   int numbranch = -1;
   double tau = -1.0;
@@ -1183,7 +1183,7 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
 void Mat::ViscoElastHyper::evaluate_visco_fract(Core::LinAlg::Matrix<6, 1> stress,
     Core::LinAlg::Matrix<6, 6> cmat, Core::LinAlg::Matrix<6, 1>& Q,
     Core::LinAlg::Matrix<6, 6>& cmatq, const Teuchos::ParameterList& params,
-    const EvaluationContext& context, const int gp)
+    const EvaluationContext<3>& context, const int gp)
 {
   // initialize parameters
   double tau(true);

@@ -1531,7 +1531,7 @@ void Discret::Elements::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
     std::shared_ptr<Mat::So3Material> so3mat =
         std::dynamic_pointer_cast<Mat::So3Material>(ele->material());
     Core::LinAlg::Tensor<double, 3> xi = {{e1, e2, e3}};
-    Mat::EvaluationContext context{.total_time = total_time,
+    Mat::EvaluationContext<3> context{.total_time = total_time,
         .time_step_size = time_step_size,
         .xi = &xi,
         .ref_coords = nullptr};

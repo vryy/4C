@@ -140,7 +140,7 @@ void Mixture::MixtureConstituentElastHyperElastinMembrane::read_element(int numg
 // Updates all summands
 void Mixture::MixtureConstituentElastHyperElastinMembrane::update(
     Core::LinAlg::Tensor<double, 3, 3> const& defgrd, const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, const int gp, const int eleGID)
+    const Mat::EvaluationContext<3>& context, const int gp, const int eleGID)
 {
   FOUR_C_ASSERT(context.ref_coords,
       "Reference coordinates not set in EvaluationContext, but required for function-based "
@@ -162,7 +162,8 @@ void Mixture::MixtureConstituentElastHyperElastinMembrane::update(
 }
 
 void Mixture::MixtureConstituentElastHyperElastinMembrane::pre_evaluate(MixtureRule& mixtureRule,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, int gp, int eleGID)
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
+    int eleGID)
 {
   Mixture::MixtureConstituentElastHyperBase::pre_evaluate(mixtureRule, params, context, gp, eleGID);
 
@@ -190,7 +191,7 @@ double Mixture::MixtureConstituentElastHyperElastinMembrane::get_growth_scalar(i
 void Mixture::MixtureConstituentElastHyperElastinMembrane::evaluate(
     const Core::LinAlg::Tensor<double, 3, 3>& F,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& E_strain,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -199,7 +200,7 @@ void Mixture::MixtureConstituentElastHyperElastinMembrane::evaluate(
 
 void Mixture::MixtureConstituentElastHyperElastinMembrane::evaluate_elastic_part(
     const Core::LinAlg::Tensor<double, 3, 3>& F, const Core::LinAlg::Tensor<double, 3, 3>& iFextin,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -225,7 +226,7 @@ void Mixture::MixtureConstituentElastHyperElastinMembrane::evaluate_elastic_part
 
 void Mixture::MixtureConstituentElastHyperElastinMembrane::evaluate_membrane_stress(
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S, const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, int gp, int eleGID)
+    const Mat::EvaluationContext<3>& context, int gp, int eleGID)
 {
   Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> cmat;
   const Core::LinAlg::SymmetricTensor<double, 3, 3> Id =
@@ -239,8 +240,8 @@ void Mixture::MixtureConstituentElastHyperElastinMembrane::evaluate_membrane_str
 void Mixture::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat_membrane(
     const Core::LinAlg::Tensor<double, 3, 3>& F, const Core::LinAlg::Tensor<double, 3, 3>& iFin,
     const Teuchos::ParameterList& params, Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
-    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, const Mat::EvaluationContext& context,
-    int gp, int eleGID) const
+    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
+    const Mat::EvaluationContext<3>& context, int gp, int eleGID) const
 {
   Core::LinAlg::Matrix<3, 3> F_view = Core::LinAlg::make_matrix_view(F);
   Core::LinAlg::Matrix<3, 3> iFin_view = Core::LinAlg::make_matrix_view(iFin);
@@ -307,7 +308,7 @@ void Mixture::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
 void Mixture::MixtureConstituentElastHyperElastinMembrane::
     evaluate_structural_tensors_in_grown_configuration(Core::LinAlg::Matrix<3, 3>& Aradgr,
         Core::LinAlg::Matrix<3, 3>& Aorthgr, const Core::LinAlg::Matrix<3, 3>& iFin,
-        const Mat::EvaluationContext& context, const int gp, const int eleGID) const
+        const Mat::EvaluationContext<3>& context, const int gp, const int eleGID) const
 {
   // Compute inelastic right Cauchy-Green deformation gradient
   static Core::LinAlg::Matrix<3, 3> iCin(Core::LinAlg::Initialization::uninitialized);

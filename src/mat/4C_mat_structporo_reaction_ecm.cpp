@@ -224,7 +224,7 @@ void Mat::StructPoroReactionECM::chem_potential(
   // dummy parameter list
   Teuchos::ParameterList params;
 
-  EvaluationContext context{};  // We have nothing available
+  EvaluationContext<3> context{};  // We have nothing available
   double psi = mat_->strain_energy(glstrain, context, gp, EleID);
 
   // derivative of

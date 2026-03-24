@@ -387,7 +387,7 @@ void Mat::ViscoAnisotropic::update_fiber_dirs(const int gp, Core::LinAlg::Matrix
  *----------------------------------------------------------------------*/
 void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {

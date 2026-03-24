@@ -21,6 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Mat
 {
   class CoordinateSystemProvider;
+  template <std::size_t dim>
   struct EvaluationContext;
 }  // namespace Mat
 
@@ -59,7 +60,7 @@ namespace Mixture
     virtual double evaluate_mue_frac(MixtureRule& mixtureRule,
         const std::shared_ptr<const Mat::CoordinateSystemProvider> cosy,
         Mixture::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, int gp,
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
         int eleGID) const = 0;
   };
 
@@ -83,7 +84,7 @@ namespace Mixture
      * \param eleGID (in) : Global element id
      */
     virtual void evaluate_membrane_stress(Core::LinAlg::SymmetricTensor<double, 3, 3>& S,
-        const Teuchos::ParameterList& params, const Mat::EvaluationContext& context, int gp,
+        const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
         int eleGID) = 0;
   };
 }  // namespace Mixture

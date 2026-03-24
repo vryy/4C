@@ -264,7 +264,7 @@ void Mat::Mixture::update()
 
 // This method is called between two timesteps
 void Mat::Mixture::update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd, const int gp,
-    const Teuchos::ParameterList& params, const EvaluationContext& context, const int eleGID)
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context, const int eleGID)
 {
   // Update all constituents
   for (const auto& constituent : *constituents_)
@@ -278,7 +278,7 @@ void Mat::Mixture::update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd, cons
 // Evaluates the material
 void Mat::Mixture::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-    const Teuchos::ParameterList& params, const EvaluationContext& context,
+    const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {

@@ -59,7 +59,7 @@ namespace Mixture
 
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>& F,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& E, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext& context, Core::LinAlg::SymmetricTensor<double, 3, 3>& S,
+        const Mat::EvaluationContext<3>& context, Core::LinAlg::SymmetricTensor<double, 3, 3>& S,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) override;
 
     [[nodiscard]] double return_mass_density() const override

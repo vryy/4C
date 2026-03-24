@@ -846,7 +846,7 @@ void Discret::Elements::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       w1_call_defgrad_tot(F_enh, F_tot, F, strain);
       /* call material law----------------------------------------------------*/
       Core::LinAlg::Tensor<double, 3> xi = {{e1, e2, 0.0}};
-      Mat::EvaluationContext context{.total_time = total_time,
+      Mat::EvaluationContext<3> context{.total_time = total_time,
           .time_step_size = time_step_size,
           .xi = &xi,
           .ref_coords = nullptr};
@@ -912,7 +912,7 @@ void Discret::Elements::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     else
     {
       Core::LinAlg::Tensor<double, 3> xi = {{e1, e2, 0.0}};
-      Mat::EvaluationContext context{.total_time = total_time,
+      Mat::EvaluationContext<3> context{.total_time = total_time,
           .time_step_size = time_step_size,
           .xi = &xi,
           .ref_coords = nullptr};
@@ -1152,7 +1152,7 @@ void Discret::Elements::Wall1::w1_linstiffmass(const std::vector<int>& lm,
 
     // material call
     Core::LinAlg::Tensor<double, 3> xi = {{e1, e2, 0.0}};
-    Mat::EvaluationContext context{.total_time = total_time,
+    Mat::EvaluationContext<3> context{.total_time = total_time,
         .time_step_size = time_step_size,
         .xi = &xi,
         .ref_coords = nullptr};
@@ -1613,7 +1613,7 @@ void Discret::Elements::Wall1::energy(Teuchos::ParameterList& params, const std:
     }
 
     Core::LinAlg::Tensor<double, 3> xi = {{xi1, xi2, 0.0}};
-    Mat::EvaluationContext context{.total_time = total_time,
+    Mat::EvaluationContext<3> context{.total_time = total_time,
         .time_step_size = time_step_size,
         .xi = &xi,
         .ref_coords = nullptr};

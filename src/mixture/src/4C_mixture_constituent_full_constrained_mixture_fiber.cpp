@@ -181,7 +181,7 @@ void Mixture::MixtureConstituentFullConstrainedMixtureFiber::setup(
 
 void Mixture::MixtureConstituentFullConstrainedMixtureFiber::update(
     const Core::LinAlg::Tensor<double, 3, 3>& F, const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext& context, const int gp, const int eleGID)
+    const Mat::EvaluationContext<3>& context, const int gp, const int eleGID)
 {
   MixtureConstituent::update(F, params, context, gp, eleGID);
 
@@ -276,7 +276,7 @@ Mixture::MixtureConstituentFullConstrainedMixtureFiber::evaluate_current_cmat(
 void Mixture::MixtureConstituentFullConstrainedMixtureFiber::evaluate(
     const Core::LinAlg::Tensor<double, 3, 3>& F,
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& E_strain,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
@@ -307,7 +307,7 @@ void Mixture::MixtureConstituentFullConstrainedMixtureFiber::evaluate(
 
 void Mixture::MixtureConstituentFullConstrainedMixtureFiber::evaluate_elastic_part(
     const Core::LinAlg::Tensor<double, 3, 3>& FM, const Core::LinAlg::Tensor<double, 3, 3>& iFextin,
-    const Teuchos::ParameterList& params, const Mat::EvaluationContext& context,
+    const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {

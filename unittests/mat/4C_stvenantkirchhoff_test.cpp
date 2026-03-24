@@ -80,7 +80,7 @@ namespace
     // Call evaluate function with test strain
     double total_time = 0.0;
     double time_step_size = 1.0;
-    Mat::EvaluationContext context{.total_time = &total_time,
+    Mat::EvaluationContext<3> context{.total_time = &total_time,
         .time_step_size = &time_step_size,
         .xi = {},
         .ref_coords = nullptr};
@@ -106,7 +106,7 @@ namespace
 
     double total_time = 0.0;
     double time_step_size = 1.0;
-    Mat::EvaluationContext context{.total_time = &total_time,
+    Mat::EvaluationContext<3> context{.total_time = &total_time,
         .time_step_size = &time_step_size,
         .xi = {},
         .ref_coords = nullptr};

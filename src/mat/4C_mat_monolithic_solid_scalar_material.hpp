@@ -37,7 +37,7 @@ namespace Mat
     virtual Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_d_stress_d_scalar(
         const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
-        const Teuchos::ParameterList& params, const EvaluationContext& context, int gp,
+        const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int gp,
         int eleGID) = 0;
   };
 }  // namespace Mat
