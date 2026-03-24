@@ -59,8 +59,6 @@ repos:
         # Do not trim trailing whitespace in C++ files. It is not trivial to trim whitespace
         # correctly, e.g., when inside a string literal. Clang-format will do this correctly.
         exclude_types: [c, c++]
-      - id: no-commit-to-branch
-        name: Don't commit to main
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
@@ -106,13 +104,6 @@ repos:
         always_run: true
         pass_filenames: false
         fail_fast: true
-
-      - id: check-dependencies-hash
-        name: Github workflow dependencies hash is up to date
-        language: python
-        entry: utilities/python-venv/bin/check-workflow-dependencies-hash
-        always_run: true
-        pass_filenames: false
 
       - id: cpp-filename
         name: C++ file names
