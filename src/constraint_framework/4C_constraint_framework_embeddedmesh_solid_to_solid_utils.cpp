@@ -317,7 +317,7 @@ void Constraints::EmbeddedMesh::change_gauss_rule_of_cut_elements(
   for (Core::Elements::Element* cut_ele : cut_elements_vector)
   {
     // Construct the gauss rule of the cut element
-    Discret::Elements::Solid* solid_ele = dynamic_cast<Discret::Elements::Solid*>(cut_ele);
+    Discret::Elements::Solid<3>* solid_ele = dynamic_cast<Discret::Elements::Solid<3>*>(cut_ele);
     if (!solid_ele)
       FOUR_C_THROW(
           "This implementation of the embedded mesh method only works for new solid elements.");

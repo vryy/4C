@@ -476,7 +476,7 @@ void CONTACT::IntegratorNitsche::so_ele_cauchy(Mortar::Element& moEle, double* b
     linearizations.d_cauchyndir_ddir = &d_cauchyndir_ddir;
     linearizations.d_cauchyndir_dxi = &d_cauchyndir_dxi;
 
-    auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(moEle.parent_element());
+    auto* solid_ele = dynamic_cast<Discret::Elements::Solid<3>*>(moEle.parent_element());
     FOUR_C_ASSERT_ALWAYS(solid_ele, "Unknown solid element type");
     const double cauchy_n_dir = solid_ele->get_normal_cauchy_stress_at_xi(
         moEle.mo_data().parent_disp(), Core::LinAlg::reinterpret_as_tensor<3>(pxsi),

@@ -228,9 +228,9 @@ bool Discret::Elements::SolidPoroPressureVelocityBased::read_element(const std::
 
   const bool with_scatra =
       poro_ele_property_.impltype != Inpar::ScaTra::ImplType::impltype_undefined;
-  SolidIntegrationRules rules =
+  SolidIntegrationRules<3> rules =
       Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
-          [](auto celltype_t) -> SolidIntegrationRules
+          [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_or_solid_scatra_calculation_interface(
       celltype_, solid_ele_property_, with_scatra, rules);
@@ -294,7 +294,7 @@ void Discret::Elements::SolidPoroPressureVelocityBased::pack(
 
   add_to_pack(data, celltype_);
 
-  Discret::Elements::add_to_pack(data, solid_ele_property_);
+  Core::Communication::add_to_pack(data, solid_ele_property_);
   Core::Communication::add_to_pack(data, poro_ele_property_.impltype);
 
   data.add_to_pack(material_post_setup_);
@@ -330,7 +330,7 @@ void Discret::Elements::SolidPoroPressureVelocityBased::unpack(
 
   extract_from_pack(buffer, celltype_);
 
-  Discret::Elements::extract_from_pack(buffer, solid_ele_property_);
+  Core::Communication::extract_from_pack(buffer, solid_ele_property_);
   Core::Communication::extract_from_pack(buffer, poro_ele_property_.impltype);
 
   extract_from_pack(buffer, material_post_setup_);
@@ -353,9 +353,9 @@ void Discret::Elements::SolidPoroPressureVelocityBased::unpack(
   // reset solid and poro interfaces
   const bool with_scatra =
       poro_ele_property_.impltype != Inpar::ScaTra::ImplType::impltype_undefined;
-  SolidIntegrationRules rules =
+  SolidIntegrationRules<3> rules =
       Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
-          [](auto celltype_t) -> SolidIntegrationRules
+          [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_or_solid_scatra_calculation_interface(
       celltype_, solid_ele_property_, with_scatra, rules);

@@ -31,18 +31,11 @@ namespace Discret::Elements
    */
   struct SolidScatraElementProperties
   {
-    SolidElementProperties solid{};
+    SolidElementProperties<3> solid{};
 
     //! scalar transport implementation type (physics)
     Inpar::ScaTra::ImplType impltype{Inpar::ScaTra::ImplType::impltype_undefined};
   };
-
-
-  void add_to_pack(Core::Communication::PackBuffer& data,
-      const Discret::Elements::SolidScatraElementProperties& properties);
-
-  void extract_from_pack(Core::Communication::UnpackBuffer& buffer,
-      Discret::Elements::SolidScatraElementProperties& properties);
 
   namespace Internal
   {
@@ -94,7 +87,7 @@ namespace Discret::Elements
   using SolidScatraCalcVariant = CreateVariantType<Internal::SolidScatraEvaluators>;
 
   SolidScatraCalcVariant create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
-      const Discret::Elements::SolidElementProperties& element_properties);
+      const Discret::Elements::SolidElementProperties<3>& element_properties);
 }  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE

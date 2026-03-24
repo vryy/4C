@@ -228,9 +228,9 @@ bool Discret::Elements::SolidPoroPressureVelocityBasedP1::read_element(const std
 
   read_anisotropic_permeability_directions_from_element_line_definition(container);
   read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(container);
-  SolidIntegrationRules rules =
+  SolidIntegrationRules<3> rules =
       Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
-          [](auto celltype_t) -> SolidIntegrationRules
+          [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_, rules);
   solidporo_press_vel_based_calc_variant_ =
@@ -293,7 +293,7 @@ void Discret::Elements::SolidPoroPressureVelocityBasedP1::pack(
 
   add_to_pack(data, celltype_);
 
-  Discret::Elements::add_to_pack(data, solid_ele_property_);
+  Core::Communication::add_to_pack(data, solid_ele_property_);
   Core::Communication::add_to_pack(data, poro_ele_property_.impltype);
 
   data.add_to_pack(material_post_setup_);
@@ -331,7 +331,7 @@ void Discret::Elements::SolidPoroPressureVelocityBasedP1::unpack(
 
   extract_from_pack(buffer, celltype_);
 
-  Discret::Elements::extract_from_pack(buffer, solid_ele_property_);
+  Core::Communication::extract_from_pack(buffer, solid_ele_property_);
   Core::Communication::extract_from_pack(buffer, poro_ele_property_.impltype);
 
   extract_from_pack(buffer, material_post_setup_);
@@ -352,9 +352,9 @@ void Discret::Elements::SolidPoroPressureVelocityBasedP1::unpack(
     extract_from_pack(buffer, anisotropic_permeability_property_.nodal_coeffs_[i]);
 
   // reset solid and poro interfaces
-  SolidIntegrationRules rules =
+  SolidIntegrationRules<3> rules =
       Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
-          [](auto celltype_t) -> SolidIntegrationRules
+          [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_, rules);
   solidporo_press_vel_based_calc_variant_ =

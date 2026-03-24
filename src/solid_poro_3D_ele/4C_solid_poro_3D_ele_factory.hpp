@@ -84,8 +84,8 @@ namespace Discret::Elements
 
   inline SolidAndSolidScatraCalcVariant create_solid_or_solid_scatra_calculation_interface(
       Core::FE::CellType celltype,
-      const Discret::Elements::SolidElementProperties& element_properties, bool with_scatra,
-      SolidIntegrationRules integration_rules)
+      const Discret::Elements::SolidElementProperties<3>& element_properties, bool with_scatra,
+      SolidIntegrationRules<3> integration_rules)
   {
     if (with_scatra)
     {

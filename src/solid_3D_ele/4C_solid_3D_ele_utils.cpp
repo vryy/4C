@@ -60,10 +60,12 @@ int Solid::Utils::ReadElement::read_element_material(
 }
 
 
-Discret::Elements::SolidElementProperties Solid::Utils::ReadElement::read_solid_element_properties(
+template <unsigned dim>
+Discret::Elements::SolidElementProperties<dim>
+Solid::Utils::ReadElement::read_solid_element_properties(
     const Core::IO::InputParameterContainer& container)
 {
-  Discret::Elements::SolidElementProperties solid_properties{};
+  Discret::Elements::SolidElementProperties<dim> solid_properties{};
 
   // element technology
   solid_properties.element_technology = container.get_or<Discret::Elements::ElementTechnology>(
@@ -85,5 +87,9 @@ void Solid::Utils::nodal_block_information_solid(
   numdf = 3;
   dimns = 6;
 }
+
+template Discret::Elements::SolidElementProperties<3>
+Solid::Utils::ReadElement::read_solid_element_properties(
+    const Core::IO::InputParameterContainer& container);
 
 FOUR_C_NAMESPACE_CLOSE

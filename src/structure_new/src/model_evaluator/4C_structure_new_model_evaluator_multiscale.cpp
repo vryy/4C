@@ -65,7 +65,7 @@ void Solid::ModelEvaluator::Multiscale::read_restart(Core::IO::DiscretizationRea
       const int eleID = ele.global_id();
       const bool eleowner = my_pid == ele.owner();
 
-      const auto* solidele = dynamic_cast<const Discret::Elements::Solid*>(actele);
+      const auto* solidele = dynamic_cast<const Discret::Elements::Solid<3>*>(actele);
       const int numGaussPoints = solidele->get_gauss_rule().num_points();
 
       for (int gp = 0; gp < numGaussPoints; ++gp) micro->read_restart(gp, eleID, eleowner);

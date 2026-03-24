@@ -147,7 +147,7 @@ namespace Discret::Elements
     /// return ScaTra::ImplType
     [[nodiscard]] Inpar::ScaTra::ImplType impl_type() const { return properties_.impltype; }
 
-    [[nodiscard]] const SolidElementProperties& get_solid_element_properties() const
+    [[nodiscard]] const SolidElementProperties<3>& get_solid_element_properties() const
     {
       return properties_.solid;
     }

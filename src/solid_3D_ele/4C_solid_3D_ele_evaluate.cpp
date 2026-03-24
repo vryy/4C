@@ -60,7 +60,8 @@ namespace
   }
 }  // namespace
 
-int Discret::Elements::Solid::evaluate(Teuchos::ParameterList& params,
+template <unsigned dim>
+int Discret::Elements::Solid<dim>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -284,7 +285,8 @@ int Discret::Elements::Solid::evaluate(Teuchos::ParameterList& params,
   return 0;
 }
 
-void Discret::Elements::Solid::set_integration_rule(
+template <unsigned dim>
+void Discret::Elements::Solid<dim>::set_integration_rule(
     const Core::FE::GaussIntegration& integration_rule)
 {
   FOUR_C_ASSERT(solid_calc_variant_.has_value(),
@@ -293,7 +295,8 @@ void Discret::Elements::Solid::set_integration_rule(
       *solid_calc_variant_);
 }
 
-int Discret::Elements::Solid::evaluate_neumann(Teuchos::ParameterList& params,
+template <unsigned dim>
+int Discret::Elements::Solid<dim>::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -314,14 +317,32 @@ int Discret::Elements::Solid::evaluate_neumann(Teuchos::ParameterList& params,
   return 0;
 }
 
-double Discret::Elements::Solid::get_normal_cauchy_stress_at_xi(const std::vector<double>& disp,
-    const Core::LinAlg::Tensor<double, 3>& xi, const Core::LinAlg::Tensor<double, 3>& n,
-    const Core::LinAlg::Tensor<double, 3>& dir, CauchyNDirLinearizations<3>& linearizations)
+template <unsigned dim>
+double Discret::Elements::Solid<dim>::get_normal_cauchy_stress_at_xi(
+    const std::vector<double>& disp, const Core::LinAlg::Tensor<double, 3>& xi,
+    const Core::LinAlg::Tensor<double, 3>& n, const Core::LinAlg::Tensor<double, 3>& dir,
+    CauchyNDirLinearizations<3>& linearizations)
 {
   FOUR_C_ASSERT(solid_calc_variant_.has_value(),
       "The solid calculation interface is not initialized for element id {}.", id());
   return Discret::Elements::get_normal_cauchy_stress_at_xi(
       *solid_calc_variant_, *this, *solid_material(), disp, xi, n, dir, linearizations);
 }
+
+template int Discret::Elements::Solid<3>::evaluate(Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3);
+template void Discret::Elements::Solid<3>::set_integration_rule(
+    const Core::FE::GaussIntegration& integration_rule);
+template int Discret::Elements::Solid<3>::evaluate_neumann(Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, const Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1);
+template double Discret::Elements::Solid<3>::get_normal_cauchy_stress_at_xi(
+    const std::vector<double>& disp, const Core::LinAlg::Tensor<double, 3>& xi,
+    const Core::LinAlg::Tensor<double, 3>& n, const Core::LinAlg::Tensor<double, 3>& dir,
+    CauchyNDirLinearizations<3>& linearizations);
 
 FOUR_C_NAMESPACE_CLOSE

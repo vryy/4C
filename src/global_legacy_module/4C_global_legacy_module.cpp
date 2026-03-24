@@ -200,7 +200,7 @@ namespace
       << Discret::Elements::Nurbs::Ale2NurbsType::instance().name() << " "
       << Discret::Elements::Bele3Type::instance().name() << " "
       << Discret::Elements::Vele3Type::instance().name() << " "
-      << Discret::Elements::SolidType::instance().name() << " "
+      << Discret::Elements::SolidType<3>::instance().name() << " "
       << Discret::Elements::SolidPoroPressureBasedType::instance().name() << " "
       << Discret::Elements::SolidPoroPressureVelocityBasedType::instance().name() << " "
       << Discret::Elements::SolidPoroPressureVelocityBasedP1Type::instance().name() << " "

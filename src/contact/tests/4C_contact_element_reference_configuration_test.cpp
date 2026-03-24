@@ -35,8 +35,8 @@ namespace
       {
         testdis_->add_node(coordshex8[i], nodeidshex8[i], nullptr);
       }
-      std::shared_ptr<Discret::Elements::Solid> testhex8ele =
-          std::make_shared<Discret::Elements::Solid>(0, 0);
+      std::shared_ptr<Discret::Elements::Solid<3>> testhex8ele =
+          std::make_shared<Discret::Elements::Solid<3>>(0, 0);
       testhex8ele->set_node_ids(8, nodeidshex8.data());
       testdis_->add_element(testhex8ele);
 
@@ -54,8 +54,8 @@ namespace
       {
         testdis_->add_node(coordstet4[j], nodeidstet4[j], nullptr);
       }
-      std::shared_ptr<Discret::Elements::Solid> testtet4ele =
-          std::make_shared<Discret::Elements::Solid>(2, 0);
+      std::shared_ptr<Discret::Elements::Solid<3>> testtet4ele =
+          std::make_shared<Discret::Elements::Solid<3>>(2, 0);
       testtet4ele->set_node_ids(4, nodeidstet4.data());
       testdis_->add_element(testtet4ele);
 

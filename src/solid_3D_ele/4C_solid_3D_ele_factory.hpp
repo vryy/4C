@@ -82,9 +82,10 @@ namespace Discret::Elements
 
   using SolidCalcVariant = CreateVariantType<Internal::SolidEvaluators>;
 
+  template <unsigned dim>
   SolidCalcVariant create_solid_calculation_interface(Core::FE::CellType celltype,
-      const Discret::Elements::SolidElementProperties& element_properties,
-      SolidIntegrationRules integration_rules);
+      const Discret::Elements::SolidElementProperties<dim>& element_properties,
+      const SolidIntegrationRules<dim>& integration_rules);
 
 }  // namespace Discret::Elements
 

@@ -236,7 +236,7 @@ double CONTACT::Utils::solid_cauchy_at_xi(CONTACT::Element* cele,
 
   if (!cele->mo_data().parent_pf_pres().size())
   {  // The element can be either an old so3 element or a new solid element
-    if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(cele->parent_element());
+    if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid<3>*>(cele->parent_element());
         solid_ele != nullptr)
     {
       Discret::Elements::CauchyNDirLinearizations<3> cauchy_linearizations{};

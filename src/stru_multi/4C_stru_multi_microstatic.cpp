@@ -257,7 +257,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     const auto* ele = e.user_element();
     ele->location_vector(*discret_, la);
 
-    const auto* solid_ele = dynamic_cast<const Discret::Elements::Solid*>(ele);
+    const auto* solid_ele = dynamic_cast<const Discret::Elements::Solid<3>*>(ele);
     FOUR_C_ASSERT_ALWAYS(solid_ele,
         "Multiscale simulations are currently only possible with the new solid elements");
 
