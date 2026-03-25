@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_contact_beam_to_beam_defines.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 #include <Sacado.hpp>
