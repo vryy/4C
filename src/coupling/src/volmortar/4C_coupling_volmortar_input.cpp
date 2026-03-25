@@ -5,15 +5,14 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_volmortar.hpp"
+#include "4C_coupling_volmortar_input.hpp"
 
 #include "4C_coupling_volmortar.hpp"
 #include "4C_io_input_spec_builders.hpp"
+
 FOUR_C_NAMESPACE_OPEN
 
-
-
-Core::IO::InputSpec Inpar::VolMortar::valid_parameters()
+Core::IO::InputSpec Coupling::VolMortar::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

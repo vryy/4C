@@ -16,6 +16,7 @@
 #include "4C_cardiovascular0d_input.hpp"
 #include "4C_constraint_framework_input.hpp"
 #include "4C_contact_input.hpp"
+#include "4C_coupling_volmortar_input.hpp"
 #include "4C_cut_input.hpp"
 #include "4C_ehl_input.hpp"
 #include "4C_elch_input.hpp"
@@ -41,7 +42,6 @@
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_inpar_volmortar.hpp"
 #include "4C_inpar_wear.hpp"
 #include "4C_inpar_xfem.hpp"
 #include "4C_io_gridgenerator.hpp"
@@ -304,7 +304,7 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
   push_specs(specs, Inpar::IORuntimeVTPStructure::valid_parameters());
   push_specs(specs, Mortar::valid_parameters());
   push_specs(specs, CONTACT::valid_parameters());
-  push_specs(specs, Inpar::VolMortar::valid_parameters());
+  push_specs(specs, Coupling::VolMortar::valid_parameters());
   push_specs(specs, Inpar::Wear::valid_parameters());
   push_specs(specs, Inpar::IORuntimeOutput::FLUID::valid_parameters());
   push_specs(specs, Inpar::IORuntimeOutput::Solid::valid_parameters());
