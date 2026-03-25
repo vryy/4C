@@ -17,7 +17,6 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
-#include "4C_geometry_pair_line_to_volume.hpp"
 #include "4C_linalg_fevector.hpp"
 
 FOUR_C_NAMESPACE_OPEN

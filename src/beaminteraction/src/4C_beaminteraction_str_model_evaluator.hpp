@@ -14,11 +14,9 @@
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_structure_new_enum_lists.hpp"
-#include "4C_structure_new_model_evaluator_generic.hpp"  // base class
+#include "4C_structure_new_model_evaluator_generic.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
-// forward declaration ...
 
 namespace Core::FE
 {

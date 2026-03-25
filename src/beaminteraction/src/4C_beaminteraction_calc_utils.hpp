@@ -41,12 +41,10 @@ namespace Core::Nodes
   class Node;
 }
 
-
 namespace Core::Geo::MeshFree
 {
   class BoundingBox;
 }
-
 
 namespace BeamInteraction
 {

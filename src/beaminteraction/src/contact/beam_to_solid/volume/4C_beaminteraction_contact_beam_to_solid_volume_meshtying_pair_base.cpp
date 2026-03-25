@@ -19,9 +19,6 @@
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
 #include "4C_geometry_pair_factory.hpp"
 #include "4C_geometry_pair_line_to_volume.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
-#include "4C_linalg_serialdensevector.hpp"
-#include "4C_linalg_utils_densematrix_inverse.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

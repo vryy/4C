@@ -8,7 +8,6 @@
 #include "4C_beaminteraction_contact_beam_to_solid_surface_meshtying_params.hpp"
 
 #include "4C_beaminteraction_contact_beam_to_solid_surface_visualization_output_params.hpp"
-#include "4C_geometry_pair_input.hpp"
 #include "4C_global_data.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

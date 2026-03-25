@@ -7,17 +7,14 @@
 
 #include "4C_beaminteraction_contact_beam_to_solid_volume_meshtying_pair_2d-3d_plane.hpp"
 
-#include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_volume_meshtying_params.hpp"
 #include "4C_beaminteraction_contact_params.hpp"
 #include "4C_beaminteraction_geometry_pair_access_traits.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
-#include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "4C_geometry_pair_line_to_volume_gauss_point_projection_cross_section.hpp"
 #include "4C_geometry_pair_utility_classes.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-#include "4C_linalg_utils_densematrix_inverse.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

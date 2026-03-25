@@ -18,7 +18,6 @@
 #include "4C_beaminteraction_contact_submodel_evaluator_assembly_manager_direct.hpp"
 #include "4C_beaminteraction_contact_submodel_evaluator_assembly_manager_indirect.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
-#include "4C_fem_discretization.hpp"
 #include "4C_geometry_pair_line_to_surface_evaluation_data.hpp"
 #include "4C_io_visualization_parameters.hpp"
 #include "4C_linalg_multi_vector.hpp"

@@ -10,16 +10,12 @@
 
 #include "4C_config.hpp"
 
-#include "4C_beaminteraction_input.hpp"
 #include "4C_beaminteraction_str_model_evaluator.hpp"
 
-namespace NOX
+namespace NOX::Solver
 {
-  namespace Solver
-  {
-    class Generic;
-  }
-}  // namespace NOX
+  class Generic;
+}  // namespace NOX::Solver
 
 FOUR_C_NAMESPACE_OPEN
 

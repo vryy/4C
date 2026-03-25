@@ -24,9 +24,10 @@ namespace Core::Elements
 
 namespace Core::GeometricSearch
 {
-  class geometric_search_params;
+  class GeometricSearchParams;
   class GeometricSearchVisualization;
 }  // namespace Core::GeometricSearch
+
 namespace BeamInteraction
 {
   class BeamContactParams;

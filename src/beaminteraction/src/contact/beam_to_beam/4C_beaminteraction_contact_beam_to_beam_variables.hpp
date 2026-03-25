@@ -15,7 +15,6 @@
 #include "4C_beaminteraction_contact_beam_to_beam_tangentsmoothing.hpp"
 #include "4C_beaminteraction_contact_beam_to_beam_utils.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
-#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_utils_fad.hpp"

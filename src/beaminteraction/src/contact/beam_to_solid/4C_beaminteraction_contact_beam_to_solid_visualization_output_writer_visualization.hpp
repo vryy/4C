@@ -8,7 +8,6 @@
 #ifndef FOUR_C_BEAMINTERACTION_CONTACT_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_VISUALIZATION_HPP
 #define FOUR_C_BEAMINTERACTION_CONTACT_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_VISUALIZATION_HPP
 
-
 #include "4C_config.hpp"
 
 #include "4C_io_visualization_manager.hpp"
@@ -16,15 +15,13 @@
 
 #include <memory>
 
-
 FOUR_C_NAMESPACE_OPEN
-
-// Forward declarations.
 
 namespace Solid::TimeInt
 {
   class ParamsRuntimeOutput;
 }
+
 namespace Core::FE
 {
   class Discretization;

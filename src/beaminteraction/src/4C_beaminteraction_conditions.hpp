@@ -11,9 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_beaminteraction_input.hpp"
 #include "4C_fem_condition.hpp"
-#include "4C_utils_exceptions.hpp"
 
 #include <map>
 #include <memory>
@@ -22,7 +20,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// Forward declarations.
 namespace Core::FE
 {
   class Discretization;
@@ -42,22 +39,19 @@ namespace BeamInteraction
     class BeamContactAssemblyManager;
   }
 }  // namespace BeamInteraction
+
 namespace GeometryPair
 {
   class GeometryEvaluationDataBase;
 }
-namespace Solid
-{
-  namespace ModelEvaluator
-  {
-    class BeamInteractionDataState;
-  }
-}  // namespace Solid
 
+namespace Solid::ModelEvaluator
+{
+  class BeamInteractionDataState;
+}
 
 namespace BeamInteraction
 {
-
   /**
    * \brief Types of beam interaction conditions
    */

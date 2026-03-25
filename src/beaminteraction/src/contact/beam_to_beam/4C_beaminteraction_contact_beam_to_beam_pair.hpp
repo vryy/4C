@@ -14,20 +14,14 @@
 #include "4C_beaminteraction_contact_beam_to_beam_defines.hpp"
 #include "4C_beaminteraction_contact_beam_to_beam_input.hpp"
 #include "4C_beaminteraction_contact_beam_to_beam_tangentsmoothing.hpp"
-#include "4C_beaminteraction_contact_beam_to_beam_utils.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_contact_input.hpp"
-#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_linalg_serialdensevector.hpp"
-#include "4C_linalg_sparsematrix.hpp"
-#include "4C_utils_fad.hpp"
 
 #include <Sacado.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declaration ...
 namespace Core::LinAlg
 {
   class SerialDenseVector;

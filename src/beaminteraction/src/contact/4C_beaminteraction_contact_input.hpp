@@ -10,21 +10,16 @@
 
 #include "4C_config.hpp"
 
-#include "4C_fem_general_utils_integration.hpp"
 #include "4C_io_input_spec.hpp"
-#include "4C_utils_exceptions.hpp"
 
 #include <vector>
-
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace BeamInteraction
 {
-
   /// beam interaction parameters
   std::vector<Core::IO::InputSpec> valid_parameters_contact();
-
 }  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

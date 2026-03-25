@@ -8,7 +8,6 @@
 #ifndef FOUR_C_BEAMINTERACTION_CONTACT_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_BASE_HPP
 #define FOUR_C_BEAMINTERACTION_CONTACT_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_BASE_HPP
 
-
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_contact_beam_to_solid_pair_base.hpp"
@@ -18,19 +17,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-// Forward declarations.
-namespace Core::LinAlg
-{
-  class SerialDenseVector;
-  class SerialDenseMatrix;
-}  // namespace Core::LinAlg
 namespace GeometryPair
 {
   template <typename ScalarType, typename Line, typename Volume>
   class GeometryPairLineToVolume;
 }  // namespace GeometryPair
-
 
 namespace BeamInteraction
 {

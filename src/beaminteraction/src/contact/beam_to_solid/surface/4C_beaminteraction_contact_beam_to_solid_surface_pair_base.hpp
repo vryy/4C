@@ -14,22 +14,14 @@
 #include "4C_beaminteraction_contact_beam_to_beam_defines.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_pair_base.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_linalg_sparsematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-
-// Forward declarations.
 namespace Core::Elements
 {
   class Element;
 }
 
-namespace Core::LinAlg
-{
-  class SerialDenseVector;
-  class SerialDenseMatrix;
-}  // namespace Core::LinAlg
 namespace GeometryPair
 {
   template <typename ScalarType, typename Line, typename Surface>

@@ -26,12 +26,7 @@
 #include "4C_geometry_pair_utility_classes.hpp"
 #include "4C_linalg_fevector.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
-#include "4C_linalg_serialdensevector.hpp"
-#include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_utils_fad.hpp"
-
-#include <math.h>
 
 #include <cmath>
 #include <memory>

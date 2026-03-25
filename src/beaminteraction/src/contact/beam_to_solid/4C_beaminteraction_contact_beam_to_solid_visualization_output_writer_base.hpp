@@ -8,7 +8,6 @@
 #ifndef FOUR_C_BEAMINTERACTION_CONTACT_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_BASE_HPP
 #define FOUR_C_BEAMINTERACTION_CONTACT_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_BASE_HPP
 
-
 #include "4C_config.hpp"
 
 #include "4C_io_visualization_parameters.hpp"
@@ -19,17 +18,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-// Forward declarations.
 namespace BeamInteraction
 {
   class BeamToSolidOutputWriterVisualization;
 }
+
 namespace Solid::TimeInt
 {
   class ParamsRuntimeOutput;
 }
-
 
 namespace BeamInteraction
 {
@@ -99,7 +96,6 @@ namespace BeamInteraction
     //! visualization parameters
     const Core::IO::VisualizationParameters visualization_params_;
   };
-
 }  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

@@ -13,7 +13,6 @@
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
-#include "4C_fem_general_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
