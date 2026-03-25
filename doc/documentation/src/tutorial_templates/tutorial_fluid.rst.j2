@@ -98,7 +98,7 @@ Filtering result data
 -  Before you can admire your results, you have to generate a filter
    which converts the generic binary |FOURC| output to the desired format.
    Starting from the ``build-release`` directory, execute
-   ``make post_drt_ensight``.
+   ``make post_ensight``.
 
 -  The filter should now be available in the ``build-release`` folder.
    Filter your results with the following call inside the
@@ -106,10 +106,10 @@ Filtering result data
 
    .. container:: center
 
-      ``./post_drt_ensight - -file=<outputdirectory>/outputprefix``
+      ``./post_ensight - -file=<outputdirectory>/outputprefix``
 
 -  Further options of the filter program are made visible by the command
-   ``./post_drt_ensight –help``
+   ``./post_ensight –help``
 
 Visualize your results in Paraview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
