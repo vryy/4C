@@ -55,7 +55,7 @@ FSI::MonolithicBase::MonolithicBase(MPI_Comm comm, const Teuchos::ParameterList&
       isadastructure_(false),
       isadafluid_(false),
       isadasolver_(false),
-      verbosity_(Teuchos::getIntegralValue<FSI::Verbosity>(
+      verbosity_(Teuchos::getIntegralValue<FSI::OutputVerbosity>(
           Global::Problem::instance()->fsi_dynamic_params(), "VERBOSITY"))
 {
   // access the discretizations
@@ -147,7 +147,7 @@ void FSI::MonolithicBase::create_fluid_and_ale_time_integrator(
 void FSI::MonolithicBase::prepare_time_step()
 {
   increment_time_and_step();
-  if (verbosity_ >= FSI::verbosity_low) print_header();
+  if (verbosity_ >= FSI::OutputVerbosity::verbosity_low) print_header();
   prepare_time_step_preconditioner();
   prepare_time_step_fields();
 
@@ -551,7 +551,7 @@ void FSI::Monolithic::time_step(const std::shared_ptr<NOX::Nln::Interface::Requi
 
   switch (verbosity_)
   {
-    case FSI::verbosity_full:
+    case FSI::OutputVerbosity::verbosity_full:
     {
       printParams.set(
           "Output Information", ::NOX::Utils::Error | ::NOX::Utils::Warning |
@@ -565,7 +565,7 @@ void FSI::Monolithic::time_step(const std::shared_ptr<NOX::Nln::Interface::Requi
                                     ::NOX::Utils::Debug | 0);
       break;
     }
-    case FSI::verbosity_medium:
+    case FSI::OutputVerbosity::verbosity_medium:
     {
       printParams.set(
           "Output Information", ::NOX::Utils::Error | ::NOX::Utils::Warning |
@@ -579,8 +579,8 @@ void FSI::Monolithic::time_step(const std::shared_ptr<NOX::Nln::Interface::Requi
                                     ::NOX::Utils::Debug | 0);
       break;
     }
-    case FSI::verbosity_low:
-    case FSI::verbosity_subproblem:
+    case FSI::OutputVerbosity::verbosity_low:
+    case FSI::OutputVerbosity::verbosity_subproblem:
     {
       printParams.set(
           "Output Information", ::NOX::Utils::Error | ::NOX::Utils::Warning |
@@ -634,7 +634,7 @@ void FSI::Monolithic::time_step(const std::shared_ptr<NOX::Nln::Interface::Requi
       create_linear_system(nlParams, noxSoln, utils_);
 
   // Create the Group
-  Teuchos::RCP<NOX::FSI::Group> grp = Teuchos::make_rcp<NOX::FSI::Group>(
+  Teuchos::RCP<FSI::Nonlinear::Group> grp = Teuchos::make_rcp<FSI::Nonlinear::Group>(
       *this, printParams, interface, noxSoln, Teuchos::rcpFromRef(*linSys));
 
   // Convergence Tests
@@ -840,19 +840,20 @@ void FSI::Monolithic::evaluate(std::shared_ptr<const Core::LinAlg::Vector<double
   // only. But the Jacobian is stored internally and will be returned
   // later on without looking at x again!
 
-  if (verbosity_ >= FSI::verbosity_medium) utils()->out() << "\nEvaluate elements\n";
+  if (verbosity_ >= FSI::OutputVerbosity::verbosity_medium)
+    utils()->out() << "\nEvaluate elements\n";
 
   {
     Teuchos::Time ts("structure", true);
     structure_field()->evaluate(sx);
-    if (verbosity_ >= FSI::verbosity_medium)
+    if (verbosity_ >= FSI::OutputVerbosity::verbosity_medium)
       utils()->out() << "structure: " << ts.totalElapsedTime(true) << " sec\n";
   }
 
   {
     Teuchos::Time ta("ale", true);
     ale_field()->evaluate(ax);
-    if (verbosity_ >= FSI::verbosity_medium)
+    if (verbosity_ >= FSI::OutputVerbosity::verbosity_medium)
       utils()->out() << "ale      : " << ta.totalElapsedTime(true) << " sec\n";
   }
 
@@ -863,11 +864,11 @@ void FSI::Monolithic::evaluate(std::shared_ptr<const Core::LinAlg::Vector<double
   {
     Teuchos::Time tf("fluid", true);
     fluid_field()->evaluate(fx);
-    if (verbosity_ >= FSI::verbosity_medium)
+    if (verbosity_ >= FSI::OutputVerbosity::verbosity_medium)
       utils()->out() << "fluid    : " << tf.totalElapsedTime(true) << " sec\n";
   }
 
-  if (verbosity_ >= FSI::verbosity_medium) utils()->out() << "\n";
+  if (verbosity_ >= FSI::OutputVerbosity::verbosity_medium) utils()->out() << "\n";
 }
 
 /*----------------------------------------------------------------------------*/
@@ -955,7 +956,7 @@ void FSI::Monolithic::set_default_parameters(
   lsParams.set<double>("base tolerance", fsimono.get<double>("BASETOL"));  // relative tolerance
   lsParams.set<double>(
       "adaptive distance", fsimono.get<double>("ADAPTIVEDIST"));  // adaptive distance
-  lsParams.set<FSI::Verbosity>("verbosity", verbosity_);  // verbosity level of FSI algorithm
+  lsParams.set<FSI::OutputVerbosity>("verbosity", verbosity_);  // verbosity level of FSI algorithm
 }
 
 /*----------------------------------------------------------------------------*/
@@ -963,7 +964,7 @@ void FSI::Monolithic::set_default_parameters(
 Teuchos::RCP<::NOX::Direction::Generic> FSI::Monolithic::buildDirection(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
 {
-  Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::make_rcp<NOX::FSI::Newton>(gd, params);
+  auto newton = Teuchos::make_rcp<FSI::Nonlinear::Newton>(gd, params);
   for (unsigned i = 0; i < statustests_.size(); ++i)
   {
     statustests_[i]->set_newton(newton);
@@ -1198,7 +1199,7 @@ std::shared_ptr<NOX::Nln::LinearSystemBase> FSI::BlockMonolithic::create_linear_
   }
 
   std::shared_ptr<NOX::Nln::LinearSystemBase> linSys =
-      std::make_shared<NOX::FSI::LinearSystem>(printParams, lsParams,
+      std::make_shared<FSI::Nonlinear::LinearSystem>(printParams, lsParams,
           Core::Utils::shared_ptr_from_ref(*iJac), system_matrix(), noxSoln, solver);
 
   return linSys;

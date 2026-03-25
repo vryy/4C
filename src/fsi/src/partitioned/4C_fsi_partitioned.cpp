@@ -186,7 +186,7 @@ void FSI::Partitioned::set_default_parameters(
 
       dirParams.set("Method", "User Defined");
       Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
-          Teuchos::make_rcp<NOX::FSI::FixPointFactory>();
+          Teuchos::make_rcp<FSI::Nonlinear::FixPointFactory>();
       dirParams.set("User Defined Direction Factory", fixpointfactory);
 
       // Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
@@ -205,11 +205,11 @@ void FSI::Partitioned::set_default_parameters(
 
       dirParams.set("Method", "User Defined");
       Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
-          Teuchos::make_rcp<NOX::FSI::FixPointFactory>();
+          Teuchos::make_rcp<FSI::Nonlinear::FixPointFactory>();
       dirParams.set("User Defined Direction Factory", fixpointfactory);
 
       Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory> linesearchfactory =
-          Teuchos::make_rcp<NOX::FSI::AitkenFactory>();
+          Teuchos::make_rcp<FSI::Nonlinear::AitkenFactory>();
       lineSearchParams.set("Method", "User Defined");
       lineSearchParams.set("User Defined Line Search Factory", linesearchfactory);
 
@@ -227,11 +227,11 @@ void FSI::Partitioned::set_default_parameters(
 
       dirParams.set("Method", "User Defined");
       Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
-          Teuchos::make_rcp<NOX::FSI::FixPointFactory>();
+          Teuchos::make_rcp<FSI::Nonlinear::FixPointFactory>();
       dirParams.set("User Defined Direction Factory", fixpointfactory);
 
       Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory> linesearchfactory =
-          Teuchos::make_rcp<NOX::FSI::SDFactory>();
+          Teuchos::make_rcp<FSI::Nonlinear::SDFactory>();
       lineSearchParams.set("Method", "User Defined");
       lineSearchParams.set("User Defined Line Search Factory", linesearchfactory);
       break;
@@ -297,7 +297,7 @@ void FSI::Partitioned::set_default_parameters(
       dirParams.set("Method", "User Defined");
 
       Teuchos::RCP<::NOX::Direction::UserDefinedFactory> factory =
-          Teuchos::make_rcp<NOX::FSI::MinimalPolynomialFactory>();
+          Teuchos::make_rcp<FSI::Nonlinear::MinimalPolynomialFactory>();
       dirParams.set("User Defined Direction Factory", factory);
 
       Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
@@ -536,7 +536,7 @@ Teuchos::RCP<NOX::Nln::LinearSystemBase> FSI::Partitioned::create_linear_system(
 
     // This is the default method.
 
-    auto FSIMF = std::make_shared<NOX::FSI::FSIMatrixFree>(printParams, interface, noxSoln);
+    auto FSIMF = std::make_shared<FSI::Nonlinear::FSIMatrixFree>(printParams, interface, noxSoln);
     iJac = FSIMF;
     J = FSIMF;
   }
@@ -584,7 +584,7 @@ Teuchos::RCP<NOX::Nln::LinearSystemBase> FSI::Partitioned::create_linear_system(
     }
     else
     {
-      linSys = Teuchos::make_rcp<NOX::FSI::LinearSystemGCR>(
+      linSys = Teuchos::make_rcp<FSI::Nonlinear::LinearSystemGCR>(
           printParams, lsParams, interface, iJac, J, noxSoln);
     }
   }
@@ -846,7 +846,8 @@ void FSI::Partitioned::output()
                                        "User Defined Line Search Factory");
       if (linesearchfactory == Teuchos::null)
         FOUR_C_THROW("Could not get UserDefinedFactory from noxparameterlist_");
-      auto aitkenfactory = Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(linesearchfactory);
+      auto aitkenfactory =
+          Teuchos::rcp_dynamic_cast<FSI::Nonlinear::AitkenFactory>(linesearchfactory);
 
       // write aitken relaxation parameter
       mb_fluid_field()->fluid_field()->disc_writer()->write_double(

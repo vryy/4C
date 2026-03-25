@@ -120,7 +120,7 @@ namespace FSI
   };
 
   /// Verbosity of FSI algorithm
-  enum Verbosity
+  enum class OutputVerbosity
   {
     verbosity_subproblem,  ///< output for FSI as a subproblem
     verbosity_low,         ///< write only nonlinear solver status

@@ -19,73 +19,69 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace NOX
+namespace FSI::Nonlinear
 {
-  namespace FSI
+  /*! \brief Calculates the fix point direction.
+
+    Calculates the direction
+    \f[
+    d = f(x)
+    \f]
+
+    This is the old (established, trusted, whatever you want) way to
+    solve the nonlinear FSI interface equations. The residuum \f$ f(x)
+    \f$ is
+    \f[
+    f(x) = g = d_{\Gamma,i+1} - d_{\Gamma,i}
+    \f]
+    in the FSI context.
+
+    To be used with relaxation (line search).
+
+  <B>Parameters</B>
+
+  None.
+
+  */
+  class FixPoint : public ::NOX::Direction::Generic
   {
-    /*! \brief Calculates the fix point direction.
+   public:
+    //! Constructor
+    FixPoint(const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params);
 
-      Calculates the direction
-      \f[
-      d = f(x)
-      \f]
 
-      This is the old (established, trusted, whatever you want) way to
-      solve the nonlinear FSI interface equations. The residuum \f$ f(x)
-      \f$ is
-      \f[
-      f(x) = g = d_{\Gamma,i+1} - d_{\Gamma,i}
-      \f]
-      in the FSI context.
+    // derived
+    bool reset(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) override;
 
-      To be used with relaxation (line search).
+    // derived
+    bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
+        const ::NOX::Solver::Generic& solver) override;
 
-    <B>Parameters</B>
+    // derived
+    bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
+        const ::NOX::Solver::LineSearchBased& solver) override;
 
-    None.
+   private:
+    //! Print error message and throw error
+    void throw_error(const std::string& functionName, const std::string& errorMsg);
 
-    */
-    class FixPoint : public ::NOX::Direction::Generic
+   private:
+    //! Printing Utils
+    Teuchos::RCP<::NOX::Utils> utils_;
+  };
+
+  /// simple factory that creates fix point direction object
+  class FixPointFactory : public ::NOX::Direction::UserDefinedFactory
+  {
+   public:
+    Teuchos::RCP<::NOX::Direction::Generic> buildDirection(
+        const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
     {
-     public:
-      //! Constructor
-      FixPoint(const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params);
+      return Teuchos::make_rcp<FixPoint>(gd->getUtils(), params);
+    }
+  };
 
-
-      // derived
-      bool reset(
-          const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) override;
-
-      // derived
-      bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
-          const ::NOX::Solver::Generic& solver) override;
-
-      // derived
-      bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
-          const ::NOX::Solver::LineSearchBased& solver) override;
-
-     private:
-      //! Print error message and throw error
-      void throw_error(const std::string& functionName, const std::string& errorMsg);
-
-     private:
-      //! Printing Utils
-      Teuchos::RCP<::NOX::Utils> utils_;
-    };
-
-    /// simple factory that creates fix point direction object
-    class FixPointFactory : public ::NOX::Direction::UserDefinedFactory
-    {
-     public:
-      Teuchos::RCP<::NOX::Direction::Generic> buildDirection(
-          const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
-      {
-        return Teuchos::make_rcp<FixPoint>(gd->getUtils(), params);
-      }
-    };
-
-  }  // namespace FSI
-}  // namespace NOX
+}  // namespace FSI::Nonlinear
 
 FOUR_C_NAMESPACE_CLOSE
 

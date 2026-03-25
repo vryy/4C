@@ -98,15 +98,15 @@ std::vector<Core::IO::InputSpec> FSI::valid_parameters()
           parameter<int>("RESULTSEVERY",
               {.description = "Increment for writing solution", .default_value = 1}),
 
-          deprecated_selection<FSI::Verbosity>("VERBOSITY",
+          deprecated_selection<FSI::OutputVerbosity>("VERBOSITY",
               {
-                  {"full", FSI::verbosity_full},
-                  {"medium", FSI::verbosity_medium},
-                  {"low", FSI::verbosity_low},
-                  {"subproblem", FSI::verbosity_subproblem},
+                  {"full", FSI::OutputVerbosity::verbosity_full},
+                  {"medium", FSI::OutputVerbosity::verbosity_medium},
+                  {"low", FSI::OutputVerbosity::verbosity_low},
+                  {"subproblem", FSI::OutputVerbosity::verbosity_subproblem},
               },
               {.description = "Verbosity of the FSI problem.",
-                  .default_value = FSI::verbosity_full})},
+                  .default_value = FSI::OutputVerbosity::verbosity_full})},
       {.required = false}));
   /*----------------------------------------------------------------------*/
   /* parameters for time step size adaptivity in fsi dynamics */

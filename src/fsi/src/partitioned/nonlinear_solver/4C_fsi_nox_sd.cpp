@@ -28,7 +28,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-NOX::FSI::SDRelaxation::SDRelaxation(
+FSI::Nonlinear::SDRelaxation::SDRelaxation(
     const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params)
     : utils_(utils)
 {
@@ -36,7 +36,7 @@ NOX::FSI::SDRelaxation::SDRelaxation(
 
 
 
-bool NOX::FSI::SDRelaxation::reset(
+bool FSI::Nonlinear::SDRelaxation::reset(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();
@@ -45,7 +45,7 @@ bool NOX::FSI::SDRelaxation::reset(
 }
 
 
-bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& step,
+bool FSI::Nonlinear::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& step,
     const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s)
 {
   if (utils_->isPrintType(::NOX::Utils::InnerIteration))
@@ -105,7 +105,7 @@ bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& ste
 }
 
 
-::NOX::Abstract::Vector& NOX::FSI::SDRelaxation::compute_directional_derivative(
+::NOX::Abstract::Vector& FSI::Nonlinear::SDRelaxation::compute_directional_derivative(
     const ::NOX::Abstract::Vector& dir, NOX::Nln::Interface::RequiredBase& interface)
 {
   // Allocate space for vecPtr and grpPtr if necessary

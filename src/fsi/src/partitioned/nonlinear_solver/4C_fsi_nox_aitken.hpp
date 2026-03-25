@@ -19,83 +19,80 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace NOX
+namespace FSI::Nonlinear
 {
-  namespace FSI
+  //! Aikten line search - the simple relaxation.
+  /*!
+    This line search can be called via ::NOX::LineSearch::Manager.
+
+    The working horse in FSI.
+
+   */
+  class AitkenRelaxation : public ::NOX::LineSearch::Generic
   {
-    //! Aikten line search - the simple relaxation.
-    /*!
-      This line search can be called via ::NOX::LineSearch::Manager.
+   public:
+    //! Constructor
+    AitkenRelaxation(const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params);
 
-      The working horse in FSI.
 
-     */
-    class AitkenRelaxation : public ::NOX::LineSearch::Generic
+    // derived
+    bool reset(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+
+    // derived
+    bool compute(::NOX::Abstract::Group& newgrp, double& step, const ::NOX::Abstract::Vector& dir,
+        const ::NOX::Solver::Generic& s) override;
+
+    //! return relaxation parameter
+    double get_omega();
+
+   private:
+    //! difference of last two solutions
+    Teuchos::RCP<::NOX::Abstract::Vector> del_;
+
+    //! difference of difference of last two pair of solutions
+    Teuchos::RCP<::NOX::Abstract::Vector> del2_;
+
+    //! aitken factor
+    double nu_;
+
+    //! max step size
+    double maxstep_;
+
+    //! min step size
+    double minstep_;
+
+    //! flag for restart
+    bool restart_;
+
+    //! first omega after restart
+    double restart_omega_;
+
+    //! Printing utilities
+    Teuchos::RCP<::NOX::Utils> utils_;
+  };
+
+
+  /// simple factory that creates aitken relaxation class
+  class AitkenFactory : public ::NOX::LineSearch::UserDefinedFactory
+  {
+   public:
+    Teuchos::RCP<::NOX::LineSearch::Generic> buildLineSearch(
+        const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
     {
-     public:
-      //! Constructor
-      AitkenRelaxation(const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params);
+      if (aitken_ == Teuchos::null)
+        aitken_ = Teuchos::make_rcp<AitkenRelaxation>(gd->getUtils(), params);
+      else
+        aitken_->reset(gd, params);
+      return aitken_;
+    }
 
+    Teuchos::RCP<AitkenRelaxation> get_aitken() { return aitken_; };
 
-      // derived
-      bool reset(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+   private:
+    mutable Teuchos::RCP<AitkenRelaxation> aitken_;
+  };
 
-      // derived
-      bool compute(::NOX::Abstract::Group& newgrp, double& step, const ::NOX::Abstract::Vector& dir,
-          const ::NOX::Solver::Generic& s) override;
-
-      //! return relaxation parameter
-      double get_omega();
-
-     private:
-      //! difference of last two solutions
-      Teuchos::RCP<::NOX::Abstract::Vector> del_;
-
-      //! difference of difference of last two pair of solutions
-      Teuchos::RCP<::NOX::Abstract::Vector> del2_;
-
-      //! aitken factor
-      double nu_;
-
-      //! max step size
-      double maxstep_;
-
-      //! min step size
-      double minstep_;
-
-      //! flag for restart
-      bool restart_;
-
-      //! first omega after restart
-      double restart_omega_;
-
-      //! Printing utilities
-      Teuchos::RCP<::NOX::Utils> utils_;
-    };
-
-
-    /// simple factory that creates aitken relaxation class
-    class AitkenFactory : public ::NOX::LineSearch::UserDefinedFactory
-    {
-     public:
-      Teuchos::RCP<::NOX::LineSearch::Generic> buildLineSearch(
-          const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
-      {
-        if (aitken_ == Teuchos::null)
-          aitken_ = Teuchos::make_rcp<AitkenRelaxation>(gd->getUtils(), params);
-        else
-          aitken_->reset(gd, params);
-        return aitken_;
-      }
-
-      Teuchos::RCP<AitkenRelaxation> get_aitken() { return aitken_; };
-
-     private:
-      mutable Teuchos::RCP<AitkenRelaxation> aitken_;
-    };
-
-  }  // namespace FSI
-}  // namespace NOX
+}  // namespace FSI::Nonlinear
 
 FOUR_C_NAMESPACE_CLOSE
 

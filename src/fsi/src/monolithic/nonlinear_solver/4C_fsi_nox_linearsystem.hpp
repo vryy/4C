@@ -35,7 +35,7 @@ namespace NOX::Nln::Interface
   class JacobianBase;
 }
 
-namespace NOX::FSI
+namespace FSI::Nonlinear
 {
   class LinearSystem : public NOX::Nln::LinearSystemBase
   {
@@ -100,7 +100,7 @@ namespace NOX::FSI
 
     Teuchos::Time timer_;
   };
-}  // namespace NOX::FSI
+}  // namespace FSI::Nonlinear
 
 FOUR_C_NAMESPACE_CLOSE
 

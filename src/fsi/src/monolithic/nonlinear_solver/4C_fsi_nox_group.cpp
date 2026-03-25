@@ -14,9 +14,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::FSI::Group::Group(FourC::FSI::MonolithicInterface& mfsi, Teuchos::ParameterList& printParams,
-    const std::shared_ptr<NOX::Nln::Interface::RequiredBase> i, const NOX::Nln::Vector& x,
-    const Teuchos::RCP<NOX::Nln::LinearSystemBase>& linSys)
+FSI::Nonlinear::Group::Group(FourC::FSI::MonolithicInterface& mfsi,
+    Teuchos::ParameterList& printParams, const std::shared_ptr<NOX::Nln::Interface::RequiredBase> i,
+    const NOX::Nln::Vector& x, const Teuchos::RCP<NOX::Nln::LinearSystemBase>& linSys)
     : NOX::Nln::GroupBase(printParams, i, x, linSys), mfsi_(mfsi)
 {
 }
@@ -24,7 +24,7 @@ NOX::FSI::Group::Group(FourC::FSI::MonolithicInterface& mfsi, Teuchos::Parameter
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::FSI::Group::capture_system_state()
+void FSI::Nonlinear::Group::capture_system_state()
 {
   // we know we already have the first linear system calculated
 
@@ -38,7 +38,7 @@ void NOX::FSI::Group::capture_system_state()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeF()
+::NOX::Abstract::Group::ReturnType FSI::Nonlinear::Group::computeF()
 {
   ::NOX::Abstract::Group::ReturnType ret = NOX::Nln::GroupBase::computeF();
   if (ret == ::NOX::Abstract::Group::Ok)
@@ -55,7 +55,7 @@ void NOX::FSI::Group::capture_system_state()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeJacobian()
+::NOX::Abstract::Group::ReturnType FSI::Nonlinear::Group::computeJacobian()
 {
   ::NOX::Abstract::Group::ReturnType ret = NOX::Nln::GroupBase::computeJacobian();
   if (ret == ::NOX::Abstract::Group::Ok)
@@ -72,7 +72,7 @@ void NOX::FSI::Group::capture_system_state()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeNewton(Teuchos::ParameterList& p)
+::NOX::Abstract::Group::ReturnType FSI::Nonlinear::Group::computeNewton(Teuchos::ParameterList& p)
 {
   mfsi_.scale_system(RHSVector.get_linalg_vector());
 
@@ -82,7 +82,7 @@ void NOX::FSI::Group::capture_system_state()
 
   // check return value of computeNewton call
   if (status == ::NOX::Abstract::Group::NotConverged || status == ::NOX::Abstract::Group::Failed)
-    FOUR_C_THROW("NOX::FSI::Group::computeNewton: linear solver not converged...");
+    FOUR_C_THROW("Linear solver not converged...");
 
   return status;
 }

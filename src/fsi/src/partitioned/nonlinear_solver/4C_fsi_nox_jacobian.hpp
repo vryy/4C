@@ -23,14 +23,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace NOX
+namespace FSI
 {
-  namespace Nln
-  {
-    class Vector;
-  }  // namespace Nln
-
-  namespace FSI
+  namespace Nonlinear
   {
     /// Matrix Free Newton Krylov based on an approximation of the residuum derivatives
     class FSIMatrixFree : public Core::LinAlg::SparseOperator,
@@ -120,8 +115,8 @@ namespace NOX
       ::NOX::Utils utils;
     };
 
-  }  // namespace FSI
-}  // namespace NOX
+  }  // namespace Nonlinear
+}  // namespace FSI
 
 FOUR_C_NAMESPACE_CLOSE
 

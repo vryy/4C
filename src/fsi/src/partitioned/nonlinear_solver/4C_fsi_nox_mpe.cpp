@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-NOX::FSI::MinimalPolynomial::MinimalPolynomial(
+FSI::Nonlinear::MinimalPolynomial::MinimalPolynomial(
     const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params)
     : utils_(utils)
 {
@@ -37,7 +37,7 @@ NOX::FSI::MinimalPolynomial::MinimalPolynomial(
 
 
 
-bool NOX::FSI::MinimalPolynomial::reset(
+bool FSI::Nonlinear::MinimalPolynomial::reset(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();
@@ -45,7 +45,7 @@ bool NOX::FSI::MinimalPolynomial::reset(
 }
 
 
-bool NOX::FSI::MinimalPolynomial::compute(
+bool FSI::Nonlinear::MinimalPolynomial::compute(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver)
 {
   // We work in a local copy of the group so that we do not spoil the
@@ -210,14 +210,14 @@ bool NOX::FSI::MinimalPolynomial::compute(
 }
 
 
-bool NOX::FSI::MinimalPolynomial::compute(::NOX::Abstract::Vector& dir,
+bool FSI::Nonlinear::MinimalPolynomial::compute(::NOX::Abstract::Vector& dir,
     ::NOX::Abstract::Group& group, const ::NOX::Solver::LineSearchBased& solver)
 {
   return ::NOX::Direction::Generic::compute(dir, group, solver);
 }
 
 
-void NOX::FSI::MinimalPolynomial::throw_error(
+void FSI::Nonlinear::MinimalPolynomial::throw_error(
     const std::string& functionName, const std::string& errorMsg)
 {
   if (utils_->isPrintType(::NOX::Utils::Error))

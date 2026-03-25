@@ -53,14 +53,14 @@ namespace Core::LinAlg
   class MapExtractor;
 }  // namespace Core::LinAlg
 
+namespace FSI::Nonlinear
+{
+  class AdaptiveNewtonNormF;
+  class Group;
+}  // namespace FSI::Nonlinear
+
 namespace NOX
 {
-  namespace FSI
-  {
-    class AdaptiveNewtonNormF;
-    class Group;
-  }  // namespace FSI
-
   class Vector;
 }  // namespace NOX
 
@@ -255,7 +255,7 @@ namespace FSI
     //@{
 
     /// verbosity level of FSI algorithm
-    const FSI::Verbosity verbosity_;
+    const FSI::OutputVerbosity verbosity_;
 
     //@}
 
@@ -513,7 +513,7 @@ namespace FSI
     void set_default_parameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /// add a status test to be used for adaptive linear solver convergence
-    void add_status_test(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test)
+    void add_status_test(Teuchos::RCP<FSI::Nonlinear::AdaptiveNewtonNormF> test)
     {
       statustests_.push_back(test);
     }
@@ -951,7 +951,7 @@ namespace FSI
 
     /// keep the status tests available so we can connect them with our
     /// adaptive Newton direction
-    std::vector<Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF>> statustests_;
+    std::vector<Teuchos::RCP<FSI::Nonlinear::AdaptiveNewtonNormF>> statustests_;
 
     /// status of NOX convergence check
     ::NOX::StatusTest::StatusType noxstatus_;
