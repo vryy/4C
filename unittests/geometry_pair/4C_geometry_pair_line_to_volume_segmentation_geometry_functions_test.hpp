@@ -30,8 +30,8 @@ namespace
     const int dummy_node_ids[2] = {0, 1};
     line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(0, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids);
-    volume_elements.push_back(std::make_shared<Discret::Elements::Solid>(1, 0));
-    volume_elements.push_back(std::make_shared<Discret::Elements::Solid>(2, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::Solid<3>>(1, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::Solid<3>>(2, 0));
 
     // Positional and tangent DOFs of the line(s).
     q_line_elements.push_back(Core::LinAlg::Matrix<12, 1, double>());
@@ -116,8 +116,8 @@ namespace
     const int dummy_node_ids[2] = {0, 1};
     line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(0, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids);
-    volume_elements.push_back(std::make_shared<Discret::Elements::Solid>(1, 0));
-    volume_elements.push_back(std::make_shared<Discret::Elements::Solid>(2, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::Solid<3>>(1, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::Solid<3>>(2, 0));
 
     // Positional and tangent DOFs of the line(s).
     q_line_elements.push_back(Core::LinAlg::Matrix<12, 1, double>());
@@ -203,7 +203,7 @@ namespace
     const int dummy_node_ids[2] = {0, 1};
     line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(0, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids);
-    volume_elements.push_back(std::make_shared<Discret::Elements::Solid>(1, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::Solid<3>>(1, 0));
 
     // Positional and tangent DOFs of the line(s).
     q_line_elements.push_back(Core::LinAlg::Matrix<12, 1, double>());
@@ -321,7 +321,7 @@ namespace
     const int dummy_node_ids[2] = {0, 1};
     line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(0, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids);
-    volume_elements.push_back(std::make_shared<Discret::Elements::Solid>(1, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::Solid<3>>(1, 0));
 
     // Positional and tangent DOFs of the line(s).
     q_line_elements.push_back(Core::LinAlg::Matrix<12, 1, double>());
@@ -391,7 +391,7 @@ namespace
     const int dummy_node_ids[2] = {0, 1};
     line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(1, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids);
-    volume_elements.push_back(std::make_shared<Discret::Elements::Solid>(0, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::Solid<3>>(0, 0));
 
     // Positional and tangent DOFs of the line(s).
     Core::LinAlg::Matrix<12, 1, double> q_line(Core::LinAlg::Initialization::zero);
@@ -580,7 +580,7 @@ namespace
     const std::vector<int> dummy_node_ids{0, 1};
     line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(0, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids.data());
-    volume_elements.push_back(std::make_shared<Discret::Elements::Solid>(1, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::Solid<3>>(1, 0));
 
     // Positional and tangent DOFs of the line(s).
     q_line_elements.push_back(Core::LinAlg::Matrix<12, 1, double>());

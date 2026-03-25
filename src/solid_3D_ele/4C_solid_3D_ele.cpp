@@ -49,29 +49,34 @@ namespace
   template <Core::FE::CellType celltype>
   auto get_integration_rule_input_spec()
   {
-    return group<Discret::Elements::SolidIntegrationRules>("INTEGRATION",
+    using GaussRule = std::conditional_t<Core::FE::dim<celltype> == 3, Core::FE::GaussRule3D,
+        Core::FE::GaussRule2D>;
+    return group<Discret::Elements::SolidIntegrationRules<Core::FE::dim<celltype>>>("INTEGRATION",
         {
             parameter<Core::FE::GaussRule3D>("RESIDUUM",
                 {.description = "Gauss integration rule used to integrate the residuum and "
                                 "its linearization",
                     .default_value = Discret::Elements::get_gauss_rule_stiffness_matrix<celltype>(),
-                    .validator = Validators::in_set(std::set<Core::FE::GaussRule3D>{
+                    .validator = Validators::in_set(std::set<GaussRule>{
                         begin(Discret::Elements::applicable_integration_rules<celltype>),
                         end(Discret::Elements::applicable_integration_rules<celltype>)}),
-                    .store = in_struct(&Discret::Elements::SolidIntegrationRules::rule_residuum)}),
+                    .store = in_struct(&Discret::Elements::SolidIntegrationRules<
+                        Core::FE::dim<celltype>>::rule_residuum)}),
             parameter<Core::FE::GaussRule3D>("MASS",
                 {.description = "Gauss integration rule used to integrate the mass matrix",
                     .default_value = Discret::Elements::get_gauss_rule_mass_matrix<celltype>(),
 
-                    .validator = Validators::in_set(std::set<Core::FE::GaussRule3D>{
+                    .validator = Validators::in_set(std::set<GaussRule>{
                         begin(Discret::Elements::applicable_integration_rules<celltype>),
                         end(Discret::Elements::applicable_integration_rules<celltype>)}),
-                    .store = in_struct(&Discret::Elements::SolidIntegrationRules::rule_mass)}),
+                    .store = in_struct(&Discret::Elements::SolidIntegrationRules<
+                        Core::FE::dim<celltype>>::rule_mass)}),
         },
         {.description = "Defines the integration rules for the solid element.", .required = false});
   }
 
   template <Core::FE::CellType celltype>
+    requires(Core::FE::dim<celltype> == 3)
   auto get_default_input_spec()
   {
     return all_of({parameter<int>("MAT"), get_kinem_type_input_spec(),
@@ -88,11 +93,17 @@ namespace
   }
 }  // namespace
 
-Discret::Elements::SolidType Discret::Elements::SolidType::instance_;
+template <unsigned dim>
+Discret::Elements::SolidType<dim> Discret::Elements::SolidType<dim>::instance_;
 
-Discret::Elements::SolidType& Discret::Elements::SolidType::instance() { return instance_; }
+template <unsigned dim>
+Discret::Elements::SolidType<dim>& Discret::Elements::SolidType<dim>::instance()
+{
+  return instance_;
+}
 
-void Discret::Elements::SolidType::setup_element_definition(
+template <unsigned dim>
+void Discret::Elements::SolidType<dim>::setup_element_definition(
     std::map<std::string, std::map<Core::FE::CellType, Core::IO::InputSpec>>& definitions)
 {
   auto& defsgeneral = definitions["SOLID"];
@@ -142,80 +153,88 @@ void Discret::Elements::SolidType::setup_element_definition(
   });
 }
 
-std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidType::create(
+template <unsigned dim>
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidType<dim>::create(
     const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLID") return create(id, owner);
   return nullptr;
 }
 
-std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidType::create(
+template <unsigned dim>
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidType<dim>::create(
     const int id, const int owner)
 {
-  return std::make_shared<Discret::Elements::Solid>(id, owner);
+  return std::make_shared<Discret::Elements::Solid<dim>>(id, owner);
 }
 
-Core::Communication::ParObject* Discret::Elements::SolidType::create(
+template <unsigned dim>
+Core::Communication::ParObject* Discret::Elements::SolidType<dim>::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::Elements::Solid(-1, -1);
+  auto* object = new Discret::Elements::Solid<dim>(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-void Discret::Elements::SolidType::nodal_block_information(
+template <unsigned dim>
+void Discret::Elements::SolidType<dim>::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns)
 {
   FourC::Solid::Utils::nodal_block_information_solid(dwele, numdf, dimns);
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::Elements::SolidType::compute_null_space(
+template <unsigned dim>
+Core::LinAlg::SerialDenseMatrix Discret::Elements::SolidType<dim>::compute_null_space(
     Core::Nodes::Node& node, std::span<const double> x0, const int numdof)
 {
-  switch (numdof)
-  {
-    case 3:
-      return compute_solid_null_space<3>(node.x(), x0);
-    case 2:
-      return compute_solid_null_space<2>(node.x(), x0);
-    default:
-      FOUR_C_THROW(
-          "The null space computation of a solid element of dimension {} is not yet implemented",
-          numdof);
-  }
+  return compute_solid_null_space<dim>(node.x(), x0);
 }
 
-Discret::Elements::Solid::Solid(int id, int owner) : Core::Elements::Element(id, owner) {}
+template <unsigned dim>
+Discret::Elements::Solid<dim>::Solid(int id, int owner) : Core::Elements::Element(id, owner)
+{
+}
 
 
-Core::Elements::Element* Discret::Elements::Solid::clone() const { return new Solid(*this); }
+template <unsigned dim>
+Core::Elements::Element* Discret::Elements::Solid<dim>::clone() const
+{
+  return new Solid(*this);
+}
 
-int Discret::Elements::Solid::num_line() const
+template <unsigned dim>
+int Discret::Elements::Solid<dim>::num_line() const
 {
   return Core::FE::get_number_of_element_lines(celltype_);
 }
 
-int Discret::Elements::Solid::num_surface() const
+template <unsigned dim>
+int Discret::Elements::Solid<dim>::num_surface() const
 {
   return Core::FE::get_number_of_element_surfaces(celltype_);
 }
 
-int Discret::Elements::Solid::num_volume() const
+template <unsigned dim>
+int Discret::Elements::Solid<dim>::num_volume() const
 {
   return Core::FE::get_number_of_element_volumes(celltype_);
 }
 
-std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Solid::lines()
+template <unsigned dim>
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Solid<dim>::lines()
 {
-  return Core::Communication::get_element_lines<SolidLine<3>, Solid>(*this);
+  return Core::Communication::get_element_lines<SolidLine<3>, Solid<dim>>(*this);
 }
 
-std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Solid::surfaces()
+template <unsigned dim>
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Solid<dim>::surfaces()
 {
-  return Core::Communication::get_element_surfaces<SolidSurface, Solid>(*this);
+  return Core::Communication::get_element_surfaces<SolidSurface, Solid<dim>>(*this);
 }
 
-const Core::FE::GaussIntegration& Discret::Elements::Solid::get_gauss_rule() const
+template <unsigned dim>
+const Core::FE::GaussIntegration& Discret::Elements::Solid<dim>::get_gauss_rule() const
 {
   FOUR_C_ASSERT(solid_calc_variant_.has_value(),
       "The solid calculation interface is not initialized for element id {}.", id());
@@ -223,7 +242,8 @@ const Core::FE::GaussIntegration& Discret::Elements::Solid::get_gauss_rule() con
       { return interface->get_gauss_rule_stiffness_integration(); }, *solid_calc_variant_);
 }
 
-void Discret::Elements::Solid::pack(Core::Communication::PackBuffer& data) const
+template <unsigned dim>
+void Discret::Elements::Solid<dim>::pack(Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, unique_par_object_id());
 
@@ -233,7 +253,7 @@ void Discret::Elements::Solid::pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, celltype_);
   add_to_pack(data, integration_rules_);
 
-  Discret::Elements::add_to_pack(data, solid_ele_property_);
+  Core::Communication::add_to_pack(data, solid_ele_property_);
 
   data.add_to_pack(material_post_setup_);
 
@@ -244,7 +264,8 @@ void Discret::Elements::Solid::pack(Core::Communication::PackBuffer& data) const
   Discret::Elements::pack(*solid_calc_variant_, data);
 }
 
-void Discret::Elements::Solid::unpack(Core::Communication::UnpackBuffer& buffer)
+template <unsigned dim>
+void Discret::Elements::Solid<dim>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -252,9 +273,13 @@ void Discret::Elements::Solid::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Elements::Element::unpack(buffer);
 
   extract_from_pack(buffer, celltype_);
+  FOUR_C_ASSERT_ALWAYS(Core::FE::get_dimension(celltype_) == dim,
+      "You try to create a solid element of dimension {} with a cell type {} of dimension {} that "
+      "does not match.",
+      dim, celltype_, Core::FE::get_dimension(celltype_));
   extract_from_pack(buffer, integration_rules_);
 
-  Discret::Elements::extract_from_pack(buffer, solid_ele_property_);
+  Core::Communication::extract_from_pack(buffer, solid_ele_property_);
 
   extract_from_pack(buffer, material_post_setup_);
 
@@ -265,7 +290,8 @@ void Discret::Elements::Solid::unpack(Core::Communication::UnpackBuffer& buffer)
   Discret::Elements::unpack(*solid_calc_variant_, buffer);
 }
 
-void Discret::Elements::Solid::set_params_interface_ptr(const Teuchos::ParameterList& p)
+template <unsigned dim>
+void Discret::Elements::Solid<dim>::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {
@@ -276,39 +302,50 @@ void Discret::Elements::Solid::set_params_interface_ptr(const Teuchos::Parameter
     interface_ptr_ = nullptr;
 }
 
-bool Discret::Elements::Solid::read_element(const std::string& eletype, const std::string& celltype,
-    const Core::IO::InputParameterContainer& container,
+template <unsigned dim>
+bool Discret::Elements::Solid<dim>::read_element(const std::string& eletype,
+    const std::string& celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // set cell type
   celltype_ = Core::FE::string_to_cell_type(celltype);
+  FOUR_C_ASSERT_ALWAYS(Core::FE::get_dimension(celltype_) == dim,
+      "You try to create a solid element of dimension {} with a cell type {} of dimension {} that "
+      "does not match.",
+      dim, celltype_, Core::FE::get_dimension(celltype_));
 
   // read number of material model
   set_material(0, Mat::factory(FourC::Solid::Utils::ReadElement::read_element_material(container)));
 
-  solid_ele_property_ = FourC::Solid::Utils::ReadElement::read_solid_element_properties(container);
 
-  integration_rules_ = container.get<SolidIntegrationRules>("INTEGRATION");
+
+  solid_ele_property_ =
+      FourC::Solid::Utils::ReadElement::read_solid_element_properties<dim>(container);
+  integration_rules_ = container.get<SolidIntegrationRules<dim>>("INTEGRATION");
 
   solid_calc_variant_ =
       create_solid_calculation_interface(celltype_, solid_ele_property_, integration_rules_);
+
   std::visit([&](auto& interface) { interface->setup(*solid_material(), container); },
       *solid_calc_variant_);
   return true;
 }
 
-std::shared_ptr<Mat::So3Material> Discret::Elements::Solid::solid_material(int nummat) const
+template <unsigned dim>
+std::shared_ptr<Mat::So3Material> Discret::Elements::Solid<dim>::solid_material(int nummat) const
 {
   return std::dynamic_pointer_cast<Mat::So3Material>(Core::Elements::Element::material(nummat));
 }
 
-void Discret::Elements::Solid::vis_names(std::map<std::string, int>& names)
+template <unsigned dim>
+void Discret::Elements::Solid<dim>::vis_names(std::map<std::string, int>& names)
 {
   Core::Elements::Element::vis_names(names);
   solid_material()->vis_names(names);
 }
 
-bool Discret::Elements::Solid::vis_data(const std::string& name, std::vector<double>& data)
+template <unsigned dim>
+bool Discret::Elements::Solid<dim>::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;
@@ -316,7 +353,8 @@ bool Discret::Elements::Solid::vis_data(const std::string& name, std::vector<dou
   return solid_material()->vis_data(name, data, id());
 }
 
-void Discret::Elements::Solid::for_each_gauss_point(Core::FE::Discretization& discretization,
+template <unsigned dim>
+void Discret::Elements::Solid<dim>::for_each_gauss_point(Core::FE::Discretization& discretization,
     std::vector<int>& lm,
     const std::function<void(Mat::So3Material&, double, int)>& integrator) const
 {
@@ -329,5 +367,9 @@ void Discret::Elements::Solid::for_each_gauss_point(Core::FE::Discretization& di
       },
       *solid_calc_variant_);
 }
+
+
+template class Discret::Elements::SolidType<3>;
+template class Discret::Elements::Solid<3>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -178,7 +178,7 @@ void CONTACT::IntegratorNitschePoro::so_ele_cauchy(Mortar::Element& moEle, doubl
   if (!moEle.mo_data().parent_pf_pres().size())
   {
     // The element can be either a solid or solid-poro element
-    if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(moEle.parent_element());
+    if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid<3>*>(moEle.parent_element());
         solid_ele != nullptr)
     {
       Discret::Elements::CauchyNDirLinearizations<3> cauchy_linearizations{};

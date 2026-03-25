@@ -95,25 +95,9 @@ namespace
   };
 }  // namespace
 
-void Discret::Elements::add_to_pack(Core::Communication::PackBuffer& data,
-    const Discret::Elements::SolidScatraElementProperties& properties)
-{
-  add_to_pack(data, properties.impltype);
-
-  Discret::Elements::add_to_pack(data, properties.solid);
-}
-
-void Discret::Elements::extract_from_pack(Core::Communication::UnpackBuffer& buffer,
-    Discret::Elements::SolidScatraElementProperties& properties)
-{
-  extract_from_pack(buffer, properties.impltype);
-
-  Discret::Elements::extract_from_pack(buffer, properties.solid);
-}
-
 Discret::Elements::SolidScatraCalcVariant
 Discret::Elements::create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
-    const Discret::Elements::SolidElementProperties& element_properties)
+    const Discret::Elements::SolidElementProperties<3>& element_properties)
 {
   // We have 4 different element properties and each combination results in a different element
   // formulation.

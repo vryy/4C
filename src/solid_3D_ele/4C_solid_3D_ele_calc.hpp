@@ -64,7 +64,7 @@ namespace Discret::Elements
   class SolidEleCalc
   {
    public:
-    SolidEleCalc(SolidIntegrationRules integration_rules);
+    SolidEleCalc(const SolidIntegrationRules<Core::FE::dim<celltype>>& integration_rules);
 
     void pack(Core::Communication::PackBuffer& data) const;
 

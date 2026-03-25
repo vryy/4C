@@ -282,7 +282,7 @@ void Mat::MicroMaterialGP::extract_and_store_history_data()
     auto* actele = ele.user_element();
     // get the solid evaluator which holds potential internal variables
     const Discret::Elements::SolidCalcVariant& solid_evaluator =
-        dynamic_cast<Discret::Elements::Solid*>(actele)->get_solid_element_evaluator();
+        dynamic_cast<Discret::Elements::Solid<3>*>(actele)->get_solid_element_evaluator();
 
     // pack evaluator and material with its potential internal variables
     Core::Communication::PackBuffer data;
@@ -304,7 +304,7 @@ void Mat::MicroMaterialGP::fill_history_data_into_elements()
       auto* actele = ele.user_element();
       // get the solid evaluator
       Discret::Elements::SolidCalcVariant& solid_evaluator =
-          dynamic_cast<Discret::Elements::Solid*>(actele)->get_solid_element_evaluator();
+          dynamic_cast<Discret::Elements::Solid<3>*>(actele)->get_solid_element_evaluator();
 
       // unpack all potential internal variables
       Core::Communication::UnpackBuffer buffer(history_data_[actele->id()]);

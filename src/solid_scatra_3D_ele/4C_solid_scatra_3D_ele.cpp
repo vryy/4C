@@ -178,7 +178,7 @@ bool Discret::Elements::SolidScatra::read_element(const std::string& eletype,
   // read scalar transport implementation type
   properties_.impltype = read_scatra_impl_type(container);
 
-  properties_.solid = Solid::Utils::ReadElement::read_solid_element_properties(container);
+  properties_.solid = Solid::Utils::ReadElement::read_solid_element_properties<3>(container);
 
   solid_scatra_calc_variant_ =
       create_solid_scatra_calculation_interface(celltype_, properties_.solid);
@@ -198,7 +198,7 @@ void Discret::Elements::SolidScatra::pack(Core::Communication::PackBuffer& data)
   Core::Elements::Element::pack(data);
 
   add_to_pack(data, celltype_);
-  Discret::Elements::add_to_pack(data, properties_);
+  Core::Communication::add_to_pack(data, properties_);
 
   data.add_to_pack(material_post_setup_);
 
@@ -215,7 +215,7 @@ void Discret::Elements::SolidScatra::unpack(Core::Communication::UnpackBuffer& b
 
   extract_from_pack(buffer, celltype_);
 
-  Discret::Elements::extract_from_pack(buffer, properties_);
+  Core::Communication::extract_from_pack(buffer, properties_);
 
   extract_from_pack(buffer, material_post_setup_);
 

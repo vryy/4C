@@ -34,6 +34,7 @@ namespace Discret::Elements
   // forward declaration
   class SolidEleCalcInterface;
 
+  template <unsigned dim>
   class SolidType : public Core::Elements::ElementType
   {
    public:
@@ -48,7 +49,10 @@ namespace Discret::Elements
 
     Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-    [[nodiscard]] std::string name() const override { return "SolidType"; }
+    [[nodiscard]] std::string name() const override
+    {
+      return "SolidType<" + std::to_string(dim) + ">";
+    }
 
     void nodal_block_information(Core::Elements::Element* dwele, int& numdf, int& dimns) override;
 
@@ -62,9 +66,10 @@ namespace Discret::Elements
 
   };  // class SolidType
 
+  template <unsigned dim>
   class Solid : public Core::Elements::Element
   {
-    friend class SolidType;
+    friend class SolidType<dim>;
 
    public:
     //! @name Constructors and destructors and related methods
@@ -84,7 +89,7 @@ namespace Discret::Elements
 
     [[nodiscard]] int unique_par_object_id() const override
     {
-      return SolidType::instance().unique_par_object_id();
+      return SolidType<dim>::instance().unique_par_object_id();
     };
 
     void pack(Core::Communication::PackBuffer& data) const override;
@@ -93,7 +98,7 @@ namespace Discret::Elements
 
     [[nodiscard]] Core::Elements::ElementType& element_type() const override
     {
-      return SolidType::instance();
+      return SolidType<dim>::instance();
     }
 
     [[nodiscard]] Core::FE::CellType shape() const override { return celltype_; };
@@ -126,7 +131,7 @@ namespace Discret::Elements
       return *solid_calc_variant_;
     }
 
-    [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
+    [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return dim; }
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
@@ -215,10 +220,10 @@ namespace Discret::Elements
     Core::FE::CellType celltype_ = Core::FE::CellType::dis_none;
 
     //! solid element properties
-    SolidElementProperties solid_ele_property_{};
+    Discret::Elements::SolidElementProperties<dim> solid_ele_property_{};
 
     //! integration rules for residuum, stiffness and mass matrix
-    SolidIntegrationRules integration_rules_{};
+    SolidIntegrationRules<dim> integration_rules_{};
 
     //! interface pointer for data exchange between the element and the time integrator.
     std::shared_ptr<FourC::Solid::Elements::ParamsInterface> interface_ptr_;

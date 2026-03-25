@@ -1237,7 +1237,7 @@ namespace BeamInteraction
         {
           eletypeset[1].insert(eleptr->id());
         }
-        else if (dynamic_cast<Discret::Elements::Solid const*>(eleptr) != nullptr ||
+        else if (dynamic_cast<Discret::Elements::Solid<3> const*>(eleptr) != nullptr ||
                  dynamic_cast<Discret::Elements::KirchhoffLoveShellNurbs const*>(eleptr) != nullptr)
         {
           eletypeset[2].insert(eleptr->id());
@@ -1323,7 +1323,7 @@ namespace BeamInteraction
       {
         return Core::Binstrategy::Utils::BinContentType::RigidSphere;
       }
-      else if (dynamic_cast<Discret::Elements::Solid const*>(ele) != nullptr ||
+      else if (dynamic_cast<Discret::Elements::Solid<3> const*>(ele) != nullptr ||
                dynamic_cast<Discret::Elements::KirchhoffLoveShellNurbs const*>(ele) != nullptr)
       {
         return Core::Binstrategy::Utils::BinContentType::Solid;

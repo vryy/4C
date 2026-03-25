@@ -137,14 +137,18 @@ namespace Discret::Elements
   static constexpr std::array applicable_integration_rules =
       Internal::ApplicableIntegrationRules<celltype>::value;
 
-  struct SolidIntegrationRules
+  template <unsigned dim>
+  struct SolidIntegrationRules;
+
+  template <>
+  struct SolidIntegrationRules<3>
   {
     Core::FE::GaussRule3D rule_residuum;
     Core::FE::GaussRule3D rule_mass;
   };
 
   template <Core::FE::CellType celltype>
-  SolidIntegrationRules make_default_solid_integration_rules()
+  SolidIntegrationRules<3> make_default_solid_integration_rules()
   {
     return {
         .rule_residuum = get_gauss_rule_stiffness_matrix<celltype>(),

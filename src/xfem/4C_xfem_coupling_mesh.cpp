@@ -2341,7 +2341,7 @@ void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(Core::Elements::El
       [&]() -> std::function<void(const Core::LinAlg::Matrix<num_dim, 1>&, double&,
                 Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&)>
       {
-        if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(coupl_ele);
+        if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid<3>*>(coupl_ele);
             solid_ele != nullptr)
         {
           return [&, solid_ele](const Core::LinAlg::Matrix<num_dim, 1>& dir, double& cauchy_n_dir,

@@ -71,7 +71,7 @@ namespace
           std::make_shared<Discret::Elements::Beam3r>(0, 0);
       beam_element->set_node_ids(2, dummy_node_ids);
       std::shared_ptr<Core::Elements::Element> solid_element =
-          std::make_shared<Discret::Elements::Solid>(1, 0);
+          std::make_shared<Discret::Elements::Solid<3>>(1, 0);
 
       // Set up the beam element.
       std::vector<double> xrefe(6);

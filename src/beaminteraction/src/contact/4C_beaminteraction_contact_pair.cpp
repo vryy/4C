@@ -76,7 +76,7 @@ BeamInteraction::BeamContactPair::create(
   const bool other_is_beam =
       dynamic_cast<Discret::Elements::Beam3Base const*>(ele_ptrs[1]) != nullptr;
   const bool other_is_solid =
-      dynamic_cast<Discret::Elements::Solid const*>(ele_ptrs[1]) != nullptr ||
+      dynamic_cast<Discret::Elements::Solid<3> const*>(ele_ptrs[1]) != nullptr ||
       dynamic_cast<Discret::Elements::KirchhoffLoveShellNurbs const*>(ele_ptrs[1]) != nullptr;
   const bool other_is_sphere =
       ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance();

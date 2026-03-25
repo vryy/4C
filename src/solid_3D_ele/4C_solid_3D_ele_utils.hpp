@@ -60,7 +60,8 @@ namespace Solid::Utils
   {
     int read_element_material(const Core::IO::InputParameterContainer& container);
 
-    Discret::Elements::SolidElementProperties read_solid_element_properties(
+    template <unsigned dim>
+    Discret::Elements::SolidElementProperties<dim> read_solid_element_properties(
         const Core::IO::InputParameterContainer& container);
 
   }  // namespace ReadElement

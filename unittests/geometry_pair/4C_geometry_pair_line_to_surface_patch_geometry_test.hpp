@@ -106,7 +106,7 @@ namespace
         for (unsigned int i_node = 0; i_node < n_nodes_volume; i_node++)
           node_ids[i_node] = connectivity_volumes[i_node + n_nodes_volume * i_el] - 1;
         new_element =
-            std::shared_ptr<Core::Elements::Element>(new Discret::Elements::Solid(i_el, 0));
+            std::shared_ptr<Core::Elements::Element>(new Discret::Elements::Solid<3>(i_el, 0));
         new_element->set_node_ids(n_nodes_volume, node_ids.data());
         discret.add_element(new_element);
       }

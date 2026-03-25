@@ -37,21 +37,4 @@ std::string Discret::Elements::element_technology_string(const ElementTechnology
   FOUR_C_THROW("Unknown element technology {}", ele_tech);
 }
 
-
-void Discret::Elements::add_to_pack(Core::Communication::PackBuffer& data,
-    const Discret::Elements::SolidElementProperties& properties)
-{
-  add_to_pack(data, properties.kintype);
-  add_to_pack(data, properties.element_technology);
-  add_to_pack(data, properties.prestress_technology);
-}
-
-void Discret::Elements::extract_from_pack(Core::Communication::UnpackBuffer& buffer,
-    Discret::Elements::SolidElementProperties& properties)
-{
-  extract_from_pack(buffer, properties.kintype);
-  extract_from_pack(buffer, properties.element_technology);
-  extract_from_pack(buffer, properties.prestress_technology);
-}
-
 FOUR_C_NAMESPACE_CLOSE

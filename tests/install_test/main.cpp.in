@@ -37,7 +37,7 @@ int main(int argc, char** argv)
   dis1->add_node(std::array<double, 3>{0.0, 1.0, 1.0}, 8, nullptr);
 
   // add a solid element to discretization 1
-  auto element1 = std::make_shared<FourC::Discret::Elements::Solid>(1, rank);
+  auto element1 = std::make_shared<FourC::Discret::Elements::Solid<3>>(1, rank);
   std::vector<int> nodes = {1, 2, 3, 4, 5, 6, 7, 8};
   element1->set_node_ids(nodes.size(), nodes.data());
   dis1->add_element(element1);

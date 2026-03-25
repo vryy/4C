@@ -198,9 +198,9 @@ bool Discret::Elements::SolidPoroPressureBased::read_element(const std::string& 
   bodyforce_contribution_ = get_bodyforce_contribution_from_input();
 
 
-  SolidIntegrationRules rules =
+  SolidIntegrationRules<3> rules =
       Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
-          [](auto celltype_t) -> SolidIntegrationRules
+          [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_, rules);
   solidporo_press_based_calc_variant_ =
@@ -232,7 +232,7 @@ void Discret::Elements::SolidPoroPressureBased::pack(Core::Communication::PackBu
 
   add_to_pack(data, celltype_);
 
-  Discret::Elements::add_to_pack(data, solid_ele_property_);
+  Core::Communication::add_to_pack(data, solid_ele_property_);
 
   add_to_pack(data, poro_ele_property_.impltype);
 
@@ -258,7 +258,7 @@ void Discret::Elements::SolidPoroPressureBased::unpack(Core::Communication::Unpa
 
   extract_from_pack(buffer, celltype_);
 
-  Discret::Elements::extract_from_pack(buffer, solid_ele_property_);
+  Core::Communication::extract_from_pack(buffer, solid_ele_property_);
 
   extract_from_pack(buffer, poro_ele_property_.impltype);
 
@@ -267,9 +267,9 @@ void Discret::Elements::SolidPoroPressureBased::unpack(Core::Communication::Unpa
   extract_from_pack(buffer, bodyforce_contribution_);
 
   // reset solid and poro interfaces
-  SolidIntegrationRules rules =
+  SolidIntegrationRules<3> rules =
       Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
-          [](auto celltype_t) -> SolidIntegrationRules
+          [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_, rules);
   solidporo_press_based_calc_variant_ =

@@ -195,10 +195,11 @@ namespace
   };
 }  // namespace
 
+template <unsigned dim>
 Discret::Elements::SolidCalcVariant Discret::Elements::create_solid_calculation_interface(
     Core::FE::CellType celltype,
-    const Discret::Elements::SolidElementProperties& element_properties,
-    SolidIntegrationRules integration_rules)
+    const Discret::Elements::SolidElementProperties<dim>& element_properties,
+    const SolidIntegrationRules<dim>& integration_rules)
 {
   // We have 4 different element properties and each combination results in a different element
   // formulation.
@@ -245,5 +246,10 @@ Discret::Elements::SolidCalcVariant Discret::Elements::create_solid_calculation_
   FOUR_C_ASSERT(interface.has_value(), "Could not create the solid calculation interface.");
   return *interface;
 }
+
+template Discret::Elements::SolidCalcVariant Discret::Elements::create_solid_calculation_interface(
+    Core::FE::CellType celltype,
+    const Discret::Elements::SolidElementProperties<3>& element_properties,
+    const SolidIntegrationRules<3>& integration_rules);
 
 FOUR_C_NAMESPACE_CLOSE

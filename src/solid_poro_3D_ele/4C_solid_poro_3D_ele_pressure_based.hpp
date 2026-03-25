@@ -196,7 +196,7 @@ namespace Discret::Elements
     Core::FE::CellType celltype_{Core::FE::CellType::dis_none};
 
     //! solid element properties
-    SolidElementProperties solid_ele_property_{};
+    SolidElementProperties<3> solid_ele_property_{};
 
     //! additional poro element properties
     SolidPoroElementProperties poro_ele_property_{};

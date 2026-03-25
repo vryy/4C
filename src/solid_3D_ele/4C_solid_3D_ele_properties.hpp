@@ -47,7 +47,11 @@ namespace Discret::Elements
   /*!
    *  @brief struct for managing solid element properties
    */
-  struct SolidElementProperties
+  template <unsigned dim>
+  struct SolidElementProperties;
+
+  template <>
+  struct SolidElementProperties<3>
   {
     //! kinematic type
     Inpar::Solid::KinemType kintype{Inpar::Solid::KinemType::vague};
@@ -58,12 +62,6 @@ namespace Discret::Elements
     //! specify prestress technology (none, MULF)
     PrestressTechnology prestress_technology{PrestressTechnology::none};
   };
-
-  void add_to_pack(Core::Communication::PackBuffer& data,
-      const Discret::Elements::SolidElementProperties& properties);
-
-  void extract_from_pack(Core::Communication::UnpackBuffer& buffer,
-      Discret::Elements::SolidElementProperties& properties);
 
 }  // namespace Discret::Elements
 

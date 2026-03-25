@@ -606,7 +606,7 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
       if (shell7p->get_ele_tech().find(Inpar::Solid::EleTech::eas) != shell7p->get_ele_tech().end())
         iseas_local = 1;
 
-    Discret::Elements::Solid* solid = dynamic_cast<Discret::Elements::Solid*>(actele);
+    Discret::Elements::Solid<3>* solid = dynamic_cast<Discret::Elements::Solid<3>*>(actele);
     if (solid != nullptr)
       if (solid->have_eas()) iseas_local = 1;
 

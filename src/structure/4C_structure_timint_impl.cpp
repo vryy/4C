@@ -517,7 +517,7 @@ void Solid::TimIntImpl::prepare_line_search()
   // each proc searches through its elements
   for (int i = 0; i < discret_->num_my_row_elements(); i++)
   {
-    if (const auto* solid = dynamic_cast<Discret::Elements::Solid*>(discret_->l_row_element(i));
+    if (const auto* solid = dynamic_cast<Discret::Elements::Solid<3>*>(discret_->l_row_element(i));
         solid != nullptr && solid->have_eas())
       haveCondensationLocal = 1;
   }

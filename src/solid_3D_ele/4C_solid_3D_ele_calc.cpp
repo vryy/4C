@@ -91,7 +91,7 @@ namespace
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
 Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::SolidEleCalc(
-    SolidIntegrationRules integration_rules)
+    const SolidIntegrationRules<Core::FE::dim<celltype>>& integration_rules)
     : stiffness_matrix_integration_(
           Core::FE::create_gauss_integration<celltype>(integration_rules.rule_residuum)),
       mass_matrix_integration_(
