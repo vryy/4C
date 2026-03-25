@@ -58,9 +58,6 @@ beam_potential:
   potential_law_prefactors: [0.3, 0.1]
   type: surface
   strategy: double_length_specific_large_separations
-BINNING STRATEGY:
-  BIN_SIZE_LOWER_BOUND: 3
-  DOMAINBOUNDINGBOX: "-0.5 -0.5 -0.5 5.5 5.5 5.5"
 SOLVER 1:
   SOLVER: "UMFPACK"
   NAME: "Structure_Solver"
