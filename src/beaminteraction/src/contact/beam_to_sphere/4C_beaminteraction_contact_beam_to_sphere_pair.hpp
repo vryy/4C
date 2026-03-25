@@ -14,20 +14,12 @@
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_fem_condition.hpp"
 #include "4C_fem_general_element.hpp"
-#include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
-#include "4C_linalg_serialdensevector.hpp"
-#include "4C_linalg_sparsematrix.hpp"
-#include "4C_linalg_vector.hpp"
 #include "4C_utils_fad.hpp"
-
-#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declaration ...
 namespace Core::LinAlg
 {
   class SerialDenseVector;

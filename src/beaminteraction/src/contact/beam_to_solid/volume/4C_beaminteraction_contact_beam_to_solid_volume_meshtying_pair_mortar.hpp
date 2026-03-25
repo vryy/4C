@@ -13,7 +13,6 @@
 
 #include "4C_beaminteraction_contact_beam_to_solid_volume_meshtying_pair_base.hpp"
 
-// Forward declarations.
 namespace
 {
   class BeamToSolidVolumeMeshtyingPairMortarTest;

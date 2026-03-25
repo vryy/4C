@@ -16,8 +16,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-// Forward declaration.
 namespace BeamInteraction
 {
   class BeamToSolidSurfaceVisualizationOutputParams;

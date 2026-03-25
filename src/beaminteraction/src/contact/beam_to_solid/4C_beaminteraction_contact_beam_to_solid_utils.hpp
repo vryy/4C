@@ -8,7 +8,6 @@
 #ifndef FOUR_C_BEAMINTERACTION_CONTACT_BEAM_TO_SOLID_UTILS_HPP
 #define FOUR_C_BEAMINTERACTION_CONTACT_BEAM_TO_SOLID_UTILS_HPP
 
-
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_calc_utils.hpp"
@@ -22,7 +21,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// Forward declarations.
 namespace BeamInteraction
 {
   class BeamToSolidMortarManager;

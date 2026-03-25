@@ -10,16 +10,12 @@
 
 #include "4C_config.hpp"
 
-#include "4C_fem_general_utils_integration.hpp"
 #include "4C_io_input_spec.hpp"
-#include "4C_utils_exceptions.hpp"
 
 #include <vector>
 
-
 FOUR_C_NAMESPACE_OPEN
 
-// forward declaration
 namespace Core::Conditions
 {
   class ConditionDefinition;

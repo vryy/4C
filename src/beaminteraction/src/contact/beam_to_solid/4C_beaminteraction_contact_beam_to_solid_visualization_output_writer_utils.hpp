@@ -12,12 +12,10 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_multi_vector.hpp"
-#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <memory>
 #include <unordered_map>
 #include <vector>
-
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,19 +24,21 @@ namespace Core::LinAlg
   template <unsigned int rows, unsigned int cols, class ValueType>
   class Matrix;
 }
+
 namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
+
 namespace BeamInteraction
 {
   class BeamToSolidOutputWriterVisualization;
 }
+
 namespace GeometryPair
 {
   class FaceElement;
 }
-
 
 namespace BeamInteraction
 {

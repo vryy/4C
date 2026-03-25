@@ -13,11 +13,9 @@
 #include "4C_beaminteraction_conditions.hpp"
 #include "4C_beaminteraction_contact_beam_to_beam_pair.hpp"
 #include "4C_fem_general_element.hpp"
-#include "4C_utils_exceptions.hpp"
 
 #include <memory>
 #include <set>
-#include <unordered_map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN

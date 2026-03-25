@@ -12,8 +12,6 @@
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
 #include "4C_fem_discretization.hpp"
-#include "4C_geometry_pair.hpp"
-#include "4C_global_data.hpp"
 #include "4C_linalg_fevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"

@@ -11,7 +11,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_io_visualization_parameters.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN

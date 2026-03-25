@@ -8,15 +8,11 @@
 #ifndef FOUR_C_BEAMINTERACTION_CONTACT_BEAM_TO_SOLID_SURFACE_PAIR_HPP
 #define FOUR_C_BEAMINTERACTION_CONTACT_BEAM_TO_SOLID_SURFACE_PAIR_HPP
 
-
 #include "4C_config.hpp"
 
-#include "4C_beaminteraction_contact_beam_to_beam_defines.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_surface_pair_base.hpp"
-#include "4C_linalg_fixedsizematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
 
 namespace BeamInteraction
 {
