@@ -223,7 +223,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_ele_penal
     double& penalty)
 {
   // safety check
-  if (lsreinitparams_->sign_type() != Inpar::ScaTra::signtype_SussmanFatemi1999)
+  if (lsreinitparams_->sign_type() != LevelSet::signtype_SussmanFatemi1999)
     FOUR_C_THROW("Penalty method only for smoothed sign function: SussmanFatemi1999!");
 
   // denominator
@@ -399,7 +399,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_v
 
     // get velocity at element center
     Core::LinAlg::Matrix<nsd_, 1> convelint(Core::LinAlg::Initialization::zero);
-    if (lsreinitparams_->reinit_type() == Inpar::ScaTra::reinitaction_sussman)
+    if (lsreinitparams_->reinit_type() == LevelSet::reinitaction_sussman)
     {
       // get sign function
       double signphi = 0.0;
@@ -431,12 +431,12 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_v
     // distinguish reinitialization
     switch (lsreinitparams_->reinit_type())
     {
-      case Inpar::ScaTra::reinitaction_sussman:
+      case LevelSet::reinitaction_sussman:
       {
         my::calc_rhs_hist_and_source(erhs, 0, fac, convelint(dir, 0));
         break;
       }
-      case Inpar::ScaTra::reinitaction_ellipticeq:
+      case LevelSet::reinitaction_ellipticeq:
       {
         my::calc_rhs_hist_and_source(erhs, 0, fac, gradphi(dir, 0));
         break;

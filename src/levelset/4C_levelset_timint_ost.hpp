@@ -16,9 +16,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace ScaTra
+namespace LevelSet
 {
-  class LevelSetTimIntOneStepTheta : public LevelSetAlgorithm, public TimIntOneStepTheta
+  class LevelSetTimIntOneStepTheta : public LevelSetAlgorithm, public ScaTra::TimIntOneStepTheta
   {
    public:
     /// standard Constructor
@@ -76,7 +76,7 @@ namespace ScaTra
    private:
   };  // class LevelSetTimIntOneStepTheta
 
-}  // namespace ScaTra
+}  // namespace LevelSet
 
 FOUR_C_NAMESPACE_CLOSE
 

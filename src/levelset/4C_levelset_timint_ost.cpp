@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-ScaTra::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
+LevelSet::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
     std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver,
     std::shared_ptr<Teuchos::ParameterList> params,
     std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
@@ -40,7 +40,7 @@ ScaTra::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::init()
+void LevelSet::LevelSetTimIntOneStepTheta::init()
 {
   // call init()-functions of base classes
   // note: this order is important
@@ -53,7 +53,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::init()
 /*----------------------------------------------------------------------*
  |  setup time integration                                  rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::setup()
+void LevelSet::LevelSetTimIntOneStepTheta::setup()
 {
   // call init()-functions of base classes
   // note: this order is important
@@ -67,7 +67,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::setup()
 /*----------------------------------------------------------------------*
 | Print information about current time step to screen   rasthofer 09/13 |
 *-----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::print_time_step_info()
+void LevelSet::LevelSetTimIntOneStepTheta::print_time_step_info()
 {
   if (myrank_ == 0)
   {
@@ -75,10 +75,10 @@ void ScaTra::LevelSetTimIntOneStepTheta::print_time_step_info()
       TimIntOneStepTheta::print_time_step_info();
     else
     {
-      if (reinitaction_ == Inpar::ScaTra::reinitaction_sussman)
+      if (reinitaction_ == LevelSet::reinitaction_sussman)
         printf("\nPSEUDOTIMESTEP: %11.4E      %s          THETA = %11.4E   PSEUDOSTEP = %4d/%4d \n",
             dtau_, method_title().c_str(), thetareinit_, pseudostep_, pseudostepmax_);
-      else if (reinitaction_ == Inpar::ScaTra::reinitaction_ellipticeq)
+      else if (reinitaction_ == LevelSet::reinitaction_ellipticeq)
         printf("\nREINIT ELLIPTIC:\n");
     }
   }
@@ -90,7 +90,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::print_time_step_info()
  | calculate consistent initial scalar time derivatives in compliance with    |
  | initial scalar field                                            fang 09/15 |
  *----------------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::calc_initial_time_derivative()
+void LevelSet::LevelSetTimIntOneStepTheta::calc_initial_time_derivative()
 {
   if (not switchreinit_)
     TimIntOneStepTheta::calc_initial_time_derivative();
@@ -119,7 +119,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::calc_initial_time_derivative()
  | set part of the residual vector belonging to the old timestep        |
  |                                                      rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::set_old_part_of_righthandside()
+void LevelSet::LevelSetTimIntOneStepTheta::set_old_part_of_righthandside()
 {
   if (not switchreinit_)
     TimIntOneStepTheta::set_old_part_of_righthandside();
@@ -135,7 +135,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::set_old_part_of_righthandside()
  | extended version for coupled level-set problems                      |
  | including reinitialization                           rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::update()
+void LevelSet::LevelSetTimIntOneStepTheta::update()
 {
   // -----------------------------------------------------------------
   //                     reinitialize level-set
@@ -157,7 +157,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::update()
  | current solution becomes most recent solution of next time step      |
  |                                                      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::update_state()
+void LevelSet::LevelSetTimIntOneStepTheta::update_state()
 {
   if (not switchreinit_)
   {
@@ -201,7 +201,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::update_state()
  | current solution becomes most recent solution of next timestep       |
  | used within reinitialization loop                    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::update_reinit()
+void LevelSet::LevelSetTimIntOneStepTheta::update_reinit()
 {
   // TODO: Fkt hier raus nehmen
   // compute time derivative at time n+1
@@ -227,7 +227,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::update_reinit()
  | Redistribute the scatra discretization and vectors according to nodegraph  rasthofer 07/11 |
  |                                                                            DA wichmann     |
  *--------------------------------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::redistribute(Core::LinAlg::Graph& nodegraph)
+void LevelSet::LevelSetTimIntOneStepTheta::redistribute(Core::LinAlg::Graph& nodegraph)
 {
   // let the base class do the basic redistribution and transfer of the base class members
   LevelSetAlgorithm::redistribute(nodegraph);
@@ -248,7 +248,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::redistribute(Core::LinAlg::Graph& nodeg
 /*----------------------------------------------------------------------*
  | setup problem after restart                          rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::read_restart(
+void LevelSet::LevelSetTimIntOneStepTheta::read_restart(
     const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   // do basic restart
@@ -261,7 +261,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::read_restart(
 /*----------------------------------------------------------------------*
  | interpolate phi to intermediate time level n+theta   rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-std::shared_ptr<Core::LinAlg::Vector<double>> ScaTra::LevelSetTimIntOneStepTheta::phinptheta(
+std::shared_ptr<Core::LinAlg::Vector<double>> LevelSet::LevelSetTimIntOneStepTheta::phinptheta(
     const double theta_inter)
 {
   const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
@@ -275,7 +275,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> ScaTra::LevelSetTimIntOneStepTheta
 /*----------------------------------------------------------------------*
  | interpolate phidt to intermediate time level n+theta rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-std::shared_ptr<Core::LinAlg::Vector<double>> ScaTra::LevelSetTimIntOneStepTheta::phidtnptheta(
+std::shared_ptr<Core::LinAlg::Vector<double>> LevelSet::LevelSetTimIntOneStepTheta::phidtnptheta(
     const double theta_inter)
 {
   const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();

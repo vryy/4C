@@ -11,6 +11,7 @@
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_levelset_algorithm.hpp"
+#include "4C_levelset_input.hpp"
 #include "4C_levelset_intersection_utils.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -27,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | initialize or update velocity field                  rasthofer 03/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::set_velocity_field(bool init)
+void LevelSet::LevelSetAlgorithm::set_velocity_field(bool init)
 {
   // call function of base class
   ScaTraTimIntImpl::set_velocity_field_from_function();
@@ -42,7 +43,7 @@ void ScaTra::LevelSetAlgorithm::set_velocity_field(bool init)
 /*----------------------------------------------------------------------*
  | add problem depended params for assemble_mat_and_rhs    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
+void LevelSet::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
     Teuchos::ParameterList& params)
 {
   const auto add_multi_vector =
@@ -61,7 +62,7 @@ void ScaTra::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
     // action for elements
     params.set<bool>("solve reinit eq", true);
 
-    if (reinitaction_ == Inpar::ScaTra::reinitaction_sussman)
+    if (reinitaction_ == LevelSet::reinitaction_sussman)
     {
       // set initial phi, i.e., solution of level-set equation
       discret_->set_state("phizero", *initialphireinit_);
@@ -74,10 +75,10 @@ void ScaTra::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
 #endif
 
       // add nodal velocity field, if required
-      if (useprojectedreinitvel_ == Inpar::ScaTra::vel_reinit_node_based)
+      if (useprojectedreinitvel_ == LevelSet::vel_reinit_node_based)
         add_multi_vector("reinitialization velocity field", nb_grad_val_);
     }
-    else if (reinitaction_ == Inpar::ScaTra::reinitaction_ellipticeq)
+    else if (reinitaction_ == LevelSet::reinitaction_ellipticeq)
     {
       // add node-based gradient, if required
       if (projection_ == true) add_multi_vector("gradphi", nb_grad_val_);
@@ -95,7 +96,7 @@ void ScaTra::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
 /*----------------------------------------------------------------------*
  | capture interface                                    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::capture_interface(
+void LevelSet::LevelSetAlgorithm::capture_interface(
     std::map<int, Core::Geo::BoundaryIntCells>& interface, const bool writetofile)
 {
   double volminus = 0.0;
@@ -115,7 +116,7 @@ void ScaTra::LevelSetAlgorithm::capture_interface(
 /*----------------------------------------------------------------------*
  | mass conservation check                              rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::mass_conservation_check(
+void LevelSet::LevelSetAlgorithm::mass_conservation_check(
     const double actvolminus, const bool writetofile)
 {
   if (myrank_ == 0)
@@ -185,16 +186,16 @@ void ScaTra::LevelSetAlgorithm::mass_conservation_check(
 /*----------------------------------------------------------------------*
  | calculate error compared to analytical solution      rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
+void LevelSet::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 {
   const auto calcerr =
-      Teuchos::getIntegralValue<Inpar::ScaTra::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
+      Teuchos::getIntegralValue<LevelSet::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
 
   switch (calcerr)
   {
-    case Inpar::ScaTra::calcerror_no_ls:  // do nothing (the usual case)
+    case LevelSet::calcerror_no_ls:  // do nothing (the usual case)
       break;
-    case Inpar::ScaTra::calcerror_initial_field:
+    case LevelSet::calcerror_initial_field:
     {
       if (myrank_ == 0)
       {
@@ -218,7 +219,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         Teuchos::ParameterList eleparams;
         Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
             "action", ScaTra::Action::calc_error, eleparams);
-        eleparams.set<Inpar::ScaTra::CalcErrorLevelSet>("calcerrorflag", calcerr);
+        eleparams.set<LevelSet::CalcErrorLevelSet>("calcerrorflag", calcerr);
 
         // get initial field
         const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
@@ -293,7 +294,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 /*------------------------------------------------------------------------------------------------*
  | compute convective velocity for contact points no-slip wall and interface      rasthofer 12/13 |
  *------------------------------------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
+void LevelSet::LevelSetAlgorithm::apply_contact_point_boundary_condition()
 {
   // get condition
   std::vector<const Core::Conditions::Condition*> lscontactpoint;
@@ -439,7 +440,7 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
 /*----------------------------------------------------------------------------*
  | Get Mass Center, using the smoothing function                 winter 06/14 |
  *----------------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
+void LevelSet::LevelSetAlgorithm::mass_center_using_smoothing()
 {
   // set vector values needed by elements
   discret_->clear_state();
@@ -515,7 +516,7 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
  | redistribute the scatra discretization and vectors         rasthofer 07/11 |
  | according to nodegraph according to nodegraph              DA wichmann     |
  *----------------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::redistribute(Core::LinAlg::Graph& nodegraph)
+void LevelSet::LevelSetAlgorithm::redistribute(Core::LinAlg::Graph& nodegraph)
 {
   // TODO: works if and only if discretization has already been redistributed
   //      change this and use unused nodegraph

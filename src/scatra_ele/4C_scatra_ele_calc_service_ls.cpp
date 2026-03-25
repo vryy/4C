@@ -8,7 +8,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_geometry_position_array.hpp"
-#include "4C_inpar_levelset.hpp"
+#include "4C_levelset_input.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_calc_ls.hpp"
 
@@ -89,10 +89,10 @@ void Discret::Elements::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_s
       ScaTra::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const auto errortype =
-      Teuchos::getIntegralValue<Inpar::ScaTra::CalcErrorLevelSet>(params, "calcerrorflag");
+      Teuchos::getIntegralValue<LevelSet::CalcErrorLevelSet>(params, "calcerrorflag");
   switch (errortype)
   {
-    case Inpar::ScaTra::calcerror_initial_field:
+    case LevelSet::calcerror_initial_field:
     {
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.ip().nquad; iquad++)

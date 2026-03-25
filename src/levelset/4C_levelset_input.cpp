@@ -5,15 +5,15 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_levelset.hpp"
+#include "4C_levelset_input.hpp"
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_io_input_spec_builders.hpp"
+
 FOUR_C_NAMESPACE_OPEN
 
-
-std::vector<Core::IO::InputSpec> Inpar::LevelSet::valid_parameters()
+std::vector<Core::IO::InputSpec> LevelSet::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -33,13 +33,13 @@ std::vector<Core::IO::InputSpec> Inpar::LevelSet::valid_parameters()
               "RESTARTEVERY", {.description = "Increment for writing restart", .default_value = 1}),
 
 
-          deprecated_selection<Inpar::ScaTra::CalcErrorLevelSet>("CALCERROR",
+          deprecated_selection<LevelSet::CalcErrorLevelSet>("CALCERROR",
               {
-                  {"No", Inpar::ScaTra::calcerror_no_ls},
-                  {"InitialField", Inpar::ScaTra::calcerror_initial_field},
+                  {"No", LevelSet::calcerror_no_ls},
+                  {"InitialField", LevelSet::calcerror_initial_field},
               },
               {.description = "compute error compared to analytical solution",
-                  .default_value = Inpar::ScaTra::calcerror_no_ls}),
+                  .default_value = LevelSet::calcerror_no_ls}),
 
           parameter<bool>("EXTRACT_INTERFACE_VEL",
               {.description =
@@ -55,15 +55,15 @@ std::vector<Core::IO::InputSpec> Inpar::LevelSet::valid_parameters()
   specs.push_back(group("LEVEL-SET CONTROL/REINITIALIZATION",
       {
 
-          deprecated_selection<Inpar::ScaTra::ReInitialAction>("REINITIALIZATION",
+          deprecated_selection<LevelSet::ReInitialAction>("REINITIALIZATION",
               {
-                  {"None", Inpar::ScaTra::reinitaction_none},
-                  {"Signed_Distance_Function", Inpar::ScaTra::reinitaction_signeddistancefunction},
-                  {"Sussman", Inpar::ScaTra::reinitaction_sussman},
-                  {"EllipticEq", Inpar::ScaTra::reinitaction_ellipticeq},
+                  {"None", LevelSet::reinitaction_none},
+                  {"Signed_Distance_Function", LevelSet::reinitaction_signeddistancefunction},
+                  {"Sussman", LevelSet::reinitaction_sussman},
+                  {"EllipticEq", LevelSet::reinitaction_ellipticeq},
               },
               {.description = "Type of reinitialization strategy for level set function",
-                  .default_value = Inpar::ScaTra::reinitaction_none}),
+                  .default_value = LevelSet::reinitaction_none}),
 
           parameter<bool>("REINIT_INITIAL",
               {.description = "Has level set field to be reinitialized before first time step?",
@@ -118,15 +118,15 @@ std::vector<Core::IO::InputSpec> Inpar::LevelSet::valid_parameters()
               {.description = "Definition of tau",
                   .default_value = Inpar::ScaTra::tau_taylor_hughes_zarins}),
           // this parameter governs whether all-scale subgrid diffusivity is included
-          deprecated_selection<Inpar::ScaTra::ArtDiff>("ARTDIFFREINIT",
+          deprecated_selection<LevelSet::ArtDiff>("ARTDIFFREINIT",
               {
-                  {"no", Inpar::ScaTra::artdiff_none},
-                  {"isotropic", Inpar::ScaTra::artdiff_isotropic},
-                  {"crosswind", Inpar::ScaTra::artdiff_crosswind},
+                  {"no", LevelSet::artdiff_none},
+                  {"isotropic", LevelSet::artdiff_isotropic},
+                  {"crosswind", LevelSet::artdiff_crosswind},
               },
               {.description = "potential incorporation of all-scale subgrid diffusivity (a.k.a. "
                               "discontinuity-capturing) term",
-                  .default_value = Inpar::ScaTra::artdiff_none}),
+                  .default_value = LevelSet::artdiff_none}),
           // this parameter selects the all-scale subgrid-diffusivity definition applied
           deprecated_selection<Inpar::ScaTra::AssgdType>("DEFINITION_ARTDIFFREINIT",
               {
@@ -145,38 +145,38 @@ std::vector<Core::IO::InputSpec> Inpar::LevelSet::valid_parameters()
                   .default_value = Inpar::ScaTra::assgd_artificial}),
 
 
-          deprecated_selection<Inpar::ScaTra::SmoothedSignType>("SMOOTHED_SIGN_TYPE",
+          deprecated_selection<LevelSet::SmoothedSignType>("SMOOTHED_SIGN_TYPE",
               {
-                  {"NonSmoothed", Inpar::ScaTra::signtype_nonsmoothed},
-                  {"SussmanFatemi1999", Inpar::ScaTra::signtype_SussmanFatemi1999},
-                  {"SussmanSmerekaOsher1994", Inpar::ScaTra::signtype_SussmanSmerekaOsher1994},
-                  {"PengEtAl1999", Inpar::ScaTra::signtype_PengEtAl1999},
+                  {"NonSmoothed", LevelSet::signtype_nonsmoothed},
+                  {"SussmanFatemi1999", LevelSet::signtype_SussmanFatemi1999},
+                  {"SussmanSmerekaOsher1994", LevelSet::signtype_SussmanSmerekaOsher1994},
+                  {"PengEtAl1999", LevelSet::signtype_PengEtAl1999},
               },
               {.description = "sign function for reinitialization equation",
-                  .default_value = Inpar::ScaTra::signtype_SussmanSmerekaOsher1994}),
+                  .default_value = LevelSet::signtype_SussmanSmerekaOsher1994}),
 
-          deprecated_selection<Inpar::ScaTra::CharEleLengthReinit>("CHARELELENGTHREINIT",
+          deprecated_selection<LevelSet::CharEleLengthReinit>("CHARELELENGTHREINIT",
               {
-                  {"root_of_volume", Inpar::ScaTra::root_of_volume_reinit},
-                  {"streamlength", Inpar::ScaTra::streamlength_reinit},
+                  {"root_of_volume", LevelSet::root_of_volume_reinit},
+                  {"streamlength", LevelSet::streamlength_reinit},
               },
               {.description = "characteristic element length for sign function",
-                  .default_value = Inpar::ScaTra::root_of_volume_reinit}),
+                  .default_value = LevelSet::root_of_volume_reinit}),
           parameter<double>("INTERFACE_THICKNESS",
               {.description = "factor for interface thickness (multiplied by element length)",
                   .default_value = 1.0}),
-          deprecated_selection<Inpar::ScaTra::VelReinit>("VELREINIT",
+          deprecated_selection<LevelSet::VelReinit>("VELREINIT",
               {
-                  {"integration_point_based", Inpar::ScaTra::vel_reinit_integration_point_based},
-                  {"node_based", Inpar::ScaTra::vel_reinit_node_based},
+                  {"integration_point_based", LevelSet::vel_reinit_integration_point_based},
+                  {"node_based", LevelSet::vel_reinit_node_based},
               },
               {.description =
                       "evaluate velocity at integration point or compute node-based velocity",
-                  .default_value = Inpar::ScaTra::vel_reinit_integration_point_based}),
-          parameter<Inpar::ScaTra::LinReinit>("LINEARIZATIONREINIT",
+                  .default_value = LevelSet::vel_reinit_integration_point_based}),
+          parameter<LevelSet::LinReinit>("LINEARIZATIONREINIT",
               {.description = "linearization scheme for nonlinear convective term of "
                               "reinitialization equation",
-                  .default_value = Inpar::ScaTra::newton}),
+                  .default_value = LevelSet::newton}),
           parameter<bool>("CORRECTOR_STEP",
               {.description = "correction of interface position via volume constraint "
                               "according to Sussman & Fatemi",
@@ -193,16 +193,16 @@ std::vector<Core::IO::InputSpec> Inpar::LevelSet::valid_parameters()
               "PENALTY_PARA", {.description = "penalty parameter for elliptic reinitialization",
                                   .default_value = -1.0}),
 
-          deprecated_selection<Inpar::ScaTra::LSDim>("DIMENSION",
+          deprecated_selection<LevelSet::LSDim>("DIMENSION",
               {
-                  {"3D", Inpar::ScaTra::ls_3D},
-                  {"2Dx", Inpar::ScaTra::ls_2Dx},
-                  {"2Dy", Inpar::ScaTra::ls_2Dy},
-                  {"2Dz", Inpar::ScaTra::ls_2Dz},
+                  {"3D", LevelSet::ls_3D},
+                  {"2Dx", LevelSet::ls_2Dx},
+                  {"2Dy", LevelSet::ls_2Dy},
+                  {"2Dz", LevelSet::ls_2Dz},
               },
               {.description = "number of space dimensions for handling of quasi-2D problems with "
                               "3D elements",
-                  .default_value = Inpar::ScaTra::ls_3D}),
+                  .default_value = LevelSet::ls_3D}),
 
           parameter<bool>(
               "PROJECTION", {.description = "use L2-projection for grad phi and related quantities",
@@ -212,17 +212,15 @@ std::vector<Core::IO::InputSpec> Inpar::LevelSet::valid_parameters()
           parameter<bool>("LUMPING",
               {.description = "use lumped mass matrix for L2-projection", .default_value = false}),
 
-          parameter<Inpar::ScaTra::DiffFunc>(
-              "DIFF_FUNC", {.description = "function for diffusivity",
-                               .default_value = Inpar::ScaTra::hyperbolic})},
+          parameter<LevelSet::DiffFunc>("DIFF_FUNC",
+              {.description = "function for diffusivity", .default_value = LevelSet::hyperbolic})},
       {.required = false}));
   return specs;
 }
 
 
 
-void Inpar::LevelSet::set_valid_conditions(
-    std::vector<Core::Conditions::ConditionDefinition>& condlist)
+void LevelSet::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
 {
   /*--------------------------------------------------------------------*/
   // Taylor Galerkin outflow Boundaries for level set transport equation

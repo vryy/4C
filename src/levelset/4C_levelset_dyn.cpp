@@ -107,7 +107,7 @@ void levelset_dyn(int restart)
   //       evaluate the velocity function and curve.
   // bool true allows for setting old convective velocity required for particle coupling
   // old particle framework removed -> todo: requires clean up
-  std::dynamic_pointer_cast<ScaTra::LevelSetAlgorithm>(levelsetalgo)->set_velocity_field(true);
+  std::dynamic_pointer_cast<LevelSet::LevelSetAlgorithm>(levelsetalgo)->set_velocity_field(true);
 
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("LEVEL SET:  + time loop");
@@ -116,7 +116,7 @@ void levelset_dyn(int restart)
   levelsetalgo->time_loop();
 
   // perform result test if required
-  std::dynamic_pointer_cast<ScaTra::LevelSetAlgorithm>(levelsetalgo)->test_results();
+  std::dynamic_pointer_cast<LevelSet::LevelSetAlgorithm>(levelsetalgo)->test_results();
 }  // end of levelset_dyn()
 
 FOUR_C_NAMESPACE_CLOSE

@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_levelset.hpp"
+#include "4C_levelset_input.hpp"
 #include "4C_scatra_ele_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -47,16 +47,13 @@ namespace Discret
       //! @name access-routines
       /*========================================================================*/
 
-      Inpar::ScaTra::ReInitialAction reinit_type() const { return reinittype_; };
-      Inpar::ScaTra::SmoothedSignType sign_type() const { return signtype_; };
-      Inpar::ScaTra::CharEleLengthReinit char_ele_length_reinit() const
-      {
-        return charelelengthreinit_;
-      };
+      LevelSet::ReInitialAction reinit_type() const { return reinittype_; };
+      LevelSet::SmoothedSignType sign_type() const { return signtype_; };
+      LevelSet::CharEleLengthReinit char_ele_length_reinit() const { return charelelengthreinit_; };
       double interface_thickness_fac() const { return interfacethicknessfac_; };
       bool use_projected_vel() const { return useprojectedreinitvel_; };
-      Inpar::ScaTra::LinReinit lin_form() const { return linform_; };
-      Inpar::ScaTra::ArtDiff art_diff() const { return artdiff_; };
+      LevelSet::LinReinit lin_form() const { return linform_; };
+      LevelSet::ArtDiff art_diff() const { return artdiff_; };
 
       /// access the penalty parameter for the elliptical reinitialization
       double penalty_para() const
@@ -68,23 +65,23 @@ namespace Discret
       bool project() const { return project_; };
       bool lumping() const { return lumping_; };
       double project_diff() const { return projectdiff_; };
-      Inpar::ScaTra::DiffFunc diff_fct() const { return difffct_; };
+      LevelSet::DiffFunc diff_fct() const { return difffct_; };
 
      private:
       // reinit type
-      Inpar::ScaTra::ReInitialAction reinittype_;
+      LevelSet::ReInitialAction reinittype_;
       // sign function for phi
-      Inpar::ScaTra::SmoothedSignType signtype_;
+      LevelSet::SmoothedSignType signtype_;
       // element length for smoothing of sign function
-      Inpar::ScaTra::CharEleLengthReinit charelelengthreinit_;
+      LevelSet::CharEleLengthReinit charelelengthreinit_;
       // interface thickness factor (multiple of characteristic element length)
       double interfacethicknessfac_;
       // from of velocity evaluation
       bool useprojectedreinitvel_;
       // form of linearization of nonlinear terms
-      Inpar::ScaTra::LinReinit linform_;
+      LevelSet::LinReinit linform_;
       // form of artificial diffusion
-      Inpar::ScaTra::ArtDiff artdiff_;
+      LevelSet::ArtDiff artdiff_;
       // penalty parameter of elliptic reinitialization
       double alphapen_;
       // use L2 projection
@@ -94,7 +91,7 @@ namespace Discret
       // mass lumping for L2 projection
       bool lumping_;
       // function for diffusivity
-      Inpar::ScaTra::DiffFunc difffct_;
+      LevelSet::DiffFunc difffct_;
     };
   }  // namespace Elements
 }  // namespace Discret
