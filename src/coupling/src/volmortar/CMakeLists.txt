@@ -13,7 +13,6 @@ set(_dependencies
     core
     cut
     global_data
-    inpar
     mortar
     )
 

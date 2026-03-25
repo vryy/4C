@@ -5,28 +5,21 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_INPAR_VOLMORTAR_HPP
-#define FOUR_C_INPAR_VOLMORTAR_HPP
+#ifndef FOUR_C_COUPLING_VOLMORTAR_INPUT_HPP
+#define FOUR_C_COUPLING_VOLMORTAR_INPUT_HPP
 
-
-/*----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
 #include "4C_io_input_spec.hpp"
 
-
-
 FOUR_C_NAMESPACE_OPEN
 
-namespace Inpar
+namespace Coupling::VolMortar
 {
-  namespace VolMortar
-  {
-    /// volmortar parameters
-    Core::IO::InputSpec valid_parameters();
+  /// volmortar parameters
+  Core::IO::InputSpec valid_parameters();
 
-  }  // namespace VolMortar
-}  // namespace Inpar
+}  // namespace Coupling::VolMortar
 
 FOUR_C_NAMESPACE_CLOSE
 
