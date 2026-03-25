@@ -23,12 +23,12 @@
 #include "4C_inpar_cardiac_monodomain.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_fsi.hpp"
-#include "4C_inpar_levelset.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_inpar_xfem.hpp"
 #include "4C_io_input_spec_builders.hpp"
+#include "4C_levelset_input.hpp"
 #include "4C_mortar_input.hpp"
 #include "4C_particle_input.hpp"
 #include "4C_porofluid_pressure_based_elast_scatra_input.hpp"
@@ -845,7 +845,7 @@ std::vector<Core::Conditions::ConditionDefinition> Global::valid_conditions()
   SSI::set_valid_conditions(condlist);
   SSTI::set_valid_conditions(condlist);
   Particle::set_valid_conditions(condlist);
-  Inpar::LevelSet::set_valid_conditions(condlist);
+  LevelSet::set_valid_conditions(condlist);
   BeamInteraction::Contact::BeamToBeam::set_valid_conditions(condlist);
   BeamInteraction::Potential::set_valid_conditions(condlist);
   Constraints::set_valid_conditions(condlist);

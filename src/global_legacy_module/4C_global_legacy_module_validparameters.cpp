@@ -37,7 +37,6 @@
 #include "4C_inpar_IO_runtime_output_fluid.hpp"
 #include "4C_inpar_IO_runtime_vtk_output_structure.hpp"
 #include "4C_inpar_IO_runtime_vtp_output_structure.hpp"
-#include "4C_inpar_levelset.hpp"
 #include "4C_inpar_plasticity.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
@@ -50,6 +49,7 @@
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_io_mesh.hpp"
 #include "4C_io_pstream.hpp"
+#include "4C_levelset_input.hpp"
 #include "4C_linear_solver_method_input.hpp"
 #include "4C_lubrication_input.hpp"
 #include "4C_mortar_input.hpp"
@@ -325,7 +325,7 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
 
   push_specs(specs, Lubrication::valid_parameters());
   push_specs(specs, Inpar::ScaTra::valid_parameters());
-  push_specs(specs, Inpar::LevelSet::valid_parameters());
+  push_specs(specs, LevelSet::valid_parameters());
   push_specs(specs, ElCh::valid_parameters());
   push_specs(specs, Inpar::ElectroPhysiology::valid_parameters());
   push_specs(specs, STI::valid_parameters());

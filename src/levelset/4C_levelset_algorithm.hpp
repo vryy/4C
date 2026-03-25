@@ -12,7 +12,7 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_geometry_geo_utils.hpp"
-#include "4C_inpar_levelset.hpp"
+#include "4C_levelset_input.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
@@ -30,9 +30,9 @@ namespace Core::LinAlg
 }
 
 
-namespace ScaTra
+namespace LevelSet
 {
-  class LevelSetAlgorithm : public virtual ScaTraTimIntImpl
+  class LevelSetAlgorithm : public virtual ScaTra::ScaTraTimIntImpl
   {
    public:
     /// Standard Constructor
@@ -158,7 +158,7 @@ namespace ScaTra
     std::shared_ptr<Teuchos::ParameterList> levelsetparams_;
 
     /// options for reinitialization of G-function;
-    Inpar::ScaTra::ReInitialAction reinitaction_;
+    LevelSet::ReInitialAction reinitaction_;
 
     /// flag to switch between standard integration and sub-time loop for reinitialization
     bool switchreinit_;
@@ -308,10 +308,10 @@ namespace ScaTra
     bool reinitcorrector_;
 
     /// evaluation of velocity field for reinitialization (reinit_eq() only)
-    Inpar::ScaTra::VelReinit useprojectedreinitvel_;
+    LevelSet::VelReinit useprojectedreinitvel_;
 
     /// 2D flag
-    Inpar::ScaTra::LSDim lsdim_;
+    LevelSet::LSDim lsdim_;
 
     /// use projection for grad phi and related quantities
     bool projection_;
@@ -347,7 +347,7 @@ namespace ScaTra
     bool cpbc_;
   };
 
-}  // namespace ScaTra
+}  // namespace LevelSet
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -61,7 +61,7 @@ Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::ScaTraEleCalcLsRein
   // safety checks
   if (my::scatrapara_->rb_sub_gr_vel())
     FOUR_C_THROW("CalcSubgrVelocityLevelSet not available anymore");
-  if (lsreinitparams_->art_diff() != Inpar::ScaTra::artdiff_none)
+  if (lsreinitparams_->art_diff() != LevelSet::artdiff_none)
   {
     if (not my::scatrapara_->mat_gp() or not my::scatrapara_->tau_gp())
       FOUR_C_THROW(
@@ -133,7 +133,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
   // distinguish reinitialization
   switch (lsreinitparams_->reinit_type())
   {
-    case Inpar::ScaTra::reinitaction_ellipticeq:
+    case LevelSet::reinitaction_ellipticeq:
     {
       // ----------------------------------------------------------------------
       // extract boundary integration cells for elliptic reinitialization
@@ -249,7 +249,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::elliptic_newto
     double diff_mat = 0.0;
     switch (lsreinitparams_->diff_fct())
     {
-      case Inpar::ScaTra::hyperbolic:
+      case LevelSet::hyperbolic:
       {
         // the basic form: goes to -infinity, if norm(grad)=1
         // yields directly desired signed-distance field
@@ -345,7 +345,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
   // distinguish reinitialization
   switch (lsreinitparams_->reinit_type())
   {
-    case Inpar::ScaTra::reinitaction_sussman:
+    case LevelSet::reinitaction_sussman:
     {
       // extract local values from the global vectors
       std::shared_ptr<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
@@ -371,7 +371,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
       sysmat_hyperbolic(elemat1, elevec1);
       break;
     }
-    case Inpar::ScaTra::reinitaction_ellipticeq:
+    case LevelSet::reinitaction_ellipticeq:
     {
       // extract boundary integration cells for elliptic reinitialization
       // define empty list
@@ -638,7 +638,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_hyperbo
     // calculation of artificial diffusion
     //--------------------------------------------------------------------
 
-    if (lsreinitparams_->art_diff() != Inpar::ScaTra::artdiff_none)
+    if (lsreinitparams_->art_diff() != LevelSet::artdiff_none)
     {
       // residual of reinit eq
       double scatrares = 0.0;
@@ -650,7 +650,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_hyperbo
       // additionally stored in subgrid diffusion coefficient
       my::calc_artificial_diff(vol, 0, 1.0, convelint, gradphinp, conv_phi, scatrares, tau);
 
-      if (lsreinitparams_->art_diff() == Inpar::ScaTra::artdiff_crosswind)
+      if (lsreinitparams_->art_diff() == LevelSet::artdiff_crosswind)
         diff_manager()->set_velocity_for_cross_wind_diff(convelint);
 
 #ifdef MODIFIED_EQ
@@ -698,7 +698,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_hyperbo
 
     // subgrid-scale velocity (dummy)
     Core::LinAlg::Matrix<nen_, 1> sgconv(Core::LinAlg::Initialization::zero);
-    if (lsreinitparams_->lin_form() == Inpar::ScaTra::newton)
+    if (lsreinitparams_->lin_form() == LevelSet::newton)
     {
       if (my::scatrapara_->stab_type() != Inpar::ScaTra::stabtype_no_stabilization)
         my::calc_mat_mass_stab(emat, 0, taufac, 1.0, 1.0, sgconv, diff);
@@ -708,12 +708,12 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_hyperbo
     // 2) element matrix: convective term in convective form
     //----------------------------------------------------------------
 
-    if (lsreinitparams_->lin_form() == Inpar::ScaTra::newton)
+    if (lsreinitparams_->lin_form() == LevelSet::newton)
       my::calc_mat_conv(emat, 0, timefacfac, 1.0, sgconv);
 
     // convective stabilization of convective term (in convective form)
     // transient stabilization of convective term (in convective form)
-    if (lsreinitparams_->lin_form() == Inpar::ScaTra::newton)
+    if (lsreinitparams_->lin_form() == LevelSet::newton)
     {
       if (my::scatrapara_->stab_type() != Inpar::ScaTra::stabtype_no_stabilization)
         my::calc_mat_trans_conv_diff_stab(emat, 0, timetaufac, 1.0, sgconv, diff);
@@ -721,7 +721,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_hyperbo
 
 
     // calculation of diffusive element matrix
-    if (lsreinitparams_->art_diff() != Inpar::ScaTra::artdiff_none)
+    if (lsreinitparams_->art_diff() != LevelSet::artdiff_none)
 #ifndef MODIFIED_EQ
       calc_mat_diff(emat, 0, dtfac);  // implicit treatment
 #else
@@ -754,7 +754,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_hyperbo
     my::calc_rhs_conv(erhs, 0, rhsfac);
 
     // linearization of diffusive term
-    if (lsreinitparams_->art_diff() != Inpar::ScaTra::artdiff_none)
+    if (lsreinitparams_->art_diff() != LevelSet::artdiff_none)
 #ifndef MODIFIED_EQ
       calc_rhs_diff(erhs, 0, dtfac, gradphinp);  // implicit treatment
 #else
@@ -819,7 +819,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_ellipti
     double diff = 0.0;
     switch (lsreinitparams_->diff_fct())
     {
-      case Inpar::ScaTra::hyperbolic:
+      case LevelSet::hyperbolic:
       {
         // the basic form: goes to -infinity, if norm(grad)=1
         // yields directly desired signed-distance field
@@ -830,7 +830,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_ellipti
 
         break;
       }
-      case Inpar::ScaTra::hyperbolic_smoothed_positive:
+      case LevelSet::hyperbolic_smoothed_positive:
       {
         // version as suggested by Basting and Kuzmin 2013
         // returns to positive values for norm(grad)<0.5
@@ -841,7 +841,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_ellipti
 
         break;
       }
-      case Inpar::ScaTra::hyperbolic_clipped_05:
+      case LevelSet::hyperbolic_clipped_05:
       {
         if (normgradphi > (2.0 / 3.0))
           diff = 1.0 - (1.0 / normgradphi);
@@ -850,7 +850,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_ellipti
 
         break;
       }
-      case Inpar::ScaTra::hyperbolic_clipped_1:
+      case LevelSet::hyperbolic_clipped_1:
       {
         if (normgradphi > 0.5)
           diff = 1.0 - (1.0 / normgradphi);
@@ -914,7 +914,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sign_function(
   // compute interface thickness
   const double epsilon = lsreinitparams_->interface_thickness_fac() * charelelength;
 
-  if (lsreinitparams_->sign_type() == Inpar::ScaTra::signtype_nonsmoothed)
+  if (lsreinitparams_->sign_type() == LevelSet::signtype_nonsmoothed)
   {
     if (phizero < 0.0)
       sign_phi = -1.0;
@@ -923,16 +923,16 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sign_function(
     else
       sign_phi = 0.0;
   }
-  else if (lsreinitparams_->sign_type() == Inpar::ScaTra::signtype_SussmanSmerekaOsher1994)
+  else if (lsreinitparams_->sign_type() == LevelSet::signtype_SussmanSmerekaOsher1994)
   {
     sign_phi = phizero / sqrt(phizero * phizero + epsilon * epsilon);
   }
-  else if (lsreinitparams_->sign_type() == Inpar::ScaTra::signtype_PengEtAl1999)
+  else if (lsreinitparams_->sign_type() == LevelSet::signtype_PengEtAl1999)
   {
     const double grad_norm_phi = gradphi.norm2();
     sign_phi = phi / sqrt(phi * phi + epsilon * epsilon * grad_norm_phi * grad_norm_phi);
   }
-  else if (lsreinitparams_->sign_type() == Inpar::ScaTra::signtype_SussmanFatemi1999)
+  else if (lsreinitparams_->sign_type() == LevelSet::signtype_SussmanFatemi1999)
   {
     if (fabs(epsilon) < 1e-15)
       FOUR_C_THROW("divide by zero in evaluate for smoothed sign function");
@@ -988,7 +988,7 @@ double Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_char_el
   switch (lsreinitparams_->char_ele_length_reinit())
   {
     // a) streamlength due to Kees et al. (2011)
-    case Inpar::ScaTra::streamlength_reinit:
+    case LevelSet::streamlength_reinit:
     {
       // get norm of gradient of phi
       double gradphi_norm = gradphizero.norm2();
@@ -1025,7 +1025,7 @@ double Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_char_el
     break;
 
     // b) cubic/square root of element volume/area or element length (3-/2-/1-D)
-    case Inpar::ScaTra::root_of_volume_reinit:
+    case LevelSet::root_of_volume_reinit:
     {
       // cast dimension to a double variable -> pow()
       const double dim = static_cast<double>(nsd_);

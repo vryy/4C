@@ -9,6 +9,7 @@
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_levelset_algorithm.hpp"
+#include "4C_levelset_input.hpp"
 #include "4C_levelset_intersection_utils.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -28,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  | algebraic reinitialization via solution of equation  rasthofer 09/13 |
  | pde-based reinitialization according to Sussman 1994                 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::reinit_eq()
+void LevelSet::LevelSetAlgorithm::reinit_eq()
 {
   if (myrank_ == 0)
     std::cout << "\n---------------------------------------  REINITIALIZATION SOLVER  "
@@ -60,7 +61,7 @@ void ScaTra::LevelSetAlgorithm::reinit_eq()
 /*-------------------------------------------------------------------*
  | set element parameters for reinitialization equation   fang 08/15 |
  *-------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::set_reinitialization_element_parameters(
+void LevelSet::LevelSetAlgorithm::set_reinitialization_element_parameters(
     bool calcinitialtimederivative) const
 {
   // create element parameter list
@@ -126,7 +127,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_parameters(
 /*----------------------------------------------------------------------*
  | set time parameters for reinitialization equation    rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::set_reinitialization_element_time_parameters()
+void LevelSet::LevelSetAlgorithm::set_reinitialization_element_time_parameters()
 {
   Teuchos::ParameterList eleparams;
 
@@ -149,7 +150,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_time_parameters()
  | prepare internal time loop for reinitialization equation             |
  |                                                      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::prepare_time_loop_reinit()
+void LevelSet::LevelSetAlgorithm::prepare_time_loop_reinit()
 {
   // set switch flag to true to active reinitialization specific parts
   switchreinit_ = true;
@@ -173,7 +174,7 @@ void ScaTra::LevelSetAlgorithm::prepare_time_loop_reinit()
 /*----------------------------------------------------------------------*
  | internal time loop for reinitialization equation     rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::time_loop_reinit()
+void LevelSet::LevelSetAlgorithm::time_loop_reinit()
 {
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + reinitialization time loop");
@@ -217,7 +218,7 @@ void ScaTra::LevelSetAlgorithm::time_loop_reinit()
  | clean internal time loop for reinitialization equation               |
  |                                                      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::finish_time_loop_reinit()
+void LevelSet::LevelSetAlgorithm::finish_time_loop_reinit()
 {
   // reset quantities that may have been overwritten
   // reset internal step counter
@@ -236,7 +237,7 @@ void ScaTra::LevelSetAlgorithm::finish_time_loop_reinit()
 /*----------------------------------------------------------------------*
  | convergence check for reinitialization equation      rasthofer 03/14 |
  *----------------------------------------------------------------------*/
-bool ScaTra::LevelSetAlgorithm::convergence_check_reinit()
+bool LevelSet::LevelSetAlgorithm::convergence_check_reinit()
 {
   bool abortreinitloop = false;
 
@@ -291,7 +292,7 @@ bool ScaTra::LevelSetAlgorithm::convergence_check_reinit()
  | setup the variables to do a new reinitialization time step           |
  |                                                      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::prepare_time_step_reinit()
+void LevelSet::LevelSetAlgorithm::prepare_time_step_reinit()
 {
   // prepare first time step
   if (pseudostep_ == 0)
@@ -314,7 +315,7 @@ void ScaTra::LevelSetAlgorithm::prepare_time_step_reinit()
   // compute node-based velocity field
   // -------------------------------------------------------------------
 #ifdef USE_PHIN_FOR_VEL
-  if (useprojectedreinitvel_ == Inpar::ScaTra::vel_reinit_node_based) calc_node_based_reinit_vel();
+  if (useprojectedreinitvel_ == LevelSet::vel_reinit_node_based) calc_node_based_reinit_vel();
 #endif
 
   return;
@@ -325,7 +326,7 @@ void ScaTra::LevelSetAlgorithm::prepare_time_step_reinit()
  | calculate node-based velocity field via L2-projection                |
  | for reinitialization                                 rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
+void LevelSet::LevelSetAlgorithm::calc_node_based_reinit_vel()
 {
   // loop all space dimensions,
   // since assembler can only deal with one dof per node here
@@ -337,9 +338,8 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
         std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
     velcomp->put_scalar(0.0);
 
-    if (lsdim_ == Inpar::ScaTra::ls_3D or (lsdim_ == Inpar::ScaTra::ls_2Dx and idim != 0) or
-        (lsdim_ == Inpar::ScaTra::ls_2Dy and idim != 1) or
-        (lsdim_ == Inpar::ScaTra::ls_2Dz and idim != 2))
+    if (lsdim_ == LevelSet::ls_3D or (lsdim_ == LevelSet::ls_2Dx and idim != 0) or
+        (lsdim_ == LevelSet::ls_2Dy and idim != 1) or (lsdim_ == LevelSet::ls_2Dz and idim != 2))
     {
       // zero out matrix and rhs entries
       sysmat_->zero();
@@ -364,7 +364,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
 
       switch (reinitaction_)
       {
-        case Inpar::ScaTra::reinitaction_sussman:
+        case LevelSet::reinitaction_sussman:
         {
           // set phin as phi used for velocity
           // note:read as phinp in sysmat_nodal_vel()
@@ -375,7 +375,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
 #endif
           break;
         }
-        case Inpar::ScaTra::reinitaction_ellipticeq:
+        case LevelSet::reinitaction_ellipticeq:
         {
           discret_->set_state("phinp", *phinp_);
           break;
@@ -422,7 +422,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
  | contains call of nonlinear solver for reinitialization equation      |
  |                                                      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::solve_reinit()
+void LevelSet::LevelSetAlgorithm::solve_reinit()
 {
   // we simply call the nonlinear_solve (since the reinitialization equation is
   // indeed nonlinear), and all the rest concerning the correct action type and
@@ -437,7 +437,7 @@ void ScaTra::LevelSetAlgorithm::solve_reinit()
 /*----------------------------------------------------------------------*
  | correction step according to Sussman & Fatemi 1999   rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::correction_reinit()
+void LevelSet::LevelSetAlgorithm::correction_reinit()
 {
   if (myrank_ == 0) std::cout << "\n---------------  Correction projection\n";
 
@@ -491,7 +491,7 @@ void ScaTra::LevelSetAlgorithm::correction_reinit()
 /*----------------------------------------------------------------------*
  | geometric reinitialization via distance to interface rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::reinit_geo(
+void LevelSet::LevelSetAlgorithm::reinit_geo(
     const std::map<int, Core::Geo::BoundaryIntCells>& interface)
 {
   if (myrank_ == 0)
@@ -964,7 +964,7 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
  | find a facing flame front patch by projection of node into boundary cell space        |
  |                                                                           henke 12/09 |
  *----------------------------------------------------------------------  -------------- */
-void ScaTra::LevelSetAlgorithm::find_facing_patch_proj_cell_space(
+void LevelSet::LevelSetAlgorithm::find_facing_patch_proj_cell_space(
     const Core::LinAlg::Matrix<3, 1>& node, const Core::Geo::BoundaryIntCell& patch,
     const Core::LinAlg::SerialDenseMatrix& patchcoord, const Core::LinAlg::Matrix<3, 1>& normal,
     bool& facenode, double& patchdist)
@@ -1068,7 +1068,7 @@ void ScaTra::LevelSetAlgorithm::find_facing_patch_proj_cell_space(
 /*---------------------------------------------------------------------------------------*
  | compute distance to edge of patch                                         henke 08/09 |
  *-------------------------------------------------------------------------------------- */
-void ScaTra::LevelSetAlgorithm::compute_distance_to_edge(const Core::LinAlg::Matrix<3, 1>& node,
+void LevelSet::LevelSetAlgorithm::compute_distance_to_edge(const Core::LinAlg::Matrix<3, 1>& node,
     const Core::Geo::BoundaryIntCell& patch, const Core::LinAlg::SerialDenseMatrix& patchcoord,
     double& edgedist)
 {
@@ -1140,7 +1140,7 @@ void ScaTra::LevelSetAlgorithm::compute_distance_to_edge(const Core::LinAlg::Mat
 /*---------------------------------------------- ----------------------------------------*
  | compute distance to vertex of patch                                       henke 08/09 |
  *-------------------------------------------------------------------------------------- */
-void ScaTra::LevelSetAlgorithm::compute_distance_to_patch(const Core::LinAlg::Matrix<3, 1>& node,
+void LevelSet::LevelSetAlgorithm::compute_distance_to_patch(const Core::LinAlg::Matrix<3, 1>& node,
     const Core::Geo::BoundaryIntCell& patch, const Core::LinAlg::SerialDenseMatrix& patchcoord,
     double& vertexdist)
 {
@@ -1178,7 +1178,7 @@ void ScaTra::LevelSetAlgorithm::compute_distance_to_patch(const Core::LinAlg::Ma
 /*-------------------------------------------------------------------------------------*
  | compute normal vector to interface patch                                henke 08/09 |
  *------------------------------------------------- ---------------------------------- */
-void ScaTra::LevelSetAlgorithm::compute_normal_vector_to_interface(
+void LevelSet::LevelSetAlgorithm::compute_normal_vector_to_interface(
     const Core::Geo::BoundaryIntCell& patch, const Core::LinAlg::SerialDenseMatrix& patchcoord,
     Core::LinAlg::Matrix<3, 1>& normal)
 {
@@ -1231,7 +1231,7 @@ void ScaTra::LevelSetAlgorithm::compute_normal_vector_to_interface(
  | project node into the boundary cell space                               henke 08/09 |
  *------------------------------------------------- ---------------------------------- */
 template <Core::FE::CellType distype>
-bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix<3, 1>& node,
+bool LevelSet::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix<3, 1>& node,
     const Core::Geo::BoundaryIntCell& patch, const Core::LinAlg::SerialDenseMatrix& patchcoord,
     const Core::LinAlg::Matrix<3, 1>& normal, Core::LinAlg::Matrix<2, 1>& eta, double& alpha)
 {
@@ -1369,7 +1369,7 @@ bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix
  |                                                                                    DA wichmann |
  | Idea: shift level-set so that volume is conserved                                              |
  *------------------------------------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::correct_volume()
+void LevelSet::LevelSetAlgorithm::correct_volume()
 {
   double volminus = 0.0;
   double volplus = 0.0;
@@ -1405,7 +1405,7 @@ void ScaTra::LevelSetAlgorithm::correct_volume()
 /*----------------------------------------------------------------------*
  | elliptic reinitialization                            rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::reinit_elliptic(
+void LevelSet::LevelSetAlgorithm::reinit_elliptic(
     std::map<int, Core::Geo::BoundaryIntCells>& interface)
 {
   // store interface
@@ -1418,7 +1418,7 @@ void ScaTra::LevelSetAlgorithm::reinit_elliptic(
 /*----------------------------------------------------------------------*
  | elliptic reinitialization                            rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
+void LevelSet::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
 {
   //-------------------------------------------------
   // preparations

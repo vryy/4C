@@ -270,7 +270,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
       case Inpar::ScaTra::timeint_one_step_theta:
       {
         // create an instance of time integration class
-        scatra_ = std::make_shared<ScaTra::LevelSetTimIntOneStepTheta>(
+        scatra_ = std::make_shared<LevelSet::LevelSetTimIntOneStepTheta>(
             discret, solver, lsparams, scatratimeparams, extraparams, output);
         break;
       }
