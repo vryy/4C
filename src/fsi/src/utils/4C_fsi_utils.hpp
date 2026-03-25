@@ -12,7 +12,7 @@
 
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fem_discretization.hpp"
-#include "4C_inpar_fsi.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -66,8 +66,8 @@ namespace FSI
           std::shared_ptr<Core::FE::Discretization> structdis,  ///< structure discretization
           std::shared_ptr<Core::FE::Discretization> fluiddis,   ///< fluid discretization
           Coupling::Adapter::CouplingMortar& coupsf,            ///< mortar adapter
-          bool structcoupmaster,            ///< is structure master of adapter coupling?
-          Inpar::FSI::SlideALEProj aleproj  ///< projection enum
+          bool structcoupmaster,     ///< is structure master of adapter coupling?
+          FSI::SlideALEProj aleproj  ///< projection enum
       );
 
       /// empty destructor
@@ -147,7 +147,7 @@ namespace FSI
       void redundant_elements(Coupling::Adapter::CouplingMortar& coupsf, MPI_Comm comm);
 
      private:
-      const Inpar::FSI::SlideALEProj aletype_;
+      const FSI::SlideALEProj aletype_;
       std::shared_ptr<Core::LinAlg::Vector<double>>
           idispms_;  ///< merged vector of displacements (struct and fluid interface)
       std::vector<double> centerdisptotal_;  ///< sum over all center displacement increments

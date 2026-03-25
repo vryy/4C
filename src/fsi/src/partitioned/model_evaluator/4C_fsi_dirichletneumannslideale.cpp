@@ -11,9 +11,9 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fem_geometry_searchtree.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_mortar_interface.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -38,10 +38,10 @@ void FSI::DirichletNeumannSlideale::setup()
 
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  set_kinematic_coupling(Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(
-                             fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp);
+  set_kinematic_coupling(Teuchos::getIntegralValue<FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
+                         FSI::CoupVarPart::disp);
 
-  auto aletype = Teuchos::getIntegralValue<Inpar::FSI::SlideALEProj>(
+  auto aletype = Teuchos::getIntegralValue<FSI::SlideALEProj>(
       Global::Problem::instance()->fsi_dynamic_params(), "SLIDEALEPROJ");
 
   slideale_ = std::make_shared<FSI::Utils::SlideAleUtils>(structure_field()->discretization(),

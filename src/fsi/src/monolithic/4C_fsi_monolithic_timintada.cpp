@@ -9,9 +9,9 @@
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_adapter_str_fsi_timint_adaptive.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_monolithic.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
@@ -118,15 +118,13 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
           Inpar::Solid::timada_kind_none))
     isadastructure_ = true;
 
-  if (not(Teuchos::getIntegralValue<Inpar::FSI::FluidMethod>(fsiada, "AUXINTEGRATORFLUID") ==
-          Inpar::FSI::timada_fld_none))
+  if (not(Teuchos::getIntegralValue<FSI::FluidMethod>(fsiada, "AUXINTEGRATORFLUID") ==
+          FSI::timada_fld_none))
     isadafluid_ = true;
 
   // get error action strategy from input file
-  const auto erroractionstrategy =
-      Teuchos::getIntegralValue<Inpar::FSI::DivContAct>(fsiada, "DIVERCONT");
-  if (erroractionstrategy != Inpar::FSI::divcont_stop and
-      erroractionstrategy != Inpar::FSI::divcont_continue)
+  const auto erroractionstrategy = Teuchos::getIntegralValue<FSI::DivContAct>(fsiada, "DIVERCONT");
+  if (erroractionstrategy != FSI::divcont_stop and erroractionstrategy != FSI::divcont_continue)
     isadasolver_ = true;
 
   flmethod_ = fluid_field()->get_tim_ada_method_name();

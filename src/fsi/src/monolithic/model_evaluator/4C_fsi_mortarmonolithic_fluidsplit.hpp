@@ -13,8 +13,8 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_monolithic.hpp"
-#include "4C_inpar_fsi.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -291,10 +291,10 @@ namespace FSI
     std::shared_ptr<Core::LinAlg::Vector<double>> aleresidual_;
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
-    Inpar::FSI::LinearBlockSolver linearsolverstrategy_;
+    FSI::LinearBlockSolver linearsolverstrategy_;
 
     /// ale movement relative to structure (none, slide_curr, slide_ref)
-    Inpar::FSI::SlideALEProj aleproj_;
+    FSI::SlideALEProj aleproj_;
     bool notsetup_;  ///< indicates if Setup has not been called yet
 
     std::shared_ptr<FSI::Utils::SlideAleUtils> slideale_;  ///< Sliding Ale helper class

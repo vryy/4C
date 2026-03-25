@@ -17,6 +17,7 @@
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fluid_xfluid.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_nox_aitken.hpp"
 #include "4C_fsi_nox_fixpoint.hpp"
 #include "4C_fsi_nox_jacobian.hpp"
@@ -25,7 +26,6 @@
 #include "4C_fsi_nox_sd.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_io_control.hpp"
 #include "4C_solver_nonlin_nox_group_base.hpp"
 #include "4C_solver_nonlin_nox_matrixfree.hpp"
@@ -473,10 +473,10 @@ void FSI::Partitioned::timeloop(const std::shared_ptr<NOX::Nln::Interface::Requi
     // ==================================================================
 
     // In case of sliding ALE interfaces, 'remesh' fluid field
-    auto usedmethod = Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
+    auto usedmethod = Teuchos::getIntegralValue<FSI::PartitionedCouplingMethod>(
         fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
-    if (usedmethod == Inpar::FSI::DirichletNeumannSlideale)
+    if (usedmethod == FSI::PartitionedCouplingMethod::DirichletNeumannSlideale)
     {
       remeshing();
     }

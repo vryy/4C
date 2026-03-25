@@ -12,8 +12,8 @@
 #include "4C_fsi_dirichletneumann_vel.hpp"
 #include "4C_fsi_dirichletneumann_volcoupl.hpp"
 #include "4C_fsi_dirichletneumannslideale.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -25,17 +25,16 @@ std::shared_ptr<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algo
     MPI_Comm comm, const Teuchos::ParameterList& fsidyn)
 {
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  auto method =
-      Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(fsipart, "PARTITIONED");
+  auto method = Teuchos::getIntegralValue<FSI::PartitionedCouplingMethod>(fsipart, "PARTITIONED");
   switch (method)
   {
-    case Inpar::FSI::DirichletNeumannSlideale:
+    case FSI::PartitionedCouplingMethod::DirichletNeumannSlideale:
       switch (Global::Problem::instance()->get_problem_type())
       {
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):
-          if (Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
-              Inpar::FSI::CoupVarPart::vel)
+          if (Teuchos::getIntegralValue<FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
+              FSI::CoupVarPart::vel)
           {
             FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "
@@ -49,13 +48,13 @@ std::shared_ptr<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algo
           break;
       }
       break;
-    case Inpar::FSI::DirichletNeumannVolCoupl:
+    case FSI::PartitionedCouplingMethod::DirichletNeumannVolCoupl:
       switch (Global::Problem::instance()->get_problem_type())
       {
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):
-          if (Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
-              Inpar::FSI::CoupVarPart::vel)
+          if (Teuchos::getIntegralValue<FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
+              FSI::CoupVarPart::vel)
           {
             FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "
@@ -69,14 +68,14 @@ std::shared_ptr<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algo
           break;
       }
       break;
-    case Inpar::FSI::DirichletNeumann:
+    case FSI::PartitionedCouplingMethod::DirichletNeumann:
       switch (Global::Problem::instance()->get_problem_type())
       {
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):
         case (Core::ProblemType::fsi_xfem):
-          if (Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
-              Inpar::FSI::CoupVarPart::vel)
+          if (Teuchos::getIntegralValue<FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
+              FSI::CoupVarPart::vel)
           {
             FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "
@@ -86,8 +85,8 @@ std::shared_ptr<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algo
             return std::shared_ptr<FSI::DirichletNeumann>(new FSI::DirichletNeumannDisp(comm));
           break;
         case (Core::ProblemType::fbi):
-          if (Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
-              Inpar::FSI::CoupVarPart::disp)
+          if (Teuchos::getIntegralValue<FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
+              FSI::CoupVarPart::disp)
           {
             FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "

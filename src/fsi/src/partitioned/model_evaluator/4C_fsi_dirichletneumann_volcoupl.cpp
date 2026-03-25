@@ -17,8 +17,8 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_geometry_searchtree.hpp"
 #include "4C_fem_geometry_searchtree_service.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -44,8 +44,8 @@ void FSI::DirichletNeumannVolCoupl::setup()
 
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  set_kinematic_coupling(Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(
-                             fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp);
+  set_kinematic_coupling(Teuchos::getIntegralValue<FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
+                         FSI::CoupVarPart::disp);
 
   if (!get_kinematic_coupling()) FOUR_C_THROW("Currently only displacement coupling is supported!");
 

@@ -26,12 +26,12 @@
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_fpsi_input.hpp"
 #include "4C_fs3i_input.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_geometric_search_input.hpp"
 #include "4C_global_legacy_module_problem_type_string.hpp"
 #include "4C_inpar_bio.hpp"
 #include "4C_inpar_cardiac_monodomain.hpp"
 #include "4C_inpar_fluid.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_inpar_io.hpp"
 #include "4C_inpar_IO_runtime_output.hpp"
 #include "4C_inpar_IO_runtime_output_fluid.hpp"
@@ -332,6 +332,7 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
 
   push_specs(specs, Inpar::S2I::valid_parameters());
   push_specs(specs, FS3I::valid_parameters());
+  push_specs(specs, FSI::valid_parameters());
   push_specs(specs, PoroElast::valid_parameters());
   push_specs(specs, PoroElastScaTra::valid_parameters());
   push_specs(specs, PoroPressureBased::valid_parameters_porofluid());
@@ -341,7 +342,6 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
   push_specs(specs, SSI::valid_parameters());
   push_specs(specs, SSTI::valid_parameters());
   push_specs(specs, ALE::valid_parameters());
-  push_specs(specs, Inpar::FSI::valid_parameters());
 
   push_specs(specs, ArtDyn::valid_parameters());
   push_specs(specs, ArteryNetwork::valid_parameters());

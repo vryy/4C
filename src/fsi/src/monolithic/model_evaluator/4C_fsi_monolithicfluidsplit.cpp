@@ -208,7 +208,7 @@ void FSI::MonolithicFluidSplit::setup_system()
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
-      Teuchos::getIntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      Teuchos::getIntegralValue<FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -946,7 +946,7 @@ void FSI::MonolithicFluidSplit::unscale_solution(Core::LinAlg::BlockSparseMatrix
   sr->norm_2(&ns);
   fr->norm_2(&nf);
   ar->norm_2(&na);
-  if (verbosity_ == Inpar::FSI::verbosity_full)
+  if (verbosity_ == FSI::verbosity_full)
   {
     utils()->out() << std::scientific << "\nlinear solver quality:\n"
                    << "L_2-norms:\n"
@@ -957,7 +957,7 @@ void FSI::MonolithicFluidSplit::unscale_solution(Core::LinAlg::BlockSparseMatrix
   sr->norm_inf(&ns);
   fr->norm_inf(&nf);
   ar->norm_inf(&na);
-  if (verbosity_ == Inpar::FSI::verbosity_full)
+  if (verbosity_ == FSI::verbosity_full)
   {
     utils()->out() << "L_inf-norms:\n"
                    << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
@@ -1338,7 +1338,7 @@ void FSI::MonolithicFluidSplit::read_restart(int step)
 void FSI::MonolithicFluidSplit::prepare_time_step()
 {
   increment_time_and_step();
-  if (verbosity_ >= Inpar::FSI::verbosity_low) print_header();
+  if (verbosity_ >= FSI::verbosity_low) print_header();
 
   prepare_time_step_preconditioner();
 

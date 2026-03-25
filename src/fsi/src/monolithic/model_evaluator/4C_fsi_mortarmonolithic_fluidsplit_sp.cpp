@@ -1142,19 +1142,19 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::evaluate(
   // only. But the Jacobian is stored internally and will be returned
   // later on without looking at x again!
 
-  if (verbosity_ >= Inpar::FSI::verbosity_medium) utils()->out() << "\nEvaluate elements\n";
+  if (verbosity_ >= FSI::verbosity_medium) utils()->out() << "\nEvaluate elements\n";
 
   {
     Teuchos::Time ts("structure", true);
     structure_field()->evaluate(sx);
-    if (verbosity_ >= Inpar::FSI::verbosity_medium)
+    if (verbosity_ >= FSI::verbosity_medium)
       utils()->out() << "structure           : " << ts.totalElapsedTime(true) << " sec\n";
   }
 
   {
     Teuchos::Time ta("ale", true);
     ale_field()->evaluate(ax);
-    if (verbosity_ >= Inpar::FSI::verbosity_medium)
+    if (verbosity_ >= FSI::verbosity_medium)
       utils()->out() << "ale                 : " << ta.totalElapsedTime(true) << " sec\n";
   }
 
@@ -1165,7 +1165,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::evaluate(
   {
     Teuchos::Time tf("fluid", true);
     fluid_field()->evaluate(fx);
-    if (verbosity_ >= Inpar::FSI::verbosity_medium)
+    if (verbosity_ >= FSI::verbosity_medium)
       utils()->out() << "fluid                : " << tf.totalElapsedTime(true) << " sec\n";
   }
 
@@ -1174,12 +1174,12 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::evaluate(
     {
       Teuchos::Time tlm("lag_mult", true);
       lag_mult_->update(1.0, *lag_mult_old_, 1.0, *lagx, 0.0);
-      if (verbosity_ >= Inpar::FSI::verbosity_medium)
+      if (verbosity_ >= FSI::verbosity_medium)
         utils()->out() << "Lagrange multiplier: " << tlm.totalElapsedTime(true) << " sec\n";
     }
   }
 
-  if (verbosity_ >= Inpar::FSI::verbosity_medium) utils()->out() << "\n";
+  if (verbosity_ >= FSI::verbosity_medium) utils()->out() << "\n";
 }
 
 /*----------------------------------------------------------------------------*/

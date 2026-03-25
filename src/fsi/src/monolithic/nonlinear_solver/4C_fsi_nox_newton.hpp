@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_fsi.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <NOX_Direction_Newton.H>
@@ -61,7 +61,7 @@ namespace NOX
       double better_;
 
       /// verbosity level of FSI algorithm
-      Inpar::FSI::Verbosity verbosity_;
+      FourC::FSI::Verbosity verbosity_;
 
       std::vector<double> cresiduals_;
       std::vector<double> dresiduals_;

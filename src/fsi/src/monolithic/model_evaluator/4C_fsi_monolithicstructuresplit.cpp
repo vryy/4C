@@ -838,7 +838,7 @@ void FSI::MonolithicStructureSplit::unscale_solution(Core::LinAlg::BlockSparseMa
   sr->norm_2(&ns);
   fr->norm_2(&nf);
   ar->norm_2(&na);
-  if (verbosity_ == Inpar::FSI::verbosity_full)
+  if (verbosity_ == FSI::verbosity_full)
   {
     utils()->out() << std::scientific << "\nlinear solver quality:\n"
                    << "L_2-norms:\n"
@@ -849,7 +849,7 @@ void FSI::MonolithicStructureSplit::unscale_solution(Core::LinAlg::BlockSparseMa
   sr->norm_inf(&ns);
   fr->norm_inf(&nf);
   ar->norm_inf(&na);
-  if (verbosity_ == Inpar::FSI::verbosity_full)
+  if (verbosity_ == FSI::verbosity_full)
   {
     utils()->out() << "L_inf-norms:\n"
                    << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na

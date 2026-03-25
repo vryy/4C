@@ -13,8 +13,8 @@
 #include "4C_adapter_algorithmbase.hpp"
 #include "4C_adapter_fld_base_algorithm.hpp"
 #include "4C_coupling_adapter.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_monolithicinterface.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_solver_nonlin_nox_interface_jacobian_base.hpp"
 #include "4C_solver_nonlin_nox_interface_required_base.hpp"
@@ -255,7 +255,7 @@ namespace FSI
     //@{
 
     /// verbosity level of FSI algorithm
-    const Inpar::FSI::Verbosity verbosity_;
+    const FSI::Verbosity verbosity_;
 
     //@}
 

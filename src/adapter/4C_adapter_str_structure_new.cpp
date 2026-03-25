@@ -25,8 +25,8 @@
 #include "4C_fem_condition_point_coupling_redistribution.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -838,8 +838,9 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
     case Core::ProblemType::fbi:
     {
       const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
-      if (Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
-              fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED") == Inpar::FSI::DirichletNeumann)
+      if (Teuchos::getIntegralValue<FSI::PartitionedCouplingMethod>(
+              fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED") ==
+          FSI::PartitionedCouplingMethod::DirichletNeumann)
         str_wrapper_ = std::make_shared<FBIStructureWrapper>(ti_strategy);
       else
         FOUR_C_THROW("Only DirichletNeumann is implemented for FBI so far");

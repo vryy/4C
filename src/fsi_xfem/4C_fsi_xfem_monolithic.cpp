@@ -17,12 +17,12 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_fem_discretization_nullspace.hpp"
 #include "4C_fluid_xfluid.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_xfem_XFAcoupling_manager.hpp"
 #include "4C_fsi_xfem_XFFcoupling_manager.hpp"
 #include "4C_fsi_xfem_XFPcoupling_manager.hpp"
 #include "4C_fsi_xfem_XFScoupling_manager.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
@@ -69,9 +69,9 @@ FSI::MonolithicXFEM::MonolithicXFEM(MPI_Comm comm, const Teuchos::ParameterList&
       itermax_(fsimono_.get<int>("ITEMAX")),
       itermax_outer_(xfpsimono_.get<int>("ITEMAX_OUTER")),
       /// Convergence criterion and convergence tolerances for Newton scheme
-      normtypeinc_(Teuchos::getIntegralValue<Inpar::FSI::ConvNorm>(fsimono_, "NORM_INC")),
-      normtypefres_(Teuchos::getIntegralValue<Inpar::FSI::ConvNorm>(fsimono_, "NORM_RESF")),
-      combincfres_(Teuchos::getIntegralValue<Inpar::FSI::BinaryOp>(fsimono_, "NORMCOMBI_RESFINC")),
+      normtypeinc_(Teuchos::getIntegralValue<FSI::ConvNorm>(fsimono_, "NORM_INC")),
+      normtypefres_(Teuchos::getIntegralValue<FSI::ConvNorm>(fsimono_, "NORM_RESF")),
+      combincfres_(Teuchos::getIntegralValue<FSI::BinaryOp>(fsimono_, "NORMCOMBI_RESFINC")),
       tolinc_(fsimono_.get<double>("CONVTOL")),
       tolfres_(fsimono_.get<double>("CONVTOL")),
       /// set tolerances for nonlinear solver
@@ -1674,10 +1674,10 @@ bool FSI::MonolithicXFEM::converged()
   // structural and fluid increments
   switch (normtypeinc_)
   {
-    case Inpar::FSI::convnorm_abs:
+    case FSI::convnorm_abs:
       convinc = norminc_ < tolinc_;
       break;
-    case Inpar::FSI::convnorm_rel:
+    case FSI::convnorm_rel:
       convinc =
           (((normstrinc_l2_ / ns_) < tol_dis_inc_l2_) and ((normstrinc_inf_) < tol_dis_inc_inf_) and
               ((normflvelinc_l2_ / nfv_) < tol_vel_inc_l2_) and
@@ -1685,7 +1685,7 @@ bool FSI::MonolithicXFEM::converged()
               ((normflpresinc_l2_ / nfp_) < tol_pre_inc_l2_) and
               ((normflpresinc_inf_) < tol_pre_inc_inf_));
       break;
-    case Inpar::FSI::convnorm_mix:
+    case FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
       break;
     default:
@@ -1697,10 +1697,10 @@ bool FSI::MonolithicXFEM::converged()
   // structural and fluid residual forces
   switch (normtypefres_)
   {
-    case Inpar::FSI::convnorm_abs:
+    case FSI::convnorm_abs:
       convfres = normrhs_ < tolfres_;
       break;
-    case Inpar::FSI::convnorm_rel:
+    case FSI::convnorm_rel:
       convfres =
           (((normstrrhs_l2_ / ns_) < tol_dis_res_l2_) and ((normstrrhs_inf_) < tol_dis_res_inf_) and
               ((normflvelrhs_l2_ / nfv_) < tol_vel_res_l2_) and
@@ -1708,7 +1708,7 @@ bool FSI::MonolithicXFEM::converged()
               ((normflpresrhs_l2_ / nfp_) < tol_pre_res_l2_) and
               ((normflpresrhs_inf_) < tol_pre_res_inf_));
       break;
-    case Inpar::FSI::convnorm_mix:
+    case FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
       break;
     default:
@@ -1720,7 +1720,7 @@ bool FSI::MonolithicXFEM::converged()
   // combined increment + residual check?
   bool converged = false;
 
-  if (combincfres_ == Inpar::FSI::bop_and)
+  if (combincfres_ == FSI::bop_and)
   {
     converged = (convinc and convfres);
   }
@@ -2398,11 +2398,11 @@ void FSI::MonolithicXFEM::print_newton_iter_header()
   // displacement
   switch (normtypefres_)
   {
-    case Inpar::FSI::convnorm_abs:
+    case FSI::convnorm_abs:
       Core::IO::cout << "            "
                      << "abs-res-norm  |";
       break;
-    case Inpar::FSI::convnorm_rel:
+    case FSI::convnorm_rel:
       Core::IO::cout << "str-rs-l2|"
                      << "flv-rs-l2|"
                      << "flp-rs-l2|";
@@ -2410,7 +2410,7 @@ void FSI::MonolithicXFEM::print_newton_iter_header()
                      << "flv-rs-li|"
                      << "flp-rs-li|";
       break;
-    case Inpar::FSI::convnorm_mix:
+    case FSI::convnorm_mix:
       FOUR_C_THROW("not implemented");
       break;
     default:
@@ -2420,11 +2420,11 @@ void FSI::MonolithicXFEM::print_newton_iter_header()
 
   switch (normtypeinc_)
   {
-    case Inpar::FSI::convnorm_abs:
+    case FSI::convnorm_abs:
       Core::IO::cout << "                  "
                      << "abs-inc-norm";
       break;
-    case Inpar::FSI::convnorm_rel:
+    case FSI::convnorm_rel:
       Core::IO::cout << "str-in-l2|"
                      << "flv-in-l2|"
                      << "flp-in-l2|";
@@ -2432,7 +2432,7 @@ void FSI::MonolithicXFEM::print_newton_iter_header()
                      << "flv-in-li|"
                      << "flp-in-li|";
       break;
-    case Inpar::FSI::convnorm_mix:
+    case FSI::convnorm_mix:
       FOUR_C_THROW("not implemented");
       break;
     default:
@@ -2472,15 +2472,15 @@ void FSI::MonolithicXFEM::print_newton_iter_text()
   // displacement
   switch (normtypefres_)
   {
-    case Inpar::FSI::convnorm_abs:
+    case FSI::convnorm_abs:
       Core::IO::cout << "             " << (normrhs_) << Core::IO::endl;
       break;
-    case Inpar::FSI::convnorm_rel:
+    case FSI::convnorm_rel:
       Core::IO::cout << "|" << (normstrrhs_l2_ / ns_) << "|" << (normflvelrhs_l2_ / nfv_) << "|"
                      << (normflpresrhs_l2_ / nfp_) << "|" << (normstrrhs_inf_) << "|"
                      << (normflvelrhs_inf_) << "|" << (normflpresrhs_inf_);
       break;
-    case Inpar::FSI::convnorm_mix:
+    case FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
       break;
     default:
@@ -2490,15 +2490,15 @@ void FSI::MonolithicXFEM::print_newton_iter_text()
 
   switch (normtypeinc_)
   {
-    case Inpar::FSI::convnorm_abs:
+    case FSI::convnorm_abs:
       Core::IO::cout << "             " << (norminc_) << Core::IO::endl;
       break;
-    case Inpar::FSI::convnorm_rel:
+    case FSI::convnorm_rel:
       Core::IO::cout << "|" << (normstrinc_l2_ / ns_) << "|" << (normflvelinc_l2_ / nfv_) << "|"
                      << (normflpresinc_l2_ / nfp_) << "|" << (normstrinc_inf_) << "|"
                      << (normflvelinc_inf_) << "|" << (normflpresinc_inf_) << "|" << Core::IO::endl;
       break;
-    case Inpar::FSI::convnorm_mix:
+    case FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
       break;
     default:

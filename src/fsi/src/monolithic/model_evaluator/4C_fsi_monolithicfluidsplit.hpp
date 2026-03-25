@@ -11,8 +11,8 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_monolithic.hpp"
-#include "4C_inpar_fsi.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -270,7 +270,7 @@ namespace FSI
     std::shared_ptr<Core::LinAlg::Vector<double>> aleresidual_;
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
-    Inpar::FSI::LinearBlockSolver linearsolverstrategy_;
+    FSI::LinearBlockSolver linearsolverstrategy_;
 
     /// @name Recovery of Lagrange multiplier at the end of each time step
 

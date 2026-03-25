@@ -14,8 +14,8 @@
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_dirichletneumann_volcoupl.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_io.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

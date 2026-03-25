@@ -11,8 +11,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_xfem_algorithm.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_inpar_xfem.hpp"
 #include "4C_linalg_mapextractor.hpp"
 
@@ -459,9 +459,9 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name Convergence criterion and convergence tolerances for Newton scheme
 
-    const Inpar::FSI::ConvNorm normtypeinc_;   //!< convergence check for increment
-    const Inpar::FSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
-    const enum Inpar::FSI::BinaryOp
+    const FSI::ConvNorm normtypeinc_;   //!< convergence check for increment
+    const FSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    const enum FSI::BinaryOp
         combincfres_;  //!< binary operator to check for increment plus residual convergence or not
 
     const double tolinc_;   //!< tolerance full increment (structure + fluid)

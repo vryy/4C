@@ -11,8 +11,8 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_monolithic.hpp"
-#include "4C_inpar_fsi.hpp"
 
 namespace NOX
 {

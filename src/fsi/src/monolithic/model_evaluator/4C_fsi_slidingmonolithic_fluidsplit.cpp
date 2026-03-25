@@ -222,9 +222,9 @@ void FSI::SlidingMonolithicFluidSplit::setup_system()
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     linearsolverstrategy_ =
-        Teuchos::getIntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+        Teuchos::getIntegralValue<FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-    aleproj_ = Teuchos::getIntegralValue<Inpar::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
+    aleproj_ = Teuchos::getIntegralValue<FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
 
     set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -288,7 +288,7 @@ void FSI::SlidingMonolithicFluidSplit::setup_system()
 
     create_system_matrix();
 
-    if (aleproj_ != Inpar::FSI::ALEprojection_none)
+    if (aleproj_ != FSI::ALEprojection_none)
     {
       // set up sliding ale utils
       slideale_ = std::make_shared<FSI::Utils::SlideAleUtils>(structure_field()->discretization(),
@@ -649,7 +649,7 @@ void FSI::SlidingMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<
   // ----------end of inner ALE DOFs
 
   // only if relative movement between ale and structure is possible
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     // get block ale matrix
     std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->block_system_matrix();
@@ -1432,7 +1432,7 @@ void FSI::SlidingMonolithicFluidSplit::update()
   lambdaold_->update(1.0, *lambda_, 0.0);
 
   // update history variables for sliding ale
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     iprojdisp_ = std::make_shared<Core::LinAlg::Vector<double>>(*coupsfm_->slave_dof_map(), true);
     std::shared_ptr<Core::LinAlg::Vector<double>> idispale = ale_to_fluid_interface(
@@ -1470,7 +1470,7 @@ void FSI::SlidingMonolithicFluidSplit::output()
   structure_field()->output();
   fluid_field()->output();
 
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     int uprestart = timeparams_.get<int>("RESTARTEVERY");
     if (uprestart != 0 && fluid_field()->step() % uprestart == 0)
@@ -1536,7 +1536,7 @@ void FSI::SlidingMonolithicFluidSplit::read_restart(int step)
 
   setup_system();
 
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     Core::IO::DiscretizationReader reader =
         Core::IO::DiscretizationReader(*fluid_field()->discretization(), input_control_file, step);
@@ -1548,7 +1548,7 @@ void FSI::SlidingMonolithicFluidSplit::read_restart(int step)
 
   set_time_step(fluid_field()->time(), fluid_field()->step());
 
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
     slideale_->evaluate_mortar(
         *structure_field()->extract_interface_dispn(), *iprojdisp_, *coupsfm_);
 }

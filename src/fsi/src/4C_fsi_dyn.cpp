@@ -39,6 +39,7 @@
 #include "4C_fsi_fluidfluidmonolithic_fluidsplit_nonox.hpp"
 #include "4C_fsi_fluidfluidmonolithic_structuresplit.hpp"
 #include "4C_fsi_fluidfluidmonolithic_structuresplit_nonox.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
 #include "4C_fsi_monolithicstructuresplit.hpp"
 #include "4C_fsi_mortarmonolithic_fluidsplit.hpp"
@@ -51,7 +52,6 @@
 #include "4C_fsi_xfem_fluid.hpp"
 #include "4C_fsi_xfem_monolithic.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_poroelast_utils_clonestrategy.hpp"
 #include "4C_poroelast_utils_setup.hpp"
@@ -321,9 +321,9 @@ void fsi_immersed_drt()
   // Any partitioned algorithm.
   std::shared_ptr<FSI::Partitioned> fsi;
 
-  auto method = Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
+  auto method = Teuchos::getIntegralValue<FSI::PartitionedCouplingMethod>(
       fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
-  if (method == Inpar::FSI::DirichletNeumann)
+  if (method == FSI::PartitionedCouplingMethod::DirichletNeumann)
   {
     fsi = FSI::DirichletNeumannFactory::create_algorithm(comm, fsidyn);
     std::dynamic_pointer_cast<FSI::DirichletNeumann>(fsi)->setup();
@@ -498,7 +498,7 @@ void fsi_ale_drt()
       std::shared_ptr<FSI::Monolithic> fsi;
 
       auto linearsolverstrategy =
-          Teuchos::getIntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+          Teuchos::getIntegralValue<FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
       // call constructor to initialize the base class
       if (coupling == fsi_iter_monolithicfluidsplit)
@@ -636,14 +636,14 @@ void fsi_ale_drt()
 
       std::shared_ptr<FSI::Partitioned> fsi;
 
-      auto method = Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
+      auto method = Teuchos::getIntegralValue<FSI::PartitionedCouplingMethod>(
           fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
       switch (method)
       {
-        case Inpar::FSI::DirichletNeumann:
-        case Inpar::FSI::DirichletNeumannSlideale:
-        case Inpar::FSI::DirichletNeumannVolCoupl:
+        case FSI::PartitionedCouplingMethod::DirichletNeumann:
+        case FSI::PartitionedCouplingMethod::DirichletNeumannSlideale:
+        case FSI::PartitionedCouplingMethod::DirichletNeumannVolCoupl:
           fsi = FSI::DirichletNeumannFactory::create_algorithm(comm, fsidyn);
           std::dynamic_pointer_cast<FSI::DirichletNeumann>(fsi)->setup();
           break;
@@ -749,9 +749,9 @@ void xfsi_drt()
       const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
       auto linearsolverstrategy =
-          Teuchos::getIntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+          Teuchos::getIntegralValue<FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-      if (linearsolverstrategy != Inpar::FSI::PreconditionedKrylov)
+      if (linearsolverstrategy != FSI::PreconditionedKrylov)
         FOUR_C_THROW("Only Newton-Krylov scheme with XFEM fluid");
 
       // create the MonolithicXFEM object that does the whole work
@@ -793,12 +793,12 @@ void xfsi_drt()
 
       std::shared_ptr<FSI::Partitioned> fsi;
 
-      auto method = Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
+      auto method = Teuchos::getIntegralValue<FSI::PartitionedCouplingMethod>(
           fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
       switch (method)
       {
-        case Inpar::FSI::DirichletNeumann:
+        case FSI::PartitionedCouplingMethod::DirichletNeumann:
           fsi = FSI::DirichletNeumannFactory::create_algorithm(comm, fsidyn);
           std::dynamic_pointer_cast<FSI::DirichletNeumann>(fsi)->setup();
           break;
@@ -904,9 +904,9 @@ void xfpsi_drt()
       // monolithic solver settings
       const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
       auto linearsolverstrategy =
-          Teuchos::getIntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+          Teuchos::getIntegralValue<FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-      if (linearsolverstrategy != Inpar::FSI::PreconditionedKrylov)
+      if (linearsolverstrategy != FSI::PreconditionedKrylov)
         FOUR_C_THROW("Only Newton-Krylov scheme with XFEM fluid");
 
       FSI::MonolithicXFEM fsi(comm, fsidyn, Adapter::FieldWrapper::type_PoroField);

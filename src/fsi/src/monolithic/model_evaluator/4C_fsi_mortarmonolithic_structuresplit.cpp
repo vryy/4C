@@ -16,10 +16,10 @@
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_statustest.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -223,9 +223,9 @@ void FSI::MortarMonolithicStructureSplit::setup_system()
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     linearsolverstrategy_ =
-        Teuchos::getIntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+        Teuchos::getIntegralValue<FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-    aleproj_ = Teuchos::getIntegralValue<Inpar::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
+    aleproj_ = Teuchos::getIntegralValue<FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
 
     set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -292,7 +292,7 @@ void FSI::MortarMonolithicStructureSplit::setup_system()
     create_system_matrix();
 
     // set up sliding ale if necessary
-    if (aleproj_ != Inpar::FSI::ALEprojection_none)
+    if (aleproj_ != FSI::ALEprojection_none)
     {
       // mesh_init possibly modifies reference configuration of slave side --> recompute element
       // volume in initialize_elements()
@@ -674,7 +674,7 @@ void FSI::MortarMonolithicStructureSplit::setup_rhs_firstiter(Core::LinAlg::Vect
   // ----------end of inner ALE DOFs
 
   // only if relative movement between ale and structure is possible
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     rhs = std::make_shared<Core::LinAlg::Vector<double>>(aig.row_map(), true);
 
@@ -848,7 +848,7 @@ void FSI::MortarMonolithicStructureSplit::update()
   lambdaold_->update(1.0, *lambda_, 0.0);
 
   // update history variables for sliding ale
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     iprojdisp_ = std::make_shared<Core::LinAlg::Vector<double>>(*coupsfm_->master_dof_map(), true);
     std::shared_ptr<Core::LinAlg::Vector<double>> idispale = ale_to_fluid_interface(
@@ -1308,7 +1308,7 @@ void FSI::MortarMonolithicStructureSplit::output()
 
   fluid_field()->output();
 
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     int uprestart = timeparams_.get<int>("RESTARTEVERY");
     if (uprestart != 0 && fluid_field()->step() % uprestart == 0)
@@ -1372,7 +1372,7 @@ void FSI::MortarMonolithicStructureSplit::read_restart(int step)
 
   setup_system();
 
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     Core::IO::DiscretizationReader reader =
         Core::IO::DiscretizationReader(*fluid_field()->discretization(), input_control_file, step);
@@ -1385,7 +1385,7 @@ void FSI::MortarMonolithicStructureSplit::read_restart(int step)
 
   set_time_step(fluid_field()->time(), fluid_field()->step());
 
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
     slideale_->evaluate_mortar(
         *structure_field()->extract_interface_dispn(), *iprojdisp_, *coupsfm_);
 }
