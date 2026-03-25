@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-NOX::FSI::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,
+FSI::Nonlinear::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::shared_ptr<NOX::Nln::Interface::RequiredBase> iReq,
     const std::shared_ptr<NOX::Nln::Interface::JacobianBase> iJac,
@@ -38,7 +38,7 @@ NOX::FSI::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,
 }
 
 
-void NOX::FSI::LinearSystemGCR::reset(Teuchos::ParameterList& linearSolverParams)
+void FSI::Nonlinear::LinearSystemGCR::reset(Teuchos::ParameterList& linearSolverParams)
 {
   zeroInitialGuess = linearSolverParams.get("Zero Initial Guess", false);
 
@@ -54,7 +54,7 @@ void NOX::FSI::LinearSystemGCR::reset(Teuchos::ParameterList& linearSolverParams
 }
 
 
-bool NOX::FSI::LinearSystemGCR::apply_jacobian(
+bool FSI::Nonlinear::LinearSystemGCR::apply_jacobian(
     const NOX::Nln::Vector& input, NOX::Nln::Vector& result) const
 {
   jacPtr->multiply(false, input.get_linalg_vector(), result.get_linalg_vector());
@@ -62,7 +62,7 @@ bool NOX::FSI::LinearSystemGCR::apply_jacobian(
 }
 
 
-bool NOX::FSI::LinearSystemGCR::apply_jacobian_transpose(
+bool FSI::Nonlinear::LinearSystemGCR::apply_jacobian_transpose(
     const NOX::Nln::Vector& input, NOX::Nln::Vector& result) const
 {
   jacPtr->multiply(true, input.get_linalg_vector(), result.get_linalg_vector());
@@ -70,7 +70,7 @@ bool NOX::FSI::LinearSystemGCR::apply_jacobian_transpose(
 }
 
 
-bool NOX::FSI::LinearSystemGCR::apply_jacobian_inverse(
+bool FSI::Nonlinear::LinearSystemGCR::apply_jacobian_inverse(
     Teuchos::ParameterList& p, const NOX::Nln::Vector& input, NOX::Nln::Vector& result)
 {
   double startTime = timer.wallTime();
@@ -111,7 +111,7 @@ bool NOX::FSI::LinearSystemGCR::apply_jacobian_inverse(
     status = solve_gcr(input, result, maxit, tol);
   else
   {
-    utils.out() << "ERROR: NOX::FSI::LinearSystemGCR::apply_jacobian_inverse()" << std::endl
+    utils.out() << "ERROR: FSI::Nonlinear::LinearSystemGCR::apply_jacobian_inverse()" << std::endl
                 << "\"Solver\" parameter \"" << linearSolver << "\" is invalid!" << std::endl;
     throw "NOX Error";
   }
@@ -141,7 +141,7 @@ bool NOX::FSI::LinearSystemGCR::apply_jacobian_inverse(
 }
 
 
-int NOX::FSI::LinearSystemGCR::solve_gcr(
+int FSI::Nonlinear::LinearSystemGCR::solve_gcr(
     const NOX::Nln::Vector& b, NOX::Nln::Vector& x, int& maxit, double& tol)
 {
   NOX::Nln::Vector r(x, ::NOX::ShapeCopy);
@@ -216,7 +216,7 @@ int NOX::FSI::LinearSystemGCR::solve_gcr(
 }
 
 
-int NOX::FSI::LinearSystemGCR::solve_gmres(
+int FSI::Nonlinear::LinearSystemGCR::solve_gmres(
     const NOX::Nln::Vector& b, NOX::Nln::Vector& x, int& max_iter, double& tol, int m)
 {
   double resid = 0;
@@ -335,7 +335,7 @@ int NOX::FSI::LinearSystemGCR::solve_gmres(
 }
 
 
-void NOX::FSI::LinearSystemGCR::generate_plane_rotation(
+void FSI::Nonlinear::LinearSystemGCR::generate_plane_rotation(
     double& dx, double& dy, double& cs, double& sn)
 {
   if (dy == 0.0)
@@ -358,7 +358,8 @@ void NOX::FSI::LinearSystemGCR::generate_plane_rotation(
 }
 
 
-void NOX::FSI::LinearSystemGCR::apply_plane_rotation(double& dx, double& dy, double& cs, double& sn)
+void FSI::Nonlinear::LinearSystemGCR::apply_plane_rotation(
+    double& dx, double& dy, double& cs, double& sn)
 {
   double temp = cs * dx + sn * dy;
   dy = -sn * dx + cs * dy;
@@ -366,7 +367,7 @@ void NOX::FSI::LinearSystemGCR::apply_plane_rotation(double& dx, double& dy, dou
 }
 
 
-bool NOX::FSI::LinearSystemGCR::compute_jacobian(const NOX::Nln::Vector& x)
+bool FSI::Nonlinear::LinearSystemGCR::compute_jacobian(const NOX::Nln::Vector& x)
 {
   bool success = jacInterfacePtr->compute_jacobian(x.get_linalg_vector(), *jacPtr);
   return success;
@@ -374,24 +375,26 @@ bool NOX::FSI::LinearSystemGCR::compute_jacobian(const NOX::Nln::Vector& x)
 
 
 std::shared_ptr<const Core::LinAlg::SparseOperator>
-NOX::FSI::LinearSystemGCR::get_jacobian_operator() const
+FSI::Nonlinear::LinearSystemGCR::get_jacobian_operator() const
 {
   return jacPtr;
 }
 
 
-std::shared_ptr<Core::LinAlg::SparseOperator> NOX::FSI::LinearSystemGCR::get_jacobian_operator()
+std::shared_ptr<Core::LinAlg::SparseOperator>
+FSI::Nonlinear::LinearSystemGCR::get_jacobian_operator()
 {
   return jacPtr;
 }
 
 
-void NOX::FSI::LinearSystemGCR::throw_error(
+void FSI::Nonlinear::LinearSystemGCR::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils.isPrintType(::NOX::Utils::Error))
   {
-    utils.out() << "NOX::FSI::LinearSystemGCR::" << functionName << " - " << errorMsg << std::endl;
+    utils.out() << "FSI::Nonlinear::LinearSystemGCR::" << functionName << " - " << errorMsg
+                << std::endl;
   }
   throw "NOX Error";
 }

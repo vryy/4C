@@ -11,8 +11,8 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -656,7 +656,7 @@ int Discret::Elements::SolidSurface::evaluate(Teuchos::ParameterList& params,
       if (Core::Communication::my_mpi_rank(Comm) == owner())
       {
         const double maxcoord = params.get<double>("maxcoord");
-        Inpar::FSI::SlideALEProj aletype = params.get<Inpar::FSI::SlideALEProj>("aletype");
+        FSI::SlideALEProj aletype = params.get<FSI::SlideALEProj>("aletype");
         const int numnode = num_node();
         const int numdf = 3;
         double tol = 1.0E-5;
@@ -695,8 +695,7 @@ int Discret::Elements::SolidSurface::evaluate(Teuchos::ParameterList& params,
           surface_integration(detA, normal, xcn, deriv);
 
           Core::LinAlg::Tensor<double, 3> tangent;
-          if (aletype == Inpar::FSI::ALEprojection_rot_z ||
-              aletype == Inpar::FSI::ALEprojection_rot_zsphere)
+          if (aletype == FSI::ALEprojection_rot_z || aletype == FSI::ALEprojection_rot_zsphere)
           {
             // compute tangential direction in xy-plane from normal
             tangent(0) = -normal[1];
@@ -719,7 +718,7 @@ int Discret::Elements::SolidSurface::evaluate(Teuchos::ParameterList& params,
           {
             double scalarprod =
                 tangent(0) * edispincr[node * numdf] + tangent(1) * edispincr[node * numdf + 1];
-            if (aletype == Inpar::FSI::ALEprojection_rot_zsphere)
+            if (aletype == FSI::ALEprojection_rot_zsphere)
             {
               double circ(0.0);
               const double val = (1.0 - pow(xcn(node, 2) / maxcoord, 2.0));
@@ -749,7 +748,7 @@ int Discret::Elements::SolidSurface::evaluate(Teuchos::ParameterList& params,
     case calc_undo_struct_rotation:
     {
       const double maxcoord = params.get<double>("maxcoord");
-      Inpar::FSI::SlideALEProj aletype = params.get<Inpar::FSI::SlideALEProj>("aletype");
+      FSI::SlideALEProj aletype = params.get<FSI::SlideALEProj>("aletype");
       const int numnode = num_node();
       const int numdf = 3;
       double tol = 1.0E-5;
@@ -783,8 +782,7 @@ int Discret::Elements::SolidSurface::evaluate(Teuchos::ParameterList& params,
         surface_integration(normal, xcn, deriv);
 
         Core::LinAlg::Tensor<double, 3> tangent;
-        if (aletype == Inpar::FSI::ALEprojection_rot_z ||
-            aletype == Inpar::FSI::ALEprojection_rot_zsphere)
+        if (aletype == FSI::ALEprojection_rot_z || aletype == FSI::ALEprojection_rot_zsphere)
         {
           // compute tangential direction in xy-plane from normal
           tangent(0) = -normal[1];
@@ -801,7 +799,7 @@ int Discret::Elements::SolidSurface::evaluate(Teuchos::ParameterList& params,
           tangent *= 1.0 / (Core::LinAlg::norm2(tangent) * nodes()[node]->num_element());
         }
 
-        if (aletype == Inpar::FSI::ALEprojection_rot_zsphere)
+        if (aletype == FSI::ALEprojection_rot_zsphere)
         {
           double circ(0.0);
           const double val = (1.0 - pow(xcn(node, 2) / maxcoord, 2.0));

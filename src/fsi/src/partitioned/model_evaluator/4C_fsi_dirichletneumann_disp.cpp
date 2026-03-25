@@ -8,8 +8,8 @@
 #include "4C_fsi_dirichletneumann_disp.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -31,8 +31,8 @@ void FSI::DirichletNeumannDisp::setup()
   FSI::DirichletNeumann::setup();
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  set_kinematic_coupling(Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(
-                             fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp);
+  set_kinematic_coupling(Teuchos::getIntegralValue<FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
+                         FSI::CoupVarPart::disp);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

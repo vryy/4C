@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+FSI::Nonlinear::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::shared_ptr<NOX::Nln::Interface::JacobianBase> iJac,
     const std::shared_ptr<Core::LinAlg::SparseOperator>& J, const NOX::Nln::Vector& cloneVector,
@@ -40,7 +40,7 @@ NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::FSI::LinearSystem::reset(Teuchos::ParameterList& linearSolverParams)
+void FSI::Nonlinear::LinearSystem::reset(Teuchos::ParameterList& linearSolverParams)
 {
   zero_initial_guess_ = linearSolverParams.get("Zero Initial Guess", false);
   manual_scaling_ = linearSolverParams.get("Compute Scaling Manually", true);
@@ -50,7 +50,7 @@ void NOX::FSI::LinearSystem::reset(Teuchos::ParameterList& linearSolverParams)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::FSI::LinearSystem::apply_jacobian(
+bool FSI::Nonlinear::LinearSystem::apply_jacobian(
     const NOX::Nln::Vector& input, NOX::Nln::Vector& result) const
 {
   jac_ptr_->multiply(false, input.get_linalg_vector(), result.get_linalg_vector());
@@ -61,7 +61,7 @@ bool NOX::FSI::LinearSystem::apply_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::FSI::LinearSystem::apply_jacobian_transpose(
+bool FSI::Nonlinear::LinearSystem::apply_jacobian_transpose(
     const NOX::Nln::Vector& input, NOX::Nln::Vector& result) const
 {
   jac_ptr_->multiply(true, input.get_linalg_vector(), result.get_linalg_vector());
@@ -72,7 +72,7 @@ bool NOX::FSI::LinearSystem::apply_jacobian_transpose(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::FSI::LinearSystem::apply_jacobian_inverse(
+bool FSI::Nonlinear::LinearSystem::apply_jacobian_inverse(
     Teuchos::ParameterList& p, const NOX::Nln::Vector& input, NOX::Nln::Vector& result)
 {
   // Zero out the delta X of the linear problem if requested by user.
@@ -117,7 +117,7 @@ bool NOX::FSI::LinearSystem::apply_jacobian_inverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::FSI::LinearSystem::compute_jacobian(const NOX::Nln::Vector& x)
+bool FSI::Nonlinear::LinearSystem::compute_jacobian(const NOX::Nln::Vector& x)
 {
   bool success = jac_interface_ptr_->compute_jacobian(x.get_linalg_vector(), *jac_ptr_);
   return success;
@@ -126,8 +126,8 @@ bool NOX::FSI::LinearSystem::compute_jacobian(const NOX::Nln::Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<const Core::LinAlg::SparseOperator> NOX::FSI::LinearSystem::get_jacobian_operator()
-    const
+std::shared_ptr<const Core::LinAlg::SparseOperator>
+FSI::Nonlinear::LinearSystem::get_jacobian_operator() const
 {
   return jac_ptr_;
 }
@@ -135,7 +135,7 @@ std::shared_ptr<const Core::LinAlg::SparseOperator> NOX::FSI::LinearSystem::get_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<Core::LinAlg::SparseOperator> NOX::FSI::LinearSystem::get_jacobian_operator()
+std::shared_ptr<Core::LinAlg::SparseOperator> FSI::Nonlinear::LinearSystem::get_jacobian_operator()
 {
   return jac_ptr_;
 }
@@ -143,11 +143,12 @@ std::shared_ptr<Core::LinAlg::SparseOperator> NOX::FSI::LinearSystem::get_jacobi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::FSI::LinearSystem::throw_error(
+void FSI::Nonlinear::LinearSystem::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(::NOX::Utils::Error))
-    utils_.out() << "NOX::FSI::LinearSystem::" << functionName << " - " << errorMsg << std::endl;
+    utils_.out() << "FSI::Nonlinear::LinearSystem::" << functionName << " - " << errorMsg
+                 << std::endl;
 
   throw "NOX Error";
 }

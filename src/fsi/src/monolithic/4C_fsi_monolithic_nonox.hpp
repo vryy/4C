@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_monolithic.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_inpar_xfem.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -274,9 +274,9 @@ namespace FSI
 
     //! @name Iterative solution technique
     //@{
-    Inpar::FSI::ConvNorm normtypeinc_;   //!< convergence check for increment
-    Inpar::FSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
-    Inpar::FSI::BinaryOp combincfres_;   //!< binary operator to combine temperatures and forces
+    FSI::ConvNorm normtypeinc_;   //!< convergence check for increment
+    FSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    FSI::BinaryOp combincfres_;   //!< binary operator to combine temperatures and forces
 
     double tolinc_;   //!< tolerance residual temperatures
     double tolfres_;  //!< tolerance force residual

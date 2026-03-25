@@ -11,8 +11,8 @@
 #include "4C_adapter_fld_fluid_xfsi.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

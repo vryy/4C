@@ -16,8 +16,8 @@
 #include "4C_fbi_constraintenforcer.hpp"
 #include "4C_fbi_constraintenforcer_factory.hpp"
 #include "4C_fbi_input.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_visualization_parameters.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -47,11 +47,11 @@ void FSI::DirichletNeumannVel::setup()
   FSI::DirichletNeumann::setup();
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  if (Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
-      Inpar::FSI::CoupVarPart::disp)
+  if (Teuchos::getIntegralValue<FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
+      FSI::CoupVarPart::disp)
     FOUR_C_THROW("Please set the fsi coupling variable to Velocity or Force!\n");
-  set_kinematic_coupling(Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(
-                             fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::vel);
+  set_kinematic_coupling(Teuchos::getIntegralValue<FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
+                         FSI::CoupVarPart::vel);
   if (std::dynamic_pointer_cast<Adapter::FBIStructureWrapper>(structure_field()) == nullptr)
   {
     FOUR_C_THROW("Something went very wrong here! You should have a FBIStructureWrapper!\n");

@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-NOX::FSI::FixPoint::FixPoint(
+FSI::Nonlinear::FixPoint::FixPoint(
     const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params)
     : utils_(utils)
 {
@@ -20,7 +20,7 @@ NOX::FSI::FixPoint::FixPoint(
 
 
 
-bool NOX::FSI::FixPoint::reset(
+bool FSI::Nonlinear::FixPoint::reset(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();
@@ -28,7 +28,7 @@ bool NOX::FSI::FixPoint::reset(
 }
 
 
-bool NOX::FSI::FixPoint::compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
+bool FSI::Nonlinear::FixPoint::compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
     const ::NOX::Solver::Generic& solver)
 {
   ::NOX::Abstract::Group::ReturnType status;
@@ -44,14 +44,15 @@ bool NOX::FSI::FixPoint::compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::
 }
 
 
-bool NOX::FSI::FixPoint::compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
+bool FSI::Nonlinear::FixPoint::compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
     const ::NOX::Solver::LineSearchBased& solver)
 {
   return ::NOX::Direction::Generic::compute(dir, group, solver);
 }
 
 
-void NOX::FSI::FixPoint::throw_error(const std::string& functionName, const std::string& errorMsg)
+void FSI::Nonlinear::FixPoint::throw_error(
+    const std::string& functionName, const std::string& errorMsg)
 {
   if (utils_->isPrintType(::NOX::Utils::Error))
     utils_->err() << "FixPoint::" << functionName << " - " << errorMsg << std::endl;

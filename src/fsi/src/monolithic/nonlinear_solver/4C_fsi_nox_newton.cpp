@@ -15,30 +15,31 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::Newton::Newton(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
+FSI::Nonlinear::Newton::Newton(
+    const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
     : ::NOX::Direction::Newton(gd, params),
       utils_(gd->getUtils()),
       desirednlnres_(0.),
       currentnlnres_(0.),
       plaintol_(1e-4),
       better_(0.1),
-      verbosity_(Inpar::FSI::verbosity_full)
+      verbosity_(FSI::OutputVerbosity::verbosity_full)
 {
   // needed because ::NOX::Direction::Newton::Newton() does not call
-  // NOX::FSI::Newton::reset()
+  // FSI::Nonlinear::Newton::reset()
   params_ptr_ = &params;
 
   // adaptive tolerance settings for linear solver
   Teuchos::ParameterList& lsParams = params_ptr_->sublist("Newton").sublist("Linear Solver");
-  plaintol_ = lsParams.get<double>("base tolerance");             // relative tolerance
-  better_ = lsParams.get<double>("adaptive distance");            // adaptive distance
-  verbosity_ = lsParams.get<Inpar::FSI::Verbosity>("verbosity");  // verbosity level
+  plaintol_ = lsParams.get<double>("base tolerance");            // relative tolerance
+  better_ = lsParams.get<double>("adaptive distance");           // adaptive distance
+  verbosity_ = lsParams.get<FSI::OutputVerbosity>("verbosity");  // verbosity level
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool NOX::FSI::Newton::reset(
+bool FSI::Nonlinear::Newton::reset(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   params_ptr_ = &params;
@@ -52,10 +53,10 @@ bool NOX::FSI::Newton::reset(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool NOX::FSI::Newton::compute(
+bool FSI::Nonlinear::Newton::compute(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("NOX::FSI::Newton::compute");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Nonlinear::Newton::compute");
 
   Teuchos::ParameterList& lsParams = params_ptr_->sublist("Newton").sublist("Linear Solver");
   lsParams.set<std::string>("Convergence Test", "r0");
@@ -79,7 +80,7 @@ bool NOX::FSI::Newton::compute(
     }
   }
 
-  if (verbosity_ >= Inpar::FSI::verbosity_medium)
+  if (verbosity_ >= FSI::OutputVerbosity::verbosity_medium)
   {
     utils_->out() << "                --- Solver input   relative tolerance " << plaintol_ << "\n";
   }
@@ -96,7 +97,7 @@ bool NOX::FSI::Newton::compute(
       if (tol > plaintol_)
       {
         lsParams.set<double>("Tolerance", tol);
-        if (verbosity_ >= Inpar::FSI::verbosity_medium)
+        if (verbosity_ >= FSI::OutputVerbosity::verbosity_medium)
         {
           utils_->out() << "                *** Solver adapted relative tolerance " << tol << "\n";
         }
@@ -113,9 +114,9 @@ bool NOX::FSI::Newton::compute(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void NOX::FSI::Newton::residual(double current, double desired)
+void FSI::Nonlinear::Newton::residual(double current, double desired)
 {
-  // utils_->out() << "NOX::FSI::Newton::Residual(" << current << "," << desired << ")\n";
+  // utils_->out() << "FSI::Nonlinear::Newton::Residual(" << current << "," << desired << ")\n";
   cresiduals_.push_back(current);
   dresiduals_.push_back(desired);
 }

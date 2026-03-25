@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
+FSI::Nonlinear::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
     const std::shared_ptr<NOX::Nln::Interface::RequiredBase> i, const NOX::Nln::Vector& x)
     : label("FSI-Matrix-Free"),
       interface(i),
@@ -34,68 +34,76 @@ NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
   perturbY.init(0.0);
 }
 
-Epetra_Operator& NOX::FSI::FSIMatrixFree::epetra_operator() { FOUR_C_THROW("Not implemented"); }
+Epetra_Operator& FSI::Nonlinear::FSIMatrixFree::epetra_operator()
+{
+  FOUR_C_THROW("Not implemented");
+}
 
-void NOX::FSI::FSIMatrixFree::zero() { FOUR_C_THROW("Not implemented"); }
+void FSI::Nonlinear::FSIMatrixFree::zero() { FOUR_C_THROW("Not implemented"); }
 
-void NOX::FSI::FSIMatrixFree::reset() { FOUR_C_THROW("Not implemented"); }
+void FSI::Nonlinear::FSIMatrixFree::reset() { FOUR_C_THROW("Not implemented"); }
 
-MPI_Comm NOX::FSI::FSIMatrixFree::get_comm() const { FOUR_C_THROW("Not implemented"); }
+MPI_Comm FSI::Nonlinear::FSIMatrixFree::get_comm() const { FOUR_C_THROW("Not implemented"); }
 
-void NOX::FSI::FSIMatrixFree::assemble(int eid, const std::vector<int>& lmstride,
+void FSI::Nonlinear::FSIMatrixFree::assemble(int eid, const std::vector<int>& lmstride,
     const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
   FOUR_C_THROW("Not implemented");
 }
 
-void NOX::FSI::FSIMatrixFree::assemble(double val, int rgid, int cgid)
+void FSI::Nonlinear::FSIMatrixFree::assemble(double val, int rgid, int cgid)
 {
   FOUR_C_THROW("Not implemented");
 }
 
-bool NOX::FSI::FSIMatrixFree::filled() const { FOUR_C_THROW("Not implemented"); }
+bool FSI::Nonlinear::FSIMatrixFree::filled() const { FOUR_C_THROW("Not implemented"); }
 
-void NOX::FSI::FSIMatrixFree::complete(Core::LinAlg::OptionsMatrixComplete options_matrix_complete)
+void FSI::Nonlinear::FSIMatrixFree::complete(
+    Core::LinAlg::OptionsMatrixComplete options_matrix_complete)
 {
   FOUR_C_THROW("Not implemented");
 }
 
-void NOX::FSI::FSIMatrixFree::complete(const Core::LinAlg::Map& domainmap,
+void FSI::Nonlinear::FSIMatrixFree::complete(const Core::LinAlg::Map& domainmap,
     const Core::LinAlg::Map& rangemap, Core::LinAlg::OptionsMatrixComplete options_matrix_complete)
 {
   FOUR_C_THROW("Not implemented");
 }
 
-void NOX::FSI::FSIMatrixFree::un_complete() { FOUR_C_THROW("Not implemented"); }
+void FSI::Nonlinear::FSIMatrixFree::un_complete() { FOUR_C_THROW("Not implemented"); }
 
-void NOX::FSI::FSIMatrixFree::apply_dirichlet(
+void FSI::Nonlinear::FSIMatrixFree::apply_dirichlet(
     const Core::LinAlg::Vector<double>& dbctoggle, bool diagonalblock)
 {
   FOUR_C_THROW("Not implemented");
 }
 
-void NOX::FSI::FSIMatrixFree::apply_dirichlet(const Core::LinAlg::Map& dbcmap, bool diagonalblock)
+void FSI::Nonlinear::FSIMatrixFree::apply_dirichlet(
+    const Core::LinAlg::Map& dbcmap, bool diagonalblock)
 {
   FOUR_C_THROW("Not implemented");
 }
 
 
-const Core::LinAlg::Map& NOX::FSI::FSIMatrixFree::domain_map() const
+const Core::LinAlg::Map& FSI::Nonlinear::FSIMatrixFree::domain_map() const
 {
   FOUR_C_THROW("Not implemented");
 }
 
-void NOX::FSI::FSIMatrixFree::add(const Core::LinAlg::SparseOperator& A, const bool transposeA,
-    const double scalarA, const double scalarB)
+void FSI::Nonlinear::FSIMatrixFree::add(const Core::LinAlg::SparseOperator& A,
+    const bool transposeA, const double scalarA, const double scalarB)
 {
   FOUR_C_THROW("Not implemented");
 }
 
-void NOX::FSI::FSIMatrixFree::scale(double ScalarConstant) { FOUR_C_THROW("Not implemented"); }
+void FSI::Nonlinear::FSIMatrixFree::scale(double ScalarConstant)
+{
+  FOUR_C_THROW("Not implemented");
+}
 
-void NOX::FSI::FSIMatrixFree::multiply(bool TransA, const Core::LinAlg::MultiVector<double>& X,
-    Core::LinAlg::MultiVector<double>& Y) const
+void FSI::Nonlinear::FSIMatrixFree::multiply(bool TransA,
+    const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y) const
 {
   if (TransA == true)
   {
@@ -165,7 +173,7 @@ void NOX::FSI::FSIMatrixFree::multiply(bool TransA, const Core::LinAlg::MultiVec
 }
 
 
-bool NOX::FSI::FSIMatrixFree::compute_jacobian(
+bool FSI::Nonlinear::FSIMatrixFree::compute_jacobian(
     const Core::LinAlg::Vector<double>& x, Core::LinAlg::SparseOperator& jac)
 {
   // Remember the current interface displacements.
@@ -178,7 +186,7 @@ bool NOX::FSI::FSIMatrixFree::compute_jacobian(
 }
 
 
-void NOX::FSI::FSIMatrixFree::set_group_for_compute_f(const ::NOX::Abstract::Group& group)
+void FSI::Nonlinear::FSIMatrixFree::set_group_for_compute_f(const ::NOX::Abstract::Group& group)
 {
   useGroupForComputeF = true;
   groupPtr = std::shared_ptr<::NOX::Abstract::Group>(group.clone().release().get());

@@ -80,7 +80,7 @@ bool FSI::Utils::fluid_ale_nodes_disjoint(
 /*----------------------------------------------------------------------*/
 FSI::Utils::SlideAleUtils::SlideAleUtils(std::shared_ptr<Core::FE::Discretization> structdis,
     std::shared_ptr<Core::FE::Discretization> fluiddis, Coupling::Adapter::CouplingMortar& coupsf,
-    bool structcoupmaster, Inpar::FSI::SlideALEProj aleproj)
+    bool structcoupmaster, FSI::SlideALEProj aleproj)
     : aletype_(aleproj)
 {
   structcoupmaster_ = structcoupmaster;
@@ -457,8 +457,7 @@ void FSI::Utils::SlideAleUtils::slide_projection(
 
   std::shared_ptr<Core::LinAlg::Vector<double>> frotfull =
       std::make_shared<Core::LinAlg::Vector<double>>(*fluiddofrowmap_, true);
-  if (aletype_ == Inpar::FSI::ALEprojection_rot_z ||
-      aletype_ == Inpar::FSI::ALEprojection_rot_zsphere)
+  if (aletype_ == FSI::ALEprojection_rot_z || aletype_ == FSI::ALEprojection_rot_zsphere)
   {
     rotation(coupsf.interface()->discret(), idispale, comm, rotrat, *frotfull);
   }
@@ -499,20 +498,19 @@ void FSI::Utils::SlideAleUtils::slide_projection(
       Core::LinAlg::Matrix<3, 1> alenodecurr(node->x().data());
 
       // compute ALE position to project from
-      if (aletype_ == Inpar::FSI::ALEprojection_curr)
+      if (aletype_ == FSI::ALEprojection_curr)
       {
         // current coord of ale node = ref + centerdispincr + history
         for (int p = 0; p < dim; p++)
           alenodecurr(p, 0) = (node->x()[p]) + centerdisp_v[p] +
                               1.0 * iprojhist_->local_values_as_span()[(lids[p])];
       }
-      else if (aletype_ == Inpar::FSI::ALEprojection_ref)
+      else if (aletype_ == FSI::ALEprojection_ref)
       {
         // current coord of ale node = ref + centerdisp
         for (int p = 0; p < dim; p++) alenodecurr(p, 0) = node->x()[p] + centerdisptotal_[p];
       }
-      else if (aletype_ == Inpar::FSI::ALEprojection_rot_z ||
-               aletype_ == Inpar::FSI::ALEprojection_rot_zsphere)
+      else if (aletype_ == FSI::ALEprojection_rot_z || aletype_ == FSI::ALEprojection_rot_zsphere)
       {
         // current coord of ale node = ref + centerdisp
         for (int p = 0; p < dim; p++)
@@ -724,7 +722,7 @@ void FSI::Utils::SlideAleUtils::rotation(
 
       params.set<std::string>("action", "calc_struct_rotation");
       params.set<double>("maxcoord", maxcoord);
-      params.set<Inpar::FSI::SlideALEProj>("aletype", aletype_);
+      params.set<FSI::SlideALEProj>("aletype", aletype_);
       int err = iele->evaluate(
           params, mtrdis, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
@@ -766,7 +764,7 @@ void FSI::Utils::SlideAleUtils::rotation(
 
       params.set<std::string>("action", "calc_undo_struct_rotation");
       params.set<double>("maxcoord", maxcoord);
-      params.set<Inpar::FSI::SlideALEProj>("aletype", aletype_);
+      params.set<FSI::SlideALEProj>("aletype", aletype_);
       int err = iele->evaluate(
           params, mtrdis, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");

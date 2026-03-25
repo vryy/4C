@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::GenericNormF::GenericNormF(
+FSI::Nonlinear::GenericNormF::GenericNormF(
     std::string name, double tolerance, ::NOX::Abstract::Vector::NormType normType, ScaleType stype)
     : status_(::NOX::StatusTest::Unevaluated),
       norm_type_(normType),
@@ -37,7 +37,7 @@ NOX::FSI::GenericNormF::GenericNormF(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormF::compute_norm(const Core::LinAlg::Vector<double>& v)
+double FSI::Nonlinear::GenericNormF::compute_norm(const Core::LinAlg::Vector<double>& v)
 {
   int n = v.global_length();
   double norm;
@@ -70,7 +70,7 @@ double NOX::FSI::GenericNormF::compute_norm(const Core::LinAlg::Vector<double>& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::FSI::GenericNormF::checkStatus(
+::NOX::StatusTest::StatusType FSI::Nonlinear::GenericNormF::checkStatus(
     const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType)
 {
   if (checkType == ::NOX::StatusTest::None)
@@ -97,12 +97,12 @@ double NOX::FSI::GenericNormF::compute_norm(const Core::LinAlg::Vector<double>& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::FSI::GenericNormF::getStatus() const { return status_; }
+::NOX::StatusTest::StatusType FSI::Nonlinear::GenericNormF::getStatus() const { return status_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& NOX::FSI::GenericNormF::print(std::ostream& stream, int indent) const
+std::ostream& FSI::Nonlinear::GenericNormF::print(std::ostream& stream, int indent) const
 {
   for (int j = 0; j < indent; j++) stream << ' ';
 
@@ -131,27 +131,30 @@ std::ostream& NOX::FSI::GenericNormF::print(std::ostream& stream, int indent) co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormF::get_norm_f() const { return norm_f_; }
+double FSI::Nonlinear::GenericNormF::get_norm_f() const { return norm_f_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormF::get_true_tolerance() const { return true_tolerance_; }
+double FSI::Nonlinear::GenericNormF::get_true_tolerance() const { return true_tolerance_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormF::get_specified_tolerance() const { return specified_tolerance_; }
+double FSI::Nonlinear::GenericNormF::get_specified_tolerance() const
+{
+  return specified_tolerance_;
+}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormF::get_initial_tolerance() const { return initial_tolerance_; }
+double FSI::Nonlinear::GenericNormF::get_initial_tolerance() const { return initial_tolerance_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::PartialNormF::PartialNormF(std::string name,
+FSI::Nonlinear::PartialNormF::PartialNormF(std::string name,
     const Core::LinAlg::MultiMapExtractor& extractor, int blocknum, double tolerance,
     ::NOX::Abstract::Vector::NormType normType, ScaleType stype)
     : AdaptiveNewtonNormF(name, tolerance, normType, stype),
@@ -163,7 +166,7 @@ NOX::FSI::PartialNormF::PartialNormF(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
+double FSI::Nonlinear::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
 {
   if (!grp.isF()) return -1.0;
 
@@ -172,7 +175,7 @@ double NOX::FSI::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
   std::shared_ptr<Core::LinAlg::Vector<double>> v =
       extractor_.extract_vector(f.get_linalg_vector(), blocknum_);
 
-  double norm = FSI::GenericNormF::compute_norm(*v);
+  double norm = FSI::Nonlinear::GenericNormF::compute_norm(*v);
 
   if (newton() != Teuchos::null)
   {
@@ -185,7 +188,7 @@ double NOX::FSI::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::PartialSumNormF::PartialSumNormF(std::string name,
+FSI::Nonlinear::PartialSumNormF::PartialSumNormF(std::string name,
     const Core::LinAlg::MapExtractor& extractor1, double scale1,
     const Core::LinAlg::MapExtractor& extractor2, double scale2,
     std::shared_ptr<Coupling::Adapter::CouplingConverter> converter, double tolerance,
@@ -202,7 +205,7 @@ NOX::FSI::PartialSumNormF::PartialSumNormF(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::PartialSumNormF::compute_norm(const ::NOX::Abstract::Group& grp)
+double FSI::Nonlinear::PartialSumNormF::compute_norm(const ::NOX::Abstract::Group& grp)
 {
   if (!grp.isF()) return -1.0;
 
@@ -218,7 +221,7 @@ double NOX::FSI::PartialSumNormF::compute_norm(const ::NOX::Abstract::Group& grp
   std::shared_ptr<Core::LinAlg::Vector<double>> v = converter_->src_to_dst(v2);
   v->update(scale1_, *v1, scale2_);
 
-  double norm = FSI::GenericNormF::compute_norm(*v);
+  double norm = FSI::Nonlinear::GenericNormF::compute_norm(*v);
 
   if (newton() != Teuchos::null)
   {
@@ -231,7 +234,7 @@ double NOX::FSI::PartialSumNormF::compute_norm(const ::NOX::Abstract::Group& grp
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::GenericNormUpdate::GenericNormUpdate(
+FSI::Nonlinear::GenericNormUpdate::GenericNormUpdate(
     std::string name, double tol, ::NOX::Abstract::Vector::NormType ntype, ScaleType stype)
     : status_(::NOX::StatusTest::Unevaluated),
       norm_type_(ntype),
@@ -245,7 +248,7 @@ NOX::FSI::GenericNormUpdate::GenericNormUpdate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::GenericNormUpdate::GenericNormUpdate(std::string name, double tol, ScaleType stype)
+FSI::Nonlinear::GenericNormUpdate::GenericNormUpdate(std::string name, double tol, ScaleType stype)
     : status_(::NOX::StatusTest::Unevaluated),
       norm_type_(::NOX::Abstract::Vector::TwoNorm),
       scale_type_(stype),
@@ -259,7 +262,7 @@ NOX::FSI::GenericNormUpdate::GenericNormUpdate(std::string name, double tol, Sca
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::FSI::GenericNormUpdate::checkStatus(
+::NOX::StatusTest::StatusType FSI::Nonlinear::GenericNormUpdate::checkStatus(
     const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType)
 {
   if (checkType == ::NOX::StatusTest::None)
@@ -307,7 +310,7 @@ NOX::FSI::GenericNormUpdate::GenericNormUpdate(std::string name, double tol, Sca
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormUpdate::compute_norm(const Core::LinAlg::Vector<double>& v)
+double FSI::Nonlinear::GenericNormUpdate::compute_norm(const Core::LinAlg::Vector<double>& v)
 {
   int n = (scale_type_ == Scaled) ? v.global_length() : 0;
 
@@ -340,12 +343,15 @@ double NOX::FSI::GenericNormUpdate::compute_norm(const Core::LinAlg::Vector<doub
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::FSI::GenericNormUpdate::getStatus() const { return status_; }
+::NOX::StatusTest::StatusType FSI::Nonlinear::GenericNormUpdate::getStatus() const
+{
+  return status_;
+}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& NOX::FSI::GenericNormUpdate::print(std::ostream& stream, int indent) const
+std::ostream& FSI::Nonlinear::GenericNormUpdate::print(std::ostream& stream, int indent) const
 {
   for (int j = 0; j < indent; j++) stream << ' ';
 
@@ -374,17 +380,17 @@ std::ostream& NOX::FSI::GenericNormUpdate::print(std::ostream& stream, int inden
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormUpdate::get_norm_update() const { return norm_update_; }
+double FSI::Nonlinear::GenericNormUpdate::get_norm_update() const { return norm_update_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormUpdate::get_tolerance() const { return tolerance_; }
+double FSI::Nonlinear::GenericNormUpdate::get_tolerance() const { return tolerance_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
+FSI::Nonlinear::PartialNormUpdate::PartialNormUpdate(std::string name,
     const Core::LinAlg::MultiMapExtractor& extractor, int blocknum, double tolerance,
     ::NOX::Abstract::Vector::NormType ntype, ScaleType stype)
     : GenericNormUpdate(name, tolerance, ntype, stype), extractor_(extractor), blocknum_(blocknum)
@@ -393,7 +399,7 @@ NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
+FSI::Nonlinear::PartialNormUpdate::PartialNormUpdate(std::string name,
     const Core::LinAlg::MultiMapExtractor& extractor, int blocknum, double tolerance,
     ScaleType stype)
     : GenericNormUpdate(name, tolerance, stype), extractor_(extractor), blocknum_(blocknum)
@@ -403,16 +409,17 @@ NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::PartialNormUpdate::compute_norm(const Core::LinAlg::Vector<double>& v)
+double FSI::Nonlinear::PartialNormUpdate::compute_norm(const Core::LinAlg::Vector<double>& v)
 {
   Core::LinAlg::Vector<double> v_new(v);
-  return FSI::GenericNormUpdate::compute_norm(*extractor_.extract_vector(v_new, blocknum_));
+  return FSI::Nonlinear::GenericNormUpdate::compute_norm(
+      *extractor_.extract_vector(v_new, blocknum_));
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::MinIters::MinIters(int minIterations, const ::NOX::Utils* u)
+FSI::Nonlinear::MinIters::MinIters(int minIterations, const ::NOX::Utils* u)
     : miniters_(minIterations), niters_(0), status_(::NOX::StatusTest::Unevaluated)
 {
   if (u != nullptr) utils_ = *u;
@@ -429,7 +436,7 @@ NOX::FSI::MinIters::MinIters(int minIterations, const ::NOX::Utils* u)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::FSI::MinIters::checkStatus(
+::NOX::StatusTest::StatusType FSI::Nonlinear::MinIters::checkStatus(
     const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType)
 {
   switch (checkType)
@@ -454,21 +461,24 @@ NOX::FSI::MinIters::MinIters(int minIterations, const ::NOX::Utils* u)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::FSI::MinIters::getStatus() const { return status_; }
+::NOX::StatusTest::StatusType FSI::Nonlinear::MinIters::getStatus() const { return status_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& NOX::FSI::MinIters::print(std::ostream& stream, int indent) const { return stream; }
+std::ostream& FSI::Nonlinear::MinIters::print(std::ostream& stream, int indent) const
+{
+  return stream;
+}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int NOX::FSI::MinIters::get_min_iters() const { return miniters_; }
+int FSI::Nonlinear::MinIters::get_min_iters() const { return miniters_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int NOX::FSI::MinIters::get_num_iters() const { return niters_; }
+int FSI::Nonlinear::MinIters::get_num_iters() const { return niters_; }
 
 FOUR_C_NAMESPACE_CLOSE

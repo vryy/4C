@@ -5,14 +5,15 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_fsi.hpp"
+#include "4C_fsi_input.hpp"
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_io_input_spec_builders.hpp"
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
-std::vector<Core::IO::InputSpec> Inpar::FSI::valid_parameters()
+std::vector<Core::IO::InputSpec> FSI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -80,16 +81,16 @@ std::vector<Core::IO::InputSpec> Inpar::FSI::valid_parameters()
               {.description = "Second order displacement-velocity conversion at the interface.",
                   .default_value = false}),
 
-          deprecated_selection<Inpar::FSI::SlideALEProj>("SLIDEALEPROJ",
+          deprecated_selection<FSI::SlideALEProj>("SLIDEALEPROJ",
               {
-                  {"None", Inpar::FSI::ALEprojection_none},
-                  {"Curr", Inpar::FSI::ALEprojection_curr},
-                  {"Ref", Inpar::FSI::ALEprojection_ref},
-                  {"RotZ", Inpar::FSI::ALEprojection_rot_z},
-                  {"RotZSphere", Inpar::FSI::ALEprojection_rot_zsphere},
+                  {"None", FSI::ALEprojection_none},
+                  {"Curr", FSI::ALEprojection_curr},
+                  {"Ref", FSI::ALEprojection_ref},
+                  {"RotZ", FSI::ALEprojection_rot_z},
+                  {"RotZSphere", FSI::ALEprojection_rot_zsphere},
               },
               {.description = "Projection method to use for sliding FSI.",
-                  .default_value = Inpar::FSI::ALEprojection_none}),
+                  .default_value = FSI::ALEprojection_none}),
 
 
           parameter<double>("TIMESTEP", {.description = "Time increment dt", .default_value = 0.1}),
@@ -97,15 +98,15 @@ std::vector<Core::IO::InputSpec> Inpar::FSI::valid_parameters()
           parameter<int>("RESULTSEVERY",
               {.description = "Increment for writing solution", .default_value = 1}),
 
-          deprecated_selection<Inpar::FSI::Verbosity>("VERBOSITY",
+          deprecated_selection<FSI::OutputVerbosity>("VERBOSITY",
               {
-                  {"full", Inpar::FSI::verbosity_full},
-                  {"medium", Inpar::FSI::verbosity_medium},
-                  {"low", Inpar::FSI::verbosity_low},
-                  {"subproblem", Inpar::FSI::verbosity_subproblem},
+                  {"full", FSI::OutputVerbosity::verbosity_full},
+                  {"medium", FSI::OutputVerbosity::verbosity_medium},
+                  {"low", FSI::OutputVerbosity::verbosity_low},
+                  {"subproblem", FSI::OutputVerbosity::verbosity_subproblem},
               },
               {.description = "Verbosity of the FSI problem.",
-                  .default_value = Inpar::FSI::verbosity_full})},
+                  .default_value = FSI::OutputVerbosity::verbosity_full})},
       {.required = false}));
   /*----------------------------------------------------------------------*/
   /* parameters for time step size adaptivity in fsi dynamics */
@@ -118,14 +119,14 @@ std::vector<Core::IO::InputSpec> Inpar::FSI::valid_parameters()
                       "time step size (>0)",
                   .default_value = 5}),
 
-          deprecated_selection<Inpar::FSI::FluidMethod>("AUXINTEGRATORFLUID",
+          deprecated_selection<FSI::FluidMethod>("AUXINTEGRATORFLUID",
               {
-                  {"None", Inpar::FSI::timada_fld_none},
-                  {"ExplicitEuler", Inpar::FSI::timada_fld_expleuler},
-                  {"AB2", Inpar::FSI::timada_fld_adamsbashforth2},
+                  {"None", FSI::timada_fld_none},
+                  {"ExplicitEuler", FSI::timada_fld_expleuler},
+                  {"AB2", FSI::timada_fld_adamsbashforth2},
               },
               {.description = "Method for error estimation in the fluid field",
-                  .default_value = Inpar::FSI::timada_fld_adamsbashforth2}),
+                  .default_value = FSI::timada_fld_adamsbashforth2}),
 
           parameter<std::string>("AVERAGINGDT",
               {.description =
@@ -136,15 +137,15 @@ std::vector<Core::IO::InputSpec> Inpar::FSI::valid_parameters()
                   .default_value = "0.3 0.7"}),
 
 
-          deprecated_selection<Inpar::FSI::DivContAct>("DIVERCONT",
+          deprecated_selection<FSI::DivContAct>("DIVERCONT",
               {
-                  {"stop", Inpar::FSI::divcont_stop},
-                  {"continue", Inpar::FSI::divcont_continue},
-                  {"halve_step", Inpar::FSI::divcont_halve_step},
-                  {"revert_dt", Inpar::FSI::divcont_revert_dt},
+                  {"stop", FSI::divcont_stop},
+                  {"continue", FSI::divcont_continue},
+                  {"halve_step", FSI::divcont_halve_step},
+                  {"revert_dt", FSI::divcont_revert_dt},
               },
               {.description = "What to do if nonlinear solver does not converge?",
-                  .default_value = Inpar::FSI::divcont_stop}),
+                  .default_value = FSI::divcont_stop}),
 
           parameter<double>(
               "DTMAX", {.description = "Limit maximally permitted time step size (>0)",
@@ -230,9 +231,9 @@ std::vector<Core::IO::InputSpec> Inpar::FSI::valid_parameters()
               "KRYLOV_SIZE", {.description = "Size of Krylov Subspace.", .default_value = 50}),
 
 
-          parameter<Inpar::FSI::LinearBlockSolver>("LINEARBLOCKSOLVER",
+          parameter<FSI::LinearBlockSolver>("LINEARBLOCKSOLVER",
               {.description = "Linear block preconditioner for block system in monolithic FSI.",
-                  .default_value = Inpar::FSI::PreconditionedKrylov}),
+                  .default_value = FSI::PreconditionedKrylov}),
 
           parameter<int>("LINEAR_SOLVER",
               {.description =
@@ -241,33 +242,33 @@ std::vector<Core::IO::InputSpec> Inpar::FSI::valid_parameters()
 
           // Iteration parameters for convergence check of newton loop
           // for implementations without NOX
-          deprecated_selection<Inpar::FSI::ConvNorm>("NORM_INC",
+          deprecated_selection<FSI::ConvNorm>("NORM_INC",
               {
-                  {"Abs", Inpar::FSI::convnorm_abs},
-                  {"Rel", Inpar::FSI::convnorm_rel},
-                  {"Mix", Inpar::FSI::convnorm_mix},
+                  {"Abs", FSI::convnorm_abs},
+                  {"Rel", FSI::convnorm_rel},
+                  {"Mix", FSI::convnorm_mix},
               },
               {.description = "type of norm for primary variables convergence check",
-                  .default_value = Inpar::FSI::convnorm_rel}),
+                  .default_value = FSI::convnorm_rel}),
 
           // for implementations without NOX
-          deprecated_selection<Inpar::FSI::ConvNorm>("NORM_RESF",
+          deprecated_selection<FSI::ConvNorm>("NORM_RESF",
               {
-                  {"Abs", Inpar::FSI::convnorm_abs},
-                  {"Rel", Inpar::FSI::convnorm_rel},
-                  {"Mix", Inpar::FSI::convnorm_mix},
+                  {"Abs", FSI::convnorm_abs},
+                  {"Rel", FSI::convnorm_rel},
+                  {"Mix", FSI::convnorm_mix},
               },
               {.description = "type of norm for residual convergence check",
-                  .default_value = Inpar::FSI::convnorm_rel}),
+                  .default_value = FSI::convnorm_rel}),
 
           // for implementations without NOX
-          deprecated_selection<Inpar::FSI::BinaryOp>("NORMCOMBI_RESFINC",
+          deprecated_selection<FSI::BinaryOp>("NORMCOMBI_RESFINC",
               {
-                  {"And", Inpar::FSI::bop_and},
+                  {"And", FSI::bop_and},
               },
               {.description =
                       "binary operator to combine primary variables and residual force values",
-                  .default_value = Inpar::FSI::bop_and}),
+                  .default_value = FSI::bop_and}),
 
           parameter<int>(
               "PRECONDREUSE", {.description = "Number of iterations in one time step reusing the "
@@ -426,14 +427,14 @@ std::vector<Core::IO::InputSpec> Inpar::FSI::valid_parameters()
               {.description = "Coupling Method mortar or conforming nodes at interface",
                   .default_value = "conforming"}),
 
-          deprecated_selection<Inpar::FSI::CoupVarPart>("COUPVARIABLE",
+          deprecated_selection<FSI::CoupVarPart>("COUPVARIABLE",
               {
-                  {"Displacement", Inpar::FSI::CoupVarPart::disp},
-                  {"Force", Inpar::FSI::CoupVarPart::force},
-                  {"Velocity", Inpar::FSI::CoupVarPart::vel},
+                  {"Displacement", FSI::CoupVarPart::disp},
+                  {"Force", FSI::CoupVarPart::force},
+                  {"Velocity", FSI::CoupVarPart::vel},
               },
               {.description = "Coupling variable at the interface",
-                  .default_value = Inpar::FSI::CoupVarPart::disp}),
+                  .default_value = FSI::CoupVarPart::disp}),
 
           parameter<bool>("DIVPROJECTION",
               {.description = "Project velocity into divergence-free subspace for partitioned fsi",
@@ -453,14 +454,16 @@ std::vector<Core::IO::InputSpec> Inpar::FSI::valid_parameters()
 
 
 
-          deprecated_selection<Inpar::FSI::PartitionedCouplingMethod>("PARTITIONED",
+          deprecated_selection<FSI::PartitionedCouplingMethod>("PARTITIONED",
               {
-                  {"DirichletNeumann", Inpar::FSI::DirichletNeumann},
-                  {"DirichletNeumannSlideALE", Inpar::FSI::DirichletNeumannSlideale},
-                  {"DirichletNeumannVolCoupl", Inpar::FSI::DirichletNeumannVolCoupl},
+                  {"DirichletNeumann", FSI::PartitionedCouplingMethod::DirichletNeumann},
+                  {"DirichletNeumannSlideALE",
+                      FSI::PartitionedCouplingMethod::DirichletNeumannSlideale},
+                  {"DirichletNeumannVolCoupl",
+                      FSI::PartitionedCouplingMethod::DirichletNeumannVolCoupl},
               },
               {.description = "Coupling strategies for partitioned FSI solvers.",
-                  .default_value = Inpar::FSI::DirichletNeumann}),
+                  .default_value = FSI::PartitionedCouplingMethod::DirichletNeumann}),
 
           deprecated_selection<std::string>("PREDICTOR",
               {"d(n)", "d(n)+dt*(1.5*v(n)-0.5*v(n-1))", "d(n)+dt*v(n)",
@@ -475,8 +478,8 @@ std::vector<Core::IO::InputSpec> Inpar::FSI::valid_parameters()
 
   /* ----------------------------------------------------------------------- */
   specs.push_back(group("FSI DYNAMIC/CONSTRAINT",
-      {parameter<Inpar::FSI::PrecConstr>("PRECONDITIONER",
-           {.description = "preconditioner to use", .default_value = Inpar::FSI::Simple}),
+      {parameter<FSI::PrecConstr>("PRECONDITIONER",
+           {.description = "preconditioner to use", .default_value = FSI::Simple}),
           parameter<int>("SIMPLEITER",
               {.description = "Number of iterations for simple pc", .default_value = 2}),
           parameter<double>(
@@ -486,7 +489,7 @@ std::vector<Core::IO::InputSpec> Inpar::FSI::valid_parameters()
 }
 
 /*----------------------------------------------------------------------------*/
-void Inpar::FSI::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
+void FSI::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
 {
   using namespace Core::IO::InputSpecBuilders;
 

@@ -25,7 +25,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-NOX::FSI::AitkenRelaxation::AitkenRelaxation(
+FSI::Nonlinear::AitkenRelaxation::AitkenRelaxation(
     const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params)
     : utils_(utils)
 {
@@ -44,7 +44,7 @@ NOX::FSI::AitkenRelaxation::AitkenRelaxation(
 
 
 
-bool NOX::FSI::AitkenRelaxation::reset(
+bool FSI::Nonlinear::AitkenRelaxation::reset(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   // We might want to constrain the step size of the first relaxation
@@ -62,7 +62,7 @@ bool NOX::FSI::AitkenRelaxation::reset(
 }
 
 
-bool NOX::FSI::AitkenRelaxation::compute(::NOX::Abstract::Group& grp, double& step,
+bool FSI::Nonlinear::AitkenRelaxation::compute(::NOX::Abstract::Group& grp, double& step,
     const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s)
 {
   if (utils_->isPrintType(::NOX::Utils::InnerIteration))
@@ -150,6 +150,6 @@ bool NOX::FSI::AitkenRelaxation::compute(::NOX::Abstract::Group& grp, double& st
 }
 
 
-double NOX::FSI::AitkenRelaxation::get_omega() { return 1. - nu_; }
+double FSI::Nonlinear::AitkenRelaxation::get_omega() { return 1. - nu_; }
 
 FOUR_C_NAMESPACE_CLOSE

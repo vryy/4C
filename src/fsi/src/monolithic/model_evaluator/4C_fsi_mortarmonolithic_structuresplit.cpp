@@ -16,10 +16,10 @@
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_statustest.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -223,9 +223,9 @@ void FSI::MortarMonolithicStructureSplit::setup_system()
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     linearsolverstrategy_ =
-        Teuchos::getIntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+        Teuchos::getIntegralValue<FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-    aleproj_ = Teuchos::getIntegralValue<Inpar::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
+    aleproj_ = Teuchos::getIntegralValue<FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
 
     set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -292,7 +292,7 @@ void FSI::MortarMonolithicStructureSplit::setup_system()
     create_system_matrix();
 
     // set up sliding ale if necessary
-    if (aleproj_ != Inpar::FSI::ALEprojection_none)
+    if (aleproj_ != FSI::ALEprojection_none)
     {
       // mesh_init possibly modifies reference configuration of slave side --> recompute element
       // volume in initialize_elements()
@@ -674,7 +674,7 @@ void FSI::MortarMonolithicStructureSplit::setup_rhs_firstiter(Core::LinAlg::Vect
   // ----------end of inner ALE DOFs
 
   // only if relative movement between ale and structure is possible
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     rhs = std::make_shared<Core::LinAlg::Vector<double>>(aig.row_map(), true);
 
@@ -848,7 +848,7 @@ void FSI::MortarMonolithicStructureSplit::update()
   lambdaold_->update(1.0, *lambda_, 0.0);
 
   // update history variables for sliding ale
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     iprojdisp_ = std::make_shared<Core::LinAlg::Vector<double>>(*coupsfm_->master_dof_map(), true);
     std::shared_ptr<Core::LinAlg::Vector<double>> idispale = ale_to_fluid_interface(
@@ -1045,7 +1045,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MortarMonolithicStructureSplit::crea
 
   // Start filling the 'converged' combo here
   // require one solve
-  converged->addStatusTest(Teuchos::make_rcp<NOX::FSI::MinIters>(1));
+  converged->addStatusTest(Teuchos::make_rcp<FSI::Nonlinear::MinIters>(1));
 
 
   // ---------------------------------------------------------------------------
@@ -1056,21 +1056,22 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MortarMonolithicStructureSplit::crea
       Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::AND);
 
   // create Norm-objects for each norm that has to be tested
-  Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp_L2 = Teuchos::make_rcp<NOX::FSI::PartialNormF>(
-      "DISPL residual", extractor(), 0, nlParams.get<double>("Tol dis res L2"),
-      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled);
-  Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp_inf =
-      Teuchos::make_rcp<NOX::FSI::PartialNormF>("DISPL residual", extractor(), 0,
+  Teuchos::RCP<FSI::Nonlinear::PartialNormF> structureDisp_L2 =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormF>("DISPL residual", extractor(), 0,
+          nlParams.get<double>("Tol dis res L2"), ::NOX::Abstract::Vector::TwoNorm,
+          FSI::Nonlinear::PartialNormF::Scaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormF> structureDisp_inf =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormF>("DISPL residual", extractor(), 0,
           nlParams.get<double>("Tol dis res Inf"), ::NOX::Abstract::Vector::MaxNorm,
-          NOX::FSI::PartialNormF::Unscaled);
-  Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate_L2 =
-      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("DISPL update", extractor(), 0,
+          FSI::Nonlinear::PartialNormF::Unscaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormUpdate> structureDispUpdate_L2 =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormUpdate>("DISPL update", extractor(), 0,
           nlParams.get<double>("Tol dis inc L2"), ::NOX::Abstract::Vector::TwoNorm,
-          NOX::FSI::PartialNormUpdate::Scaled);
-  Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate_inf =
-      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("DISPL update", extractor(), 0,
+          FSI::Nonlinear::PartialNormUpdate::Scaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormUpdate> structureDispUpdate_inf =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormUpdate>("DISPL update", extractor(), 0,
           nlParams.get<double>("Tol dis inc Inf"), ::NOX::Abstract::Vector::MaxNorm,
-          NOX::FSI::PartialNormUpdate::Unscaled);
+          FSI::Nonlinear::PartialNormUpdate::Unscaled);
 
   // tests needed to adapt relative tolerance of the linear solver
   add_status_test(structureDisp_L2);
@@ -1099,21 +1100,22 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MortarMonolithicStructureSplit::crea
       Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::AND);
 
   // create Norm-objects for each norm that has to be tested
-  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest_L2 = Teuchos::make_rcp<NOX::FSI::PartialNormF>(
-      "GAMMA residual", interfaceextract, 0, nlParams.get<double>("Tol fsi res L2"),
-      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled);
-  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest_inf =
-      Teuchos::make_rcp<NOX::FSI::PartialNormF>("GAMMA residual", interfaceextract, 0,
+  Teuchos::RCP<FSI::Nonlinear::PartialNormF> interfaceTest_L2 =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormF>("GAMMA residual", interfaceextract, 0,
+          nlParams.get<double>("Tol fsi res L2"), ::NOX::Abstract::Vector::TwoNorm,
+          FSI::Nonlinear::PartialNormF::Scaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormF> interfaceTest_inf =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormF>("GAMMA residual", interfaceextract, 0,
           nlParams.get<double>("Tol fsi res Inf"), ::NOX::Abstract::Vector::MaxNorm,
-          NOX::FSI::PartialNormF::Unscaled);
-  Teuchos::RCP<NOX::FSI::PartialNormUpdate> interfaceTestUpdate_L2 =
-      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("GAMMA update", interfaceextract, 0,
+          FSI::Nonlinear::PartialNormF::Unscaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormUpdate> interfaceTestUpdate_L2 =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormUpdate>("GAMMA update", interfaceextract, 0,
           nlParams.get<double>("Tol fsi inc L2"), ::NOX::Abstract::Vector::TwoNorm,
-          NOX::FSI::PartialNormUpdate::Scaled);
-  Teuchos::RCP<NOX::FSI::PartialNormUpdate> interfaceTestUpdate_inf =
-      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("GAMMA update", interfaceextract, 0,
+          FSI::Nonlinear::PartialNormUpdate::Scaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormUpdate> interfaceTestUpdate_inf =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormUpdate>("GAMMA update", interfaceextract, 0,
           nlParams.get<double>("Tol fsi inc Inf"), ::NOX::Abstract::Vector::MaxNorm,
-          NOX::FSI::PartialNormUpdate::Unscaled);
+          FSI::Nonlinear::PartialNormUpdate::Unscaled);
 
   // tests needed to adapt relative tolerance of the linear solver
   add_status_test(interfaceTest_L2);
@@ -1142,21 +1144,22 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MortarMonolithicStructureSplit::crea
       Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::AND);
 
   // create Norm-objects for each norm that has to be tested
-  Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel_L2 = Teuchos::make_rcp<NOX::FSI::PartialNormF>(
-      "VELOC residual", fluidvelextract, 0, nlParams.get<double>("Tol vel res L2"),
-      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled);
-  Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel_inf =
-      Teuchos::make_rcp<NOX::FSI::PartialNormF>("VELOC residual", fluidvelextract, 0,
+  Teuchos::RCP<FSI::Nonlinear::PartialNormF> innerFluidVel_L2 =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormF>("VELOC residual", fluidvelextract, 0,
+          nlParams.get<double>("Tol vel res L2"), ::NOX::Abstract::Vector::TwoNorm,
+          FSI::Nonlinear::PartialNormF::Scaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormF> innerFluidVel_inf =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormF>("VELOC residual", fluidvelextract, 0,
           nlParams.get<double>("Tol vel res Inf"), ::NOX::Abstract::Vector::MaxNorm,
-          NOX::FSI::PartialNormF::Unscaled);
-  Teuchos::RCP<NOX::FSI::PartialNormUpdate> innerFluidVelUpdate_L2 =
-      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("VELOC update", fluidvelextract, 0,
+          FSI::Nonlinear::PartialNormF::Unscaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormUpdate> innerFluidVelUpdate_L2 =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormUpdate>("VELOC update", fluidvelextract, 0,
           nlParams.get<double>("Tol vel inc L2"), ::NOX::Abstract::Vector::TwoNorm,
-          NOX::FSI::PartialNormUpdate::Scaled);
-  Teuchos::RCP<NOX::FSI::PartialNormUpdate> innerFluidVelUpdate_inf =
-      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("VELOC update", fluidvelextract, 0,
+          FSI::Nonlinear::PartialNormUpdate::Scaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormUpdate> innerFluidVelUpdate_inf =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormUpdate>("VELOC update", fluidvelextract, 0,
           nlParams.get<double>("Tol vel inc Inf"), ::NOX::Abstract::Vector::MaxNorm,
-          NOX::FSI::PartialNormUpdate::Unscaled);
+          FSI::Nonlinear::PartialNormUpdate::Unscaled);
 
   // tests needed to adapt relative tolerance of the linear solver
   add_status_test(innerFluidVel_L2);
@@ -1185,20 +1188,22 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MortarMonolithicStructureSplit::crea
       Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::AND);
 
   // create Norm-objects for each norm that has to be tested
-  Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress_L2 = Teuchos::make_rcp<NOX::FSI::PartialNormF>(
-      "PRESS residual", fluidpressextract, 0, nlParams.get<double>("Tol pre res L2"),
-      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled);
-  Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress_inf = Teuchos::make_rcp<NOX::FSI::PartialNormF>(
-      "PRESS residual", fluidpressextract, 0, nlParams.get<double>("Tol pre res Inf"),
-      ::NOX::Abstract::Vector::MaxNorm, NOX::FSI::PartialNormF::Unscaled);
-  Teuchos::RCP<NOX::FSI::PartialNormUpdate> fluidPressUpdate_L2 =
-      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("PRESS update", fluidpressextract, 0,
+  Teuchos::RCP<FSI::Nonlinear::PartialNormF> fluidPress_L2 =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormF>("PRESS residual", fluidpressextract, 0,
+          nlParams.get<double>("Tol pre res L2"), ::NOX::Abstract::Vector::TwoNorm,
+          FSI::Nonlinear::PartialNormF::Scaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormF> fluidPress_inf =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormF>("PRESS residual", fluidpressextract, 0,
+          nlParams.get<double>("Tol pre res Inf"), ::NOX::Abstract::Vector::MaxNorm,
+          FSI::Nonlinear::PartialNormF::Unscaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormUpdate> fluidPressUpdate_L2 =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormUpdate>("PRESS update", fluidpressextract, 0,
           nlParams.get<double>("Tol pre inc L2"), ::NOX::Abstract::Vector::TwoNorm,
-          NOX::FSI::PartialNormUpdate::Scaled);
-  Teuchos::RCP<NOX::FSI::PartialNormUpdate> fluidPressUpdate_inf =
-      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("PRESS update", fluidpressextract, 0,
+          FSI::Nonlinear::PartialNormUpdate::Scaled);
+  Teuchos::RCP<FSI::Nonlinear::PartialNormUpdate> fluidPressUpdate_inf =
+      Teuchos::make_rcp<FSI::Nonlinear::PartialNormUpdate>("PRESS update", fluidpressextract, 0,
           nlParams.get<double>("Tol pre inc Inf"), ::NOX::Abstract::Vector::MaxNorm,
-          NOX::FSI::PartialNormUpdate::Unscaled);
+          FSI::Nonlinear::PartialNormUpdate::Unscaled);
 
   // tests needed to adapt relative tolerance of the linear solver
   add_status_test(fluidPress_L2);
@@ -1308,7 +1313,7 @@ void FSI::MortarMonolithicStructureSplit::output()
 
   fluid_field()->output();
 
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     int uprestart = timeparams_.get<int>("RESTARTEVERY");
     if (uprestart != 0 && fluid_field()->step() % uprestart == 0)
@@ -1372,7 +1377,7 @@ void FSI::MortarMonolithicStructureSplit::read_restart(int step)
 
   setup_system();
 
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
   {
     Core::IO::DiscretizationReader reader =
         Core::IO::DiscretizationReader(*fluid_field()->discretization(), input_control_file, step);
@@ -1385,7 +1390,7 @@ void FSI::MortarMonolithicStructureSplit::read_restart(int step)
 
   set_time_step(fluid_field()->time(), fluid_field()->step());
 
-  if (aleproj_ != Inpar::FSI::ALEprojection_none)
+  if (aleproj_ != FSI::ALEprojection_none)
     slideale_->evaluate_mortar(
         *structure_field()->extract_interface_dispn(), *iprojdisp_, *coupsfm_);
 }

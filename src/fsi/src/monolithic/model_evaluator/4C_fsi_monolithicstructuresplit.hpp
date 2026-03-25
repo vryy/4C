@@ -12,8 +12,8 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_fsi_monolithic.hpp"
-#include "4C_inpar_fsi.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

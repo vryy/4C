@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_fld_wrapper.hpp"
-#include "4C_inpar_fsi.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
@@ -319,7 +319,7 @@ namespace Adapter
     std::shared_ptr<Core::LinAlg::Vector<double>>
         locerrvelnp_;  ///< vector of temporal local discretization error
 
-    Inpar::FSI::FluidMethod auxintegrator_;  ///< auxiliary time integrator in fluid field
+    FSI::FluidMethod auxintegrator_;  ///< auxiliary time integrator in fluid field
 
     int numfsidbcdofs_;  ///< number of interface DOFs with Dirichlet boundary condition
 

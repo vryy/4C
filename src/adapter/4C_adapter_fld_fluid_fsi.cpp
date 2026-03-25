@@ -13,8 +13,8 @@
 #include "4C_fluid_implicit_integration.hpp"
 #include "4C_fluid_utils.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
+#include "4C_fsi_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fsi.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_linalg_mapextractor.hpp"
@@ -46,7 +46,7 @@ Adapter::FluidFSI::FluidFSI(std::shared_ptr<Fluid> fluid,
       interface_(std::make_shared<FLD::Utils::MapExtractor>()),
       meshmap_(std::make_shared<Core::LinAlg::MapExtractor>()),
       locerrvelnp_(nullptr),
-      auxintegrator_(Inpar::FSI::timada_fld_none),
+      auxintegrator_(FSI::timada_fld_none),
       numfsidbcdofs_(0),
       methodadapt_(ada_none)
 {
@@ -102,10 +102,10 @@ void Adapter::FluidFSI::init()
   if (timeadapton)
   {
     // extract the type of auxiliary integrator from the input parameter list
-    auxintegrator_ = Teuchos::getIntegralValue<Inpar::FSI::FluidMethod>(
+    auxintegrator_ = Teuchos::getIntegralValue<FSI::FluidMethod>(
         fsidyn.sublist("TIMEADAPTIVITY"), "AUXINTEGRATORFLUID");
 
-    if (auxintegrator_ != Inpar::FSI::timada_fld_none)
+    if (auxintegrator_ != FSI::timada_fld_none)
     {
       // determine type of adaptivity
       if (aux_method_order_of_accuracy() > fluidimpl_->method_order_of_accuracy())
@@ -549,17 +549,17 @@ void Adapter::FluidFSI::time_step_auxiliary()
   // calculate time step with auxiliary time integrator, i.e. the extrapolated solution
   switch (auxintegrator_)
   {
-    case Inpar::FSI::timada_fld_none:
+    case FSI::timada_fld_none:
     {
       break;
     }
-    case Inpar::FSI::timada_fld_expleuler:
+    case FSI::timada_fld_expleuler:
     {
       explicit_euler(veln_vector, accn_vector, *locerrvelnp_);
 
       break;
     }
-    case Inpar::FSI::timada_fld_adamsbashforth2:
+    case FSI::timada_fld_adamsbashforth2:
     {
       if (step() >= 1)  // adams_bashforth2 only if at least second time step
       {
@@ -731,11 +731,11 @@ double Adapter::FluidFSI::calculate_error_norm(
  *----------------------------------------------------------------------*/
 int Adapter::FluidFSI::aux_method_order_of_accuracy() const
 {
-  if (auxintegrator_ == Inpar::FSI::timada_fld_none)
+  if (auxintegrator_ == FSI::timada_fld_none)
     return 0;
-  else if (auxintegrator_ == Inpar::FSI::timada_fld_expleuler)
+  else if (auxintegrator_ == FSI::timada_fld_expleuler)
     return 1;
-  else if (auxintegrator_ == Inpar::FSI::timada_fld_adamsbashforth2)
+  else if (auxintegrator_ == FSI::timada_fld_adamsbashforth2)
     return 2;
   else
   {
@@ -748,11 +748,11 @@ int Adapter::FluidFSI::aux_method_order_of_accuracy() const
  *----------------------------------------------------------------------*/
 double Adapter::FluidFSI::aux_method_lin_err_coeff_vel() const
 {
-  if (auxintegrator_ == Inpar::FSI::timada_fld_none)
+  if (auxintegrator_ == FSI::timada_fld_none)
     return 0.0;
-  else if (auxintegrator_ == Inpar::FSI::timada_fld_expleuler)
+  else if (auxintegrator_ == FSI::timada_fld_expleuler)
     return 0.5;
-  else if (auxintegrator_ == Inpar::FSI::timada_fld_adamsbashforth2)
+  else if (auxintegrator_ == FSI::timada_fld_adamsbashforth2)
   {
     // time step sizes of current and previous time step
     const double dtc = dt();
@@ -772,7 +772,7 @@ double Adapter::FluidFSI::aux_method_lin_err_coeff_vel() const
  *----------------------------------------------------------------------*/
 double Adapter::FluidFSI::get_tim_ada_err_order() const
 {
-  if (auxintegrator_ != Inpar::FSI::timada_fld_none)
+  if (auxintegrator_ != FSI::timada_fld_none)
   {
     if (methodadapt_ == ada_upward)
       return fluidimpl_->method_order_of_accuracy_vel();
@@ -794,17 +794,17 @@ std::string Adapter::FluidFSI::get_tim_ada_method_name() const
 {
   switch (auxintegrator_)
   {
-    case Inpar::FSI::timada_fld_none:
+    case FSI::timada_fld_none:
     {
       return "none";
       break;
     }
-    case Inpar::FSI::timada_fld_expleuler:
+    case FSI::timada_fld_expleuler:
     {
       return "ExplicitEuler";
       break;
     }
-    case Inpar::FSI::timada_fld_adamsbashforth2:
+    case FSI::timada_fld_adamsbashforth2:
     {
       return "AdamsBashforth2";
       break;

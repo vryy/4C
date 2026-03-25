@@ -13,7 +13,7 @@
 #include "4C_fbi_immersed_geometry_coupler.hpp"
 #include "4C_fbi_immersedcoupler_factory.hpp"
 #include "4C_fbi_input.hpp"
-#include "4C_inpar_fsi.hpp"
+#include "4C_fsi_input.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
