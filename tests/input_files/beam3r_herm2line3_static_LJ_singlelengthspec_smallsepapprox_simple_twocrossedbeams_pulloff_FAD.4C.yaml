@@ -34,6 +34,9 @@ SOLVER 1:
 STRUCT NOX/Printing:
   Inner Iteration: false
   Outer Iteration StatusTest: false
+BINNING STRATEGY:
+  BIN_SIZE_LOWER_BOUND: 2
+  DOMAINBOUNDINGBOX: "-2 -2 -1 2 2 1"
 BEAM INTERACTION:
   REPARTITIONSTRATEGY: "Everydt"
 beam_potential:

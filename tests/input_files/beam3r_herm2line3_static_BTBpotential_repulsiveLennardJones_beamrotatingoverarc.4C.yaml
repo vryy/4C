@@ -42,6 +42,9 @@ beam_potential:
     interval_steps: 1
     force: true
     write_force_moment_per_elementpair: true
+BINNING STRATEGY:
+  BIN_SIZE_LOWER_BOUND: 5
+  DOMAINBOUNDINGBOX: "-5 -5 -5 5 5 5"
 STRUCT NOX/Printing:
   Inner Iteration: false
   Outer Iteration StatusTest: false
