@@ -63,10 +63,15 @@ Inpar::ScaTra::ImplType Adapter::get_sca_tra_impl_type(Core::Elements::Element* 
   {
     impltype = (dynamic_cast<Discret::Elements::Truss3Scatra*>(ele))->impl_type();
   }
-  // SolidScatra element
-  else if (eletypename == "SolidScatraType")
+  // SolidScatra<3> element
+  else if (eletypename == "SolidScatraType<3>")
   {
-    impltype = (dynamic_cast<Discret::Elements::SolidScatra*>(ele))->impl_type();
+    impltype = (dynamic_cast<Discret::Elements::SolidScatra<3>*>(ele))->impl_type();
+  }
+  // SolidScatra<2> element
+  else if (eletypename == "SolidScatraType<2>")
+  {
+    impltype = (dynamic_cast<Discret::Elements::SolidScatra<2>*>(ele))->impl_type();
   }
   else
   {

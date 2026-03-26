@@ -13,16 +13,20 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
+
+template <unsigned dim>
+int Discret::Elements::SolidScatra<dim>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
+  FOUR_C_ASSERT(solid_scatra_calc_variant_.has_value(),
+      "The solid-scatra calculation interface is not initialized for element id {}.", id());
   if (!material_post_setup_)
   {
     std::visit([&](auto& interface) { interface->material_post_setup(*this, solid_material()); },
-        solid_scatra_calc_variant_);
+        *solid_scatra_calc_variant_);
     material_post_setup_ = true;
   }
 
@@ -50,7 +54,7 @@ int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
             interface->evaluate_d_stress_d_scalar(
                 *this, solid_material(), discretization, la, params, elemat1);
           },
-          solid_scatra_calc_variant_);
+          *solid_scatra_calc_variant_);
       return 0;
     case Core::Elements::struct_calc_nlnstiff:
     {
@@ -60,7 +64,7 @@ int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
             interface->evaluate_nonlinear_force_stiffness_mass(
                 *this, solid_material(), discretization, la, params, &elevec1, &elemat1, nullptr);
           },
-          solid_scatra_calc_variant_);
+          *solid_scatra_calc_variant_);
       return 0;
     }
     case Core::Elements::struct_calc_nlnstiffmass:
@@ -71,7 +75,7 @@ int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
             interface->evaluate_nonlinear_force_stiffness_mass(
                 *this, solid_material(), discretization, la, params, &elevec1, &elemat1, &elemat2);
           },
-          solid_scatra_calc_variant_);
+          *solid_scatra_calc_variant_);
 
       return 0;
     }
@@ -83,7 +87,7 @@ int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
             interface->evaluate_nonlinear_force_stiffness_mass(
                 *this, solid_material(), discretization, la, params, &elevec1, nullptr, nullptr);
           },
-          solid_scatra_calc_variant_);
+          *solid_scatra_calc_variant_);
 
       return 0;
     }
@@ -91,14 +95,14 @@ int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
     {
       std::visit([&](auto& interface)
           { interface->update(*this, solid_material(), discretization, la, params); },
-          solid_scatra_calc_variant_);
+          *solid_scatra_calc_variant_);
 
       return 0;
     }
     case Core::Elements::struct_calc_recover:
     {
       std::visit([&](auto& interface) { interface->recover(*this, discretization, la, params); },
-          solid_scatra_calc_variant_);
+          *solid_scatra_calc_variant_);
 
       return 0;
     }
@@ -112,7 +116,7 @@ int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
                 StrainIO{get_io_strain_type(*this, params), get_strain_data(*this, params)},
                 discretization, la, params);
           },
-          solid_scatra_calc_variant_);
+          *solid_scatra_calc_variant_);
 
       return 0;
     }
@@ -124,7 +128,7 @@ int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
             interface->initialize_gauss_point_data_output(*this, solid_material(),
                 *get_solid_params_interface().gauss_point_data_output_manager_ptr());
           },
-          solid_scatra_calc_variant_);
+          *solid_scatra_calc_variant_);
 
       return 0;
     }
@@ -136,7 +140,7 @@ int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
             interface->evaluate_gauss_point_data_output(*this, solid_material(),
                 *get_solid_params_interface().gauss_point_data_output_manager_ptr());
           },
-          solid_scatra_calc_variant_);
+          *solid_scatra_calc_variant_);
 
       return 0;
     }
@@ -144,7 +148,7 @@ int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
     {
       std::visit([&](auto& interface)
           { interface->reset_to_last_converged(*this, solid_material()); },
-          solid_scatra_calc_variant_);
+          *solid_scatra_calc_variant_);
 
       return 0;
     }
@@ -159,7 +163,8 @@ int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
   return 0;
 }
 
-int Discret::Elements::SolidScatra::evaluate_neumann(Teuchos::ParameterList& params,
+template <unsigned dim>
+int Discret::Elements::SolidScatra<dim>::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -175,19 +180,54 @@ int Discret::Elements::SolidScatra::evaluate_neumann(Teuchos::ParameterList& par
           return params.get("total time", -1.0);
       });
 
-  Discret::Elements::evaluate_neumann_by_element<3>(
+  Discret::Elements::evaluate_neumann_by_element<dim>(
       *this, discretization, condition, elevec1, time);
   return 0;
 }
 
-double Discret::Elements::SolidScatra::get_normal_cauchy_stress_at_xi(
+template <unsigned dim>
+double Discret::Elements::SolidScatra<dim>::get_normal_cauchy_stress_at_xi(
     const std::vector<double>& disp, const std::vector<double>& scalars,
     const Core::LinAlg::Tensor<double, 3>& xi, const Core::LinAlg::Tensor<double, 3>& n,
     const Core::LinAlg::Tensor<double, 3>& dir,
     Discret::Elements::SolidScatraCauchyNDirLinearizations<3>& linearizations)
 {
-  return Discret::Elements::get_normal_cauchy_stress_at_xi(solid_scatra_calc_variant_, *this,
+  FOUR_C_ASSERT(solid_scatra_calc_variant_.has_value(),
+      "The solid-scatra calculation interface is not initialized for element id {}.", id());
+
+  return Discret::Elements::get_normal_cauchy_stress_at_xi(*solid_scatra_calc_variant_, *this,
       solid_material(), disp, scalars, xi, n, dir, linearizations);
 }
+
+template int Discret::Elements::SolidScatra<2>::evaluate(Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3);
+template int Discret::Elements::SolidScatra<3>::evaluate(Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3);
+
+template int Discret::Elements::SolidScatra<2>::evaluate_neumann(Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, const Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1);
+template int Discret::Elements::SolidScatra<3>::evaluate_neumann(Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, const Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1);
+
+template double Discret::Elements::SolidScatra<2>::get_normal_cauchy_stress_at_xi(
+    const std::vector<double>& disp, const std::vector<double>& scalars,
+    const Core::LinAlg::Tensor<double, 3>& xi, const Core::LinAlg::Tensor<double, 3>& n,
+    const Core::LinAlg::Tensor<double, 3>& dir,
+    Discret::Elements::SolidScatraCauchyNDirLinearizations<3>& linearizations);
+template double Discret::Elements::SolidScatra<3>::get_normal_cauchy_stress_at_xi(
+    const std::vector<double>& disp, const std::vector<double>& scalars,
+    const Core::LinAlg::Tensor<double, 3>& xi, const Core::LinAlg::Tensor<double, 3>& n,
+    const Core::LinAlg::Tensor<double, 3>& dir,
+    Discret::Elements::SolidScatraCauchyNDirLinearizations<3>& linearizations);
 
 FOUR_C_NAMESPACE_CLOSE

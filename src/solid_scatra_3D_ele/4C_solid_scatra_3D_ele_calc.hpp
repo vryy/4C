@@ -36,7 +36,11 @@ namespace Discret::Elements
   class SolidScatraEleCalc
   {
    public:
-    SolidScatraEleCalc();
+    SolidScatraEleCalc()
+      requires(Core::FE::dim<celltype> == 3);
+    SolidScatraEleCalc(
+        const double reference_thickness, const Discret::Elements::PlaneAssumption plane_assumption)
+      requires(Core::FE::dim<celltype> == 2);
 
     void pack(Core::Communication::PackBuffer& data) const;
 
@@ -101,6 +105,8 @@ namespace Discret::Elements
 
     Core::FE::GaussIntegration stiffness_matrix_integration_;
     Core::FE::GaussIntegration mass_matrix_integration_;
+
+    ElementProperties<celltype> element_properties_;
 
     SolidFormulationHistory<SolidFormulation> history_data_{};
   };

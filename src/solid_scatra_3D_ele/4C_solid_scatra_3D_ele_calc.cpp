@@ -24,6 +24,7 @@
 #include "4C_solid_3D_ele_calc_lib_formulation.hpp"
 #include "4C_solid_3D_ele_calc_lib_integration.hpp"
 #include "4C_solid_3D_ele_calc_lib_io.hpp"
+#include "4C_solid_3D_ele_calc_lib_plane.hpp"
 #include "4C_solid_3D_ele_formulation.hpp"
 #include "4C_solid_3D_ele_interface_serializable.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -51,11 +52,13 @@ namespace
   template <Core::FE::CellType celltype>
   Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>
   evaluate_d_material_stress_d_scalar(Mat::So3Material& solid_material,
+      const Discret::Elements::ElementProperties<celltype>& element_properties,
       const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
           deformation_gradient,
       const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
           gl_strain,
-      Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, const int gp,
+      Teuchos::ParameterList& params,
+      const Mat::EvaluationContext<Core::FE::dim<celltype>>& context, const int gp,
       const int eleGID)
   {
     auto* monolithic_material = dynamic_cast<Mat::MonolithicSolidScalarMaterial*>(&solid_material);
@@ -63,10 +66,32 @@ namespace
     FOUR_C_ASSERT_ALWAYS(
         monolithic_material, "Your material does not allow to evaluate a monolithic ssi material!");
 
-    // The derivative of the solid stress w.r.t. the scalar is implemented in the normal
-    // material Evaluate call by not passing the linearization matrix.
-    return monolithic_material->evaluate_d_stress_d_scalar(
-        deformation_gradient, gl_strain, params, context, gp, eleGID);
+    if constexpr (Core::FE::dim<celltype> == 3)
+    {
+      // The derivative of the solid stress w.r.t. the scalar is implemented in the normal
+      // material Evaluate call by not passing the linearization matrix.
+      return monolithic_material->evaluate_d_stress_d_scalar(
+          deformation_gradient, gl_strain, params, context, gp, eleGID);
+    }
+    else
+    {
+      Core::LinAlg::SymmetricTensor<double, 3, 3> d_stress_d_scalar_3d{};
+      Discret::Elements::transform_to_3d(solid_material, element_properties, deformation_gradient,
+          gl_strain, params, context, gp, eleGID,
+          [&](const Core::LinAlg::Tensor<double, 3, 3>& defgrd_3d,
+              const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl_strain_3d,
+              const Mat::EvaluationContext<3>& context_3d)
+          {
+            d_stress_d_scalar_3d = monolithic_material->evaluate_d_stress_d_scalar(
+                defgrd_3d, gl_strain_3d, params, context_3d, gp, eleGID);
+          });
+
+      // only return the 2D part of the tensor
+      return Core::LinAlg::assume_symmetry(Core::LinAlg::Tensor<double, 2, 2>{{
+          {d_stress_d_scalar_3d(0, 0), d_stress_d_scalar_3d(0, 1)},
+          {d_stress_d_scalar_3d(1, 0), d_stress_d_scalar_3d(1, 1)},
+      }});
+    }
   }
 
   template <Core::FE::CellType celltype>
@@ -250,10 +275,24 @@ namespace
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
 Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::SolidScatraEleCalc()
+  requires(Core::FE::dim<celltype> == 3)
     : stiffness_matrix_integration_(Core::FE::create_gauss_integration<celltype>(
           get_gauss_rule_stiffness_matrix<celltype>())),
       mass_matrix_integration_(
           Core::FE::create_gauss_integration<celltype>(get_gauss_rule_mass_matrix<celltype>()))
+{
+}
+
+template <Core::FE::CellType celltype, typename SolidFormulation>
+Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::SolidScatraEleCalc(
+    const double reference_thickness, const Discret::Elements::PlaneAssumption plane_assumption)
+  requires(Core::FE::dim<celltype> == 2)
+    : stiffness_matrix_integration_(Core::FE::create_gauss_integration<celltype>(
+          get_gauss_rule_stiffness_matrix<celltype>())),
+      mass_matrix_integration_(
+          Core::FE::create_gauss_integration<celltype>(get_gauss_rule_mass_matrix<celltype>())),
+      element_properties_(
+          {.reference_thickness = reference_thickness, .plane_assumption = plane_assumption})
 {
 }
 
@@ -333,13 +372,14 @@ void Discret::Elements::SolidScatraEleCalc<celltype,
             history_data_, gp,
             [&](const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>,
                     Core::FE::dim<celltype>>& deformation_gradient,
-                const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl_strain,
+                const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>,
+                    Core::FE::dim<celltype>>& gl_strain,
                 const auto& linearization)
             {
               auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
                   nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-              Mat::EvaluationContext<3> context{.total_time = total_time,
+              Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
@@ -475,14 +515,16 @@ void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
             {
               auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
                   nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
-              Mat::EvaluationContext<3> context{.total_time = total_time,
+              Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
 
-              Core::LinAlg::SymmetricTensor<double, 3, 3> dSdc =
-                  evaluate_d_material_stress_d_scalar<celltype>(solid_material,
-                      deformation_gradient, gl_strain, params, context, gp, ele.id());
+              Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>,
+                  Core::FE::dim<celltype>>
+                  dSdc = evaluate_d_material_stress_d_scalar<celltype>(solid_material,
+                      element_properties_, deformation_gradient, gl_strain, params, context, gp,
+                      ele.id());
 
               constexpr int num_dof_per_ele =
                   Core::FE::dim<celltype> * Core::FE::num_nodes(celltype);
@@ -581,7 +623,7 @@ void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::update(
         auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
             nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-        Mat::EvaluationContext<3> context{.total_time = total_time,
+        Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
             .time_step_size = time_step_size,
             .xi = &xi,
             .ref_coords = &gp_ref_coord};
@@ -589,9 +631,13 @@ void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::update(
             history_data_, gp,
             [&](const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>,
                     Core::FE::dim<celltype>>& deformation_gradient,
-                const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl_strain,
+                const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>,
+                    Core::FE::dim<celltype>>& gl_strain,
                 const auto& linearization)
-            { solid_material.update(deformation_gradient, gp, params, context, ele.id()); });
+            {
+              update_material(solid_material, element_properties_, deformation_gradient, params,
+                  context, gp, ele.id());
+            });
       });
 
   solid_material.update();
@@ -646,11 +692,12 @@ double Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::calcul
               auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
                   nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-              Mat::EvaluationContext<3> context{.total_time = total_time,
+              Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
-              double psi = solid_material.strain_energy(gl_strain, context, gp, ele.id());
+              double psi = evaluate_material_strain_energy<celltype>(
+                  solid_material, element_properties_, gl_strain, params, context, gp, ele.id());
               intenergy += psi * integration_factor;
             });
       });
@@ -711,7 +758,7 @@ void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::calculat
               auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
                   nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-              Mat::EvaluationContext<3> context{.total_time = total_time,
+              Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
@@ -745,11 +792,18 @@ Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::get_normal_ca
         "history. The element formulation is {}.",
         Core::Utils::get_type_name<SolidFormulation>().c_str());
   }
+  else if constexpr (Core::FE::dim<celltype> != 3)
+  {
+    FOUR_C_THROW(
+        "Cannot evaluate the Cauchy stress at xi for an element formulation with spatial "
+        "dimension different than 3. The element formulation is {}.",
+        Core::Utils::get_type_name<SolidFormulation>().c_str());
+  }
   else
   {
     // project scalar values to xi
-    const auto scalar_values_at_xi =
-        Core::FE::interpolate_to_xi<celltype>(Core::LinAlg::make_matrix_view<3, 1>(xi), scalars);
+    const auto scalar_values_at_xi = Core::FE::interpolate_to_xi<celltype>(
+        Core::LinAlg::make_matrix_view<Core::FE::dim<celltype>, 1>(xi), scalars);
 
 
     ElementNodes<celltype> element_nodes = evaluate_element_nodes<celltype>(ele, disp);
@@ -873,6 +927,15 @@ template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tet10,
 template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::nurbs27,
     Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::nurbs27>>;
 
+template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad4,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::quad4>>;
+template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad9,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::quad9>>;
+template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri3,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tri3>>;
+template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri6,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tri6>>;
+
 // for displacement based formulation with linear kinematics
 template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex8>>;
@@ -884,6 +947,15 @@ template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tet10,
     Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tet10>>;
 template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::nurbs27,
     Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::nurbs27>>;
+
+template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad4,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::quad4>>;
+template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad9,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::quad9>>;
+template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri3,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tri3>>;
+template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri6,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tri6>>;
 
 
 // FBar based formulation
@@ -897,6 +969,11 @@ template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
 template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
         Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>>;
+
+// explicit instantiations for quad4 with EAS
+template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad4,
+    Discret::Elements::EASFormulation<Core::FE::CellType::quad4,
+        Discret::Elements::EasType::eastype_q4_4, Inpar::Solid::KinemType::nonlinearTotLag>>;
 
 
 FOUR_C_NAMESPACE_CLOSE

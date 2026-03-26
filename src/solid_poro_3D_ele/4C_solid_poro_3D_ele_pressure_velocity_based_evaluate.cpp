@@ -39,8 +39,8 @@ namespace
       IsMemberOfVariant<std::remove_cvref_t<T>, Discret::Elements::SolidCalcVariant<3>>::value;
 
   template <typename T>
-  concept IsSolidScatraInterface =
-      IsMemberOfVariant<std::remove_cvref_t<T>, Discret::Elements::SolidScatraCalcVariant>::value;
+  concept IsSolidScatraInterface = IsMemberOfVariant<std::remove_cvref_t<T>,
+      Discret::Elements::SolidScatraCalcVariant<3>>::value;
 
   template <IsSolidScatraInterface SolidInterface>
   const auto& get_location_array(const Core::Elements::LocationArray& la)

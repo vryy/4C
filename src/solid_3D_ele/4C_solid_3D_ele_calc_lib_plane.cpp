@@ -9,39 +9,19 @@
 
 #include "4C_solid_3D_ele_calc_lib_plane.hpp"
 
-#include "4C_fem_discretization.hpp"
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_element.hpp"
-#include "4C_fem_general_element_dof_matrix.hpp"
-#include "4C_fem_general_extract_values.hpp"
-#include "4C_fem_general_fiber_node_holder.hpp"
-#include "4C_fem_general_fiber_node_utils.hpp"
-#include "4C_fem_general_utils_gauss_point_postprocess.hpp"
-#include "4C_fem_general_utils_gausspoints.hpp"
-#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_fem_nurbs_discretization_utils.hpp"
-#include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
-#include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
-#include "4C_linalg_symmetric_tensor_eigen.hpp"
 #include "4C_linalg_tensor.hpp"
-#include "4C_linalg_tensor_conversion.hpp"
 #include "4C_linalg_tensor_generators.hpp"
-#include "4C_linalg_tensor_symmetric_einstein.hpp"
-#include "4C_linalg_vector.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_mat_structporo.hpp"
 #include "4C_mat_stvenantkirchhoff.hpp"
-#include "4C_solid_3D_ele_calc_lib_integration.hpp"
-#include "4C_utils_function.hpp"
 #include "4C_utils_local_newton.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
-#include <algorithm>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -201,6 +181,52 @@ namespace
 
 template <Core::FE::CellType celltype>
   requires(Core::FE::dim<celltype> == 2)
+void Discret::Elements::transform_to_3d(Mat::So3Material& material,
+    const ElementProperties<celltype>& element_properties,
+    const Core::LinAlg::Tensor<double, 2, 2>& defgrd,
+    const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
+    const Mat::EvaluationContext<2>& context, const int gp, const int eleGID,
+    const std::function<void(const Core::LinAlg::Tensor<double, 3, 3>&,
+        const Core::LinAlg::SymmetricTensor<double, 3, 3>&, const Mat::EvaluationContext<3>&)>&
+        funct)
+{
+  // making 3D context out of 2D context
+  Core::LinAlg::Tensor<double, 3> xi, gp_ref_coord;
+  const Mat::EvaluationContext<3> context_3d = translate_context(context, xi, gp_ref_coord);
+
+  switch (element_properties.plane_assumption)
+  {
+    case PlaneAssumption::plane_stress:
+    {
+      // solve local system to obtain the consistent 3d strains for plane stress
+      const Core::LinAlg::SymmetricTensor<double, 3, 3> gl_strain_3d =
+          evaluate_material_plane_stress<celltype>(material, gl_strain, params, context, gp, eleGID)
+              .gl_strain_3d;
+
+      // compute consistent deformation gradient
+      const Core::LinAlg::Tensor<double, 3, 3> defgrd_3d =
+          Discret::Elements::compute_deformation_gradient_from_gl_strains(
+              make_3d_tensor(defgrd, 1.0), gl_strain_3d);
+
+      funct(defgrd_3d, gl_strain_3d, context_3d);
+      break;
+    }
+    case PlaneAssumption::plane_strain:
+    {
+      // this is the easy case
+      const Core::LinAlg::Tensor<double, 3, 3> defgrd_3d = make_3d_tensor(defgrd, 1.0);
+      const Core::LinAlg::SymmetricTensor<double, 3, 3> gl_strain_3d =
+          make_3d_tensor(gl_strain, 0.0);
+      funct(defgrd_3d, gl_strain_3d, context_3d);
+      return;
+    }
+    default:
+      FOUR_C_THROW("Unknown plane assumption for 2D solid element.");
+  }
+}
+
+template <Core::FE::CellType celltype>
+  requires(Core::FE::dim<celltype> == 2)
 Discret::Elements::Stress<celltype> Discret::Elements::evaluate_material_stress(
     Mat::So3Material& material, const ElementProperties<celltype>& element_properties,
     const Core::LinAlg::Tensor<double, 2, 2>& defgrd,
@@ -269,43 +295,15 @@ void Discret::Elements::update_material(Mat::So3Material& material,
     const Core::LinAlg::Tensor<double, 2, 2>& defgrd, Teuchos::ParameterList& params,
     const Mat::EvaluationContext<2>& context, const int gp, const int eleGID)
 {
-  Core::LinAlg::Tensor<double, 3, 3> F_consistent{};
+  Core::LinAlg::SymmetricTensor<double, 2, 2> gl_strain =
+      0.5 * (Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(defgrd) * defgrd) -
+                Core::LinAlg::TensorGenerators::identity<double, 2, 2>);
 
-  switch (element_properties.plane_assumption)
-  {
-    case PlaneAssumption::plane_stress:
-    {
-      // compute 2d strains
-      Core::LinAlg::SymmetricTensor<double, 2, 2> gl_strain_2d =
-          0.5 * (Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(defgrd) * defgrd) -
-                    Core::LinAlg::TensorGenerators::identity<double, 2, 2>);
-
-      // solve local system to obtain the consistent 3d strains for plane stress
-      Core::LinAlg::SymmetricTensor<double, 3, 3> gl_strain_3d =
-          evaluate_material_plane_stress<celltype>(
-              material, gl_strain_2d, params, context, gp, eleGID)
-              .gl_strain_3d;
-
-      // compute consistent deformation gradient
-      F_consistent = Discret::Elements::compute_deformation_gradient_from_gl_strains(
-          make_3d_tensor(defgrd, 1.0), gl_strain_3d);
-      break;
-    }
-    case PlaneAssumption::plane_strain:
-    {
-      F_consistent = make_3d_tensor(defgrd, 1.0);
-      break;
-    }
-    default:
-      FOUR_C_THROW("Unknown plane assumption for 2D solid element.");
-  }
-
-  // making 3D context out of 2D context
-  Core::LinAlg::Tensor<double, 3> xi, gp_ref_coord;
-  const Mat::EvaluationContext<3> context_3d = translate_context(context, xi, gp_ref_coord);
-
-  // call consistent update
-  material.update(F_consistent, gp, params, context_3d, eleGID);
+  transform_to_3d(material, element_properties, defgrd, gl_strain, params, context, gp, eleGID,
+      [&](const Core::LinAlg::Tensor<double, 3, 3>& defgrd_3d,
+          const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl_strain_3d,
+          const Mat::EvaluationContext<3>& context_3d)
+      { material.update(defgrd_3d, gp, params, context_3d, eleGID); });
 }
 
 template <Core::FE::CellType celltype>
@@ -315,32 +313,67 @@ double Discret::Elements::evaluate_material_strain_energy(Mat::So3Material& mate
     const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
     const Mat::EvaluationContext<2>& context, const int gp, const int eleGID)
 {
-  Core::LinAlg::SymmetricTensor<double, 3, 3> gl_strain_3d;
-  switch (element_properties.plane_assumption)
-  {
-    case PlaneAssumption::plane_stress:
-    {
-      // solve local system to obtain the consistent 3d strains for plane stress
-      gl_strain_3d =
-          evaluate_material_plane_stress<celltype>(material, gl_strain, params, context, gp, eleGID)
-              .gl_strain_3d;
-      break;
-    }
-    case PlaneAssumption::plane_strain:
-    {
-      gl_strain_3d = make_3d_tensor(gl_strain, 0.0);
-      break;
-    }
-    default:
-      FOUR_C_THROW("Unknown plane assumption for 2D solid element.");
-  }
+  const Core::LinAlg::Tensor<double, 2, 2> defgrd =
+      Discret::Elements::compute_deformation_gradient_from_gl_strains({}, gl_strain);
 
-  // making 3D context out of 2D context
-  Core::LinAlg::Tensor<double, 3> xi, gp_ref_coord;
-  const Mat::EvaluationContext<3> context_3d = translate_context(context, xi, gp_ref_coord);
+  double strain_energy = 0.0;
+  transform_to_3d(material, element_properties, defgrd, gl_strain, params, context, gp, eleGID,
+      [&](const Core::LinAlg::Tensor<double, 3, 3>& defgrd_3d,
+          const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl_strain_3d,
+          const Mat::EvaluationContext<3>& context_3d)
+      { strain_energy = material.strain_energy(gl_strain_3d, context_3d, gp, eleGID); });
 
-  return material.strain_energy(gl_strain_3d, context_3d, gp, eleGID);
+  return strain_energy;
 }
+
+template void Discret::Elements::transform_to_3d(Mat::So3Material& material,
+    const ElementProperties<Core::FE::CellType::quad4>& element_properties,
+    const Core::LinAlg::Tensor<double, 2, 2>& defgrd,
+    const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
+    const Mat::EvaluationContext<2>& context, int gp, int eleGID,
+    const std::function<void(const Core::LinAlg::Tensor<double, 3, 3>&,
+        const Core::LinAlg::SymmetricTensor<double, 3, 3>&, const Mat::EvaluationContext<3>&)>&
+        funct);
+template void Discret::Elements::transform_to_3d(Mat::So3Material& material,
+    const ElementProperties<Core::FE::CellType::quad8>& element_properties,
+    const Core::LinAlg::Tensor<double, 2, 2>& defgrd,
+    const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
+    const Mat::EvaluationContext<2>& context, int gp, int eleGID,
+    const std::function<void(const Core::LinAlg::Tensor<double, 3, 3>&,
+        const Core::LinAlg::SymmetricTensor<double, 3, 3>&, const Mat::EvaluationContext<3>&)>&
+        funct);
+template void Discret::Elements::transform_to_3d(Mat::So3Material& material,
+    const ElementProperties<Core::FE::CellType::quad9>& element_properties,
+    const Core::LinAlg::Tensor<double, 2, 2>& defgrd,
+    const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
+    const Mat::EvaluationContext<2>& context, int gp, int eleGID,
+    const std::function<void(const Core::LinAlg::Tensor<double, 3, 3>&,
+        const Core::LinAlg::SymmetricTensor<double, 3, 3>&, const Mat::EvaluationContext<3>&)>&
+        funct);
+template void Discret::Elements::transform_to_3d(Mat::So3Material& material,
+    const ElementProperties<Core::FE::CellType::nurbs9>& element_properties,
+    const Core::LinAlg::Tensor<double, 2, 2>& defgrd,
+    const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
+    const Mat::EvaluationContext<2>& context, int gp, int eleGID,
+    const std::function<void(const Core::LinAlg::Tensor<double, 3, 3>&,
+        const Core::LinAlg::SymmetricTensor<double, 3, 3>&, const Mat::EvaluationContext<3>&)>&
+        funct);
+template void Discret::Elements::transform_to_3d(Mat::So3Material& material,
+    const ElementProperties<Core::FE::CellType::tri3>& element_properties,
+    const Core::LinAlg::Tensor<double, 2, 2>& defgrd,
+    const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
+    const Mat::EvaluationContext<2>& context, int gp, int eleGID,
+    const std::function<void(const Core::LinAlg::Tensor<double, 3, 3>&,
+        const Core::LinAlg::SymmetricTensor<double, 3, 3>&, const Mat::EvaluationContext<3>&)>&
+        funct);
+template void Discret::Elements::transform_to_3d(Mat::So3Material& material,
+    const ElementProperties<Core::FE::CellType::tri6>& element_properties,
+    const Core::LinAlg::Tensor<double, 2, 2>& defgrd,
+    const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
+    const Mat::EvaluationContext<2>& context, int gp, int eleGID,
+    const std::function<void(const Core::LinAlg::Tensor<double, 3, 3>&,
+        const Core::LinAlg::SymmetricTensor<double, 3, 3>&, const Mat::EvaluationContext<3>&)>&
+        funct);
 
 template Discret::Elements::Stress<Core::FE::CellType::quad4>
 Discret::Elements::evaluate_material_stress<Core::FE::CellType::quad4>(Mat::So3Material& material,
