@@ -795,4 +795,10 @@ template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
         Discret::Elements::EasType::eastype_sh8_7, Inpar::Solid::KinemType::linear>>;
 
+
+// explicit instantiations for quad4 with EAS
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad4,
+    Discret::Elements::EASFormulation<Core::FE::CellType::quad4,
+        Discret::Elements::EasType::eastype_q4_4, Inpar::Solid::KinemType::nonlinearTotLag>>;
+
 FOUR_C_NAMESPACE_CLOSE

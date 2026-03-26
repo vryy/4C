@@ -45,6 +45,7 @@ namespace Discret::Elements
     eastype_h8_21,
     eastype_sh8_7,
     eastype_sw6_1,
+    eastype_q4_4,
     eastype_undefined
   };
 
@@ -71,6 +72,11 @@ namespace Discret::Elements
   struct EasTypeToNumEas<Discret::Elements::EasType::eastype_sw6_1>
   {
     static constexpr int num_eas = 1;
+  };
+  template <>
+  struct EasTypeToNumEas<Discret::Elements::EasType::eastype_q4_4>
+  {
+    static constexpr int num_eas = 4;
   };
   template <>
   struct EasTypeToNumEas<Discret::Elements::EasType::eastype_undefined>
@@ -364,6 +370,21 @@ namespace Discret::Elements
 
         break;
       }
+      case Discret::Elements::EasType::eastype_q4_4:
+      {
+        /* eastype_q4_4 is the EAS interpolation for the 2d Solid quad4 element.
+        ** consisting of 4 modes, based on
+        **           r 0 0 0
+        **    M =    0 s 0 0
+        **           0 0 r s
+        */
+        M(0, 0) = xi(0);
+        M(1, 1) = xi(1);
+        M(2, 2) = xi(0);
+        M(2, 3) = xi(1);
+
+        break;
+      }
       default:
         FOUR_C_THROW("unknown EAS type");
         break;
@@ -454,9 +475,19 @@ namespace Discret::Elements
         Core::LinAlg::Initialization::uninitialized);
     enhanced_gl_strain.multiply(Mtilde, alpha);
 
-    Core::LinAlg::Voigt::Strains::to_stress_like(enhanced_gl_strain, enhanced_gl_strain);
-    Core::LinAlg::SymmetricTensor<double, 3, 3> gl_strain_eas_tensor;
-    std::ranges::copy_n(enhanced_gl_strain.data(), 6, gl_strain_eas_tensor.data());
+    if constexpr (Core::FE::dim<celltype> == 2)
+    {
+      // convert to stress like voigt notation
+      enhanced_gl_strain(2) *= 0.5;
+    }
+    else
+    {
+      Core::LinAlg::Voigt::Strains::to_stress_like(enhanced_gl_strain, enhanced_gl_strain);
+    }
+    Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>
+        gl_strain_eas_tensor;
+    std::ranges::copy_n(enhanced_gl_strain.data(), Discret::Elements::num_str<celltype>,
+        gl_strain_eas_tensor.data());
     return gl_strain_eas_tensor;
   }
 
