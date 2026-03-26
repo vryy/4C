@@ -212,6 +212,13 @@ std::vector<Core::IO::InputSpec> Particle::valid_parameters()
                   .default_value = "none"}),
 
 
+          // particle types that may carry a per-particle Dirichlet function id
+          parameter<std::optional<std::vector<std::string>>>("DIRICHLET_BOUNDARY_CONDITION_FLAGGED",
+              {.description = "Particle type names for which individual particles may carry a "
+                              "DIRICHLET_FUNCT id (per-particle Dirichlet BC), e.g. '[phase1, "
+                              "phase2]'. \nNote: Individually flagged particles override a "
+                              "potentially set condition via DIRICHLET_BOUNDARY_CONDITION."}),
+
           // dirichlet boundary condition of particle phase given by function
           parameter<std::string>("DIRICHLET_BOUNDARY_CONDITION",
               {.description =

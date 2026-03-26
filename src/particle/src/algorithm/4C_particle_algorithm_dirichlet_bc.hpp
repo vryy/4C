@@ -13,8 +13,8 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
+#include "4C_comm_utils.hpp"
 #include "4C_particle_engine_typedefs.hpp"
-#include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,6 +25,11 @@ namespace Particle
 {
   class ParticleEngineInterface;
 }  // namespace Particle
+
+namespace Core::Utils
+{
+  class FunctionOfSpaceTime;
+}  // namespace Core::Utils
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -49,10 +54,17 @@ namespace Particle
     /*!
      * \brief setup dirichlet boundary condition handler
      *
-     *
-     * \param[in] particleengineinterface interface to particle engine
+     * \param[in] particle_engine_interface interface to particle engine
      */
-    void setup(const std::shared_ptr<Particle::ParticleEngineInterface> particleengineinterface);
+    void setup(const std::shared_ptr<Particle::ParticleEngineInterface> particle_engine_interface);
+
+    /*!
+     * \brief build function cache for all Dirichlet funct ids across all procs
+     * Must be called after particles are distributed to containers.
+     *
+     * \param[in] comm MPI communicator
+     */
+    void build_funct_cache(MPI_Comm comm);
 
     /*!
      * \brief get reference to set of particle types subjected to dirichlet boundary conditions
@@ -62,7 +74,19 @@ namespace Particle
      */
     const std::set<Particle::TypeEnum>& get_particle_types_subjected_to_dirichlet_bc_set() const
     {
-      return typessubjectedtodirichletbc_;
+      return types_subjected_to_dirichlet_bc_;
+    };
+
+    /*!
+     * \brief get reference to set of particle types with per-particle dirichlet boundary conditions
+     *
+     *
+     * \return set of particle types with per-particle dirichlet boundary conditions
+     */
+    const std::set<Particle::TypeEnum>& get_particle_types_with_per_particle_dirichlet_bc_set()
+        const
+    {
+      return types_with_per_particle_dirichlet_bc_;
     };
 
     /*!
@@ -97,13 +121,19 @@ namespace Particle
     const Teuchos::ParameterList& params_;
 
     //! interface to particle engine
-    std::shared_ptr<Particle::ParticleEngineInterface> particleengineinterface_;
+    std::shared_ptr<Particle::ParticleEngineInterface> particle_engine_interface_;
 
     //! relating particle types to function ids of dirichlet boundary conditions
-    std::map<Particle::TypeEnum, int> dirichletbctypetofunctid_;
+    std::map<Particle::TypeEnum, int> dirichlet_bc_type_to_funct_id_;
 
     //! set of particle types subjected to dirichlet boundary conditions
-    std::set<Particle::TypeEnum> typessubjectedtodirichletbc_;
+    std::set<Particle::TypeEnum> types_subjected_to_dirichlet_bc_;
+
+    //! set of particle types with per-particle Dirichlet function id
+    std::set<Particle::TypeEnum> types_with_per_particle_dirichlet_bc_;
+
+    //! cache of per-particle Dirichlet functions, keyed by function id
+    mutable std::map<int, const Core::Utils::FunctionOfSpaceTime*> per_particle_function_cache_;
   };
 
 }  // namespace Particle
