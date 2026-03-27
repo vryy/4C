@@ -22,6 +22,7 @@
 #include "4C_scatra_ele_parameter_boundary.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_ssi_monolithic.hpp"
+#include "4C_ssi_problem_access.hpp"
 #include "4C_ssi_utils.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -93,7 +94,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
     : block_map_scatra_(ssi_mono.block_map_scatra()),
       block_map_scatra_manifold_(ssi_mono.block_map_scatra_manifold()),
       block_map_structure_(ssi_mono.block_map_structure()),
-      do_output_(Global::Problem::instance()
+      do_output_(SSI::Utils::problem_from_instance()
               ->ssi_control_params()
               .sublist("MANIFOLD")
               .get<bool>("OUTPUT_INFLOW")),
@@ -191,7 +192,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
   if (do_output())
   {
     runtime_csvwriter_.emplace(Core::Communication::my_mpi_rank(ssi_mono.get_comm()),
-        *Global::Problem::instance()->output_control_file(), "manifold_inflow");
+        *SSI::Utils::problem_from_instance()->output_control_file(), "manifold_inflow");
 
     for (const auto& condition_manifold : conditions_manifold)
     {

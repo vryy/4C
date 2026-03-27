@@ -17,6 +17,7 @@
 #include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
+#include "4C_ssi_problem_access.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,6 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 void SSI::SSICouplingMatchingVolume::init(const int ndim,
     std::shared_ptr<Core::FE::Discretization> structdis, std::shared_ptr<SSI::SSIBase> ssi_base)
 {
+  Global::Problem* problem = SSI::Utils::problem_from_instance();
+
   set_is_setup(false);
 
   int scatra_dofset_counter = ssi_base->scatra_field()->get_max_dof_set_number();
@@ -45,7 +48,7 @@ void SSI::SSICouplingMatchingVolume::init(const int ndim,
   if (structdis->add_dof_set(scatradofset) != ++structure_dofset_counter)
     FOUR_C_THROW("unexpected dof sets in structure field");
 
-  if (Global::Problem::instance()->elch_control_params().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
+  if (problem->elch_control_params().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
   {
     const int numDofsPerNodeTemp = 1;  // defined by temperature field
 
@@ -55,10 +58,8 @@ void SSI::SSICouplingMatchingVolume::init(const int ndim,
       FOUR_C_THROW("unexpected dof sets in structure field");
   }
 
-  if (Global::Problem::instance()->materials()->first_id_by_type(
-          Core::Materials::m_scatra_multiscale) != -1 or
-      Global::Problem::instance()->materials()->first_id_by_type(
-          Core::Materials::m_newman_multiscale) != -1)
+  if (problem->materials()->first_id_by_type(Core::Materials::m_scatra_multiscale) != -1 or
+      problem->materials()->first_id_by_type(Core::Materials::m_newman_multiscale) != -1)
   {
     auto dofsetmicro = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(1, 0, 0, true);
     if (scatradis->add_dof_set(dofsetmicro) != ++scatra_dofset_counter)
@@ -180,6 +181,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::set_temperature_field(
 void SSI::SSICouplingNonMatchingBoundary::init(const int ndim,
     std::shared_ptr<Core::FE::Discretization> structdis, std::shared_ptr<SSI::SSIBase> ssi_base)
 {
+  Global::Problem* problem = SSI::Utils::problem_from_instance();
+
   set_is_setup(false);
 
   int scatra_dofset_counter = ssi_base->scatra_field()->get_max_dof_set_number();
@@ -234,10 +237,9 @@ void SSI::SSICouplingNonMatchingBoundary::init(const int ndim,
   });
 
   // setup mortar adapter for surface volume coupling
-  adaptermeshtying_ = std::make_shared<Coupling::Adapter::CouplingMortar>(
-      Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
-      Global::Problem::instance()->contact_dynamic_params(),
-      Global::Problem::instance()->spatial_approximation_type());
+  adaptermeshtying_ = std::make_shared<Coupling::Adapter::CouplingMortar>(problem->n_dim(),
+      problem->mortar_coupling_params(), problem->contact_dynamic_params(),
+      problem->spatial_approximation_type());
 
   set_is_init(true);
 }
@@ -246,17 +248,17 @@ void SSI::SSICouplingNonMatchingBoundary::init(const int ndim,
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::setup()
 {
+  Global::Problem* problem = SSI::Utils::problem_from_instance();
+
   check_is_init();
 
   std::vector<int> coupleddof(problem_dimension_, 1);
   // Setup of meshtying adapter
 
   adaptermeshtying_->setup(structdis_, scatradis_, nullptr, coupleddof, "SSICoupling",
-      structdis_->get_comm(), Global::Problem::instance()->function_manager(),
-      Global::Problem::instance()->binning_strategy_params(),
-      Global::Problem::instance()->discretization_map(),
-      Global::Problem::instance()->output_control_file(),
-      Global::Problem::instance()->spatial_approximation_type(), false, false, 0, 1);
+      structdis_->get_comm(), problem->function_manager(), problem->binning_strategy_params(),
+      problem->discretization_map(), problem->output_control_file(),
+      problem->spatial_approximation_type(), false, false, 0, 1);
 
 
   // extractor for coupled surface of structure discretization with surface scatra
@@ -385,11 +387,12 @@ void SSI::SSICouplingNonMatchingVolume::init(const int ndim,
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::setup()
 {
+  const auto* problem = SSI::Utils::problem_from_instance();
+
   check_is_init();
 
   // setup projection matrices (use default material strategy)
-  volcoupl_structurescatra_->setup(Global::Problem::instance()->volmortar_params(),
-      Global::Problem::instance()->cut_general_params());
+  volcoupl_structurescatra_->setup(problem->volmortar_params(), problem->cut_general_params());
 
   set_is_setup(true);
 }
@@ -400,9 +403,10 @@ void SSI::SSICouplingNonMatchingVolume::assign_material_pointers(
     std::shared_ptr<Core::FE::Discretization> structdis,
     std::shared_ptr<Core::FE::Discretization> scatradis)
 {
-  volcoupl_structurescatra_->assign_materials(structdis, scatradis,
-      Global::Problem::instance()->volmortar_params(),
-      Global::Problem::instance()->cut_general_params());
+  const auto* problem = SSI::Utils::problem_from_instance();
+
+  volcoupl_structurescatra_->assign_materials(
+      structdis, scatradis, problem->volmortar_params(), problem->cut_general_params());
 }
 
 /*----------------------------------------------------------------------*/
@@ -448,6 +452,8 @@ void SSI::SSICouplingNonMatchingVolume::set_scalar_field_micro(Core::FE::Discret
 void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
     std::shared_ptr<Core::FE::Discretization> structdis, std::shared_ptr<SSI::SSIBase> ssi_base)
 {
+  const auto* problem = SSI::Utils::problem_from_instance();
+
   set_is_setup(false);
 
   int scatra_dofset_counter = ssi_base->scatra_field()->get_max_dof_set_number();
@@ -571,7 +577,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
     scatra_manifold_integrator->set_number_of_dof_set_velocity(scatra_manifold_dofset_counter);
   }
 
-  if (Global::Problem::instance()->elch_control_params().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
+  if (problem->elch_control_params().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
   {
     const int numDofsPerNodeTemp = 1;  // defined by temperature field
 
