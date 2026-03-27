@@ -5,8 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_INPAR_BIO_HPP
-#define FOUR_C_INPAR_BIO_HPP
+#ifndef FOUR_C_FS3I_BIOFILM_FSI_INPUT_HPP
+#define FOUR_C_FS3I_BIOFILM_FSI_INPUT_HPP
 
 #include "4C_config.hpp"
 
@@ -22,18 +22,15 @@ namespace Core::Conditions
   class ConditionDefinition;
 }
 
-namespace Inpar
+namespace BioFilm
 {
-  namespace BioFilm
-  {
-    /// biofilm parameters
-    Core::IO::InputSpec valid_parameters();
+  /// biofilm parameters
+  Core::IO::InputSpec valid_parameters();
 
-    /// set specific biofilm conditions
-    void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);
-  }  // namespace BioFilm
+  /// set specific biofilm conditions
+  void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);
+}  // namespace BioFilm
 
-}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

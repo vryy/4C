@@ -25,11 +25,11 @@
 #include "4C_fem_geometry_searchtree_input.hpp"
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_fpsi_input.hpp"
+#include "4C_fs3i_biofilm_fsi_input.hpp"
 #include "4C_fs3i_input.hpp"
 #include "4C_fsi_input.hpp"
 #include "4C_geometric_search_input.hpp"
 #include "4C_global_legacy_module_problem_type_string.hpp"
-#include "4C_inpar_bio.hpp"
 #include "4C_inpar_cardiac_monodomain.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_io.hpp"
@@ -345,7 +345,7 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
 
   push_specs(specs, ArtDyn::valid_parameters());
   push_specs(specs, ArteryNetwork::valid_parameters());
-  push_specs(specs, Inpar::BioFilm::valid_parameters());
+  push_specs(specs, BioFilm::valid_parameters());
   push_specs(specs, Airway::valid_parameters());
   push_specs(specs, ReducedLung::valid_parameters());
   push_specs(specs, ReducedLung1dPipeFlow::valid_parameters());
