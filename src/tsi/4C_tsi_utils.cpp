@@ -18,6 +18,7 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_solid_scatra_3D_ele.hpp"
 #include "4C_thermo_element.hpp"
+#include "4C_tsi_problem_access.hpp"
 
 
 
@@ -45,7 +46,7 @@ void TSI::Utils::ThermoStructureCloneStrategy::check_material_type(const int mat
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   //  Core::Materials::MaterialType mtype =
-  //  Global::Problem::instance()->Materials()->ParameterById(matid)->Type(); if ((mtype !=
+  //  Global::Problem singleton -> Materials()->ParameterById(matid)->Type(); if ((mtype !=
   //  Core::Materials::m_thermo_fourier))
   //     FOUR_C_THROW("Material with ID {} is not admissible for thermo elements",matid);
 
@@ -114,9 +115,11 @@ bool TSI::Utils::ThermoStructureCloneStrategy::determine_ele_type(
  *----------------------------------------------------------------------*/
 void TSI::Utils::setup_tsi(MPI_Comm comm)
 {
+  Global::Problem* problem = TSI::Utils::problem_from_instance();
+
   // access the structure discretization, make sure it is filled
   std::shared_ptr<Core::FE::Discretization> structdis;
-  structdis = Global::Problem::instance()->get_dis("structure");
+  structdis = problem->get_dis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->filled() or !structdis->have_dofs())
   {
@@ -128,11 +131,11 @@ void TSI::Utils::setup_tsi(MPI_Comm comm)
 
   // access the thermo discretization
   std::shared_ptr<Core::FE::Discretization> thermdis;
-  thermdis = Global::Problem::instance()->get_dis("thermo");
+  thermdis = problem->get_dis("thermo");
   if (!thermdis->filled()) thermdis->fill_complete();
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& tsidyn = Global::Problem::instance()->tsi_dynamic_params();
+  const Teuchos::ParameterList& tsidyn = problem->tsi_dynamic_params();
 
   bool matchinggrid = tsidyn.get<bool>("MATCHINGGRID");
 
@@ -150,7 +153,7 @@ void TSI::Utils::setup_tsi(MPI_Comm comm)
     }
 
     Core::FE::clone_discretization<TSI::Utils::ThermoStructureCloneStrategy>(
-        *structdis, *thermdis, Global::Problem::instance()->cloning_material_map());
+        *structdis, *thermdis, problem->cloning_material_map());
     thermdis->fill_complete();
 
     // connect degrees of freedom for periodic boundary conditions
@@ -207,7 +210,7 @@ void TSI::Utils::setup_tsi(MPI_Comm comm)
     // build auxiliary dofsets, i.e. pseudo dofs on each discretization
     const int ndofpernode_thermo = 1;
     const int ndofperelement_thermo = 0;
-    const int ndofpernode_struct = Global::Problem::instance()->n_dim();
+    const int ndofpernode_struct = problem->n_dim();
     const int ndofperelement_struct = 0;
     std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux;
     dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(

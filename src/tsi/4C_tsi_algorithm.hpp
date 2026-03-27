@@ -28,6 +28,12 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
+
+namespace Global
+{
+  class Problem;
+}
+
 namespace CONTACT
 {
   class LagrangeStrategyTsi;
@@ -171,6 +177,8 @@ namespace TSI
     //@}
 
     //! @name Volume Mortar stuff
+
+    Global::Problem* problem_;
 
     //! flag for matchinggrid
     const bool matchinggrid_;

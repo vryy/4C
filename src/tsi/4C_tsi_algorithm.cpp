@@ -23,6 +23,7 @@
 #include "4C_mortar_multifield_coupling.hpp"
 #include "4C_thermo_adapter.hpp"
 #include "4C_tsi_input.hpp"
+#include "4C_tsi_problem_access.hpp"
 #include "4C_tsi_utils.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -36,23 +37,19 @@ FOUR_C_NAMESPACE_OPEN
  | constructor (public)                                      dano 12/09 |
  *----------------------------------------------------------------------*/
 TSI::Algorithm::Algorithm(MPI_Comm comm)
-    : AlgorithmBase(comm, Global::Problem::instance()->tsi_dynamic_params()),
+    : AlgorithmBase(comm, TSI::Utils::tsi_dynamic_params_from_problem()),
       dispnp_(nullptr),
       tempnp_(nullptr),
-      matchinggrid_(Global::Problem::instance()->tsi_dynamic_params().get<bool>("MATCHINGGRID")),
+      problem_(TSI::Utils::problem_from_instance()),
+      matchinggrid_(TSI::Utils::tsi_dynamic_params_from_problem().get<bool>("MATCHINGGRID")),
       volcoupl_(nullptr)
 {
   // access the structural discretization
-  std::shared_ptr<Core::FE::Discretization> structdis =
-      Global::Problem::instance()->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> structdis = problem_->get_dis("structure");
   // access the thermo discretization
-  std::shared_ptr<Core::FE::Discretization> thermodis =
-      Global::Problem::instance()->get_dis("thermo");
-
-  // get the problem instance
-  Global::Problem* problem = Global::Problem::instance();
+  std::shared_ptr<Core::FE::Discretization> thermodis = problem_->get_dis("thermo");
   // get the restart step
-  const int restart = problem->restart();
+  const int restart = problem_->restart();
 
   if (!matchinggrid_)
   {
@@ -62,41 +59,37 @@ TSI::Algorithm::Algorithm(MPI_Comm comm)
     std::shared_ptr<Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy =
         std::make_shared<TSI::Utils::TSIMaterialStrategy>();
     // init coupling adapter projection matrices
-    volcoupl_->init(Global::Problem::instance()->n_dim(), structdis, thermodis, nullptr, nullptr,
-        nullptr, nullptr, materialstrategy);
+    volcoupl_->init(problem_->n_dim(), structdis, thermodis, nullptr, nullptr, nullptr, nullptr,
+        materialstrategy);
     // redistribute discretizations to meet needs of volmortar coupling
-    Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
+    Teuchos::ParameterList binning_params = problem_->binning_strategy_params();
     Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
-        "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
-        binning_params);
-    volcoupl_->redistribute(binning_params, Global::Problem::instance()->output_control_file());
+        "spatial_approximation_type", problem_->spatial_approximation_type(), binning_params);
+    volcoupl_->redistribute(binning_params, problem_->output_control_file());
     // setup projection matrices
-    volcoupl_->setup(Global::Problem::instance()->volmortar_params(),
-        Global::Problem::instance()->cut_general_params());
+    volcoupl_->setup(problem_->volmortar_params(), problem_->cut_general_params());
   }
 
   if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
-          Global::Problem::instance()->structural_dynamic_params(), "INT_STRATEGY") ==
-      Inpar::Solid::int_old)
+          problem_->structural_dynamic_params(), "INT_STRATEGY") == Inpar::Solid::int_old)
     FOUR_C_THROW("old structural time integration no longer supported in tsi");
   else
   {
-    Thermo::BaseAlgorithm thermo(Global::Problem::instance()->tsi_dynamic_params(), thermodis);
+    Thermo::BaseAlgorithm thermo(problem_->tsi_dynamic_params(), thermodis);
     thermo_ = thermo.thermo_field();
 
     //  // access structural dynamic params list which will be possibly modified while creating the
     //  time integrator
-    const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
+    const Teuchos::ParameterList& sdyn = problem_->structural_dynamic_params();
     std::shared_ptr<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
         Adapter::build_structure_algorithm(sdyn);
-    adapterbase_ptr->init(Global::Problem::instance()->tsi_dynamic_params(),
-        const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+    adapterbase_ptr->init(
+        problem_->tsi_dynamic_params(), const_cast<Teuchos::ParameterList&>(sdyn), structdis);
 
     // set the temperature; Monolithic does this in it's own constructor with potentially
     // redistributed discretizations
-    if (Teuchos::getIntegralValue<TSI::SolutionSchemeOverFields>(
-            Global::Problem::instance()->tsi_dynamic_params(), "COUPALGO") !=
-        TSI::SolutionSchemeOverFields::Monolithic)
+    if (Teuchos::getIntegralValue<TSI::SolutionSchemeOverFields>(problem_->tsi_dynamic_params(),
+            "COUPALGO") != TSI::SolutionSchemeOverFields::Monolithic)
     {
       if (matchinggrid_)
         structdis->set_state(1, "temperature", *thermo_field()->tempnp());
@@ -109,9 +102,9 @@ TSI::Algorithm::Algorithm(MPI_Comm comm)
     structure_ =
         std::dynamic_pointer_cast<Adapter::StructureWrapper>(adapterbase_ptr->structure_field());
 
-    if (restart && Teuchos::getIntegralValue<TSI::SolutionSchemeOverFields>(
-                       Global::Problem::instance()->tsi_dynamic_params(), "COUPALGO") ==
-                       TSI::SolutionSchemeOverFields::Monolithic)
+    if (restart &&
+        Teuchos::getIntegralValue<TSI::SolutionSchemeOverFields>(problem_->tsi_dynamic_params(),
+            "COUPALGO") == TSI::SolutionSchemeOverFields::Monolithic)
       structure_->setup();
 
     structure_field()->discretization()->clear_state(true);
@@ -135,31 +128,23 @@ TSI::Algorithm::Algorithm(MPI_Comm comm)
   }
 
   // setup mortar coupling
-  if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::tsi)
+  if (problem_->get_problem_type() == Core::ProblemType::tsi)
   {
     if (structure_field()->discretization()->has_condition("MortarMulti"))
     {
       mortar_coupling_ = std::make_shared<Mortar::MultiFieldCoupling>();
       mortar_coupling_->push_back_coupling(structure_field()->discretization(), 0,
-          std::vector<int>(3, 1), Global::Problem::instance()->mortar_coupling_params(),
-          Global::Problem::instance()->contact_dynamic_params(),
-          Global::Problem::instance()->binning_strategy_params(),
-          {{"structure", Global::Problem::instance()->get_dis("structure")},
-              {"thermo", Global::Problem::instance()->get_dis("thermo")}},
-          Global::Problem::instance()->function_manager(),
-          Global::Problem::instance()->output_control_file(),
-          Global::Problem::instance()->spatial_approximation_type(),
-          Global::Problem::instance()->n_dim());
+          std::vector<int>(3, 1), problem_->mortar_coupling_params(),
+          problem_->contact_dynamic_params(), problem_->binning_strategy_params(),
+          {{"structure", problem_->get_dis("structure")}, {"thermo", problem_->get_dis("thermo")}},
+          problem_->function_manager(), problem_->output_control_file(),
+          problem_->spatial_approximation_type(), problem_->n_dim());
       mortar_coupling_->push_back_coupling(thermo_field()->discretization(), 0,
-          std::vector<int>(1, 1), Global::Problem::instance()->mortar_coupling_params(),
-          Global::Problem::instance()->contact_dynamic_params(),
-          Global::Problem::instance()->binning_strategy_params(),
-          {{"structure", Global::Problem::instance()->get_dis("structure")},
-              {"thermo", Global::Problem::instance()->get_dis("thermo")}},
-          Global::Problem::instance()->function_manager(),
-          Global::Problem::instance()->output_control_file(),
-          Global::Problem::instance()->spatial_approximation_type(),
-          Global::Problem::instance()->n_dim());
+          std::vector<int>(1, 1), problem_->mortar_coupling_params(),
+          problem_->contact_dynamic_params(), problem_->binning_strategy_params(),
+          {{"structure", problem_->get_dis("structure")}, {"thermo", problem_->get_dis("thermo")}},
+          problem_->function_manager(), problem_->output_control_file(),
+          problem_->spatial_approximation_type(), problem_->n_dim());
     }
   }
 
@@ -180,7 +165,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
   // defines the dof number ordering of the Discretizations.
 
   // call the TSI parameter list
-  const Teuchos::ParameterList& tsidyn = Global::Problem::instance()->tsi_dynamic_params();
+  const Teuchos::ParameterList& tsidyn = problem_->tsi_dynamic_params();
   // Get the parameters for the Newton iteration
   int upres = tsidyn.get<int>("RESULTSEVERY");
   int uprestart = tsidyn.get<int>("RESTARTEVERY");
@@ -215,7 +200,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
           volcoupl_->apply_vector_mapping21(*structure_field()->dispnp());
 
       // determine number of space dimensions
-      const int numdim = Global::Problem::instance()->n_dim();
+      const int numdim = problem_->n_dim();
 
       // loop over all local nodes of thermal discretisation
       for (int lnodeid = 0; lnodeid < (thermo_field()->discretization()->num_my_row_nodes());
@@ -343,7 +328,7 @@ void TSI::Algorithm::output_deformation_in_thermo(
     // get the degrees of freedom associated with this structural node
     std::vector<int> structnodedofs = structdis.dof(0, structlnode);
     // determine number of space dimensions
-    const int numdim = Global::Problem::instance()->n_dim();
+    const int numdim = problem_->n_dim();
 
     // now we transfer displacement dofs only
     for (int index = 0; index < numdim; ++index)
@@ -444,7 +429,7 @@ void TSI::Algorithm::apply_struct_coupling_state(
 void TSI::Algorithm::prepare_contact_strategy()
 {
   auto stype = Teuchos::getIntegralValue<CONTACT::SolvingStrategy>(
-      Global::Problem::instance()->contact_dynamic_params(), "STRATEGY");
+      problem_->contact_dynamic_params(), "STRATEGY");
 
   if (stype == CONTACT::SolvingStrategy::lagmult)
   {
@@ -464,7 +449,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     // ---------------------------------------------------------------------
     CONTACT::STRATEGY::Factory factory;
     factory.init(structure_field()->discretization());
-    factory.setup(Global::Problem::instance()->n_dim());
+    factory.setup(problem_->n_dim());
 
     // check the problem dimension
     factory.check_dimension();
@@ -510,14 +495,13 @@ void TSI::Algorithm::prepare_contact_strategy()
     contact_strategy_lagrange_->inttime_init();
     contact_strategy_lagrange_->set_time_integration_info(structure_field()->tim_int_param(),
         Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
-            Global::Problem::instance()->structural_dynamic_params(), "DYNAMICTYPE"));
+            problem_->structural_dynamic_params(), "DYNAMICTYPE"));
     contact_strategy_lagrange_->redistribute_contact(
         structure_field()->dispn(), structure_field()->veln());
 
     if (contact_strategy_lagrange_ != nullptr)
     {
-      contact_strategy_lagrange_->set_alphaf_thermo(
-          Global::Problem::instance()->thermal_dynamic_params());
+      contact_strategy_lagrange_->set_alphaf_thermo(problem_->thermal_dynamic_params());
       contact_strategy_lagrange_->set_coupling(coupST_);
     }
   }
