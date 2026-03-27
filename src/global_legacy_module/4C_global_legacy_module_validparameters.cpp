@@ -31,7 +31,6 @@
 #include "4C_fsi_input.hpp"
 #include "4C_geometric_search_input.hpp"
 #include "4C_global_legacy_module_problem_type_string.hpp"
-#include "4C_inpar_cardiac_monodomain.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_io.hpp"
 #include "4C_inpar_IO_runtime_output.hpp"
@@ -64,6 +63,7 @@
 #include "4C_red_airways_input.hpp"
 #include "4C_reduced_lung_1d_pipe_flow_input.hpp"
 #include "4C_reduced_lung_input.hpp"
+#include "4C_scatra_cardiac_monodomain_input.hpp"
 #include "4C_solver_nonlin_nox_input.hpp"
 #include "4C_ssi_input.hpp"
 #include "4C_ssti_input.hpp"
@@ -327,7 +327,7 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
   push_specs(specs, Inpar::ScaTra::valid_parameters());
   push_specs(specs, LevelSet::valid_parameters());
   push_specs(specs, ElCh::valid_parameters());
-  push_specs(specs, Inpar::ElectroPhysiology::valid_parameters());
+  push_specs(specs, ElectroPhysiology::valid_parameters());
   push_specs(specs, STI::valid_parameters());
 
   push_specs(specs, Inpar::S2I::valid_parameters());
