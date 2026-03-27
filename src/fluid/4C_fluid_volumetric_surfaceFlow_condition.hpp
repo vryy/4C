@@ -73,12 +73,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
       */
-      void output(Core::IO::DiscretizationWriter& output);
+      void output(Core::IO::DiscretizationWriter& output) const;
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart
       */
-      void read_restart(Core::IO::DiscretizationReader& reader);
+      void read_restart(Core::IO::DiscretizationReader& reader) const;
 
 
      private:
@@ -131,12 +131,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
       */
-      void output(Core::IO::DiscretizationWriter& output);
+      void output(Core::IO::DiscretizationWriter& output) const;
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart
       */
-      void read_restart(Core::IO::DiscretizationReader& reader);
+      void read_restart(Core::IO::DiscretizationReader& reader) const;
 
 
      private:
@@ -307,7 +307,8 @@ namespace FLD
       /*!
       \brief output
       */
-      void output(Core::IO::DiscretizationWriter& output, std::string ds_condname, int condnum);
+      void output(
+          Core::IO::DiscretizationWriter& output, std::string ds_condname, int condnum) const;
 
       /*!
       \brief Read restart

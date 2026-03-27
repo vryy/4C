@@ -500,7 +500,7 @@ void Arteries::ArtNetImplStationary::collect_runtime_output_data()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Arteries::ArtNetImplStationary::output_restart()
+void Arteries::ArtNetImplStationary::output_restart() const
 {
   // step number and time (only after that data output is possible)
   output_.new_step(step_, time_);

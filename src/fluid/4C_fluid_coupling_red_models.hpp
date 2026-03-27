@@ -205,7 +205,7 @@ namespace FLD
       /*!
       \brief write flowrates_ and flowratespos_ to result files
       */
-      void write_restart(Core::IO::DiscretizationWriter& output, int condnum);
+      void write_restart(Core::IO::DiscretizationWriter& output, int condnum) const;
 
       /*!
       \brief read flowrates_ and flowratespos_

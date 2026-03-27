@@ -66,7 +66,7 @@ void FLD::TimIntPoro::assemble_mat_and_rhs()
   poro_int_update();
 }
 
-void FLD::TimIntPoro::read_restart(int step)
+void FLD::TimIntPoro::read_restart(const int step)
 {
   Core::IO::DiscretizationReader reader(
       *discret_, Global::Problem::instance()->input_control_file(), step);
@@ -163,22 +163,28 @@ void FLD::TimIntPoro::update_iter_incrementally(
   }
 }
 
+void FLD::TimIntPoro::write_output() const
+{
+  auto convel = std::make_shared<Core::LinAlg::Vector<double>>(*velnp_);
+  convel->update(-1.0, *gridv_, 1.0);
+  output_->write_vector("convel", convel);
+  output_->write_vector("gridv", gridv_);
+}
+
+void FLD::TimIntPoro::write_restart() const { output_->write_vector("gridv", gridv_); }
+
 void FLD::TimIntPoro::output()
 {
   FluidImplicitTimeInt::output();
   // output of solution
-  if (step_ % upres_ == 0)
+  if (upres_ > 0 && step_ % upres_ == 0)
   {
-    std::shared_ptr<Core::LinAlg::Vector<double>> convel =
-        std::make_shared<Core::LinAlg::Vector<double>>(*velnp_);
-    convel->update(-1.0, *gridv_, 1.0);
-    output_->write_vector("convel", convel);
-    output_->write_vector("gridv", gridv_);
+    write_output();
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ > 0 && step_ % uprestart_ == 0)
   {
-    output_->write_vector("gridv", gridv_);
+    write_restart();
   }
 }
 

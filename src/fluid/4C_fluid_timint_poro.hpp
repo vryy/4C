@@ -70,6 +70,12 @@ namespace FLD
     */
     void output() override;
 
+    //! write output for each step as defined in the input file
+    void write_output() const;
+
+    //! write restart information for each step as defined in the input file
+    void write_restart() const;
+
     /*!
     \brief Do some poro-specific stuff in assemble_mat_and_rhs
 

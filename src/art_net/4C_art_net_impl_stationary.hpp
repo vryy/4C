@@ -90,7 +90,7 @@ namespace Arteries
     void collect_runtime_output_data();
 
     //! write data required for restart
-    void output_restart();
+    void output_restart() const;
 
     // output
     void output(bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams) override;
