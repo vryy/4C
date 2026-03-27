@@ -33,7 +33,7 @@ Core::Communication::ParObject* Discret::Elements::WallQuad4PoroType::create(
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::WallQuad4PoroType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLQ4PORO")
   {
@@ -106,7 +106,7 @@ Core::Communication::ParObject* Discret::Elements::WallQuad9PoroType::create(
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::WallQuad9PoroType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLQ9PORO")
   {
@@ -178,7 +178,7 @@ Core::Communication::ParObject* Discret::Elements::WallNurbs4PoroType::create(
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::WallNurbs4PoroType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLN4PORO")
   {
@@ -250,7 +250,7 @@ Core::Communication::ParObject* Discret::Elements::WallNurbs9PoroType::create(
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::WallNurbs9PoroType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLN9PORO")
   {
@@ -322,7 +322,7 @@ Core::Communication::ParObject* Discret::Elements::WallTri3PoroType::create(
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::WallTri3PoroType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLT3PORO")
   {

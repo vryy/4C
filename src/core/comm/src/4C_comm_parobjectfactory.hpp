@@ -105,7 +105,7 @@ namespace Core::Communication
 
     /// create an element from its name (and dis type if needed)
     std::shared_ptr<Core::Elements::Element> create(
-        const std::string eletype, const std::string eledistype, const int id, const int owner);
+        const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner);
 
     /// initialize all element types
     void initialize_elements(Core::FE::Discretization& dis);

@@ -41,7 +41,7 @@ Core::Communication::ParObject* Discret::Elements::Truss3ScatraType::create(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Discret::Elements::Truss3ScatraType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "TRUSS3SCATRA")
   {
@@ -51,7 +51,7 @@ std::shared_ptr<Core::Elements::Element> Discret::Elements::Truss3ScatraType::cr
   }
   // return base class
   else
-    return Discret::Elements::Truss3Type::create(eletype, eledistype, id, owner);
+    return Discret::Elements::Truss3Type::create(eletype, celltype, id, owner);
 }
 
 /*----------------------------------------------------------------------*
@@ -133,11 +133,11 @@ void Discret::Elements::Truss3Scatra::unpack(Core::Communication::UnpackBuffer& 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Discret::Elements::Truss3Scatra::read_element(const std::string& eletype,
-    const std::string& distype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // read base element
-  Truss3::read_element(eletype, distype, container, element_data);
+  Truss3::read_element(eletype, celltype, container, element_data);
 
   // read scalar transport implementation type
   auto impltype = container.get<std::string>("TYPE");

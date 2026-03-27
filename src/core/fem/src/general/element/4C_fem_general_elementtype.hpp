@@ -60,7 +60,7 @@ namespace Core::Elements
 
     /// create an element from an input file specifier
     virtual std::shared_ptr<Element> create(
-        const std::string eletype, const std::string eledistype, const int id, const int owner)
+        const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
     {
       return nullptr;
     }

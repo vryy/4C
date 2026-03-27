@@ -40,7 +40,7 @@ Core::Communication::ParObject* Thermo::ElementType::create(
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Thermo::ElementType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "THERMO")
   {

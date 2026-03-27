@@ -108,7 +108,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool read_element(const std::string& eletype, const std::string& eledistype,
+      bool read_element(const std::string& eletype, Core::FE::CellType celltype,
           const Core::IO::InputParameterContainer& container,
           const Core::IO::MeshInput::ElementDataFromCellData& element_data) override;
 

@@ -30,7 +30,7 @@ Discret::Elements::Shell7pType& Discret::Elements::Shell7pType::instance() { ret
 
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::Shell7pType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "SHELL7P") return create(id, owner);
   return nullptr;
@@ -308,13 +308,13 @@ std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Shell7p
 }
 
 bool Discret::Elements::Shell7p::read_element(const std::string& eletype,
-    const std::string& distype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   Solid::Elements::ShellData shell_data = {};
 
   // set discretization type
-  distype_ = Core::FE::string_to_cell_type(distype);
+  distype_ = celltype;
 
   // set thickness in reference frame
   thickness_ = container.get<double>("THICK");

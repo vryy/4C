@@ -581,8 +581,8 @@ void Particle::WallHandlerDiscretCondition::init_wall_discretization()
       std::shared_ptr<Core::Elements::Element> currele = eleit.second;
 
       // create wall element
-      std::shared_ptr<Core::Elements::Element> wallele =
-          Core::Communication::factory("BELE3_3", "Polynomial", currele->id(), currele->owner());
+      std::shared_ptr<Core::Elements::Element> wallele = Core::Communication::factory(
+          "BELE3_3", Core::FE::CellType::dis_none, currele->id(), currele->owner());
 
       // set node ids to element
       wallele->set_node_ids(currele->num_node(), currele->node_ids());
@@ -716,7 +716,7 @@ void Particle::WallHandlerBoundingBox::init_wall_discretization()
       {
         // create wall element
         std::shared_ptr<Core::Elements::Element> wallele =
-            Core::Communication::factory("BELE3_3", "Polynomial", eleid, myrank_);
+            Core::Communication::factory("BELE3_3", Core::FE::CellType::dis_none, eleid, myrank_);
 
         // set node ids to element
         wallele->set_node_ids(4, nodeidsofelements[dim * 2 + sign].data());

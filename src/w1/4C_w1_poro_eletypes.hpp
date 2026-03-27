@@ -35,8 +35,8 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
-          const std::string eledistype, const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const std::string& eletype,
+          Core::FE::CellType celltype, const int id, const int owner) override;
 
       std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
@@ -62,8 +62,8 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
-          const std::string eledistype, const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const std::string& eletype,
+          Core::FE::CellType celltype, const int id, const int owner) override;
 
       std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
@@ -89,8 +89,8 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
-          const std::string eledistype, const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const std::string& eletype,
+          Core::FE::CellType celltype, const int id, const int owner) override;
 
       std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
@@ -116,8 +116,8 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
-          const std::string eledistype, const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const std::string& eletype,
+          Core::FE::CellType celltype, const int id, const int owner) override;
 
       std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
@@ -143,8 +143,8 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
-          const std::string eledistype, const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const std::string& eletype,
+          Core::FE::CellType celltype, const int id, const int owner) override;
 
       std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 

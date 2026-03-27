@@ -47,8 +47,8 @@ namespace Discret::Elements
         std::map<std::string, std::map<Core::FE::CellType, Core::IO::InputSpec>>& definitions)
         override;
 
-    std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
-        const std::string elecelltype, const int id, const int owner) override;
+    std::shared_ptr<Core::Elements::Element> create(const std::string& eletype,
+        Core::FE::CellType celltype, const int id, const int owner) override;
 
     std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
@@ -119,7 +119,7 @@ namespace Discret::Elements
       return SolidPoroPressureVelocityBasedType::instance();
     }
 
-    bool read_element(const std::string& eletype, const std::string& celltype,
+    bool read_element(const std::string& eletype, Core::FE::CellType celltype,
         const Core::IO::InputParameterContainer& container,
         const Core::IO::MeshInput::ElementDataFromCellData& element_data) override;
 

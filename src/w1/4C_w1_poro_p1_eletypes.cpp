@@ -34,7 +34,7 @@ Core::Communication::ParObject* Discret::Elements::WallQuad4PoroP1Type::create(
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::WallQuad4PoroP1Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLQ4POROP1")
   {
@@ -125,7 +125,7 @@ Core::Communication::ParObject* Discret::Elements::WallQuad9PoroP1Type::create(
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::WallQuad9PoroP1Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLQ9POROP1")
   {
@@ -217,7 +217,7 @@ Core::Communication::ParObject* Discret::Elements::WallTri3PoroP1Type::create(
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::WallTri3PoroP1Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLT3POROP1")
   {

@@ -29,7 +29,7 @@ Core::Communication::ParObject* Discret::Elements::Vele3Type::create(
 
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::Vele3Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "VELE3")
   {
@@ -228,7 +228,7 @@ Core::FE::GaussRule3D Discret::Elements::Vele3::get_optimal_gaussrule(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::Elements::Vele3::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Vele3::read_element(const std::string& eletype, Core::FE::CellType celltype,
     const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {

@@ -84,7 +84,7 @@ namespace
     for (std::size_t i = 0; i < Core::FE::num_nodes(celltype); ++i) node_ids[i] = i + 1;
 
     std::shared_ptr<Core::Elements::Element> ele =
-        Core::Communication::factory(ele_type, Core::FE::celltype_string<celltype>, 1, 0);
+        Core::Communication::factory(ele_type, celltype, 1, 0);
     ele->set_node_ids(Core::FE::num_nodes(celltype), node_ids.data());
 
 
@@ -95,8 +95,8 @@ namespace
     container.add(
         "INTEGRATION", Discret::Elements::make_default_solid_integration_rules<celltype>());
 
-    ele->read_element(ele_type, Core::FE::cell_type_to_string(celltype), container,
-        Core::IO::MeshInput::ElementDataFromCellData{});
+    ele->read_element(
+        ele_type, celltype, container, Core::IO::MeshInput::ElementDataFromCellData{});
 
     return ele;
   }

@@ -49,9 +49,9 @@ Core::Communication::ParObject* Discret::Elements::KirchhoffLoveShellNurbsType::
  *
  */
 std::shared_ptr<Core::Elements::Element> Discret::Elements::KirchhoffLoveShellNurbsType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
-  if (eletype == "SHELL_KIRCHHOFF_LOVE_NURBS" and eledistype == "NURBS9")
+  if (eletype == "SHELL_KIRCHHOFF_LOVE_NURBS" and celltype == Core::FE::CellType::nurbs9)
   {
     return std::make_shared<Discret::Elements::KirchhoffLoveShellNurbs>(id, owner);
   }

@@ -36,7 +36,7 @@ Core::Communication::ParObject* Discret::Elements::Bele3Type::create(
 
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::Bele3Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   // Search for "BELE3". If found, search for "_"
   // the number after "_" is numdof: so BELE3_4 is a BELE3 element
@@ -255,7 +255,7 @@ Core::FE::GaussRule2D Discret::Elements::Bele3::get_optimal_gaussrule() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::Elements::Bele3::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Bele3::read_element(const std::string& eletype, Core::FE::CellType celltype,
     const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {

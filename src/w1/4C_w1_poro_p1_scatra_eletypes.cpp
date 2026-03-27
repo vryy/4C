@@ -38,7 +38,7 @@ Core::Communication::ParObject* Discret::Elements::WallQuad4PoroP1ScatraType::cr
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Discret::Elements::WallQuad4PoroP1ScatraType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLQ4POROP1SCATRA")
   {
@@ -108,7 +108,7 @@ Core::Communication::ParObject* Discret::Elements::WallQuad9PoroP1ScatraType::cr
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Discret::Elements::WallQuad9PoroP1ScatraType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLQ9POROP1SCATRA")
   {
@@ -176,7 +176,7 @@ Core::Communication::ParObject* Discret::Elements::WallTri3PoroP1ScatraType::cre
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Discret::Elements::WallTri3PoroP1ScatraType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLT3POROP1SCATRA")
   {

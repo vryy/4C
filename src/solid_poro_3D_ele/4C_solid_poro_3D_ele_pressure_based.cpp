@@ -92,7 +92,7 @@ void Discret::Elements::SolidPoroPressureBasedType::setup_element_definition(
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidPoroPressureBasedType::create(
-    const std::string eletype, const std::string elecelltype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "SOLIDPORO_PRESSURE_BASED") return create(id, owner);
   return nullptr;
@@ -178,12 +178,12 @@ void Discret::Elements::SolidPoroPressureBased::set_params_interface_ptr(
 }
 
 bool Discret::Elements::SolidPoroPressureBased::read_element(const std::string& eletype,
-    const std::string& elecelltype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // read base element
   // set cell type
-  celltype_ = Core::FE::string_to_cell_type(elecelltype);
+  celltype_ = celltype;
 
   // read number of material model
   set_material(0, Mat::factory(Solid::Utils::ReadElement::read_element_material(container)));

@@ -28,7 +28,7 @@ Core::Communication::ParObject* Core::FE::MeshFree::MeshfreeMultiBinType::create
 }
 
 std::shared_ptr<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "MESHFREEMULTIBIN")
   {

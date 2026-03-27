@@ -27,7 +27,7 @@ Inpar::ScaTra::ImplType PoroElastScaTra::Utils::PoroScatraCloneStrategy::get_imp
 )
 {
   // the element type name, needed to cast correctly in the following
-  const std::string eletypename = ele->element_type().name();
+  const std::string& eletypename = ele->element_type().name();
 
   // Solidporo
   if (eletypename == "SolidPoroPressureBasedType")

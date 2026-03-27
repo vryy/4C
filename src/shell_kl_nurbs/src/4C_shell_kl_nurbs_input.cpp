@@ -18,11 +18,11 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 bool Discret::Elements::KirchhoffLoveShellNurbs::read_element(const std::string& eletype,
-    const std::string& distype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // set discretization type
-  set_dis_type(Core::FE::string_to_cell_type(distype));
+  set_dis_type(celltype);
 
   auto ngp = container.get<std::vector<int>>("GP");
   if (ngp[0] < 1 or ngp[1] < 1) FOUR_C_THROW("Number of Gauss points has to be a positive integer");

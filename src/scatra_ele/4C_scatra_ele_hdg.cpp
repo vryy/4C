@@ -65,7 +65,7 @@ Core::Communication::ParObject* Discret::Elements::ScaTraHDGType::create(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Discret::Elements::ScaTraHDGType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "TRANSPHDG")
   {
@@ -332,10 +332,10 @@ int Discret::Elements::ScaTraHDG::initialize()
  |  Read element from input (public)                     hoermann 09/15 |
  *----------------------------------------------------------------------*/
 bool Discret::Elements::ScaTraHDG::read_element(const std::string& eletype,
-    const std::string& distype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
-  bool success = Transport::read_element(eletype, distype, container, element_data);
+  bool success = Transport::read_element(eletype, celltype, container, element_data);
   degree_ = container.get<int>("DEG");
   degree_old_ = degree_;
 

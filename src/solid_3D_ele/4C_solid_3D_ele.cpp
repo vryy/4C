@@ -155,7 +155,7 @@ void Discret::Elements::SolidType<dim>::setup_element_definition(
 
 template <unsigned dim>
 std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidType<dim>::create(
-    const std::string eletype, const std::string elecelltype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "SOLID") return create(id, owner);
   return nullptr;
@@ -304,11 +304,11 @@ void Discret::Elements::Solid<dim>::set_params_interface_ptr(const Teuchos::Para
 
 template <unsigned dim>
 bool Discret::Elements::Solid<dim>::read_element(const std::string& eletype,
-    const std::string& celltype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // set cell type
-  celltype_ = Core::FE::string_to_cell_type(celltype);
+  celltype_ = celltype;
   FOUR_C_ASSERT_ALWAYS(Core::FE::get_dimension(celltype_) == dim,
       "You try to create a solid element of dimension {} with a cell type {} of dimension {} that "
       "does not match.",

@@ -185,8 +185,8 @@ namespace Core::FE
           else
           {
             // create an element with the same global element id
-            condele =
-                Core::Communication::factory(element_name, "Polynomial", sourceele->id(), myrank);
+            condele = Core::Communication::factory(
+                element_name, Core::FE::CellType::dis_none, sourceele->id(), myrank);
             // set the same global node ids to the new element
             condele->set_node_ids(nids.size(), nids.data());
           }
@@ -592,32 +592,32 @@ namespace Core::FE
       {
         Core::Elements::Element* sourceele = sourcedis.g_element(*it);
 
-        std::string approxtype = "Polynomial";
+        Core::FE::CellType celltype = Core::FE::CellType::dis_none;
         if (isnurbsdis)
         {
           if (sourceele->num_node() == 8)
           {
-            approxtype = "NURBS8";
+            celltype = Core::FE::CellType::nurbs8;
           }
           else if (sourceele->num_node() == 9)
           {
-            approxtype = "NURBS9";
+            celltype = Core::FE::CellType::nurbs9;
           }
           else if (sourceele->num_node() == 4)
           {
-            approxtype = "NURBS4";
+            celltype = Core::FE::CellType::nurbs4;
           }
           else if (sourceele->num_node() == 27)
           {
-            approxtype = "NURBS27";
+            celltype = Core::FE::CellType::nurbs27;
           }
           else if (sourceele->num_node() == 2)
           {
-            approxtype = "NURBS2";
+            celltype = Core::FE::CellType::nurbs2;
           }
           else if (sourceele->num_node() == 3)
           {
-            approxtype = "NURBS3";
+            celltype = Core::FE::CellType::nurbs3;
           }
           else
           {
@@ -627,7 +627,7 @@ namespace Core::FE
 
         // create a new element of desired type with the same global element id
         std::shared_ptr<Core::Elements::Element> newele =
-            Core::Communication::factory(eletype_[i], approxtype, *it, myrank);
+            Core::Communication::factory(eletype_[i], celltype, *it, myrank);
 
         // get global node ids of source element
         std::vector<int> nids;
@@ -701,32 +701,32 @@ namespace Core::FE
         Core::Elements::Element* sourceele = src_ele_citer->second.get();
         if (sourceele == nullptr) FOUR_C_THROW("The sourceele pointer is nullptr!");
 
-        std::string approxtype = "Polynomial";
+        Core::FE::CellType celltype = Core::FE::CellType::dis_none;
         if (isnurbsdis)
         {
           if (sourceele->num_node() == 8)
           {
-            approxtype = "NURBS8";
+            celltype = Core::FE::CellType::nurbs8;
           }
           else if (sourceele->num_node() == 9)
           {
-            approxtype = "NURBS9";
+            celltype = Core::FE::CellType::nurbs9;
           }
           else if (sourceele->num_node() == 4)
           {
-            approxtype = "NURBS4";
+            celltype = Core::FE::CellType::nurbs4;
           }
           else if (sourceele->num_node() == 27)
           {
-            approxtype = "NURBS27";
+            celltype = Core::FE::CellType::nurbs27;
           }
           else if (sourceele->num_node() == 2)
           {
-            approxtype = "NURBS2";
+            celltype = Core::FE::CellType::nurbs2;
           }
           else if (sourceele->num_node() == 3)
           {
-            approxtype = "NURBS3";
+            celltype = Core::FE::CellType::nurbs3;
           }
           else
           {
@@ -742,7 +742,7 @@ namespace Core::FE
         // create a new element of desired type with the same global element id and same owner as
         // source element
         std::shared_ptr<Core::Elements::Element> newele =
-            Core::Communication::factory(eletype_[i], approxtype, *it, sourceeleowner);
+            Core::Communication::factory(eletype_[i], celltype, *it, sourceeleowner);
 
         // get global node ids of fluid element
         std::vector<int> nids;

@@ -41,7 +41,7 @@ Core::Communication::ParObject* Discret::Elements::FluidHDGType::create(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidHDGType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "FLUIDHDG")
   {
@@ -219,10 +219,10 @@ void Discret::Elements::FluidHDG::unpack(Core::Communication::UnpackBuffer& buff
  |  Read element from input (public)                  kronbichler 06/14 |
  *----------------------------------------------------------------------*/
 bool Discret::Elements::FluidHDG::read_element(const std::string& eletype,
-    const std::string& distype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
-  bool success = Fluid::read_element(eletype, distype, container, element_data);
+  bool success = Fluid::read_element(eletype, celltype, container, element_data);
   degree_ = container.get<int>("DEG");
 
   completepol_ = container.get<std::optional<bool>>("SPC").value_or(false);
