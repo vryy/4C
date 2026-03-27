@@ -31,17 +31,57 @@
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include <functional>
+
 FOUR_C_NAMESPACE_OPEN
 namespace ReducedLung1dPipeFlow
 {
+  namespace
+  {
+    struct ReducedLung1dPipeFlowContext
+    {
+      std::shared_ptr<Core::FE::Discretization> artery_discretization;
+      const Teuchos::ParameterList* reduced_lung_parameters;
+      std::function<const Core::Utils::FunctionOfTime&(int)> function_of_time_by_id;
+      const Teuchos::ParameterList* io_parameters;
+      std::shared_ptr<Core::IO::OutputControl> output_control_file;
+      const Teuchos::ParameterList* linear_solver_parameters;
+      std::function<const Teuchos::ParameterList&(int)> solver_params_callback;
+      Core::IO::Verbositylevel verbosity;
+      std::function<void(std::shared_ptr<Core::Utils::ResultTest>)> add_field_test;
+      std::function<void(MPI_Comm)> test_all;
+    };
+
+    ReducedLung1dPipeFlowContext make_reduced_lung_1d_pipe_flow_context_from_problem(
+        Global::Problem& problem)
+    {
+      return ReducedLung1dPipeFlowContext{
+          .artery_discretization = problem.get_dis("artery"),
+          .reduced_lung_parameters = &problem.reduced_lung_parameters(),
+          .function_of_time_by_id = [&problem](
+                                        int function_id) -> const Core::Utils::FunctionOfTime&
+          {
+            return problem.function_manager().function_by_id<Core::Utils::FunctionOfTime>(
+                function_id);
+          },
+          .io_parameters = &problem.io_params(),
+          .output_control_file = problem.output_control_file(),
+          .linear_solver_parameters = &problem.solver_params(1),
+          .solver_params_callback = problem.solver_params_callback(),
+          .verbosity =
+              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(problem.io_params(), "VERBOSITY"),
+          .add_field_test = [&problem](std::shared_ptr<Core::Utils::ResultTest> result_test)
+          { problem.add_field_test(result_test); },
+          .test_all = [&problem](MPI_Comm comm) { problem.test_all(comm); },
+      };
+    }
+  }  // namespace
+
   void fill_parameters(Parameters& parameters, Core::LinAlg::Vector<double>& solution,
       Core::LinAlg::Vector<double>& reference_area, Core::LinAlg::Vector<double>& thickness,
       Core::LinAlg::Vector<double>& Young, Core::LinAlg::Vector<double>& beta,
       Core::LinAlg::Vector<double>& radius, const Core::FE::Discretization& discretization)
   {
-    const auto& reduced_lung_parameters = Global::Problem::instance()->reduced_lung_parameters();
-    parameters = reduced_lung_parameters.get<Parameters>("general");
-
     // constants to be computed from the input parameters
     parameters.fluid.viscous_resistance_K_R =
         8.0 * M_PI * parameters.fluid.viscosity_mu / parameters.fluid.density_rho;
@@ -70,13 +110,6 @@ namespace ReducedLung1dPipeFlow
       solution.replace_global_value(2 * node_gid, A0_value);
       solution.replace_global_value(2 * node_gid + 1, 0.0);
     }
-
-    // Boundary conditions
-    parameters.boundary_conditions.bc_fct =
-        &Global::Problem::instance()
-             ->function_manager()
-             .function_by_id<Core::Utils::FunctionOfTime>(
-                 parameters.boundary_conditions.function_id_inflow);
   }
 
   double compute_length(const Core::Elements::Element& element)
@@ -418,10 +451,25 @@ namespace ReducedLung1dPipeFlow
     }
   }
 
-  void main()
+  void run_reduced_lung_1d_pipe_flow(const ReducedLung1dPipeFlowContext& context)
   {
-    std::shared_ptr<Core::FE::Discretization> discretization =
-        Global::Problem::instance()->get_dis("artery");
+    FOUR_C_ASSERT_ALWAYS(
+        context.artery_discretization != nullptr, "Artery discretization is not initialized.");
+    FOUR_C_ASSERT_ALWAYS(
+        context.reduced_lung_parameters != nullptr, "Reduced lung parameters are not initialized.");
+    FOUR_C_ASSERT_ALWAYS(
+        context.function_of_time_by_id, "Function lookup callback is not initialized.");
+    FOUR_C_ASSERT_ALWAYS(context.io_parameters != nullptr, "I/O parameters are not initialized.");
+    FOUR_C_ASSERT_ALWAYS(
+        context.output_control_file != nullptr, "Output control file is not initialized.");
+    FOUR_C_ASSERT_ALWAYS(context.linear_solver_parameters != nullptr,
+        "Linear solver parameters are not initialized.");
+    FOUR_C_ASSERT_ALWAYS(
+        context.solver_params_callback, "Solver parameter callback is not initialized.");
+    FOUR_C_ASSERT_ALWAYS(context.add_field_test, "Result test callback is not initialized.");
+    FOUR_C_ASSERT_ALWAYS(context.test_all, "Result test runner callback is not initialized.");
+
+    std::shared_ptr<Core::FE::Discretization> discretization = context.artery_discretization;
     if (!discretization->filled() || !discretization->have_dofs())
     {
       discretization->fill_complete({.assign_degrees_of_freedom = true,
@@ -430,7 +478,9 @@ namespace ReducedLung1dPipeFlow
     }
 
     // parameters for time and blood from input file
-    Parameters input;
+    Parameters input = context.reduced_lung_parameters->get<Parameters>("general");
+    input.boundary_conditions.bc_fct =
+        &context.function_of_time_by_id(input.boundary_conditions.function_id_inflow);
 
     // vectors with nodal properties (changing over time)
     Core::LinAlg::Vector<double> solution(*discretization->dof_row_map());
@@ -1138,8 +1188,8 @@ namespace ReducedLung1dPipeFlow
     // Visualization setup
     Core::IO::DiscretizationVisualizationWriterMesh visualization_writer(
         discretization, Core::IO::visualization_parameters_factory(
-                            Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
-                            *Global::Problem::instance()->output_control_file(), 0.0));
+                            context.io_parameters->sublist("RUNTIME VTK OUTPUT"),
+                            *context.output_control_file, 0.0));
     visualization_writer.reset();
     visualization_writer.append_element_owner("Owner");
     visualization_writer.append_result_data_vector_with_context(
@@ -1153,10 +1203,8 @@ namespace ReducedLung1dPipeFlow
     visualization_writer.write_to_disk(0.0, 0);
 
     // Setup solver
-    Core::LinAlg::Solver solver(Global::Problem::instance()->solver_params(1),
-        discretization->get_comm(), Global::Problem::instance()->solver_params_callback(),
-        Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-            Global::Problem::instance()->io_params(), "VERBOSITY"));
+    Core::LinAlg::Solver solver(*context.linear_solver_parameters, discretization->get_comm(),
+        context.solver_params_callback, context.verbosity);
 
     auto y = std::make_shared<Core::LinAlg::Vector<double>>(*discretization->dof_row_map());
 
@@ -1237,8 +1285,15 @@ namespace ReducedLung1dPipeFlow
     auto sol_ptr = std::make_shared<const Core::LinAlg::Vector<double>>(solution);
     std::shared_ptr<Core::Utils::ResultTest> resulttest =
         std::make_shared<ReducedLung1dPipeFlow::ResultTest>(discretization, sol_ptr);
-    Global::Problem::instance()->add_field_test(resulttest);
-    Global::Problem::instance()->test_all(discretization->get_comm());
+    context.add_field_test(resulttest);
+    context.test_all(discretization->get_comm());
+  }
+
+  void main()
+  {
+    const ReducedLung1dPipeFlowContext context =
+        make_reduced_lung_1d_pipe_flow_context_from_problem(*Global::Problem::instance());
+    run_reduced_lung_1d_pipe_flow(context);
   }
 }  // namespace ReducedLung1dPipeFlow
 FOUR_C_NAMESPACE_CLOSE
