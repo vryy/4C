@@ -229,7 +229,7 @@ bool Discret::Elements::SolidPoroPressureVelocityBasedP1::read_element(const std
   read_anisotropic_permeability_directions_from_element_line_definition(container);
   read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(container);
   SolidIntegrationRules<3> rules =
-      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
+      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<3>>(celltype_,
           [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_, rules);
@@ -353,7 +353,7 @@ void Discret::Elements::SolidPoroPressureVelocityBasedP1::unpack(
 
   // reset solid and poro interfaces
   SolidIntegrationRules<3> rules =
-      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes>(celltype_,
+      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<3>>(celltype_,
           [](auto celltype_t) -> SolidIntegrationRules<3>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_, rules);

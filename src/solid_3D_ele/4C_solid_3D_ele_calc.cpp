@@ -9,6 +9,7 @@
 
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_tensor_generators.hpp"
@@ -23,6 +24,7 @@
 #include "4C_solid_3D_ele_calc_lib_integration.hpp"
 #include "4C_solid_3D_ele_calc_lib_io.hpp"
 #include "4C_solid_3D_ele_calc_lib_nitsche.hpp"
+#include "4C_solid_3D_ele_calc_lib_plane.hpp"
 #include "4C_solid_3D_ele_calc_mulf.hpp"
 #include "4C_solid_3D_ele_calc_mulf_fbar.hpp"
 #include "4C_solid_3D_ele_calc_shell_ans.hpp"
@@ -92,10 +94,28 @@ namespace
 template <Core::FE::CellType celltype, typename ElementFormulation>
 Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::SolidEleCalc(
     const SolidIntegrationRules<Core::FE::dim<celltype>>& integration_rules)
+  requires(Core::FE::dim<celltype> == 3)
     : stiffness_matrix_integration_(
           Core::FE::create_gauss_integration<celltype>(integration_rules.rule_residuum)),
       mass_matrix_integration_(
           Core::FE::create_gauss_integration<celltype>(integration_rules.rule_mass))
+
+{
+  Discret::Elements::resize_gp_history(history_data_, stiffness_matrix_integration_.num_points());
+}
+
+template <Core::FE::CellType celltype, typename ElementFormulation>
+Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::SolidEleCalc(
+    SolidIntegrationRules<Core::FE::dim<celltype>> integration_rules,
+    const double reference_thickness, const Discret::Elements::PlaneAssumption plane_assumption)
+  requires(Core::FE::dim<celltype> == 2)
+    : stiffness_matrix_integration_(
+          Core::FE::create_gauss_integration<celltype>(integration_rules.rule_residuum)),
+      mass_matrix_integration_(
+          Core::FE::create_gauss_integration<celltype>(integration_rules.rule_mass)),
+      element_properties_(
+          {.reference_thickness = reference_thickness, .plane_assumption = plane_assumption})
+
 {
   Discret::Elements::resize_gp_history(history_data_, stiffness_matrix_integration_.num_points());
 }
@@ -165,7 +185,8 @@ void Discret::Elements::SolidEleCalc<celltype,
       params.isParameter("total time") ? &params.get<double>("total time") : nullptr;
   const double* time_step_size =
       params.isParameter("delta time") ? &params.get<double>("delta time") : nullptr;
-  Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, element_properties_,
+      stiffness_matrix_integration_,
       [&](const Core::LinAlg::Tensor<double, Internal::num_dim<celltype>>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -181,12 +202,13 @@ void Discret::Elements::SolidEleCalc<celltype,
               auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
                   nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
 
-              Mat::EvaluationContext context{.total_time = total_time,
+              Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
-              const Stress<celltype> stress = evaluate_material_stress<celltype>(
-                  solid_material, deformation_gradient, gl_strain, params, context, gp, ele.id());
+              const Stress<celltype> stress =
+                  evaluate_material_stress<celltype>(solid_material, element_properties_,
+                      deformation_gradient, gl_strain, params, context, gp, ele.id());
 
               if constexpr (has_condensed_contribution<ElementFormulation>)
               {
@@ -246,7 +268,8 @@ void Discret::Elements::SolidEleCalc<celltype,
   {
     // integrate mass matrix
     FOUR_C_ASSERT(element_mass > 0, "It looks like the element mass is 0.0");
-    Discret::Elements::for_each_gauss_point<celltype>(nodal_coordinates, mass_matrix_integration_,
+    Discret::Elements::for_each_gauss_point<celltype>(nodal_coordinates, element_properties_,
+        mass_matrix_integration_,
         [&](const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
             const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -310,7 +333,8 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::update(
       params.isParameter("total time") ? &params.get<double>("total time") : nullptr;
   const double* time_step_size =
       params.isParameter("delta time") ? &params.get<double>("delta time") : nullptr;
-  Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, element_properties_,
+      stiffness_matrix_integration_,
       [&](const Core::LinAlg::Tensor<double, Internal::num_dim<celltype>>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -330,7 +354,8 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::update(
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
-              solid_material.update(deformation_gradient, gp, params, context, ele.id());
+              update_material<celltype>(solid_material, element_properties_, deformation_gradient,
+                  params, context, gp, ele.id());
             });
       });
 
@@ -356,7 +381,8 @@ double Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_
       params.isParameter("total time") ? &params.get<double>("total time") : nullptr;
   const double* time_step_size =
       params.isParameter("delta time") ? &params.get<double>("delta time") : nullptr;
-  Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, element_properties_,
+      stiffness_matrix_integration_,
       [&](const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -377,7 +403,9 @@ double Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
 
-              double psi = solid_material.strain_energy(gl_strain, context, gp, ele.id());
+              double psi = evaluate_material_strain_energy<celltype>(
+                  solid_material, element_properties_, gl_strain, params, context, gp, ele.id());
+
               intenergy += psi * integration_factor;
             });
       });
@@ -408,7 +436,8 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_st
       params.isParameter("total time") ? &params.get<double>("total time") : nullptr;
   const double* time_step_size =
       params.isParameter("delta time") ? &params.get<double>("delta time") : nullptr;
-  Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, element_properties_,
+      stiffness_matrix_integration_,
       [&](const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -428,8 +457,9 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_st
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
-              const Stress<celltype> stress = evaluate_material_stress<celltype>(
-                  solid_material, deformation_gradient, gl_strain, params, context, gp, ele.id());
+              const Stress<celltype> stress =
+                  evaluate_material_stress<celltype>(solid_material, element_properties_,
+                      deformation_gradient, gl_strain, params, context, gp, ele.id());
 
               assemble_strain_type_to_matrix_row<celltype>(
                   gl_strain, deformation_gradient, strainIO.type, strain_data, gp);
@@ -459,7 +489,8 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::update_prest
     Discret::Elements::update_prestress<ElementFormulation, celltype>(
         ele, nodal_coordinates, preparation_data, history_data_);
 
-    Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+    Discret::Elements::for_each_gauss_point(nodal_coordinates, element_properties_,
+        stiffness_matrix_integration_,
         [&](const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
             const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -555,6 +586,13 @@ Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::get_normal_cauchy
         "history. The element formulation is {}.",
         Core::Utils::get_type_name<ElementFormulation>().c_str());
   }
+  else if constexpr (Core::FE::dim<celltype> != 3)
+  {
+    FOUR_C_THROW(
+        "Cannot evaluate the Cauchy stress at xi for an element formulation with spatial "
+        "dimension different than 3. The element formulation is {}.",
+        Core::Utils::get_type_name<ElementFormulation>().c_str());
+  }
   else
   {
     ElementNodes<celltype> element_nodes = evaluate_element_nodes<celltype>(ele, disp);
@@ -595,7 +633,8 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::for_each_gau
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, lm);
 
-  Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, element_properties_,
+      stiffness_matrix_integration_,
       [&](const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -630,6 +669,16 @@ template struct VerifyPackable<Core::FE::CellType::hex8, Core::FE::CellType::hex
 
 // explicit instantiations of template classes
 // for displacement based formulation
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad4,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::quad4>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad8,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::quad8>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad9,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::quad9>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tri3,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tri3>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tri6,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tri6>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::hex8>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex18,
@@ -650,6 +699,17 @@ template class Discret::Elements::SolidEleCalc<Core::FE::CellType::wedge6,
     Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::wedge6>>;
 
 // for displacement based formulation with linear kinematics
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad4,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::quad4>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad8,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::quad8>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad9,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::quad9>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tri3,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tri3>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tri6,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tri6>>;
+
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex8>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex18,

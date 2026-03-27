@@ -8,6 +8,7 @@
 #include "4C_solid_3D_ele_utils.hpp"
 
 #include "4C_fem_general_element.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
@@ -15,6 +16,7 @@
 #include "4C_linalg_symmetric_tensor_eigen.hpp"
 #include "4C_linalg_tensor_generators.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
+#include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_properties.hpp"
 
 #include <algorithm>
@@ -22,35 +24,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Core::LinAlg::SymmetricTensor<double, 3, 3> Solid::Utils::pk2_to_cauchy(
-    const Core::LinAlg::SymmetricTensor<double, 3, 3>& pk2,
-    const Core::LinAlg::Tensor<double, 3, 3>& defgrd)
-{
-  return Core::LinAlg::assume_symmetry(defgrd * pk2 * Core::LinAlg::transpose(defgrd)) /
-         Core::LinAlg::det(defgrd);
-}
-
-Core::LinAlg::SymmetricTensor<double, 3, 3> Solid::Utils::green_lagrange_to_euler_almansi(
-    const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl,
-    const Core::LinAlg::Tensor<double, 3, 3>& defgrd)
-{
-  Core::LinAlg::Tensor<double, 3, 3> invdefgrd = Core::LinAlg::inv(defgrd);
-
-  return Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(invdefgrd) * gl * invdefgrd);
-}
-
-Core::LinAlg::SymmetricTensor<double, 3, 3> Solid::Utils::green_lagrange_to_log_strain(
-    const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl)
-{
-  auto [eigenvalues, eigenvectors] = Core::LinAlg::eig(gl);
-
-  // compute principal logarithmic strains
-  std::ranges::for_each(
-      eigenvalues, [](double& value) { value = std::log(std::sqrt(2 * value + 1.0)); });
-
-  const auto eig = Core::LinAlg::TensorGenerators::diagonal(eigenvalues);
-  return Core::LinAlg::assume_symmetry(eigenvectors * eig * Core::LinAlg::transpose(eigenvectors));
-}
 
 int Solid::Utils::ReadElement::read_element_material(
     const Core::IO::InputParameterContainer& container)
@@ -78,16 +51,27 @@ Solid::Utils::ReadElement::read_solid_element_properties(
   // kinematic type
   solid_properties.kintype = container.get<Inpar::Solid::KinemType>("KINEM");
 
+  if constexpr (dim == 2)
+  {
+    solid_properties.reference_thickness = container.get<double>("THICKNESS");
+    solid_properties.plane_assumption =
+        container.get<Discret::Elements::PlaneAssumption>("PLANE_ASSUMPTION");
+  }
+
   return solid_properties;
 }
 
 void Solid::Utils::nodal_block_information_solid(
     Core::Elements::Element* dwele, int& numdf, int& dimns)
 {
-  numdf = 3;
-  dimns = 6;
+  numdf = Core::FE::get_dimension(dwele->shape());
+  dimns = numdf * (numdf + 1) / 2;
 }
 
+
+template Discret::Elements::SolidElementProperties<2>
+Solid::Utils::ReadElement::read_solid_element_properties(
+    const Core::IO::InputParameterContainer& container);
 template Discret::Elements::SolidElementProperties<3>
 Solid::Utils::ReadElement::read_solid_element_properties(
     const Core::IO::InputParameterContainer& container);

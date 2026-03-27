@@ -49,11 +49,11 @@ namespace
   template <Core::FE::CellType celltype>
   auto get_integration_rule_input_spec()
   {
-    using GaussRule = std::conditional_t<Core::FE::dim<celltype> == 3, Core::FE::GaussRule3D,
-        Core::FE::GaussRule2D>;
-    return group<Discret::Elements::SolidIntegrationRules<Core::FE::dim<celltype>>>("INTEGRATION",
+    constexpr std::size_t dim = Core::FE::dim<celltype>;
+    using GaussRule = std::conditional_t<dim == 3, Core::FE::GaussRule3D, Core::FE::GaussRule2D>;
+    return group<Discret::Elements::SolidIntegrationRules<dim>>("INTEGRATION",
         {
-            parameter<Core::FE::GaussRule3D>("RESIDUUM",
+            parameter<GaussRule>("RESIDUUM",
                 {.description = "Gauss integration rule used to integrate the residuum and "
                                 "its linearization",
                     .default_value = Discret::Elements::get_gauss_rule_stiffness_matrix<celltype>(),
@@ -62,7 +62,7 @@ namespace
                         end(Discret::Elements::applicable_integration_rules<celltype>)}),
                     .store = in_struct(&Discret::Elements::SolidIntegrationRules<
                         Core::FE::dim<celltype>>::rule_residuum)}),
-            parameter<Core::FE::GaussRule3D>("MASS",
+            parameter<GaussRule>("MASS",
                 {.description = "Gauss integration rule used to integrate the mass matrix",
                     .default_value = Discret::Elements::get_gauss_rule_mass_matrix<celltype>(),
 
@@ -91,6 +91,30 @@ namespace
         parameter<std::optional<std::vector<double>>>("FIBER3", {.size = 3}),
         get_integration_rule_input_spec<celltype>()});
   }
+
+  template <Core::FE::CellType celltype>
+    requires(Core::FE::dim<celltype> == 2)
+  auto get_default_input_spec()
+  {
+    return all_of({
+        parameter<int>("MAT"),
+        get_kinem_type_input_spec(),
+        parameter<Discret::Elements::PrestressTechnology>(
+            "PRESTRESS_TECH", {.description = "The technology used for prestressing",
+                                  .default_value = Discret::Elements::PrestressTechnology::none}),
+        parameter<std::optional<std::vector<double>>>("RAD", {.size = 2}),
+        parameter<std::optional<std::vector<double>>>("AXI", {.size = 2}),
+        parameter<std::optional<std::vector<double>>>("CIR", {.size = 2}),
+        parameter<std::optional<std::vector<double>>>("FIBER1", {.size = 2}),
+        parameter<std::optional<std::vector<double>>>("FIBER2", {.size = 2}),
+        parameter<std::optional<std::vector<double>>>("FIBER3", {.size = 2}),
+        get_integration_rule_input_spec<celltype>(),
+        parameter<double>(
+            "THICKNESS", {.description = "Reference thickness of the 2D solid element"}),
+        parameter<Discret::Elements::PlaneAssumption>(
+            "PLANE_ASSUMPTION", {.description = "Plane assumption for the 2D solid element"}),
+    });
+  }
 }  // namespace
 
 template <unsigned dim>
@@ -108,56 +132,67 @@ void Discret::Elements::SolidType<dim>::setup_element_definition(
 {
   auto& defsgeneral = definitions["SOLID"];
 
-  defsgeneral[Core::FE::CellType::hex8] = all_of({
-      get_default_input_spec<Core::FE::CellType::hex8>(),
-      parameter<ElementTechnology>("TECH", {.default_value = ElementTechnology::none}),
-  });
+  if constexpr (dim == 2)
+  {
+    defsgeneral[Core::FE::CellType::quad4] = get_default_input_spec<Core::FE::CellType::quad4>();
+    defsgeneral[Core::FE::CellType::quad8] = get_default_input_spec<Core::FE::CellType::quad8>();
+    defsgeneral[Core::FE::CellType::quad9] = get_default_input_spec<Core::FE::CellType::quad9>();
+    defsgeneral[Core::FE::CellType::tri3] = get_default_input_spec<Core::FE::CellType::tri3>();
+    defsgeneral[Core::FE::CellType::tri6] = get_default_input_spec<Core::FE::CellType::tri6>();
+  }
+  else if constexpr (dim == 3)
+  {
+    defsgeneral[Core::FE::CellType::hex8] = all_of({
+        get_default_input_spec<Core::FE::CellType::hex8>(),
+        parameter<ElementTechnology>("TECH", {.default_value = ElementTechnology::none}),
+    });
 
-  defsgeneral[Core::FE::CellType::hex18] = get_default_input_spec<Core::FE::CellType::hex18>();
+    defsgeneral[Core::FE::CellType::hex18] = get_default_input_spec<Core::FE::CellType::hex18>();
 
-  defsgeneral[Core::FE::CellType::hex20] = get_default_input_spec<Core::FE::CellType::hex20>();
+    defsgeneral[Core::FE::CellType::hex20] = get_default_input_spec<Core::FE::CellType::hex20>();
 
-  defsgeneral[Core::FE::CellType::hex27] = get_default_input_spec<Core::FE::CellType::hex27>();
+    defsgeneral[Core::FE::CellType::hex27] = get_default_input_spec<Core::FE::CellType::hex27>();
 
-  defsgeneral[Core::FE::CellType::tet4] = get_default_input_spec<Core::FE::CellType::tet4>();
+    defsgeneral[Core::FE::CellType::tet4] = get_default_input_spec<Core::FE::CellType::tet4>();
 
-  defsgeneral[Core::FE::CellType::tet10] = get_default_input_spec<Core::FE::CellType::tet10>();
+    defsgeneral[Core::FE::CellType::tet10] = get_default_input_spec<Core::FE::CellType::tet10>();
 
-  defsgeneral[Core::FE::CellType::wedge6] = all_of({
-      get_default_input_spec<Core::FE::CellType::wedge6>(),
-      deprecated_selection<ElementTechnology>("TECH",
-          {
-              {element_technology_string(ElementTechnology::none), ElementTechnology::none},
-              {element_technology_string(ElementTechnology::shell_ans),
-                  ElementTechnology::shell_ans},
-              {element_technology_string(ElementTechnology::shell_eas_ans),
-                  ElementTechnology::shell_eas_ans},
-          },
-          {.default_value = ElementTechnology::none}),
-  });
+    defsgeneral[Core::FE::CellType::wedge6] = all_of({
+        get_default_input_spec<Core::FE::CellType::wedge6>(),
+        deprecated_selection<ElementTechnology>("TECH",
+            {
+                {element_technology_string(ElementTechnology::none), ElementTechnology::none},
+                {element_technology_string(ElementTechnology::shell_ans),
+                    ElementTechnology::shell_ans},
+                {element_technology_string(ElementTechnology::shell_eas_ans),
+                    ElementTechnology::shell_eas_ans},
+            },
+            {.default_value = ElementTechnology::none}),
+    });
 
-  defsgeneral[Core::FE::CellType::pyramid5] = all_of({
-      get_default_input_spec<Core::FE::CellType::pyramid5>(),
-      deprecated_selection<ElementTechnology>("TECH",
-          {
-              {element_technology_string(ElementTechnology::none), ElementTechnology::none},
-              {element_technology_string(ElementTechnology::fbar), ElementTechnology::fbar},
-          },
-          {.default_value = ElementTechnology::none}),
-  });
+    defsgeneral[Core::FE::CellType::pyramid5] = all_of({
+        get_default_input_spec<Core::FE::CellType::pyramid5>(),
+        deprecated_selection<ElementTechnology>("TECH",
+            {
+                {element_technology_string(ElementTechnology::none), ElementTechnology::none},
+                {element_technology_string(ElementTechnology::fbar), ElementTechnology::fbar},
+            },
+            {.default_value = ElementTechnology::none}),
+    });
 
-  defsgeneral[Core::FE::CellType::nurbs27] = all_of({
-      parameter<int>("MAT"),
-      get_kinem_type_input_spec(),
-      get_integration_rule_input_spec<Core::FE::CellType::nurbs27>(),
-  });
+    defsgeneral[Core::FE::CellType::nurbs27] = all_of({
+        parameter<int>("MAT"),
+        get_kinem_type_input_spec(),
+        get_integration_rule_input_spec<Core::FE::CellType::nurbs27>(),
+    });
+  }
 }
 
 template <unsigned dim>
 std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidType<dim>::create(
     const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
-  if (eletype == "SOLID") return create(id, owner);
+  if (eletype == "SOLID" && Core::FE::get_dimension(celltype) == dim) return create(id, owner);
   return nullptr;
 }
 
@@ -224,13 +259,18 @@ int Discret::Elements::Solid<dim>::num_volume() const
 template <unsigned dim>
 std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Solid<dim>::lines()
 {
-  return Core::Communication::get_element_lines<SolidLine<3>, Solid<dim>>(*this);
+  return Core::Communication::get_element_lines<SolidLine<dim>, Solid>(*this);
 }
 
 template <unsigned dim>
 std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Solid<dim>::surfaces()
 {
-  return Core::Communication::get_element_surfaces<SolidSurface, Solid<dim>>(*this);
+  if constexpr (dim == 2)
+  {
+    // return the element itself if we are a surface
+    return {Core::Utils::shared_ptr_from_ref(*this)};
+  };
+  return Core::Communication::get_element_surfaces<SolidSurface, Solid>(*this);
 }
 
 template <unsigned dim>
@@ -258,7 +298,8 @@ void Discret::Elements::Solid<dim>::pack(Core::Communication::PackBuffer& data) 
   data.add_to_pack(material_post_setup_);
 
   FOUR_C_ASSERT(solid_calc_variant_.has_value(),
-      "The solid calculation interface is not initialized for element id {}. The element needs to "
+      "The solid calculation interface is not initialized for element id {}. The element needs "
+      "to "
       "be fully setup before packing.",
       id());
   Discret::Elements::pack(*solid_calc_variant_, data);
@@ -274,7 +315,8 @@ void Discret::Elements::Solid<dim>::unpack(Core::Communication::UnpackBuffer& bu
 
   extract_from_pack(buffer, celltype_);
   FOUR_C_ASSERT_ALWAYS(Core::FE::get_dimension(celltype_) == dim,
-      "You try to create a solid element of dimension {} with a cell type {} of dimension {} that "
+      "You try to create a solid element of dimension {} with a cell type {} of dimension {} "
+      "that "
       "does not match.",
       dim, celltype_, Core::FE::get_dimension(celltype_));
   extract_from_pack(buffer, integration_rules_);
@@ -286,6 +328,7 @@ void Discret::Elements::Solid<dim>::unpack(Core::Communication::UnpackBuffer& bu
   // reset solid interface
   solid_calc_variant_ =
       create_solid_calculation_interface(celltype_, solid_ele_property_, integration_rules_);
+
 
   Discret::Elements::unpack(*solid_calc_variant_, buffer);
 }
@@ -310,14 +353,13 @@ bool Discret::Elements::Solid<dim>::read_element(const std::string& eletype,
   // set cell type
   celltype_ = celltype;
   FOUR_C_ASSERT_ALWAYS(Core::FE::get_dimension(celltype_) == dim,
-      "You try to create a solid element of dimension {} with a cell type {} of dimension {} that "
+      "You try to create a solid element of dimension {} with a cell type {} of dimension {} "
+      "that "
       "does not match.",
       dim, celltype_, Core::FE::get_dimension(celltype_));
 
   // read number of material model
   set_material(0, Mat::factory(FourC::Solid::Utils::ReadElement::read_element_material(container)));
-
-
 
   solid_ele_property_ =
       FourC::Solid::Utils::ReadElement::read_solid_element_properties<dim>(container);
@@ -368,7 +410,8 @@ void Discret::Elements::Solid<dim>::for_each_gauss_point(Core::FE::Discretizatio
       *solid_calc_variant_);
 }
 
-
+template class Discret::Elements::SolidType<2>;
+template class Discret::Elements::Solid<2>;
 template class Discret::Elements::SolidType<3>;
 template class Discret::Elements::Solid<3>;
 

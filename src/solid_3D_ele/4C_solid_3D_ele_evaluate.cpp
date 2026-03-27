@@ -262,11 +262,11 @@ int Discret::Elements::Solid<dim>::evaluate(Teuchos::ParameterList& params,
           Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
               analytical_function_id);
 
-      Core::FE::cell_type_switch<ImplementedSolidCellTypes>(celltype_,
+      Core::FE::cell_type_switch<ImplementedSolidCellTypes<dim>>(celltype_,
           [&](auto celltype_t)
           {
             const auto error_result = compute_analytical_displacement_error_integration<celltype_t>(
-                *this, discretization, lm, analytical_displacements_function);
+                *this, {}, discretization, lm, analytical_displacements_function);
 
             elevec1(0) = error_result.integrated_squared_error;
             elevec1(1) = error_result.integrated_squared_displacements;
@@ -312,7 +312,7 @@ int Discret::Elements::Solid<dim>::evaluate_neumann(Teuchos::ParameterList& para
           return params.get("total time", -1.0);
       });
 
-  Discret::Elements::evaluate_neumann_by_element<3>(
+  Discret::Elements::evaluate_neumann_by_element<dim>(
       *this, discretization, condition, elevec1, time);
   return 0;
 }
@@ -328,6 +328,22 @@ double Discret::Elements::Solid<dim>::get_normal_cauchy_stress_at_xi(
   return Discret::Elements::get_normal_cauchy_stress_at_xi(
       *solid_calc_variant_, *this, *solid_material(), disp, xi, n, dir, linearizations);
 }
+
+template int Discret::Elements::Solid<2>::evaluate(Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3);
+template void Discret::Elements::Solid<2>::set_integration_rule(
+    const Core::FE::GaussIntegration& integration_rule);
+template int Discret::Elements::Solid<2>::evaluate_neumann(Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, const Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1);
+template double Discret::Elements::Solid<2>::get_normal_cauchy_stress_at_xi(
+    const std::vector<double>& disp, const Core::LinAlg::Tensor<double, 3>& xi,
+    const Core::LinAlg::Tensor<double, 3>& n, const Core::LinAlg::Tensor<double, 3>& dir,
+    CauchyNDirLinearizations<3>& linearizations);
 
 template int Discret::Elements::Solid<3>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,

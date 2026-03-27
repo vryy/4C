@@ -184,71 +184,114 @@ namespace
   };
 
   /*!
-   * @brief Nonlinear modified updated lagrangian prestressing for all celltypes
+   * @brief Nonlinear modified updated lagrangian prestressing for all 3D celltypes
    */
   template <Core::FE::CellType celltype>
+    requires(Core::FE::dim<celltype> == 3)
   struct SolidCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::none, Discret::Elements::PrestressTechnology::mulf>
   {
     using type =
         Discret::Elements::SolidEleCalc<celltype, Discret::Elements::MulfFormulation<celltype>>;
   };
+
+  template <unsigned dim>
+  auto make_constexpr_element_properties_switch(Core::FE::CellType celltype,
+      const Discret::Elements::SolidElementProperties<dim>& element_properties, auto funct)
+  {
+    // Determine the return type
+    using ReturnType = std::decay_t<decltype(funct(
+        std::declval<std::integral_constant<Core::FE::CellType, Core::FE::CellType::hex8>>(),
+        std::declval<std::integral_constant<Inpar::Solid::KinemType,
+            Inpar::Solid::KinemType::nonlinearTotLag>>(),
+        std::declval<std::integral_constant<Discret::Elements::ElementTechnology,
+            Discret::Elements::ElementTechnology::none>>(),
+        std::declval<std::integral_constant<Discret::Elements::PrestressTechnology,
+            Discret::Elements::PrestressTechnology::none>>()))>;
+
+    // We have 4 different element properties and each combination results in a different element
+    // formulation.
+    return Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<dim>>(celltype,
+        [&](auto celltype_t) -> ReturnType
+        {
+          if constexpr (Core::FE::dim<celltype_t()> == dim)
+          {
+            return EnumTools::enum_switch(
+                [&](auto kinemtype_t)
+                {
+                  return EnumTools::enum_switch(
+                      [&](auto eletech_t)
+                      {
+                        return EnumTools::enum_switch(
+                            // Note: enum_switch return type needs to be default constructible
+                            [&](auto prestress_tech_t) -> ReturnType
+                            { return funct(celltype_t, kinemtype_t, eletech_t, prestress_tech_t); },
+                            element_properties.prestress_technology);
+                      },
+                      element_properties.element_technology);
+                },
+                element_properties.kintype);
+          }
+          else
+          {
+            FOUR_C_THROW("Cell type {} does not match the dimension of the integration rules.",
+                Core::FE::celltype_string<celltype_t()>);
+          }
+        });
+  }
 }  // namespace
 
 template <unsigned dim>
-Discret::Elements::SolidCalcVariant Discret::Elements::create_solid_calculation_interface(
+Discret::Elements::SolidCalcVariant<dim> Discret::Elements::create_solid_calculation_interface(
     Core::FE::CellType celltype,
     const Discret::Elements::SolidElementProperties<dim>& element_properties,
     const SolidIntegrationRules<dim>& integration_rules)
 {
-  // We have 4 different element properties and each combination results in a different element
-  // formulation.
-  auto interface = Core::FE::cell_type_switch<ImplementedSolidCellTypes>(celltype,
-      [&](auto celltype_t)
+  auto interface = make_constexpr_element_properties_switch<dim>(celltype, element_properties,
+      [&](auto celltype_t, auto kinemtype_t, auto eletech_t,
+          auto prestress_tech_t) -> std::optional<SolidCalcVariant<dim>>
       {
-        return EnumTools::enum_switch(
-            [&](auto kinemtype_t)
-            {
-              return EnumTools::enum_switch(
-                  [&](auto eletech_t)
-                  {
-                    return EnumTools::enum_switch(
-                        // Note: enum_switch return type needs to be default constructible
-                        [&](auto prestress_tech_t) -> std::optional<SolidCalcVariant>
-                        {
-                          constexpr Core::FE::CellType celltype_c = celltype_t();
-                          constexpr Inpar::Solid::KinemType kinemtype_c = kinemtype_t();
-                          constexpr ElementTechnology eletech_c = eletech_t();
-                          constexpr PrestressTechnology prestress_tech_c = prestress_tech_t();
-                          if constexpr (is_valid_type<SolidCalculationFormulation<celltype_c,
-                                            kinemtype_c, eletech_c, prestress_tech_c>>)
-                          {
-                            return typename SolidCalculationFormulation<celltype_c, kinemtype_c,
-                                eletech_c, prestress_tech_c>::type(integration_rules);
-                          }
+        constexpr Core::FE::CellType celltype_c = celltype_t();
+        constexpr Inpar::Solid::KinemType kinemtype_c = kinemtype_t();
+        constexpr ElementTechnology eletech_c = eletech_t();
+        constexpr PrestressTechnology prestress_tech_c = prestress_tech_t();
+        if constexpr (is_valid_type<SolidCalculationFormulation<celltype_c, kinemtype_c, eletech_c,
+                          prestress_tech_c>>)
+        {
+          if constexpr (dim == 2)
+          {
+            return typename SolidCalculationFormulation<celltype_c, kinemtype_c, eletech_c,
+                prestress_tech_c>::type(integration_rules, element_properties.reference_thickness,
+                element_properties.plane_assumption);
+          }
+          else
+          {
+            return typename SolidCalculationFormulation<celltype_c, kinemtype_c, eletech_c,
+                prestress_tech_c>::type(integration_rules);
+          }
+        }
 
-                          FOUR_C_THROW(
-                              "Your element formulation with cell type {}, kinematic type {},"
-                              " element technology {} and prestress type {} does not exist ",
-                              Core::FE::celltype_string<celltype_t()>,
-                              Inpar::Solid::kinem_type_string(element_properties.kintype).c_str(),
-                              element_technology_string(element_properties.element_technology)
-                                  .c_str(),
-                              element_properties.prestress_technology);
-                        },
-                        element_properties.prestress_technology);
-                  },
-                  element_properties.element_technology);
-            },
-            element_properties.kintype);
+        FOUR_C_THROW(
+            "Your element formulation with cell type {}, kinematic type "
+            "{},"
+            " element technology {} and prestress type {} does not "
+            "exist ",
+            Core::FE::celltype_string<celltype_t()>,
+            Inpar::Solid::kinem_type_string(element_properties.kintype).c_str(),
+            element_technology_string(element_properties.element_technology).c_str(),
+            element_properties.prestress_technology);
       });
 
   FOUR_C_ASSERT(interface.has_value(), "Could not create the solid calculation interface.");
   return *interface;
 }
 
-template Discret::Elements::SolidCalcVariant Discret::Elements::create_solid_calculation_interface(
-    Core::FE::CellType celltype,
+template Discret::Elements::SolidCalcVariant<2>
+Discret::Elements::create_solid_calculation_interface(Core::FE::CellType celltype,
+    const Discret::Elements::SolidElementProperties<2>& element_properties,
+    const SolidIntegrationRules<2>& integration_rules);
+template Discret::Elements::SolidCalcVariant<3>
+Discret::Elements::create_solid_calculation_interface(Core::FE::CellType celltype,
     const Discret::Elements::SolidElementProperties<3>& element_properties,
     const SolidIntegrationRules<3>& integration_rules);
 

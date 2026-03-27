@@ -534,26 +534,46 @@ template void Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::
     Core::FE::IntegrationPoints2D>(const Core::Elements::Element& ele,
     const Core::LinAlg::SerialDenseMatrix& gp_data, Core::LinAlg::MultiVector<double>& global_data,
     bool nodal_average, const Core::FE::IntegrationPoints2D& integration);
+template void Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::quad4,
+    Core::FE::GaussIntegration>(const Core::Elements::Element& ele,
+    const Core::LinAlg::SerialDenseMatrix& gp_data, Core::LinAlg::MultiVector<double>& global_data,
+    bool nodal_average, const Core::FE::GaussIntegration& integration);
 
 template void Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::quad8,
     Core::FE::IntegrationPoints2D>(const Core::Elements::Element& ele,
     const Core::LinAlg::SerialDenseMatrix& gp_data, Core::LinAlg::MultiVector<double>& global_data,
     bool nodal_average, const Core::FE::IntegrationPoints2D& integration);
+template void Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::quad8,
+    Core::FE::GaussIntegration>(const Core::Elements::Element& ele,
+    const Core::LinAlg::SerialDenseMatrix& gp_data, Core::LinAlg::MultiVector<double>& global_data,
+    bool nodal_average, const Core::FE::GaussIntegration& integration);
 
 template void Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::quad9,
     Core::FE::IntegrationPoints2D>(const Core::Elements::Element& ele,
     const Core::LinAlg::SerialDenseMatrix& gp_data, Core::LinAlg::MultiVector<double>& global_data,
     bool nodal_average, const Core::FE::IntegrationPoints2D& integration);
+template void Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::quad9,
+    Core::FE::GaussIntegration>(const Core::Elements::Element& ele,
+    const Core::LinAlg::SerialDenseMatrix& gp_data, Core::LinAlg::MultiVector<double>& global_data,
+    bool nodal_average, const Core::FE::GaussIntegration& integration);
 
 template void Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::tri3,
     Core::FE::IntegrationPoints2D>(const Core::Elements::Element& ele,
     const Core::LinAlg::SerialDenseMatrix& gp_data, Core::LinAlg::MultiVector<double>& global_data,
     bool nodal_average, const Core::FE::IntegrationPoints2D& integration);
+template void Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::tri3,
+    Core::FE::GaussIntegration>(const Core::Elements::Element& ele,
+    const Core::LinAlg::SerialDenseMatrix& gp_data, Core::LinAlg::MultiVector<double>& global_data,
+    bool nodal_average, const Core::FE::GaussIntegration& integration);
 
 template void Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::tri6,
     Core::FE::IntegrationPoints2D>(const Core::Elements::Element& ele,
     const Core::LinAlg::SerialDenseMatrix& gp_data, Core::LinAlg::MultiVector<double>& global_data,
     bool nodal_average, const Core::FE::IntegrationPoints2D& integration);
+template void Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::tri6,
+    Core::FE::GaussIntegration>(const Core::Elements::Element& ele,
+    const Core::LinAlg::SerialDenseMatrix& gp_data, Core::LinAlg::MultiVector<double>& global_data,
+    bool nodal_average, const Core::FE::GaussIntegration& integration);
 
 template void Core::FE::extrapolate_gp_quantity_to_nurbs_knots_and_assemble<
     Core::FE::CellType::nurbs27, Core::FE::GaussIntegration>(const Core::FE::Discretization& dis,

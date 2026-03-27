@@ -30,6 +30,26 @@ namespace Core::FE::Internal
     using type = decltype(std::tuple_cat(std::declval<T>()...));
   };
 
+  /**
+   * @brief A helper struct to join multiple CelltypeSequence into a single CelltypeSequence.
+   */
+  template <typename... T>
+  struct join_celltype_sequences;
+
+  template <Core::FE::CellType... celltypes1, Core::FE::CellType... celltypes2, typename... T>
+  struct join_celltype_sequences<CelltypeSequence<celltypes1...>, CelltypeSequence<celltypes2...>,
+      T...>
+  {
+    using type =
+        join_celltype_sequences<CelltypeSequence<celltypes1..., celltypes2...>, T...>::type;
+  };
+
+  template <Core::FE::CellType... celltypes1, Core::FE::CellType... celltypes2>
+  struct join_celltype_sequences<CelltypeSequence<celltypes1...>, CelltypeSequence<celltypes2...>>
+  {
+    using type = CelltypeSequence<celltypes1..., celltypes2...>;
+  };
+
 
   template <template <typename...> typename TypeList, template <CellType> typename Base, typename T>
   struct apply_celltype_sequence;

@@ -36,7 +36,7 @@ namespace
 
   template <typename T>
   concept IsSolidInterface =
-      IsMemberOfVariant<std::remove_cvref_t<T>, Discret::Elements::SolidCalcVariant>::value;
+      IsMemberOfVariant<std::remove_cvref_t<T>, Discret::Elements::SolidCalcVariant<3>>::value;
 
   template <typename T>
   concept IsSolidScatraInterface =

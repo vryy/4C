@@ -264,9 +264,17 @@ template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::tr
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>>&,
     NodalFiberHolder&);
+template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::tri6>(
+    const Core::Nodes::Node* const*,
+    const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri6), 1>>&,
+    NodalFiberHolder&);
 template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::quad4>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>>&,
+    NodalFiberHolder&);
+template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::quad8>(
+    const Core::Nodes::Node* const*,
+    const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad8), 1>>&,
     NodalFiberHolder&);
 template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::quad9>(
     const Core::Nodes::Node* const*,
@@ -302,6 +310,16 @@ template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::nurbs27>(
 template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::pyramid5>(
     const Core::Nodes::Node* const* nodes);
 template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::wedge6>(
+    const Core::Nodes::Node* const* nodes);
+template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::quad4>(
+    const Core::Nodes::Node* const* nodes);
+template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::quad8>(
+    const Core::Nodes::Node* const* nodes);
+template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::quad9>(
+    const Core::Nodes::Node* const* nodes);
+template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tri3>(
+    const Core::Nodes::Node* const* nodes);
+template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tri6>(
     const Core::Nodes::Node* const* nodes);
 
 FOUR_C_NAMESPACE_CLOSE

@@ -80,7 +80,7 @@ namespace Discret::Elements
 
 
   using SolidAndSolidScatraCalcVariant =
-      Internal::VariantUnionHelper<SolidCalcVariant, SolidScatraCalcVariant>::type;
+      Internal::VariantUnionHelper<SolidCalcVariant<3>, SolidScatraCalcVariant>::type;
 
   inline SolidAndSolidScatraCalcVariant create_solid_or_solid_scatra_calculation_interface(
       Core::FE::CellType celltype,
@@ -96,7 +96,7 @@ namespace Discret::Elements
     }
 
 
-    SolidCalcVariant solid_item =
+    SolidCalcVariant<3> solid_item =
         create_solid_calculation_interface(celltype, element_properties, integration_rules);
     return std::visit(
         [](auto& interface) -> SolidAndSolidScatraCalcVariant { return interface; }, solid_item);

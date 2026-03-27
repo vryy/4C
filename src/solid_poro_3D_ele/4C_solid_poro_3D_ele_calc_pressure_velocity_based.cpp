@@ -374,7 +374,7 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
   ensure_positive_jacobian_determinant_at_element_nodes(nodal_coordinates);
 
   // Loop over all Gauss points
-  for_each_gauss_point(nodal_coordinates, gauss_integration_,
+  for_each_gauss_point(nodal_coordinates, {}, gauss_integration_,
       [&](const Core::LinAlg::Tensor<double, num_dim_>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -650,7 +650,7 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
       evaluate_element_nodes<celltype>(ele, primary_variables.solid_displacements);
 
   // Loop over all Gauss points
-  for_each_gauss_point(nodal_coordinates, gauss_integration_,
+  for_each_gauss_point(nodal_coordinates, {}, gauss_integration_,
       [&](const Core::LinAlg::Tensor<double, num_dim_>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)

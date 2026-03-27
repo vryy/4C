@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_inpar_structure.hpp"
+#include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <string>
@@ -63,6 +64,24 @@ namespace Discret::Elements
     PrestressTechnology prestress_technology{PrestressTechnology::none};
   };
 
+  template <>
+  struct SolidElementProperties<2>
+  {
+    //! kinematic type
+    Inpar::Solid::KinemType kintype{Inpar::Solid::KinemType::vague};
+
+    //! element technology (none, F-Bar, EAS full, EAS mild)
+    ElementTechnology element_technology{ElementTechnology::none};
+
+    //! specify prestress technology (none, MULF)
+    PrestressTechnology prestress_technology{PrestressTechnology::none};
+
+    //! Reference thickness for 2D elements
+    double reference_thickness{1.0};
+
+    //! Plane assumption for 2D elements
+    PlaneAssumption plane_assumption{PlaneAssumption::plane_stress};
+  };
 }  // namespace Discret::Elements
 
 
