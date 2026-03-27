@@ -661,7 +661,9 @@ struct VerifyPackable
   }
 };
 
-template struct VerifyPackable<Core::FE::CellType::hex8, Core::FE::CellType::hex18,
+template struct VerifyPackable<Core::FE::CellType::quad4, Core::FE::CellType::quad8,
+    Core::FE::CellType::quad9, Core::FE::CellType::nurbs9, Core::FE::CellType::tri3,
+    Core::FE::CellType::tri6, Core::FE::CellType::hex8, Core::FE::CellType::hex18,
     Core::FE::CellType::hex20, Core::FE::CellType::hex27, Core::FE::CellType::nurbs27,
     Core::FE::CellType::tet4, Core::FE::CellType::tet10, Core::FE::CellType::pyramid5,
     Core::FE::CellType::wedge6, Core::FE::CellType::hex8, Core::FE::CellType::hex8,
@@ -675,6 +677,8 @@ template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad8,
     Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::quad8>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad9,
     Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::quad9>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::nurbs9,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::nurbs9>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tri3,
     Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tri3>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tri6,
@@ -705,6 +709,8 @@ template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad8,
     Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::quad8>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad9,
     Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::quad9>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::nurbs9,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::nurbs9>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tri3,
     Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tri3>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tri6,

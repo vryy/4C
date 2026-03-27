@@ -317,6 +317,8 @@ template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::quad8>(
     const Core::Nodes::Node* const* nodes);
 template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::quad9>(
     const Core::Nodes::Node* const* nodes);
+template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::nurbs9>(
+    const Core::Nodes::Node* const* nodes);
 template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tri3>(
     const Core::Nodes::Node* const* nodes);
 template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tri6>(

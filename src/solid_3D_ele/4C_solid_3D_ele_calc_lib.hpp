@@ -415,8 +415,16 @@ namespace Discret::Elements
     requires(Core::FE::is_nurbs<celltype>)
   {
     ShapeFunctionsAndDerivatives<celltype> shapefcns;
-    Core::FE::Nurbs::nurbs_get_funct_deriv(shapefcns.shapefunctions_, shapefcns.derivatives_, xi,
-        nodal_coordinates.knots, nodal_coordinates.weights, celltype);
+    if constexpr (Core::FE::dim<celltype> == 3)
+    {
+      Core::FE::Nurbs::nurbs_get_3d_funct_deriv(shapefcns.shapefunctions_, shapefcns.derivatives_,
+          xi, nodal_coordinates.knots, nodal_coordinates.weights, celltype);
+    }
+    else if constexpr (Core::FE::dim<celltype> == 2)
+    {
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv(shapefcns.shapefunctions_, shapefcns.derivatives_,
+          xi, nodal_coordinates.knots, nodal_coordinates.weights, celltype);
+    }
 
     return shapefcns;
   }

@@ -37,9 +37,9 @@ namespace Discret::Elements
       Core::FE::CellType::nurbs27, Core::FE::CellType::tet4, Core::FE::CellType::tet10,
       Core::FE::CellType::wedge6, Core::FE::CellType::pyramid5>;
 
-  using ImplementedSolidCellTypes2D =
-      Core::FE::CelltypeSequence<Core::FE::CellType::quad4, Core::FE::CellType::quad8,
-          Core::FE::CellType::quad9, Core::FE::CellType::tri3, Core::FE::CellType::tri6>;
+  using ImplementedSolidCellTypes2D = Core::FE::CelltypeSequence<Core::FE::CellType::quad4,
+      Core::FE::CellType::quad8, Core::FE::CellType::quad9, Core::FE::CellType::tri3,
+      Core::FE::CellType::tri6, Core::FE::CellType::nurbs9>;
 
   template <unsigned dim>
   using ImplementedSolidCellTypes =

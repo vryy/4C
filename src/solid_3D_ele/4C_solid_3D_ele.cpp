@@ -139,6 +139,8 @@ void Discret::Elements::SolidType<dim>::setup_element_definition(
     defsgeneral[Core::FE::CellType::quad9] = get_default_input_spec<Core::FE::CellType::quad9>();
     defsgeneral[Core::FE::CellType::tri3] = get_default_input_spec<Core::FE::CellType::tri3>();
     defsgeneral[Core::FE::CellType::tri6] = get_default_input_spec<Core::FE::CellType::tri6>();
+
+    defsgeneral[Core::FE::CellType::nurbs9] = get_default_input_spec<Core::FE::CellType::nurbs9>();
   }
   else if constexpr (dim == 3)
   {
@@ -180,11 +182,8 @@ void Discret::Elements::SolidType<dim>::setup_element_definition(
             {.default_value = ElementTechnology::none}),
     });
 
-    defsgeneral[Core::FE::CellType::nurbs27] = all_of({
-        parameter<int>("MAT"),
-        get_kinem_type_input_spec(),
-        get_integration_rule_input_spec<Core::FE::CellType::nurbs27>(),
-    });
+    defsgeneral[Core::FE::CellType::nurbs27] =
+        get_default_input_spec<Core::FE::CellType::nurbs27>();
   }
 }
 
