@@ -11,6 +11,7 @@
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fluid_timint_loma.hpp"
+#include "4C_fs3i_problem_access.hpp"
 #include "4C_fsi_monolithic.hpp"
 #include "4C_global_data.hpp"
 #include "4C_scatra_algorithm.hpp"
@@ -18,20 +19,21 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace
+{
+  const Teuchos::ParameterList& fs3i_dynamic_params_from_problem()
+  {
+    return FS3I::Utils::fs3i_dynamic_params_from_problem();
+  }
+}  // namespace
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::PartFS3I2Wc::PartFS3I2Wc(MPI_Comm comm)
     : PartFS3I(comm),
-      itmax_(Global::Problem::instance()
-              ->f_s3_i_dynamic_params()
-              .sublist("PARTITIONED")
-              .get<int>("ITEMAX")),
-      ittol_(Global::Problem::instance()
-              ->f_s3_i_dynamic_params()
-              .sublist("PARTITIONED")
-              .get<double>("CONVTOL")),
-      consthermpress_(
-          Global::Problem::instance()->f_s3_i_dynamic_params().get<std::string>("CONSTHERMPRESS"))
+      itmax_(fs3i_dynamic_params_from_problem().sublist("PARTITIONED").get<int>("ITEMAX")),
+      ittol_(fs3i_dynamic_params_from_problem().sublist("PARTITIONED").get<double>("CONVTOL")),
+      consthermpress_(fs3i_dynamic_params_from_problem().get<std::string>("CONSTHERMPRESS"))
 {
   // constructor is supposed to stay empty
   return;
@@ -71,8 +73,8 @@ void FS3I::PartFS3I2Wc::timeloop()
   set_fsi_solution();
 
   // calculate initial time derivative, when restart was done from a part. FSI simulation
-  if (Global::Problem::instance()->restart() and
-      Global::Problem::instance()->f_s3_i_dynamic_params().get<bool>("RESTART_FROM_PART_FSI"))
+  const auto* problem = FS3I::Utils::problem_from_instance();
+  if (problem->restart() and problem->f_s3_i_dynamic_params().get<bool>("RESTART_FROM_PART_FSI"))
   {
     scatravec_[0]->scatra_field()->prepare_first_time_step();
     scatravec_[1]->scatra_field()->prepare_first_time_step();

@@ -14,6 +14,7 @@
 #include "4C_fem_condition_selector.hpp"
 #include "4C_fluid_implicit_integration.hpp"
 #include "4C_fs3i_input.hpp"
+#include "4C_fs3i_problem_access.hpp"
 #include "4C_fsi_dyn.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
 #include "4C_fsi_monolithicstructuresplit.hpp"
@@ -30,13 +31,21 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace
+{
+  const Teuchos::ParameterList& fs3i_dynamic_params_from_problem()
+  {
+    return FS3I::Utils::fs3i_dynamic_params_from_problem();
+  }
+}  // namespace
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::FS3IBase::FS3IBase()
-    : infperm_(Global::Problem::instance()->f_s3_i_dynamic_params().get<bool>("INF_PERM")),
-      timemax_(Global::Problem::instance()->f_s3_i_dynamic_params().get<double>("MAXTIME")),
-      numstep_(Global::Problem::instance()->f_s3_i_dynamic_params().get<int>("NUMSTEP")),
-      dt_(Global::Problem::instance()->f_s3_i_dynamic_params().get<double>("TIMESTEP")),
+    : infperm_(fs3i_dynamic_params_from_problem().get<bool>("INF_PERM")),
+      timemax_(fs3i_dynamic_params_from_problem().get<double>("MAXTIME")),
+      numstep_(fs3i_dynamic_params_from_problem().get<int>("NUMSTEP")),
+      dt_(fs3i_dynamic_params_from_problem().get<double>("TIMESTEP")),
       time_(0.0),
       step_(0),
       issetup_(false),
@@ -155,7 +164,7 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
 void FS3I::FS3IBase::check_f_s3_i_inputs()
 {
   // Check FS3I dynamic parameters
-  Global::Problem* problem = Global::Problem::instance();
+  Global::Problem* problem = FS3I::Utils::problem_from_instance();
   const Teuchos::ParameterList& fs3idyn = problem->f_s3_i_dynamic_params();
   const Teuchos::ParameterList& structdynparams = problem->structural_dynamic_params();
   const Teuchos::ParameterList& scatradynparams = problem->scalar_transport_dynamic_params();
@@ -228,8 +237,7 @@ void FS3I::FS3IBase::check_f_s3_i_inputs()
         "in the structure is NOT divergence free!");
   }
 
-  auto pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-      Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
+  auto pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(structdynparams, "PRESTRESS");
   // is structure calculated dynamic when not prestressing?
   if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structdynparams, "DYNAMICTYPE") ==
           Inpar::Solid::DynamicType::Statics and
