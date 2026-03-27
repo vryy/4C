@@ -32,11 +32,11 @@ Core::Communication::ParObject* Discret::Elements::Wall1Type::create(
 
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::Wall1Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALL")
   {
-    if (eledistype != "NURBS4" and eledistype != "NURBS9")
+    if (celltype != Core::FE::CellType::nurbs4 && celltype != Core::FE::CellType::nurbs9)
     {
       return std::make_shared<Discret::Elements::Wall1>(id, owner);
     }

@@ -727,7 +727,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
 
     // assign nodes to elements
     std::shared_ptr<Core::Elements::Element> newele =
-        Core::Communication::factory("VELE3", "Polynomial", ele->id(), myrank_);
+        Core::Communication::factory("VELE3", Core::FE::CellType::dis_none, ele->id(), myrank_);
     newele->set_node_ids(nids.size(), nids.data());
     visbindis_->add_element(newele);
   }
@@ -775,7 +775,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
 
       // assign nodes to elements
       std::shared_ptr<Core::Elements::Element> newele =
-          Core::Communication::factory("VELE3", "Polynomial", newelegid, myrank_);
+          Core::Communication::factory("VELE3", Core::FE::CellType::dis_none, newelegid, myrank_);
       newele->set_node_ids(nids.size(), nids.data());
       visbindis_->add_element(newele);
     }
@@ -845,8 +845,8 @@ void Core::Binstrategy::BinningStrategy::fill_bins_into_bin_discretization(
   for (int i = 0; i < rowbins.num_my_elements(); ++i)
   {
     const int gid = rowbins.gid(i);
-    std::shared_ptr<Core::Elements::Element> bin =
-        Core::Communication::factory("MESHFREEMULTIBIN", "dummy", gid, myrank_);
+    std::shared_ptr<Core::Elements::Element> bin = Core::Communication::factory(
+        "MESHFREEMULTIBIN", Core::FE::CellType::dis_none, gid, myrank_);
     bindis_->add_element(bin);
   }
 }

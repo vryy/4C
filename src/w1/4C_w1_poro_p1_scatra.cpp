@@ -90,11 +90,11 @@ void Discret::Elements::Wall1PoroP1Scatra<distype>::unpack(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 bool Discret::Elements::Wall1PoroP1Scatra<distype>::read_element(const std::string& eletype,
-    const std::string& eledistype, const Core::IO::InputParameterContainer& container,
+    const Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // read base element
-  my::read_element(eletype, eledistype, container, element_data);
+  my::read_element(eletype, celltype, container, element_data);
 
   // read scalar transport implementation type
   auto impltype = container.get<std::string>("TYPE");

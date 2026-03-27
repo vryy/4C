@@ -60,7 +60,7 @@ Core::Communication::ParObject* Discret::Elements::Shell7pScatraType::create(
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::Shell7pScatraType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "SHELL7PSCATRA") return create(id, owner);
   return nullptr;
@@ -337,13 +337,13 @@ int Discret::Elements::Shell7pScatra::num_surface() const { return 1; }
 
 
 bool Discret::Elements::Shell7pScatra::read_element(const std::string& eletype,
-    const std::string& distype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   Solid::Elements::ShellData shell_data = {};
 
   // set discretization type
-  distype_ = Core::FE::string_to_cell_type(distype);
+  distype_ = celltype;
 
   // set thickness in reference frame
   thickness_ = container.get<double>("THICK");

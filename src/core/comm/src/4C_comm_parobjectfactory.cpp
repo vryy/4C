@@ -124,13 +124,13 @@ Core::Communication::ParObject* Core::Communication::ParObjectFactory::create(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Core::Communication::ParObjectFactory::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   finalize_registration();
   std::map<std::string, Core::Elements::ElementType*>::iterator c = element_cache_.find(eletype);
   if (c != element_cache_.end())
   {
-    return c->second->create(eletype, eledistype, id, owner);
+    return c->second->create(eletype, celltype, id, owner);
   }
 
   // This is element specific code. Thus we need a down cast.
@@ -141,7 +141,7 @@ std::shared_ptr<Core::Elements::Element> Core::Communication::ParObjectFactory::
     Core::Elements::ElementType* eot = dynamic_cast<Core::Elements::ElementType*>(pot);
     if (eot != nullptr)
     {
-      std::shared_ptr<Core::Elements::Element> ele = eot->create(eletype, eledistype, id, owner);
+      std::shared_ptr<Core::Elements::Element> ele = eot->create(eletype, celltype, id, owner);
       if (ele != nullptr)
       {
         element_cache_[eletype] = eot;

@@ -177,7 +177,7 @@ void Core::Elements::Element::print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::Elements::Element::read_element(const std::string& eletype, const std::string& distype,
+bool Core::Elements::Element::read_element(const std::string& eletype, Core::FE::CellType celltype,
     const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {

@@ -32,9 +32,9 @@ Core::Communication::ParObject* Discret::Elements::MembraneScatraTri3Type::creat
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneScatraTri3Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
-  if (eletype == "MEMBRANESCATRA3" && eledistype == "TRI3")
+  if (eletype == "MEMBRANESCATRA3" && celltype == Core::FE::CellType::tri3)
   {
     std::shared_ptr<Core::Elements::Element> ele =
         std::make_shared<Discret::Elements::MembraneScatra<Core::FE::CellType::tri3>>(id, owner);
@@ -88,9 +88,9 @@ Core::Communication::ParObject* Discret::Elements::MembraneScatraTri6Type::creat
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneScatraTri6Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
-  if (eletype == "MEMBRANESCATRA6" && eledistype == "TRI6")
+  if (eletype == "MEMBRANESCATRA6" && celltype == Core::FE::CellType::tri6)
   {
     std::shared_ptr<Core::Elements::Element> ele =
         std::make_shared<Discret::Elements::MembraneScatra<Core::FE::CellType::tri6>>(id, owner);
@@ -145,9 +145,9 @@ Core::Communication::ParObject* Discret::Elements::MembraneScatraQuad4Type::crea
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneScatraQuad4Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
-  if (eletype == "MEMBRANESCATRA4" && eledistype == "QUAD4")
+  if (eletype == "MEMBRANESCATRA4" && celltype == Core::FE::CellType::quad4)
   {
     std::shared_ptr<Core::Elements::Element> ele =
         std::make_shared<Discret::Elements::MembraneScatra<Core::FE::CellType::quad4>>(id, owner);
@@ -202,9 +202,9 @@ Core::Communication::ParObject* Discret::Elements::MembraneScatraQuad9Type::crea
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::MembraneScatraQuad9Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
-  if (eletype == "MEMBRANESCATRA9" && eledistype == "QUAD9")
+  if (eletype == "MEMBRANESCATRA9" && celltype == Core::FE::CellType::quad9)
   {
     std::shared_ptr<Core::Elements::Element> ele =
         std::make_shared<Discret::Elements::MembraneScatra<Core::FE::CellType::quad9>>(id, owner);

@@ -35,13 +35,13 @@ Core::Communication::ParObject* Discret::Elements::Ale2Type::create(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Discret::Elements::Ale2Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   std::shared_ptr<Core::Elements::Element> ele;
 
   if (eletype == "ALE2")
   {
-    if (eledistype != "NURBS4" and eledistype != "NURBS9")
+    if (celltype != Core::FE::CellType::nurbs4 && celltype != Core::FE::CellType::nurbs9)
     {
       ele = std::make_shared<Discret::Elements::Ale2>(id, owner);
     }

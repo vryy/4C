@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-bool Discret::Elements::Beam3r::read_element(const std::string& eletype, const std::string& distype,
-    const Core::IO::InputParameterContainer& container,
+bool Discret::Elements::Beam3r::read_element(const std::string& eletype,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   /* the triad field is discretized with Lagrange polynomials of order num_node()-1;

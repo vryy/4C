@@ -310,8 +310,8 @@ namespace
         read_cell_info(parser, cell_info);
 
         // let the factory create a matching empty element
-        std::shared_ptr<Core::Elements::Element> ele =
-            Core::Communication::factory(eletype, cell_info.cell_type_str, elenumber, 0);
+        std::shared_ptr<Core::Elements::Element> ele = Core::Communication::factory(
+            eletype, Core::FE::string_to_cell_type(cell_info.cell_type_str), elenumber, 0);
         if (!ele) FOUR_C_THROW("element creation failed");
 
         const auto& linedef = ed.get(eletype, cell_info.cell_type);
@@ -320,8 +320,8 @@ namespace
         linedef.fully_parse(parser, data);
 
         ele->set_node_ids_one_based_index(cell_info.nodal_ids);
-        ele->read_element(
-            eletype, cell_info.cell_type_str, data, Core::IO::MeshInput::ElementDataFromCellData{});
+        ele->read_element(eletype, Core::FE::string_to_cell_type(cell_info.cell_type_str), data,
+            Core::IO::MeshInput::ElementDataFromCellData{});
 
         // add element to discretization
         dis_->add_element(ele);
@@ -608,8 +608,6 @@ namespace
         const auto [element_name, cell_type, specific_data] =
             element_definition.unpack_element_data(*current_block_data);
 
-        const std::string cell_type_string = Core::FE::cell_type_to_string(cell_block.cell_type());
-
         FOUR_C_ASSERT_ALWAYS(cell_type == cell_block.cell_type(),
             "Element block '{}' has cell type '{}' but your given element definition for '{}' has "
             "cell type '{}'.",
@@ -620,12 +618,13 @@ namespace
         {
           // Do not yet use the external cell ID. 4C is not yet prepared to deal with this!
           // replace ele_count with cell.external_id once possible
-          auto ele = Core::Communication::factory(element_name, cell_type_string, ele_count, 0);
+          auto ele =
+              Core::Communication::factory(element_name, cell_block.cell_type(), ele_count, 0);
           if (!ele) FOUR_C_THROW("element creation failed");
           ele->set_node_ids(cell.size(), cell.data());
           Core::IO::MeshInput::ElementDataFromCellData element_data{
               cell_block.cell_data(), cell_id_in_block, mesh.converters()};
-          ele->read_element(element_name, cell_type_string, specific_data, element_data);
+          ele->read_element(element_name, cell_block.cell_type(), specific_data, element_data);
 
           user_elements.emplace(ele_count, std::move(ele));
           ele_count++;

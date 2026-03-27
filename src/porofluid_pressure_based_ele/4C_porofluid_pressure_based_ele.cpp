@@ -41,7 +41,7 @@ Core::Communication::ParObject* Discret::Elements::PoroFluidMultiPhaseType::crea
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::PoroFluidMultiPhaseType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "POROFLUIDMULTIPHASE")
   {
@@ -281,7 +281,7 @@ Discret::Elements::PoroFluidMultiPhase::surfaces()
 }
 
 bool Discret::Elements::PoroFluidMultiPhase::read_element(const std::string& eletype,
-    const std::string& distype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // read number of material model
@@ -289,7 +289,7 @@ bool Discret::Elements::PoroFluidMultiPhase::read_element(const std::string& ele
   set_material(0, Mat::factory(material_id));
 
   // set discretization type
-  set_dis_type(Core::FE::string_to_cell_type(distype));
+  set_dis_type(celltype);
 
   return true;
 }

@@ -29,11 +29,11 @@ Core::Communication::ParObject* Discret::Elements::Wall1ScatraType::create(
 
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::Wall1ScatraType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "WALLSCATRA")
   {
-    if (eledistype != "NURBS4" and eledistype != "NURBS9")
+    if (celltype != Core::FE::CellType::nurbs4 && celltype != Core::FE::CellType::nurbs9)
     {
       return std::make_shared<Discret::Elements::Wall1Scatra>(id, owner);
     }
@@ -144,11 +144,11 @@ void Discret::Elements::Wall1Scatra::print(std::ostream& os) const
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 bool Discret::Elements::Wall1Scatra::read_element(const std::string& eletype,
-    const std::string& eledistype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // read base element
-  Wall1::read_element(eletype, eledistype, container, element_data);
+  Wall1::read_element(eletype, celltype, container, element_data);
 
   // read scalar transport implementation type
   auto impltype = container.get<std::string>("TYPE");

@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::Elements::Fluid::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Fluid::read_element(const std::string& eletype, Core::FE::CellType celltype,
     const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
@@ -24,7 +24,7 @@ bool Discret::Elements::Fluid::read_element(const std::string& eletype, const st
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)
-  set_dis_type(Core::FE::string_to_cell_type(distype));
+  set_dis_type(celltype);
 
   std::string na = container.get<std::string>("NA");
   if (na == "ale" or na == "ALE" or na == "Ale")

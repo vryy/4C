@@ -38,7 +38,7 @@ Core::Communication::ParObject* Discret::Elements::RedInterAcinarDepType::create
  |  Create                                                              |
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Discret::Elements::RedInterAcinarDepType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "RED_ACINAR_INTER_DEP")
   {

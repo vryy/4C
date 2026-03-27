@@ -83,7 +83,7 @@ void Discret::Elements::SolidScatraType::setup_element_definition(
 }
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidScatraType::create(
-    const std::string eletype, const std::string elecelltype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "SOLIDSCATRA") return create(id, owner);
   return nullptr;
@@ -165,12 +165,12 @@ void Discret::Elements::SolidScatra::set_params_interface_ptr(const Teuchos::Par
 }
 
 bool Discret::Elements::SolidScatra::read_element(const std::string& eletype,
-    const std::string& celltype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // read base element
   // set cell type
-  celltype_ = Core::FE::string_to_cell_type(celltype);
+  celltype_ = celltype;
 
   // read number of material model
   set_material(0, Mat::factory(Solid::Utils::ReadElement::read_element_material(container)));

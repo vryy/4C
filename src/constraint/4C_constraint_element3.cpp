@@ -31,7 +31,7 @@ Core::Communication::ParObject* Discret::Elements::ConstraintElement3Type::creat
 
 
 std::shared_ptr<Core::Elements::Element> Discret::Elements::ConstraintElement3Type::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "CONSTRELE3")
   {

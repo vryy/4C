@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool Discret::Elements::Ale3::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Ale3::read_element(const std::string& eletype, Core::FE::CellType celltype,
     const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
@@ -22,13 +22,9 @@ bool Discret::Elements::Ale3::read_element(const std::string& eletype, const std
   int material_id = container.get<int>("MAT");
   set_material(0, Mat::factory(material_id));
 
-  Core::FE::CellType shape = Core::FE::string_to_cell_type(distype);
-
-  std::cout << " distype " << distype << std::endl;
-
   Core::FE::GaussRule3D gaussrule;
 
-  switch (shape)
+  switch (celltype)
   {
     case Core::FE::CellType::hex8:
     {
@@ -57,11 +53,11 @@ bool Discret::Elements::Ale3::read_element(const std::string& eletype, const std
       break;
     }
     default:
-      FOUR_C_THROW("Unknown distype {} for ALE3 element", distype);
+      FOUR_C_THROW("Unknown celltype {} for ALE3 element", Core::FE::cell_type_to_string(celltype));
       // just set to something to shutup compiler
       gaussrule = Core::FE::GaussRule3D::undefined;
       break;
-  }  // end switch distype
+  }  // end switch celltype
 
   // set up of materials with GP data (e.g., history variables)
   std::shared_ptr<Mat::So3Material> so3mat =

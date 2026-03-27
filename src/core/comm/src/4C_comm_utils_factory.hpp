@@ -55,13 +55,13 @@ namespace Core::Communication
   allocated depends on the input parameter eletype.
 
   \param eletype (in): A string containing the type of element
-  \param distype (in): A string containing the distype of the element
+  \param celltype (in): A string containing the cell type of the element
   \param id      (in): id of the new element to be created
   \param owner   (in): owner of the new element
 
   */
   std::shared_ptr<Core::Elements::Element> factory(
-      const std::string eletype, const std::string distype, const int id, const int owner);
+      const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner);
 
   //! flag, whether surfaces or lines have to be created in the element_boundary_factory
   enum BoundaryBuildType

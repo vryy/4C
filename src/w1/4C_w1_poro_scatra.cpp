@@ -99,11 +99,11 @@ void Discret::Elements::Wall1PoroScatra<distype>::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 bool Discret::Elements::Wall1PoroScatra<distype>::read_element(const std::string& eletype,
-    const std::string& eledistype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // read base element
-  my::read_element(eletype, eledistype, container, element_data);
+  my::read_element(eletype, celltype, container, element_data);
 
   // read implementation type
   auto impltype = container.get<std::string>("TYPE");

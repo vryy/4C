@@ -417,11 +417,11 @@ namespace Core::IO::GridGenerator
         break;
     }
     // let the factory create a matching empty element
-    std::shared_ptr<Core::Elements::Element> ele = Core::Communication::factory(
-        elementtype, Core::FE::cell_type_to_string(cell_type), eleid, myrank);
+    std::shared_ptr<Core::Elements::Element> ele =
+        Core::Communication::factory(elementtype, cell_type, eleid, myrank);
     ele->set_node_ids(nodeids.size(), &(nodeids[0]));
-    ele->read_element(elementtype, Core::FE::cell_type_to_string(cell_type), ele_data,
-        Core::IO::MeshInput::ElementDataFromCellData{});
+    ele->read_element(
+        elementtype, cell_type, ele_data, Core::IO::MeshInput::ElementDataFromCellData{});
     return ele;
   }
 
@@ -515,11 +515,11 @@ namespace Core::IO::GridGenerator
     }
 
     // let the factory create a matching empty element
-    std::shared_ptr<Core::Elements::Element> ele = Core::Communication::factory(
-        elementtype, FE::cell_type_to_string(cell_type), eleid, myrank);
+    std::shared_ptr<Core::Elements::Element> ele =
+        Core::Communication::factory(elementtype, cell_type, eleid, myrank);
     ele->set_node_ids(nodeids.size(), &(nodeids[0]));
-    ele->read_element(elementtype, FE::cell_type_to_string(cell_type), ele_data,
-        Core::IO::MeshInput::ElementDataFromCellData{});
+    ele->read_element(
+        elementtype, cell_type, ele_data, Core::IO::MeshInput::ElementDataFromCellData{});
     return ele;
   }
 

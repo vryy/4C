@@ -42,7 +42,7 @@ Core::Communication::ParObject* Discret::Elements::FluidHDGWeakCompType::create(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidHDGWeakCompType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "FLUIDHDGWEAKCOMP")
   {
@@ -174,10 +174,10 @@ void Discret::Elements::FluidHDGWeakComp::unpack(Core::Communication::UnpackBuff
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Discret::Elements::FluidHDGWeakComp::read_element(const std::string& eletype,
-    const std::string& distype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
-  bool success = Fluid::read_element(eletype, distype, container, element_data);
+  bool success = Fluid::read_element(eletype, celltype, container, element_data);
   degree_ = container.get<int>("DEG");
 
   completepol_ = container.get<std::optional<bool>>("SPC").value_or(false);

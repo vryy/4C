@@ -108,7 +108,7 @@ void Discret::Elements::SolidPoroPressureVelocityBasedP1Type::setup_element_defi
 
 std::shared_ptr<Core::Elements::Element>
 Discret::Elements::SolidPoroPressureVelocityBasedP1Type::create(
-    const std::string eletype, const std::string elecelltype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "SOLIDPORO_PRESSURE_VELOCITY_BASED_P1") return create(id, owner);
   return nullptr;
@@ -208,12 +208,12 @@ void Discret::Elements::SolidPoroPressureVelocityBasedP1::set_params_interface_p
 }
 
 bool Discret::Elements::SolidPoroPressureVelocityBasedP1::read_element(const std::string& eletype,
-    const std::string& elecelltype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // read base element
   // set cell type
-  celltype_ = Core::FE::string_to_cell_type(elecelltype);
+  celltype_ = celltype;
 
   // set anisotropic_properties
   anisotropic_permeability_property_.directions_.resize(3);

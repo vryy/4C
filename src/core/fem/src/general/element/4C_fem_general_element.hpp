@@ -656,7 +656,7 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Read input for this element
     */
-    virtual bool read_element(const std::string& eletype, const std::string& distype,
+    virtual bool read_element(const std::string& eletype, Core::FE::CellType celltype,
         const Core::IO::InputParameterContainer& container,
         const Core::IO::MeshInput::ElementDataFromCellData& element_data);
 

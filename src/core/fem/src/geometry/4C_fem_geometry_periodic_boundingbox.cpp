@@ -218,7 +218,7 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
 
     // assign nodes to element
     std::shared_ptr<Core::Elements::Element> newele =
-        Core::Communication::factory("VELE3", "Polynomial", 0, 0);
+        Core::Communication::factory("VELE3", Core::FE::CellType::dis_none, 0, 0);
     newele->set_node_ids(8, node_ids);
     boxdiscret_->add_element(newele);
   }

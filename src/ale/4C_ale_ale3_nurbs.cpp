@@ -32,11 +32,11 @@ Core::Communication::ParObject* Discret::Elements::Nurbs::Ale3NurbsType::create(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 std::shared_ptr<Core::Elements::Element> Discret::Elements::Nurbs::Ale3NurbsType::create(
-    const std::string eletype, const std::string eledistype, const int id, const int owner)
+    const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
   if (eletype == "ALE3")
   {
-    if (eledistype == "NURBS8" || eledistype == "NURBS27")
+    if (celltype == Core::FE::CellType::nurbs8 || celltype == Core::FE::CellType::nurbs27)
     {
       return std::make_shared<Discret::Elements::Nurbs::Ale3Nurbs>(id, owner);
     }

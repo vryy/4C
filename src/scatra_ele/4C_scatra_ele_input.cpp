@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
  | read element input                                        fang 02/15 |
  *----------------------------------------------------------------------*/
 bool Discret::Elements::Transport::read_element(const std::string& eletype,
-    const std::string& distype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // read implementation type
@@ -77,7 +77,7 @@ bool Discret::Elements::Transport::read_element(const std::string& eletype,
   set_material(0, Mat::factory(material_id));
 
   // set discretization type
-  set_dis_type(Core::FE::string_to_cell_type(distype));
+  set_dis_type(celltype);
 
   if (material()->material_type() == Core::Materials::m_myocard)
   {

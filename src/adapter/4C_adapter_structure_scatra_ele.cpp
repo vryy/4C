@@ -23,7 +23,7 @@ Inpar::ScaTra::ImplType Adapter::get_sca_tra_impl_type(Core::Elements::Element* 
   Inpar::ScaTra::ImplType impltype(Inpar::ScaTra::impltype_undefined);
 
   // the element type name, needed to cast correctly in the following
-  const std::string eletypename = ele->element_type().name();
+  const std::string& eletypename = ele->element_type().name();
 
   if (eletypename == "Wall1ScatraType")
   {

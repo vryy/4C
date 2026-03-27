@@ -293,8 +293,8 @@ Constraints::MPConstraint3::create_discretization_from_condition(
 
       if (myrank == 0)
       {
-        std::shared_ptr<Core::Elements::Element> constraintele =
-            Core::Communication::factory(element_name, "Polynomial", nodeiter + startID, myrank);
+        std::shared_ptr<Core::Elements::Element> constraintele = Core::Communication::factory(
+            element_name, Core::FE::CellType::dis_none, nodeiter + startID, myrank);
         // set the same global node ids to the ale element
         constraintele->set_node_ids(ngid_ele.size(), ngid_ele.data());
         // add constraint element

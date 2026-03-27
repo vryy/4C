@@ -16,12 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::Elements::Wall1::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Wall1::read_element(const std::string& eletype, Core::FE::CellType celltype,
     const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // set discretization type
-  set_dis_type(Core::FE::string_to_cell_type(distype));
+  set_dis_type(celltype);
 
   thickness_ = container.get<double>("THICK");
   if (thickness_ <= 0) FOUR_C_THROW("WALL element thickness needs to be < 0");

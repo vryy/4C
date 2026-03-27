@@ -102,11 +102,11 @@ void Discret::Elements::MembraneScatra<distype>::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 bool Discret::Elements::MembraneScatra<distype>::read_element(const std::string& eletype,
-    const std::string& eledistype, const Core::IO::InputParameterContainer& container,
+    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // read base element
-  Membrane<distype>::read_element(eletype, eledistype, container, element_data);
+  Membrane<distype>::read_element(eletype, celltype, container, element_data);
 
   // read scalar transport implementation type
   std::string impltype = container.get<std::string>("TYPE");
