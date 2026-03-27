@@ -13,6 +13,7 @@
 #include "4C_io_input_field.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_io_input_spec_validators.hpp"
+#include "4C_linalg_tensor_generators.hpp"
 #include "4C_linalg_utils_densematrix_funct.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_mat_fiber_interpolation.hpp"
@@ -4172,6 +4173,10 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 parameter<bool>(
                     "ISOCHORIC", {.description = "Flag whether prestretch tensor is isochoric",
                                      .default_value = false}),
+                interpolated_input_field<Core::LinAlg::SymmetricTensor<double, 3, 3>>("PRESTRETCH",
+                    {.description = "Optional initial prestretch tensor used as starting value. "
+                                    "If not provided, the identity tensor is used.",
+                        .default_value = Core::LinAlg::TensorGenerators::identity<double, 3, 3>}),
             },
             {.description = "Simple iterative prestress strategy for any geometry. Needed to be "
                             "used within the mixture framework."});

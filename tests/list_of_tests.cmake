@@ -2554,6 +2554,7 @@ four_c_test(TEST_FILE xfsi_push_1D_1st_order.4C.yaml)
 four_c_test(TEST_FILE xfsi_push_1D_2nd_order.4C.yaml)
 
 # Tests requiring VTK
+four_c_test(TEST_FILE mixture_prestress_iterative_prescribed.4C.yaml NP 2 REQUIRED_DEPENDENCIES VTK)
 four_c_test(TEST_FILE ssi_homogenized_constraint_mixture_qcyl.4C.yaml NP 2 REQUIRED_DEPENDENCIES VTK)
 four_c_test(TEST_FILE ssi_homogenized_constraint_mixture_prestress_qcyl.4C.yaml NP 2 REQUIRED_DEPENDENCIES VTK)
 four_c_test(TEST_FILE solid_vtu_input.4C.yaml NP 2 REQUIRED_DEPENDENCIES VTK RETURN_AS current)

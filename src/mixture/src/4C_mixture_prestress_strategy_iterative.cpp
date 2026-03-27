@@ -9,7 +9,6 @@
 
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
-#include "4C_linalg_tensor_generators.hpp"
 #include "4C_linalg_tensor_svd.hpp"
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_elast_isoneohooke.hpp"
@@ -25,7 +24,10 @@ Mixture::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : PrestressStrategy(matdata),
       isochoric_(matdata.parameters.get<bool>("ISOCHORIC")),
-      is_active_(matdata.parameters.get<bool>("ACTIVE"))
+      is_active_(matdata.parameters.get<bool>("ACTIVE")),
+      initial_prestretch_(matdata.parameters
+              .get<Core::IO::InterpolatedInputField<Core::LinAlg::SymmetricTensor<double, 3, 3>>>(
+                  "PRESTRETCH"))
 {
 }
 
@@ -55,8 +57,7 @@ void Mixture::IterativePrestressStrategy::evaluate_prestress(const MixtureRule& 
     const Teuchos::ParameterList& params, const Mat::EvaluationContext<3>& context, int gp,
     int eleGID)
 {
-  // Start with zero prestretch
-  G = Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
+  G = params_->initial_prestretch_.interpolate(eleGID, context.xi->as_span());
 }
 
 void Mixture::IterativePrestressStrategy::update(

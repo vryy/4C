@@ -826,6 +826,17 @@ namespace Core::IO
        * used to implement input_field().
        */
       StoreFunction<DefaultStorage> transform_data{nullptr};
+
+      /**
+       * Whether the selection is required or optional.
+       */
+      bool required{true};
+
+      /**
+       * An optional function that stores a default value into the container when the selection
+       * is absent from the input. Setting this implies has_default_value = true.
+       */
+      std::optional<std::function<void(Storage&)>> default_value_setter{};
     };
 
     template <typename T>
@@ -884,6 +895,19 @@ namespace Core::IO
        * store the InputField in a struct.
        */
       StoreFunction<InputField> store{nullptr};
+
+      /**
+       * Whether the InputField is required or optional. If false, the field may be absent from
+       * the input. If a default_value is set, it is stored when the field is absent.
+       */
+      bool required{true};
+
+      /**
+       * An optional default value of the underlying value type T. When the InputField is absent
+       * from the input, a constant InputField wrapping this value is stored automatically.
+       * Implies required = false.
+       */
+      std::optional<typename InputField::value_type> default_value{};
     };
 
     template <typename Number, Utils::CompileTimeString... variables>
@@ -985,6 +1009,9 @@ namespace Core::IO
 
       std::function<void(InputSpecBuilders::Storage& my_storage)> init_my_storage{};
       InputSpecBuilders::StoreFunction<InputSpecBuilders::Storage> move_my_storage{};
+
+      bool required{true};
+      std::optional<std::function<void(InputSpecBuilders::Storage&)>> default_value_setter{};
 
       void parse(ValueParser& parser, InputParameterContainer& container) const;
       bool match(ConstYamlNodeRef node, InputSpecBuilders::Storage& container,
@@ -2259,6 +2286,19 @@ bool Core::IO::Internal::SelectionSpec<T>::match(ConstYamlNodeRef node,
 
   if (!group_exists_nested && !group_node_is_input)
   {
+    if (default_value_setter.has_value())
+    {
+      match_entry.state = IO::Internal::MatchEntry::State::defaulted;
+      set_default_value(container);
+      return true;
+    }
+
+    if (!required)
+    {
+      match_entry.state = IO::Internal::MatchEntry::State::not_required;
+      return true;
+    }
+
     return false;
   }
 
@@ -2352,7 +2392,7 @@ void Core::IO::Internal::SelectionSpec<T>::emit_metadata(
   {
     emit_value_as_yaml(node.wrap(node.node["description"]), data.description);
   }
-  emit_value_as_yaml(node.wrap(node.node["required"]), true);
+  emit_value_as_yaml(node.wrap(node.node["required"]), required);
 
   node.node["choices"] |= ryml::SEQ;
   for (const auto& [choice, spec] : choices)
@@ -2397,7 +2437,9 @@ template <typename T>
 void Core::IO::Internal::SelectionSpec<T>::set_default_value(
     InputSpecBuilders::Storage& container) const
 {
-  FOUR_C_THROW("Internal error: set_default_value() called on a SelectionSpec.");
+  FOUR_C_ASSERT(default_value_setter.has_value(),
+      "Internal error: set_default_value() called on a SelectionSpec without a default value.");
+  (*default_value_setter)(container);
 }
 
 
@@ -2521,8 +2563,8 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::selection(
   Internal::InputSpecImpl::CommonData common_data{
       .name = name,
       .description = data.description,
-      .required = true,
-      .has_default_value = false,
+      .required = data.required && !data.default_value_setter.has_value(),
+      .has_default_value = data.default_value_setter.has_value(),
       .type = Internal::InputSpecType::selection,
       .stores_to =
           data.transform_data ? &data.transform_data.stores_to() : &move_my_storage.stores_to(),
@@ -2552,6 +2594,8 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::selection(
               },
           .init_my_storage = [](Storage& storage) { storage.emplace<StorageType>(); },
           .move_my_storage = std::move(move_my_storage),
+          .required = data.required && !data.default_value_setter.has_value(),
+          .default_value_setter = std::move(data.default_value_setter),
       },
       common_data);
 }
@@ -2562,6 +2606,19 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::input_field(
     const std::string name, InputFieldData<InputField<T>> data)
 {
   auto store = data.store ? data.store : in_container<InputField<T>>(name);
+
+  std::optional<std::function<void(Storage&)>> default_value_setter;
+  if (data.default_value.has_value())
+  {
+    default_value_setter = [store_fn = store, default_value = *data.default_value](
+                               Storage& container)
+    {
+      InputField<T> default_field(default_value);
+      [[maybe_unused]] auto [ok, _] = store_fn(container, std::move(default_field));
+      FOUR_C_ASSERT(ok, "Internal error: could not set default value for input field.");
+    };
+  }
+
   auto spec = selection<Internal::InputFieldType>(name,
       {
           parameter<T>("constant", {.description = "Constant value for the field."}),
@@ -2575,6 +2632,8 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::input_field(
       {
           .description = data.description,
           .transform_data = Internal::make_input_field_data_transform<T>(name, std::move(store)),
+          .required = data.required && !data.default_value.has_value(),
+          .default_value_setter = std::move(default_value_setter),
       });
   return spec;
 };
@@ -2585,6 +2644,20 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::interpolated_input_field(
 {
   auto store =
       data.store ? data.store : in_container<InterpolatedInputField<T, Interpolation>>(name);
+
+  std::optional<std::function<void(Storage&)>> default_value_setter;
+  if (data.default_value.has_value())
+  {
+    default_value_setter = [store_fn = store, default_value = *data.default_value](
+                               Storage& container)
+    {
+      InterpolatedInputField<T, Interpolation> default_field(default_value);
+      [[maybe_unused]] auto [ok, _] = store_fn(container, std::move(default_field));
+      FOUR_C_ASSERT(
+          ok, "Internal error: could not set default value for interpolated input field.");
+    };
+  }
+
   auto spec = selection<Internal::InputFieldType>(name,
       {
           parameter<T>("constant", {.description = "Constant value for the field."}),
@@ -2598,6 +2671,8 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::interpolated_input_field(
       {
           .description = data.description,
           .transform_data = Internal::make_input_field_data_transform<T>(name, std::move(store)),
+          .required = data.required && !data.default_value.has_value(),
+          .default_value_setter = std::move(default_value_setter),
       });
   return spec;
 };

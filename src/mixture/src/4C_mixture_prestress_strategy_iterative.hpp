@@ -11,7 +11,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
+#include "4C_io_input_field.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_mixture_prestress_strategy.hpp"
 
@@ -50,6 +52,9 @@ namespace Mixture
       const bool isochoric_;
       /// Flag whether the prestretch tensor should be updated
       const bool is_active_;
+      /// Initial prestretch tensor. Defaults to the identity tensor if not specified in the input.
+      const Core::IO::InterpolatedInputField<Core::LinAlg::SymmetricTensor<double, 3, 3>>
+          initial_prestretch_;
       /// @}
     };
   }  // namespace PAR

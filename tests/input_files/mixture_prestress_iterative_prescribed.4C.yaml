@@ -1,0 +1,213 @@
+TITLE:
+  - "This test covers the functionality of the iterative prestress strategy with a prescribed initial
+    prestretch. The test represents the prestressing performed on a single element in Maes & Famaey 2023
+    https://doi.org/10.1016/j.jmbbm.2023.105733 paragraph 2.6."
+PROBLEM TYPE:
+  PROBLEMTYPE: "Structure"
+IO:
+  STRUCT_DISP: true
+  VERBOSITY: "Standard"
+  STRUCT_STRAIN: "gl"
+  STRUCT_STRESS: "cauchy"
+  WRITE_FINAL_STATE: true
+  WRITE_INITIAL_STATE: false
+IO/RUNTIME VTK OUTPUT:
+  INTERVAL_STEPS: 1
+IO/RUNTIME VTK OUTPUT/STRUCTURE:
+  OUTPUT_STRUCTURE: true
+  DISPLACEMENT: true
+  ELEMENT_OWNER: true
+  STRESS_STRAIN: true
+  GAUSS_POINT_DATA_OUTPUT_TYPE: "gauss_points"
+SOLVER 1:
+  NAME: "Structure_Solver"
+  SOLVER: "MUMPS"
+STRUCTURAL DYNAMIC:
+  INT_STRATEGY: "Standard"
+  DYNAMICTYPE: "Statics"
+  RESULTSEVERY: 0
+  RESTARTEVERY: 0
+  TIMESTEP: 0.1
+  NUMSTEP: 2000
+  MAXTIME: 200.0000000001
+  TOLDISP: 1e-09
+  TOLRES: 1e-09
+  LINEAR_SOLVER: 1
+  LOADLIN: true
+  PRESTRESS: "material_iterative"
+  PRESTRESSTIME: 200.0000000001
+  PRESTRESSTOLDISP: 1.0 # This is set large to ensure that the desired MINLOADSTEPS below from the paper are met
+  PRESTRESSMINLOADSTEPS: 20
+STRUCTURE GEOMETRY:
+  FILE: "vtu/homogenized-constrained-mixture-patch.vtu"
+  ELEMENT_BLOCKS:
+    - ID: 1
+      SOLID:
+        HEX8:
+          MAT: 1
+          KINEM: "nonlinear"
+MATERIALS:
+  - MAT: 1
+    MAT_Mixture:
+      MATIDSCONST: [11, 12, 13, 14, 15]
+      MATIDMIXTURERULE: 10
+  - MAT: 10
+    MIX_GrowthRemodelMixtureRule:
+      GROWTH_STRATEGY: 100
+      MASSFRAC: [0.8, 0.05, 0.05, 0.05, 0.05]
+      DENS: 1.0
+  - MAT: 100
+    MIX_GrowthStrategy_Anisotropic:
+      GROWTH_DIRECTION:
+        constant: [1.0, 0.0, 0.0]
+  - MAT: 11
+    MIX_Constituent_ElastHyper:
+      NUMMAT: 2
+      MATIDS: [111, 112]
+      PRESTRESS_STRATEGY: 119
+  - MAT: 111
+    ELAST_IsoNeoHooke:
+      MUE:
+        constant: 0.07625
+  - MAT: 112
+    ELAST_VolSussmanBathe:
+      KAPPA: 0.7625
+  - MAT: 119
+    MIX_Prestress_Strategy_Iterative:
+      ISOCHORIC: false
+      ACTIVE: true
+      PRESTRETCH:
+        constant: [[0.912870929, 0.0, 0.0], [0.0, 0.912870929, 0.0], [0.0, 0.0, 1.2]]
+  - MAT: 12
+    MIX_Constituent_ExplicitRemodelFiber:
+      FIBER_MATERIAL_ID: 110
+      DECAY_TIME: 101.0
+      GROWTH_CONSTANT: 0.0009900990099009901
+      DEPOSITION_STRETCH: 1.1
+      ENABLE_GROWTH: false
+      ENABLE_BASAL_MASS_PRODUCTION: true
+      ORIENTATION:
+        constant: [0.0, 1.0, 0.0]
+      INELASTIC_GROWTH: true
+  - MAT: 13
+    MIX_Constituent_ExplicitRemodelFiber:
+      FIBER_MATERIAL_ID: 110
+      DECAY_TIME: 101.0
+      GROWTH_CONSTANT: 0.0009900990099009901
+      DEPOSITION_STRETCH: 1.1
+      ENABLE_GROWTH: false
+      ENABLE_BASAL_MASS_PRODUCTION: true
+      ORIENTATION:
+        constant: [0.0, 0.0, 1.0]
+      INELASTIC_GROWTH: true
+  - MAT: 130
+    MIX_Constituent_RemodelFiber_Material_Exponential:
+      K1: 0.578
+      K2: 1.23
+      COMPRESSION: false
+  - MAT: 14
+    MIX_Constituent_ExplicitRemodelFiber:
+      FIBER_MATERIAL_ID: 110
+      DECAY_TIME: 101.0
+      GROWTH_CONSTANT: 0.0009900990099009901
+      DEPOSITION_STRETCH: 1.1
+      ENABLE_GROWTH: false
+      ENABLE_BASAL_MASS_PRODUCTION: true
+      ORIENTATION:
+        constant: [0.0, 0.9238795325112867, 0.3826834323650898]
+      INELASTIC_GROWTH: true
+  - MAT: 140
+    MIX_Constituent_RemodelFiber_Material_Exponential:
+      K1: 0.578
+      K2: 1.23
+      COMPRESSION: false
+  - MAT: 15
+    MIX_Constituent_ExplicitRemodelFiber:
+      FIBER_MATERIAL_ID: 110
+      DECAY_TIME: 101.0
+      GROWTH_CONSTANT: 0.0009900990099009901
+      DEPOSITION_STRETCH: 1.1
+      ENABLE_GROWTH: false
+      ENABLE_BASAL_MASS_PRODUCTION: true
+      ORIENTATION:
+        constant: [0.0, 0.9238795325112867, -0.3826834323650898]
+      INELASTIC_GROWTH: true
+  - MAT: 110
+    MIX_Constituent_RemodelFiber_Material_Exponential:
+      K1: 0.578
+      K2: 1.23
+      COMPRESSION: false
+DESIGN SURF DIRICH CONDITIONS:
+  - E: 2
+    ENTITY_TYPE: "node_set_id"
+    NUMDOF: 3
+    ONOFF: [1, 0, 0]
+    VAL: [0.0, 0.0, 0.0]
+    FUNCT: [0, 0, 0]
+  - E: 3
+    ENTITY_TYPE: "node_set_id"
+    NUMDOF: 3
+    ONOFF: [0, 0, 1]
+    VAL: [0.0, 0.0, 0.0]
+    FUNCT: [0, 0, 0]
+  - E: 5
+    ENTITY_TYPE: "node_set_id"
+    NUMDOF: 3
+    ONOFF: [0, 0, 1]
+    VAL: [0.0, 0.0, 0.0]
+    FUNCT: [0, 0, 0]
+  - E: 6
+    ENTITY_TYPE: "node_set_id"
+    NUMDOF: 3
+    ONOFF: [0, 1, 0]
+    VAL: [0.0, 0.0, 0.0]
+    FUNCT: [0, 0, 0]
+DESIGN SURF NEUMANN CONDITIONS:
+  - E: 4
+    ENTITY_TYPE: "node_set_id"
+    NUMDOF: 3
+    ONOFF: [1, 0, 0]
+    VAL: [1.0, 0.0, 0.0]
+    FUNCT: [1, 0, 0]
+    TYPE: "orthopressure"
+FUNCT1:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "v"
+  - VARIABLE: 0
+    NAME: "v"
+    TYPE: "linearinterpolation"
+    NUMPOINTS: 3
+    TIMES: [0, 1, 200.10000000009998]
+    VALUES: [0.1, 0.1, 0.1]
+FUNCT2:
+  - SYMBOLIC_FUNCTION_OF_TIME: "v"
+  - VARIABLE: 0
+    NAME: "v"
+    TYPE: "linearinterpolation"
+    NUMPOINTS: 3
+    TIMES: [0.0, 1.0, 200.10000000009998]
+    VALUES: [1.1, 1.1, 1.1]
+RESULT DESCRIPTION:
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 1
+      QUANTITY: "dispx"
+      VALUE: 1.84976129836196318e-04
+      TOLERANCE: 1e-06
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 6
+      QUANTITY: "dispy"
+      VALUE: 2.11809010640181855e-04
+      TOLERANCE: 1e-06
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 8
+      QUANTITY: "dispy"
+      VALUE: 2.11809010639350950e-04
+      TOLERANCE: 1e-06
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 2
+      QUANTITY: "dispx"
+      VALUE: 0
+      TOLERANCE: 1.84976129836364044e-04

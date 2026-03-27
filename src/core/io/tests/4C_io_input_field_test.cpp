@@ -174,4 +174,45 @@ namespace
       EXPECT_EQ(data.stiffness.at(3), 5.5);
     }
   }
+  TEST(InputField, DefaultValueUsedWhenFieldAbsent)
+  {
+    auto spec = input_field<double>(
+        "stiffness", {.description = "A stiffness field", .default_value = 10.0});
+
+    EXPECT_FALSE(spec.impl().required());
+    EXPECT_TRUE(spec.impl().has_default_value());
+
+    ryml::Tree tree = init_yaml_tree_with_exceptions();
+    ryml::NodeRef root = tree.rootref();
+    ryml::parse_in_arena("{}", root);
+
+    ConstYamlNodeRef node(root, "");
+    InputParameterContainer container;
+    spec.match(node, container);
+
+    const auto& field = container.get<InputField<double>>("stiffness");
+    EXPECT_EQ(field.at(0), 10.0);
+    EXPECT_EQ(field.at(99), 10.0);
+  }
+
+  TEST(InputField, DefaultValueUsedWhenInterpolatedFieldAbsent)
+  {
+    auto spec = interpolated_input_field<double>(
+        "scalar1", {.description = "A scalar field", .default_value = 12.00});
+
+    EXPECT_FALSE(spec.impl().required());
+    EXPECT_TRUE(spec.impl().has_default_value());
+
+    ryml::Tree tree = init_yaml_tree_with_exceptions();
+    ryml::NodeRef root = tree.rootref();
+    ryml::parse_in_arena("{}", root);
+
+    ConstYamlNodeRef node(root, "");
+    InputParameterContainer container;
+    spec.match(node, container);
+
+    const auto& field = container.get<InterpolatedInputField<double>>("scalar1");
+    EXPECT_NEAR(field.interpolate(0, std::array{0.0, 0.0, 0.0}), 12.00, 1e-12);
+  }
+
 }  // namespace
