@@ -57,7 +57,8 @@ namespace
   }
 }  // namespace
 
-int Discret::Elements::SolidPoroPressureVelocityBased::evaluate(Teuchos::ParameterList& params,
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureVelocityBased<dim>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -302,7 +303,8 @@ int Discret::Elements::SolidPoroPressureVelocityBased::evaluate(Teuchos::Paramet
 
 
 
-double Discret::Elements::SolidPoroPressureVelocityBased::get_normal_cauchy_stress_at_xi(
+template <unsigned dim>
+double Discret::Elements::SolidPoroPressureVelocityBased<dim>::get_normal_cauchy_stress_at_xi(
     const std::vector<double>& disp, const std::optional<std::vector<double>>& pressures,
     const Core::LinAlg::Tensor<double, 3>& xi, const Core::LinAlg::Tensor<double, 3>& n,
     const Core::LinAlg::Tensor<double, 3>& dir,
@@ -350,17 +352,17 @@ double Discret::Elements::SolidPoroPressureVelocityBased::get_normal_cauchy_stre
               (*linearizations.d_cauchyndir_dp)(node, 0) =
                   -n_dot_dir * shape_functions.shapefunctions_(node);
 
-            for (unsigned dim = 0; dim < 3; ++dim)
+            for (unsigned i = 0; i < dim; ++i)
             {
               if (linearizations.solid.d_cauchyndir_dn)
-                (*linearizations.solid.d_cauchyndir_dn)(dim, 0) -= pressure_at_xi * dir(dim);
+                (*linearizations.solid.d_cauchyndir_dn)(i, 0) -= pressure_at_xi * dir(i);
 
               if (linearizations.solid.d_cauchyndir_ddir)
-                (*linearizations.solid.d_cauchyndir_ddir)(dim, 0) -= pressure_at_xi * n(dim);
+                (*linearizations.solid.d_cauchyndir_ddir)(i, 0) -= pressure_at_xi * n(i);
 
               if (linearizations.solid.d_cauchyndir_dxi)
-                (*linearizations.solid.d_cauchyndir_dxi)(dim, 0) -=
-                    (*pressures)[node] * shape_functions.derivatives_(dim, node) * n_dot_dir;
+                (*linearizations.solid.d_cauchyndir_dxi)(i, 0) -=
+                    (*pressures)[node] * shape_functions.derivatives_(i, node) * n_dot_dir;
             }
           }
         }
@@ -370,7 +372,8 @@ double Discret::Elements::SolidPoroPressureVelocityBased::get_normal_cauchy_stre
   return cauchy_stress_n_dir;
 }
 
-int Discret::Elements::SolidPoroPressureVelocityBased::evaluate_neumann(
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureVelocityBased<dim>::evaluate_neumann(
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     const Core::Conditions::Condition& condition, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -379,4 +382,21 @@ int Discret::Elements::SolidPoroPressureVelocityBased::evaluate_neumann(
       "Cannot yet evaluate volume neumann forces within the pressure-velocity based poro "
       "implementation.");
 }
+
+template int Discret::Elements::SolidPoroPressureVelocityBased<3>::evaluate(
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+    Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3);
+template double
+Discret::Elements::SolidPoroPressureVelocityBased<3>::get_normal_cauchy_stress_at_xi(
+    const std::vector<double>& disp, const std::optional<std::vector<double>>& pressures,
+    const Core::LinAlg::Tensor<double, 3>& xi, const Core::LinAlg::Tensor<double, 3>& n,
+    const Core::LinAlg::Tensor<double, 3>& dir,
+    SolidPoroCauchyNDirLinearizations<3>& linearizations);
+template int Discret::Elements::SolidPoroPressureVelocityBased<3>::evaluate_neumann(
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    const Core::Conditions::Condition& condition, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseMatrix* elemat1);
+
 FOUR_C_NAMESPACE_CLOSE

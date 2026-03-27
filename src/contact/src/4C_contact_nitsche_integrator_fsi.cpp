@@ -251,7 +251,7 @@ double CONTACT::Utils::solid_cauchy_at_xi(CONTACT::Element* cele,
   }
   else
   {
-    if (auto* solid_ele = dynamic_cast<Discret::Elements::SolidPoroPressureVelocityBased*>(
+    if (auto* solid_ele = dynamic_cast<Discret::Elements::SolidPoroPressureVelocityBased<3>*>(
             cele->parent_element());
         solid_ele != nullptr)
     {

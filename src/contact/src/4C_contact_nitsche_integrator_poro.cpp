@@ -192,7 +192,7 @@ void CONTACT::IntegratorNitschePoro::so_ele_cauchy(Mortar::Element& moEle, doubl
           Core::LinAlg::reinterpret_as_tensor<3>(normal),
           Core::LinAlg::reinterpret_as_tensor<3>(direction), cauchy_linearizations);
     }
-    else if (auto* solid_ele = dynamic_cast<Discret::Elements::SolidPoroPressureVelocityBased*>(
+    else if (auto* solid_ele = dynamic_cast<Discret::Elements::SolidPoroPressureVelocityBased<3>*>(
                  moEle.parent_element());
         solid_ele != nullptr)
     {
@@ -214,7 +214,7 @@ void CONTACT::IntegratorNitschePoro::so_ele_cauchy(Mortar::Element& moEle, doubl
   }
   else
   {
-    if (auto* solid_ele = dynamic_cast<Discret::Elements::SolidPoroPressureVelocityBased*>(
+    if (auto* solid_ele = dynamic_cast<Discret::Elements::SolidPoroPressureVelocityBased<3>*>(
             moEle.parent_element());
         solid_ele != nullptr)
     {

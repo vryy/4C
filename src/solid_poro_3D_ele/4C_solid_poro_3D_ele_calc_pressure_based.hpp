@@ -57,7 +57,7 @@ namespace Discret
       void add_bodyforce_contribution_to_nonlinear_force_stiffness(
           const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
           Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::Solid::KinemType& kinematictype,
-          const Core::LinAlg::Tensor<double, 3>& bodyforce_contribution,
+          const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>& bodyforce_contribution,
           const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
           Core::LinAlg::SerialDenseMatrix* stiffness_matrix);

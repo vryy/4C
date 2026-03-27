@@ -39,7 +39,7 @@ namespace Solid::Elements
 
 namespace Discret::Elements
 {
-
+  template <unsigned dim>
   class SolidPoroPressureVelocityBasedP1Type : public Core::Elements::ElementType
   {
    public:
@@ -56,7 +56,7 @@ namespace Discret::Elements
 
     [[nodiscard]] std::string name() const override
     {
-      return "SolidPoroPressureVelocityBasedP1Type";
+      return "SolidPoroPressureVelocityBasedP1Type<" + std::to_string(dim) + ">";
     }
 
     void nodal_block_information(Core::Elements::Element* dwele, int& numdf, int& dimns) override;
@@ -72,8 +72,11 @@ namespace Discret::Elements
   };  // class SolidPoroType
 
 
+  template <unsigned dim>
   class SolidPoroPressureVelocityBasedP1 : public Core::Elements::Element
   {
+    friend class SolidPoroPressureVelocityBasedP1Type<dim>;
+
    public:
     //! @name Constructors and destructors and related methods
     //!@{
@@ -92,7 +95,7 @@ namespace Discret::Elements
 
     [[nodiscard]] int unique_par_object_id() const override
     {
-      return SolidPoroPressureVelocityBasedP1Type::instance().unique_par_object_id();
+      return SolidPoroPressureVelocityBasedP1Type<dim>::instance().unique_par_object_id();
     };
 
     [[nodiscard]] int num_line() const override;
@@ -120,7 +123,7 @@ namespace Discret::Elements
 
     [[nodiscard]] Core::Elements::ElementType& element_type() const override
     {
-      return SolidPoroPressureVelocityBasedP1Type::instance();
+      return SolidPoroPressureVelocityBasedP1Type<dim>::instance();
     }
 
     bool read_element(const std::string& eletype, Core::FE::CellType celltype,
@@ -213,7 +216,7 @@ namespace Discret::Elements
     Core::FE::CellType celltype_{Core::FE::CellType::dis_none};
 
     //! solid element properties
-    SolidElementProperties<3> solid_ele_property_{};
+    SolidElementProperties<dim> solid_ele_property_{};
 
     //! additional poro element properties
     SolidPoroElementProperties poro_ele_property_{};
@@ -228,7 +231,7 @@ namespace Discret::Elements
     std::shared_ptr<FourC::Solid::Elements::ParamsInterface> solid_interface_ptr_;
 
     //! element calculation holding one of the implemented variants
-    std::optional<SolidCalcVariant<3>> solid_calc_variant_;
+    std::optional<SolidCalcVariant<dim>> solid_calc_variant_;
 
     //! poro element calculation holding one of the implemented variants
     SolidPoroPressureVelocityBasedP1CalcVariant solidporo_press_vel_based_calc_variant_;

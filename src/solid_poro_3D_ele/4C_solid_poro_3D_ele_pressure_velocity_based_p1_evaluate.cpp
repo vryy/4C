@@ -25,11 +25,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-int Discret::Elements::SolidPoroPressureVelocityBasedP1::evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
-    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
-    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
-    Core::LinAlg::SerialDenseVector& elevec3)
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureVelocityBasedP1<dim>::evaluate(
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+    Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   FOUR_C_ASSERT(solid_calc_variant_.has_value(),
       "The solid calculation interface is not initialized for element id {}.", id());
@@ -44,7 +45,7 @@ int Discret::Elements::SolidPoroPressureVelocityBasedP1::evaluate(Teuchos::Param
   {
     initial_porosity_ = Core::FE::extract_values(*discretization.get_state(0, "displacement"),
         get_reduced_porosity_location_array(
-            la[0].lm_, Core::FE::get_number_of_element_volumes(shape()), 3));
+            la[0].lm_, Core::FE::get_number_of_element_volumes(shape()), dim));
   }
 
   // get ptr to interface to time integration
@@ -60,7 +61,6 @@ int Discret::Elements::SolidPoroPressureVelocityBasedP1::evaluate(Teuchos::Param
       });
 
   const int num_nodes = Core::FE::get_number_of_element_nodes(shape());
-  constexpr int dim = 3;
   int num_displ_dofs = num_nodes * dim;
 
   switch (action)
@@ -365,7 +365,8 @@ int Discret::Elements::SolidPoroPressureVelocityBasedP1::evaluate(Teuchos::Param
 }
 
 
-int Discret::Elements::SolidPoroPressureVelocityBasedP1::evaluate_neumann(
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureVelocityBasedP1<dim>::evaluate_neumann(
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     const Core::Conditions::Condition& condition, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -374,4 +375,16 @@ int Discret::Elements::SolidPoroPressureVelocityBasedP1::evaluate_neumann(
       "Cannot yet evaluate volume neumann forces within the pressure-velocity based poro p1 "
       "implementation.");
 }
+
+
+template int Discret::Elements::SolidPoroPressureVelocityBasedP1<3>::evaluate(
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+    Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3);
+template int Discret::Elements::SolidPoroPressureVelocityBasedP1<3>::evaluate_neumann(
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    const Core::Conditions::Condition& condition, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseMatrix* elemat1);
+
 FOUR_C_NAMESPACE_CLOSE

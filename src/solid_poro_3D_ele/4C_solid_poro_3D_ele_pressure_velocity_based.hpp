@@ -40,6 +40,7 @@ namespace Solid::Elements
 namespace Discret::Elements
 {
 
+  template <unsigned dim>
   class SolidPoroPressureVelocityBasedType : public Core::Elements::ElementType
   {
    public:
@@ -54,7 +55,10 @@ namespace Discret::Elements
 
     Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-    [[nodiscard]] std::string name() const override { return "SolidPoroPressureVelocityBasedType"; }
+    [[nodiscard]] std::string name() const override
+    {
+      return "SolidPoroPressureVelocityBasedType<" + std::to_string(dim) + ">";
+    }
 
     void nodal_block_information(Core::Elements::Element* dwele, int& numdf, int& dimns) override;
 
@@ -69,9 +73,10 @@ namespace Discret::Elements
   };  // class SolidPoroType
 
 
+  template <unsigned dim>
   class SolidPoroPressureVelocityBased : public Core::Elements::Element
   {
-    friend class SolidPoroType;
+    friend class SolidPoroPressureVelocityBasedType<dim>;
 
    public:
     //! @name Constructors and destructors and related methods
@@ -91,7 +96,7 @@ namespace Discret::Elements
 
     [[nodiscard]] int unique_par_object_id() const override
     {
-      return SolidPoroPressureVelocityBasedType::instance().unique_par_object_id();
+      return SolidPoroPressureVelocityBasedType<dim>::instance().unique_par_object_id();
     };
 
     [[nodiscard]] int num_line() const override;
@@ -104,7 +109,7 @@ namespace Discret::Elements
 
     std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
-    [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
+    [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return dim; }
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
@@ -116,7 +121,7 @@ namespace Discret::Elements
 
     [[nodiscard]] Core::Elements::ElementType& element_type() const override
     {
-      return SolidPoroPressureVelocityBasedType::instance();
+      return SolidPoroPressureVelocityBasedType<dim>::instance();
     }
 
     bool read_element(const std::string& eletype, Core::FE::CellType celltype,
@@ -231,7 +236,7 @@ namespace Discret::Elements
     Core::FE::CellType celltype_{Core::FE::CellType::dis_none};
 
     //! solid element properties
-    SolidElementProperties<3> solid_ele_property_{};
+    SolidElementProperties<dim> solid_ele_property_{};
 
     //! additional poro element properties
     SolidPoroElementProperties poro_ele_property_{};

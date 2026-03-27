@@ -12,8 +12,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-int Discret::Elements::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& params,
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureBased<dim>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -260,7 +260,8 @@ int Discret::Elements::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& 
   }
 }
 
-int Discret::Elements::SolidPoroPressureBased::evaluate_neumann(Teuchos::ParameterList& params,
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureBased<dim>::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -268,4 +269,14 @@ int Discret::Elements::SolidPoroPressureBased::evaluate_neumann(Teuchos::Paramet
   FOUR_C_THROW("not implemented");
   return 1;
 }
+
+template int Discret::Elements::SolidPoroPressureBased<3>::evaluate(Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3);
+template int Discret::Elements::SolidPoroPressureBased<3>::evaluate_neumann(
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    const Core::Conditions::Condition& condition, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseMatrix* elemat1);
 FOUR_C_NAMESPACE_CLOSE

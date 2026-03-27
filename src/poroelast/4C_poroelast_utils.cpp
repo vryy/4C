@@ -36,9 +36,9 @@ FOUR_C_NAMESPACE_OPEN
 bool PoroElast::Utils::is_poro_element(const Core::Elements::Element* actele)
 {
   // all poro elements need to be listed here
-  return actele->element_type() == Discret::Elements::SolidPoroPressureBasedType::instance() or
+  return actele->element_type() == Discret::Elements::SolidPoroPressureBasedType<3>::instance() or
          actele->element_type() ==
-             Discret::Elements::SolidPoroPressureVelocityBasedType::instance() or
+             Discret::Elements::SolidPoroPressureVelocityBasedType<3>::instance() or
          actele->element_type() == Discret::Elements::WallTri3PoroType::instance() or
          actele->element_type() == Discret::Elements::WallQuad4PoroType::instance() or
          actele->element_type() == Discret::Elements::WallQuad9PoroType::instance() or
@@ -51,7 +51,7 @@ bool PoroElast::Utils::is_poro_p1_element(const Core::Elements::Element* actele)
 {
   // all poro-p1 elements need to be listed here
   return actele->element_type() ==
-             Discret::Elements::SolidPoroPressureVelocityBasedP1Type::instance() or
+             Discret::Elements::SolidPoroPressureVelocityBasedP1Type<3>::instance() or
          actele->element_type() == Discret::Elements::WallQuad4PoroP1Type::instance() or
          actele->element_type() == Discret::Elements::WallTri3PoroP1Type::instance() or
          actele->element_type() == Discret::Elements::WallQuad9PoroP1Type::instance();
@@ -458,7 +458,8 @@ void PoroElast::Utils::PoroMaterialStrategy::assign_material1_to2(
   auto* fluid = dynamic_cast<Discret::Elements::FluidPoro*>(ele2);
   if (fluid != nullptr)
   {
-    if (auto* solid_poro = dynamic_cast<Discret::Elements::SolidPoroPressureVelocityBased*>(ele1);
+    if (auto* solid_poro =
+            dynamic_cast<Discret::Elements::SolidPoroPressureVelocityBased<3>*>(ele1);
         solid_poro != nullptr)
     {
       fluid->set_kinematic_type(solid_poro->kinematic_type());

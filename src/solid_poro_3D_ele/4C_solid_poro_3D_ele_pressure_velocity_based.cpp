@@ -50,9 +50,12 @@ namespace Discret::Elements::SolidPoroPressureVelocityBasedInternal
               },
               {.description = "Whether to use linear kinematics (small displacements) or nonlinear "
                               "kinematics (large displacements)"}),
-          parameter<std::optional<std::vector<double>>>("POROANISODIR1", {.size = 3}),
-          parameter<std::optional<std::vector<double>>>("POROANISODIR2", {.size = 3}),
-          parameter<std::optional<std::vector<double>>>("POROANISODIR3", {.size = 3}),
+          parameter<std::optional<std::vector<double>>>(
+              "POROANISODIR1", {.size = Core::FE::dim<celltype>}),
+          parameter<std::optional<std::vector<double>>>(
+              "POROANISODIR2", {.size = Core::FE::dim<celltype>}),
+          parameter<std::optional<std::vector<double>>>(
+              "POROANISODIR3", {.size = Core::FE::dim<celltype>}),
           deprecated_selection<Inpar::ScaTra::ImplType>("TYPE",
               Discret::Elements::get_impltype_inpar_map(),
               {.description = "Scalar transport implementation type",
@@ -62,16 +65,19 @@ namespace Discret::Elements::SolidPoroPressureVelocityBasedInternal
   }  // namespace
 }  // namespace Discret::Elements::SolidPoroPressureVelocityBasedInternal
 
-Discret::Elements::SolidPoroPressureVelocityBasedType
-    Discret::Elements::SolidPoroPressureVelocityBasedType::instance_;
+template <unsigned dim>
+Discret::Elements::SolidPoroPressureVelocityBasedType<dim>
+    Discret::Elements::SolidPoroPressureVelocityBasedType<dim>::instance_;
 
-Discret::Elements::SolidPoroPressureVelocityBasedType&
-Discret::Elements::SolidPoroPressureVelocityBasedType::instance()
+template <unsigned dim>
+Discret::Elements::SolidPoroPressureVelocityBasedType<dim>&
+Discret::Elements::SolidPoroPressureVelocityBasedType<dim>::instance()
 {
   return instance_;
 }
 
-void Discret::Elements::SolidPoroPressureVelocityBasedType::setup_element_definition(
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureVelocityBasedType<dim>::setup_element_definition(
     std::map<std::string, std::map<Core::FE::CellType, Core::IO::InputSpec>>& definitions)
 {
   auto& defsgeneral = definitions["SOLIDPORO_PRESSURE_VELOCITY_BASED"];
@@ -111,81 +117,101 @@ void Discret::Elements::SolidPoroPressureVelocityBasedType::setup_element_defini
 }
 
 
+template <unsigned dim>
 std::shared_ptr<Core::Elements::Element>
-Discret::Elements::SolidPoroPressureVelocityBasedType::create(
+Discret::Elements::SolidPoroPressureVelocityBasedType<dim>::create(
     const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
-  if (eletype == "SOLIDPORO_PRESSURE_VELOCITY_BASED") return create(id, owner);
+  if (eletype == "SOLIDPORO_PRESSURE_VELOCITY_BASED" && Core::FE::get_dimension(celltype) == dim)
+    return create(id, owner);
   return nullptr;
 }
 
+template <unsigned dim>
 std::shared_ptr<Core::Elements::Element>
-Discret::Elements::SolidPoroPressureVelocityBasedType::create(const int id, const int owner)
+Discret::Elements::SolidPoroPressureVelocityBasedType<dim>::create(const int id, const int owner)
 {
-  return std::make_shared<Discret::Elements::SolidPoroPressureVelocityBased>(id, owner);
+  return std::make_shared<Discret::Elements::SolidPoroPressureVelocityBased<dim>>(id, owner);
 }
 
-Core::Communication::ParObject* Discret::Elements::SolidPoroPressureVelocityBasedType::create(
+template <unsigned dim>
+Core::Communication::ParObject* Discret::Elements::SolidPoroPressureVelocityBasedType<dim>::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::Elements::SolidPoroPressureVelocityBased(-1, -1);
+  auto* object = new Discret::Elements::SolidPoroPressureVelocityBased<dim>(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-void Discret::Elements::SolidPoroPressureVelocityBasedType::nodal_block_information(
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureVelocityBasedType<dim>::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns)
 {
   Solid::Utils::nodal_block_information_solid(dwele, numdf, dimns);
 }
 
+template <unsigned dim>
 Core::LinAlg::SerialDenseMatrix
-Discret::Elements::SolidPoroPressureVelocityBasedType::compute_null_space(
+Discret::Elements::SolidPoroPressureVelocityBasedType<dim>::compute_null_space(
     Core::Nodes::Node& node, std::span<const double> x0, const int numdof)
 {
-  return compute_solid_null_space<3>(node.x(), x0);
+  return compute_solid_null_space<dim>(node.x(), x0);
 }
 
-Discret::Elements::SolidPoroPressureVelocityBased::SolidPoroPressureVelocityBased(int id, int owner)
+template <unsigned dim>
+Discret::Elements::SolidPoroPressureVelocityBased<dim>::SolidPoroPressureVelocityBased(
+    int id, int owner)
     : Core::Elements::Element(id, owner)
 {
 }
 
-Core::Elements::Element* Discret::Elements::SolidPoroPressureVelocityBased::clone() const
+template <unsigned dim>
+Core::Elements::Element* Discret::Elements::SolidPoroPressureVelocityBased<dim>::clone() const
 {
-  return new Discret::Elements::SolidPoroPressureVelocityBased(*this);
+  return new Discret::Elements::SolidPoroPressureVelocityBased<dim>(*this);
 }
 
-int Discret::Elements::SolidPoroPressureVelocityBased::num_line() const
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureVelocityBased<dim>::num_line() const
 {
   return Core::FE::get_number_of_element_lines(celltype_);
 }
 
-int Discret::Elements::SolidPoroPressureVelocityBased::num_surface() const
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureVelocityBased<dim>::num_surface() const
 {
   return Core::FE::get_number_of_element_surfaces(celltype_);
 }
 
-int Discret::Elements::SolidPoroPressureVelocityBased::num_volume() const
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureVelocityBased<dim>::num_volume() const
 {
   return Core::FE::get_number_of_element_volumes(celltype_);
 }
 
+template <unsigned dim>
 std::vector<std::shared_ptr<Core::Elements::Element>>
-Discret::Elements::SolidPoroPressureVelocityBased::lines()
+Discret::Elements::SolidPoroPressureVelocityBased<dim>::lines()
 {
-  return Core::Communication::get_element_lines<SolidLine<3>, SolidPoroPressureVelocityBased>(
-      *this);
+  return Core::Communication::get_element_lines<SolidLine<dim>,
+      SolidPoroPressureVelocityBased<dim>>(*this);
 }
 
+template <unsigned dim>
 std::vector<std::shared_ptr<Core::Elements::Element>>
-Discret::Elements::SolidPoroPressureVelocityBased::surfaces()
+Discret::Elements::SolidPoroPressureVelocityBased<dim>::surfaces()
 {
-  return Core::Communication::get_element_surfaces<SolidSurface, SolidPoroPressureVelocityBased>(
-      *this);
+  if constexpr (dim == 2)
+  {
+    // return the element itself if we are a surface
+    return {Core::Utils::shared_ptr_from_ref(*this)};
+  }
+  return Core::Communication::get_element_surfaces<SolidSurface,
+      SolidPoroPressureVelocityBased<dim>>(*this);
 }
 
-void Discret::Elements::SolidPoroPressureVelocityBased::set_params_interface_ptr(
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureVelocityBased<dim>::set_params_interface_ptr(
     const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
@@ -201,8 +227,10 @@ void Discret::Elements::SolidPoroPressureVelocityBased::set_params_interface_ptr
   }
 }
 
-bool Discret::Elements::SolidPoroPressureVelocityBased::read_element(const std::string& eletype,
-    Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
+template <unsigned dim>
+bool Discret::Elements::SolidPoroPressureVelocityBased<dim>::read_element(
+    const std::string& eletype, Core::FE::CellType celltype,
+    const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
   // read base element
@@ -210,8 +238,8 @@ bool Discret::Elements::SolidPoroPressureVelocityBased::read_element(const std::
   celltype_ = celltype;
 
   // set anisotropic_properties
-  anisotropic_permeability_property_.directions_.resize(3);
-  anisotropic_permeability_property_.nodal_coeffs_.resize(3);
+  anisotropic_permeability_property_.directions_.resize(dim);
+  anisotropic_permeability_property_.nodal_coeffs_.resize(dim);
 
   // read number of material model
   set_material(0, Mat::factory(Solid::Utils::ReadElement::read_element_material(container)));
@@ -228,9 +256,9 @@ bool Discret::Elements::SolidPoroPressureVelocityBased::read_element(const std::
 
   const bool with_scatra =
       poro_ele_property_.impltype != Inpar::ScaTra::ImplType::impltype_undefined;
-  SolidIntegrationRules<3> rules =
-      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<3>>(celltype_,
-          [](auto celltype_t) -> SolidIntegrationRules<3>
+  SolidIntegrationRules<dim> rules =
+      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<dim>>(celltype_,
+          [](auto celltype_t) -> SolidIntegrationRules<dim>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_or_solid_scatra_calculation_interface(
       celltype_, solid_ele_property_, with_scatra, rules);
@@ -249,42 +277,46 @@ bool Discret::Elements::SolidPoroPressureVelocityBased::read_element(const std::
   return true;
 }
 
-void Discret::Elements::SolidPoroPressureVelocityBased::
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureVelocityBased<dim>::
     read_anisotropic_permeability_directions_from_element_line_definition(
         const Core::IO::InputParameterContainer& container)
 {
-  for (int dim = 0; dim < 3; ++dim)
+  for (unsigned i = 0; i < dim; ++i)
   {
-    std::string definition_name = "POROANISODIR" + std::to_string(dim + 1);
+    std::string definition_name = "POROANISODIR" + std::to_string(i + 1);
     const auto& dir = container.get<std::optional<std::vector<double>>>(definition_name);
-    anisotropic_permeability_property_.directions_[dim] = dir ? *dir : std::vector<double>(3, 0.0);
+    anisotropic_permeability_property_.directions_[i] = dir ? *dir : std::vector<double>(dim, 0.0);
   }
 }
 
-void Discret::Elements::SolidPoroPressureVelocityBased::
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureVelocityBased<dim>::
     read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(
         const Core::IO::InputParameterContainer& container)
 {
-  for (int dim = 0; dim < 3; ++dim)
+  for (unsigned i = 0; i < dim; ++i)
   {
-    std::string definition_name = "POROANISONODALCOEFFS" + std::to_string(dim + 1);
+    std::string definition_name = "POROANISONODALCOEFFS" + std::to_string(i + 1);
 
     if (const auto* coeffs = container.get_if<std::optional<std::vector<double>>>(definition_name);
         coeffs && coeffs->has_value())
-      anisotropic_permeability_property_.nodal_coeffs_[dim] = coeffs->value();
+      anisotropic_permeability_property_.nodal_coeffs_[i] = coeffs->value();
     else
-      anisotropic_permeability_property_.nodal_coeffs_[dim] = std::vector<double>(num_node(), 0.0);
+      anisotropic_permeability_property_.nodal_coeffs_[i] = std::vector<double>(num_node(), 0.0);
   }
 }
 
 
-Mat::So3Material& Discret::Elements::SolidPoroPressureVelocityBased::solid_poro_material(
+template <unsigned dim>
+Mat::So3Material& Discret::Elements::SolidPoroPressureVelocityBased<dim>::solid_poro_material(
     int nummat) const
 {
   return *std::dynamic_pointer_cast<Mat::So3Material>(Core::Elements::Element::material(nummat));
 }
 
-void Discret::Elements::SolidPoroPressureVelocityBased::pack(
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureVelocityBased<dim>::pack(
     Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, unique_par_object_id());
@@ -320,7 +352,8 @@ void Discret::Elements::SolidPoroPressureVelocityBased::pack(
   Discret::Elements::pack(solidporo_press_vel_based_calc_variant_, data);
 }
 
-void Discret::Elements::SolidPoroPressureVelocityBased::unpack(
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureVelocityBased<dim>::unpack(
     Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
@@ -338,7 +371,7 @@ void Discret::Elements::SolidPoroPressureVelocityBased::unpack(
   // anisotropic_permeability_directions_
   int size = 0;
   extract_from_pack(buffer, size);
-  anisotropic_permeability_property_.directions_.resize(size, std::vector<double>(3, 0.0));
+  anisotropic_permeability_property_.directions_.resize(size, std::vector<double>(dim, 0.0));
   for (int i = 0; i < size; ++i)
     extract_from_pack(buffer, anisotropic_permeability_property_.directions_[i]);
 
@@ -353,9 +386,9 @@ void Discret::Elements::SolidPoroPressureVelocityBased::unpack(
   // reset solid and poro interfaces
   const bool with_scatra =
       poro_ele_property_.impltype != Inpar::ScaTra::ImplType::impltype_undefined;
-  SolidIntegrationRules<3> rules =
-      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<3>>(celltype_,
-          [](auto celltype_t) -> SolidIntegrationRules<3>
+  SolidIntegrationRules<dim> rules =
+      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<dim>>(celltype_,
+          [](auto celltype_t) -> SolidIntegrationRules<dim>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_or_solid_scatra_calculation_interface(
       celltype_, solid_ele_property_, with_scatra, rules);
@@ -366,13 +399,16 @@ void Discret::Elements::SolidPoroPressureVelocityBased::unpack(
   Discret::Elements::unpack(solidporo_press_vel_based_calc_variant_, buffer);
 }
 
-void Discret::Elements::SolidPoroPressureVelocityBased::vis_names(std::map<std::string, int>& names)
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureVelocityBased<dim>::vis_names(
+    std::map<std::string, int>& names)
 {
   Core::Elements::Element::vis_names(names);
   solid_poro_material().vis_names(names);
 }
 
-bool Discret::Elements::SolidPoroPressureVelocityBased::vis_data(
+template <unsigned dim>
+bool Discret::Elements::SolidPoroPressureVelocityBased<dim>::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
@@ -385,7 +421,8 @@ bool Discret::Elements::SolidPoroPressureVelocityBased::vis_data(
               // for the old output; works for now for the underlying struct poro material
 }
 
-Mat::StructPoro& Discret::Elements::SolidPoroPressureVelocityBased::struct_poro_material(
+template <unsigned dim>
+Mat::StructPoro& Discret::Elements::SolidPoroPressureVelocityBased<dim>::struct_poro_material(
     int nummat) const
 {
   auto porostruct_mat =
@@ -402,7 +439,8 @@ Mat::StructPoro& Discret::Elements::SolidPoroPressureVelocityBased::struct_poro_
 }
 
 
-Mat::FluidPoro& Discret::Elements::SolidPoroPressureVelocityBased::fluid_poro_material(
+template <unsigned dim>
+Mat::FluidPoro& Discret::Elements::SolidPoroPressureVelocityBased<dim>::fluid_poro_material(
     int nummat) const
 {
   if (this->num_material() <= 1)
@@ -418,5 +456,8 @@ Mat::FluidPoro& Discret::Elements::SolidPoroPressureVelocityBased::fluid_poro_ma
     FOUR_C_THROW("invalid fluid material for poroelasticity");
   return *fluidmulti_mat;
 }
+
+template class Discret::Elements::SolidPoroPressureVelocityBasedType<3>;
+template class Discret::Elements::SolidPoroPressureVelocityBased<3>;
 
 FOUR_C_NAMESPACE_CLOSE

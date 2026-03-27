@@ -38,7 +38,7 @@ namespace Solid::Elements
 
 namespace Discret::Elements
 {
-
+  template <unsigned dim>
   class SolidPoroPressureBasedType : public Core::Elements::ElementType
   {
    public:
@@ -53,7 +53,10 @@ namespace Discret::Elements
 
     Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-    [[nodiscard]] std::string name() const override { return "SolidPoroPressureBasedType"; }
+    [[nodiscard]] std::string name() const override
+    {
+      return "SolidPoroPressureBasedType<" + std::to_string(dim) + ">";
+    }
 
     void nodal_block_information(Core::Elements::Element* dwele, int& numdf, int& dimns) override;
 
@@ -68,9 +71,10 @@ namespace Discret::Elements
   };  // class SolidPoroType
 
 
+  template <unsigned dim>
   class SolidPoroPressureBased : public Core::Elements::Element
   {
-    friend class SolidPoroType;
+    friend class SolidPoroPressureBasedType<dim>;
 
    public:
     //! @name Constructors and destructors and related methods
@@ -90,7 +94,7 @@ namespace Discret::Elements
 
     [[nodiscard]] int unique_par_object_id() const override
     {
-      return SolidPoroPressureBasedType::instance().unique_par_object_id();
+      return SolidPoroPressureBasedType<dim>::instance().unique_par_object_id();
     };
 
     [[nodiscard]] int num_line() const override;
@@ -103,7 +107,7 @@ namespace Discret::Elements
 
     std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
-    [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
+    [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return dim; }
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
@@ -115,7 +119,7 @@ namespace Discret::Elements
 
     [[nodiscard]] Core::Elements::ElementType& element_type() const override
     {
-      return SolidPoroPressureBasedType::instance();
+      return SolidPoroPressureBasedType<dim>::instance();
     }
 
     bool read_element(const std::string& eletype, Core::FE::CellType celltype,
@@ -167,7 +171,7 @@ namespace Discret::Elements
 
     [[nodiscard]] Mat::FluidPoroMultiPhase& fluid_poro_material(int nummat = 1) const;
 
-    [[nodiscard]] std::optional<Core::LinAlg::Tensor<double, 3>>
+    [[nodiscard]] std::optional<Core::LinAlg::Tensor<double, dim>>
     get_bodyforce_contribution_from_input() const;
 
     [[nodiscard]] Mat::So3Material& solid_poro_material(int nummat = 0) const;
@@ -182,7 +186,7 @@ namespace Discret::Elements
 
     Inpar::ScaTra::ImplType get_impl_type() { return poro_ele_property_.impltype; }
 
-    std::optional<Core::LinAlg::Tensor<double, 3>> get_possible_bodyforce_contribution()
+    std::optional<Core::LinAlg::Tensor<double, dim>> get_possible_bodyforce_contribution()
     {
       return bodyforce_contribution_;
     }
@@ -196,7 +200,7 @@ namespace Discret::Elements
     Core::FE::CellType celltype_{Core::FE::CellType::dis_none};
 
     //! solid element properties
-    SolidElementProperties<3> solid_ele_property_{};
+    SolidElementProperties<dim> solid_ele_property_{};
 
     //! additional poro element properties
     SolidPoroElementProperties poro_ele_property_{};
@@ -208,7 +212,7 @@ namespace Discret::Elements
     std::shared_ptr<FourC::Solid::Elements::ParamsInterface> solid_interface_ptr_;
 
     //! element calculation holding one of the implemented variants
-    std::optional<SolidCalcVariant<3>> solid_calc_variant_;
+    std::optional<SolidCalcVariant<dim>> solid_calc_variant_;
 
     //! poro element calculation holding one of the implemented variants
     SolidPoroPressureBasedCalcVariant solidporo_press_based_calc_variant_;
@@ -217,7 +221,7 @@ namespace Discret::Elements
     bool material_post_setup_ = false;
 
     //! optional body force contribution
-    std::optional<Core::LinAlg::Tensor<double, 3>> bodyforce_contribution_{};
+    std::optional<Core::LinAlg::Tensor<double, dim>> bodyforce_contribution_{};
 
   };  // class SolidPoro
 

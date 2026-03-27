@@ -59,16 +59,19 @@ namespace Discret::Elements::SolidPoroPressureBasedInternal
   }  // namespace
 }  // namespace Discret::Elements::SolidPoroPressureBasedInternal
 
-Discret::Elements::SolidPoroPressureBasedType
-    Discret::Elements::SolidPoroPressureBasedType::instance_;
+template <unsigned dim>
+Discret::Elements::SolidPoroPressureBasedType<dim>
+    Discret::Elements::SolidPoroPressureBasedType<dim>::instance_;
 
-Discret::Elements::SolidPoroPressureBasedType&
-Discret::Elements::SolidPoroPressureBasedType::instance()
+template <unsigned dim>
+Discret::Elements::SolidPoroPressureBasedType<dim>&
+Discret::Elements::SolidPoroPressureBasedType<dim>::instance()
 {
   return instance_;
 }
 
-void Discret::Elements::SolidPoroPressureBasedType::setup_element_definition(
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureBasedType<dim>::setup_element_definition(
     std::map<std::string, std::map<Core::FE::CellType, Core::IO::InputSpec>>& definitions)
 {
   auto& defsgeneral = definitions["SOLIDPORO_PRESSURE_BASED"];
@@ -91,77 +94,98 @@ void Discret::Elements::SolidPoroPressureBasedType::setup_element_definition(
           Core::FE::CellType::tet10>();
 }
 
-std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidPoroPressureBasedType::create(
+template <unsigned dim>
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidPoroPressureBasedType<dim>::create(
     const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner)
 {
-  if (eletype == "SOLIDPORO_PRESSURE_BASED") return create(id, owner);
+  if (eletype == "SOLIDPORO_PRESSURE_BASED" && Core::FE::get_dimension(celltype) == dim)
+    return create(id, owner);
   return nullptr;
 }
 
-std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidPoroPressureBasedType::create(
+template <unsigned dim>
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidPoroPressureBasedType<dim>::create(
     const int id, const int owner)
 {
-  return std::make_shared<Discret::Elements::SolidPoroPressureBased>(id, owner);
+  return std::make_shared<Discret::Elements::SolidPoroPressureBased<dim>>(id, owner);
 }
 
-Core::Communication::ParObject* Discret::Elements::SolidPoroPressureBasedType::create(
+template <unsigned dim>
+Core::Communication::ParObject* Discret::Elements::SolidPoroPressureBasedType<dim>::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::Elements::SolidPoroPressureBased(-1, -1);
+  auto* object = new Discret::Elements::SolidPoroPressureBased<dim>(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-void Discret::Elements::SolidPoroPressureBasedType::nodal_block_information(
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureBasedType<dim>::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns)
 {
   Solid::Utils::nodal_block_information_solid(dwele, numdf, dimns);
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::Elements::SolidPoroPressureBasedType::compute_null_space(
+template <unsigned dim>
+Core::LinAlg::SerialDenseMatrix
+Discret::Elements::SolidPoroPressureBasedType<dim>::compute_null_space(
     Core::Nodes::Node& node, std::span<const double> x0, const int numdof)
 {
-  return compute_solid_null_space<3>(node.x(), x0);
+  return compute_solid_null_space<dim>(node.x(), x0);
 }
 
-Discret::Elements::SolidPoroPressureBased::SolidPoroPressureBased(int id, int owner)
+template <unsigned dim>
+Discret::Elements::SolidPoroPressureBased<dim>::SolidPoroPressureBased(int id, int owner)
     : Core::Elements::Element(id, owner)
 {
 }
 
-Core::Elements::Element* Discret::Elements::SolidPoroPressureBased::clone() const
+template <unsigned dim>
+Core::Elements::Element* Discret::Elements::SolidPoroPressureBased<dim>::clone() const
 {
-  return new Discret::Elements::SolidPoroPressureBased(*this);
+  return new Discret::Elements::SolidPoroPressureBased<dim>(*this);
 }
 
-int Discret::Elements::SolidPoroPressureBased::num_line() const
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureBased<dim>::num_line() const
 {
   return Core::FE::get_number_of_element_lines(celltype_);
 }
 
-int Discret::Elements::SolidPoroPressureBased::num_surface() const
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureBased<dim>::num_surface() const
 {
   return Core::FE::get_number_of_element_surfaces(celltype_);
 }
 
-int Discret::Elements::SolidPoroPressureBased::num_volume() const
+template <unsigned dim>
+int Discret::Elements::SolidPoroPressureBased<dim>::num_volume() const
 {
   return Core::FE::get_number_of_element_volumes(celltype_);
 }
 
+template <unsigned dim>
 std::vector<std::shared_ptr<Core::Elements::Element>>
-Discret::Elements::SolidPoroPressureBased::lines()
+Discret::Elements::SolidPoroPressureBased<dim>::lines()
 {
-  return Core::Communication::get_element_lines<SolidLine<3>, SolidPoroPressureBased>(*this);
+  return Core::Communication::get_element_lines<SolidLine<dim>, SolidPoroPressureBased<dim>>(*this);
 }
 
+template <unsigned dim>
 std::vector<std::shared_ptr<Core::Elements::Element>>
-Discret::Elements::SolidPoroPressureBased::surfaces()
+Discret::Elements::SolidPoroPressureBased<dim>::surfaces()
 {
-  return Core::Communication::get_element_surfaces<SolidSurface, SolidPoroPressureBased>(*this);
+  if constexpr (dim == 2)
+  {
+    // return the element itself if we are a surface
+    return {Core::Utils::shared_ptr_from_ref(*this)};
+  };
+  return Core::Communication::get_element_surfaces<SolidSurface, SolidPoroPressureBased<dim>>(
+      *this);
 }
 
-void Discret::Elements::SolidPoroPressureBased::set_params_interface_ptr(
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureBased<dim>::set_params_interface_ptr(
     const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
@@ -177,7 +201,8 @@ void Discret::Elements::SolidPoroPressureBased::set_params_interface_ptr(
   }
 }
 
-bool Discret::Elements::SolidPoroPressureBased::read_element(const std::string& eletype,
+template <unsigned dim>
+bool Discret::Elements::SolidPoroPressureBased<dim>::read_element(const std::string& eletype,
     Core::FE::CellType celltype, const Core::IO::InputParameterContainer& container,
     const Core::IO::MeshInput::ElementDataFromCellData& element_data)
 {
@@ -198,9 +223,9 @@ bool Discret::Elements::SolidPoroPressureBased::read_element(const std::string& 
   bodyforce_contribution_ = get_bodyforce_contribution_from_input();
 
 
-  SolidIntegrationRules<3> rules =
-      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<3>>(celltype_,
-          [](auto celltype_t) -> SolidIntegrationRules<3>
+  SolidIntegrationRules<dim> rules =
+      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<dim>>(celltype_,
+          [](auto celltype_t) -> SolidIntegrationRules<dim>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_, rules);
   solidporo_press_based_calc_variant_ =
@@ -218,12 +243,16 @@ bool Discret::Elements::SolidPoroPressureBased::read_element(const std::string& 
   return true;
 }
 
-Mat::So3Material& Discret::Elements::SolidPoroPressureBased::solid_poro_material(int nummat) const
+template <unsigned dim>
+Mat::So3Material& Discret::Elements::SolidPoroPressureBased<dim>::solid_poro_material(
+    int nummat) const
 {
   return *std::dynamic_pointer_cast<Mat::So3Material>(Core::Elements::Element::material(nummat));
 }
 
-void Discret::Elements::SolidPoroPressureBased::pack(Core::Communication::PackBuffer& data) const
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureBased<dim>::pack(
+    Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, unique_par_object_id());
 
@@ -249,7 +278,9 @@ void Discret::Elements::SolidPoroPressureBased::pack(Core::Communication::PackBu
   Discret::Elements::pack(solidporo_press_based_calc_variant_, data);
 }
 
-void Discret::Elements::SolidPoroPressureBased::unpack(Core::Communication::UnpackBuffer& buffer)
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureBased<dim>::unpack(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -267,9 +298,9 @@ void Discret::Elements::SolidPoroPressureBased::unpack(Core::Communication::Unpa
   extract_from_pack(buffer, bodyforce_contribution_);
 
   // reset solid and poro interfaces
-  SolidIntegrationRules<3> rules =
-      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<3>>(celltype_,
-          [](auto celltype_t) -> SolidIntegrationRules<3>
+  SolidIntegrationRules<dim> rules =
+      Core::FE::cell_type_switch<Discret::Elements::ImplementedSolidCellTypes<dim>>(celltype_,
+          [](auto celltype_t) -> SolidIntegrationRules<dim>
           { return make_default_solid_integration_rules<celltype_t()>(); });
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_, rules);
   solidporo_press_based_calc_variant_ =
@@ -279,13 +310,15 @@ void Discret::Elements::SolidPoroPressureBased::unpack(Core::Communication::Unpa
   Discret::Elements::unpack(solidporo_press_based_calc_variant_, buffer);
 }
 
-void Discret::Elements::SolidPoroPressureBased::vis_names(std::map<std::string, int>& names)
+template <unsigned dim>
+void Discret::Elements::SolidPoroPressureBased<dim>::vis_names(std::map<std::string, int>& names)
 {
   Core::Elements::Element::vis_names(names);
   solid_poro_material().vis_names(names);
 }
 
-bool Discret::Elements::SolidPoroPressureBased::vis_data(
+template <unsigned dim>
+bool Discret::Elements::SolidPoroPressureBased<dim>::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
@@ -295,7 +328,9 @@ bool Discret::Elements::SolidPoroPressureBased::vis_data(
   return solid_poro_material().vis_data(name, data, dummy_gp, id());
 }
 
-Mat::StructPoro& Discret::Elements::SolidPoroPressureBased::struct_poro_material(int nummat) const
+template <unsigned dim>
+Mat::StructPoro& Discret::Elements::SolidPoroPressureBased<dim>::struct_poro_material(
+    int nummat) const
 {
   auto porostruct_mat =
       std::dynamic_pointer_cast<Mat::StructPoro>(Core::Elements::Element::material(nummat));
@@ -309,7 +344,9 @@ Mat::StructPoro& Discret::Elements::SolidPoroPressureBased::struct_poro_material
 
   return *porostruct_mat;
 }
-Mat::FluidPoroMultiPhase& Discret::Elements::SolidPoroPressureBased::fluid_poro_material(
+
+template <unsigned dim>
+Mat::FluidPoroMultiPhase& Discret::Elements::SolidPoroPressureBased<dim>::fluid_poro_material(
     int nummat) const
 {
   if (this->num_material() <= 1)
@@ -332,8 +369,10 @@ Mat::FluidPoroMultiPhase& Discret::Elements::SolidPoroPressureBased::fluid_poro_
   }
   return *fluidmulti_mat;
 }
-std::optional<Core::LinAlg::Tensor<double, 3>>
-Discret::Elements::SolidPoroPressureBased::get_bodyforce_contribution_from_input() const
+
+template <unsigned dim>
+std::optional<Core::LinAlg::Tensor<double, dim>>
+Discret::Elements::SolidPoroPressureBased<dim>::get_bodyforce_contribution_from_input() const
 {
   // get poro-solid parameter
   const Teuchos::ParameterList& solid_poro_params =
@@ -347,11 +386,11 @@ Discret::Elements::SolidPoroPressureBased::get_bodyforce_contribution_from_input
     // safety check
     FOUR_C_ASSERT_ALWAYS(
         static_cast<int>(body_force->size()) == Global::Problem::instance()->n_dim() &&
-            Global::Problem::instance()->n_dim() == 3,
+            Global::Problem::instance()->n_dim() == dim,
         "The dimension of your bodyforce vector and the dimension of the problem must be equal!");
 
-    Core::LinAlg::Tensor<double, 3> bodyforce{};
-    for (int idim = 0; idim < 3; idim++)
+    Core::LinAlg::Tensor<double, dim> bodyforce{};
+    for (unsigned idim = 0; idim < dim; idim++)
     {
       bodyforce(idim) = body_force.value()[idim];
     }
@@ -362,5 +401,8 @@ Discret::Elements::SolidPoroPressureBased::get_bodyforce_contribution_from_input
     return std::nullopt;
   }
 }
+
+template class Discret::Elements::SolidPoroPressureBasedType<3>;
+template class Discret::Elements::SolidPoroPressureBased<3>;
 
 FOUR_C_NAMESPACE_CLOSE
