@@ -50,9 +50,6 @@ BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS:
     COUPLING_ID: 1
   - E: 2
     COUPLING_ID: 1
-BINNING STRATEGY:
-  BIN_SIZE_LOWER_BOUND: 5
-  DOMAINBOUNDINGBOX: "-5 -5 -5 5 5 5"
 STRUCT NOX/Printing:
   Inner Iteration: false
   Outer Iteration StatusTest: false
