@@ -130,17 +130,42 @@ namespace Core::IO
       return PrettyTypeName<T>{}();
     }
 
+    //! Additional context that might be used by YamlTypeEmitter specializations.
+    struct YamlTypeEmitterContext
+    {
+      //! Pointer with sizes for dynamic-sized containers.
+      std::span<size_t> dynamic_sizes;
+      //! Current level of dynamic size nesting.
+      size_t dynamic_size_index = 0;
+
+      [[nodiscard]] size_t current_dynamic_size() const
+      {
+        FOUR_C_ASSERT(dynamic_size_index < dynamic_sizes.size(),
+            "Internal error: Not enough dynamic sizes provided in context.");
+        return dynamic_sizes[dynamic_size_index];
+      }
+
+      void next_dynamic_size() { ++dynamic_size_index; }
+
+      void previous_dynamic_size()
+      {
+        FOUR_C_ASSERT(dynamic_size_index > 0,
+            "Internal error: Already at the outermost dynamic size in context.");
+        --dynamic_size_index;
+      }
+    };
+
     template <typename T>
     struct YamlTypeEmitter
     {
-      void operator()(ryml::NodeRef node) = delete;
+      void operator()(ryml::NodeRef node, YamlTypeEmitterContext& context) = delete;
     };
 
     template <YamlSupportedType T>
       requires(!std::is_enum_v<T>)
     struct YamlTypeEmitter<T>
     {
-      void operator()(ryml::NodeRef node, size_t*)
+      void operator()(ryml::NodeRef node, YamlTypeEmitterContext& context)
       {
         FOUR_C_ASSERT(node.is_map(), "Expected a map node.");
         node["type"] << get_pretty_type_name<T>();
@@ -151,7 +176,7 @@ namespace Core::IO
       requires(std::is_enum_v<Enum>)
     struct YamlTypeEmitter<Enum>
     {
-      void operator()(ryml::NodeRef node, size_t*)
+      void operator()(ryml::NodeRef node, YamlTypeEmitterContext& context)
       {
         FOUR_C_ASSERT(node.is_map(), "Expected a map node.");
         node["type"] = "enum";
@@ -161,46 +186,52 @@ namespace Core::IO
     template <typename T>
     struct YamlTypeEmitter<std::vector<T>>
     {
-      void operator()(ryml::NodeRef node, size_t* size)
+      void operator()(ryml::NodeRef node, YamlTypeEmitterContext& context)
       {
         FOUR_C_ASSERT(node.is_map(), "Expected a map node.");
         node["type"] = "vector";
-        if (*size > 0)
+        if (context.current_dynamic_size() > 0)
         {
-          node["size"] << *size;
+          node["size"] << context.current_dynamic_size();
         }
         node["value_type"] |= ryml::MAP;
-        YamlTypeEmitter<T>{}(node["value_type"], size + 1);
+
+        context.next_dynamic_size();
+        YamlTypeEmitter<T>{}(node["value_type"], context);
+        context.previous_dynamic_size();
       }
     };
 
     template <typename T, std::size_t size_n>
     struct YamlTypeEmitter<std::array<T, size_n>>
     {
-      void operator()(ryml::NodeRef node, size_t* size)
+      void operator()(ryml::NodeRef node, YamlTypeEmitterContext& context)
       {
         FOUR_C_ASSERT(node.is_map(), "Expected a map node.");
         // In the schema we do not distinguish between arrays and vectors, so we use the same type.
         node["type"] = "vector";
         node["size"] << size_n;
         node["value_type"] |= ryml::MAP;
-        YamlTypeEmitter<T>{}(node["value_type"], size + 1);
+        YamlTypeEmitter<T>{}(node["value_type"], context);
       }
     };
 
     template <typename T>
     struct YamlTypeEmitter<std::map<std::string, T>>
     {
-      void operator()(ryml::NodeRef node, size_t* size)
+      void operator()(ryml::NodeRef node, YamlTypeEmitterContext& context)
       {
         FOUR_C_ASSERT(node.is_map(), "Expected a map node.");
         node["type"] = "map";
-        if (*size > 0)
+        if (context.current_dynamic_size() > 0)
         {
-          node["size"] << *size;
+          node["size"] << context.current_dynamic_size();
         }
         node["value_type"] |= ryml::MAP;
-        YamlTypeEmitter<T>{}(node["value_type"], size + 1);
+
+        context.next_dynamic_size();
+        YamlTypeEmitter<T>{}(node["value_type"], context);
+        context.previous_dynamic_size();
       }
     };
 
@@ -208,58 +239,58 @@ namespace Core::IO
     struct YamlTypeEmitter<std::tuple<Ts...>>
     {
       template <std::size_t tuple_index = 0>
-      void emit_elements(ryml::NodeRef node, size_t* size)
+      void emit_elements(ryml::NodeRef node, YamlTypeEmitterContext& context)
       {
         if constexpr (tuple_index < sizeof...(Ts))
         {
           using Te = std::tuple_element_t<tuple_index, std::tuple<Ts...>>;
           ryml::NodeRef child = node["value_types"].append_child();
           child |= ryml::MAP;
-          YamlTypeEmitter<Te>{}(child, size + 1);
+          YamlTypeEmitter<Te>{}(child, context);
 
-          emit_elements<tuple_index + 1>(node, size);  // recurse to next element
+          emit_elements<tuple_index + 1>(node, context);  // recurse to next element
         }
       }
 
-      void operator()(ryml::NodeRef node, size_t* size)
+      void operator()(ryml::NodeRef node, YamlTypeEmitterContext& context)
       {
         FOUR_C_ASSERT(node.is_map(), "Expected a map node.");
         node["type"] = "tuple";
         node["size"] << sizeof...(Ts);
         node["value_types"] |= ryml::SEQ;
-        emit_elements(node, size);
+        emit_elements(node, context);
       }
     };
 
     template <typename T1, typename T2>
     struct YamlTypeEmitter<std::pair<T1, T2>>
     {
-      void operator()(ryml::NodeRef node, size_t* size)
+      void operator()(ryml::NodeRef node, YamlTypeEmitterContext& context)
       {
-        YamlTypeEmitter<std::tuple<T1, T2>>{}(node, size);
+        YamlTypeEmitter<std::tuple<T1, T2>>{}(node, context);
       }
     };
 
     template <typename T>
     struct YamlTypeEmitter<std::optional<T>>
     {
-      void operator()(ryml::NodeRef node, size_t* size)
+      void operator()(ryml::NodeRef node, YamlTypeEmitterContext& context)
       {
         FOUR_C_ASSERT(node.is_map(), "Expected a map node.");
         // Pull up the std::optional aspect. The fact that this type wraps another type is specific
         // to C++ and not relevant to other tools. Simply knowing that a type can be empty is
         // enough for them.
         emit_value_as_yaml(YamlNodeRef{node["noneable"], ""}, true);
-        YamlTypeEmitter<T>{}(node, size);
+        YamlTypeEmitter<T>{}(node, context);
       }
     };
 
     template <ProxyTypeConcept T>
     struct YamlTypeEmitter<T>
     {
-      void operator()(ryml::NodeRef node, size_t* size)
+      void operator()(ryml::NodeRef node, YamlTypeEmitterContext& context)
       {
-        return YamlTypeEmitter<typename ProxyType<T>::type>{}(node, size);
+        return YamlTypeEmitter<typename ProxyType<T>::type>{}(node, context);
       }
     };
 
@@ -267,13 +298,17 @@ namespace Core::IO
       requires(dynamic_rank<T>() == 0)
     void emit_type_as_yaml(ryml::NodeRef node)
     {
-      YamlTypeEmitter<T>{}(node, nullptr);
+      YamlTypeEmitterContext context{};
+      YamlTypeEmitter<T>{}(node, context);
     }
 
     template <typename T>
-    void emit_type_as_yaml(ryml::NodeRef node, std::array<std::size_t, dynamic_rank<T>()> size)
+    void emit_type_as_yaml(ryml::NodeRef node, YamlTypeEmitterContext& context)
     {
-      YamlTypeEmitter<T>{}(node, size.data());
+      FOUR_C_ASSERT(context.dynamic_sizes.size() == dynamic_rank<T>(),
+          "Context for emitting type as yaml has wrong number of dynamic sizes for type.");
+
+      YamlTypeEmitter<T>{}(node, context);
     }
 
 
@@ -1938,7 +1973,10 @@ void Core::IO::Internal::ParameterSpec<T>::emit_metadata(
     {
       size_info[i] = std::visit(DynamicSizeVisitor{}, data.size[i]);
     }
-    IO::Internal::emit_type_as_yaml<StoredType>(node.node, size_info);
+    YamlTypeEmitterContext type_emitter_context{
+        .dynamic_sizes = size_info,
+    };
+    IO::Internal::emit_type_as_yaml<StoredType>(node.node, type_emitter_context);
   }
 
   if (!data.description.empty())
