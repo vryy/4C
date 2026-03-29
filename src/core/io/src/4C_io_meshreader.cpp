@@ -317,7 +317,7 @@ namespace
         const auto& linedef = ed.get(eletype, cell_info.cell_type);
 
         Core::IO::InputParameterContainer data;
-        linedef.fully_parse(parser, data);
+        linedef.deprecated_parse(parser, data);
 
         ele->set_node_ids_one_based_index(cell_info.nodal_ids);
         ele->read_element(eletype, Core::FE::string_to_cell_type(cell_info.cell_type_str), data,
