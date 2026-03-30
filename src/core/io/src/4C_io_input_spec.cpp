@@ -18,7 +18,7 @@ Core::IO::InputSpec::InputSpec(std::unique_ptr<Internal::InputSpecImpl> pimpl)
 {
 }
 
-void Core::IO::InputSpec::fully_parse(
+void Core::IO::InputSpec::deprecated_parse(
     ValueParser& parser, Core::IO::InputParameterContainer& container) const
 {
   FOUR_C_ASSERT(pimpl_, "InputSpec is empty.");

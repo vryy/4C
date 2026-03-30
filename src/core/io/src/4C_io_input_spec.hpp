@@ -80,8 +80,10 @@ namespace Core::IO
     /**
      * Use the @p parser to parse whatever this InputSpec expects. The results are stored in the
      * @p container. If parsing fails, an exception is thrown.
+     *
+     * @deprecated This function is used to parse legacy dat-style strings. Use match() in new code.
      */
-    void fully_parse(ValueParser& parser, InputParameterContainer& container) const;
+    void deprecated_parse(ValueParser& parser, InputParameterContainer& container) const;
 
     /**
      * Match the content in @p yaml to the expected input format of this InputSpec. If the content
