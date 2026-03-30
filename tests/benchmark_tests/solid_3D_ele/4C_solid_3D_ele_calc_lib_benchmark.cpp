@@ -164,7 +164,8 @@ static void add_stiffness_matrix_bop(benchmark::State& state)
     Core::LinAlg::Matrix<num_str, num_dofs> Bop =
         Discret::Elements::evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
     add_elastic_stiffness_matrix(Bop, stress, integration_factor, stiffness_matrix);
-    add_geometric_stiffness_matrix(jacobian_mapping, stress, integration_factor, stiffness_matrix);
+    add_geometric_stiffness_matrix(
+        jacobian_mapping, stress.pk2_, integration_factor, stiffness_matrix);
     benchmark::DoNotOptimize(stiffness_matrix);
   }
 }
