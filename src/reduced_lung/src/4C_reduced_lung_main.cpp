@@ -15,7 +15,9 @@
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_input_field.hpp"
-#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_map.hpp"
+#include "4C_linalg_sparsematrix.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_rebalance.hpp"
 #include "4C_reduced_lung_airways.hpp"
 #include "4C_reduced_lung_boundary_conditions.hpp"
@@ -23,6 +25,7 @@
 #include "4C_reduced_lung_input.hpp"
 #include "4C_reduced_lung_junctions.hpp"
 #include "4C_reduced_lung_terminal_unit.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -74,174 +77,262 @@ namespace ReducedLung
       };
     }
 
-    void run_reduced_lung(const ReducedLungContext& context)
+    class ReducedLungSimulation
     {
-      auto actdis =
-          std::make_shared<Core::FE::Discretization>("reduced_lung", context.local_comm, 3);
-
-      build_discretization_from_topology(
-          *actdis, context.parameters.lung_tree.topology, context.rebalance_parameters);
-      actdis->fill_complete();
-
-      // Create runtime output writer
-      Core::IO::DiscretizationVisualizationWriterMesh visualization_writer(
-          actdis, Core::IO::visualization_parameters_factory(
-                      context.io_parameters.sublist("RUNTIME VTK OUTPUT"),
-                      *context.output_control_file, 0));
-
-      // The existing mpi communicator is recycled for the new data layout.
-      const auto& comm = actdis->get_comm();
-
-      // "Elements" of the lung tree introducing the dofs.
-      Airways::AirwayContainer airways;
-      TerminalUnits::TerminalUnitContainer terminal_units;
-      std::map<int, int> dof_per_ele;  // Map global element id -> dof.
-      int n_airways = 0;
-      int n_terminal_units = 0;
-      create_local_element_models(*actdis, context.parameters, airways, terminal_units, dof_per_ele,
-          n_airways, n_terminal_units);
-
-      // Create global dof numbering (done on every processor simultaneously).
-      std::map<int, int> first_global_dof_of_ele;
-      std::map<int, int> global_dof_per_ele;
-      create_global_dof_maps(dof_per_ele, comm, global_dof_per_ele, first_global_dof_of_ele);
-      assign_global_dof_ids_to_models(first_global_dof_of_ele, airways, terminal_units);
-
-      // Create evaluator functions (assembly, residual, updates) for the different models.
-      TerminalUnits::create_evaluators(terminal_units);
-      Airways::create_evaluators(airways);
-
-      // Mapping node -> elements to differentiate between boundary conditions and junctions.
-      auto global_ele_ids_per_node = create_global_ele_ids_per_node(*actdis, comm);
-
-      // Create entities with equations connecting elements (acting on "nodes" of the lung tree).
-      BoundaryConditions::BoundaryConditionContainer boundary_conditions;
-      Junctions::ConnectionData connections;
-      Junctions::BifurcationData bifurcations;
-
-      BoundaryConditions::create_boundary_conditions(*actdis, context.parameters,
-          global_ele_ids_per_node, global_dof_per_ele, first_global_dof_of_ele,
-          context.function_manager, boundary_conditions);
-      BoundaryConditions::create_evaluators(boundary_conditions);
-
-      Junctions::create_junctions(*actdis, global_ele_ids_per_node, global_dof_per_ele,
-          first_global_dof_of_ele, connections, bifurcations);
-      int n_connections = static_cast<int>(connections.size());
-      int n_bifurcations = static_cast<int>(bifurcations.size());
-      int n_boundary_conditions =
-          BoundaryConditions::count_boundary_conditions(boundary_conditions);
-
-      print_instantiated_object_counts(
-          comm, n_airways, n_terminal_units, n_connections, n_bifurcations, n_boundary_conditions);
-
-      // Calculate local and global number of "element" equations and assign local row IDs to
-      // define the structure of the system of equations (for the row map).
-      int n_local_equations = 0;
-      Airways::assign_local_equation_ids(airways, n_local_equations);
-      TerminalUnits::assign_local_equation_ids(terminal_units, n_local_equations);
-      // Assign local equation ids to connections, bifurcations, and boundary conditions.
-      Junctions::assign_junction_local_equation_ids(connections, bifurcations, n_local_equations);
-      BoundaryConditions::assign_local_equation_ids(boundary_conditions, n_local_equations);
-
-      // Create all necessary maps for matrix, rhs, and dof-vector.
-      // Map with all dof ids belonging to the local elements (airways and terminal units).
-      const Core::LinAlg::Map locally_owned_dof_map =
-          create_domain_map(comm, airways, terminal_units);
-      // Map with row ids for the equations of local elements, connections, bifurcations, and
-      // boundary conditions.
-      const Core::LinAlg::Map row_map = create_row_map(
-          comm, airways, terminal_units, connections, bifurcations, boundary_conditions);
-      // Map with all relevant dof ids for the local equations.
-      const Core::LinAlg::Map locally_relevant_dof_map =
-          create_column_map(comm, airways, terminal_units, global_dof_per_ele,
-              first_global_dof_of_ele, connections, bifurcations, boundary_conditions);
-
-      // Assign global equation ids to connections, bifurcations, and boundary conditions based on
-      // the row map. Maybe not necessary, but helps with debugging.
-      Junctions::assign_junction_global_equation_ids(row_map, connections, bifurcations);
-      BoundaryConditions::assign_global_equation_ids(row_map, boundary_conditions);
-
-      // Save locally relevant dof ids of every entity. Needed for local assembly.
-      Airways::assign_local_dof_ids(locally_relevant_dof_map, airways);
-      TerminalUnits::assign_local_dof_ids(locally_relevant_dof_map, terminal_units);
-      Junctions::assign_junction_local_dof_ids(locally_relevant_dof_map, connections, bifurcations);
-      BoundaryConditions::assign_local_dof_ids(locally_relevant_dof_map, boundary_conditions);
-
-      // Create system matrix and vectors:
-      // Vector with all degrees of freedom (p1, p2, q, ...) associated to the elements.
-      auto dofs = Core::LinAlg::Vector<double>(locally_owned_dof_map, true);
-      // Vector with locally relevant degrees of freedom, needs to import data from dofs vector.
-      auto locally_relevant_dofs = Core::LinAlg::Vector<double>(locally_relevant_dof_map, true);
-      // Solution vector (on row_map) used as the NOX initial guess each time step.
-      auto x = Core::LinAlg::Vector<double>(row_map, true);
-      // Jacobian of the system equations.
-      auto sysmat = Core::LinAlg::SparseMatrix(row_map, locally_relevant_dof_map, 3);
-
-      // Time integration parameters.
-      const double dt = context.parameters.dynamics.time_increment;
-      const int n_timesteps = context.parameters.dynamics.number_of_steps;
-      double current_time = 0.0;
-
-      const NoxSolverContext nox_solver_context{
-          .comm = comm,
-          .dynamics = context.parameters.dynamics,
-          .linear_solver_parameters = context.linear_solver_parameters,
-          .solver_params_callback = context.solver_params_callback,
-          .dofs = dofs,
-          .locally_relevant_dofs = locally_relevant_dofs,
-          .x = x,
-          .jacobian = sysmat,
-          .airways = airways,
-          .terminal_units = terminal_units,
-          .connections = connections,
-          .bifurcations = bifurcations,
-          .boundary_conditions = boundary_conditions,
-      };
-
-      auto nox_solver = NoxSolver(nox_solver_context, current_time);
-
-      // Time loop
-      if (Core::Communication::my_mpi_rank(comm) == 0)
+     public:
+      explicit ReducedLungSimulation(const ReducedLungContext& context)
+          : context_(context),
+            actdis_(
+                std::make_shared<Core::FE::Discretization>("reduced_lung", context.local_comm, 3)),
+            comm_(context.local_comm),
+            dt_(context.parameters.dynamics.time_increment),
+            n_timesteps_(context.parameters.dynamics.number_of_steps)
       {
-        std::cout << "-------- Start Time Integration --------\n"
-                  << "----------------------------------------\n"
-                  << std::flush;
       }
-      for (int n = 1; n <= n_timesteps; n++)
+
+      void initialize()
       {
-        if (Core::Communication::my_mpi_rank(comm) == 0)
+        validate_parameters();
+        build_discretization();
+        build_element_models();
+        build_node_entities();
+        assign_equation_ids();
+        build_maps_and_local_ids();
+        build_linear_system_and_solver();
+      }
+
+      void run()
+      {
+        if (Core::Communication::my_mpi_rank(comm_) == 0)
         {
-          std::cout << "Timestep: " << n << "/" << n_timesteps
+          std::cout << "-------- Start Time Integration --------\n"
+                    << "----------------------------------------\n"
+                    << std::flush;
+        }
+
+        for (int step = 1; step <= n_timesteps_; ++step)
+        {
+          solve_timestep(step);
+          write_output_if_due(step);
+        }
+      }
+
+     private:
+      void validate_parameters() const
+      {
+        const auto& dynamics = context_.parameters.dynamics;
+
+        if (dynamics.time_increment <= 0.0)
+        {
+          FOUR_C_THROW(
+              "Reduced lung time_increment must be positive, got {}.", dynamics.time_increment);
+        }
+        if (dynamics.number_of_steps < 0)
+        {
+          FOUR_C_THROW("Reduced lung number_of_steps must be non-negative, got {}.",
+              dynamics.number_of_steps);
+        }
+        if (dynamics.results_every <= 0)
+        {
+          FOUR_C_THROW(
+              "Reduced lung results_every must be positive, got {}.", dynamics.results_every);
+        }
+        if (dynamics.max_nonlinear_iterations <= 0)
+        {
+          FOUR_C_THROW("Reduced lung max_nonlinear_iterations must be positive, got {}.",
+              dynamics.max_nonlinear_iterations);
+        }
+      }
+
+      void build_discretization()
+      {
+        build_discretization_from_topology(
+            *actdis_, context_.parameters.lung_tree.topology, context_.rebalance_parameters);
+        actdis_->fill_complete();
+
+        visualization_writer_ = std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(
+            actdis_, Core::IO::visualization_parameters_factory(
+                         context_.io_parameters.sublist("RUNTIME VTK OUTPUT"),
+                         *context_.output_control_file, 0));
+        comm_ = actdis_->get_comm();
+      }
+
+      void build_element_models()
+      {
+        create_local_element_models(*actdis_, context_.parameters, airways_, terminal_units_,
+            dof_per_ele_, n_airways_, n_terminal_units_);
+
+        create_global_dof_maps(dof_per_ele_, comm_, global_dof_per_ele_, first_global_dof_of_ele_);
+        assign_global_dof_ids_to_models(first_global_dof_of_ele_, airways_, terminal_units_);
+
+        TerminalUnits::create_evaluators(terminal_units_);
+        Airways::create_evaluators(airways_);
+      }
+
+      void build_node_entities()
+      {
+        global_ele_ids_per_node_ = create_global_ele_ids_per_node(*actdis_, comm_);
+
+        BoundaryConditions::create_boundary_conditions(*actdis_, context_.parameters,
+            global_ele_ids_per_node_, global_dof_per_ele_, first_global_dof_of_ele_,
+            context_.function_manager, boundary_conditions_);
+        BoundaryConditions::create_evaluators(boundary_conditions_);
+
+        Junctions::create_junctions(*actdis_, global_ele_ids_per_node_, global_dof_per_ele_,
+            first_global_dof_of_ele_, connections_, bifurcations_);
+
+        const int n_connections = static_cast<int>(connections_.size());
+        const int n_bifurcations = static_cast<int>(bifurcations_.size());
+        const int n_boundary_conditions =
+            BoundaryConditions::count_boundary_conditions(boundary_conditions_);
+        print_instantiated_object_counts(comm_, n_airways_, n_terminal_units_, n_connections,
+            n_bifurcations, n_boundary_conditions);
+      }
+
+      void assign_equation_ids()
+      {
+        int n_local_equations = 0;
+        Airways::assign_local_equation_ids(airways_, n_local_equations);
+        TerminalUnits::assign_local_equation_ids(terminal_units_, n_local_equations);
+        Junctions::assign_junction_local_equation_ids(
+            connections_, bifurcations_, n_local_equations);
+        BoundaryConditions::assign_local_equation_ids(boundary_conditions_, n_local_equations);
+      }
+
+      void build_maps_and_local_ids()
+      {
+        locally_owned_dof_map_ = std::make_unique<Core::LinAlg::Map>(
+            create_domain_map(comm_, airways_, terminal_units_));
+        row_map_ = std::make_unique<Core::LinAlg::Map>(create_row_map(
+            comm_, airways_, terminal_units_, connections_, bifurcations_, boundary_conditions_));
+        locally_relevant_dof_map_ = std::make_unique<Core::LinAlg::Map>(
+            create_column_map(comm_, airways_, terminal_units_, global_dof_per_ele_,
+                first_global_dof_of_ele_, connections_, bifurcations_, boundary_conditions_));
+
+        Junctions::assign_junction_global_equation_ids(*row_map_, connections_, bifurcations_);
+        BoundaryConditions::assign_global_equation_ids(*row_map_, boundary_conditions_);
+
+        Airways::assign_local_dof_ids(*locally_relevant_dof_map_, airways_);
+        TerminalUnits::assign_local_dof_ids(*locally_relevant_dof_map_, terminal_units_);
+        Junctions::assign_junction_local_dof_ids(
+            *locally_relevant_dof_map_, connections_, bifurcations_);
+        BoundaryConditions::assign_local_dof_ids(*locally_relevant_dof_map_, boundary_conditions_);
+      }
+
+      void build_linear_system_and_solver()
+      {
+        FOUR_C_ASSERT_ALWAYS(locally_owned_dof_map_ != nullptr && row_map_ != nullptr &&
+                                 locally_relevant_dof_map_ != nullptr,
+            "Reduced lung maps must be initialized before linear system setup.");
+
+        dofs_ = std::make_unique<Core::LinAlg::Vector<double>>(*locally_owned_dof_map_, true);
+        locally_relevant_dofs_ =
+            std::make_unique<Core::LinAlg::Vector<double>>(*locally_relevant_dof_map_, true);
+        x_ = std::make_unique<Core::LinAlg::Vector<double>>(*row_map_, true);
+        sysmat_ =
+            std::make_unique<Core::LinAlg::SparseMatrix>(*row_map_, *locally_relevant_dof_map_, 3);
+
+        const NoxSolverContext nox_solver_context{
+            .comm = comm_,
+            .dynamics = context_.parameters.dynamics,
+            .linear_solver_parameters = context_.linear_solver_parameters,
+            .solver_params_callback = context_.solver_params_callback,
+            .dofs = *dofs_,
+            .locally_relevant_dofs = *locally_relevant_dofs_,
+            .x = *x_,
+            .jacobian = *sysmat_,
+            .airways = airways_,
+            .terminal_units = terminal_units_,
+            .connections = connections_,
+            .bifurcations = bifurcations_,
+            .boundary_conditions = boundary_conditions_,
+        };
+
+        nox_solver_ = std::make_unique<NoxSolver>(nox_solver_context, current_time_);
+      }
+
+      void solve_timestep(int step)
+      {
+        if (Core::Communication::my_mpi_rank(comm_) == 0)
+        {
+          std::cout << "Timestep: " << step << "/" << n_timesteps_
                     << "\n----------------------------------------\n"
                     << std::flush;
         }
-        current_time += dt;
 
-        // Solve the nonlinear system. Converged state sync is handled inside nox_solver.solve().
-        nox_solver.solve(current_time);
+        FOUR_C_ASSERT_ALWAYS(nox_solver_ != nullptr,
+            "Reduced lung solver must be initialized before time integration.");
+        FOUR_C_ASSERT_ALWAYS(locally_relevant_dofs_ != nullptr,
+            "Reduced lung locally relevant dof vector must be initialized before time "
+            "integration.");
 
-        TerminalUnits::end_of_timestep_routine(terminal_units, locally_relevant_dofs, dt);
-        Airways::end_of_timestep_routine(airways, locally_relevant_dofs, dt);
+        current_time_ += dt_;
+        nox_solver_->solve(current_time_);
 
-        // Runtime output
-        if (n % context.parameters.dynamics.results_every == 0)
-        {
-          visualization_writer.reset();
-          collect_runtime_output_data(visualization_writer, airways, terminal_units,
-              locally_relevant_dofs, actdis->element_row_map());
-          visualization_writer.write_to_disk(current_time, n);
-        }
+        TerminalUnits::end_of_timestep_routine(terminal_units_, *locally_relevant_dofs_, dt_);
+        Airways::end_of_timestep_routine(airways_, *locally_relevant_dofs_, dt_);
       }
-    }
+
+      void write_output_if_due(int step)
+      {
+        if (step % context_.parameters.dynamics.results_every != 0)
+        {
+          return;
+        }
+
+        FOUR_C_ASSERT_ALWAYS(visualization_writer_ != nullptr,
+            "Reduced lung visualization writer is not initialized.");
+        FOUR_C_ASSERT_ALWAYS(locally_relevant_dofs_ != nullptr,
+            "Reduced lung locally relevant dof vector must be initialized before output.");
+
+        visualization_writer_->reset();
+        collect_runtime_output_data(*visualization_writer_, airways_, terminal_units_,
+            *locally_relevant_dofs_, actdis_->element_row_map());
+        visualization_writer_->write_to_disk(current_time_, step);
+      }
+
+      const ReducedLungContext context_;
+      std::shared_ptr<Core::FE::Discretization> actdis_;
+      std::unique_ptr<Core::IO::DiscretizationVisualizationWriterMesh> visualization_writer_;
+      MPI_Comm comm_;
+
+      Airways::AirwayContainer airways_;
+      TerminalUnits::TerminalUnitContainer terminal_units_;
+      std::map<int, int> dof_per_ele_;
+      int n_airways_ = 0;
+      int n_terminal_units_ = 0;
+      std::map<int, int> first_global_dof_of_ele_;
+      std::map<int, int> global_dof_per_ele_;
+      std::map<int, std::vector<int>> global_ele_ids_per_node_;
+      BoundaryConditions::BoundaryConditionContainer boundary_conditions_;
+      Junctions::ConnectionData connections_;
+      Junctions::BifurcationData bifurcations_;
+
+      std::unique_ptr<Core::LinAlg::Map> locally_owned_dof_map_;
+      std::unique_ptr<Core::LinAlg::Map> row_map_;
+      std::unique_ptr<Core::LinAlg::Map> locally_relevant_dof_map_;
+      std::unique_ptr<Core::LinAlg::Vector<double>> dofs_;
+      std::unique_ptr<Core::LinAlg::Vector<double>> locally_relevant_dofs_;
+      std::unique_ptr<Core::LinAlg::Vector<double>> x_;
+      std::unique_ptr<Core::LinAlg::SparseMatrix> sysmat_;
+
+      std::unique_ptr<NoxSolver> nox_solver_;
+      const double dt_;
+      const int n_timesteps_;
+      double current_time_ = 0.0;
+    };
 
   }  // namespace
 
-  void reduced_lung_main()
+  void reduced_lung_main(Global::Problem& problem)
   {
-    const ReducedLungContext context =
-        make_reduced_lung_context_from_problem(*Global::Problem::instance());
-    run_reduced_lung(context);
+    const ReducedLungContext context = make_reduced_lung_context_from_problem(problem);
+    ReducedLungSimulation simulation(context);
+    simulation.initialize();
+    simulation.run();
   }
+
+  void reduced_lung_main() { reduced_lung_main(*Global::Problem::instance()); }
 }  // namespace ReducedLung
 
 FOUR_C_NAMESPACE_CLOSE
