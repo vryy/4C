@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_wear.hpp"
+#include "4C_contact_wear_input.hpp"
 #include "4C_mortar_integrator.hpp"
 #include "4C_utils_pairedvector.hpp"
 
@@ -805,19 +805,19 @@ namespace CONTACT
      \brief Return the Wear shape fcn type (wear weighting...)
 
      */
-    Inpar::Wear::WearShape wear_shape_fcn() { return wearshapefcn_; }
+    Wear::WearShape wear_shape_fcn() { return wearshapefcn_; }
 
     /*!
      \brief Return type of wear surface definition
 
      */
-    Inpar::Wear::WearSide wear_side() { return wearside_; }
+    Wear::WearSide wear_side() { return wearside_; }
 
     /*!
      \brief Return type of wear algorithm
 
      */
-    Inpar::Wear::WearType wear_type() { return weartype_; }
+    Wear::WearType wear_type() { return weartype_; }
 
     /*!
      \brief Return the LM shape fcn type
@@ -862,15 +862,15 @@ namespace CONTACT
 
     // wear inputs from parameter list
     //! type of wear law
-    Inpar::Wear::WearLaw wearlaw_;
+    Wear::WearLaw wearlaw_;
     //! flag for implicit wear algorithm
     bool wearimpl_;
     //! definition of wear surface
-    Inpar::Wear::WearSide wearside_;
+    Wear::WearSide wearside_;
     //! definition of contact wear algorithm
-    Inpar::Wear::WearType weartype_;
+    Wear::WearType weartype_;
     //! type of wear shape function
-    Inpar::Wear::WearShape wearshapefcn_;
+    Wear::WearShape wearshapefcn_;
     //! flag for steady state wear
     bool sswear_;
     //! wear coefficient
