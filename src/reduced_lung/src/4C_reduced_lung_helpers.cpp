@@ -37,15 +37,92 @@ namespace ReducedLung
   using namespace TerminalUnits;
   using namespace Airways;
 
+  NoxAssemblyPipeline create_default_nox_assembly_pipeline(AirwayContainer& airways,
+      TerminalUnitContainer& terminal_units, Junctions::ConnectionData& connections,
+      Junctions::BifurcationData& bifurcations,
+      BoundaryConditions::BoundaryConditionContainer& boundary_conditions)
+  {
+    NoxAssemblyPipeline pipeline;
+
+    pipeline.residual_assemblers.emplace_back(
+        [&airways](Core::LinAlg::Vector<double>& residual,
+            const Core::LinAlg::Vector<double>& locally_relevant_dofs, double /*current_time*/,
+            double time_step_size_dt)
+        {
+          Airways::update_residual_vector(
+              residual, airways, locally_relevant_dofs, time_step_size_dt);
+        });
+    pipeline.residual_assemblers.emplace_back(
+        [&terminal_units](Core::LinAlg::Vector<double>& residual,
+            const Core::LinAlg::Vector<double>& locally_relevant_dofs, double /*current_time*/,
+            double time_step_size_dt)
+        {
+          TerminalUnits::update_residual_vector(
+              residual, terminal_units, locally_relevant_dofs, time_step_size_dt);
+        });
+    pipeline.residual_assemblers.emplace_back(
+        [&connections, &bifurcations](Core::LinAlg::Vector<double>& residual,
+            const Core::LinAlg::Vector<double>& locally_relevant_dofs, double /*current_time*/,
+            double /*time_step_size_dt*/)
+        {
+          Junctions::update_residual_vector(
+              residual, connections, bifurcations, locally_relevant_dofs);
+        });
+    pipeline.residual_assemblers.emplace_back(
+        [&boundary_conditions](Core::LinAlg::Vector<double>& residual,
+            const Core::LinAlg::Vector<double>& locally_relevant_dofs, double current_time,
+            double /*time_step_size_dt*/)
+        {
+          BoundaryConditions::update_residual_vector(
+              residual, boundary_conditions, locally_relevant_dofs, current_time);
+        });
+
+    pipeline.jacobian_assemblers.emplace_back(
+        [&airways](Core::LinAlg::SparseMatrix& jacobian,
+            const Core::LinAlg::Vector<double>& locally_relevant_dofs, double /*current_time*/,
+            double time_step_size_dt)
+        { Airways::update_jacobian(jacobian, airways, locally_relevant_dofs, time_step_size_dt); });
+    pipeline.jacobian_assemblers.emplace_back(
+        [&terminal_units](Core::LinAlg::SparseMatrix& jacobian,
+            const Core::LinAlg::Vector<double>& locally_relevant_dofs, double /*current_time*/,
+            double time_step_size_dt)
+        {
+          TerminalUnits::update_jacobian(
+              jacobian, terminal_units, locally_relevant_dofs, time_step_size_dt);
+        });
+    pipeline.jacobian_assemblers.emplace_back(
+        [&connections, &bifurcations](Core::LinAlg::SparseMatrix& jacobian,
+            const Core::LinAlg::Vector<double>& /*locally_relevant_dofs*/, double /*current_time*/,
+            double /*time_step_size_dt*/)
+        { Junctions::update_jacobian(jacobian, connections, bifurcations); });
+    pipeline.jacobian_assemblers.emplace_back(
+        [&boundary_conditions](Core::LinAlg::SparseMatrix& jacobian,
+            const Core::LinAlg::Vector<double>& /*locally_relevant_dofs*/, double /*current_time*/,
+            double /*time_step_size_dt*/)
+        { BoundaryConditions::update_jacobian(jacobian, boundary_conditions); });
+
+    pipeline.state_updaters.emplace_back(
+        [&airways](
+            const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time_step_size_dt)
+        {
+          Airways::update_internal_state_vectors(airways, locally_relevant_dofs, time_step_size_dt);
+        });
+    pipeline.state_updaters.emplace_back(
+        [&terminal_units](
+            const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time_step_size_dt)
+        {
+          TerminalUnits::update_internal_state_vectors(
+              terminal_units, locally_relevant_dofs, time_step_size_dt);
+        });
+
+    return pipeline;
+  }
+
   NoxSolver::NoxSolver(const NoxSolverContext& context, double initial_time)
       : x_solution_(context.x),
         dofs_(context.dofs),
         locally_relevant_dofs_(context.locally_relevant_dofs),
-        airways_(context.airways),
-        terminal_units_(context.terminal_units),
-        connections_(context.connections),
-        bifurcations_(context.bifurcations),
-        boundary_conditions_(context.boundary_conditions),
+        assembly_pipeline_(context.assembly_pipeline),
         dt_(context.dynamics.time_increment),
         current_time_(initial_time),
         linear_solver_(std::make_shared<Core::LinAlg::Solver>(context.linear_solver_parameters,
@@ -54,6 +131,14 @@ namespace ReducedLung
     if (!linear_solver_)
     {
       FOUR_C_THROW("ReducedLung::NoxSolver requires a valid linear solver instance.");
+    }
+    if (assembly_pipeline_.residual_assemblers.empty())
+    {
+      FOUR_C_THROW("ReducedLung::NoxSolver requires at least one residual assembler callback.");
+    }
+    if (assembly_pipeline_.jacobian_assemblers.empty())
+    {
+      FOUR_C_THROW("ReducedLung::NoxSolver requires at least one Jacobian assembler callback.");
     }
 
     // Create NOX parameter list
@@ -92,12 +177,10 @@ namespace ReducedLung
   {
     sync_state_from_x(x);
 
-    Airways::update_residual_vector(residual, airways_, locally_relevant_dofs_, dt_);
-    TerminalUnits::update_residual_vector(residual, terminal_units_, locally_relevant_dofs_, dt_);
-    Junctions::update_residual_vector(
-        residual, connections_, bifurcations_, locally_relevant_dofs_);
-    BoundaryConditions::update_residual_vector(
-        residual, boundary_conditions_, locally_relevant_dofs_, current_time_);
+    for (const auto& assemble_residual : assembly_pipeline_.residual_assemblers)
+    {
+      assemble_residual(residual, locally_relevant_dofs_, current_time_, dt_);
+    }
 
     return true;
   }
@@ -113,10 +196,10 @@ namespace ReducedLung
           "ReducedLung NOX assembly requires Core::LinAlg::SparseMatrix Jacobian operator.");
     }
 
-    Airways::update_jacobian(*jac_matrix, airways_, locally_relevant_dofs_, dt_);
-    TerminalUnits::update_jacobian(*jac_matrix, terminal_units_, locally_relevant_dofs_, dt_);
-    Junctions::update_jacobian(*jac_matrix, connections_, bifurcations_);
-    BoundaryConditions::update_jacobian(*jac_matrix, boundary_conditions_);
+    for (const auto& assemble_jacobian : assembly_pipeline_.jacobian_assemblers)
+    {
+      assemble_jacobian(*jac_matrix, locally_relevant_dofs_, current_time_, dt_);
+    }
 
     if (!jac_matrix->filled()) jac_matrix->complete();
 
@@ -128,8 +211,10 @@ namespace ReducedLung
     Core::LinAlg::export_to(x, dofs_);
     Core::LinAlg::export_to(dofs_, locally_relevant_dofs_);
 
-    Airways::update_internal_state_vectors(airways_, locally_relevant_dofs_, dt_);
-    TerminalUnits::update_internal_state_vectors(terminal_units_, locally_relevant_dofs_, dt_);
+    for (const auto& update_state : assembly_pipeline_.state_updaters)
+    {
+      update_state(locally_relevant_dofs_, dt_);
+    }
   }
 
 

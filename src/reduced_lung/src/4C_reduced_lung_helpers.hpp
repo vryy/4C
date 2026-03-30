@@ -36,6 +36,7 @@ namespace Core::Nodes
 namespace Core::LinAlg
 {
   class Solver;
+  class SparseMatrix;
   class SparseOperator;
   template <typename T>
   class Vector;
@@ -54,6 +55,30 @@ namespace Core::Rebalance
 namespace ReducedLung
 {
   /**
+   * @brief Ordered callback registry for NOX residual/Jacobian/state assembly.
+   *
+   * The pipeline decouples @ref NoxSolver from concrete reduced-lung model blocks. Additional
+   * model families can register callbacks without changing solver internals.
+   */
+  struct NoxAssemblyPipeline
+  {
+    using ResidualAssembler = std::function<void(Core::LinAlg::Vector<double>& residual,
+        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double current_time,
+        double time_step_size_dt)>;
+
+    using JacobianAssembler = std::function<void(Core::LinAlg::SparseMatrix& jacobian,
+        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double current_time,
+        double time_step_size_dt)>;
+
+    using StateUpdater = std::function<void(
+        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time_step_size_dt)>;
+
+    std::vector<ResidualAssembler> residual_assemblers;
+    std::vector<JacobianAssembler> jacobian_assemblers;
+    std::vector<StateUpdater> state_updaters;
+  };
+
+  /**
    * @brief Context bundling all objects required to construct and run @ref NoxSolver.
    */
   struct NoxSolverContext
@@ -62,18 +87,23 @@ namespace ReducedLung
     const ReducedLungParameters::Dynamics& dynamics;  ///< Nonlinear/timestep solver parameters.
     const Teuchos::ParameterList& linear_solver_parameters;  ///< Linear solver configuration.
     std::function<const Teuchos::ParameterList&(int)>
-        solver_params_callback;          ///< Callback for nested/ID-based solver parameters.
-    Core::LinAlg::Vector<double>& dofs;  ///< Owned dof vector.
-    Core::LinAlg::Vector<double>& locally_relevant_dofs;   ///< Ghosted dof vector.
-    Core::LinAlg::Vector<double>& x;                       ///< NOX solution vector.
-    Core::LinAlg::SparseOperator& jacobian;                ///< NOX Jacobian operator.
-    Airways::AirwayContainer& airways;                     ///< Airway model container.
-    TerminalUnits::TerminalUnitContainer& terminal_units;  ///< Terminal-unit model container.
-    Junctions::ConnectionData& connections;                ///< Junction connection equations/data.
-    Junctions::BifurcationData& bifurcations;              ///< Junction bifurcation equations/data.
-    BoundaryConditions::BoundaryConditionContainer&
-        boundary_conditions;  ///< Boundary-condition container.
+        solver_params_callback;  ///< Callback for nested/ID-based solver parameters.
+    const NoxAssemblyPipeline& assembly_pipeline;         ///< Ordered model assembly callbacks.
+    Core::LinAlg::Vector<double>& dofs;                   ///< Owned dof vector.
+    Core::LinAlg::Vector<double>& locally_relevant_dofs;  ///< Ghosted dof vector.
+    Core::LinAlg::Vector<double>& x;                      ///< NOX solution vector.
+    Core::LinAlg::SparseOperator& jacobian;               ///< NOX Jacobian operator.
   };
+
+  /**
+   * @brief Create the default reduced-lung NOX assembly pipeline.
+   *
+   * Registers airway, terminal-unit, junction, and boundary-condition contributions.
+   */
+  NoxAssemblyPipeline create_default_nox_assembly_pipeline(Airways::AirwayContainer& airways,
+      TerminalUnits::TerminalUnitContainer& terminal_units, Junctions::ConnectionData& connections,
+      Junctions::BifurcationData& bifurcations,
+      BoundaryConditions::BoundaryConditionContainer& boundary_conditions);
 
   /**
    * @brief NOX solver for reduced lung simulations.
@@ -88,7 +118,7 @@ namespace ReducedLung
      * @brief Construct NOX solver with all required model components.
      *
      * @param context NOX setup context including communicator, dynamics, linear solver setup,
-     * and all bound vectors/operators/model containers.
+     * assembly pipeline callbacks, and all bound vectors/operators.
      * @param initial_time Initial time for the simulation.
      */
     NoxSolver(const NoxSolverContext& context, double initial_time = 0.0);
@@ -104,7 +134,7 @@ namespace ReducedLung
      *
      * Updates current time for boundary conditions, performs Newton solve,
      * and synchronizes the converged solution to dofs, locally_relevant_dofs,
-     * and internal state vectors (airways, terminal units).
+     * and registered internal state vectors via the assembly pipeline.
      *
      * @param time Current physical time for time-dependent BCs.
      * @return Number of nonlinear iterations performed.
@@ -124,11 +154,7 @@ namespace ReducedLung
     Core::LinAlg::Vector<double>& x_solution_;
     Core::LinAlg::Vector<double>& dofs_;
     Core::LinAlg::Vector<double>& locally_relevant_dofs_;
-    Airways::AirwayContainer& airways_;
-    TerminalUnits::TerminalUnitContainer& terminal_units_;
-    Junctions::ConnectionData& connections_;
-    Junctions::BifurcationData& bifurcations_;
-    BoundaryConditions::BoundaryConditionContainer& boundary_conditions_;
+    NoxAssemblyPipeline assembly_pipeline_;
 
     // Time integration parameters
     double dt_;

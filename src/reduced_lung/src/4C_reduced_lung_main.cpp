@@ -232,20 +232,19 @@ namespace ReducedLung
         sysmat_ =
             std::make_unique<Core::LinAlg::SparseMatrix>(*row_map_, *locally_relevant_dof_map_, 3);
 
+        assembly_pipeline_ = create_default_nox_assembly_pipeline(
+            airways_, terminal_units_, connections_, bifurcations_, boundary_conditions_);
+
         const NoxSolverContext nox_solver_context{
             .comm = comm_,
             .dynamics = context_.parameters.dynamics,
             .linear_solver_parameters = context_.linear_solver_parameters,
             .solver_params_callback = context_.solver_params_callback,
+            .assembly_pipeline = assembly_pipeline_,
             .dofs = *dofs_,
             .locally_relevant_dofs = *locally_relevant_dofs_,
             .x = *x_,
             .jacobian = *sysmat_,
-            .airways = airways_,
-            .terminal_units = terminal_units_,
-            .connections = connections_,
-            .bifurcations = bifurcations_,
-            .boundary_conditions = boundary_conditions_,
         };
 
         nox_solver_ = std::make_unique<NoxSolver>(nox_solver_context, current_time_);
@@ -315,6 +314,7 @@ namespace ReducedLung
       std::unique_ptr<Core::LinAlg::Vector<double>> locally_relevant_dofs_;
       std::unique_ptr<Core::LinAlg::Vector<double>> x_;
       std::unique_ptr<Core::LinAlg::SparseMatrix> sysmat_;
+      NoxAssemblyPipeline assembly_pipeline_;
 
       std::unique_ptr<NoxSolver> nox_solver_;
       const double dt_;
