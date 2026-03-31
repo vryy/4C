@@ -18,6 +18,35 @@ namespace
   using namespace Core::IO;
   using namespace Core::IO::InputSpecBuilders;
 
+  namespace Helpers
+  {
+    std::string emit_metadata(const InputSpec& spec, InputSpecEmitMetadataOptions options = {})
+    {
+      ryml::Tree tree = init_yaml_tree_with_exceptions();
+      ryml::NodeRef root = tree.rootref();
+      YamlNodeRef yaml(root, "");
+      spec.emit_metadata(yaml, options);
+
+      std::string metadata;
+      ryml::emitrs_yaml(tree, &metadata);
+      return metadata;
+    }
+
+    InputParameterContainer match(
+        const InputSpec& spec, const std::string& yaml_str, const std::string& filepath = "")
+    {
+      InputParameterContainer container;
+      ryml::Tree tree = init_yaml_tree_with_exceptions();
+      ryml::NodeRef root = tree.rootref();
+      ryml::parse_in_arena(ryml::to_csubstr(yaml_str), root);
+
+      ConstYamlNodeRef node(root, filepath);
+      spec.match(node, container);
+
+      return container;
+    }
+  }  // namespace Helpers
+
   TEST(InputSpecTest, NestedOneOfs)
   {
     auto spec = one_of({
@@ -37,13 +66,8 @@ namespace
 
     {
       // Verify that all entries got pulled to the highest level.
-      std::ostringstream out;
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      YamlNodeRef yaml(root, "");
-      spec.emit_metadata(yaml);
-      out << tree;
-      EXPECT_EQ(out.str(), R"(type: one_of
+      const std::string metadata = Helpers::emit_metadata(spec);
+      EXPECT_EQ(metadata, R"(type: one_of
 specs:
   - type: all_of
     specs:
@@ -104,12 +128,7 @@ specs:
             { container.add<int>("index", index); }),
     });
 
-    std::ostringstream out;
-    ryml::Tree tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
-    YamlNodeRef yaml(root, "");
-    spec.emit_metadata(yaml);
-    out << tree;
+    const std::string metadata = Helpers::emit_metadata(spec);
 
     std::string expected = R"(type: one_of
 specs:
@@ -152,7 +171,7 @@ specs:
                         type: string
                         required: true
 )";
-    EXPECT_EQ(out.str(), expected);
+    EXPECT_EQ(metadata, expected);
   }
 
   TEST(InputSpecTest, NestedOneOfsWithAllOfs)
@@ -175,12 +194,7 @@ specs:
         }),
     });
 
-    std::ostringstream out;
-    ryml::Tree tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
-    YamlNodeRef yaml(root, "");
-    spec.emit_metadata(yaml);
-    out << tree;
+    const std::string metadata = Helpers::emit_metadata(spec);
 
     std::string expected = R"(type: one_of
 specs:
@@ -211,7 +225,7 @@ specs:
         type: int
         required: true
 )";
-    EXPECT_EQ(out.str(), expected);
+    EXPECT_EQ(metadata, expected);
   }
 
 
@@ -269,12 +283,7 @@ specs:
 
 
     {
-      std::ostringstream out;
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      YamlNodeRef yaml(root, "");
-      spec.emit_metadata(yaml);
-      out << tree;
+      const std::string metadata = Helpers::emit_metadata(spec);
 
       std::string expected = R"(type: all_of
 specs:
@@ -547,8 +556,9 @@ specs:
                   type: int
                   required: true
 )";
-      EXPECT_EQ(out.str(), expected);
-      std::cout << out.str() << std::endl;
+      EXPECT_EQ(metadata, expected);
+
+      std::cout << metadata << std::endl;
     }
   }
 
@@ -585,14 +595,10 @@ specs:
     }
 
 
-    std::ostringstream out;
-    ryml::Tree tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
-    YamlNodeRef yaml(root, "");
-    spec.emit_metadata(yaml, {.condense_duplicated_specs_threshold = 1});
-    out << tree;
+    const std::string metadata =
+        Helpers::emit_metadata(spec, {.condense_duplicated_specs_threshold = 1});
 
-    std::string expected = R"(type: all_of
+    const std::string expected = R"(type: all_of
 specs:
   - name: first
     type: group
@@ -672,8 +678,8 @@ $references:
           required: true
 )";
 
-    std::cout << out.str() << std::endl;
-    EXPECT_EQ(out.str(), expected);
+    std::cout << metadata << std::endl;
+    EXPECT_EQ(metadata, expected);
   }
 
   TEST(InputSpecTest, Copyable)
@@ -692,20 +698,13 @@ $references:
     }
 
     {
-      InputParameterContainer container;
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      root |= ryml::MAP;
-      ryml::parse_in_arena(R"(
+      InputParameterContainer container = Helpers::match(spec, R"(
 group:
   a: 1
   b: string
   d: 42
-)",
-          root);
+)");
 
-      ConstYamlNodeRef node(root, "");
-      spec.match(node, container);
       const auto& group = container.group("group");
       EXPECT_EQ(group.get<int>("a"), 1);
       EXPECT_EQ(group.get<std::string>("b"), "string");
@@ -718,15 +717,9 @@ group:
     auto spec = parameter<int>("a");
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      root |= ryml::MAP;
-      root["a"] << 1;
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      spec.match(node, container);
+      InputParameterContainer container = Helpers::match(spec, R"(
+a: 1
+)");
       EXPECT_EQ(container.get<int>("a"), 1);
     }
 
@@ -745,30 +738,18 @@ group:
     }
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      root |= ryml::MAP;
-      root["b"] << 1;
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-          spec.match(node, container), Core::Exception, "Expected parameter 'a'");
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+b: 1
+)"),
+          Core::Exception, "Expected parameter 'a'");
     }
 
     {
       SCOPED_TRACE("Wrong type.");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      root |= ryml::MAP;
-      root["a"] << "string";
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
-          "Candidate parameter 'a' has wrong type, expected type: int");
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+a: "string"
+)"),
+          Core::Exception, "Candidate parameter 'a' has wrong type, expected type: int");
     }
   }
 
@@ -779,21 +760,14 @@ group:
             std::tuple<std::string, int, double>>;
 
     // vector and map are sized to 2 entries each
-    auto spec = parameter<ComplicatedType>("t", {.description = "", .size = {2, 2}});
-    auto tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
+    const auto spec = parameter<ComplicatedType>("t", {.description = "", .size = {2, 2}});
 
-    ryml::parse_in_arena(R"(
+    const InputParameterContainer container = Helpers::match(spec, R"(
 t:
   - 42
   - [ [1.1, 2.2], {a: true, b: false} ]
   - ["hello", 7, 8.9]
-)",
-        root);
-
-    ConstYamlNodeRef node(root, "");
-    InputParameterContainer container;
-    spec.match(node, container);
+)");
 
     const auto& tuple = container.get<ComplicatedType>("t");
 
@@ -826,15 +800,9 @@ t:
     // outer vector is sized to 3 entries, inner vector to 2 entries, map to 4 entries
     auto spec = parameter<ComplicatedType>("c", {.description = "", .size = {2, 3, 4}});
 
-    auto tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
-    ryml::parse_in_arena(R"(
-c: [[1.0, 2.0], [[1.0, 2.0, 8.0], {a: true, b: false, c: true, d: false}]])",
-        root);
-
-    ConstYamlNodeRef node(root, "");
-    InputParameterContainer container;
-    spec.match(node, container);
+    InputParameterContainer container = Helpers::match(spec, R"(
+c: [[1.0, 2.0], [[1.0, 2.0, 8.0], {a: true, b: false, c: true, d: false}]]
+)");
 
     const auto& pair = container.get<ComplicatedType>("c");
     ASSERT_EQ(pair.first.size(), 2);
@@ -860,40 +828,25 @@ c: [[1.0, 2.0], [[1.0, 2.0, 8.0], {a: true, b: false, c: true, d: false}]])",
 
     {
       SCOPED_TRACE("Matches");
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      ryml::parse_in_arena("a: [1, 2, 3]", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+      Helpers::match(spec, R"(
+a: [1, 2, 3]
+)");
     }
 
     {
       SCOPED_TRACE("Too few elements");
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      ryml::parse_in_arena("a: [1, 2 ]", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
-          "Candidate parameter 'a' has incorrect size");
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+a: [1, 2 ]
+)"),
+          Core::Exception, "Candidate parameter 'a' has incorrect size");
     }
 
     {
       SCOPED_TRACE("Too many elements");
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      ryml::parse_in_arena("a: [1, 2, 3, 4]", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
-          "Candidate parameter 'a' has incorrect size");
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+a: [1, 2, 3, 4]
+)"),
+          Core::Exception, "Candidate parameter 'a' has incorrect size");
     }
   }
 
@@ -908,17 +861,10 @@ c: [[1.0, 2.0], [[1.0, 2.0, 8.0], {a: true, b: false, c: true, d: false}]])",
             .validator = all_elements(all_elements(all_elements(all_elements(positive<int>())))),
             .size = {2, 3},
         });
-    auto tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
 
-    // YAML input matching the nested structure:
-    ryml::parse_in_arena(R"(
-t: [[[[1,1,1],[1,1,2],[1,3,1]], [[2,2,2],[2,2,1],[2,2,9]]], [[[3,3,3],[3,2,3],[3,1,3]], [[4,4,4],[4,4,5],[4,4,6]]]])",
-        root);
-
-    ConstYamlNodeRef node(root, "");
-    InputParameterContainer container;
-    spec.match(node, container);
+    InputParameterContainer container = Helpers::match(spec, R"(
+t: [[[[1,1,1],[1,1,2],[1,3,1]], [[2,2,2],[2,2,1],[2,2,9]]], [[[3,3,3],[3,2,3],[3,1,3]], [[4,4,4],[4,4,5],[4,4,6]]]]
+)");
 
     const auto& outer_vector = container.get<ComplicatedType>("t");
     ASSERT_EQ(outer_vector.size(), 2);
@@ -940,40 +886,25 @@ t: [[[[1,1,1],[1,1,2],[1,3,1]], [[2,2,2],[2,2,1],[2,2,9]]], [[[3,3,3],[3,2,3],[3
 
     {
       SCOPED_TRACE("Matches");
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      ryml::parse_in_arena("a: [1, 2, 3]", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+      Helpers::match(spec, R"(
+a: [1, 2, 3]
+)");
     }
 
     {
       SCOPED_TRACE("Too few elements");
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      ryml::parse_in_arena("a: [1, 2 ]", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
-          "Candidate parameter 'a' has incorrect size");
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+a: [1, 2 ]
+)"),
+          Core::Exception, "Candidate parameter 'a' has incorrect size");
     }
 
     {
       SCOPED_TRACE("Too many elements");
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      ryml::parse_in_arena("a: [1, 2, 3, 4]", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
-          "Candidate parameter 'a' has incorrect size");
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+a: [1, 2, 3, 4]
+)"),
+          Core::Exception, "Candidate parameter 'a' has incorrect size");
     }
   }
 
@@ -983,25 +914,17 @@ t: [[[[1,1,1],[1,1,2],[1,3,1]], [[2,2,2],[2,2,1],[2,2,9]]], [[[3,3,3],[3,2,3],[3
 
     {
       SCOPED_TRACE("Matches");
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      ryml::parse_in_arena("a: [[1, 2], [2, 3]]", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+      Helpers::match(spec, R"(
+a: [[1, 2], [2, 3]]
+)");
     }
+
     {
       SCOPED_TRACE("Invalid nonsymmetric match");
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      ryml::parse_in_arena("a: [[1, 2], [3, 3]]", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      EXPECT_THROW(spec.match(node, container), Core::Exception);
+      EXPECT_THROW(Helpers::match(spec, R"(
+a: [[1, 2], [3, 3]]
+)"),
+          Core::Exception);
     }
   }
 
@@ -1010,17 +933,10 @@ t: [[[[1,1,1],[1,1,2],[1,3,1]], [[2,2,2],[2,2,1],[2,2,9]]], [[[3,3,3],[3,2,3],[3
     using namespace Core::IO::InputSpecBuilders::Validators;
 
     auto spec = parameter<Core::LinAlg::Tensor<int, 2, 2, 3, 3>>("t", {.description = ""});
-    auto tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
 
-    // YAML input matching the nested structure:
-    ryml::parse_in_arena(R"(
-t: [[[[1,1,1],[1,1,2],[1,3,1]], [[2,2,2],[2,2,1],[2,2,9]]], [[[3,3,3],[3,2,3],[3,1,3]], [[4,4,4],[4,4,5],[4,4,6]]]])",
-        root);
-
-    ConstYamlNodeRef node(root, "");
-    InputParameterContainer container;
-    spec.match(node, container);
+    InputParameterContainer container = Helpers::match(spec, R"(
+t: [[[[1,1,1],[1,1,2],[1,3,1]], [[2,2,2],[2,2,1],[2,2,9]]], [[[3,3,3],[3,2,3],[3,1,3]], [[4,4,4],[4,4,5],[4,4,6]]]]
+)");
 
     const auto& outer_vector = container.get<Core::LinAlg::Tensor<int, 2, 2, 3, 3>>("t");
 
@@ -1037,16 +953,9 @@ t: [[[[1,1,1],[1,1,2],[1,3,1]], [[2,2,2],[2,2,1],[2,2,9]]], [[[3,3,3],[3,2,3],[3
 
     {
       SCOPED_TRACE("Valid Match");
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      // YAML input matching the nested structure:
-      ryml::parse_in_arena(R"(
-t: [[1, 2], [2, 3]])",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+      InputParameterContainer container = Helpers::match(spec, R"(
+t: [[1, 2], [2, 3]]
+)");
 
       const auto& outer_vector = container.get<Core::LinAlg::SymmetricTensor<int, 2, 2>>("t");
 
@@ -1065,39 +974,25 @@ t: [[1, 2], [2, 3]])",
                                });
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      root |= ryml::MAP;
-      root["group"] |= ryml::MAP;
-      root["group"]["a"] << 1;
-      root["group"]["b"] << "b";
-
       {
         SCOPED_TRACE("Match root node.");
-        ConstYamlNodeRef node(root, "");
-        InputParameterContainer container;
-        spec.match(node, container);
-        EXPECT_EQ(container.group("group").get<int>("a"), 1);
-        EXPECT_EQ(container.group("group").get<std::string>("b"), "b");
-      }
-
-      {
-        SCOPED_TRACE("Match group node.");
-        ConstYamlNodeRef node(root["group"], "");
-        InputParameterContainer container;
-        spec.match(node, container);
+        InputParameterContainer container = Helpers::match(spec, R"(
+group:
+  a: 1
+  b: "b"
+)");
         EXPECT_EQ(container.group("group").get<int>("a"), 1);
         EXPECT_EQ(container.group("group").get<std::string>("b"), "b");
       }
 
       {
         SCOPED_TRACE("Top-level match ignores unused.");
-        root["dummy"] << 1;
-
-        ConstYamlNodeRef node(root, "");
-        InputParameterContainer container;
-        spec.match(node, container);
+        InputParameterContainer container = Helpers::match(spec, R"(
+group:
+  a: 1
+  b: "b"
+dummy: 1
+)");
         EXPECT_EQ(container.group("group").get<int>("a"), 1);
         EXPECT_EQ(container.group("group").get<std::string>("b"), "b");
       }
@@ -1127,35 +1022,23 @@ t: [[1, 2], [2, 3]])",
         {.description = "", .store_selector = in_container<Model>("type")});
     {
       SCOPED_TRACE("First selection");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(model:
+      InputParameterContainer container = Helpers::match(spec, R"(
+model:
   linear:
     coefficient: 1.0
-)",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+)");
       EXPECT_EQ(container.group("model").get<Model>("type"), Model::linear);
       EXPECT_EQ(container.group("model").group("linear").get<double>("coefficient"), 1.0);
     }
 
     {
       SCOPED_TRACE("Second selection");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(model:
+      InputParameterContainer container = Helpers::match(spec, R"(
+model:
   quadratic:
     a: 1
     b: 2.0
-)",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+)");
       EXPECT_EQ(container.group("model").get<Model>("type"), Model::quadratic);
       EXPECT_EQ(container.group("model").group("quadratic").get<int>("a"), 1);
       EXPECT_EQ(container.group("model").group("quadratic").get<double>("b"), 2.0);
@@ -1163,35 +1046,23 @@ t: [[1, 2], [2, 3]])",
 
     {
       SCOPED_TRACE("Second selection, other one_of");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(model:
+      InputParameterContainer container = Helpers::match(spec, R"(
+model:
   quadratic:
     c: 3.0
-)",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+)");
       EXPECT_EQ(container.group("model").get<Model>("type"), Model::quadratic);
       EXPECT_EQ(container.group("model").group("quadratic").get<double>("c"), 3.0);
     }
 
     {
       SCOPED_TRACE("Too many keys");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(model:
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+model:
   type: quadratic
   coefficient: 1
-)",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
-          "'model' needs exactly one child with selector value as key");
+)"),
+          Core::Exception, "'model' needs exactly one child with selector value as key");
     }
   }
 
@@ -1207,37 +1078,26 @@ t: [[1, 2], [2, 3]])",
 
     {
       SCOPED_TRACE("Match");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(enum: A)", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+      InputParameterContainer container = Helpers::match(spec, R"(
+enum: A
+)");
       EXPECT_EQ(container.get<Enum>("enum"), Enum::a);
     }
 
     {
       SCOPED_TRACE("No match: wrong key");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(this_is_the_wrong_name: A)", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-          spec.match(node, container), Core::Exception, "Expected deprecated_selection 'enum'");
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+this_is_the_wrong_name: A
+)"),
+          Core::Exception, "Expected deprecated_selection 'enum'");
     }
 
     {
       SCOPED_TRACE("No match: wrong value");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(enum: wrong_value)", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+enum: wrong_value
+)"),
+          Core::Exception,
           "Candidate deprecated_selection 'enum' has wrong value, possible values: A|B");
     }
   }
@@ -1259,35 +1119,22 @@ t: [[1, 2], [2, 3]])",
                               });
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(data:
+      InputParameterContainer container = Helpers::match(spec, R"(
+data:
   a: 1
   b: b
-)",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      spec.match(node, container);
+)");
       const auto& data = container.group("data");
       EXPECT_EQ(data.get<int>("a"), 1);
       EXPECT_EQ(data.get<std::string>("b"), "b");
     }
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(data:
+      InputParameterContainer container = Helpers::match(spec, R"(
+data:
   a: 1
   d: 2.0
-)",
-          root);
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      spec.match(node, container);
+)");
       const auto& data = container.group("data");
       EXPECT_EQ(data.get<int>("a"), 1);
       EXPECT_EQ(data.get<double>("d"), 2.0);
@@ -1295,21 +1142,13 @@ t: [[1, 2], [2, 3]])",
 
     {
       SCOPED_TRACE("Multiple possible matches.");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      ryml::parse_in_arena(R"(data:
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+data:
   a: 1
   b: b
   d: 2
-)",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-          spec.match(node, container), Core::Exception, R"([X] Expected one of:
+)"),
+          Core::Exception, R"([X] Expected one of:
       {
         [ ] Matched parameter 'a'
         [ ] Matched parameter 'b'
@@ -1335,38 +1174,13 @@ t: [[1, 2], [2, 3]])",
         {.size = 1});
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      root |= ryml::MAP;
-      auto list_node = root.append_child();
-      list_node << ryml::key("list");
-      list_node |= ryml::SEQ;
-      {
-        auto first_entry = list_node.append_child();
-        first_entry |= ryml::MAP;
-        first_entry["a"] << 1;
-        first_entry["b"] << "string";
-      }
-
       {
         SCOPED_TRACE("Match root node.");
-        ConstYamlNodeRef node(root, "");
-
-        InputParameterContainer container;
-        spec.match(node, container);
-        const auto& list = container.get_list("list");
-        EXPECT_EQ(list.size(), 1);
-        EXPECT_EQ(list[0].get<int>("a"), 1);
-        EXPECT_EQ(list[0].get<std::string>("b"), "string");
-      }
-
-      {
-        SCOPED_TRACE("Match list node.");
-        ConstYamlNodeRef node(root["list"], "");
-
-        InputParameterContainer container;
-        spec.match(node, container);
+        InputParameterContainer container = Helpers::match(spec, R"(
+list:
+  - a: 1
+    b: "string"
+)");
         const auto& list = container.get_list("list");
         EXPECT_EQ(list.size(), 1);
         EXPECT_EQ(list[0].get<int>("a"), 1);
@@ -1376,58 +1190,26 @@ t: [[1, 2], [2, 3]])",
 
     // unmatched node
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      root |= ryml::MAP;
-      auto list_node = root.append_child();
-      list_node << ryml::key("list");
-      list_node |= ryml::SEQ;
-      {
-        auto first_entry = list_node.append_child();
-        first_entry |= ryml::MAP;
-        first_entry["a"] << "wrong type";
-        first_entry["b"] << "string";
-      }
-      {
-        auto second_entry = list_node.append_child();
-        second_entry |= ryml::MAP;
-        second_entry["a"] << 2;
-        second_entry["b"] << "string2";
-      }
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-          spec.match(node, container), Core::Exception, "The following list entry did not match:");
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+list:
+  - a: "wrong type"
+    b: "string"
+  - a: 2
+    b: "string2"
+)"),
+          Core::Exception, "The following list entry did not match:");
     }
 
     // too many entries
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      root |= ryml::MAP;
-      auto list_node = root.append_child();
-      list_node << ryml::key("list");
-      list_node |= ryml::SEQ;
-      {
-        auto first_entry = list_node.append_child();
-        first_entry |= ryml::MAP;
-        first_entry["a"] << 1;
-        first_entry["b"] << "string";
-      }
-      {
-        auto second_entry = list_node.append_child();
-        second_entry |= ryml::MAP;
-        second_entry["a"] << 2;
-        second_entry["b"] << "string2";
-      }
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
-          "Too many list entries encountered: expected 1 but matched 2");
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+list:
+  - a: 1
+    b: "string"
+  - a: 2
+    b: "string2"
+)"),
+          Core::Exception, "Too many list entries encountered: expected 1 but matched 2");
     }
   }
 
@@ -1436,41 +1218,29 @@ t: [[1, 2], [2, 3]])",
     auto spec = parameter<std::filesystem::path>("a");
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
+      InputParameterContainer container = Helpers::match(spec, R"(
+a: "dir/file.txt"
+)",
+          "path/to/input.yaml");
 
-      root |= ryml::MAP;
-      root["a"] << "dir/file.txt";
-      ConstYamlNodeRef node(root, "path/to/input.yaml");
-
-      InputParameterContainer container;
-      spec.match(node, container);
       EXPECT_EQ(container.get<std::filesystem::path>("a"), "path/to/dir/file.txt");
     }
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
+      InputParameterContainer container = Helpers::match(spec, R"(
+a: "dir/file.txt"
+)",
+          "input.yaml");
 
-      root |= ryml::MAP;
-      root["a"] << "dir/file.txt";
-      ConstYamlNodeRef node(root, "input.yaml");
-
-      InputParameterContainer container;
-      spec.match(node, container);
       EXPECT_EQ(container.get<std::filesystem::path>("a"), "dir/file.txt");
     }
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
+      InputParameterContainer container = Helpers::match(spec, R"(
+a: "/root/dir/file.txt"
+)",
+          "path/to/input.yaml");
 
-      root |= ryml::MAP;
-      root["a"] << "/root/dir/file.txt";
-      ConstYamlNodeRef node(root, "path/to/input.yaml");
-
-      InputParameterContainer container;
-      spec.match(node, container);
       EXPECT_EQ(container.get<std::filesystem::path>("a"), "/root/dir/file.txt");
     }
   }
@@ -1484,18 +1254,12 @@ t: [[1, 2], [2, 3]])",
                               });
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::parse_in_arena(R"(data:
+      InputParameterContainer container = Helpers::match(spec, R"(
+data:
   i : 1
   s: string
   v: [1.0, 2.0, 3.0]
-)",
-          &tree);
-      ryml::NodeRef root = tree.rootref();
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      spec.match(node, container);
+)");
       const auto& data = container.group("data");
       EXPECT_EQ(data.get<std::optional<int>>("i"), 1);
       EXPECT_EQ(data.get<std::optional<std::string>>("s"), "string");
@@ -1507,18 +1271,12 @@ t: [[1, 2], [2, 3]])",
     }
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::parse_in_arena(R"(data:
+      InputParameterContainer container = Helpers::match(spec, R"(
+data:
   i : null
   s: # Note: leaving the key out is the same as setting null
   v: [Null, NULL, ~] # all the other spellings that YAML supports
-)",
-          &tree);
-      ryml::NodeRef root = tree.rootref();
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      spec.match(node, container);
+)");
       const auto& data = container.group("data");
       EXPECT_EQ(data.get<std::optional<int>>("i"), std::nullopt);
       EXPECT_EQ(data.get<std::optional<std::string>>("s"), std::nullopt);
@@ -1542,19 +1300,14 @@ t: [[1, 2], [2, 3]])",
 
     {
       SCOPED_TRACE("Expected sizes");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::parse_in_arena(R"(data:
+      InputParameterContainer container = Helpers::match(spec, R"(
+data:
   num: 3
   v:
     - key1: [[1, 2, 1], [9.876], [true, true]]
       key2: [[3, 4, 5], [9.876], [true, false]]
-    - key1: [[5, 6, 9], [9.876], [false, false]])",
-          &tree);
-      ryml::NodeRef root = tree.rootref();
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      spec.match(node, container);
+    - key1: [[5, 6, 9], [9.876], [false, false]]
+)");
       const auto& v = container.group("data").get<ComplicatedType>("v");
       EXPECT_EQ(v.size(), 2);
       EXPECT_EQ(std::get<0>(v[0].at("key1")).size(), 3);
@@ -1567,55 +1320,41 @@ t: [[1, 2], [2, 3]])",
 
     {
       SCOPED_TRACE("Wrong size from_parameter");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::parse_in_arena(R"(data:
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+data:
   num: 3
   v:
     - key1: [[1, 2, 3], [9.876], [true, true]]
       key2: [[3, 4, 5], [9.876], [true, false]]
-    - key1: [[5, 6], [9.876], [false, false]])",  // [5, 6] should be size 3
-          &tree);
-      ryml::NodeRef root = tree.rootref();
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      EXPECT_THROW(spec.match(node, container), Core::Exception);
+    - key1: [[5, 6], [9.876], [false, false]]
+)"),
+          Core::Exception, "");  // [5, 6] should be size 3
     }
 
     {
       SCOPED_TRACE("Wrong size explicitly set for outer vector.");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::parse_in_arena(R"(data:
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+data:
   num: 3
   v:
     - key1: [[1, 2, 3], [9.876], [true, true]]
     - key1: [[5, 6, 5], [9.876], [true, false]]
-    - key1: [[7, 8, 9], [9.876], [false, false]])",  // v should only have 2 entries
-          &tree);
-      ryml::NodeRef root = tree.rootref();
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-          spec.match(node, container), Core::Exception, "has incorrect size");
+    - key1: [[7, 8, 9], [9.876], [false, false]]
+)"),  // v should only have 2 entries
+          Core::Exception, "has incorrect size");
     }
 
     {
       SCOPED_TRACE("Wrong size explicitly set for inner vector.");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::parse_in_arena(R"(data:
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+data:
   num: 3
   v:
     - key1: [[1, 2, 3], [9.876], [true, true]]
       key2: [[5, 6, 5], [9.876, 4.244], [true, false]]
-    - key1: [[7, 8, 9], [9.876], [false, false]])",  // [9.876, 4.244] should be size 1
-          &tree);
-      ryml::NodeRef root = tree.rootref();
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-          spec.match(node, container), Core::Exception, "has incorrect size");
+    - key1: [[7, 8, 9], [9.876], [false, false]]
+)"),  // [9.876, 4.244] should be size 1
+          Core::Exception, "has incorrect size");
     }
   }
 
@@ -1636,19 +1375,13 @@ t: [[1, 2], [2, 3]])",
                                       });
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(material:
+      InputParameterContainer container = Helpers::match(mat_spec, R"(
+material:
   MAT: 1
   MAT_A:
     a: 2
-)",
-          root);
+)");
 
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      mat_spec.match(node, container);
       const auto& material = container.group("material");
       EXPECT_EQ(material.get<int>("MAT"), 1);
       EXPECT_EQ(material.group("MAT_A").get<int>("a"), 2);
@@ -1661,13 +1394,8 @@ t: [[1, 2], [2, 3]])",
     auto spec = parameter<int>("a", {.default_value = 42});
 
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      root |= ryml::MAP;
-      ConstYamlNodeRef node(root, "");
-
-      InputParameterContainer container;
-      spec.match(node, container);
+      InputParameterContainer container = Helpers::match(spec, R"(
+)");
       EXPECT_EQ(container.get<int>("a"), 42);
     }
   }
@@ -1683,15 +1411,11 @@ t: [[1, 2], [2, 3]])",
 
     {
       SCOPED_TRACE("Optional has value");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::parse_in_arena(R"(data:
+      InputParameterContainer container = Helpers::match(spec, R"(
+data:
   num: 2
-  v: [1.0, 2.0])",
-          &tree);
-      ConstYamlNodeRef node(tree.rootref(), "");
-
-      InputParameterContainer container;
-      spec.match(node, container);
+  v: [1.0, 2.0]
+)");
       const auto& data = container.group("data");
       EXPECT_EQ(data.get<int>("num"), 2);
       const auto& v = data.get<std::optional<std::vector<double>>>("v");
@@ -1703,15 +1427,11 @@ t: [[1, 2], [2, 3]])",
 
     {
       SCOPED_TRACE("Empty optional");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::parse_in_arena(R"(data:
+      InputParameterContainer container = Helpers::match(spec, R"(
+data:
   num: 2
-  v: null)",
-          &tree);
-      ConstYamlNodeRef node(tree.rootref(), "");
-
-      InputParameterContainer container;
-      spec.match(node, container);
+  v: null
+)");
       const auto& data = container.group("data");
       EXPECT_EQ(data.get<int>("num"), 2);
       const auto& v = data.get<std::optional<std::vector<double>>>("v");
@@ -1745,20 +1465,16 @@ t: [[1, 2], [2, 3]])",
 
     {
       SCOPED_TRACE("Partial match in one_of");
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(parameters:
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+parameters:
   start: 0.0
   TimeIntegration:
     OST:
       theta: true # wrong type
     Special:
-      type: invalid)",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
+      type: invalid
+)"),
+          Core::Exception,
           R"([!] Candidate group 'parameters'
   {
     [ ] Matched parameter 'start'
@@ -1795,9 +1511,8 @@ t: [[1, 2], [2, 3]])",
     }
     {
       SCOPED_TRACE("Unused parts.");
-      auto tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(data:
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+data:
   a: 1
 parameters:
   start: 0.0
@@ -1805,12 +1520,9 @@ parameters:
   TimeIntegration:
     OST:
       theta: 0.5
-    Special:)",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
+    Special:
+)"),
+          Core::Exception,
           R"([!] Candidate group 'parameters'
   {
     [ ] Matched parameter 'start'
@@ -1846,16 +1558,11 @@ parameters:
 
     {
       SCOPED_TRACE("Valid input");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(parameters:
+      InputParameterContainer container = Helpers::match(spec, R"(
+parameters:
   a: 1
-  b: 2.0)",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+  b: 2.0
+)");
       const auto& parameters = container.group("parameters");
       EXPECT_EQ(parameters.get<int>("a"), 1);
       EXPECT_EQ(*parameters.get<std::optional<double>>("b"), 2.0);
@@ -1863,15 +1570,10 @@ parameters:
 
     {
       SCOPED_TRACE("Valid input with defaulted parameter");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(parameters:
-  a: 1)",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+      InputParameterContainer container = Helpers::match(spec, R"(
+parameters:
+  a: 1
+)");
       const auto& parameters = container.group("parameters");
       EXPECT_EQ(parameters.get<int>("a"), 1);
       EXPECT_FALSE(parameters.get<std::optional<double>>("b").has_value());
@@ -1879,16 +1581,12 @@ parameters:
 
     {
       SCOPED_TRACE("Validation failure");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(parameters:
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+parameters:
   a: -1
-  b: 0.0)",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception, R"(
+  b: 0.0
+)"),
+          Core::Exception, R"(
     [!] Candidate parameter 'a' does not pass validation: in_range[0,50]
     [!] Candidate parameter 'b' does not pass validation: null_or{in_range(0,1.7976931348623157e+308]}
 )");
@@ -1915,24 +1613,18 @@ parameters:
 
     {
       SCOPED_TRACE("Valid input");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(a: 5)", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+      InputParameterContainer container = Helpers::match(spec, R"(
+a: 5
+)");
       EXPECT_EQ(container.get<std::optional<int>>("a"), 5);
     }
 
     {
       SCOPED_TRACE("Invalid input");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(a: 15)", root);
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+a: 15
+)"),
+          Core::Exception,
           "Candidate parameter 'a' does not pass validation: null_or{in_range[0,10]}");
     }
   }
@@ -1947,13 +1639,9 @@ parameters:
 
     auto spec = parameter<std::optional<EnumClass>>("e", {});
     {
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(e: A)", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+      InputParameterContainer container = Helpers::match(spec, R"(
+e: A
+)");
       EXPECT_EQ(container.get<std::optional<EnumClass>>("e"), EnumClass::A);
     }
   }
@@ -1970,13 +1658,9 @@ parameters:
 
     {
       SCOPED_TRACE("Valid input");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(v: [null, 2, 3])", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+      InputParameterContainer container = Helpers::match(spec, R"(
+v: [null, 2, 3]
+)");
       const auto& v = container.get<Type>("v");
       EXPECT_TRUE(v.has_value());
       EXPECT_EQ(v->size(), 3);
@@ -1987,12 +1671,10 @@ parameters:
 
     {
       SCOPED_TRACE("Invalid input");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(v: [-1, null, 4])", root);
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+v: [-1, null, 4]
+)"),
+          Core::Exception,
           "Candidate parameter 'v' does not pass validation: "
           "null_or{all_elements{null_or{in_range[0,10]}}}");
     }
@@ -2010,15 +1692,11 @@ parameters:
 
     {
       SCOPED_TRACE("Overlapping values.");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::parse_in_arena(R"(data:
+      InputParameterContainer container = Helpers::match(spec, R"(
+data:
   a: 1
-  b: 2)",
-          &tree);
-      const ConstYamlNodeRef node(tree.rootref(), "");
-
-      InputParameterContainer container;
-      spec.match(node, container);
+  b: 2
+)");
       const auto& data = container.group("data");
       EXPECT_EQ(data.get<int>("a"), 1);
       EXPECT_EQ(data.get<int>("b"), 2);
@@ -2041,15 +1719,12 @@ parameters:
                                             }),
                                         }),
                                     });
-    ryml::Tree tree = init_yaml_tree_with_exceptions();
-    ryml::parse_in_arena(R"(data:
+    InputParameterContainer container = Helpers::match(spec, R"(
+data:
   a: 1
   b: 2
-  c: 3)",
-        &tree);
-    const ConstYamlNodeRef node(tree.rootref(), "");
-    InputParameterContainer container;
-    spec.match(node, container);
+  c: 3
+)");
     const auto& data = container.group("data");
     EXPECT_EQ(data.get<int>("a"), 1);
     EXPECT_EQ(data.get<int>("b"), 2);
@@ -2097,18 +1772,14 @@ parameters:
                 {.store = in_struct(&Outer::inner)}),
         });
 
-    ryml::Tree tree = init_yaml_tree_with_exceptions();
-    ryml::parse_in_arena(R"(outer:
+    const InputParameterContainer container = Helpers::match(spec, R"(
+outer:
   d: 1.23
   inner:
     option: b
     a: 1
     s: "abc"
-    v: [1.0, 2.0, 3.0])",
-        &tree);
-    const ConstYamlNodeRef node(tree.rootref(), "");
-    InputParameterContainer container;
-    spec.match(node, container);
+    v: [1.0, 2.0, 3.0])");
 
     const auto& outer = container.get<Outer>("outer");
     EXPECT_EQ(outer.d, 1.23);
@@ -2182,14 +1853,9 @@ parameters:
       // Construction of this spec is fine because one could continue to use this spec inside
       // a group, but it is not allowed to match it directly.
       auto spec = parameter<int>("a", {.store = in_struct(&S::a)});
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
 
       // But matching should not work because the spec does not store to InputParameterContainer
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, ""), Core::Exception,
           "the top-level InputSpec that is used for matching must store to the "
           "InputParameterContainer type");
     }
@@ -2259,17 +1925,10 @@ parameters:
                          }),
                  });
 
-    auto tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
-    ryml::parse_in_arena(R"(model:
+    InputParameterContainer container = Helpers::match(spec, R"(model:
   a:
     a: 1
-    s: abc)",
-        root);
-
-    ConstYamlNodeRef node(root, "");
-    InputParameterContainer container;
-    spec.match(node, container);
+    s: abc)");
 
     const auto& model = container.group("model");
     EXPECT_EQ(model.get<Options>("_selector"), Options::a);
@@ -2339,18 +1998,12 @@ parameters:
                                                 }),
                                         });
 
-    auto tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
-    ryml::parse_in_arena(R"(parameters:
+    InputParameterContainer container = Helpers::match(spec, R"(
+parameters:
   model:
     a:
       a: 1
-      s: abc)",
-        root);
-
-    ConstYamlNodeRef node(root, "");
-    InputParameterContainer container;
-    spec.match(node, container);
+      s: abc)");
 
     const auto& model = container.get<Parameters>("parameters").model;
     EXPECT_EQ(model.type, Options::a);
@@ -2370,21 +2023,15 @@ parameters:
                                   parameter<std::string>("f"),
                               });
 
-    ryml::Tree tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
-    ryml::parse_in_arena(R"(test:
+    Helpers::match(spec, R"(
+test:
   a: "double-quoted string"
   b: 'single quoted string'
   c: "123"
   d: "null"
   e: '1.23'
   f: "true"
-        )",
-        root);
-
-    ConstYamlNodeRef node(root, "");
-    InputParameterContainer container;
-    spec.match(node, container);
+)");
   }
 
   TEST(InputSpecTest, QuoutedStringDoNotMatchOtherTypes)
@@ -2396,22 +2043,15 @@ parameters:
                                   parameter<std::optional<int>>("d"),
                               });
 
-    ryml::Tree tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
-    ryml::parse_in_arena(R"(test:
+    // Matching should fail because the quoted strings do not match the expected types.
+    FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+test:
   a: "true"
   b: "123"
   c: "1.23"
   d: "null"
-        )",
-        root);
-
-    ConstYamlNodeRef node(root, "");
-    InputParameterContainer container;
-
-    // Matching should fail because the quoted strings do not match the expected types.
-    FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        spec.match(node, container), Core::Exception, R"([!] Candidate group 'test'
+)"),
+        Core::Exception, R"([!] Candidate group 'test'
   {
     [!] Candidate parameter 'a' has wrong type, expected type: bool
     [!] Candidate parameter 'b' has wrong type, expected type: int
@@ -2429,16 +2069,10 @@ parameters:
 
     {
       SCOPED_TRACE("OK");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(test:
+      InputParameterContainer container = Helpers::match(spec, R"(
+test:
   expr: "x + y * 2.0"
-        )",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
+)");
       const auto& expr =
           container.group("test").get<Core::Utils::SymbolicExpression<double, "x", "y">>("expr");
       EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(1.0), Core::Utils::var<"y">(2.0)), 5.0);
@@ -2446,17 +2080,11 @@ parameters:
 
     {
       SCOPED_TRACE("Wrong variables.");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(test:
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(Helpers::match(spec, R"(
+test:
   expr: "x + y * 2.0 + z" # z is not defined in the expression
-        )",
-          root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-          spec.match(node, container), Core::Exception, R"([!] Candidate group 'test'
+)"),
+          Core::Exception, R"([!] Candidate group 'test'
   {
     [!] Candidate parameter 'expr' could not be parsed as symbolic expression with variables: "x" "y" 
   }
@@ -2476,16 +2104,10 @@ parameters:
                     symbolic_expression<double, "x", "y">("expr", {.store = in_struct(&S::expr)}),
                 });
 
-    ryml::Tree tree = init_yaml_tree_with_exceptions();
-    ryml::NodeRef root = tree.rootref();
-    ryml::parse_in_arena(R"(test:
+    InputParameterContainer container = Helpers::match(spec, R"(
+test:
   expr: "x + y * 2.0"
-        )",
-        root);
-
-    ConstYamlNodeRef node(root, "");
-    InputParameterContainer container;
-    spec.match(node, container);
+)");
     const auto& expr = container.get<S>("test").expr;
     EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(1.0), Core::Utils::var<"y">(2.0)), 5.0);
   }
