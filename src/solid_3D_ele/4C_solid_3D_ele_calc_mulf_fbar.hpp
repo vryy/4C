@@ -228,7 +228,7 @@ namespace Discret::Elements
     {
       Discret::Elements::add_elastic_stiffness_matrix(linearization.Bop, stress,
           integration_factor * linearization.fbar_factor, stiffness_matrix);
-      Discret::Elements::add_geometric_stiffness_matrix(jacobian_mapping, stress,
+      Discret::Elements::add_geometric_stiffness_matrix(jacobian_mapping, stress.pk2_,
           integration_factor / linearization.fbar_factor, stiffness_matrix);
 
       // additional stiffness matrix needed for fbar method

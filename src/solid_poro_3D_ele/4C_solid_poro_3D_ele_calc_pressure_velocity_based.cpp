@@ -14,6 +14,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
+#include "4C_linalg_tensor_conversion.hpp"
 #include "4C_linalg_tensor_generators.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_integration.hpp"
@@ -421,8 +422,8 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
         fluid_velocity.multiply(fluid_variables.fluidvel_nodal, shape_functions.shapefunctions_);
 
         // material fluid velocity gradient at integration point
-        Core::LinAlg::Matrix<num_dim_, num_dim_> fvelder(Core::LinAlg::Initialization::zero);
-        fvelder.multiply_nt(
+        Core::LinAlg::Tensor<double, num_dim_, num_dim_> fvelder{};
+        Core::LinAlg::make_matrix_view(fvelder).multiply_nt(
             fluid_variables.fluidvel_nodal, Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ));
 
         // pressure gradient at integration point
@@ -441,22 +442,18 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
                 evaluate_inverse_deformation_gradient_linearization_multiplication<celltype>(
                     dInverseDeformationGradientTransposed_dDisp, Gradp, kinematictype);
 
-        Core::LinAlg::Matrix<1, num_dof_per_ele_> dPorosity_dDisp;
+        double dPorosity_ddetJ = 0.0;
 
         const double porosity = compute_porosity_and_linearization<celltype, porosity_formulation>(
             porostructmat, params, solid_variables, shape_functions, fluid_press, gp, volchange,
-            dDetDefGrad_dDisp, dPorosity_dDisp);
-
-        // inverse Right Cauchy-Green tensor as vector in voigt notation
-        Core::LinAlg::Matrix<num_str_, 1> C_inv_vec(Core::LinAlg::Initialization::uninitialized);
-        Core::LinAlg::Voigt::Stresses::matrix_to_vector(
-            cauchygreen.inverse_right_cauchy_green_, C_inv_vec);
+            dPorosity_ddetJ);
 
         // B^T . C^-1
         Core::LinAlg::Matrix<num_dof_per_ele_, 1> BopCinv(Core::LinAlg::Initialization::zero);
-        BopCinv.multiply_tn(Bop, C_inv_vec);
+        BopCinv.multiply_tn(Bop,
+            Core::LinAlg::make_stress_like_voigt_view(cauchygreen.inverse_right_cauchy_green_));
 
-        Core::LinAlg::Matrix<num_str_, 1> fstress(Core::LinAlg::Initialization::zero);
+        Core::LinAlg::SymmetricTensor<double, num_dim_, num_dim_> fstress{};
 
 
         // update internal force vector
@@ -468,9 +465,8 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
             update_internal_force_vector_for_brinkman_flow<celltype>(integration_factor,
                 porofluidmat.viscosity(),
                 spatial_material_mapping.determinant_deformation_gradient_, porosity, fvelder,
-                Core::LinAlg::make_matrix_view(
-                    spatial_material_mapping.inverse_deformation_gradient_),
-                Bop, cauchygreen.inverse_right_cauchy_green_, fstress, *matrix_views.force_vector);
+                spatial_material_mapping.inverse_deformation_gradient_, Bop,
+                cauchygreen.inverse_right_cauchy_green_, fstress, *matrix_views.force_vector);
           }
 
           update_internal_forcevector_with_structure_fluid_coupling_and_reactive_darcy_terms<
@@ -478,8 +474,12 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
               anisotropy_properties, spatial_material_mapping, porosity, disp_velocity,
               fluid_velocity, FinvGradp, *matrix_views.force_vector);
 
-          update_internal_forcevector_with_fluidstressterm<celltype>(integration_factor,
-              fluid_press, spatial_material_mapping.determinant_deformation_gradient_, BopCinv,
+          // Add fluid stress term to internal force vector
+          const auto pk2_pressure = -fluid_press *
+                                    spatial_material_mapping.determinant_deformation_gradient_ *
+                                    cauchygreen.inverse_right_cauchy_green_;
+          add_internal_force_vector(jacobian_mapping,
+              spatial_material_mapping.deformation_gradient_, pk2_pressure, integration_factor,
               *matrix_views.force_vector);
         }
 
@@ -491,11 +491,9 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
           {
             update_stiffness_matrix_for_brinkman_flow<celltype>(integration_factor,
                 porofluidmat.viscosity(),
-
                 spatial_material_mapping.determinant_deformation_gradient_, porosity, fvelder,
-                Core::LinAlg::make_matrix_view(
-                    spatial_material_mapping.inverse_deformation_gradient_),
-                Bop, cauchygreen.inverse_right_cauchy_green_, dPorosity_dDisp, dDetDefGrad_dDisp,
+                spatial_material_mapping.inverse_deformation_gradient_, Bop,
+                cauchygreen.inverse_right_cauchy_green_, dPorosity_ddetJ, dDetDefGrad_dDisp,
                 dInverseRightCauchyGreen_dDisp, dInverseDeformationGradientTransposed_dDisp,
                 fstress, *matrix_views.K_displacement_displacement);
           }
@@ -508,28 +506,11 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
               integration_factor, shape_functions.shapefunctions_, porofluidmat,
               anisotropy_properties, spatial_material_mapping, porosity, disp_velocity,
               fluid_velocity, FinvGradp, dDetDefGrad_dDisp, dInverseDeformationGradient_dDisp_Gradp,
-              dPorosity_dDisp, dInverseDeformationGradientTransposed_dDisp, erea_v,
+              dPorosity_ddetJ, dInverseDeformationGradientTransposed_dDisp, erea_v,
               *matrix_views.K_displacement_displacement);
 
-          // derivative of press w.r.t. displacements zero here
-          Core::LinAlg::Matrix<1, num_dof_per_ele_> dSolidpressure_dDisp(
-              Core::LinAlg::Initialization::zero);
-
-          update_elastic_stiffness_matrix<celltype>(integration_factor, fluid_press,
-              spatial_material_mapping.determinant_deformation_gradient_, BopCinv, Bop,
-              dDetDefGrad_dDisp, dSolidpressure_dDisp, dInverseRightCauchyGreen_dDisp,
-              *matrix_views.K_displacement_displacement);
-
-          // factor for `geometric' stiffness matrix
-          Core::LinAlg::Matrix<num_str_, 1> sfac(C_inv_vec);  // auxiliary integrated stress
-
-          // scale and add viscous stress
-          sfac.update(integration_factor, fstress,
-              (-1.0) * integration_factor * fluid_press *
-                  spatial_material_mapping.determinant_deformation_gradient_);
-
-          update_geometric_stiffness_matrix<celltype>(
-              sfac, jacobian_mapping.N_XYZ, *matrix_views.K_displacement_displacement);
+          add_pressure_stiffness_matrix(jacobian_mapping, spatial_material_mapping, fluid_press,
+              0.0, integration_factor, *matrix_views.K_displacement_displacement);
 
           if (react_matrix.has_value())
           {
@@ -680,10 +661,10 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
             fluid_variables.fluidvel_nodal, shape_functions);
 
         // material fluid velocity gradient at integration point
-        Core::LinAlg::Matrix<num_dim_, num_dim_> fluid_velocity_gradient(
-            Core::LinAlg::Initialization::zero);
-        fluid_velocity_gradient.multiply_nt(
-            fluid_variables.fluidvel_nodal, Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ));
+        Core::LinAlg::Tensor<double, num_dim_, num_dim_> fluid_velocity_gradient{};
+        Core::LinAlg::make_matrix_view(fluid_velocity_gradient)
+            .multiply_nt(fluid_variables.fluidvel_nodal,
+                Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ));
 
         // pressure gradient at integration point
         Core::LinAlg::Matrix<num_dim_, 1> pressure_gradient(Core::LinAlg::Initialization::zero);
@@ -694,14 +675,10 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
             compute_porosity_and_linearization_od<celltype, porosity_formulation>(porostructmat,
                 params, solid_variables, shape_functions, fluid_press, volchange, gp);
 
-        // inverse Right Cauchy-Green tensor as vector in voigt notation
-        Core::LinAlg::Matrix<num_str_, 1> C_inv_vec(Core::LinAlg::Initialization::uninitialized);
-        Core::LinAlg::Voigt::Stresses::matrix_to_vector(
-            cauchygreen.inverse_right_cauchy_green_, C_inv_vec);
-
         // B^T . C^-1
         Core::LinAlg::Matrix<num_dof_per_ele_, 1> BopCinv(Core::LinAlg::Initialization::zero);
-        BopCinv.multiply_tn(Bop, C_inv_vec);
+        BopCinv.multiply_tn(Bop,
+            Core::LinAlg::make_stress_like_voigt_view(cauchygreen.inverse_right_cauchy_green_));
 
         // F^-T * grad p
         Core::LinAlg::Matrix<num_dim_, 1> Finvgradp;
