@@ -50,5 +50,5 @@ jobs:
         with:
           path: ${{ github.workspace }}
           retention-days: 1
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
 
