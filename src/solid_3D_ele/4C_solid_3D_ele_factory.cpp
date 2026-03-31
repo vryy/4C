@@ -102,6 +102,18 @@ namespace
   };
 
   /*!
+   * @brief Nonlinear total lagrangian formulation with EAS for quad4
+   */
+  template <>
+  struct SolidCalculationFormulation<Core::FE::CellType::quad4,
+      Inpar::Solid::KinemType::nonlinearTotLag, Discret::Elements::ElementTechnology::eas_full,
+      Discret::Elements::PrestressTechnology::none>
+  {
+    using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::quad4,
+        Discret::Elements::EasType::eastype_q4_4, Inpar::Solid::KinemType::nonlinearTotLag>;
+  };
+
+  /*!
    * @brief Small displacements formulation with full EAS for hex8
    */
   template <>

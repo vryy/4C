@@ -527,9 +527,8 @@ namespace Discret::Elements
   template <Core::FE::CellType celltype>
   JacobianMapping<celltype> evaluate_jacobian_mapping_centroid(
       const ElementNodes<celltype>& nodal_coordinates)
-    requires(Internal::num_dim<celltype> == 3)
   {
-    // set coordinates in parameter space at centroid as zero -> xi = [0; 0; 0]
+    // set coordinates in parameter space at centroid as zero
     Core::LinAlg::Tensor<double, Internal::num_dim<celltype>> xi_centroid =
         evaluate_parameter_coordinate_centroid<celltype>();
 
@@ -777,6 +776,40 @@ namespace Discret::Elements
       Bop(5, Internal::num_dim<celltype> * i + 2) =
           spatial_material_mapping.deformation_gradient_(2, 2) * jacobian_mapping.N_XYZ[i](0) +
           spatial_material_mapping.deformation_gradient_(2, 0) * jacobian_mapping.N_XYZ[i](2);
+    }
+
+    return Bop;
+  }
+
+
+  template <Core::FE::CellType celltype>
+  Core::LinAlg::Matrix<Internal::num_str<celltype>,
+      Internal::num_dim<celltype> * Internal::num_nodes<celltype>>
+  evaluate_strain_gradient(const JacobianMapping<celltype>& jacobian_mapping,
+      const SpatialMaterialMapping<celltype>& spatial_material_mapping)
+    requires(Internal::num_dim<celltype> == 2)
+  {
+    // B-operator
+    Core::LinAlg::Matrix<Internal::num_str<celltype>,
+        Internal::num_dim<celltype> * Internal::num_nodes<celltype>>
+        Bop;
+    for (int i = 0; i < Internal::num_nodes<celltype>; ++i)
+    {
+      for (int d = 0; d < Internal::num_dim<celltype>; ++d)
+      {
+        for (int e = 0; e < Internal::num_dim<celltype>; ++e)
+        {
+          Bop(d, Internal::num_dim<celltype> * i + e) =
+              spatial_material_mapping.deformation_gradient_(e, d) * jacobian_mapping.N_XYZ[i](d);
+        }
+      }
+
+      Bop(2, 2 * i + 0) =
+          spatial_material_mapping.deformation_gradient_(0, 0) * jacobian_mapping.N_XYZ[i](1) +
+          spatial_material_mapping.deformation_gradient_(0, 1) * jacobian_mapping.N_XYZ[i](0);
+      Bop(2, 2 * i + 1) =
+          spatial_material_mapping.deformation_gradient_(1, 0) * jacobian_mapping.N_XYZ[i](1) +
+          spatial_material_mapping.deformation_gradient_(1, 1) * jacobian_mapping.N_XYZ[i](0);
     }
 
     return Bop;
@@ -1403,11 +1436,11 @@ namespace Discret::Elements
    * @return : transformation matrix
    */
   template <Core::FE::CellType celltype>
+    requires(Core::FE::dim<celltype> == 3)
   Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_str<celltype>>
   evaluate_voigt_transformation_matrix(const Discret::Elements::JacobianMapping<celltype>& jacobian)
   {
     // build T^T (based on strain-like Voigt notation: xx,yy,zz,xy,yz,xz)
-    // currently only works in 3D
     Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_str<celltype>> TinvT(
         Core::LinAlg::Initialization::uninitialized);
     TinvT(0, 0) = jacobian.jacobian_(0, 0) * jacobian.jacobian_(0, 0);
@@ -1471,6 +1504,41 @@ namespace Discret::Elements
     return TinvT;
   }
 
+  template <Core::FE::CellType celltype>
+    requires(Core::FE::dim<celltype> == 2)
+  Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_str<celltype>>
+  evaluate_voigt_transformation_matrix(const Discret::Elements::JacobianMapping<celltype>& jacobian)
+  {
+    Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_str<celltype>> TinvT(
+        Core::LinAlg::Initialization::uninitialized);
+    // build T^T (based on strain-like Voigt notation: xx,yy,xy)
+    TinvT(0, 0) = jacobian.jacobian_(0, 0) * jacobian.jacobian_(0, 0);
+    TinvT(1, 0) = jacobian.jacobian_(1, 0) * jacobian.jacobian_(1, 0);
+    TinvT(2, 0) = 2 * jacobian.jacobian_(0, 0) * jacobian.jacobian_(1, 0);
+
+    // Column 1 (yy)
+    TinvT(0, 1) = jacobian.jacobian_(0, 1) * jacobian.jacobian_(0, 1);
+    TinvT(1, 1) = jacobian.jacobian_(1, 1) * jacobian.jacobian_(1, 1);
+    TinvT(2, 1) = 2 * jacobian.jacobian_(0, 1) * jacobian.jacobian_(1, 1);
+
+    // Column 2 (xy)
+    TinvT(0, 2) = jacobian.jacobian_(0, 0) * jacobian.jacobian_(0, 1);
+    TinvT(1, 2) = jacobian.jacobian_(1, 0) * jacobian.jacobian_(1, 1);
+    TinvT(2, 2) = jacobian.jacobian_(0, 0) * jacobian.jacobian_(1, 1) +
+                  jacobian.jacobian_(1, 0) * jacobian.jacobian_(0, 1);
+
+    // evaluate the inverse T0^{-T} with solver
+    Core::LinAlg::FixedSizeSerialDenseSolver<Internal::num_str<celltype>,
+        Internal::num_str<celltype>, 1>
+        solve_for_inverse;
+    solve_for_inverse.set_matrix(TinvT);
+
+    int err_inv = solve_for_inverse.invert();
+    FOUR_C_ASSERT_ALWAYS(!err_inv, "Inversion of matrix failed with LAPACK error code {}", err_inv);
+
+    return TinvT;
+  }
+
 
 
   /*!
@@ -1482,16 +1550,17 @@ namespace Discret::Elements
    gradient from
    * @return Core::LinAlg::Matrix<dim, dim> : deformation gradient F^{enh} computed from GL strains
    */
-  static inline Core::LinAlg::Tensor<double, 3, 3> compute_deformation_gradient_from_gl_strains(
-      const Core::LinAlg::Tensor<double, 3, 3>& defgrd_disp,
-      const Core::LinAlg::SymmetricTensor<double, 3, 3>& enhanced_gl_strain)
+  template <std::size_t dim>
+  static inline Core::LinAlg::Tensor<double, dim, dim> compute_deformation_gradient_from_gl_strains(
+      const Core::LinAlg::Tensor<double, dim, dim>& defgrd_disp,
+      const Core::LinAlg::SymmetricTensor<double, dim, dim>& enhanced_gl_strain)
   {
     // calculate modified right stretch tensor
-    const Core::LinAlg::SymmetricTensor<double, 3, 3> cauchy_green_enh =
-        2 * enhanced_gl_strain + Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
+    const Core::LinAlg::SymmetricTensor<double, dim, dim> cauchy_green_enh =
+        2 * enhanced_gl_strain + Core::LinAlg::TensorGenerators::identity<double, dim, dim>;
 
     const auto compute_pure_stretch_tensor =
-        [](const Core::LinAlg::SymmetricTensor<double, 3, 3>& C)
+        [](const Core::LinAlg::SymmetricTensor<double, dim, dim>& C)
     {
       auto [eigenvalues, eigenvectors] = Core::LinAlg::eig(C);
 
@@ -1503,9 +1572,9 @@ namespace Discret::Elements
     };
 
     // compute rotation tensor from deformation gradient
-    const Core::LinAlg::SymmetricTensor<double, 3, 3> cauchy_green_disp =
+    const Core::LinAlg::SymmetricTensor<double, dim, dim> cauchy_green_disp =
         Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(defgrd_disp) * defgrd_disp);
-    const Core::LinAlg::Tensor<double, 3, 3> R =
+    const Core::LinAlg::Tensor<double, dim, dim> R =
         defgrd_disp * Core::LinAlg::inv(compute_pure_stretch_tensor(cauchy_green_disp));
 
     // Compute consistent deformation gradient

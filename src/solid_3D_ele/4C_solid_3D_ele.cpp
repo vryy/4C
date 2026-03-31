@@ -134,7 +134,10 @@ void Discret::Elements::SolidType<dim>::setup_element_definition(
 
   if constexpr (dim == 2)
   {
-    defsgeneral[Core::FE::CellType::quad4] = get_default_input_spec<Core::FE::CellType::quad4>();
+    defsgeneral[Core::FE::CellType::quad4] = all_of({
+        get_default_input_spec<Core::FE::CellType::quad4>(),
+        parameter<ElementTechnology>("TECH", {.default_value = ElementTechnology::none}),
+    });
     defsgeneral[Core::FE::CellType::quad8] = get_default_input_spec<Core::FE::CellType::quad8>();
     defsgeneral[Core::FE::CellType::quad9] = get_default_input_spec<Core::FE::CellType::quad9>();
     defsgeneral[Core::FE::CellType::tri3] = get_default_input_spec<Core::FE::CellType::tri3>();

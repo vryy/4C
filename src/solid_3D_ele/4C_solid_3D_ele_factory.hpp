@@ -59,17 +59,21 @@ namespace Discret::Elements
     using FbarEvaluators = Core::FE::apply_celltype_sequence<FBarSolidIntegrator,
         Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>>;
 
-    using EASEvaluators = Core::FE::BaseTypeList<
-        EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
-            Inpar::Solid::KinemType::nonlinearTotLag>,
-        EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_21,
-            Inpar::Solid::KinemType::nonlinearTotLag>,
-        EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_sh8_7,
-            Inpar::Solid::KinemType::nonlinearTotLag>,
-        EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
-            Inpar::Solid::KinemType::linear>,
-        EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_21,
-            Inpar::Solid::KinemType::linear>>;
+    template <unsigned dim>
+    using EASEvaluators = std::conditional_t<dim == 3,
+        Core::FE::BaseTypeList<
+            EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
+                Inpar::Solid::KinemType::nonlinearTotLag>,
+            EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_21,
+                Inpar::Solid::KinemType::nonlinearTotLag>,
+            EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_sh8_7,
+                Inpar::Solid::KinemType::nonlinearTotLag>,
+            EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
+                Inpar::Solid::KinemType::linear>,
+            EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_21,
+                Inpar::Solid::KinemType::linear>>,
+        Core::FE::BaseTypeList<EASSolidIntegrator<Core::FE::CellType::quad4,
+            Discret::Elements::EasType::eastype_q4_4, Inpar::Solid::KinemType::nonlinearTotLag>>>;
 
     using MulfEvaluators =
         Core::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes<3>>;
@@ -88,10 +92,10 @@ namespace Discret::Elements
     template <unsigned dim>
     using SolidEvaluators = std::conditional_t<dim == 3,
         Core::FE::Join<DisplacementBasedEvaluators<dim>,
-            DisplacementBasedLinearKinematicsEvaluators<dim>, FbarEvaluators, EASEvaluators,
+            DisplacementBasedLinearKinematicsEvaluators<dim>, FbarEvaluators, EASEvaluators<dim>,
             MulfEvaluators, FBarMulfEvaluators, SolidShellEvaluators, SolidShellEasEvaluators>,
         Core::FE::Join<DisplacementBasedEvaluators<dim>,
-            DisplacementBasedLinearKinematicsEvaluators<dim>>>;
+            DisplacementBasedLinearKinematicsEvaluators<dim>, EASEvaluators<dim>>>;
   }  // namespace Internal
 
   template <unsigned dim>
