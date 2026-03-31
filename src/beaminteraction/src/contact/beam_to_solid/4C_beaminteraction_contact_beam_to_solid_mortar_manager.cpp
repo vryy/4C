@@ -353,31 +353,38 @@ BeamInteraction::BeamToSolidMortarManager::location_vector(
   std::vector<int> lambda_pos_row;
   std::vector<int> lambda_rot_row;
 
+  int element_id = contact_pair.element1()->id();
+  FOUR_C_ASSERT_ALWAYS(BeamInteraction::Utils::is_beam_element(*contact_pair.element1()),
+      "The first element of the pair has to be a beam element!");
+
   // Get the global DOFs ids of the nodal Lagrange multipliers.
   if (parameters_.n_lambda_node() > 0)
   {
-    for (int i_node = 0; i_node < contact_pair.element1()->num_node(); i_node++)
+    // We only loop over the boundary nodes here. Internal nodes are accounted for in the
+    // `n_lambda_element` DOFs.
+    for (int i_node = 0; i_node < 2; i_node++)
     {
       const Core::Nodes::Node& node = *(contact_pair.element1()->nodes()[i_node]);
-      if (BeamInteraction::Utils::is_beam_centerline_node(node))
-      {
-        // Get the global id of the node.
-        int node_id = node.id();
+      FOUR_C_ASSERT_ALWAYS(BeamInteraction::Utils::is_beam_centerline_node(node),
+          "The first two nodes of the beam element have to be centerline nodes! Node {} for "
+          "element {} is not a centerline node.",
+          i_node, element_id);
 
-        // Check if the id is in the map. If it is, add it to the output vector.
-        auto search_key_in_map = node_gid_to_lambda_gid_map_.find(node_id);
-        if (search_key_in_map == node_gid_to_lambda_gid_map_.end())
-          FOUR_C_THROW("Global node id {} not in map!", node_id);
-        const auto node_lambda_gid = search_key_in_map->second;
-        for (unsigned int i_pos = 0; i_pos < parameters_.n_lambda_node_translational; i_pos++)
-        {
-          lambda_pos_row.push_back(node_lambda_gid[i_pos]);
-        }
-        for (unsigned int i_rot = 0; i_rot < parameters_.n_lambda_node_rotational; i_rot++)
-        {
-          lambda_rot_row.push_back(
-              node_lambda_gid[parameters_.n_lambda_node_translational + i_rot]);
-        }
+      // Get the global id of the node.
+      int node_id = node.id();
+
+      // Check if the id is in the map. If it is, add it to the output vector.
+      auto search_key_in_map = node_gid_to_lambda_gid_map_.find(node_id);
+      if (search_key_in_map == node_gid_to_lambda_gid_map_.end())
+        FOUR_C_THROW("Global node id {} not in map!", node_id);
+      const auto& node_lambda_gid = search_key_in_map->second;
+      for (unsigned int i_pos = 0; i_pos < parameters_.n_lambda_node_translational; i_pos++)
+      {
+        lambda_pos_row.push_back(node_lambda_gid[i_pos]);
+      }
+      for (unsigned int i_rot = 0; i_rot < parameters_.n_lambda_node_rotational; i_rot++)
+      {
+        lambda_rot_row.push_back(node_lambda_gid[parameters_.n_lambda_node_translational + i_rot]);
       }
     }
   }
@@ -385,25 +392,19 @@ BeamInteraction::BeamToSolidMortarManager::location_vector(
   // Get the global DOFs ids of the element Lagrange multipliers.
   if (parameters_.n_lambda_element() > 0)
   {
-    if (BeamInteraction::Utils::is_beam_element(*contact_pair.element1()))
+    // Check if the id is in the map. If it is, add it to the output vector.
+    auto search_key_in_map = element_gid_to_lambda_gid_map_.find(element_id);
+    if (search_key_in_map == element_gid_to_lambda_gid_map_.end())
+      FOUR_C_THROW("Global element id {} not in map!", element_id);
+    const auto& element_lambda_gid = search_key_in_map->second;
+    for (unsigned int i_pos = 0; i_pos < parameters_.n_lambda_element_translational; i_pos++)
     {
-      // Get the global id of the element.
-      int element_id = contact_pair.element1()->id();
-
-      // Check if the id is in the map. If it is, add it to the output vector.
-      auto search_key_in_map = element_gid_to_lambda_gid_map_.find(element_id);
-      if (search_key_in_map == element_gid_to_lambda_gid_map_.end())
-        FOUR_C_THROW("Global element id {} not in map!", element_id);
-      const auto element_lambda_gid = search_key_in_map->second;
-      for (unsigned int i_pos = 0; i_pos < parameters_.n_lambda_element_translational; i_pos++)
-      {
-        lambda_pos_row.push_back(element_lambda_gid[i_pos]);
-      }
-      for (unsigned int i_rot = 0; i_rot < parameters_.n_lambda_element_rotational; i_rot++)
-      {
-        lambda_rot_row.push_back(
-            element_lambda_gid[parameters_.n_lambda_element_translational + i_rot]);
-      }
+      lambda_pos_row.push_back(element_lambda_gid[i_pos]);
+    }
+    for (unsigned int i_rot = 0; i_rot < parameters_.n_lambda_element_rotational; i_rot++)
+    {
+      lambda_rot_row.push_back(
+          element_lambda_gid[parameters_.n_lambda_element_translational + i_rot]);
     }
   }
 

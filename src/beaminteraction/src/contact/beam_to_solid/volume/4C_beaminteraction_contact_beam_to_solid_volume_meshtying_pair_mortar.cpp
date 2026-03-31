@@ -129,6 +129,8 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
 
     // Get the lambda GIDs of this pair.
     const auto& [lambda_row_pos, _] = mortar_manager->location_vector(*this);
+    FOUR_C_ASSERT_ALWAYS(lambda_row_pos.size() == Mortar::n_dof_,
+        "Expected {} Lagrange multiplier GIDs, got {}!", Mortar::n_dof_, lambda_row_pos.size());
 
     std::vector<double> lambda_pair = Core::FE::extract_values(*lambda, lambda_row_pos);
     for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
