@@ -62,8 +62,14 @@ namespace Mat
                           ///< analytical evaluation of the linearization
       failed_solution_analytic_linearization,  ///< solution of the linear system in the analytical
                                                ///< linearization failed
-      failed_matrix_log_evaluation,            ///< failed evaluation of the matrix logarithm or its
-                                               ///< derivative
+      failed_computation_flow_resistance,  ///< failed in the computation of the flow resistance via
+                                           ///< time integration of the hardening-rate equation
+                                           ///(e.g., when using the Anand law)
+      failed_computation_flow_resistance_derivs,  ///< failed in the computation of the flow
+                                                  ///< resistance derivatives (e.g., when using the
+                                                  ///< Anand law)
+      failed_matrix_log_evaluation,   ///< failed evaluation of the matrix logarithm or its
+                                      ///< derivative
       failed_matrix_exp_evaluation,   ///< failed evaluation of the matrix exponential or its
                                       ///< derivative
       failed_right_cg_interpolation,  ///< failed interpolation of the right Cauchy-Green tensor
@@ -133,6 +139,13 @@ namespace Mat
       //! (equivalent) plastic strain at the last time step (for all Gauss points)
       std::vector<double> last_plastic_strain;
 
+      //! equivalent stress at the previous time instant (for all Gauss points)
+      std::vector<double> last_equiv_stress;
+
+
+      //! last (reduced) deformation gradient (for all Gauss points)
+      std::vector<Core::LinAlg::Matrix<3, 3>> last_defgrad;
+
       //! temporary variable, for which we store the right Cauchy-Green deformation tensor at each
       //! evaluation (used in order to update last_rightCG_ once outer NR converges) (for all Gauss
       //! points)
@@ -147,6 +160,10 @@ namespace Mat
 
       //! current plastic strain (for all Gauss points)
       std::vector<double> current_plastic_strain;
+
+      //! current equivalent stress (for all Gauss points)
+      std::vector<double> current_equiv_stress;
+
 
       //! inverse plastic deformation gradient at the last computed time instant (after the last
       //! converged substep)
@@ -422,7 +439,17 @@ namespace Mat
       StateQuantityDerivEvalType eval_type;
     };
 
+    //! struct containing specific derivatives of the scalar plastic strain rate used in
+    //! InelasticDefgradTransvIsotropElastViscoplast
+    struct PlasticStrainRateDerivs
+    {
+      //! derivative with respect to the equivalent stress
+      double deriv_equiv_stress;
 
+
+      //! derivative with respect to the plastic strain
+      double deriv_plastic_strain;
+    };
 
   }  // namespace InelasticDefgradTransvIsotropElastViscoplastUtils
 

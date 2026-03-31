@@ -385,6 +385,12 @@ namespace
       viscoplastic_law_reformulated_Johnson_Cook_data.add("INIT_YIELD_STRENGTH", 2.0e4);
       viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_PREFAC", 5.0e3);
       viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_EXP", 0.2);
+      viscoplastic_law_reformulated_Johnson_Cook_data.add("REF_TEMPERATURE", 293.0);
+      viscoplastic_law_reformulated_Johnson_Cook_data.add("MELT_TEMPERATURE", 1793.0);
+      viscoplastic_law_reformulated_Johnson_Cook_data.add("TEMPERATURE_SENS", 1.03);
+
+
+
       // add material to problem instance
       problem.materials()->insert(400,
           Mat::make_parameter(400, Core::Materials::MaterialType::mvl_reformulated_Johnson_Cook,

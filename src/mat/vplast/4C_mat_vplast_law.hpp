@@ -94,6 +94,22 @@ namespace Mat
       virtual double evaluate_stress_ratio(
           const double equiv_stress, const double equiv_plastic_strain) = 0;
 
+
+      /*!
+       * @brief Evaluates the yield stress, or more generally the flow resistance (to accommodate
+       * viscoplastic laws with and without yield surfaces in a common framework)
+       *
+       *
+       * @param[in] equiv_stress equivalent stress
+       * @param[in] equiv_plastic_strain accumulated plastic strain
+       * @param[in/out] err_status error status of the evaluation
+       *
+       */
+      virtual double compute_flow_resistance(const double equiv_stress,
+          const double equiv_plastic_strain,
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status) = 0;
+
+
       /*!
        * @brief Evaluate the equivalent plastic strain rate \f$ \dot{\varepsilon}^{\text{p}} \f$ for
        * a given equivalent stress \f$ \overflow{\sigma} \f$ and a given plastic strain \f$
@@ -142,8 +158,9 @@ namespace Mat
        * @return Derivatives of the equivalent plastic strain rate w.r.t. the equivalent stress
        *         (element 0 of matrix) and the plastic strain (element 1 of matrix)
        */
-      virtual Core::LinAlg::Matrix<2, 1> evaluate_derivatives_of_plastic_strain_rate(
-          const double equiv_stress, const double equiv_plastic_strain, const double dt,
+      virtual InelasticDefgradTransvIsotropElastViscoplastUtils::PlasticStrainRateDerivs
+      evaluate_derivatives_of_plastic_strain_rate(const double equiv_stress,
+          const double equiv_plastic_strain, const double dt,
           const double max_plastic_strain_deriv_incr,
           Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
           const bool update_hist_var = true) = 0;
@@ -164,9 +181,10 @@ namespace Mat
        * @brief Pre-evaluation, intended to be used for stuff that has to be done only once per
        *        evaluate()
        *
+       * @param[in] params  parameter list
        * @param[in] gp      Current Gauss point
        */
-      virtual void pre_evaluate(int gp) = 0;
+      virtual void pre_evaluate(const Teuchos::ParameterList& params, int gp) { gp_ = gp; };
 
       /*!
        * @brief Update history variables of the viscoplasticity law for next time step
@@ -184,6 +202,38 @@ namespace Mat
       virtual void pack_viscoplastic_law(Core::Communication::PackBuffer& data) const = 0;
 
       virtual void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) = 0;
+
+
+      /*!
+       * @brief Register names of the internal data that should be saved during runtime output
+       *
+       * @param[out] name_and_size Unordered map of names of the data with the respective vector
+       * size
+       */
+      virtual void register_output_data_names(
+          std::unordered_map<std::string, int>& names_and_size) const
+      {
+      }
+
+      /*!
+       * @brief Evaluate internal data for every Gauss point saved for output during runtime
+       * output
+       *
+       * @param[in] name  Name of the data to export
+       * @param[out] data NUMGPxNUMDATA Matrix holding the data
+       *
+       * @return true if data is set by the material, otherwise false
+       */
+      virtual bool evaluate_output_data(
+          const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
+      {
+        return false;
+      }
+
+     protected:
+      /// Gauss point index
+      int gp_;
+
 
      private:
       /// material parameters

@@ -170,12 +170,17 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
   current_plastic_strain.resize(1, 0.0);  // value irrelevant at this point
   last_substep_plastic_strain.resize(1, 0.0);
 
+  // update last_ and current_ values of the equivalent stress
+  last_equiv_stress.resize(1, 0.0);
+  current_equiv_stress.resize(1, 0.0);  // value irrelevant at this point
+
   // default values of the right CG tensor: unit tensor
   last_rightCG.resize(1, id3x3);
   current_rightCG.resize(1, id3x3);  // value irrelevant at this point
 
   // default value for the current deformation gradient: zero tensor \f$ \boldsymbol{0} f$ (to make
   // sure that the inverse inelastic deformation gradient is evaluated in the first method call)
+  last_defgrad.resize(1, Core::LinAlg::Matrix<3, 3>{id3x3});
   current_defgrad.resize(1, Core::LinAlg::Matrix<3, 3>{Core::LinAlg::Initialization::zero});
 }
 
@@ -189,6 +194,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
       "You already called resize for the time step quantities! The number of current GP is {} and "
       "you attempt to set it to {}",
       last_plastic_strain.size(), numgp);
+
 
   // default values of the inverse plastic deformation gradient for ALL Gauss Points
   last_plastic_defgrad_inverse.resize(numgp, last_plastic_defgrad_inverse[0]);
@@ -205,7 +211,12 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
   last_rightCG.resize(numgp, last_rightCG[0]);
   current_rightCG.resize(numgp, last_rightCG[0]);  // value irrelevant at this point
 
+  // default values of the equivalent stress for ALL Gauss Points
+  last_equiv_stress.resize(numgp, last_equiv_stress[0]);
+  current_equiv_stress.resize(numgp, current_equiv_stress[0]);  // value irrelevant at this point
+
   // default values of the deformation gradient
+  last_defgrad.resize(numgp, last_defgrad[0]);
   current_defgrad.resize(numgp, current_defgrad[0]);
 }
 
@@ -224,10 +235,12 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
 void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::update()
 {
   // update history variables for the next time step
+  last_defgrad = current_defgrad;
   last_rightCG = current_rightCG;
   last_plastic_defgrad_inverse = current_plastic_defgrad_inverse;
   last_substep_plastic_defgrad_inverse = current_plastic_defgrad_inverse;
   last_plastic_strain = current_plastic_strain;
+  last_equiv_stress = current_equiv_stress;
   last_substep_plastic_strain = current_plastic_strain;
 }
 
@@ -237,9 +250,11 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
 void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::pack(
     Core::Communication::PackBuffer& data) const
 {
+  add_to_pack(data, last_defgrad);
   add_to_pack(data, last_rightCG);
   add_to_pack(data, last_plastic_defgrad_inverse);
   add_to_pack(data, last_plastic_strain);
+  add_to_pack(data, last_equiv_stress);
   add_to_pack(data, last_substep_plastic_defgrad_inverse);
   add_to_pack(data, last_substep_plastic_strain);
 }
@@ -250,9 +265,11 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
     Core::Communication::UnpackBuffer& buffer)
 {
   // extract last values
+  extract_from_pack(buffer, last_defgrad);
   extract_from_pack(buffer, last_rightCG);
   extract_from_pack(buffer, last_plastic_defgrad_inverse);
   extract_from_pack(buffer, last_plastic_strain);
+  extract_from_pack(buffer, last_equiv_stress);
   extract_from_pack(buffer, last_substep_plastic_defgrad_inverse);
   extract_from_pack(buffer, last_substep_plastic_strain);
 
@@ -263,6 +280,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
       last_plastic_defgrad_inverse[0]);  // value irrelevant
   current_plastic_strain.resize(last_plastic_strain.size(),
       last_plastic_strain[0]);  // value irrelevant
+  current_equiv_stress.resize(last_equiv_stress.size(),
+      last_equiv_stress[0]);  // value irrelevant
 
   // set evaluated deformation gradient to 0, to make sure that the inverse inelastic deformation
   // gradient is evaluated fully after the restart
