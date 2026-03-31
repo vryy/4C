@@ -200,6 +200,7 @@ namespace Core::IO
           !std::is_same_v<Interpolation, NoInterpolation>;
 
      public:
+      using value_type = T;
       using IndexType = int;
       using MapType = std::unordered_map<IndexType, T>;
       using PointMapType = PointDataMap<IndexType, T>;
