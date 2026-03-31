@@ -123,6 +123,9 @@ void Particle::ParticleAlgorithm::setup()
   // setup initial particles
   setup_initial_particles();
 
+  // build Dirichlet BC function cache after particles are distributed to containers
+  particletimint_->build_dirichlet_bc_funct_cache(get_comm());
+
   // setup initial rigid bodies
   if (particlerigidbody_) setup_initial_rigid_bodies();
 

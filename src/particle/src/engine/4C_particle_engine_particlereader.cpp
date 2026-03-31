@@ -64,7 +64,8 @@ void Particle::read_particles(Core::IO::InputFile& input, const std::string& sec
         // optional particle parameters
         const std::unordered_map<std::string, Particle::ParticleState> additional_states = {
             {"RAD", Particle::Radius}, {"RIGIDCOLOR", Particle::RigidBodyColor},
-            {"PDBODYID", Particle::PDBodyId}, {"BOUNDARYID", Particle::OpenBoundaryId}};
+            {"PDBODYID", Particle::PDBodyId}, {"DIRICHLET_FUNCT", Particle::DirichletFunctionId},
+            {"BOUNDARYID", Particle::OpenBoundaryId}};
 
         while (!parser.at_end())
         {
@@ -119,6 +120,7 @@ Core::IO::InputSpec Particle::create_particle_spec()
   return all_of({deprecated_selection<std::string>("TYPE", get_particle_type_names()),
       parameter<std::vector<double>>("POS", {.size = 3}), parameter<std::optional<double>>("RAD"),
       parameter<std::optional<double>>("RIGIDCOLOR"), parameter<std::optional<double>>("PDBODYID"),
+      parameter<std::optional<double>>("DIRICHLET_FUNCT"),
       parameter<std::optional<double>>("BOUNDARYID")});
 }
 

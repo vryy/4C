@@ -41,6 +41,7 @@ int Particle::enum_to_state_dim(const ParticleState& state)
     case InitialConnectedBonds:
     case CurrentConnectedBonds:
     case PDDamageVariable:
+    case DirichletFunctionId:
     case OpenBoundaryId:
       dim = 1;
       break;
@@ -223,6 +224,9 @@ std::string Particle::enum_to_state_name(const ParticleState& state)
       break;
     case PDDamageVariable:
       name = "pd_damage_phi";
+      break;
+    case DirichletFunctionId:
+      name = "dirichlet_function_id";
       break;
     case OpenBoundaryId:
       name = "open_boundary_id";

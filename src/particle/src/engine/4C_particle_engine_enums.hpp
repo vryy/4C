@@ -97,6 +97,7 @@ namespace Particle
     InitialConnectedBonds,  //!< initial active bonds
     CurrentConnectedBonds,  //!< remained active bonds
     PDDamageVariable,       //!< damage level at pd node
+    DirichletFunctionId,    //!< per-particle Dirichlet function id (0 = no BC, N = follow FUNCT N)
     /*---------------------------------------------------------------------------*/
     // particle states for open boundaries
     OpenBoundaryId  //!< open boundary id

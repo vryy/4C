@@ -84,6 +84,11 @@ void Particle::TimInt::setup(
   constraints_ = constraints;
 }
 
+void Particle::TimInt::build_dirichlet_bc_funct_cache(MPI_Comm comm)
+{
+  if (dirichletboundarycondition_) dirichletboundarycondition_->build_funct_cache(comm);
+}
+
 void Particle::TimInt::insert_particle_states_of_particle_types(
     std::map<Particle::TypeEnum, std::set<Particle::StateEnum>>& particlestatestotypes) const
 {
@@ -125,12 +130,12 @@ void Particle::TimInt::init_dirichlet_boundary_condition()
   dirichletboundarycondition_ =
       std::make_unique<Particle::DirichletBoundaryConditionHandler>(params_);
 
-  // get reference to set of particle types subjected to dirichlet boundary conditions
-  const std::set<Particle::TypeEnum>& typessubjectedtodirichletbc =
-      dirichletboundarycondition_->get_particle_types_subjected_to_dirichlet_bc_set();
-
-  // no particle types are subjected to dirichlet boundary conditions
-  if (typessubjectedtodirichletbc.empty()) dirichletboundarycondition_.reset();
+  // discard handler if no dirichlet boundary conditions of any kind are defined
+  const bool has_per_type =
+      !dirichletboundarycondition_->get_particle_types_subjected_to_dirichlet_bc_set().empty();
+  const bool has_per_particle =
+      !dirichletboundarycondition_->get_particle_types_with_per_particle_dirichlet_bc_set().empty();
+  if (!has_per_type && !has_per_particle) dirichletboundarycondition_.reset();
 }
 
 void Particle::TimInt::init_temperature_boundary_condition()

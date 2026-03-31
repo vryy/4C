@@ -13,6 +13,7 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
+#include "4C_comm_utils.hpp"
 #include "4C_particle_engine_typedefs.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -67,6 +68,15 @@ namespace Particle
         const std::shared_ptr<Particle::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<Particle::RigidBodyHandlerInterface> particlerigidbodyinterface,
         const std::shared_ptr<Particle::ConstraintsHandler> constraints = nullptr);
+
+    /*!
+     * \brief build Dirichlet BC function cache across all procs
+     *
+     * Must be called after particles are distributed to containers.
+     *
+     * \param[in] comm MPI communicator
+     */
+    void build_dirichlet_bc_funct_cache(MPI_Comm comm);
 
     /*!
      * \brief insert integration dependent states of all particle types
