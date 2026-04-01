@@ -126,7 +126,7 @@ bool Discret::Elements::MembraneScatra<distype>::read_element(const std::string&
   else if (impltype == "Std")
     impltype_ = Inpar::ScaTra::impltype_std;
   else
-    FOUR_C_THROW("Invalid implementation type for Wall1_Scatra elements!");
+    FOUR_C_THROW("Invalid implementation type for Membrane-Scatra elements!");
 
   return true;
 }

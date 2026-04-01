@@ -144,7 +144,7 @@ void PoroElastScaTra::Utils::PoroScatraCloneStrategy::set_element_data(
         "copied "
         "to scatra elements or the ImplType is set 'Undefined' which is not meaningful for the "
         "created scatra discretization! "
-        "Use SOLIDSCATRA, WALLSCATRA, SHELLSCATRA, SOLIDPOROSCATRA, SOLIDPOROP1SCATRA, "
+        "Use SOLIDSCATRA, SHELLSCATRA, SOLIDPOROSCATRA, SOLIDPOROP1SCATRA, "
         "SOLIDPORO_PRESSURE_BASED, WALLPOROSCATRA or WALLPOROP1SCATRA Elements with meaningful "
         "ImplType instead!");
 

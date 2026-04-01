@@ -12,7 +12,6 @@
 #include "4C_shell7p_ele_scatra.hpp"
 #include "4C_solid_scatra_3D_ele.hpp"
 #include "4C_truss3_scatra.hpp"
-#include "4C_w1_scatra.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,12 +24,7 @@ Inpar::ScaTra::ImplType Adapter::get_sca_tra_impl_type(Core::Elements::Element* 
   // the element type name, needed to cast correctly in the following
   const std::string& eletypename = ele->element_type().name();
 
-  if (eletypename == "Wall1ScatraType")
-  {
-    impltype = (dynamic_cast<Discret::Elements::Wall1Scatra*>(ele))->impl_type();
-  }
-  // shell scatra elements
-  else if (eletypename == "Shell7pScatraType")
+  if (eletypename == "Shell7pScatraType")
   {
     impltype = (dynamic_cast<Discret::Elements::Shell7pScatra*>(ele))->impl_type();
   }
