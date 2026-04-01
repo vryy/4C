@@ -100,8 +100,8 @@ namespace ReducedLung1dPipeFlow
    * The first N rows in f refer to characteristic speed information, N+1 to mass conservation, and
    * the remaining to pressure conservation.
    */
-  void compute_residual(Teuchos::SerialDenseVector<int, double>& f, const int N_connected_nodes,
-      Teuchos::SerialDenseVector<int, double> x, const std::vector<double>& junction_normal,
+  void compute_residual(Core::LinAlg::SerialDenseVector& f, const int N_connected_nodes,
+      const Core::LinAlg::SerialDenseVector& x, const std::vector<double>& junction_normal,
       const std::vector<double>& junction_ref_area_A0,
       const std::vector<double>& junction_characteristic_out,
       const std::vector<double>& junction_beta, const double density_rho);
@@ -113,10 +113,9 @@ namespace ReducedLung1dPipeFlow
    * The first N (@param N_connected_nodes) rows in f refer to characteristic speed information, N+1
    * to mass conservation, and the remaining to pressure conservation.
    */
-  void compute_jacobian(Teuchos::SerialDenseMatrix<int, double>& jacobian,
-      const int N_connected_nodes, Teuchos::SerialDenseVector<int, double> x,
-      const std::vector<double>& junction_normal, const std::vector<double>& junction_beta,
-      const double density_rho);
+  void compute_jacobian(Core::LinAlg::SerialDenseMatrix& jacobian, const int N_connected_nodes,
+      const Core::LinAlg::SerialDenseVector& x, const std::vector<double>& junction_normal,
+      const std::vector<double>& junction_beta, const double density_rho);
 
   /**
    * Compute the values for A_np and u_np for all nodes at the junctions.

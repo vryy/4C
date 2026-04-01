@@ -18,6 +18,8 @@
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_io_pstream.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_vplast_law.hpp"
@@ -26,9 +28,9 @@
 #include "4C_reduced_lung_1d_pipe_flow_terminal_unit.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_utils_function_of_time.hpp"
+#include "4C_utils_local_newton.hpp"
 
 #include <boost/graph/subgraph.hpp>
-#include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <functional>
@@ -149,41 +151,29 @@ namespace ReducedLung1dPipeFlow
       const double& boundary_A0, const double& characteristic_W_outgoing, const double& beta,
       double& A_condition, double& u_condition)
   {
-    // step 1: initial guess: Q(A0), W1 = 2Q/A0 - W2
-    double W_in = 2 * Q_condition / boundary_A0 - characteristic_W_outgoing;
-    double f = pow(W_in - characteristic_W_outgoing, 4) / 1024 *
-                   pow(input.fluid.density_rho / beta, 2) * 0.5 *
-                   (W_in + characteristic_W_outgoing) -
-               Q_condition;
+    const double rho_beta = input.fluid.density_rho / beta;
+    const double residual_constant = rho_beta * rho_beta * 0.5 / 1024.0;
 
-    int itrs = 0;
-    while (fabs(f) > 0.000001)
+    auto residuum_and_jacobian = [&](double W_in) -> std::tuple<double, double>
     {
-      // step 2: calculate df/dW
-      double dfdW1 = pow(input.fluid.density_rho / beta, 2) * (1.0 / 1024.0) *
+      double f = residual_constant * pow(W_in - characteristic_W_outgoing, 4) *
+                     (W_in + characteristic_W_outgoing) -
+                 Q_condition;
+      double dfdW1 = rho_beta * rho_beta * (1.0 / 1024.0) *
                      pow(W_in - characteristic_W_outgoing, 3) *
                      (2.5 * W_in + 1.5 * characteristic_W_outgoing);
-      // step 3: find W_in(n+1) = W_in(n) - f(n)/dfdW1(n)
-      W_in = W_in - f / dfdW1;
-      // step 4: calculate error f
-      f = pow(W_in - characteristic_W_outgoing, 4) / 1024 * pow(input.fluid.density_rho / beta, 2) *
-              0.5 * (W_in + characteristic_W_outgoing) -
-          Q_condition;
-      // prevent infinite loop
-      itrs++;
-      if (itrs >= 100)
-      {
-        FOUR_C_THROW("Newton Raphson method exceeded maximum allowed iterations");
-      }
-    }
+      return {f, dfdW1};
+    };
 
-    A_condition =
-        pow(input.fluid.density_rho / beta, 2) * pow(W_in - characteristic_W_outgoing, 4) / 1024;
+    double W_in = Core::Utils::solve_local_newton(residuum_and_jacobian,
+        2.0 * Q_condition / boundary_A0 - characteristic_W_outgoing, 1e-6, 100);
+
+    A_condition = rho_beta * rho_beta * pow(W_in - characteristic_W_outgoing, 4) / 1024.0;
     u_condition = 0.5 * (W_in + characteristic_W_outgoing);
   }
 
-  void compute_residual(Teuchos::SerialDenseVector<int, double>& f, const int N_connected_nodes,
-      Teuchos::SerialDenseVector<int, double> x, const std::vector<double>& junction_normal,
+  void compute_residual(Core::LinAlg::SerialDenseVector& f, const int N_connected_nodes,
+      const Core::LinAlg::SerialDenseVector& x, const std::vector<double>& junction_normal,
       const std::vector<double>& junction_ref_area_A0,
       const std::vector<double>& junction_characteristic_out,
       const std::vector<double>& junction_beta, const double density_rho)
@@ -228,10 +218,9 @@ namespace ReducedLung1dPipeFlow
     }
   }
 
-  void compute_jacobian(Teuchos::SerialDenseMatrix<int, double>& jacobian,
-      const int N_connected_nodes, Teuchos::SerialDenseVector<int, double> x,
-      const std::vector<double>& junction_normal, const std::vector<double>& junction_beta,
-      const double density_rho)
+  void compute_jacobian(Core::LinAlg::SerialDenseMatrix& jacobian, const int N_connected_nodes,
+      const Core::LinAlg::SerialDenseVector& x, const std::vector<double>& junction_normal,
+      const std::vector<double>& junction_beta, const double density_rho)
   {
     std::vector<double> junction_velocity_u(N_connected_nodes);
     std::vector<double> junction_area_A(N_connected_nodes);
@@ -321,84 +310,29 @@ namespace ReducedLung1dPipeFlow
 
       // first guess from old values
       // x = [u_0 u_1 ... u_N A_0 A_1 ... A_N]^T
-      Teuchos::SerialDenseVector<int, double> x(2 * N_connected_nodes);
+      Core::LinAlg::SerialDenseVector x(2 * N_connected_nodes, true);
       for (int i = 0; i < N_connected_nodes; ++i)
       {
         x(i) = junction_velocity_u[i];
         x(N_connected_nodes + i) = junction_area_A[i];
       }
-      // Weighted Root Mean Square (WRMS) Setup
-      constexpr double WRMS_TOL = 1.0;
-      Teuchos::SerialDenseVector<int, double> ATOL(2 * N_connected_nodes);
-      for (int i = 0; i < N_connected_nodes; ++i)
+
+      auto residuum_and_jacobian_evaluator = [&](Core::LinAlg::SerialDenseVector& x_eval)
+          -> std::tuple<Core::LinAlg::SerialDenseVector, Core::LinAlg::SerialDenseMatrix>
       {
-        ATOL(i) = 1e-5;                      // for velocity (u)
-        ATOL(N_connected_nodes + i) = 1e-8;  // for area (A)
-      }
-
-      Teuchos::SerialDenseVector<int, double> w(2 * N_connected_nodes);
-      for (int i = 0; i < 2 * N_connected_nodes; ++i)
-      {
-        constexpr double RTOL = 1e-6;
-        w(i) = 1.0 / (RTOL * std::abs(x(i)) + ATOL(i));
-      }
-
-      // derive residual vector
-      Teuchos::SerialDenseVector<int, double> f(2 * N_connected_nodes);
-      compute_residual(f, N_connected_nodes, x, junction_normal, junction_ref_area_A0,
-          junction_characteristic_out, junction_beta, density_rho);
-
-      const auto compute_wrms = [&](const Teuchos::SerialDenseVector<int, double>& vec) -> double
-      {
-        double sum = 0.0;
-        for (int i = 0; i < 2 * N_connected_nodes; ++i)
-        {
-          const double scaled = w(i) * vec(i);
-          sum += scaled * scaled;
-        }
-        return std::sqrt(sum / (2 * N_connected_nodes));
-      };
-
-      // Jacobian matrix needed for Newton-Raphson method
-      Teuchos::SerialDenseMatrix<int, double> Jacobian(
-          2 * N_connected_nodes, 2 * N_connected_nodes);
-
-      // Newton-Raphson iterations
-      int itrs = 0;
-
-      while (compute_wrms(f) > WRMS_TOL)
-      {
-        // step 2: calculate Jacobian
-        compute_jacobian(
-            Jacobian, N_connected_nodes, x, junction_normal, junction_beta, density_rho);
-
-        // step 3: find solution_junction = solution_junction - Jacobian^-1 * f
-        // dx = Jacobian^-1 * f
-        Teuchos::SerialDenseSolver<int, double> junction_solver;
-        Teuchos::SerialDenseVector<int, double> dx(2 * N_connected_nodes);
-        junction_solver.setMatrix(Teuchos::rcpFromRef(Jacobian));
-        junction_solver.setVectors(Teuchos::rcpFromRef(dx), Teuchos::rcpFromRef(f));
-        junction_solver.factorWithEquilibration(true), junction_solver.factor();
-        junction_solver.solve();
-
-        //  Update solution vector: x = x - Jacobian^-1 * f = x - dx
-        for (int i = 0; i < 2 * N_connected_nodes; ++i)
-        {
-          x(i) -= dx(i);
-        }
-
-        // step 4: recalculate residual
-        compute_residual(f, N_connected_nodes, x, junction_normal, junction_ref_area_A0,
+        Core::LinAlg::SerialDenseVector f(2 * N_connected_nodes, true);
+        compute_residual(f, N_connected_nodes, x_eval, junction_normal, junction_ref_area_A0,
             junction_characteristic_out, junction_beta, density_rho);
 
-        // prevent infinite loop
-        itrs++;
-        if (itrs >= 20)
-        {
-          FOUR_C_THROW("Newton Raphson at junction exceeded maximum allowed iterations, WRMS is",
-              compute_wrms(f));
-        }
-      }
+        Core::LinAlg::SerialDenseMatrix Jacobian(
+            2 * N_connected_nodes, 2 * N_connected_nodes, true);
+        compute_jacobian(
+            Jacobian, N_connected_nodes, x_eval, junction_normal, junction_beta, density_rho);
+
+        return {f, Jacobian};
+      };
+
+      x = Core::Utils::solve_local_newton(residuum_and_jacobian_evaluator, x, 1e-8, 50);
 
       for (int i = 0; i < N_connected_nodes; ++i)
       {
@@ -1121,30 +1055,16 @@ namespace ReducedLung1dPipeFlow
                 }
                 ReducedLung1DPipe::TerminalUnit::TerminalUnitModel& terminal_unit =
                     all_terminal_units[it->second];
-                // get jacobian and residual using, A and u from last time step
-                auto [residual_f, jacobian] = terminal_unit.evaluate_residual_jacobian(A_condition,
-                    reference_area_element, beta_element, boundary_Pext, input.fluid.density_rho,
-                    characteristic_W_outgoing, dt);
 
-                int iter = 0;
-                // Newton-Raphson solving for A at 1D terminal node
-                while (abs(residual_f) > 1e-8)
+                auto residuum_and_jacobian = [&](double A_eval) -> std::tuple<double, double>
                 {
-                  A_condition -= residual_f / jacobian;
-                  // recompute residual with new values
-                  auto result = terminal_unit.evaluate_residual_jacobian(A_condition,
-                      reference_area_element, beta_element, boundary_Pext, input.fluid.density_rho,
+                  return terminal_unit.evaluate_residual_jacobian(A_eval, reference_area_element,
+                      beta_element, boundary_Pext, input.fluid.density_rho,
                       characteristic_W_outgoing, dt);
-                  residual_f = result.first;
-                  jacobian = result.second;
-                  iter++;
-                  if (iter >= 100)
-                  {
-                    FOUR_C_THROW(
-                        "Newton Raphson method exceeded maximum allowed iterations at terminal "
-                        "unit.");
-                  }
-                }
+                };
+
+                A_condition =
+                    Core::Utils::solve_local_newton(residuum_and_jacobian, A_condition, 1e-8, 100);
 
                 u_condition = characteristic_W_outgoing -
                               4 * std::pow(A_condition, 0.25) *
