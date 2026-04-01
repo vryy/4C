@@ -13,12 +13,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Global
+{
+  class Problem;
+}
+
 namespace ReducedLung
 {
-
+  void reduced_lung_main(Global::Problem& problem);
   void reduced_lung_main();
-
-}
+}  // namespace ReducedLung
 
 FOUR_C_NAMESPACE_CLOSE
 

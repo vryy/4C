@@ -207,20 +207,19 @@ namespace
     const auto get_solver_params = [&](int) -> const Teuchos::ParameterList&
     { return solver_params; };
 
+    const auto assembly_pipeline = create_default_nox_assembly_pipeline(
+        airways, terminal_units, connections, bifurcations, boundary_conditions);
+
     const NoxSolverContext nox_solver_context{
         .comm = MPI_COMM_WORLD,
         .dynamics = params.dynamics,
         .linear_solver_parameters = solver_params,
         .solver_params_callback = get_solver_params,
+        .assembly_pipeline = assembly_pipeline,
         .dofs = dofs,
         .locally_relevant_dofs = locally_relevant_dofs,
         .x = x,
         .jacobian = sysmat,
-        .airways = airways,
-        .terminal_units = terminal_units,
-        .connections = connections,
-        .bifurcations = bifurcations,
-        .boundary_conditions = boundary_conditions,
     };
 
     auto nox_solver = NoxSolver(nox_solver_context);
