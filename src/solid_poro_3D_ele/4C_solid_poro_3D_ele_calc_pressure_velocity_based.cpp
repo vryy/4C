@@ -387,13 +387,6 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
         const CauchyGreenAndInverse<celltype> cauchygreen =
             evaluate_cauchy_green_and_inverse(spatial_material_mapping);
 
-        Core::LinAlg::Matrix<num_str_, num_dof_per_ele_> Bop =
-            evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
-
-        Core::LinAlg::Matrix<num_str_, num_dof_per_ele_> dInverseRightCauchyGreen_dDisp =
-            evaluate_inverse_cauchy_green_linearization(
-                cauchygreen, jacobian_mapping, spatial_material_mapping);
-
         Core::LinAlg::Matrix<num_dim_ * num_dim_, num_dim_ * num_nodes_>
             dInverseDeformationGradientTransposed_dDisp =
                 compute_linearization_of_deformation_gradient_transposed_wrt_disp<celltype>(
@@ -448,27 +441,9 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
             porostructmat, params, solid_variables, shape_functions, fluid_press, gp, volchange,
             dPorosity_ddetJ);
 
-        // B^T . C^-1
-        Core::LinAlg::Matrix<num_dof_per_ele_, 1> BopCinv(Core::LinAlg::Initialization::zero);
-        BopCinv.multiply_tn(Bop,
-            Core::LinAlg::make_stress_like_voigt_view(cauchygreen.inverse_right_cauchy_green_));
-
-        Core::LinAlg::SymmetricTensor<double, num_dim_, num_dim_> fstress{};
-
-
         // update internal force vector
         if (matrix_views.force_vector.has_value())
         {
-          // update internal force vector with darcy-brinkman additions
-          if (porofluidmat.type() == Mat::PAR::darcy_brinkman)
-          {
-            update_internal_force_vector_for_brinkman_flow<celltype>(integration_factor,
-                porofluidmat.viscosity(),
-                spatial_material_mapping.determinant_deformation_gradient_, porosity, fvelder,
-                spatial_material_mapping.inverse_deformation_gradient_, Bop,
-                cauchygreen.inverse_right_cauchy_green_, fstress, *matrix_views.force_vector);
-          }
-
           update_internal_forcevector_with_structure_fluid_coupling_and_reactive_darcy_terms<
               celltype>(integration_factor, shape_functions.shapefunctions_, porofluidmat,
               anisotropy_properties, spatial_material_mapping, porosity, disp_velocity,
@@ -483,21 +458,32 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
               *matrix_views.force_vector);
         }
 
+        if (porofluidmat.type() == Mat::PAR::darcy_brinkman)
+        {
+          // if we have a darcy-brinkman flow, we additionally need to deal with viscous forces
+          Core::LinAlg::SymmetricTensor<double, num_dim_, num_dim_> viscous_stress =
+              calculate_viscous_stress<celltype>(porofluidmat.viscosity(), spatial_material_mapping,
+                  fvelder, cauchygreen.inverse_right_cauchy_green_);
+
+          if (matrix_views.force_vector.has_value())
+          {
+            add_internal_force_vector(jacobian_mapping,
+                spatial_material_mapping.deformation_gradient_, porosity * viscous_stress,
+                integration_factor, *matrix_views.force_vector);
+          }
+
+          if (matrix_views.K_displacement_displacement.has_value())
+          {
+            update_stiffness_matrix_for_brinkman_flow<celltype>(jacobian_mapping,
+                integration_factor, porofluidmat.viscosity(), porosity, fvelder,
+                cauchygreen.inverse_right_cauchy_green_, dPorosity_ddetJ, spatial_material_mapping,
+                *matrix_views.K_displacement_displacement);
+          }
+        }
+
         // update stiffness matrix
         if (matrix_views.K_displacement_displacement.has_value())
         {
-          // update stiffness matrix with darcy-brinkman additions
-          if (porofluidmat.type() == Mat::PAR::darcy_brinkman)
-          {
-            update_stiffness_matrix_for_brinkman_flow<celltype>(integration_factor,
-                porofluidmat.viscosity(),
-                spatial_material_mapping.determinant_deformation_gradient_, porosity, fvelder,
-                spatial_material_mapping.inverse_deformation_gradient_, Bop,
-                cauchygreen.inverse_right_cauchy_green_, dPorosity_ddetJ, dDetDefGrad_dDisp,
-                dInverseRightCauchyGreen_dDisp, dInverseDeformationGradientTransposed_dDisp,
-                fstress, *matrix_views.K_displacement_displacement);
-          }
-
           // initialize element matrizes and vectors
           Core::LinAlg::Matrix<num_dof_per_ele_, num_dof_per_ele_> erea_v(
               Core::LinAlg::Initialization::zero);
@@ -716,7 +702,7 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
               porosity_and_linearization_od.porosity,
               porosity_and_linearization_od.d_porosity_d_pressure, shape_functions.shapefunctions_,
               jacobian_mapping, spatial_material_mapping, cauchygreen.inverse_right_cauchy_green_,
-              fluid_velocity_gradient, Bop, *matrix_views.K_displacement_fluid_dofs);
+              fluid_velocity_gradient, *matrix_views.K_displacement_fluid_dofs);
         }
 
         if constexpr (porosity_formulation == PorosityFormulation::as_primary_variable)

@@ -104,31 +104,6 @@ namespace Discret::Elements::Internal
 {
   template <Core::FE::CellType celltype>
   inline static constexpr int num_dof_per_node = num_dim<celltype>;
-
-  template <Core::FE::CellType celltype>
-  inline void calculate_viscous_stress(const double integration_fac, const double viscosity,
-      const double det_defgrad, const double porosity,
-      const Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
-          fvelder,
-      const Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
-          defgrd_inv,
-      const Core::LinAlg::SymmetricTensor<double, Internal::num_dim<celltype>,
-          Internal::num_dim<celltype>>& C_inv,
-      Core::LinAlg::SymmetricTensor<double, Internal::num_dim<celltype>,
-          Internal::num_dim<celltype>>& fstress,
-      Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
-          CinvFvel)
-  {
-    CinvFvel = C_inv * fvelder;
-
-
-    Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>>
-        stress_nonsym = CinvFvel * Core::LinAlg::transpose(defgrd_inv);
-
-    fstress = integration_fac * viscosity * det_defgrad * porosity *
-              Core::LinAlg::assume_symmetry(stress_nonsym + Core::LinAlg::transpose(stress_nonsym));
-  }
-
 }  // namespace Discret::Elements::Internal
 
 
@@ -1322,12 +1297,13 @@ namespace Discret::Elements
   }
 
   /*!
-   * @brief Update stiffness matrix with off-diogonal brinkmann flow contribution
+   * @brief Update stiffness matrix with off-diagonal brinkman flow contribution
    *
    * @tparam celltype: Cell type
    * @param integration_fac (in) : Integration factor (Gauss point weight times the determinant of
    * the jacobian)
    * @param viscosity (in) : viscosity of fluid phase
+   * @param porosity (in) : porosity
    * @param dporosity_dpressure (in) : Derivative of porosity w.r.t. fluid pressure
    * @param shapefunctions (in) : Shape functions
    * @param jacobian_mapping (in): An object holding quantities of the jacobian mapping
@@ -1337,8 +1313,6 @@ namespace Discret::Elements
    * determinant_deformation_gradient)
    * @param inverse_right_cauchy_green (in) : inverse right cauchygreen trensor
    * @param fvelder (in) : material fluid velocity gradient at integration point
-   * @param bop (in) : Strain gradient (B-Operator)
-   * @param rea_fluid_vel (in/out) : reactive fluid velocity
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
   template <Core::FE::CellType celltype>
@@ -1351,90 +1325,69 @@ namespace Discret::Elements
           Internal::num_dim<celltype>>& inverse_right_cauchy_green,
       const Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
           fvelder,
-      const Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_dof_per_ele<celltype>>&
-          bop,
       Core::LinAlg::Matrix<Internal::num_dim<celltype> * Internal::num_nodes<celltype>,
           (Internal::num_dim<celltype> + 1) * Internal::num_nodes<celltype>>& stiffness_matrix)
   {
     constexpr unsigned dim = Internal::num_dim<celltype>;
-    Core::LinAlg::Tensor<double, dim, dim> f_stress_nonsym =
+    constexpr unsigned num_nodes = Internal::num_nodes<celltype>;
+    constexpr unsigned dof_per_node = Internal::num_dof_per_node<celltype>;
+
+    // Compute fluid stress
+    const Core::LinAlg::Tensor<double, dim, dim> f_stress_nonsym =
         inverse_right_cauchy_green * fvelder *
         Core::LinAlg::transpose(spatial_material_mapping.inverse_deformation_gradient_);
 
-    Core::LinAlg::SymmetricTensor<double, dim, dim> f_stress =
+    const Core::LinAlg::SymmetricTensor<double, dim, dim> f_stress =
         Core::LinAlg::assume_symmetry(f_stress_nonsym + Core::LinAlg::transpose(f_stress_nonsym));
 
-    // B^T . \sigma
-    static Core::LinAlg::Matrix<Internal::num_dof_per_ele<celltype>, 1> fstressb;
-    fstressb.multiply_tn(bop, Core::LinAlg::make_stress_like_voigt_view(f_stress));
-    static Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_nodes<celltype>>
-        N_XYZ_Finv;
-    N_XYZ_Finv.multiply(
-        Core::LinAlg::make_matrix_view(spatial_material_mapping.inverse_deformation_gradient_),
-        Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ));
+    // Common scalar factors
+    const double detJ = spatial_material_mapping.determinant_deformation_gradient_;
+    const double press_factor = integration_fac * dporosity_dpressure * viscosity * detJ;
+    const double vel_factor = integration_fac * porosity * viscosity * detJ;
 
-    // dfstress/dv^f
-    Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_dof_per_ele<celltype>>
-        dfstressb_dv;
-    for (int j = 0; j < Internal::num_dim<celltype>; j++)
+    // assemble nodal block contributions directly
+    for (unsigned i = 0; i < num_nodes; ++i)
     {
-      const double C_inv_0_j = inverse_right_cauchy_green(0, j);
-      const double C_inv_1_j = inverse_right_cauchy_green(1, j);
-      const double C_inv_2_j = inverse_right_cauchy_green(2, j);
+      const unsigned fi = dof_per_node * i;
 
-      for (int i = 0; i < Internal::num_nodes<celltype>; i++)
+      // Force vector for pressure coupling: f_stress_div = F * (S * grad_X N_i)
+      const Core::LinAlg::Tensor<double, dim> f_stress_div =
+          spatial_material_mapping.deformation_gradient_ * f_stress * jacobian_mapping.N_XYZ[i];
+
+      // Precompute (C^{-1} * grad_nx[i]) for the velocity coupling block
+      const Core::LinAlg::Tensor<double, dim> C_inv_grad_X_i =
+          inverse_right_cauchy_green * jacobian_mapping.N_XYZ[i];
+
+      const Core::LinAlg::Tensor<double, dim> N_xyz =
+          jacobian_mapping.N_XYZ[i] * spatial_material_mapping.inverse_deformation_gradient_;
+
+      for (unsigned k = 0; k < num_nodes; ++k)
       {
-        const int k = Internal::num_dim<celltype> * i + j;
-        const double N_XYZ_Finv_0_i = N_XYZ_Finv(0, i);
-        const double N_XYZ_Finv_1_i = N_XYZ_Finv(1, i);
-        const double N_XYZ_Finv_2_i = N_XYZ_Finv(2, i);
+        const unsigned fkp1 = (dim + 1) * k;
 
-        dfstressb_dv(0, k) = 2 * N_XYZ_Finv_0_i * C_inv_0_j;
-        dfstressb_dv(1, k) = 2 * N_XYZ_Finv_1_i * C_inv_1_j;
-        dfstressb_dv(2, k) = 2 * N_XYZ_Finv_2_i * C_inv_2_j;
-        //**********************************
-        dfstressb_dv(3, k) = N_XYZ_Finv_0_i * C_inv_1_j + N_XYZ_Finv_1_i * C_inv_0_j;
-        dfstressb_dv(4, k) = N_XYZ_Finv_1_i * C_inv_2_j + N_XYZ_Finv_2_i * C_inv_1_j;
-        dfstressb_dv(5, k) = N_XYZ_Finv_2_i * C_inv_0_j + N_XYZ_Finv_0_i * C_inv_2_j;
-      }
-    }
-
-    // B^T . dfstress/dv^f
-    Core::LinAlg::Matrix<Internal::num_dof_per_ele<celltype>, Internal::num_dof_per_ele<celltype>>
-        dfstressb_dv_bop(Core::LinAlg::Initialization::zero);
-    dfstressb_dv_bop.multiply_tn(bop, dfstressb_dv);
-
-    for (int i = 0; i < Internal::num_nodes<celltype>; i++)
-    {
-      const int fi = Internal::num_dof_per_node<celltype> * i;
-      for (int j = 0; j < Internal::num_dim<celltype>; j++)
-      {
-        const double fstressb_i_j = fstressb(fi + j);
-
-        for (int k = 0; k < Internal::num_nodes<celltype>; k++)
+        // --- Pressure Coupling Block ---
+        const double p_scale = press_factor * shapefunctions(k);
+        for (unsigned j = 0; j < dim; ++j)
         {
-          const int fk = Internal::num_dof_per_node<celltype> * k;
-          const int fkp1 = (Internal::num_dim<celltype> + 1) * k;
+          stiffness_matrix(fi + j, fkp1 + dim) += p_scale * f_stress_div(j);
+        }
 
-          /*-------structure- fluid pressure coupling: "darcy-brinkman stress terms" B^T . ( \mu*J -
-           * d(phi)/(dp) * fstress ) * Dp */
-          (stiffness_matrix)(fi + j, fkp1 + Internal::num_dim<celltype>) +=
-              integration_fac * fstressb_i_j * dporosity_dpressure * viscosity *
-              spatial_material_mapping.determinant_deformation_gradient_ * shapefunctions(k);
-          for (int l = 0; l < Internal::num_dof_per_node<celltype>; l++)
+        // --- Velocity Coupling Block ---
+        const Core::LinAlg::Tensor<double, dim, dim> K_uv =
+            Core::LinAlg::dyadic(jacobian_mapping.N_XYZ[k], C_inv_grad_X_i) +
+            N_xyz * jacobian_mapping.N_XYZ[k] *
+                Core::LinAlg::transpose(spatial_material_mapping.inverse_deformation_gradient_);
+
+        for (unsigned j = 0; j < dim; ++j)  // Solid Row DOF
+        {
+          for (unsigned l = 0; l < dim; ++l)  // Fluid Velocity Col DOF
           {
-            /*-------structure- fluid velocity coupling: "darcy-brinkman stress terms" B^T . ( \mu*J
-             * - phi * dfstress/dv^f ) * Dp */
-            (stiffness_matrix)(fi + j, fkp1 + l) +=
-                integration_fac * viscosity *
-                spatial_material_mapping.determinant_deformation_gradient_ * porosity *
-                dfstressb_dv_bop(fi + j, fk + l);
+            stiffness_matrix(fi + j, fkp1 + l) += vel_factor * K_uv(j, l);
           }
         }
       }
     }
   }
-
 
   /*!
    * @brief Add off-diagonal contribution of one Gauss point to stiffness matrix
@@ -1878,183 +1831,120 @@ namespace Discret::Elements
     }
   }
 
-  /*!
-   * @brief Update force vector with brinkmann flow  contribution
-   *
-   * @tparam celltype: Cell type
-   * @param integration_fac (in) : Integration factor (Gauss point weight times the determinant of
-   * the jacobian)
-   *  @param det_defgrd (in) : determinant of deformation gradient
-   *  @param porosity (in) : porosity
-   * @param fvelder (in) :  material fluid velocity gradient at integration point
-   * @param defgrd_inv (in) : inverse deformationgradient
-   * @param bop (in) : Strain gradient (B-Operator)
-   * @param C_inv (in) : inverse right cachygreen tensor
-   * @param fstress (in) : viscous stress
-   * @param force_vector (in/out) : Force vector where the local contribution is added to
-   */
   template <Core::FE::CellType celltype>
-  inline void update_internal_force_vector_for_brinkman_flow(const double integration_fac,
-      const double viscosity, const double det_defgrd, const double porosity,
+  inline Core::LinAlg::SymmetricTensor<double, Internal::num_dim<celltype>,
+      Internal::num_dim<celltype>>
+  calculate_viscous_stress(const double viscosity,
+      const SpatialMaterialMapping<celltype>& spatial_material_mapping,
       const Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
           fvelder,
-      const Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
-          defgrd_inv,
-      const Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_dof_per_ele<celltype>>&
-          bop,
       const Core::LinAlg::SymmetricTensor<double, Internal::num_dim<celltype>,
-          Internal::num_dim<celltype>>& C_inv,
-      Core::LinAlg::SymmetricTensor<double, Internal::num_dim<celltype>,
-          Internal::num_dim<celltype>>& fstress,
-      Core::LinAlg::Matrix<Internal::num_dim<celltype> * Internal::num_nodes<celltype>, 1>&
-          force_vector)
+          Internal::num_dim<celltype>>& C_inv)
   {
-    Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>> CinvFvel;
-    Discret::Elements::Internal::calculate_viscous_stress<celltype>(integration_fac, viscosity,
-        det_defgrd, porosity, fvelder, defgrd_inv, C_inv, fstress, CinvFvel);
-    // B^T . C^-1
-    static Core::LinAlg::Matrix<Internal::num_dof_per_ele<celltype>, 1> fstressb(
-        Core::LinAlg::Initialization::zero);
-    fstressb.multiply_tn(bop, Core::LinAlg::make_stress_like_voigt_view(fstress));
-    force_vector.update(1.0, fstressb, 1.0);
+    const Core::LinAlg::SymmetricTensor<double, Internal::num_dim<celltype>,
+        Internal::num_dim<celltype>>
+        C_dot =
+            Core::LinAlg::assume_symmetry(
+                Core::LinAlg::transpose(fvelder) * spatial_material_mapping.deformation_gradient_) +
+            Core::LinAlg::assume_symmetry(
+                Core::LinAlg::transpose(spatial_material_mapping.deformation_gradient_) * fvelder);
+
+    return viscosity * spatial_material_mapping.determinant_deformation_gradient_ *
+           Core::LinAlg::assume_symmetry(C_inv * C_dot * C_inv);
   }
 
-
   /*!
-   * @brief Update stiffness matrix with brinkmann flow  contribution
+   * @brief Update stiffness matrix with brinkman flow  contribution
    *
    * @tparam celltype: Cell type
+   * @param jacobian_mapping (in) : object holding the jacobian mapping tensors (N_XYZ, J, etc.)
    * @param integration_fac (in) : Integration factor (Gauss point weight times the determinant of
    * the jacobian)
-   *  @param det_defgrd (in) : determinant of deformation gradient
+   * @param viscosity (in) : fluid viscosity
    *  @param porosity (in) : porosity
    * @param fvelder (in) :  material fluid velocity gradient at integration point
-   * @param defgrd_inv (in) : inverse deformationgradient
-   * @param bop (in) : Strain gradient (B-Operator)
    * @param C_inv (in) : inverse right cachygreen tensor
-   * @param dporosity_dus (in) : derivative of porosity w.r.t. displacements
-   * @param dJ_dus (in) : derivative of determinante of deformationgradient w.r.t. displacements
-   * @param dCinv_dus (in) :  derivative of right cauchy greeen tensor w.r.t. displacements
-   * @param dFinvTdus (in) : derivative of inverse transposed deformation gradient w.r.t.
-   * displacements
-   * @param fstress (in) : viscous stress
+   * @param dporosity_ddetJ (in) : derivative of porosity w.r.t. determinant of deformation gradient
+   * @param spatial_material_mapping (in) : object holding the spatial material mapping tensors
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
   template <Core::FE::CellType celltype>
-  inline void update_stiffness_matrix_for_brinkman_flow(const double integration_fac,
-      const double viscosity, const double det_defgrd, const double porosity,
+  inline void update_stiffness_matrix_for_brinkman_flow(
+      const JacobianMapping<celltype>& jacobian_mapping, const double integration_fac,
+      const double viscosity, const double porosity,
       const Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
           fvelder,
-      const Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
-          defgrd_inv,
-      const Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_dof_per_ele<celltype>>&
-          bop,
       const Core::LinAlg::SymmetricTensor<double, Internal::num_dim<celltype>,
           Internal::num_dim<celltype>>& C_inv,
       const double dporosity_ddetJ,
-      const Core::LinAlg::Matrix<1, Internal::num_dof_per_ele<celltype>>& dJ_dus,
-      const Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_dof_per_ele<celltype>>&
-          dCinv_dus,
-      const Core::LinAlg::Matrix<Internal::num_dim<celltype> * Internal::num_dim<celltype>,
-          Internal::num_dof_per_ele<celltype>>& dFinvTdus,
-      Core::LinAlg::SymmetricTensor<double, Internal::num_dim<celltype>,
-          Internal::num_dim<celltype>>& fstress,
+      const SpatialMaterialMapping<celltype>& spatial_material_mapping,
       Core::LinAlg::Matrix<Internal::num_dim<celltype> * Internal::num_nodes<celltype>,
           Internal::num_dim<celltype> * Internal::num_nodes<celltype>>& stiffness_matrix)
   {
-    Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>> CinvFvel;
-    Discret::Elements::Internal::calculate_viscous_stress<celltype>(integration_fac, viscosity,
-        det_defgrd, porosity, fvelder, defgrd_inv, C_inv, fstress, CinvFvel);
-    // B^T . C^-1
-    static Core::LinAlg::Matrix<Internal::num_dof_per_ele<celltype>, 1> fstressb(
-        Core::LinAlg::Initialization::zero);
-    fstressb.multiply_tn(bop, Core::LinAlg::make_stress_like_voigt_view(fstress));
+    constexpr unsigned dim = Internal::num_dim<celltype>;
 
-    // evaluate viscous terms (for darcy-brinkman flow only)
+    // 1. Core mapping tensors
+    const auto Finv = spatial_material_mapping.inverse_deformation_gradient_;
+    const auto FinvT = Core::LinAlg::transpose(Finv);
+    const auto F = spatial_material_mapping.deformation_gradient_;
+    const double J = spatial_material_mapping.determinant_deformation_gradient_;
+
+    // 2. Base kinematic terms
+    const auto tmp = fvelder * FinvT;
+    const auto S_nonsym = C_inv * tmp;
+    const auto S_sym = S_nonsym + Core::LinAlg::transpose(S_nonsym);
+
+    // 3. The precise components of d(S_nonsym)/dF
+    // By applying the product rule to C^-1 * fvelder * F^-T
+    const auto Cinv_tmp = C_inv * tmp;
+    const auto FinvT_tmp = FinvT * tmp;
+
+    // D1_ijkl = Finv_ik * (Cinv_tmp)_lj
+    auto D1 = Core::LinAlg::einsum<"ik", "lj">(Finv, Cinv_tmp);
+    // D2_ijkl = Cinv_il * (FinvT_tmp)_kj
+    auto D2 = Core::LinAlg::einsum<"il", "kj">(C_inv, FinvT_tmp);
+    // D3_ijkl = (Cinv_tmp)_il * Finv_jk
+    auto D3 = Core::LinAlg::einsum<"il", "jk">(Cinv_tmp, Finv);
+
+    // Non-symmetric 4th-order tangent (dSnonsym / dF)
+    const Core::LinAlg::Tensor<double, dim, dim, dim, dim> dSnonsym_dF = (D1 + D2 + D3) * -1.0;
+
+    // d(S_sym)/dF_kl = d(S_nonsym_ij)/dF_kl + d(S_nonsym_ji)/dF_kl
+    const auto dSsym_dF = dSnonsym_dF + Core::LinAlg::einsum<"jikl">(dSnonsym_dF);
+
+    // 4. Volumetric and Porosity terms
+    const double beta = viscosity * J * porosity;
+    const double dbeta_dJ = viscosity * (porosity + J * dporosity_ddetJ);
+
+    // d(beta)/dF_kl = d(beta)/dJ * dJ/dF_kl = dbeta_dJ * J * Finv_lk
+    const auto dbeta_dF = FinvT * (dbeta_dJ * J);
+
+    // Outer product mapping S_sym to the volume/porosity variation
+    const auto vol_part = Core::LinAlg::einsum<"ij", "kl">(S_sym, dbeta_dF);
+
+    // 5. Total Material Tangent: dS / dF
+    const Core::LinAlg::Tensor<double, dim, dim, dim, dim> dS_dF = dSsym_dF * beta + vol_part;
+
+    // 6. Push forward the tangent to spatial force variations
+    // A_mat = F * (dS/dF) * w
+    const auto A_mat = Core::LinAlg::einsum<"ia", "ajkl">(F, dS_dF);
+
+    for (std::size_t a = 0; a < Core::FE::num_nodes(celltype); ++a)
     {
-      Core::LinAlg::Tensor<double, Internal::num_dim<celltype>, Internal::num_dim<celltype>> tmp =
-          fvelder * Core::LinAlg::transpose(defgrd_inv);
-      double fac = integration_fac * viscosity;
-      Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_dof_per_ele<celltype>>
-          fstress_dus(Core::LinAlg::Initialization::zero);
+      const auto gradN_a = jacobian_mapping.N_XYZ[a];  // Material gradient dN_a/dX
 
+      auto w_gradN_a_A = Core::LinAlg::einsum<"m", "imjk">(integration_fac * gradN_a, A_mat);
+
+      for (std::size_t b = 0; b < Core::FE::num_nodes(celltype); ++b)
       {
-        for (int n = 0; n < Internal::num_nodes<celltype>; ++n)
-        {
-          for (int k = 0; k < Internal::num_dim<celltype>; ++k)
-          {
-            const int gid = n * Internal::num_dim<celltype> + k;
-            fstress_dus(0, gid) +=
-                2 * (dCinv_dus(0, gid) * tmp(0, 0) + dCinv_dus(3, gid) * tmp(1, 0) +
-                        dCinv_dus(5, gid) * tmp(2, 0));
-            fstress_dus(1, gid) +=
-                2 * (dCinv_dus(3, gid) * tmp(0, 1) + dCinv_dus(1, gid) * tmp(1, 1) +
-                        dCinv_dus(4, gid) * tmp(2, 1));
-            fstress_dus(2, gid) +=
-                2 * (dCinv_dus(5, gid) * tmp(0, 2) + dCinv_dus(4, gid) * tmp(1, 2) +
-                        dCinv_dus(2, gid) * tmp(2, 2));
-            /* ~~~ */
-            fstress_dus(3, gid) += +dCinv_dus(0, gid) * tmp(0, 1) + dCinv_dus(3, gid) * tmp(1, 1) +
-                                   dCinv_dus(5, gid) * tmp(2, 1) + dCinv_dus(3, gid) * tmp(0, 0) +
-                                   dCinv_dus(1, gid) * tmp(1, 0) + dCinv_dus(4, gid) * tmp(2, 0);
-            fstress_dus(4, gid) += +dCinv_dus(3, gid) * tmp(0, 2) + dCinv_dus(1, gid) * tmp(1, 2) +
-                                   dCinv_dus(4, gid) * tmp(2, 2) + dCinv_dus(5, gid) * tmp(0, 1) +
-                                   dCinv_dus(4, gid) * tmp(1, 1) + dCinv_dus(2, gid) * tmp(2, 1);
-            fstress_dus(5, gid) += +dCinv_dus(5, gid) * tmp(0, 0) + dCinv_dus(4, gid) * tmp(1, 0) +
-                                   dCinv_dus(2, gid) * tmp(2, 0) + dCinv_dus(0, gid) * tmp(0, 2) +
-                                   dCinv_dus(3, gid) * tmp(1, 2) + dCinv_dus(5, gid) * tmp(2, 2);
-            fstress_dus(0, gid) +=
-                2 * CinvFvel(0, 0) * dFinvTdus(0 * Internal::num_dim<celltype>, gid) +
-                2 * CinvFvel(0, 1) * dFinvTdus(1 * Internal::num_dim<celltype>, gid) +
-                2 * CinvFvel(0, 2) * dFinvTdus(2 * Internal::num_dim<celltype>, gid);
-            fstress_dus(1, gid) +=
-                2 * CinvFvel(1, 0) * dFinvTdus(0 * Internal::num_dim<celltype> + 1, gid) +
-                2 * CinvFvel(1, 1) * dFinvTdus(1 * Internal::num_dim<celltype> + 1, gid) +
-                2 * CinvFvel(1, 2) * dFinvTdus(2 * Internal::num_dim<celltype> + 1, gid);
-            fstress_dus(2, gid) +=
-                2 * CinvFvel(2, 0) * dFinvTdus(0 * Internal::num_dim<celltype> + 2, gid) +
-                2 * CinvFvel(2, 1) * dFinvTdus(1 * Internal::num_dim<celltype> + 2, gid) +
-                2 * CinvFvel(2, 2) * dFinvTdus(2 * Internal::num_dim<celltype> + 2, gid);
-            /* ~~~ */
-            fstress_dus(3, gid) +=
-                CinvFvel(0, 0) * dFinvTdus(0 * Internal::num_dim<celltype> + 1, gid) +
-                CinvFvel(1, 0) * dFinvTdus(0 * Internal::num_dim<celltype>, gid) +
-                CinvFvel(0, 1) * dFinvTdus(1 * Internal::num_dim<celltype> + 1, gid) +
-                CinvFvel(1, 1) * dFinvTdus(1 * Internal::num_dim<celltype>, gid) +
-                CinvFvel(0, 2) * dFinvTdus(2 * Internal::num_dim<celltype> + 1, gid) +
-                CinvFvel(1, 2) * dFinvTdus(2 * Internal::num_dim<celltype>, gid);
-            fstress_dus(4, gid) +=
-                CinvFvel(1, 0) * dFinvTdus(0 * Internal::num_dim<celltype> + 2, gid) +
-                CinvFvel(2, 0) * dFinvTdus(0 * Internal::num_dim<celltype> + 1, gid) +
-                CinvFvel(1, 1) * dFinvTdus(1 * Internal::num_dim<celltype> + 2, gid) +
-                CinvFvel(2, 1) * dFinvTdus(1 * Internal::num_dim<celltype> + 1, gid) +
-                CinvFvel(1, 2) * dFinvTdus(2 * Internal::num_dim<celltype> + 2, gid) +
-                CinvFvel(2, 2) * dFinvTdus(2 * Internal::num_dim<celltype> + 1, gid);
-            fstress_dus(5, gid) +=
-                CinvFvel(2, 0) * dFinvTdus(0 * Internal::num_dim<celltype>, gid) +
-                CinvFvel(0, 0) * dFinvTdus(0 * Internal::num_dim<celltype> + 2, gid) +
-                CinvFvel(2, 1) * dFinvTdus(1 * Internal::num_dim<celltype>, gid) +
-                CinvFvel(0, 1) * dFinvTdus(1 * Internal::num_dim<celltype> + 2, gid) +
-                CinvFvel(2, 2) * dFinvTdus(2 * Internal::num_dim<celltype>, gid) +
-                CinvFvel(0, 2) * dFinvTdus(2 * Internal::num_dim<celltype> + 2, gid);
-          }
-        }
-      }
-      static Core::LinAlg::Matrix<Internal::num_dof_per_ele<celltype>,
-          Internal::num_dof_per_ele<celltype>>
-          fluidstress_part;
+        const auto gradN_b = jacobian_mapping.N_XYZ[b];  // Material gradient dN_b/dX
 
-      /* additional viscous fluid stress- stiffness term (B^T . fstress . dJ/d(us) * porosity * detJ
-       * * w(gp)) */
-      fluidstress_part.multiply(fac * porosity, fstressb, dJ_dus);
-      stiffness_matrix.update(1.0, fluidstress_part, 1.0);
-      // additional fluid stress- stiffness term (B^T .  d\phi/d(us) . fstress  * J * w(gp))
-      fluidstress_part.multiply(fac * det_defgrd * dporosity_ddetJ, fstressb, dJ_dus);
-      stiffness_matrix.update(1.0, fluidstress_part, 1.0);
-      // additional fluid stress- stiffness term (B^T .  phi . dfstress/d(us)  * J * w(gp))
-      fluidstress_part.multiply_tn(
-          integration_fac * viscosity * det_defgrd * porosity, bop, fstress_dus);
-      stiffness_matrix.update(1.0, fluidstress_part, 1.0);
+        // Material Stiffness: Contraction of gradN_a * A_mat * gradN_b
+        auto K_mat = Core::LinAlg::einsum<"ijn", "n">(w_gradN_a_A, gradN_b);
+
+        // Add to the main stiffness matrix directly
+        add_nodal_contribution<celltype>(a, b, K_mat, stiffness_matrix);
+      }
     }
   }
 
