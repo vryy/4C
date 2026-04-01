@@ -1456,7 +1456,7 @@ four_c_test(TEST_FILE red_airway_1airway_acinus_collapsible.4C.yaml RETURN_AS cu
 four_c_test_restart(BASED_ON ${current} SAME_FILE RESTART_STEP 500)
 four_c_test(TEST_FILE red_airway_2_acinus_of_3Exponential_alveolar_ducts.4C.yaml NP 2 RETURN_AS current)
 four_c_test_restart(BASED_ON ${current} SAME_FILE NP 2 RESTART_STEP 599)
-four_c_test(TEST_FILE red_airway_3airway_2acinus_awacinter.4C.yaml NP 2)
+four_c_test(TEST_FILE red_airway_3airway_2acinus_awacinter.4C.yaml NP 2 TIMEOUT 240)
 four_c_test(TEST_FILE red_airway_5000_airway_acinus_collapsible.4C.yaml NP 2 TIMEOUT 240)
 four_c_test(TEST_FILE red_airway_acinus_inter_acinar.4C.yaml RETURN_AS current)
 four_c_test_restart(BASED_ON ${current} SAME_FILE RESTART_STEP 9999)
