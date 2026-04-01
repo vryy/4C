@@ -71,6 +71,41 @@ namespace
     EXPECT_NEAR(x(1), 0, 1e-8);
   }
 
+  TEST(CoreUtilsLocalNewtonTest, NewtonSerialDenseVector)
+  {
+    auto residuum_and_jacobian = [](const Core::LinAlg::SerialDenseVector& x)
+        -> std::tuple<Core::LinAlg::SerialDenseVector, Core::LinAlg::SerialDenseMatrix>
+    {
+      Core::LinAlg::SerialDenseVector residuum(2, true);
+      Core::LinAlg::SerialDenseMatrix jacobian(2, 2, true);
+
+      residuum(0) = std::exp(x(0) * x(1)) - 1;
+      residuum(1) = 2 * std::exp(x(0) * x(1)) - x(0);
+
+      jacobian(0, 0) = x(1) * std::exp(x(0) * x(1));
+      jacobian(0, 1) = x(0) * std::exp(x(0) * x(1));
+      jacobian(1, 0) = 2 * x(1) * std::exp(x(0) * x(1)) - 1;
+      jacobian(1, 1) = 2 * x(0) * std::exp(x(0) * x(1));
+
+      return {residuum, jacobian};
+    };
+
+    Core::LinAlg::SerialDenseVector x_0(2, true);
+    x_0(0) = 1.1;
+    x_0(1) = 0.1;
+
+    auto [x_with_jac, jacobian] =
+        Core::Utils::solve_local_newton_and_return_jacobian(residuum_and_jacobian, x_0, 1e-9);
+
+    EXPECT_NEAR(x_with_jac(0), 2, 1e-8);
+    EXPECT_NEAR(x_with_jac(1), 0, 1e-8);
+
+    auto x = Core::Utils::solve_local_newton(residuum_and_jacobian, x_0, 1e-9);
+
+    EXPECT_NEAR(x(0), 2, 1e-8);
+    EXPECT_NEAR(x(1), 0, 1e-8);
+  }
+
   // Definition of our custom types:
   struct CustomScalarType
   {
