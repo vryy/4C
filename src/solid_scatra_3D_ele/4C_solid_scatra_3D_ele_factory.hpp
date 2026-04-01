@@ -29,9 +29,10 @@ namespace Discret::Elements
   /*!
    *  @brief struct for managing solidscatra element properties
    */
+  template <unsigned dim>
   struct SolidScatraElementProperties
   {
-    SolidElementProperties<3> solid{};
+    SolidElementProperties<dim> solid{};
 
     //! scalar transport implementation type (physics)
     Inpar::ScaTra::ImplType impltype{Inpar::ScaTra::ImplType::impltype_undefined};
@@ -40,25 +41,31 @@ namespace Discret::Elements
   namespace Internal
   {
 
-    using ImplementedSolidScatraCellTypes =
+    template <unsigned dim>
+    using ImplementedSolidScatraCellTypes = std::conditional_t<dim == 3,
         Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::hex27,
-            Core::FE::CellType::tet4, Core::FE::CellType::tet10, Core::FE::CellType::nurbs27>;
+            Core::FE::CellType::tet4, Core::FE::CellType::tet10, Core::FE::CellType::nurbs27>,
+        Core::FE::CelltypeSequence<Core::FE::CellType::quad4, Core::FE::CellType::quad9,
+            Core::FE::CellType::tri3, Core::FE::CellType::tri6>>;
 
     // Displacement based integrators
     template <Core::FE::CellType celltype>
     using DisplacementBasedSolidScatraIntegrator =
         SolidScatraEleCalc<celltype, DisplacementBasedFormulation<celltype>>;
+
+    template <unsigned dim>
     using DisplacementBasedSolidScatraEvaluator =
         Core::FE::apply_celltype_sequence<DisplacementBasedSolidScatraIntegrator,
-            ImplementedSolidScatraCellTypes>;
+            ImplementedSolidScatraCellTypes<dim>>;
 
     // Displacement based integrators with linear kinematics
     template <Core::FE::CellType celltype>
     using DisplacementBasedLinearKinematicsSolidScatraIntegrator =
         SolidScatraEleCalc<celltype, DisplacementBasedLinearKinematicsFormulation<celltype>>;
+    template <unsigned dim>
     using DisplacementBasedLinearKinematicsSolidScatraEvaluator =
         Core::FE::apply_celltype_sequence<DisplacementBasedLinearKinematicsSolidScatraIntegrator,
-            ImplementedSolidScatraCellTypes>;
+            ImplementedSolidScatraCellTypes<dim>>;
 
 
     // FBar evaluators
@@ -72,22 +79,33 @@ namespace Discret::Elements
         Inpar::Solid::KinemType kinem_type>
     using EASSolidScatraIntegrator =
         SolidScatraEleCalc<celltype, EASFormulation<celltype, eas_type, kinem_type>>;
-    using EASScatraEvaluators = Core::FE::BaseTypeList<
-        EASSolidScatraIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
-            Inpar::Solid::KinemType::nonlinearTotLag>,
-        EASSolidScatraIntegrator<Core::FE::CellType::hex8,
-            Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>>;
+    template <unsigned dim>
+    using EASScatraEvaluators = std::conditional_t<dim == 3,
+        Core::FE::BaseTypeList<
+            EASSolidScatraIntegrator<Core::FE::CellType::hex8,
+                Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>,
+            EASSolidScatraIntegrator<Core::FE::CellType::hex8,
+                Discret::Elements::EasType::eastype_h8_21,
+                Inpar::Solid::KinemType::nonlinearTotLag>>,
+        Core::FE::BaseTypeList<EASSolidScatraIntegrator<Core::FE::CellType::quad4,
+            Discret::Elements::EasType::eastype_q4_4, Inpar::Solid::KinemType::nonlinearTotLag>>>;
 
-    using SolidScatraEvaluators = Core::FE::Join<DisplacementBasedSolidScatraEvaluator,
-        DisplacementBasedLinearKinematicsSolidScatraEvaluator, FbarScatraEvaluators,
-        EASScatraEvaluators>;
+    template <unsigned dim>
+    using SolidScatraEvaluators = std::conditional_t<dim == 3,
+        Core::FE::Join<DisplacementBasedSolidScatraEvaluator<dim>,
+            DisplacementBasedLinearKinematicsSolidScatraEvaluator<dim>, FbarScatraEvaluators,
+            EASScatraEvaluators<dim>>,
+        Core::FE::Join<DisplacementBasedSolidScatraEvaluator<dim>,
+            DisplacementBasedLinearKinematicsSolidScatraEvaluator<dim>, EASScatraEvaluators<dim>>>;
   }  // namespace Internal
 
   /// Variant holding the different implementations for the solid-scatra element
-  using SolidScatraCalcVariant = CreateVariantType<Internal::SolidScatraEvaluators>;
+  template <unsigned dim>
+  using SolidScatraCalcVariant = CreateVariantType<Internal::SolidScatraEvaluators<dim>>;
 
-  SolidScatraCalcVariant create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
-      const Discret::Elements::SolidElementProperties<3>& element_properties);
+  template <unsigned dim>
+  SolidScatraCalcVariant<dim> create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
+      const Discret::Elements::SolidElementProperties<dim>& element_properties);
 }  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE

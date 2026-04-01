@@ -100,7 +100,7 @@ void SSI::ScatraStructureCloneStrategy::set_element_data(
           "discretization, but the STRUCTURE elements that are defined in the input file are "
           "either not meant to be copied to scatra elements or the ImplType is set 'Undefined' "
           "which is not meaningful for the created scatra discretization! Use SOLIDSCATRA, "
-          "WALLSCATRA, SHELLSCATRA or TRUSS3SCATRA elements with meaningful ImplType instead!");
+          "SHELLSCATRA or TRUSS3SCATRA elements with meaningful ImplType instead!");
     }
     else
       trans->set_impl_type(impltype);

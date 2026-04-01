@@ -95,50 +95,83 @@ namespace
   };
 }  // namespace
 
-Discret::Elements::SolidScatraCalcVariant
+template <unsigned dim>
+Discret::Elements::SolidScatraCalcVariant<dim>
 Discret::Elements::create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
-    const Discret::Elements::SolidElementProperties<3>& element_properties)
+    const Discret::Elements::SolidElementProperties<dim>& element_properties)
 {
+  using ReturnType = std::optional<SolidScatraCalcVariant<dim>>;
+
   // We have 4 different element properties and each combination results in a different element
   // formulation.
-  return Core::FE::cell_type_switch<Internal::ImplementedSolidScatraCellTypes>(celltype,
-      [&](auto celltype_t)
+  ReturnType interface = Core::FE::cell_type_switch<Internal::ImplementedSolidScatraCellTypes<dim>>(
+      celltype,
+      [&](auto celltype_t) -> ReturnType
       {
-        return EnumTools::enum_switch(
-            [&](auto kinemtype_t)
-            {
-              return EnumTools::enum_switch(
-                  [&](auto eletech_t)
-                  {
-                    return EnumTools::enum_switch(
-                        [&](auto prestress_tech_t) -> SolidScatraCalcVariant
-                        {
-                          constexpr Core::FE::CellType celltype_c = celltype_t();
-                          constexpr Inpar::Solid::KinemType kinemtype_c = kinemtype_t();
-                          constexpr ElementTechnology eletech_c = eletech_t();
-                          constexpr PrestressTechnology prestress_tech_c = prestress_tech_t();
-                          if constexpr (is_valid_type<SolidScatraCalculationFormulation<celltype_c,
-                                            kinemtype_c, eletech_c, prestress_tech_c>>)
+        if constexpr (Core::FE::dim<celltype_t()> == dim)
+        {
+          return EnumTools::enum_switch(
+              [&](auto kinemtype_t) -> ReturnType
+              {
+                return EnumTools::enum_switch(
+                    [&](auto eletech_t) -> ReturnType
+                    {
+                      return EnumTools::enum_switch(
+                          [&](auto prestress_tech_t) -> ReturnType
                           {
-                            return typename SolidScatraCalculationFormulation<celltype_c,
-                                kinemtype_c, eletech_c, prestress_tech_c>::type();
-                          }
+                            constexpr Core::FE::CellType celltype_c = celltype_t();
+                            constexpr Inpar::Solid::KinemType kinemtype_c = kinemtype_t();
+                            constexpr ElementTechnology eletech_c = eletech_t();
+                            constexpr PrestressTechnology prestress_tech_c = prestress_tech_t();
+                            if constexpr (is_valid_type<
+                                              SolidScatraCalculationFormulation<celltype_c,
+                                                  kinemtype_c, eletech_c, prestress_tech_c>>)
+                            {
+                              if constexpr (dim == 2)
+                              {
+                                return typename SolidScatraCalculationFormulation<celltype_c,
+                                    kinemtype_c, eletech_c,
+                                    prestress_tech_c>::type(element_properties.reference_thickness,
+                                    element_properties.plane_assumption);
+                              }
+                              else
+                              {
+                                return typename SolidScatraCalculationFormulation<celltype_c,
+                                    kinemtype_c, eletech_c, prestress_tech_c>::type();
+                              }
+                            }
 
-                          FOUR_C_THROW(
-                              "Your element formulation with cell type {}, kinematic type {},"
-                              " element technology {} and prestress type {} does not exist in the "
-                              "solid-scatra context.",
-                              Core::FE::celltype_string<celltype_t()>, element_properties.kintype,
-                              element_technology_string(element_properties.element_technology)
-                                  .c_str(),
-                              element_properties.prestress_technology);
-                        },
-                        element_properties.prestress_technology);
-                  },
-                  element_properties.element_technology);
-            },
-            element_properties.kintype);
+                            FOUR_C_THROW(
+                                "Your element formulation with cell type {}, kinematic type {},"
+                                " element technology {} and prestress type {} does not exist "
+                                "in the solid-scatra context.",
+                                Core::FE::celltype_string<celltype_t()>, element_properties.kintype,
+                                element_technology_string(element_properties.element_technology)
+                                    .c_str(),
+                                element_properties.prestress_technology);
+                          },
+                          element_properties.prestress_technology);
+                    },
+                    element_properties.element_technology);
+              },
+              element_properties.kintype);
+        }
+        else
+        {
+          FOUR_C_THROW("Cell type {} does not match the dimension of the integration rules.",
+              Core::FE::celltype_string<celltype_t()>);
+        }
       });
+
+  FOUR_C_ASSERT(interface.has_value(), "Could not create the solid calculation interface.");
+  return *interface;
 }
+
+template Discret::Elements::SolidScatraCalcVariant<2>
+Discret::Elements::create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
+    const Discret::Elements::SolidElementProperties<2>& element_properties);
+template Discret::Elements::SolidScatraCalcVariant<3>
+Discret::Elements::create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
+    const Discret::Elements::SolidElementProperties<3>& element_properties);
 
 FOUR_C_NAMESPACE_CLOSE

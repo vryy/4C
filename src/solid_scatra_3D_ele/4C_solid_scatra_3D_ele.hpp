@@ -26,7 +26,7 @@ namespace Mat
 }
 namespace Discret::Elements
 {
-  // forward declaration
+  template <unsigned dim>
   class SolidScatraType : public Core::Elements::ElementType
   {
    public:
@@ -41,7 +41,10 @@ namespace Discret::Elements
 
     Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-    [[nodiscard]] std::string name() const override { return "SolidScatraType"; }
+    [[nodiscard]] std::string name() const override
+    {
+      return "SolidScatraType<" + std::to_string(dim) + ">";
+    }
 
     void nodal_block_information(Core::Elements::Element* dwele, int& numdf, int& dimns) override;
 
@@ -55,9 +58,10 @@ namespace Discret::Elements
 
   };  // class SolidType
 
+  template <unsigned dim>
   class SolidScatra : public Core::Elements::Element
   {
-    friend class SolidScatraType;
+    friend class SolidScatraType<dim>;
 
    public:
     SolidScatra(int id, int owner);
@@ -66,7 +70,7 @@ namespace Discret::Elements
 
     [[nodiscard]] int unique_par_object_id() const override
     {
-      return SolidScatraType::instance().unique_par_object_id();
+      return SolidScatraType<dim>::instance().unique_par_object_id();
     }
 
     void pack(Core::Communication::PackBuffer& data) const override;
@@ -75,7 +79,7 @@ namespace Discret::Elements
 
     [[nodiscard]] Core::Elements::ElementType& element_type() const override
     {
-      return SolidScatraType::instance();
+      return SolidScatraType<dim>::instance();
     }
 
     [[nodiscard]] Core::FE::CellType shape() const override { return celltype_; }
@@ -92,7 +96,7 @@ namespace Discret::Elements
 
     std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
-    [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
+    [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return dim; }
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
@@ -147,7 +151,7 @@ namespace Discret::Elements
     /// return ScaTra::ImplType
     [[nodiscard]] Inpar::ScaTra::ImplType impl_type() const { return properties_.impltype; }
 
-    [[nodiscard]] const SolidElementProperties<3>& get_solid_element_properties() const
+    [[nodiscard]] const SolidElementProperties<dim>& get_solid_element_properties() const
     {
       return properties_.solid;
     }
@@ -174,7 +178,7 @@ namespace Discret::Elements
     Core::FE::CellType celltype_ = Core::FE::CellType::dis_none;
 
     //! solid-scatra properties
-    SolidScatraElementProperties properties_{};
+    SolidScatraElementProperties<dim> properties_{};
 
     //! interface pointer for data exchange between the element and the time integrator.
     std::shared_ptr<Core::Elements::ParamsInterface> interface_ptr_;
@@ -184,7 +188,7 @@ namespace Discret::Elements
 
 
     //! solid element calculation holding one of the implemented variants
-    SolidScatraCalcVariant solid_scatra_calc_variant_;
+    std::optional<SolidScatraCalcVariant<dim>> solid_scatra_calc_variant_;
 
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;

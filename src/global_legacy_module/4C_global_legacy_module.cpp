@@ -137,7 +137,6 @@
 #include "4C_w1_poro_p1_eletypes.hpp"
 #include "4C_w1_poro_p1_scatra_eletypes.hpp"
 #include "4C_w1_poro_scatra_eletypes.hpp"
-#include "4C_w1_scatra.hpp"
 
 #include <iostream>
 #include <string>
@@ -183,7 +182,6 @@ namespace
       << Discret::Elements::WallNurbs4PoroType::instance().name() << " "
       << Discret::Elements::WallNurbs9PoroType::instance().name() << " "
       << Discret::Elements::Nurbs::Wall1NurbsType::instance().name() << " "
-      << Discret::Elements::Wall1ScatraType::instance().name() << " "
       << Discret::Elements::WallQuad4PoroScatraType::instance().name() << " "
       << Discret::Elements::WallQuad4PoroP1ScatraType::instance().name() << " "
       << Discret::Elements::FluidType::instance().name() << " "
@@ -205,7 +203,8 @@ namespace
       << Discret::Elements::SolidPoroPressureBasedType::instance().name() << " "
       << Discret::Elements::SolidPoroPressureVelocityBasedType::instance().name() << " "
       << Discret::Elements::SolidPoroPressureVelocityBasedP1Type::instance().name() << " "
-      << Discret::Elements::SolidScatraType::instance().name() << " "
+      << Discret::Elements::SolidScatraType<2>::instance().name() << " "
+      << Discret::Elements::SolidScatraType<3>::instance().name() << " "
       << Discret::Elements::ArteryType::instance().name() << " "
       << Discret::Elements::RedAirwayType::instance().name() << " "
       << Discret::Elements::RedAcinusType::instance().name() << " "
