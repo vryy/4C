@@ -297,6 +297,8 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
 
   // Get the Lagrange multiplier GIDs.
   const auto& [lambda_gid, _] = mortar_manager->location_vector(*this);
+  FOUR_C_ASSERT_ALWAYS(lambda_gid.size() == Mortar::n_dof_,
+      "Expected {} Lagrange multiplier GIDs, got {}!", Mortar::n_dof_, lambda_gid.size());
 
   // Assemble into the global vectors
   global_constraint.sum_into_global_values(
@@ -362,6 +364,8 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
 
   // Get the Lagrange multipliers DOF vector for this pair
   const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*this);
+  FOUR_C_ASSERT_ALWAYS(lambda_gid_pos.size() == Mortar::n_dof_,
+      "Expected {} Lagrange multiplier GIDs, got {}!", Mortar::n_dof_, lambda_gid_pos.size());
   std::vector<double> lambda_pos_vector = Core::FE::extract_values(global_lambda, lambda_gid_pos);
   const auto lambda_pos = Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>(lambda_pos_vector.data());
 
@@ -466,6 +470,8 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
 
       // Get the lambda GIDs of this pair.
       const auto& [lambda_row_pos, _] = mortar_manager->location_vector(*this);
+      FOUR_C_ASSERT_ALWAYS(lambda_row_pos.size() == Mortar::n_dof_,
+          "Expected {} Lagrange multiplier GIDs, got {}!", Mortar::n_dof_, lambda_row_pos.size());
 
       std::vector<double> lambda_pair = Core::FE::extract_values(*lambda, lambda_row_pos);
       for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)

@@ -61,6 +61,8 @@ void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam,
 
   // Get the positional Lagrange multipliers for this pair.
   const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*this);
+  FOUR_C_ASSERT_ALWAYS(lambda_gid_pos.size() == Mortar::n_dof_,
+      "Expected {} Lagrange multiplier GIDs, got {}!", Mortar::n_dof_, lambda_gid_pos.size());
   std::vector<double> local_lambda_pos = Core::FE::extract_values(global_lambda, lambda_gid_pos);
   auto q_lambda = GeometryPair::InitializeElementData<Mortar, double>::initialize(nullptr);
   q_lambda.element_position_ =
@@ -212,6 +214,8 @@ void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam,
 
   // Get the Lagrange multiplier GIDs.
   const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*this);
+  FOUR_C_ASSERT_ALWAYS(lambda_gid_pos.size() == Mortar::n_dof_,
+      "Expected {} Lagrange multiplier GIDs, got {}!", Mortar::n_dof_, lambda_gid_pos.size());
 
   // Assemble into the matrices related to beam DOFs.
   for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; i_lambda++)
@@ -502,6 +506,8 @@ void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
 
   // Get the rotational Lagrange multipliers for this pair.
   const auto& [_, lambda_gid_rot] = mortar_manager->location_vector(*this);
+  FOUR_C_ASSERT_ALWAYS(lambda_gid_rot.size() == Mortar::n_dof_,
+      "Expected {} Lagrange multiplier GIDs, got {}!", Mortar::n_dof_, lambda_gid_rot.size());
   std::vector<double> lambda_rot_double = Core::FE::extract_values(global_lambda, lambda_gid_rot);
   Core::LinAlg::Matrix<Mortar::n_dof_, 1, double> lambda_rot;
   for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
@@ -963,6 +969,8 @@ void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
 
   // Get the Lagrange multiplier GIDs.
   const auto& [_, lambda_gid_rot] = mortar_manager->location_vector(*this);
+  FOUR_C_ASSERT_ALWAYS(lambda_gid_rot.size() == Mortar::n_dof_,
+      "Expected {} Lagrange multiplier GIDs, got {}!", Mortar::n_dof_, lambda_gid_rot.size());
 
   // Assemble into the global vectors
   global_constraint.sum_into_global_values(

@@ -25,6 +25,7 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <array>
+#include <cstddef>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -178,6 +179,14 @@ void BeamInteraction::BeamToBeamPointCouplingPair<Beam1, n_dof_beam_1, Beam2,
 
   auto get_pair_lambda_gid = [&](const std::vector<int>& lambda_gid_total)
   {
+    // In this function we extract the pair GIDs from the given total lambda GID vector.
+    // We also check that the size is consistent, i.e., a multiple of the spatial dimension.
+    constexpr size_t n_dim = 3;
+
+    FOUR_C_ASSERT_ALWAYS(lambda_gid_total.size() >= n_dim && lambda_gid_total.size() % n_dim == 0,
+        "Expected a non-zero multiple of {} Lagrange multiplier GIDs, got {}!", n_dim,
+        lambda_gid_total.size());
+
     // Get the GIDs that are not taken by another coupling pair.
     std::vector<int> available_gid;
     for (size_t i = 0; i < lambda_gid_total.size(); i++)
@@ -187,28 +196,29 @@ void BeamInteraction::BeamToBeamPointCouplingPair<Beam1, n_dof_beam_1, Beam2,
       if (lid < 0) FOUR_C_THROW("Could not find the GID {} in the lambda dof row map!", gid);
       if (global_lambda_active.get_values()[lid] < 1e-5)
       {
-        if (available_gid.size() == 0 && i % 3 != 0)
+        if (available_gid.size() == 0 && i % n_dim != 0)
           FOUR_C_THROW(
               "Invalid starting Lagrange multiplier index {} for coupling pair. Expected multiple "
-              "of 3.",
-              gid);
+              "of {}.",
+              gid, n_dim);
         available_gid.push_back(gid);
       }
-      if (available_gid.size() == 3) break;
+      if (available_gid.size() == n_dim) break;
     }
 
     // Perform some sanity checks.
-    if (available_gid.size() != 3)
+    if (available_gid.size() != n_dim)
       FOUR_C_THROW(
           "Could not find enough available Lagrange multiplier GIDs for the coupling pair! "
           "Increase the value of MAX_NUMBER_OF_PAIRS_PER_ELEMENT");
-    // Ensure a consecutive triplet
-    if (available_gid[1] != available_gid[0] + 1 || available_gid[2] != available_gid[1] + 1)
+    // Ensure a consecutive numbering
+    for (size_t i = 1; i < available_gid.size(); i++)
     {
-      FOUR_C_THROW(
-          "Invalid Lagrange multiplier GIDs for coupling pair. Expected first GID multiple of 3 "
-          "and the remaining two successive. Got {}, {}, {}",
-          available_gid[0], available_gid[1], available_gid[2]);
+      if (available_gid[i - 1] + 1 != available_gid[i])
+        FOUR_C_THROW(
+            "Invalid Lagrange multiplier GIDs for coupling pair. Expected consecutive numbering. "
+            "Got GIDs {} and {} for the entries {} and {}.",
+            available_gid[0], available_gid[1], i - 1, i);
     }
 
     return available_gid;

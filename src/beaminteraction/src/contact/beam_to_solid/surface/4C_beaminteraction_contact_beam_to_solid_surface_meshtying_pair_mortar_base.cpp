@@ -81,6 +81,8 @@ void BeamInteraction::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
     // Get the lambda GIDs of this pair.
     auto q_lambda = GeometryPair::InitializeElementData<Mortar, double>::initialize(nullptr);
     const auto& [lambda_row_pos, _] = mortar_manager->location_vector(*this);
+    FOUR_C_ASSERT_ALWAYS(lambda_row_pos.size() == Mortar::n_dof_,
+        "Expected {} Lagrange multiplier GIDs, got {}!", Mortar::n_dof_, lambda_row_pos.size());
     std::vector<double> lambda_pair = Core::FE::extract_values(*lambda, lambda_row_pos);
     for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
       q_lambda.element_position_(i_dof) = lambda_pair[i_dof];

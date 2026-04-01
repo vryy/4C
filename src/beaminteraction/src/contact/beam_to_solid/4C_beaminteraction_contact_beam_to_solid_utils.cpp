@@ -22,6 +22,7 @@
 #include "4C_geometry_pair_scalar_types.hpp"
 #include "4C_linalg_fevector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
+#include "4C_utils_exceptions.hpp"
 #include "4C_utils_fad.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -773,6 +774,8 @@ void BeamInteraction::assemble_local_mortar_contributions(
 {
   // Get the GIDs of the Lagrange multipliers.
   const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*pair);
+  FOUR_C_ASSERT_ALWAYS(lambda_gid_pos.size() == Mortar::n_dof_,
+      "Expected {} Lagrange multiplier GIDs, got {}!", Mortar::n_dof_, lambda_gid_pos.size());
 
   // Get the beam centerline GIDs.
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
