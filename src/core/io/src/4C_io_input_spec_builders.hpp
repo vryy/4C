@@ -2023,6 +2023,24 @@ void Core::IO::Internal::ParameterSpec<T>::emit_metadata(
     {
       // Only use the valid values.
       data.validator->emit_metadata(node);
+
+      // Post-process all emitted values and append their descriptions if available
+      if (data.enum_value_description)
+      {
+        auto choices_node = node.node["choices"];
+        for (auto choice_node : choices_node.children())
+        {
+          const auto choice_name = choice_node["name"].val();
+          const auto choice_name_sv = std::string_view{choice_name.data(), choice_name.size()};
+          const auto choice_value = EnumTools::enum_cast<RemoveOptional<T>>(choice_name_sv);
+          FOUR_C_ASSERT(choice_value,
+              "Internal error: emitted enum value '{}' is not a valid enum constant.",
+              choice_name_sv);
+
+          emit_value_as_yaml(
+              node.wrap(choice_node["description"]), data.enum_value_description(*choice_value));
+        }
+      }
     }
     else
     {

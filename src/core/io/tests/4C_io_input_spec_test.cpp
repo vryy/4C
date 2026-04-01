@@ -1646,6 +1646,36 @@ e: A
     }
   }
 
+  TEST(InputSpecTest, EnumValidatorAndDescriptionMetadata)
+  {
+    enum Enum
+    {
+      allowed,
+      not_allowed,
+    };
+
+    const auto spec = parameter<Enum>("e",
+        {
+            .description = "This is an enum parameter",
+            .enum_value_description = [](Enum e) -> std::string
+            { return e == Enum::allowed ? "allowed value" : "not allowed value"; },
+            .validator = Validators::in_set({Enum::allowed}),
+        });
+
+    {
+      SCOPED_TRACE("Only print description for validator values");
+      const auto metadata = Helpers::emit_metadata(spec);
+      EXPECT_EQ(metadata, R"(name: e
+type: enum
+description: "This is an enum parameter"
+required: true
+choices:
+  - name: allowed
+    description: "allowed value"
+)");
+    }
+  }
+
   TEST(InputSpecTest, OptionalParameterValidationComplex)
   {
     using namespace Core::IO::InputSpecBuilders::Validators;
