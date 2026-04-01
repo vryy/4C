@@ -166,11 +166,19 @@ namespace Discret::Elements
     };
 
     template <Core::FE::CellType celltype>
-      requires(celltype == Core::FE::CellType::nurbs27)
+      requires(Core::FE::is_nurbs<celltype> && Core::FE::dim<celltype> == 3)
     struct ApplicableIntegrationRules<celltype>
     {
       static constexpr std::array value =
           ApplicableIntegrationRules<Core::FE::CellType::hex8>::value;
+    };
+
+    template <Core::FE::CellType celltype>
+      requires(Core::FE::is_nurbs<celltype> && Core::FE::dim<celltype> == 2)
+    struct ApplicableIntegrationRules<celltype>
+    {
+      static constexpr std::array value =
+          ApplicableIntegrationRules<Core::FE::CellType::quad4>::value;
     };
   }  // namespace Internal
 

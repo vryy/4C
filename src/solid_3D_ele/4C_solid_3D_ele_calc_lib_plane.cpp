@@ -360,6 +360,12 @@ Discret::Elements::evaluate_material_stress<Core::FE::CellType::quad9>(Mat::So3M
     const Core::LinAlg::Tensor<double, 2, 2>& defgrd,
     const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
     const Mat::EvaluationContext<2>& context, const int gp, const int eleGID);
+template Discret::Elements::Stress<Core::FE::CellType::nurbs9>
+Discret::Elements::evaluate_material_stress<Core::FE::CellType::nurbs9>(Mat::So3Material& material,
+    const ElementProperties<Core::FE::CellType::nurbs9>& element_properties,
+    const Core::LinAlg::Tensor<double, 2, 2>& defgrd,
+    const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
+    const Mat::EvaluationContext<2>& context, const int gp, const int eleGID);
 template Discret::Elements::Stress<Core::FE::CellType::tri3>
 Discret::Elements::evaluate_material_stress<Core::FE::CellType::tri3>(Mat::So3Material& material,
     const ElementProperties<Core::FE::CellType::tri3>& element_properties,
@@ -386,6 +392,10 @@ template void Discret::Elements::update_material(Mat::So3Material& material,
     const Core::LinAlg::Tensor<double, 2, 2>& defgrd, Teuchos::ParameterList& params,
     const Mat::EvaluationContext<2>& context, const int gp, const int eleGID);
 template void Discret::Elements::update_material(Mat::So3Material& material,
+    const ElementProperties<Core::FE::CellType::nurbs9>& element_properties,
+    const Core::LinAlg::Tensor<double, 2, 2>& defgrd, Teuchos::ParameterList& params,
+    const Mat::EvaluationContext<2>& context, const int gp, const int eleGID);
+template void Discret::Elements::update_material(Mat::So3Material& material,
     const ElementProperties<Core::FE::CellType::tri3>& element_properties,
     const Core::LinAlg::Tensor<double, 2, 2>& defgrd, Teuchos::ParameterList& params,
     const Mat::EvaluationContext<2>& context, const int gp, const int eleGID);
@@ -404,6 +414,10 @@ template double Discret::Elements::evaluate_material_strain_energy(Mat::So3Mater
     const Mat::EvaluationContext<2>& context, const int gp, const int eleGID);
 template double Discret::Elements::evaluate_material_strain_energy(Mat::So3Material& material,
     const ElementProperties<Core::FE::CellType::quad9>& element_properties,
+    const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
+    const Mat::EvaluationContext<2>& context, const int gp, const int eleGID);
+template double Discret::Elements::evaluate_material_strain_energy(Mat::So3Material& material,
+    const ElementProperties<Core::FE::CellType::nurbs9>& element_properties,
     const Core::LinAlg::SymmetricTensor<double, 2, 2>& gl_strain, Teuchos::ParameterList& params,
     const Mat::EvaluationContext<2>& context, const int gp, const int eleGID);
 template double Discret::Elements::evaluate_material_strain_energy(Mat::So3Material& material,

@@ -55,15 +55,21 @@ Core::Elements::Element* Discret::Elements::SolidLine<dim>::clone() const
 template <unsigned dim>
 Core::FE::CellType Discret::Elements::SolidLine<dim>::shape() const
 {
-  switch (num_node())
-  {
-    case 2:
-      return Core::FE::CellType::line2;
-    case 3:
-      return Core::FE::CellType::line3;
-    default:
-      FOUR_C_THROW("unexpected number of nodes {}", num_node());
-  }
+  return Core::FE::cell_type_switch(parent_element()->shape(),
+      [&](auto celltype_t)
+      {
+        switch (num_node())
+        {
+          case 2:
+            return Core::FE::is_nurbs<celltype_t()> ? Core::FE::CellType::nurbs2
+                                                    : Core::FE::CellType::line2;
+          case 3:
+            return Core::FE::is_nurbs<celltype_t()> ? Core::FE::CellType::nurbs3
+                                                    : Core::FE::CellType::line3;
+          default:
+            FOUR_C_THROW("unexpected number of nodes {}", num_node());
+        }
+      });
 }
 
 template <unsigned dim>
