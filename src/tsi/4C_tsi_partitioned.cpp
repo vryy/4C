@@ -39,10 +39,9 @@ TSI::Partitioned::Partitioned(MPI_Comm comm)
       mu_(0.0)
 {
   // call the TSI parameter list
-  const Teuchos::ParameterList& tsidyn = Global::Problem::instance()->tsi_dynamic_params();
+  const Teuchos::ParameterList& tsidyn = problem_->tsi_dynamic_params();
   // call the TSI parameter list
-  const Teuchos::ParameterList& tsidynpart =
-      Global::Problem::instance()->tsi_dynamic_params().sublist("PARTITIONED");
+  const Teuchos::ParameterList& tsidynpart = problem_->tsi_dynamic_params().sublist("PARTITIONED");
 
   // get the parameters for the convergence_check
   itmax_ = tsidyn.get<int>("ITEMAX");          // default: =1
@@ -61,7 +60,7 @@ TSI::Partitioned::Partitioned(MPI_Comm comm)
     std::cout << "Coupling variable: temperature" << std::endl;
 
   // if structure field is quasi-static --> calc_velocity
-  const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = problem_->structural_dynamic_params();
   // major switch to different time integrators
   quasistatic_ = (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE") ==
                   Inpar::Solid::DynamicType::Statics);
@@ -374,9 +373,8 @@ void TSI::Partitioned::outer_iteration_loop()
   }
 
   // call the TSI parameter lists
-  const Teuchos::ParameterList& tsidyn = Global::Problem::instance()->tsi_dynamic_params();
-  const Teuchos::ParameterList& tsidynpart =
-      Global::Problem::instance()->tsi_dynamic_params().sublist("PARTITIONED");
+  const Teuchos::ParameterList& tsidyn = problem_->tsi_dynamic_params();
+  const Teuchos::ParameterList& tsidynpart = problem_->tsi_dynamic_params().sublist("PARTITIONED");
 
   // decide if one-way coupling or full coupling
   auto coupling = Teuchos::getIntegralValue<TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");

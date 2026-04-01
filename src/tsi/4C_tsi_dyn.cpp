@@ -16,6 +16,7 @@
 #include "4C_tsi_input.hpp"
 #include "4C_tsi_monolithic.hpp"
 #include "4C_tsi_partitioned.hpp"
+#include "4C_tsi_problem_access.hpp"
 #include "4C_tsi_utils.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -28,8 +29,10 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void tsi_dyn_drt()
 {
+  Global::Problem* problem = TSI::Utils::problem_from_instance();
+
   // create a communicator
-  MPI_Comm comm = Global::Problem::instance()->get_dis("structure")->get_comm();
+  MPI_Comm comm = problem->get_dis("structure")->get_comm();
 
   // print TSI-Logo to screen
   if (Core::Communication::my_mpi_rank(comm) == 0) TSI::printlogo();
@@ -38,10 +41,9 @@ void tsi_dyn_drt()
   TSI::Utils::setup_tsi(comm);
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& tsidyn = Global::Problem::instance()->tsi_dynamic_params();
+  const Teuchos::ParameterList& tsidyn = problem->tsi_dynamic_params();
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& sdynparams =
-      Global::Problem::instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdynparams = problem->structural_dynamic_params();
   const auto coupling =
       Teuchos::getIntegralValue<TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
@@ -74,7 +76,7 @@ void tsi_dyn_drt()
       break;
   }  // end switch
 
-  const int restart = Global::Problem::instance()->restart();
+  const int restart = problem->restart();
   if (restart)
   {
     // read the restart information, set vectors and variables
@@ -93,9 +95,9 @@ void tsi_dyn_drt()
   tsi->time_loop();
 
   // perform the result test
-  Global::Problem::instance()->add_field_test(tsi->structure_field()->create_field_test());
-  Global::Problem::instance()->add_field_test(tsi->thermo_field()->create_field_test());
-  Global::Problem::instance()->test_all(comm);
+  problem->add_field_test(tsi->structure_field()->create_field_test());
+  problem->add_field_test(tsi->thermo_field()->create_field_test());
+  problem->test_all(comm);
 }  // tsi_dyn_drt()
 
 

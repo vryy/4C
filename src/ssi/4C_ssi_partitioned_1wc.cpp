@@ -15,6 +15,7 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_scatra_timint_cardiac_monodomain.hpp"
 #include "4C_scatra_timint_implicit.hpp"
+#include "4C_ssi_problem_access.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -84,7 +85,7 @@ void SSI::SSIPart1WC::do_scatra_step()
     if (scatra_field()->step() % diffsteps == 0)
     {
       Core::IO::DiscretizationReader reader(*scatra_field()->discretization(),
-          Global::Problem::instance()->input_control_file(), scatra_field()->step());
+          SSI::Utils::problem_from_instance()->input_control_file(), scatra_field()->step());
 
       // check if this is a cardiac monodomain problem
       std::shared_ptr<ScaTra::TimIntCardiacMonodomain> cardmono =
@@ -251,8 +252,8 @@ void SSI::SSIPart1WCScatraToSolid::init(MPI_Comm comm,
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // Flag for reading scatra result from restart file instead of computing it
-  isscatrafromfile_ =
-      Global::Problem::instance()->ssi_control_params().get<bool>("SCATRA_FROM_RESTART_FILE");
+  isscatrafromfile_ = SSI::Utils::problem_from_instance()->ssi_control_params().get<bool>(
+      "SCATRA_FROM_RESTART_FILE");
 }
 
 /*----------------------------------------------------------------------*/

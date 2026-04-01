@@ -14,6 +14,7 @@
 #include "4C_ssi_monolithic_meshtying_strategy.hpp"
 #include "4C_ssi_partitioned_1wc.hpp"
 #include "4C_ssi_partitioned_2wc.hpp"
+#include "4C_ssi_problem_access.hpp"
 #include "4C_ssi_utils.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -27,7 +28,7 @@ void ssi_drt()
 {
   // 1.- Initialization
   std::shared_ptr<SSI::SSIBase> ssi = nullptr;
-  Global::Problem* problem = Global::Problem::instance();
+  Global::Problem* problem = SSI::Utils::problem_from_instance();
   MPI_Comm comm = problem->get_dis("structure")->get_comm();
 
   {
@@ -40,8 +41,7 @@ void ssi_drt()
         const_cast<Teuchos::ParameterList&>(problem->scalar_transport_dynamic_params());
     // access the structural dynamic params list which will be possibly modified while creating the
     // time integrator
-    auto& sdyn = const_cast<Teuchos::ParameterList&>(
-        Global::Problem::instance()->structural_dynamic_params());
+    auto& sdyn = const_cast<Teuchos::ParameterList&>(problem->structural_dynamic_params());
 
     FOUR_C_ASSERT_ALWAYS(sdyn.get<Inpar::Solid::IntegrationStrategy>("INT_STRATEGY") ==
                              Inpar::Solid::IntegrationStrategy::int_standard,

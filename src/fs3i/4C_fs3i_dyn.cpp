@@ -14,6 +14,7 @@
 #include "4C_fs3i_fps3i_partitioned_1wc.hpp"
 #include "4C_fs3i_partitioned_1wc.hpp"
 #include "4C_fs3i_partitioned_2wc.hpp"
+#include "4C_fs3i_problem_access.hpp"
 #include "4C_global_data.hpp"
 #include "4C_utils_enum.hpp"
 
@@ -25,12 +26,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void fs3i_dyn()
 {
-  MPI_Comm comm = Global::Problem::instance()->get_dis("structure")->get_comm();
+  Global::Problem* problem = FS3I::Utils::problem_from_instance();
+
+  MPI_Comm comm = problem->get_dis("structure")->get_comm();
 
   std::shared_ptr<FS3I::FS3IBase> fs3i;
 
   // what's the current problem type?
-  Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
+  Core::ProblemType probtype = problem->get_problem_type();
 
   switch (probtype)
   {

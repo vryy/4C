@@ -14,11 +14,20 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_timint_implicit.hpp"
+#include "4C_ssi_problem_access.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 
 #include <Teuchos_Time.hpp>
 
 FOUR_C_NAMESPACE_OPEN
+
+namespace
+{
+  const Teuchos::ParameterList& ssi_control_params_from_problem()
+  {
+    return SSI::Utils::ssi_control_params_from_problem();
+  }
+}  // namespace
 
 /*----------------------------------------------------------------------*
  | constructor                                               Thon 12/14 |
@@ -45,9 +54,9 @@ void SSI::SSIPart2WC::init(MPI_Comm comm, const Teuchos::ParameterList& globalti
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // call the SSI parameter lists
-  const Teuchos::ParameterList& ssicontrol = Global::Problem::instance()->ssi_control_params();
+  const Teuchos::ParameterList& ssicontrol = ssi_control_params_from_problem();
   const Teuchos::ParameterList& ssicontrolpart =
-      Global::Problem::instance()->ssi_control_params().sublist("PARTITIONED");
+      ssi_control_params_from_problem().sublist("PARTITIONED");
 
   // do some checks
   {
@@ -441,7 +450,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::init(MPI_Comm comm,
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
-      Global::Problem::instance()->ssi_control_params().sublist("PARTITIONED");
+      ssi_control_params_from_problem().sublist("PARTITIONED");
 
   // Get minimal relaxation parameter from input file
   omega_ = ssicontrolpart.get<double>("STARTOMEGA");
@@ -561,7 +570,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::setup()
 void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const int itnum)
 {
   const Teuchos::ParameterList& ssicontrolpart =
-      Global::Problem::instance()->ssi_control_params().sublist("PARTITIONED");
+      ssi_control_params_from_problem().sublist("PARTITIONED");
 
   // Get maximal relaxation parameter from input file
   const double maxomega = ssicontrolpart.get<double>("MAXOMEGA");
@@ -657,7 +666,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::init(MPI_Comm comm,
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
-      Global::Problem::instance()->ssi_control_params().sublist("PARTITIONED");
+      ssi_control_params_from_problem().sublist("PARTITIONED");
 
   // Get start relaxation parameter from input file
   omega_ = ssicontrolpart.get<double>("STARTOMEGA");
@@ -777,7 +786,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::setup()
 void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const int itnum)
 {
   const Teuchos::ParameterList& ssicontrolpart =
-      Global::Problem::instance()->ssi_control_params().sublist("PARTITIONED");
+      ssi_control_params_from_problem().sublist("PARTITIONED");
 
   // Get maximal relaxation parameter from input file
   const double maxomega = ssicontrolpart.get<double>("MAXOMEGA");

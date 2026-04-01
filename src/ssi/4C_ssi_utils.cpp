@@ -22,6 +22,7 @@
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 #include "4C_ssi_monolithic.hpp"
+#include "4C_ssi_problem_access.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -1000,7 +1001,8 @@ void SSI::Utils::SSIMeshTying::setup_mesh_tying_handlers(const Core::FE::Discret
         Core::Communication::add_owned_node_gid(dis, slave_gid, my_coupled_original_slave_gids);
 
       slave_slave_transformation->setup_coupling(dis, dis, inodegidvec_slave,
-          my_coupled_original_slave_gids, Global::Problem::instance()->n_dim(), true, 1.0e-8);
+          my_coupled_original_slave_gids, SSI::Utils::problem_from_instance()->n_dim(), true,
+          1.0e-8);
     }
 
     // combine coupling adapters and multimap extractor to mesh tying object

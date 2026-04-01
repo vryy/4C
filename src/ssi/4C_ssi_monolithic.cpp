@@ -36,6 +36,7 @@
 #include "4C_ssi_monolithic_dbc_handler.hpp"
 #include "4C_ssi_monolithic_evaluate_OffDiag.hpp"
 #include "4C_ssi_monolithic_meshtying_strategy.hpp"
+#include "4C_ssi_problem_access.hpp"
 #include "4C_ssi_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -60,11 +61,11 @@ SSI::SsiMono::SsiMono(MPI_Comm comm, const Teuchos::ParameterList& globaltimepar
       relax_lin_solver_iter_step_(
           globaltimeparams.sublist("MONOLITHIC").get<int>("RELAX_LIN_SOLVER_STEP")),
       solver_(std::make_shared<Core::LinAlg::Solver>(
-          Global::Problem::instance()->solver_params(
+          SSI::Utils::problem_from_instance()->solver_params(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
-          comm, Global::Problem::instance()->solver_params_callback(),
+          comm, SSI::Utils::problem_from_instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"))),
+              SSI::Utils::problem_from_instance()->io_params(), "VERBOSITY"))),
       timer_(std::make_shared<Teuchos::Time>("SSI_Mono", true))
 {
   const auto init_pot_calc_linear_solver =
@@ -73,10 +74,10 @@ SSI::SsiMono::SsiMono(MPI_Comm comm, const Teuchos::ParameterList& globaltimepar
   if (init_pot_calc_linear_solver.has_value())
   {
     init_pot_calc_solver_ = std::make_shared<Core::LinAlg::Solver>(
-        Global::Problem::instance()->solver_params(init_pot_calc_linear_solver.value()), comm,
-        Global::Problem::instance()->solver_params_callback(),
+        SSI::Utils::problem_from_instance()->solver_params(init_pot_calc_linear_solver.value()),
+        comm, SSI::Utils::problem_from_instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-            Global::Problem::instance()->io_params(), "VERBOSITY"));
+            SSI::Utils::problem_from_instance()->io_params(), "VERBOSITY"));
   }
   else
   {
@@ -133,7 +134,7 @@ bool SSI::SsiMono::is_uncomplete_of_matrices_necessary_for_mesh_tying() const
     // check for first iteration in restart simulations
     if (is_restart())
     {
-      auto* problem = Global::Problem::instance();
+      auto* problem = SSI::Utils::problem_from_instance();
       // restart based on time step
       if (step() == problem->restart() + 1) return true;
     }
@@ -670,10 +671,10 @@ void SSI::SsiMono::setup()
         "one transported scalar at the moment it is not reasonable to use them with more than one "
         "transported scalar. So you need to cope with it or change implementation! ;-)");
   }
-  const auto ssi_params = Global::Problem::instance()->ssi_control_params();
+  const auto ssi_params = SSI::Utils::problem_from_instance()->ssi_control_params();
 
   const bool calc_initial_pot_elch =
-      Global::Problem::instance()->elch_control_params().get<bool>("INITPOTCALC");
+      SSI::Utils::problem_from_instance()->elch_control_params().get<bool>("INITPOTCALC");
   const bool calc_initial_pot_ssi = ssi_params.sublist("ELCH").get<bool>("INITPOTCALC");
 
   if (scatra_field()->equilibration_method() != Core::LinAlg::EquilibrationMethod::none)
@@ -693,7 +694,8 @@ void SSI::SsiMono::setup()
           equilibration_method_.scatra != Core::LinAlg::EquilibrationMethod::none))
     FOUR_C_THROW("Block based equilibration only for block matrices");
 
-  if (not Global::Problem::instance()->scalar_transport_dynamic_params().get<bool>("SKIPINITDER"))
+  if (not SSI::Utils::problem_from_instance()->scalar_transport_dynamic_params().get<bool>(
+          "SKIPINITDER"))
   {
     FOUR_C_THROW(
         "Initial derivatives are already calculated in monolithic SSI. Enable 'SKIPINITDER' in the "
@@ -1182,7 +1184,7 @@ void SSI::SsiMono::distribute_solution_all_fields(const bool restore_velocity)
 void SSI::SsiMono::calc_initial_potential_field()
 {
   const auto equpot = Teuchos::getIntegralValue<ElCh::EquPot>(
-      Global::Problem::instance()->elch_control_params(), "EQUPOT");
+      SSI::Utils::problem_from_instance()->elch_control_params(), "EQUPOT");
   if (equpot != ElCh::equpot_divi and equpot != ElCh::equpot_enc_pde and
       equpot != ElCh::equpot_enc_pde_elim)
   {
@@ -1626,7 +1628,7 @@ void SSI::SsiMono::print_system_matrix_rhs_to_mat_lab_format() const
         for (int col = 0; col < block_matrix->cols(); ++col)
         {
           std::ostringstream filename;
-          filename << Global::Problem::instance()->output_control_file()->file_name()
+          filename << SSI::Utils::problem_from_instance()->output_control_file()->file_name()
                    << "_block_system_matrix_" << row << "_" << col << ".csv";
 
           Core::LinAlg::print_matrix_in_matlab_format(
@@ -1641,8 +1643,9 @@ void SSI::SsiMono::print_system_matrix_rhs_to_mat_lab_format() const
       auto sparse_matrix =
           cast_to_const_sparse_matrix_and_check_success(ssi_matrices_->system_matrix());
 
-      const std::string filename = Global::Problem::instance()->output_control_file()->file_name() +
-                                   "_sparse_system_matrix.csv";
+      const std::string filename =
+          SSI::Utils::problem_from_instance()->output_control_file()->file_name() +
+          "_sparse_system_matrix.csv";
 
       Core::LinAlg::print_matrix_in_matlab_format(filename, *sparse_matrix, true);
       break;
@@ -1657,14 +1660,15 @@ void SSI::SsiMono::print_system_matrix_rhs_to_mat_lab_format() const
   // print rhs
   {
     const std::string filename =
-        Global::Problem::instance()->output_control_file()->file_name() + "_system_vector.csv";
+        SSI::Utils::problem_from_instance()->output_control_file()->file_name() +
+        "_system_vector.csv";
     print_vector_in_matlab_format(filename, *ssi_vectors_->residual(), true);
   }
 
   // print full map
   {
     const std::string filename =
-        Global::Problem::instance()->output_control_file()->file_name() + "_full_map.csv";
+        SSI::Utils::problem_from_instance()->output_control_file()->file_name() + "_full_map.csv";
     print_map_in_matlab_format(filename, *ssi_maps_->map_system_matrix(), true);
   }
 }

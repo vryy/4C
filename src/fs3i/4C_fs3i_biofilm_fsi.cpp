@@ -18,6 +18,7 @@
 #include "4C_fem_geometry_update_reference_config.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fs3i_biofilm_fsi_utils.hpp"
+#include "4C_fs3i_problem_access.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
@@ -60,7 +61,7 @@ void FS3I::BiofilmFSI::init()
 
   // this algorithm needs an ale discretization also for the structure in order to be able to handle
   // the growth
-  Global::Problem* problem = Global::Problem::instance();
+  Global::Problem* problem = FS3I::Utils::problem_from_instance();
   problem->get_dis("structale")->fill_complete();
 
   // create struct ale elements if not yet existing
@@ -95,13 +96,11 @@ void FS3I::BiofilmFSI::init()
   // getting and initializing problem-specific parameters
   //---------------------------------------------------------------------
 
-  const Teuchos::ParameterList& biofilmcontrol =
-      Global::Problem::instance()->biofilm_control_params();
+  const Teuchos::ParameterList& biofilmcontrol = problem->biofilm_control_params();
 
   // make sure that initial time derivative of concentration is not calculated
   // automatically (i.e. field-wise)
-  const Teuchos::ParameterList& scatradyn =
-      Global::Problem::instance()->scalar_transport_dynamic_params();
+  const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
   if (not scatradyn.get<bool>("SKIPINITDER"))
     FOUR_C_THROW(
         "Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to "
@@ -146,11 +145,12 @@ void FS3I::BiofilmFSI::init()
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::setup()
 {
+  auto* problem = FS3I::Utils::problem_from_instance();
+
   // call setup() in base class
   FS3I::PartFS3I1Wc::setup();
 
-  std::shared_ptr<Core::FE::Discretization> structaledis =
-      Global::Problem::instance()->get_dis("structale");
+  std::shared_ptr<Core::FE::Discretization> structaledis = problem->get_dis("structale");
 
   // create fluid-ALE Dirichlet Map Extractor for FSI step
   ale_->setup_dbc_map_ex(ALE::Utils::MapExtractor::dbc_set_std);
@@ -170,7 +170,7 @@ void FS3I::BiofilmFSI::setup()
   //---------------------------------------------------------------------
 
   const std::string condname = "FSICoupling";
-  const int ndim = Global::Problem::instance()->n_dim();
+  const int ndim = problem->n_dim();
 
   // set up ale-fluid couplings
   icoupfa_ = std::make_shared<Coupling::Adapter::Coupling>();
@@ -249,8 +249,8 @@ void FS3I::BiofilmFSI::timeloop()
   check_is_setup();
 
 
-  const Teuchos::ParameterList& biofilmcontrol =
-      Global::Problem::instance()->biofilm_control_params();
+  auto* problem = FS3I::Utils::problem_from_instance();
+  const Teuchos::ParameterList& biofilmcontrol = problem->biofilm_control_params();
   const bool biofilmgrowth = biofilmcontrol.get<bool>("BIOFILMGROWTH");
   const bool outputgmsh_ = biofilmcontrol.get<bool>("OUTPUT_GMSH");
 
@@ -354,8 +354,8 @@ void FS3I::BiofilmFSI::inner_timeloop()
   // Calculation of growth can be based both on values averaged during the inner timeloop
   // (in this case for the time being it takes in account also the initial transient state!),
   // or only on the last values coming from the fsi-scatra simulation
-  const Teuchos::ParameterList& biofilmcontrol =
-      Global::Problem::instance()->biofilm_control_params();
+  auto* problem = FS3I::Utils::problem_from_instance();
+  const Teuchos::ParameterList& biofilmcontrol = problem->biofilm_control_params();
   const bool avgrowth = biofilmcontrol.get<bool>("AVGROWTH");
   // in case of averaged values we need temporary variables
   Core::LinAlg::Vector<double> normtempinflux_(
@@ -433,7 +433,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
     // at the purpose to compute lambdafull, it is necessary to know which coupling algorithm is
     // used however the imposition of a Dirichlet condition on the interface produce wrong lambda_
     // when structuresplit is used
-    const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
+    const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
     const auto coupling = Teuchos::getIntegralValue<FsiCoupling>(fsidyn, "COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit)
     {
@@ -891,12 +891,12 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::struct_to_ale(
 void FS3I::BiofilmFSI::vec_to_scatravec(Core::FE::Discretization& scatradis,
     Core::LinAlg::Vector<double>& vec, Core::LinAlg::MultiVector<double>& scatravec)
 {
+  auto* problem = FS3I::Utils::problem_from_instance();
+  const int numdim = problem->n_dim();
+
   // loop over all local nodes of scatra discretization
   for (int lnodeid = 0; lnodeid < scatradis.num_my_row_nodes(); lnodeid++)
   {
-    // determine number of space dimensions
-    const int numdim = Global::Problem::instance()->n_dim();
-
     for (int index = 0; index < numdim; ++index)
     {
       double vecval = vec.local_values_as_span()[index + numdim * lnodeid];

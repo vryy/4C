@@ -9,6 +9,7 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
+#include "4C_fs3i_problem_access.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
@@ -48,7 +49,7 @@ void FS3I::BioFilm::Utils::scatra_change_config(Core::FE::Discretization& scatra
     std::vector<double> nvector(3, 0.0);
 
     // determine number of space dimensions
-    const int numdim = Global::Problem::instance()->n_dim();
+    const int numdim = FS3I::Utils::problem_from_instance()->n_dim();
 
     for (int i = 0; i < numdim; ++i)
     {

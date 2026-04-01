@@ -15,6 +15,7 @@
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fpsi_monolithic_plain.hpp"
 #include "4C_fpsi_utils.hpp"
+#include "4C_fs3i_problem_access.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_scatra.hpp"
@@ -82,7 +83,7 @@ void FS3I::PartFPS3I::init()
     std::cout << std::endl;
   }
   // ##################       1.- Parameter reading          //#########################
-  Global::Problem* problem = Global::Problem::instance();
+  Global::Problem* problem = FS3I::Utils::problem_from_instance();
   const Teuchos::ParameterList& fs3idyn = problem->f_s3_i_dynamic_params();
   const Teuchos::ParameterList& fpsidynparams = problem->fpsi_dynamic_params();
   const Teuchos::ParameterList& poroelastdynparams = problem->poroelast_dynamic_params();
@@ -136,8 +137,8 @@ void FS3I::PartFPS3I::init()
   std::shared_ptr<Core::FE::Discretization> structscatradis = problem->get_dis("scatra2");
 
   // determine type of scalar transport
-  const auto impltype_fluid = Teuchos::getIntegralValue<Inpar::ScaTra::ImplType>(
-      Global::Problem::instance()->f_s3_i_dynamic_params(), "FLUIDSCAL_SCATRATYPE");
+  const auto impltype_fluid =
+      Teuchos::getIntegralValue<Inpar::ScaTra::ImplType>(fs3idyn, "FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
   // create discretization for fluid-based scalar transport from and
@@ -156,7 +157,7 @@ void FS3I::PartFPS3I::init()
   {
     // fill fluid-based scatra discretization by cloning fluid discretization
     Core::FE::clone_discretization<ScaTra::ScatraFluidCloneStrategy>(
-        *fluiddis, *fluidscatradis, Global::Problem::instance()->cloning_material_map());
+        *fluiddis, *fluidscatradis, problem->cloning_material_map());
     fluidscatradis->fill_complete();
 
     // set implementation type of cloned scatra elements to advanced reactions
@@ -184,7 +185,7 @@ void FS3I::PartFPS3I::init()
   {
     // fill poro-based scatra discretization by cloning structure discretization
     Core::FE::clone_discretization<PoroElastScaTra::Utils::PoroScatraCloneStrategy>(
-        *structdis, *structscatradis, Global::Problem::instance()->cloning_material_map());
+        *structdis, *structscatradis, problem->cloning_material_map());
   }
   else
     FOUR_C_THROW("Structure AND ScaTra discretization present. This is not supported.");
@@ -344,7 +345,7 @@ void FS3I::PartFPS3I::read_restart()
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
-  Global::Problem* problem = Global::Problem::instance();
+  Global::Problem* problem = FS3I::Utils::problem_from_instance();
   const int restart = problem->restart();
 
   if (restart)
@@ -371,7 +372,7 @@ void FS3I::PartFPS3I::redistribute_interface()
 {
   fpsi_->redistribute_interface();
 
-  Global::Problem* problem = Global::Problem::instance();
+  Global::Problem* problem = FS3I::Utils::problem_from_instance();
 
   if (Core::Communication::num_mpi_ranks(comm_) >
       1)  // if we have more than one processor, we need to redistribute at the FPSI interface
@@ -402,6 +403,8 @@ void FS3I::PartFPS3I::redistribute_interface()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::setup_system()
 {
+  Global::Problem* problem = FS3I::Utils::problem_from_instance();
+
   // do the coupling setup and create the combined dofmap
 
   // Setup FPSI system
@@ -493,7 +496,7 @@ void FS3I::PartFPS3I::setup_system()
   std::shared_ptr<Core::FE::Discretization> firstscatradis =
       (scatravec_[0])->scatra_field()->discretization();
 
-  const Teuchos::ParameterList& fs3idyn = Global::Problem::instance()->f_s3_i_dynamic_params();
+  const Teuchos::ParameterList& fs3idyn = problem->f_s3_i_dynamic_params();
   // get solver number used for fs3i
   const int linsolvernumber = fs3idyn.get<int>("COUPLED_LINEAR_SOLVER");
   // check if LOMA solvers has a valid number
@@ -501,8 +504,7 @@ void FS3I::PartFPS3I::setup_system()
     FOUR_C_THROW(
         "no linear solver defined for FS3I problems. Please set COUPLED_LINEAR_SOLVER in FS3I "
         "DYNAMIC to a valid number!");
-  const Teuchos::ParameterList& coupledscatrasolvparams =
-      Global::Problem::instance()->solver_params(linsolvernumber);
+  const Teuchos::ParameterList& coupledscatrasolvparams = problem->solver_params(linsolvernumber);
 
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(coupledscatrasolvparams, "SOLVER");
@@ -518,9 +520,8 @@ void FS3I::PartFPS3I::setup_system()
 
   // use coupled scatra solver object
   scatrasolver_ = std::make_shared<Core::LinAlg::Solver>(coupledscatrasolvparams,
-      firstscatradis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY"));
+      firstscatradis->get_comm(), problem->solver_params_callback(),
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(problem->io_params(), "VERBOSITY"));
   // get the solver number used for structural ScalarTransport solver
   const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
   // get the solver number used for structural ScalarTransport solver
@@ -536,16 +537,12 @@ void FS3I::PartFPS3I::setup_system()
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
   scatrasolver_->put_solver_params_to_sub_params("Inverse1",
-      Global::Problem::instance()->solver_params(linsolver1number),
-      Global::Problem::instance()->solver_params_callback(),
-      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY"),
+      problem->solver_params(linsolver1number), problem->solver_params_callback(),
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(problem->io_params(), "VERBOSITY"),
       get_comm());
   scatrasolver_->put_solver_params_to_sub_params("Inverse2",
-      Global::Problem::instance()->solver_params(linsolver2number),
-      Global::Problem::instance()->solver_params_callback(),
-      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY"),
+      problem->solver_params(linsolver2number), problem->solver_params_callback(),
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(problem->io_params(), "VERBOSITY"),
       get_comm());
 
   if (azprectype == Core::LinearSolver::PreconditionerType::block_teko)
@@ -565,15 +562,16 @@ void FS3I::PartFPS3I::setup_system()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::test_results(MPI_Comm comm)
 {
-  Global::Problem::instance()->add_field_test(fpsi_->fluid_field()->create_field_test());
+  auto* problem = FS3I::Utils::problem_from_instance();
+  problem->add_field_test(fpsi_->fluid_field()->create_field_test());
 
   fpsi_->poro_field()->structure_field()->create_field_test();
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    Global::Problem::instance()->add_field_test(scatra->create_scatra_field_test());
+    problem->add_field_test(scatra->create_scatra_field_test());
   }
-  Global::Problem::instance()->test_all(comm);
+  problem->test_all(comm);
 }
 
 
@@ -628,7 +626,7 @@ void FS3I::PartFPS3I::set_mesh_disp()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::set_velocity_fields()
 {
-  Global::Problem* problem = Global::Problem::instance();
+  Global::Problem* problem = FS3I::Utils::problem_from_instance();
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
   const auto cdvel =
       Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");

@@ -20,6 +20,7 @@
 #include "4C_fpsi_monolithic.hpp"
 #include "4C_fpsi_monolithic_plain.hpp"
 #include "4C_fpsi_utils.hpp"
+#include "4C_fs3i_problem_access.hpp"
 #include "4C_fsi_monolithic.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_scatra.hpp"
@@ -187,7 +188,8 @@ void FS3I::PartFpS3I1Wc::prepare_time_step()
  *----------------------------------------------------------------------*/
 bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
 {
-  const Teuchos::ParameterList& fs3idyn = Global::Problem::instance()->f_s3_i_dynamic_params();
+  const auto* problem = FS3I::Utils::problem_from_instance();
+  const Teuchos::ParameterList& fs3idyn = problem->f_s3_i_dynamic_params();
   auto scatra_solvtype =
       Teuchos::getIntegralValue<Inpar::ScaTra::SolverType>(fs3idyn, "SCATRA_SOLVERTYPE");
 
@@ -215,8 +217,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
     case Inpar::ScaTra::solvertype_nonlinear:
     {
       // some input parameters for the scatra fields
-      const Teuchos::ParameterList& scatradyn =
-          Global::Problem::instance()->scalar_transport_dynamic_params();
+      const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
       const int itemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
       const double ittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
       const double abstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
