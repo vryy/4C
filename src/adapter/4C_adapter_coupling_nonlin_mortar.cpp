@@ -168,25 +168,25 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
     {
       const std::string& side = conds[i]->parameters().get<std::string>("Side");
 
-      if (side == "Master") conds_master.push_back(conds[i]);
+      if (side == "Target") conds_master.push_back(conds[i]);
 
-      if (side == "Slave") conds_slave.push_back(conds[i]);
+      if (side == "Source") conds_slave.push_back(conds[i]);
     }
 
-    // Fill maps based on condition for master side (masterdis == slavedis)
+    // Fill maps based on condition for target side (masterdis == slavedis)
     Core::Conditions::find_condition_objects(
         *masterdis, masternodes, mastergnodes, masterelements, conds_master);
 
-    // Fill maps based on condition for slave side (masterdis == slavedis)
+    // Fill maps based on condition for source side (masterdis == slavedis)
     Core::Conditions::find_condition_objects(
         *slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
   }
   // Coupling condition is defined by "FSI COUPLING CONDITIONS"
-  // There are two discretizations for the master and slave side. Therefore, the master/slave nodes
-  // are chosen based on the discretization.
+  // There are two discretizations for the target and source side. Therefore, the target/source
+  // nodes are chosen based on the discretization.
   else
   {
-    // Fill maps based on condition for slave side (masterdis != slavedis)
+    // Fill maps based on condition for source side (masterdis != slavedis)
     if (slavedis != nullptr)
       Core::Conditions::find_condition_objects(
           *slavedis, slavenodes, slavegnodes, slaveelements, couplingcond);
@@ -272,7 +272,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
   //  }
   // ########## CHECK for a better implementation of this ###################
 
-  // feeding master nodes to the interface including ghosted nodes
+  // feeding target nodes to the interface including ghosted nodes
   std::map<int, Core::Nodes::Node*>::const_iterator nodeiter;
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
@@ -304,7 +304,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
     interface->add_node(cnode);
   }
 
-  // feeding slave nodes to the interface including ghosted nodes
+  // feeding source nodes to the interface including ghosted nodes
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
     Core::Nodes::Node* node = nodeiter->second;
@@ -370,11 +370,11 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
   // ########## CHECK for a better implementation of this ###################
 
 
-  // We need to determine an element offset to start the numbering of the slave
-  // mortar elements AFTER the master mortar elements in order to ensure unique
+  // We need to determine an element offset to start the numbering of the source
+  // mortar elements AFTER the target mortar elements in order to ensure unique
   // eleIDs in the interface discretization. The element offset equals the
-  // overall number of master mortar elements (which is not equal to the number
-  // of elements in the field that is chosen as master side).
+  // overall number of target mortar elements (which is not equal to the number
+  // of elements in the field that is chosen as target side).
   //
   // If masterdis==slavedis, the element numbering is right without offset
   int eleoffset = 0;
@@ -387,7 +387,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
   //  if(slidingale==true)
   //    eleoffset = masterdis->ElementRowMap()->MaxAllGID()+1;
 
-  // feeding master elements to the interface
+  // feeding target elements to the interface
   std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
@@ -419,14 +419,14 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
     interface->add_element(cele);
   }
 
-  // feeding slave elements to the interface
+  // feeding source elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
     std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
 
     // Here, we have to distinguish between standard and sliding ale since mortar elements are
     // generated from the identical element sets in the case of sliding ale Therefore, we introduce
-    // an element offset AND a node offset for the the slave mortar elements
+    // an element offset AND a node offset for the the source mortar elements
     if (true)  //(slidingale==false)
     {
       std::shared_ptr<CONTACT::Element> cele = std::make_shared<CONTACT::Element>(
@@ -604,7 +604,7 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   std::map<int, std::shared_ptr<Core::Elements::Element>> masterelements;
 
   // get the conditions for the current evaluation we use the SpringDashpot condition as a
-  // substitute for the mortar slave surface
+  // substitute for the mortar source surface
   std::vector<const Core::Conditions::Condition*> conds_master;
   std::vector<const Core::Conditions::Condition*> conds_slave;
 
@@ -617,10 +617,10 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   if (!n_coup_conds)
     FOUR_C_THROW("No section DESIGN SURF ROBIN SPRING DASHPOT COUPLING CONDITIONS found.");
 
-  // slave surface = spring dashpot condition
+  // source surface = spring dashpot condition
   conds_slave.push_back(&(spring));
 
-  // find master surface: loop all coupling conditions
+  // find target surface: loop all coupling conditions
   for (int i = 0; i < n_coup_conds; i++)
   {
     if (coup_conds[i]->parameters().get<int>("COUPLING") == (coupling_id))
@@ -675,11 +675,11 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   // feeding elements to the interface
   std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
 
-  // eleoffset is necessary because slave and master elements are from different conditions
+  // eleoffset is necessary because source and target elements are from different conditions
   const int eleoffset = masterdis->element_row_map()->max_all_gid() + 1;
 
-  // MASTER NODES
-  // feeding master nodes to the interface including ghosted nodes
+  // TARGET NODES
+  // feeding target nodes to the interface including ghosted nodes
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
     Core::Nodes::Node* node = nodeiter->second;
@@ -690,8 +690,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
     interface->add_node(mrtrnode);
   }
 
-  // SLAVE NODES
-  // feeding slave nodes to the interface including ghosted nodes
+  // SOURCE NODES
+  // feeding source nodes to the interface including ghosted nodes
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
     Core::Nodes::Node* node = nodeiter->second;
@@ -702,8 +702,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
     interface->add_node(mrtrnode);
   }
 
-  // MASTER ELEMENTS
-  // feeding master elements to the interface
+  // TARGET ELEMENTS
+  // feeding target elements to the interface
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
     std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
@@ -714,8 +714,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
     interface->add_element(mrtrele);
   }
 
-  // SLAVE ELEMENTS
-  // feeding slave elements to the interface
+  // SOURCE ELEMENTS
+  // feeding source elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
     std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
@@ -756,7 +756,7 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   // create binary search tree
   interface_->create_search_tree();
 
-  // interface displacement (=0) has to be merged from slave and master discretization
+  // interface displacement (=0) has to be merged from source and target discretization
   std::shared_ptr<Core::LinAlg::Map> dofrowmap =
       Core::LinAlg::merge_map(masterdofrowmap_, slavedofrowmap_, false);
   std::shared_ptr<Core::LinAlg::Vector<double>> dispn =
@@ -782,7 +782,7 @@ void Adapter::CouplingNonLinMortar::print_interface(std::ostream& os) { interfac
 
 
 /*----------------------------------------------------------------------*
- |  Integrate slave-side matrix + linearization (D matrix)   farah 10/14|
+ |  Integrate source-side matrix + linearization (D matrix)   farah 10/14|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename,
     const std::shared_ptr<Core::LinAlg::Vector<double>> vec,
@@ -804,7 +804,7 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
   interface_->initialize();
   interface_->set_element_areas();
 
-  // loop over all slave col elements and direct integration
+  // loop over all source col elements and direct integration
   for (int j = 0; j < interface_->source_col_elements()->num_my_elements(); ++j)
   {
     int gid = interface_->source_col_elements()->gid(j);

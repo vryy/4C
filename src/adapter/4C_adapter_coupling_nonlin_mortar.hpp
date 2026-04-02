@@ -227,9 +227,9 @@ namespace Adapter
     int myrank_;     ///< my proc id
 
     std::shared_ptr<Core::LinAlg::Map>
-        slavenoderowmap_;  ///< map of slave row nodes (after parallel redist.)
+        slavenoderowmap_;  ///< map of source row nodes (after parallel redist.)
     std::shared_ptr<Core::LinAlg::Map>
-        pslavenoderowmap_;  ///< map of slave row nodes (before parallel redist.)
+        pslavenoderowmap_;  ///< map of source row nodes (before parallel redist.)
     std::shared_ptr<Core::LinAlg::Map>
         smdofrowmap_;  ///< map of sm merged row dofs (after parallel redist.)
     std::shared_ptr<Core::LinAlg::Map>
@@ -239,12 +239,12 @@ namespace Adapter
     std::shared_ptr<Core::LinAlg::SparseMatrix> MLin_;  ///< linearization of M matrix
 
     std::shared_ptr<Core::LinAlg::SparseMatrix>
-        H_;  ///< Matrix containing the tangent derivatives with respect to slave dofs
+        H_;  ///< Matrix containing the tangent derivatives with respect to source dofs
     std::shared_ptr<Core::LinAlg::SparseMatrix>
-        T_;  ///< Matrix containing the tangent vectors of the slave nodes
+        T_;  ///< Matrix containing the tangent vectors of the source nodes
     std::shared_ptr<Core::LinAlg::SparseMatrix>
         N_;  ///< Matrix containing the (weighted) gap derivatives
-             ///< with respect to master and slave dofs
+             ///< with respect to target and source dofs
     std::shared_ptr<Core::LinAlg::Vector<double>> gap_;  ///< gap vector
 
     std::shared_ptr<CONTACT::Interface> interface_;  ///< interface

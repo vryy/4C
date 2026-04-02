@@ -248,14 +248,14 @@ namespace Coupling::VolMortar
         std::shared_ptr<Core::FE::Discretization> searchdis, bool dis, std::set<int>& donebefore);
 
     /*!
-     \brief define vertices for 2D polygon clipping (master)
+     \brief define vertices for 2D polygon clipping (target)
 
      */
     virtual void define_vertices_master(
         Core::Elements::Element& ele, std::vector<Mortar::Vertex>& source_vertices);
 
     /*!
-     \brief define vertices for 2D polygon clipping (slave)
+     \brief define vertices for 2D polygon clipping (source)
 
      */
     virtual void define_vertices_slave(

@@ -47,10 +47,10 @@ namespace Coupling::VolMortar
     // destructor
     virtual ~VolMortarIntegrator() = default;
 
-    //! ns_: number of slave element nodes
+    //! ns_: number of source element nodes
     static constexpr int ns_ = Core::FE::num_nodes(distype_s);
 
-    //! nm_: number of master element nodes
+    //! nm_: number of target element nodes
     static constexpr int nm_ = Core::FE::num_nodes(distype_m);
 
     //! number of space dimensions ("+1" due to considering only interface elements)
@@ -158,7 +158,7 @@ namespace Coupling::VolMortar
     // destructor
     virtual ~VolMortarIntegratorEleBased() = default;
 
-    //! ns_: number of slave element nodes
+    //! ns_: number of source element nodes
     static constexpr int ns_ = Core::FE::num_nodes(distype_s);
 
     //! number of space dimensions ("+1" due to considering only interface elements)
@@ -205,7 +205,7 @@ namespace Coupling::VolMortar
   bool check_mapping(
       Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi)
   {
-    // check GP projection (SLAVE)
+    // check GP projection (SOURCE)
     double tol = 1e-5;
     if (distype_s == Core::FE::CellType::hex8 || distype_s == Core::FE::CellType::hex20 ||
         distype_s == Core::FE::CellType::hex27)
@@ -250,7 +250,7 @@ namespace Coupling::VolMortar
     else
       FOUR_C_THROW("Wrong element type!");
 
-    // check GP projection (MASTER)
+    // check GP projection (TARGET)
     if (distype_m == Core::FE::CellType::hex8 || distype_m == Core::FE::CellType::hex20 ||
         distype_m == Core::FE::CellType::hex27)
     {

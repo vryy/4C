@@ -335,7 +335,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
     return;
   }
 
-  // split matrix blocks in 3 rows: Active, Master and (Inactive+others)
+  // split matrix blocks in 3 rows: Active, Target and (Inactive+others)
   std::shared_ptr<Core::LinAlg::SparseMatrix> kss_ni, kss_m, kss_a, kst_ni, kst_m, kst_a, kts_ni,
       kts_m, kts_a, ktt_ni, ktt_m, ktt_a, dummy1, dummy2, dummy3;
 
@@ -537,12 +537,12 @@ void Adapter::CouplingEhlMortar::condense_contact(
   CONTACT::Utils::add_vector(rsni, *combined_RHS);
 
   // (2) add the 'uncondensed' blocks (i.e. everything w/o a D^-1
-  // (2)a actual stiffness blocks of the master-rows
+  // (2)a actual stiffness blocks of the target-rows
   Core::LinAlg::matrix_add(*kss_m, false, 1., kss_new, 1.);
   Core::LinAlg::matrix_add(*kst_m, false, 1., kst_new, 1.);
   CONTACT::Utils::add_vector(rsm, *combined_RHS);
 
-  // (2)b active constraints in the active slave rows
+  // (2)b active constraints in the active source rows
   Core::LinAlg::matrix_add(*dcsdd, false, 1., kss_new, 1.);
   CONTACT::Utils::add_vector(*fcsa, *combined_RHS);
 
@@ -663,7 +663,7 @@ void Adapter::CouplingEhlMortar::recover_coupled(std::shared_ptr<Core::LinAlg::V
  *----------------------------------------------------------------------*/
 void Adapter::CouplingEhlMortar::store_dirichlet_status(const Core::LinAlg::MapExtractor& dbcmaps)
 {
-  // loop over all slave row nodes on the current interface
+  // loop over all source row nodes on the current interface
   for (int j = 0; j < interface_->source_row_nodes()->num_my_elements(); ++j)
   {
     int gid = interface_->source_row_nodes()->gid(j);
@@ -718,7 +718,7 @@ bool Adapter::CouplingEhlMortar::already_evaluated(
 }
 
 std::shared_ptr<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble_ehl_lin_d(
-    const std::shared_ptr<Core::LinAlg::Vector<double>> x  // slave dof vector
+    const std::shared_ptr<Core::LinAlg::Vector<double>> x  // source dof vector
 )
 {
   std::shared_ptr<Core::LinAlg::SparseMatrix> DLinEHL =
@@ -735,7 +735,7 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble
 }
 
 std::shared_ptr<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble_ehl_lin_m(
-    const std::shared_ptr<Core::LinAlg::Vector<double>> x  // slave dof vector
+    const std::shared_ptr<Core::LinAlg::Vector<double>> x  // source dof vector
 )
 {
   std::shared_ptr<Core::LinAlg::SparseMatrix> MLinEHL =

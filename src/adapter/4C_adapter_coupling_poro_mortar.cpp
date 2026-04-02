@@ -99,7 +99,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
   // get problem dimension (2D or 3D) and create (Mortar::Interface)
   const int dim = problem->n_dim();
 
-  // feeding master elements to the interface
+  // feeding target elements to the interface
   std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
@@ -124,7 +124,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
         {
           if (mastertype_ == 0)
             FOUR_C_THROW(
-                "struct and poro master elements on the same processor - no mixed interface "
+                "struct and poro target elements on the same processor - no mixed interface "
                 "supported");
           cele->phys_type() = Mortar::Element::poro;
           mastertype_ = 1;
@@ -136,7 +136,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
     {
       if (mastertype_ == 1)
         FOUR_C_THROW(
-            "struct and poro master elements on the same processor - no mixed interface supported");
+            "struct and poro target elements on the same processor - no mixed interface supported");
       cele->phys_type() = Mortar::Element::structure;
       mastertype_ = 0;
     }
@@ -167,7 +167,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
     interface->add_element(cele);
   }
 
-  // feeding slave elements to the interface
+  // feeding source elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
     std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
@@ -193,7 +193,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
         {
           if (slavetype_ == 0)
             FOUR_C_THROW(
-                "struct and poro slave elements on the same processor - no mixed interface "
+                "struct and poro source elements on the same processor - no mixed interface "
                 "supported");
           cele->phys_type() = Mortar::Element::poro;
           slavetype_ = 1;
@@ -205,7 +205,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
     {
       if (slavetype_ == 1)
         FOUR_C_THROW(
-            "struct and poro slave elements on the same processor - no mixed interface supported");
+            "struct and poro source elements on the same processor - no mixed interface supported");
       cele->phys_type() = Mortar::Element::structure;
       slavetype_ = 0;
     }
@@ -262,7 +262,7 @@ void Adapter::CouplingPoroMortar::create_strategy(
   bool structmaster = false;
   bool structslave = false;
 
-  // wait for all processors to determine if they have poro or structural master or slave elements
+  // wait for all processors to determine if they have poro or structural target or source elements
   Core::Communication::barrier(comm_);
   std::vector<int> slaveTypeList(Core::Communication::num_mpi_ranks(comm_));
   std::vector<int> masterTypeList(Core::Communication::num_mpi_ranks(comm_));
@@ -279,14 +279,14 @@ void Adapter::CouplingPoroMortar::create_strategy(
       case 1:
         if (structslave)
           FOUR_C_THROW(
-              "struct and poro slave elements on the same adapter - no mixed interface supported");
+              "struct and poro source elements on the same adapter - no mixed interface supported");
         // adjust FOUR_C_THROW text, when more than one interface is supported
         poroslave = true;
         break;
       case 0:
         if (poroslave)
           FOUR_C_THROW(
-              "struct and poro slave elements on the same adapter - no mixed interface supported");
+              "struct and poro source elements on the same adapter - no mixed interface supported");
         structslave = true;
         break;
       default:
@@ -304,14 +304,14 @@ void Adapter::CouplingPoroMortar::create_strategy(
       case 1:
         if (structmaster)
           FOUR_C_THROW(
-              "struct and poro master elements on the same adapter - no mixed interface supported");
+              "struct and poro target elements on the same adapter - no mixed interface supported");
         // adjust FOUR_C_THROW text, when more than one interface is supported
         poromaster = true;
         break;
       case 0:
         if (poromaster)
           FOUR_C_THROW(
-              "struct and poro master elements on the same adapter - no mixed interface supported");
+              "struct and poro target elements on the same adapter - no mixed interface supported");
         structmaster = true;
         break;
       default:

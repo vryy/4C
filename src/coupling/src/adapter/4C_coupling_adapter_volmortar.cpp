@@ -303,8 +303,8 @@ void Coupling::Adapter::MortarVolCoupl::target_to_source(
     const Core::LinAlg::MultiVector<double>& mv, Core::LinAlg::MultiVector<double>& sv) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  FOUR_C_ASSERT(mv.get_map().point_same_as(p21_->domain_map()), "master dof map vector expected");
-  FOUR_C_ASSERT(sv.get_map().point_same_as(p21_->row_map()), "slave dof map vector expected");
+  FOUR_C_ASSERT(mv.get_map().point_same_as(p21_->domain_map()), "target dof map vector expected");
+  FOUR_C_ASSERT(sv.get_map().point_same_as(p21_->row_map()), "source dof map vector expected");
   FOUR_C_ASSERT(sv.num_vectors() == mv.num_vectors(), "column number mismatch {}!={}",
       sv.num_vectors(), mv.num_vectors());
 #endif
@@ -313,7 +313,7 @@ void Coupling::Adapter::MortarVolCoupl::target_to_source(
   check_setup();
   check_init();
 
-  // slave vector with auxiliary dofmap
+  // source vector with auxiliary dofmap
   Core::LinAlg::MultiVector<double> sv_aux(p21_->row_map(), sv.num_vectors());
 
   // project
@@ -324,7 +324,7 @@ void Coupling::Adapter::MortarVolCoupl::target_to_source(
       sv_aux.get_values() + (sv_aux.local_length() * sv_aux.num_vectors()), sv.get_values());
 
   // in contrast to the Adapter::Coupling class we do not need to export here, as
-  // the binning has (or should have) guaranteed the same distribution of master and slave dis
+  // the binning has (or should have) guaranteed the same distribution of target and source dis
   // on all procs
 }
 
@@ -393,8 +393,8 @@ void Coupling::Adapter::MortarVolCoupl::source_to_target(
     const Core::LinAlg::MultiVector<double>& sv, Core::LinAlg::MultiVector<double>& mv) const
 {
   // #ifdef FOUR_C_ENABLE_ASSERTIONS
-  FOUR_C_ASSERT(mv.get_map().point_same_as(p12_->row_map()), "master dof map vector expected");
-  FOUR_C_ASSERT(sv.get_map().point_same_as(p21_->row_map()), "slave dof map vector expected");
+  FOUR_C_ASSERT(mv.get_map().point_same_as(p12_->row_map()), "target dof map vector expected");
+  FOUR_C_ASSERT(sv.get_map().point_same_as(p21_->row_map()), "source dof map vector expected");
   FOUR_C_ASSERT(sv.num_vectors() == mv.num_vectors(), "column number mismatch {}!={}",
       sv.num_vectors(), mv.num_vectors());
   // #endif
@@ -403,7 +403,7 @@ void Coupling::Adapter::MortarVolCoupl::source_to_target(
   check_setup();
   check_init();
 
-  // master vector with auxiliary dofmap
+  // target vector with auxiliary dofmap
   Core::LinAlg::MultiVector<double> mv_aux(p12_->row_map(), mv.num_vectors());
 
   // project
@@ -414,7 +414,7 @@ void Coupling::Adapter::MortarVolCoupl::source_to_target(
       mv_aux.get_values() + (mv_aux.local_length() * mv_aux.num_vectors()), mv.get_values());
 
   // in contrast to the Adapter::Coupling class we do not need to export here, as
-  // the binning has (or should have) guaranteed the same distribution of master and slave dis
+  // the binning has (or should have) guaranteed the same distribution of target and source dis
   // on all procs
 }
 

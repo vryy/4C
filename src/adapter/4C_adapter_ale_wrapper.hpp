@@ -255,7 +255,7 @@ namespace Adapter
       ale_->create_system_matrix(interface);
     }
 
-    //! update slave dofs for fsi simulations with ale mesh tying
+    //! update source dofs for fsi simulations with ale mesh tying
     void update_slave_dof(std::shared_ptr<Core::LinAlg::Vector<double>>& a) override
     {
       ale_->update_slave_dof(a);

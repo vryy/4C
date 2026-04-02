@@ -48,7 +48,7 @@ void Coupling::Adapter::Coupling::setup_condition_coupling(
   const int numdof = masterdofs.size();
   const int numdof_slave = slavedofs.size();
   if (numdof != numdof_slave)
-    FOUR_C_THROW("Received {} master DOFs, but {} slave DOFs", numdof, numdof_slave);
+    FOUR_C_THROW("Received {} target DOFs, but {} source DOFs", numdof, numdof_slave);
 
   auto masternodes_set = Core::Conditions::find_conditioned_node_ids(
       masterdis, condname, Core::Conditions::LookFor::locally_owned);
@@ -66,16 +66,16 @@ void Coupling::Adapter::Coupling::setup_condition_coupling(
   slavecount = Core::Communication::sum_all(localslavecount, slavedis.get_comm());
 
   if (mastercount != slavecount)
-    FOUR_C_THROW("got {} master nodes but {} slave nodes for coupling", mastercount, slavecount);
+    FOUR_C_THROW("got {} target nodes but {} source nodes for coupling", mastercount, slavecount);
 
   setup_coupling(masterdis, slavedis, masternodes, slavenodes, masterdofs, slavedofs, matchall,
       1.0e-3, nds_master, nds_slave);
 
   // test for completeness
   if (static_cast<int>(masternodes.size()) * numdof != masterdofmap_->num_my_elements())
-    FOUR_C_THROW("failed to setup master nodes properly");
+    FOUR_C_THROW("failed to setup target nodes properly");
   if (static_cast<int>(slavenodes.size()) * numdof != slavedofmap_->num_my_elements())
-    FOUR_C_THROW("failed to setup slave nodes properly");
+    FOUR_C_THROW("failed to setup source nodes properly");
 
   // Now swap in the maps we already had.
   // So we did a little more work than required. But there are cases
@@ -85,11 +85,11 @@ void Coupling::Adapter::Coupling::setup_condition_coupling(
   // The point is to make sure there is only one map for each
   // interface.
 
-  if (not masterdofmap_->point_same_as(*mastercondmap)) FOUR_C_THROW("master dof map mismatch");
+  if (not masterdofmap_->point_same_as(*mastercondmap)) FOUR_C_THROW("target dof map mismatch");
 
   if (not slavedofmap_->point_same_as(*slavecondmap))
   {
-    FOUR_C_THROW("slave dof map mismatch");
+    FOUR_C_THROW("source dof map mismatch");
   }
 
   masterdofmap_ = mastercondmap;
@@ -179,7 +179,7 @@ void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization&
     const double tolerance, const int nds_master, const int nds_slave)
 {
   if (masternodes.num_global_elements() != slavenodes.num_global_elements() and matchall)
-    FOUR_C_THROW("got {} master nodes but {} slave nodes for coupling",
+    FOUR_C_THROW("got {} target nodes but {} source nodes for coupling",
         masternodes.num_global_elements(), slavenodes.num_global_elements());
 
   std::vector<int> mastervect(masternodes.my_global_elements(),
@@ -214,7 +214,7 @@ void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization&
     const int numdof)
 {
   if (masternodemap.num_global_elements() != slavenodemap.num_global_elements())
-    FOUR_C_THROW("got {} master nodes but {} slave nodes for coupling",
+    FOUR_C_THROW("got {} target nodes but {} source nodes for coupling",
         masternodemap.num_global_elements(), slavenodemap.num_global_elements());
 
   // just copy maps
@@ -228,7 +228,7 @@ void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization&
   std::shared_ptr<Core::LinAlg::Map> mypermslavenodemap =
       std::make_shared<Core::LinAlg::Map>(permslavenodemap);
 
-  // build slave to master permutation and dof all maps
+  // build source to target permutation and dof all maps
   finish_coupling(masterdis, slavedis, mymasternodemap, myslavenodemap, mypermslavenodemap,
       build_dof_vector_from_num_dof(numdof), build_dof_vector_from_num_dof(numdof));
 }
@@ -241,16 +241,16 @@ void Coupling::Adapter::Coupling::setup_coupling(
   // safety check
   if (masterdis.dof_row_map()->num_global_elements() !=
       slavedis.dof_row_map()->num_global_elements())
-    FOUR_C_THROW("got {} master nodes but {} slave nodes for coupling",
+    FOUR_C_THROW("got {} target nodes but {} source nodes for coupling",
         masterdis.dof_row_map()->num_global_elements(),
         slavedis.dof_row_map()->num_global_elements());
 
-  // get master dof maps and build exporter
+  // get target dof maps and build exporter
   permmasterdofmap_ = std::make_shared<Core::LinAlg::Map>(*slavedis.dof_row_map());
   masterdofmap_ = std::make_shared<Core::LinAlg::Map>(*masterdis.dof_row_map());
   masterexport_ = std::make_shared<Core::LinAlg::Export>(*permmasterdofmap_, *masterdofmap_);
 
-  // get slave dof maps and build exporter
+  // get source dof maps and build exporter
   permslavedofmap_ = std::make_shared<Core::LinAlg::Map>(*masterdis.dof_row_map());
   slavedofmap_ = std::make_shared<Core::LinAlg::Map>(*slavedis.dof_row_map());
   slaveexport_ = std::make_shared<Core::LinAlg::Export>(*permslavedofmap_, *slavedofmap_);
@@ -263,8 +263,8 @@ void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization&
     const std::vector<std::vector<int>>& slavenodes_vec, const int numdof, const bool matchall,
     const double tolerance, const int nds_master, const int nds_slave)
 {
-  // vectors with master and slave node maps (from input) for every coupling condition
-  // Permuted slave node map for each coupling conditions from match_nodes()
+  // vectors with target and source node maps (from input) for every coupling condition
+  // Permuted source node map for each coupling conditions from match_nodes()
   std::vector<std::shared_ptr<const Core::LinAlg::Map>> masternodemap_cond;
   std::vector<std::shared_ptr<const Core::LinAlg::Map>> slavenodemap_cond;
   std::vector<std::shared_ptr<const Core::LinAlg::Map>> permslavenodemap_cond;
@@ -286,8 +286,8 @@ void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization&
         -1, permslavenodes.size(), permslavenodes.data(), 0, slavedis.get_comm()));
   }
 
-  // merge maps for all conditions, but keep order (= keep assignment of permuted slave node map and
-  // master map)
+  // merge maps for all conditions, but keep order (= keep assignment of permuted source node map
+  // and target map)
   auto masternodemap = Core::LinAlg::MultiMapExtractor::merge_maps_keep_order(masternodemap_cond);
   auto slavenodemap = Core::LinAlg::MultiMapExtractor::merge_maps_keep_order(slavenodemap_cond);
   auto permslavenodemap =
@@ -305,7 +305,7 @@ void Coupling::Adapter::Coupling::match_nodes(const Core::FE::Discretization& ma
     std::vector<int>& permslavenodes, const std::vector<int>& slavenodes, const bool matchall,
     const double tolerance)
 {
-  // match master and slave nodes using octree
+  // match target and source nodes using octree
   auto tree = Core::GeometricSearch::NodeMatchingOctree();
   tree.init(masterdis, masternodes, 150, tolerance);
   tree.setup();
@@ -326,7 +326,7 @@ void Coupling::Adapter::Coupling::match_nodes(const Core::FE::Discretization& ma
 
   for (int gid : masternodes)
   {
-    // We allow to hand in master nodes that do not take part in the
+    // We allow to hand in target nodes that do not take part in the
     // coupling. If this is undesired behaviour the user has to make
     // sure all nodes were used.
     if (coupling.find(gid) != coupling.end())
@@ -337,7 +337,7 @@ void Coupling::Adapter::Coupling::match_nodes(const Core::FE::Discretization& ma
     }
   }
 
-  // return new list of master nodes via reference
+  // return new list of target nodes via reference
   swap(masternodes, patchedmasternodes);
 }
 
@@ -352,12 +352,12 @@ void Coupling::Adapter::Coupling::finish_coupling(const Core::FE::Discretization
 {
   // we expect to get maps of exactly the same shape
   if (not masternodemap->point_same_as(*permslavenodemap))
-    FOUR_C_THROW("master and permuted slave node maps do not match");
+    FOUR_C_THROW("target and permuted source node maps do not match");
 
-  // export master nodes to slave node distribution
+  // export target nodes to source node distribution
 
-  // To do so we create vectors that contain the values of the master
-  // maps, assigned to the slave maps. On the master side we actually
+  // To do so we create vectors that contain the values of the target
+  // maps, assigned to the source maps. On the target side we actually
   // create just a view on the map! This vector must not be changed!
   std::shared_ptr<Core::LinAlg::Vector<int>> masternodevec =
       std::make_shared<Core::LinAlg::Vector<int>>(
@@ -374,7 +374,7 @@ void Coupling::Adapter::Coupling::finish_coupling(const Core::FE::Discretization
           permmasternodevec->get_local_values().data(), 0, masterdis.get_comm());
 
   if (not slavenodemap->point_same_as(*permmasternodemap))
-    FOUR_C_THROW("slave and permuted master node maps do not match");
+    FOUR_C_THROW("source and permuted target node maps do not match");
 
   masternodevec = nullptr;
   permmasternodevec = nullptr;
@@ -457,14 +457,14 @@ void Coupling::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization&
 
     if (!thiscond.empty())
     {
-      // loop them and check, whether this is a pbc pure master node
+      // loop them and check, whether this is a pbc pure target node
       // for all previous conditions
       unsigned ntimesmaster = 0;
       for (auto& cond : thiscond)
       {
         const auto& mymasterslavetoggle = cond->parameters().get<std::string>("MASTER_OR_SLAVE");
 
-        if (mymasterslavetoggle == "Master")
+        if (mymasterslavetoggle == "Target")
         {
           ++ntimesmaster;
         }
@@ -472,7 +472,7 @@ void Coupling::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization&
 
       if (ntimesmaster < thiscond.size())
       {
-        // this node is not a master and does not own its own dofs
+        // this node is not a target and does not own its own dofs
         continue;
       }
     }
@@ -615,8 +615,8 @@ void Coupling::Adapter::Coupling::target_to_source(
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not mv.get_map().point_same_as(*masterdofmap_))
-    FOUR_C_THROW("master dof map vector expected");
-  if (not sv.get_map().point_same_as(*slavedofmap_)) FOUR_C_THROW("slave dof map vector expected");
+    FOUR_C_THROW("target dof map vector expected");
+  if (not sv.get_map().point_same_as(*slavedofmap_)) FOUR_C_THROW("source dof map vector expected");
   if (sv.num_vectors() != mv.num_vectors())
     FOUR_C_THROW("column number mismatch {}!={}", sv.num_vectors(), mv.num_vectors());
 #endif
@@ -648,14 +648,14 @@ void Coupling::Adapter::Coupling::source_to_target(
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not mv.get_map().point_same_as(*masterdofmap_))
-    FOUR_C_THROW("master dof map vector expected");
+    FOUR_C_THROW("target dof map vector expected");
   if (not sv.get_map().point_same_as(*slavedofmap_))
   {
     std::cout << "slavedofmap_" << std::endl;
     std::cout << *slavedofmap_ << std::endl;
     std::cout << "sv" << std::endl;
     std::cout << sv.get_map() << std::endl;
-    FOUR_C_THROW("slave dof map vector expected");
+    FOUR_C_THROW("source dof map vector expected");
   }
   if (sv.num_vectors() != mv.num_vectors())
     FOUR_C_THROW("column number mismatch {}!={}", sv.num_vectors(), mv.num_vectors());
@@ -705,11 +705,11 @@ void Coupling::Adapter::Coupling::fill_slave_to_master_map(std::map<int, int>& r
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::Map> Coupling::Adapter::Coupling::slave_to_master_map(
-    Core::LinAlg::Map& slave)
+    Core::LinAlg::Map& source)
 {
   int nummyele = 0;
   std::vector<int> globalelements;
-  const std::shared_ptr<Core::LinAlg::Map> slavemap = Core::LinAlg::allreduce_e_map(slave);
+  const std::shared_ptr<Core::LinAlg::Map> slavemap = Core::LinAlg::allreduce_e_map(source);
   for (int i = 0; i < slavemap->num_my_elements(); ++i)
   {
     int lid = permslavedofmap_->lid(slavemap->gid(i));
@@ -721,17 +721,17 @@ std::shared_ptr<Core::LinAlg::Map> Coupling::Adapter::Coupling::slave_to_master_
   }
 
   return std::make_shared<Core::LinAlg::Map>(
-      -1, nummyele, globalelements.data(), 0, slave.get_comm());
+      -1, nummyele, globalelements.data(), 0, source.get_comm());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::Map> Coupling::Adapter::Coupling::target_to_source_map(
-    Core::LinAlg::Map& master)
+    Core::LinAlg::Map& target)
 {
   int nummyele = 0;
   std::vector<int> globalelements;
-  const std::shared_ptr<Core::LinAlg::Map> mastermap = Core::LinAlg::allreduce_e_map(master);
+  const std::shared_ptr<Core::LinAlg::Map> mastermap = Core::LinAlg::allreduce_e_map(target);
   for (int i = 0; i < mastermap->num_my_elements(); ++i)
   {
     int lid = permmasterdofmap_->lid(mastermap->gid(i));
@@ -743,7 +743,7 @@ std::shared_ptr<Core::LinAlg::Map> Coupling::Adapter::Coupling::target_to_source
   }
 
   return std::make_shared<Core::LinAlg::Map>(
-      -1, nummyele, globalelements.data(), 0, master.get_comm());
+      -1, nummyele, globalelements.data(), 0, target.get_comm());
 }
 
 
@@ -771,7 +771,7 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Coupling::Adapter::Coupling::slave_t
     const Core::LinAlg::SparseMatrix& sm) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not sm.row_map().point_same_as(*slavedofmap_)) FOUR_C_THROW("slave dof map vector expected");
+  if (not sm.row_map().point_same_as(*slavedofmap_)) FOUR_C_THROW("source dof map vector expected");
   if (not sm.filled()) FOUR_C_THROW("matrix must be filled");
 #endif
 
@@ -818,7 +818,7 @@ void Coupling::Adapter::Coupling::setup_coupling_matrices(const Core::LinAlg::Ma
   matmm_trans_->complete(shiftedmastermap, masterdomainmap);
   matsm_trans_->complete(shiftedmastermap, *perm_source_dof_map());
 
-  // communicate slave to master matrix
+  // communicate source to target matrix
   auto tmp = std::make_shared<Core::LinAlg::SparseMatrix>(slavedomainmap, 1);
 
   Core::LinAlg::Import exporter(slavedomainmap, *perm_source_dof_map());

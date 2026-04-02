@@ -86,7 +86,7 @@ namespace Adapter
       return interface_;
     }
 
-    /// update slave dofs for multifield simulations with fluid mesh tying
+    /// update source dofs for multifield simulations with fluid mesh tying
     virtual void update_slave_dof(std::shared_ptr<Core::LinAlg::Vector<double>>& f);
 
     std::shared_ptr<const Core::LinAlg::Map> inner_velocity_row_map() override;

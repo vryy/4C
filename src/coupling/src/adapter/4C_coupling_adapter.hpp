@@ -44,13 +44,13 @@ namespace Coupling::Adapter
    *
    *  This class handles the transfer of dof values at the interface
    *  (Core::LinAlg::Vectors build on the interface dof map of either side) to
-   *  the other side. To distinguish both sides lets speak of master and
-   *  slave, even though no side really dominates the other. On the
+   *  the other side. To distinguish both sides lets speak of target and
+   *  source, even though no side really dominates the other. On the
    *  contrary we provide perfect symmetry once the setup is done.
    *
-   *  The idea is simple: We have a master dof map that describes the
-   *  distribution of the master's interface dofs. And we have a slave
-   *  dof map that describes the distribution of the slave's interface
+   *  The idea is simple: We have a target dof map that describes the
+   *  distribution of the target's interface dofs. And we have a source
+   *  dof map that describes the distribution of the source's interface
    *  dofs. Both maps, however, live in their respective
    *  communicator. We cannot transfer data between them. Furthermore
    *  the dof gids are totally independent of each other.
@@ -58,7 +58,7 @@ namespace Coupling::Adapter
    *  So we build a mapping between the nodes from both meshes during
    *  the setup phase. This establishes the connection. From that
    *  connection we deduce (in a somewhat painful way) a permuted
-   *  master dof map and a permuted slave dof map. These permuted
+   *  target dof map and a permuted source dof map. These permuted
    *  maps are bound to have the same layout as the normal maps from the
    *  other side. So we can exchange dof values between fields by simply
    *  copying from a normal Core::LinAlg::Vector<double> to the permuted
@@ -88,7 +88,7 @@ namespace Coupling::Adapter
 
       second variant accepts two vectors to couple the DOFs specified in these
       vectors, e.g. masterdofs = [0 3 5] and slavedofs = [1 2 4] will couple
-      DOF 0 (master) with DOF 1 slave, DOF 3 (master) with DOF 2 slave, etc.
+      DOF 0 (target) with DOF 1 source, DOF 3 (target) with DOF 2 source, etc.
 
      */
     void setup_condition_coupling(const Core::FE::Discretization& masterdis,
@@ -109,10 +109,10 @@ namespace Coupling::Adapter
      *  Setup the whole thing. Find matching nodes via octtree and build
      *  appropriate dof maps.
      *
-     *  \note All slave nodes are required to find a match. In contrast
-     *  master nodes do not need to have a match. So it is legal to hand
-     *  in more master nodes that slave nodes as long as there is one
-     *  master node for each slave node.
+     *  \note All source nodes are required to find a match. In contrast
+     *  target nodes do not need to have a match. So it is legal to hand
+     *  in more target nodes that source nodes as long as there is one
+     *  target node for each source node.
      *
      *  We need some way to guess the tolerance for the octree. It must not be
      *  too small, otherwise we won't find matching nodes. Too large a tolerance
@@ -120,13 +120,13 @@ namespace Coupling::Adapter
      *  (But it could hurt, if the geometry is very small. It should be
      *   around the size of the smallest element)
      *
-     *  \param masterdis   (i) master side mesh
-     *  \param slavedis    (i) slave side mesh
-     *  \param masternodes (i) gids of nodes on master side to be coupled
-     *  \param slavenodes  (i) gids of nodes on slave side to be coupled
-     *  \param masterdofs  (i) vector with DOF ids of master side to be coupled
+     *  \param masterdis   (i) target side mesh
+     *  \param slavedis    (i) source side mesh
+     *  \param masternodes (i) gids of nodes on target side to be coupled
+     *  \param slavenodes  (i) gids of nodes on source side to be coupled
+     *  \param masterdofs  (i) vector with DOF ids of target side to be coupled
      *  \param slavedofs   (i) vector with DOF ids of side side to be coupled
-     *  \param matchall    (i) flag indicating matching slave and master nodes
+     *  \param matchall    (i) flag indicating matching source and target nodes
      *  \param tolerance   (i) tolerance for octree for node matching
      */
     void setup_coupling(const Core::FE::Discretization& masterdis,
@@ -138,7 +138,7 @@ namespace Coupling::Adapter
     /*! \brief Setup coupling of given nodes
      *
      *  only difference to the variant above is that the first numdof
-     *  DOFs on both slave and master side will be coupled
+     *  DOFs on both source and target side will be coupled
      *
      *  \param numdof      (i) number of dofs per node to be coupled
      */
@@ -152,21 +152,21 @@ namespace Coupling::Adapter
      *  Setup the whole thing. Find matching nodes via octtree and build
      *  appropriate dof maps.
      *
-     *  \note All slave nodes are required to find a match. In contrast
-     *  master nodes do not need to have a match. So it is legal to hand
-     *  in more master nodes that slave nodes as long as there is one
-     *  master node for each slave node.
+     *  \note All source nodes are required to find a match. In contrast
+     *  target nodes do not need to have a match. So it is legal to hand
+     *  in more target nodes that source nodes as long as there is one
+     *  target node for each source node.
      *
      *  We need some way to guess the tolerance for the octree. It must not be
      *  too small, otherwise we won't find matching nodes. Too large a tolerance
      *  will not hurt that much. It just means we will have to test more nodes.
      *
-     *  \param masterdis   (i) master side mesh
-     *  \param slavedis    (i) slave side mesh
-     *  \param masternodes (i) gids of nodes on master side to be coupled
-     *  \param slavenodes  (i) gids of nodes on slave side to be coupled
+     *  \param masterdis   (i) target side mesh
+     *  \param slavedis    (i) source side mesh
+     *  \param masternodes (i) gids of nodes on target side to be coupled
+     *  \param slavenodes  (i) gids of nodes on source side to be coupled
      *  \param numdof      (i) number of dofs per node to be coupled
-     *  \param matchall    (i) flag indicating matching slave and master nodes
+     *  \param matchall    (i) flag indicating matching source and target nodes
      *  \param tolerance   (i) tolerance for octree for node matching
      */
     void setup_coupling(const Core::FE::Discretization& masterdis,
@@ -179,19 +179,19 @@ namespace Coupling::Adapter
      *  Setup the whole thing. Build appropriate dof maps (for given, matching nodes on both
      * sides).
      *
-     *  \note All master and slave nodes are required to match.
-     *  The permuted slave node map is given as input, thus no search tree to find matching nodes
+     *  \note All target and source nodes are required to match.
+     *  The permuted source node map is given as input, thus no search tree to find matching nodes
      * is used. Only the corresponding dof maps are build here (+ some checks). This setup method
      * can be used, if one discretization was cloned from the others discretization, and thus
      * matching node GIDs are assured (for Fluid-ALE or poro, for instance). In this case, this
      * setup gives the same results as the standard version above, but without the need to perform
      * the matching node search.
      *
-     *  \param masterdis         (i) master side mesh
-     *  \param slavedis          (i) slave side mesh
-     *  \param masternodemap     (i) gids of nodes on master side to be coupled
-     *  \param slavenodemap      (i) gids of nodes on slave side to be coupled
-     *  \param permslavenodemap  (i) permuted node map of the slave side
+     *  \param masterdis         (i) target side mesh
+     *  \param slavedis          (i) source side mesh
+     *  \param masternodemap     (i) gids of nodes on target side to be coupled
+     *  \param slavenodemap      (i) gids of nodes on source side to be coupled
+     *  \param permslavenodemap  (i) permuted node map of the source side
      *  \param numdof            (i) number of dofs per node to be coupled
      */
     void setup_coupling(const Core::FE::Discretization& masterdis,
@@ -199,18 +199,18 @@ namespace Coupling::Adapter
         const Core::LinAlg::Map& slavenodemap, const Core::LinAlg::Map& permslavenodemap,
         const int numdof);
 
-    /*! \brief Setup coupling of given master and slave discretization
+    /*! \brief Setup coupling of given target and source discretization
      *
      *  Setup the whole thing for matching dofs on both sides
      *
-     *  \note All master and slave dofs are required to match.
+     *  \note All target and source dofs are required to match.
      *  This setup method can be used, if one discretization was cloned from the other
      * discretization, and thus matching dof GIDs are assured. All dofs of all nodes are coupled
      * this way. In this case, this setup gives the same results as the standard version above,
      * but neither a matching node search nor building dof maps is necessary.
      *
-     *  \param masterdis         (i) master side mesh
-     *  \param slavedis          (i) slave side mesh
+     *  \param masterdis         (i) target side mesh
+     *  \param slavedis          (i) source side mesh
      */
     void setup_coupling(
         const Core::FE::Discretization& masterdis, const Core::FE::Discretization& slavedis);
@@ -220,22 +220,22 @@ namespace Coupling::Adapter
      *  Setup the whole thing. Find matching nodes via octtree and build
      *  appropriate dof maps.
      *
-     *  \note All slave nodes are required to find a match. In contrast
-     *  master nodes do not need to have a match.
+     *  \note All source nodes are required to find a match. In contrast
+     *  target nodes do not need to have a match.
      *
      *  Nodes are clustered, such that coupling is performed between clusters
      *  (e.g. masternodes_vec.at(0) <-> slavenodes_vec.at(0), masternodes_vec.at(1) <->
      * slavenodes_vec.at(1), ...)
      *
-     *  \param masterdis       (i) master side mesh
-     *  \param slavedis        (i) slave side mesh
-     *  \param masternodes_vec (i) gids of nodes on master side to be coupled
-     *  \param slavenodes_vec  (i) gids of nodes on slave side to be coupled
+     *  \param masterdis       (i) target side mesh
+     *  \param slavedis        (i) source side mesh
+     *  \param masternodes_vec (i) gids of nodes on target side to be coupled
+     *  \param slavenodes_vec  (i) gids of nodes on source side to be coupled
      *  \param numdof          (i) number of dofs per node to be coupled
-     *  \param matchall        (i) flag indicating matching slave and master nodes
+     *  \param matchall        (i) flag indicating matching source and target nodes
      *  \param tolerance       (i) tolerance for octree for node matching
-     *  \param nds_master      (i) dofset ID of master side
-     *  \param nds_slave       (i) dofset ID of slave side
+     *  \param nds_master      (i) dofset ID of target side
+     *  \param nds_slave       (i) dofset ID of source side
      */
     void setup_coupling(const Core::FE::Discretization& masterdis,
         const Core::FE::Discretization& slavedis,
@@ -247,10 +247,10 @@ namespace Coupling::Adapter
     /*! Setup coupling based on dof maps. This can be used if no search is required anymore and
      * all dof maps are known already
      *
-     * \param slavedofmap       (i) slave side dof map
-     * \param permslavedofmap   (i) permuted dofs on slave side to match dofs on master side
-     * \param masterdofmap      (i) master side dof map
-     * \param permmasterdofmap  (i) permuted dofs on master side to match dofs on slave side
+     * \param slavedofmap       (i) source side dof map
+     * \param permslavedofmap   (i) permuted dofs on source side to match dofs on target side
+     * \param masterdofmap      (i) target side dof map
+     * \param permmasterdofmap  (i) permuted dofs on target side to match dofs on source side
      */
     void setup_coupling(std::shared_ptr<const Core::LinAlg::Map> slavedofmap,
         std::shared_ptr<const Core::LinAlg::Map> permslavedofmap,
@@ -258,63 +258,63 @@ namespace Coupling::Adapter
         std::shared_ptr<const Core::LinAlg::Map> permmasterdofmap);
     //@}
 
-    /** \name Conversion between master and slave */
+    /** \name Conversion between target and source */
     //@{
     /// There are different versions to satisfy all needs. The basic
     /// idea is the same for all of them.
 
-    /// transfer a dof vector from master to slave
+    /// transfer a dof vector from target to source
     std::shared_ptr<Core::LinAlg::Vector<double>> target_to_source(
-        const Core::LinAlg::Vector<double>& mv  ///< master vector (to be transferred)
+        const Core::LinAlg::Vector<double>& mv  ///< target vector (to be transferred)
     ) const override;
 
-    /// transfer a dof vector from slave to master
+    /// transfer a dof vector from source to target
     std::shared_ptr<Core::LinAlg::Vector<double>> source_to_target(
-        const Core::LinAlg::Vector<double>& sv  ///< slave vector (to be transferred)
+        const Core::LinAlg::Vector<double>& sv  ///< source vector (to be transferred)
     ) const override;
 
-    /// transfer a dof vector from master to slave
+    /// transfer a dof vector from target to source
     std::shared_ptr<Core::LinAlg::FEVector<double>> target_to_source(
-        const Core::LinAlg::FEVector<double>& mv  ///< master vector (to be transferred)
+        const Core::LinAlg::FEVector<double>& mv  ///< target vector (to be transferred)
     ) const;
 
-    /// transfer a dof vector from slave to master
+    /// transfer a dof vector from source to target
     std::shared_ptr<Core::LinAlg::FEVector<double>> source_to_target(
-        const Core::LinAlg::FEVector<double>& sv  ///< slave vector (to be transferred)
+        const Core::LinAlg::FEVector<double>& sv  ///< source vector (to be transferred)
     ) const;
 
-    /// transfer a dof vector from master to slave
+    /// transfer a dof vector from target to source
     std::shared_ptr<Core::LinAlg::MultiVector<double>> target_to_source(
-        const Core::LinAlg::MultiVector<double>& mv  ///< master vector (to be transferred)
+        const Core::LinAlg::MultiVector<double>& mv  ///< target vector (to be transferred)
     ) const override;
 
-    /// transfer a dof vector from slave to master
+    /// transfer a dof vector from source to target
     std::shared_ptr<Core::LinAlg::MultiVector<double>> source_to_target(
-        const Core::LinAlg::MultiVector<double>& sv  ///< slave vector (to be transferred)
+        const Core::LinAlg::MultiVector<double>& sv  ///< source vector (to be transferred)
     ) const override;
 
-    /// transfer a dof vector from master to slave
+    /// transfer a dof vector from target to source
     void target_to_source(
-        const Core::LinAlg::MultiVector<double>& mv,  ///< master vector (to be transferred)
-        Core::LinAlg::MultiVector<double>& sv         ///< slave vector (containing result)
+        const Core::LinAlg::MultiVector<double>& mv,  ///< target vector (to be transferred)
+        Core::LinAlg::MultiVector<double>& sv         ///< source vector (containing result)
     ) const override;
 
-    /// transfer a dof vector from slave to master
+    /// transfer a dof vector from source to target
     void source_to_target(
-        const Core::LinAlg::MultiVector<double>& sv,  ///< slave vector (to be transferred)
-        Core::LinAlg::MultiVector<double>& mv         ///< master vector (containing result)
+        const Core::LinAlg::MultiVector<double>& sv,  ///< source vector (to be transferred)
+        Core::LinAlg::MultiVector<double>& mv         ///< target vector (containing result)
     ) const override;
 
-    /// transfer a dof vector from master to slave
+    /// transfer a dof vector from target to source
     void target_to_source(
-        const Core::LinAlg::Vector<int>& mv,  ///< master vector (to be transferred)
-        Core::LinAlg::Vector<int>& sv         ///< slave vector (containing result)
+        const Core::LinAlg::Vector<int>& mv,  ///< target vector (to be transferred)
+        Core::LinAlg::Vector<int>& sv         ///< source vector (containing result)
     ) const;
 
-    /// transfer a dof vector from slave to master
+    /// transfer a dof vector from source to target
     void source_to_target(
-        const Core::LinAlg::Vector<int>& sv,  ///< slave vector (to be transferred)
-        Core::LinAlg::Vector<int>& mv         ///< master vector (containing result)
+        const Core::LinAlg::Vector<int>& sv,  ///< source vector (to be transferred)
+        Core::LinAlg::Vector<int>& mv         ///< target vector (containing result)
     ) const;
 
     //@}
@@ -322,25 +322,25 @@ namespace Coupling::Adapter
     //! @name Access to coupled maps
     //@{
 
-    /// the interface dof map of the master side
+    /// the interface dof map of the target side
     std::shared_ptr<const Core::LinAlg::Map> target_dof_map() const override
     {
       return masterdofmap_;
     }
 
-    /// the interface dof map of the slave side
+    /// the interface dof map of the source side
     std::shared_ptr<const Core::LinAlg::Map> source_dof_map() const override
     {
       return slavedofmap_;
     }
 
-    /// the permuted interface dof map of the master side
+    /// the permuted interface dof map of the target side
     std::shared_ptr<const Core::LinAlg::Map> perm_master_dof_map() const
     {
       return permmasterdofmap_;
     }
 
-    /// the permuted interface dof map of the slave side
+    /// the permuted interface dof map of the source side
     std::shared_ptr<const Core::LinAlg::Map> perm_source_dof_map() const
     {
       return permslavedofmap_;
@@ -351,23 +351,23 @@ namespace Coupling::Adapter
     //! @name Matrix transform
     //@{
 
-    /// fill rowmap with master -> slave pairs
+    /// fill rowmap with target -> source pairs
     void fill_master_to_slave_map(std::map<int, int>& rowmap) const;
 
-    /// fill rowmap with slave -> master pairs
+    /// fill rowmap with source -> target pairs
     void fill_slave_to_master_map(std::map<int, int>& rowmap) const;
 
     /// fill partial mastermap with gid of partial slavemap
-    std::shared_ptr<Core::LinAlg::Map> slave_to_master_map(Core::LinAlg::Map& slave);
+    std::shared_ptr<Core::LinAlg::Map> slave_to_master_map(Core::LinAlg::Map& source);
 
     /// fill partial slavemap with gid of partial mastermap
-    std::shared_ptr<Core::LinAlg::Map> target_to_source_map(Core::LinAlg::Map& master);
+    std::shared_ptr<Core::LinAlg::Map> target_to_source_map(Core::LinAlg::Map& target);
 
-    /// redistribute crsmatrix from master row map to permuted master row map
+    /// redistribute crsmatrix from target row map to permuted target row map
     std::shared_ptr<Core::LinAlg::SparseMatrix> master_to_perm_master(
         const Core::LinAlg::SparseMatrix& sm) const;
 
-    /// redistribute crsmatrix from slave row map to permuted slave row map
+    /// redistribute crsmatrix from source row map to permuted source row map
     std::shared_ptr<Core::LinAlg::SparseMatrix> slave_to_perm_slave(
         const Core::LinAlg::SparseMatrix& sm) const;
 
@@ -412,17 +412,17 @@ namespace Coupling::Adapter
     virtual std::vector<int> build_dof_vector_from_num_dof(const int numdof);
 
    private:
-    /*! \brief Do the actual matching of the master <-> slave pairs
+    /*! \brief Do the actual matching of the target <-> source pairs
      *
-     *  Here the octree is used. Afterwards all not paired master nodes
+     *  Here the octree is used. Afterwards all not paired target nodes
      *  are removed.
      *
-     *  \param masterdis   (i) master side mesh
-     *  \param slavedis    (i) slave side mesh
-     *  \param masternodes (i/o) all master node gids. on output those that have a match
-     *  \param permslavenodes (o) slave node gids permuted to match master node gids
-     *  \param slavenodes (i) slave node gids
-     *  \param matchall (i) bool indicating match of all slave and master nodes
+     *  \param masterdis   (i) target side mesh
+     *  \param slavedis    (i) source side mesh
+     *  \param masternodes (i/o) all target node gids. on output those that have a match
+     *  \param permslavenodes (o) source node gids permuted to match target node gids
+     *  \param slavenodes (i) source node gids
+     *  \param matchall (i) bool indicating match of all source and target nodes
      *  \param tolerance   (i) tolerance for octree for node matching
      */
     void match_nodes(const Core::FE::Discretization& masterdis,
@@ -430,7 +430,7 @@ namespace Coupling::Adapter
         std::vector<int>& permslavenodes, const std::vector<int>& slavenodes, const bool matchall,
         const double tolerance);
 
-    /// build slave to master permutation and dof all maps
+    /// build source to target permutation and dof all maps
     void finish_coupling(const Core::FE::Discretization& masterdis,
         const Core::FE::Discretization& slavedis, std::shared_ptr<Core::LinAlg::Map> masternodemap,
         std::shared_ptr<Core::LinAlg::Map> slavenodemap,
@@ -452,27 +452,27 @@ namespace Coupling::Adapter
     /// @name accessors to the private class members for derived classes
     /// @{
 
-    /// access the interface DoF map of the master side
+    /// access the interface DoF map of the target side
     std::shared_ptr<const Core::LinAlg::Map>& ma_dof_map_ptr();
     const Core::LinAlg::Map& ma_dof_map() const;
 
-    /// access the permuted interface DoF map of the master side
+    /// access the permuted interface DoF map of the target side
     std::shared_ptr<const Core::LinAlg::Map>& permuted_ma_dof_map_ptr();
     const Core::LinAlg::Map& permuted_ma_dof_map() const;
 
-    /// access the interface DoF map of the slave side
+    /// access the interface DoF map of the source side
     std::shared_ptr<const Core::LinAlg::Map>& sl_dof_map_ptr();
     const Core::LinAlg::Map& sl_dof_map() const;
 
-    /// access the permuted interface DoF map of the slave side
+    /// access the permuted interface DoF map of the source side
     std::shared_ptr<const Core::LinAlg::Map>& permuted_sl_dof_map_ptr();
     const Core::LinAlg::Map& permuted_sl_dof_map() const;
 
-    /// access the permuted master dof map to master dof map exporter
+    /// access the permuted target dof map to target dof map exporter
     std::shared_ptr<Core::LinAlg::Export>& ma_exporter_ptr();
     const Core::LinAlg::Export& ma_exporter() const;
 
-    /// access the permuted slave dof map to slave dof map exporter
+    /// access the permuted source dof map to source dof map exporter
     std::shared_ptr<Core::LinAlg::Export>& sl_exporter_ptr();
     const Core::LinAlg::Export& sl_exporter() const;
 
@@ -482,21 +482,21 @@ namespace Coupling::Adapter
    private:
     /*! @name Fundamental dof maps
      *
-     *  We keep the master and slave dof map as well as permuted versions
+     *  We keep the target and source dof map as well as permuted versions
      *  that match the respective other side.
      */
     //@{
 
-    //! the interface dof map of the master side
+    //! the interface dof map of the target side
     std::shared_ptr<const Core::LinAlg::Map> masterdofmap_;
 
-    //! the permuted interface dof map of the master side
+    //! the permuted interface dof map of the target side
     std::shared_ptr<const Core::LinAlg::Map> permmasterdofmap_;
 
-    //! the interface dof map of the slave side
+    //! the interface dof map of the source side
     std::shared_ptr<const Core::LinAlg::Map> slavedofmap_;
 
-    //! the permuted interface dof map of the slave side
+    //! the permuted interface dof map of the source side
     std::shared_ptr<const Core::LinAlg::Map> permslavedofmap_;
 
     //@}
@@ -504,10 +504,10 @@ namespace Coupling::Adapter
     //! @name Communication object
     //@{
 
-    //! permuted master dof map to master dof map exporter
+    //! permuted target dof map to target dof map exporter
     std::shared_ptr<Core::LinAlg::Export> masterexport_;
 
-    //! permuted slave dof map to slave dof map exporter
+    //! permuted source dof map to source dof map exporter
     std::shared_ptr<Core::LinAlg::Export> slaveexport_;
 
     //@}
