@@ -62,20 +62,20 @@ namespace Adapter
     \brief Read Mortar Condition
 
     */
-    void read_mortar_condition(std::shared_ptr<Core::FE::Discretization> masterdis,
-        std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    void read_mortar_condition(std::shared_ptr<Core::FE::Discretization> target_dis,
+        std::shared_ptr<Core::FE::Discretization> source_dis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
-        std::map<int, Core::Nodes::Node*>& mastergnodes,
-        std::map<int, Core::Nodes::Node*>& slavegnodes,
-        std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
-        std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements) override;
+        std::map<int, Core::Nodes::Node*>& target_global_nodes,
+        std::map<int, Core::Nodes::Node*>& source_global_nodes,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& target_elements,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& source_elements) override;
 
     /*!
     \brief initialize routine
 
     */
-    void setup(std::shared_ptr<Core::FE::Discretization> masterdis,
-        std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    void setup(std::shared_ptr<Core::FE::Discretization> target_dis,
+        std::shared_ptr<Core::FE::Discretization> source_dis, std::vector<int> coupleddof,
         const std::string& couplingcond) override;
 
     /// perform interface integration
@@ -174,7 +174,7 @@ namespace Adapter
       FOUR_C_THROW("stop");
     }
     void evaluate_with_mesh_relocation(
-        std::shared_ptr<Core::FE::Discretization> slavedis,    ///< source discretization
+        std::shared_ptr<Core::FE::Discretization> source_dis,  ///< source discretization
         std::shared_ptr<Core::FE::Discretization> aledis,      ///< ALE discretization
         std::shared_ptr<Core::LinAlg::Vector<double>>& idisp,  ///< ALE displacements
         MPI_Comm comm,                                         ///< communicator

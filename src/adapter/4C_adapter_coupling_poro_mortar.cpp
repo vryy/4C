@@ -43,18 +43,19 @@ Adapter::CouplingPoroMortar::CouplingPoroMortar(Global::Problem& problem, int sp
  |  Read Mortar Condition                                     ager 10/15|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::read_mortar_condition(
-    std::shared_ptr<Core::FE::Discretization> masterdis,
-    std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    std::shared_ptr<Core::FE::Discretization> target_dis,
+    std::shared_ptr<Core::FE::Discretization> source_dis, std::vector<int> coupleddof,
     const std::string& couplingcond, Teuchos::ParameterList& input,
-    std::map<int, Core::Nodes::Node*>& mastergnodes, std::map<int, Core::Nodes::Node*>& slavegnodes,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements)
+    std::map<int, Core::Nodes::Node*>& target_global_nodes,
+    std::map<int, Core::Nodes::Node*>& source_global_nodes,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& target_elements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& source_elements)
 {
   auto* problem = &CouplingNonLinMortar::problem();
 
   // Call Base Class
-  CouplingNonLinMortar::read_mortar_condition(masterdis, slavedis, coupleddof, couplingcond, input,
-      mastergnodes, slavegnodes, masterelements, slaveelements);
+  CouplingNonLinMortar::read_mortar_condition(target_dis, source_dis, coupleddof, couplingcond,
+      input, target_global_nodes, source_global_nodes, target_elements, source_elements);
 
   // Set Problem Type to Poro
   switch (problem->get_problem_type())
@@ -86,10 +87,10 @@ void Adapter::CouplingPoroMortar::read_mortar_condition(
  |  Add Mortar Elements                                        ager 10/15|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::add_mortar_elements(
-    std::shared_ptr<Core::FE::Discretization> masterdis,
-    std::shared_ptr<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements,
+    std::shared_ptr<Core::FE::Discretization> target_dis,
+    std::shared_ptr<Core::FE::Discretization> source_dis, Teuchos::ParameterList& input,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& target_elements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& source_elements,
     std::shared_ptr<CONTACT::Interface>& interface, int numcoupleddof)
 {
   auto* problem = &CouplingNonLinMortar::problem();
@@ -101,7 +102,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
 
   // feeding target elements to the interface
   std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
-  for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
+  for (elemiter = target_elements.begin(); elemiter != target_elements.end(); ++elemiter)
   {
     std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
     std::shared_ptr<CONTACT::Element> cele = std::make_shared<CONTACT::Element>(
@@ -113,7 +114,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
     cele->phys_type() = Mortar::Element::other;
 
     std::vector<const Core::Conditions::Condition*> porocondvec;
-    masterdis->get_condition("PoroCoupling", porocondvec);
+    target_dis->get_condition("PoroCoupling", porocondvec);
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
       std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator eleitergeometry;
@@ -146,7 +147,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
     if (isnurbs)
     {
       std::shared_ptr<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
-          std::dynamic_pointer_cast<Core::FE::Nurbs::NurbsDiscretization>(masterdis);
+          std::dynamic_pointer_cast<Core::FE::Nurbs::NurbsDiscretization>(target_dis);
 
       std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
@@ -168,7 +169,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
   }
 
   // feeding source elements to the interface
-  for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
+  for (elemiter = source_elements.begin(); elemiter != source_elements.end(); ++elemiter)
   {
     std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
 
@@ -181,7 +182,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
     cele->phys_type() = Mortar::Element::other;
 
     std::vector<const Core::Conditions::Condition*> porocondvec;
-    masterdis->get_condition("PoroCoupling", porocondvec);
+    target_dis->get_condition("PoroCoupling", porocondvec);
 
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
@@ -214,7 +215,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
     if (isnurbs)
     {
       std::shared_ptr<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
-          std::dynamic_pointer_cast<Core::FE::Nurbs::NurbsDiscretization>(slavedis);
+          std::dynamic_pointer_cast<Core::FE::Nurbs::NurbsDiscretization>(source_dis);
 
       std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
@@ -243,8 +244,8 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
  |  read mortar condition                                    Ager 02/16 |
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::create_strategy(
-    std::shared_ptr<Core::FE::Discretization> masterdis,
-    std::shared_ptr<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
+    std::shared_ptr<Core::FE::Discretization> target_dis,
+    std::shared_ptr<Core::FE::Discretization> source_dis, Teuchos::ParameterList& input,
     int numcoupleddof)
 {
   auto* problem = &CouplingNonLinMortar::problem();
@@ -340,7 +341,7 @@ void Adapter::CouplingPoroMortar::create_strategy(
       std::make_shared<CONTACT::AbstractStrategyDataContainer>();
   // create contact poro lagrange strategy for mesh tying
   porolagstrategy_ = std::make_shared<CONTACT::LagrangeStrategyPoro>(data_ptr,
-      masterdis->dof_row_map(), masterdis->node_row_map(), input, interfaces, dim, comm_, alphaf,
+      target_dis->dof_row_map(), target_dis->node_row_map(), input, interfaces, dim, comm_, alphaf,
       numcoupleddof, poroslave, poromaster);
 
   porolagstrategy_->setup(false, true);
@@ -354,17 +355,17 @@ void Adapter::CouplingPoroMortar::create_strategy(
  |  complete interface (also print and parallel redist.)      Ager 02/16|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::complete_interface(
-    std::shared_ptr<Core::FE::Discretization> masterdis,
+    std::shared_ptr<Core::FE::Discretization> target_dis,
     std::shared_ptr<CONTACT::Interface>& interface)
 {
   auto* problem = &CouplingNonLinMortar::problem();
 
   // finalize the contact interface construction
-  int maxdof = masterdis->dof_row_map()->max_all_gid();
+  int maxdof = target_dis->dof_row_map()->max_all_gid();
   interface->fill_complete({}, problem->binning_strategy_params(), problem->output_control_file(),
       problem->spatial_approximation_type(), true, maxdof);
 
-  // interface->create_volume_ghosting(*masterdis);
+  // interface->create_volume_ghosting(*target_dis);
 
   // store old row maps (before parallel redistribution)
   slavedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());

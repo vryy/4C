@@ -58,23 +58,23 @@ Adapter::CouplingNonLinMortar::CouplingNonLinMortar(Global::Problem& problem, in
 /*----------------------------------------------------------------------*
  |  initialize nonlinear mortar framework                    farah 10/14|
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::setup(std::shared_ptr<Core::FE::Discretization> masterdis,
-    std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+void Adapter::CouplingNonLinMortar::setup(std::shared_ptr<Core::FE::Discretization> target_dis,
+    std::shared_ptr<Core::FE::Discretization> source_dis, std::vector<int> coupleddof,
     const std::string& couplingcond)
 {
-  myrank_ = Core::Communication::my_mpi_rank(masterdis->get_comm());
-  comm_ = masterdis->get_comm();
+  myrank_ = Core::Communication::my_mpi_rank(target_dis->get_comm());
+  comm_ = target_dis->get_comm();
 
   // ParameterList
   Teuchos::ParameterList input;
 
   // initialize maps for column nodes
-  std::map<int, Core::Nodes::Node*> mastergnodes;
-  std::map<int, Core::Nodes::Node*> slavegnodes;
+  std::map<int, Core::Nodes::Node*> target_global_nodes;
+  std::map<int, Core::Nodes::Node*> source_global_nodes;
 
   // initialize maps for elements
-  std::map<int, std::shared_ptr<Core::Elements::Element>> masterelements;
-  std::map<int, std::shared_ptr<Core::Elements::Element>> slaveelements;
+  std::map<int, std::shared_ptr<Core::Elements::Element>> target_elements;
+  std::map<int, std::shared_ptr<Core::Elements::Element>> source_elements;
 
   std::shared_ptr<CONTACT::Interface> interface;
 
@@ -87,26 +87,26 @@ void Adapter::CouplingNonLinMortar::setup(std::shared_ptr<Core::FE::Discretizati
     if (coupleddof[ii] == 1) numcoupleddof += 1;
 
   // read the mortar conditions and set probtype
-  read_mortar_condition(masterdis, slavedis, coupleddof, couplingcond, input, mastergnodes,
-      slavegnodes, masterelements, slaveelements);
+  read_mortar_condition(target_dis, source_dis, coupleddof, couplingcond, input,
+      target_global_nodes, source_global_nodes, target_elements, source_elements);
 
   // add contact nodes to interface discr.
-  add_mortar_nodes(masterdis, slavedis, coupleddof, input, mastergnodes, slavegnodes,
-      masterelements, slaveelements, interface, numcoupleddof);
+  add_mortar_nodes(target_dis, source_dis, coupleddof, input, target_global_nodes,
+      source_global_nodes, target_elements, source_elements, interface, numcoupleddof);
 
   // add contact eles to interface discr.
   add_mortar_elements(
-      masterdis, slavedis, input, masterelements, slaveelements, interface, numcoupleddof);
+      target_dis, source_dis, input, target_elements, source_elements, interface, numcoupleddof);
 
   // complete interface, store as int. var. and do
   // parallel red.
-  complete_interface(masterdis, interface);
+  complete_interface(target_dis, interface);
 
   // Initialize matrices
   init_matrices();
 
   // create stratgy object if required
-  create_strategy(masterdis, slavedis, input, numcoupleddof);
+  create_strategy(target_dis, source_dis, input, numcoupleddof);
 
   // set setup flag
   issetup_ = true;
@@ -119,8 +119,8 @@ void Adapter::CouplingNonLinMortar::setup(std::shared_ptr<Core::FE::Discretizati
  |  read mortar condition                                    farah 10/14|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::create_strategy(
-    std::shared_ptr<Core::FE::Discretization> masterdis,
-    std::shared_ptr<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
+    std::shared_ptr<Core::FE::Discretization> target_dis,
+    std::shared_ptr<Core::FE::Discretization> source_dis, Teuchos::ParameterList& input,
     int numcoupleddof)
 {
   // nothing to do for pure adapter
@@ -132,12 +132,13 @@ void Adapter::CouplingNonLinMortar::create_strategy(
  |  read mortar condition                                    farah 10/14|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::read_mortar_condition(
-    std::shared_ptr<Core::FE::Discretization> masterdis,
-    std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    std::shared_ptr<Core::FE::Discretization> target_dis,
+    std::shared_ptr<Core::FE::Discretization> source_dis, std::vector<int> coupleddof,
     const std::string& couplingcond, Teuchos::ParameterList& input,
-    std::map<int, Core::Nodes::Node*>& mastergnodes, std::map<int, Core::Nodes::Node*>& slavegnodes,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements)
+    std::map<int, Core::Nodes::Node*>& target_global_nodes,
+    std::map<int, Core::Nodes::Node*>& source_global_nodes,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& target_elements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& source_elements)
 {
   auto* problem = &problem_;
 
@@ -155,14 +156,14 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
   std::map<int, Core::Nodes::Node*> slavenodes;
 
   // Coupling condition is defined by "MORTAR COUPLING CONDITIONS"
-  // There is only one discretization (masterdis == slavedis). Therefore, the node set have to be
+  // There is only one discretization (target_dis == source_dis). Therefore, the node set have to be
   // separated beforehand.
   if (couplingcond == "Mortar" || couplingcond == "Contact" || couplingcond == "EHLCoupling")
   {
     std::vector<const Core::Conditions::Condition*> conds;
     std::vector<const Core::Conditions::Condition*> conds_master;
     std::vector<const Core::Conditions::Condition*> conds_slave;
-    masterdis->get_condition(couplingcond, conds);
+    target_dis->get_condition(couplingcond, conds);
 
     for (unsigned i = 0; i < conds.size(); i++)
     {
@@ -173,23 +174,23 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
       if (side == "Source") conds_slave.push_back(conds[i]);
     }
 
-    // Fill maps based on condition for target side (masterdis == slavedis)
+    // Fill maps based on condition for target side (target_dis == source_dis)
     Core::Conditions::find_condition_objects(
-        *masterdis, masternodes, mastergnodes, masterelements, conds_master);
+        *target_dis, masternodes, target_global_nodes, target_elements, conds_master);
 
-    // Fill maps based on condition for source side (masterdis == slavedis)
+    // Fill maps based on condition for source side (target_dis == source_dis)
     Core::Conditions::find_condition_objects(
-        *slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
+        *source_dis, slavenodes, source_global_nodes, source_elements, conds_slave);
   }
   // Coupling condition is defined by "FSI COUPLING CONDITIONS"
   // There are two discretizations for the target and source side. Therefore, the target/source
   // nodes are chosen based on the discretization.
   else
   {
-    // Fill maps based on condition for source side (masterdis != slavedis)
-    if (slavedis != nullptr)
+    // Fill maps based on condition for source side (target_dis != source_dis)
+    if (source_dis != nullptr)
       Core::Conditions::find_condition_objects(
-          *slavedis, slavenodes, slavegnodes, slaveelements, couplingcond);
+          *source_dis, slavenodes, source_global_nodes, source_elements, couplingcond);
   }
 
   // get mortar coupling parameters
@@ -229,12 +230,12 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
  |  add mortar nodes                                         farah 10/14|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::add_mortar_nodes(
-    std::shared_ptr<Core::FE::Discretization> masterdis,
-    std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
-    Teuchos::ParameterList& input, std::map<int, Core::Nodes::Node*>& mastergnodes,
-    std::map<int, Core::Nodes::Node*>& slavegnodes,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements,
+    std::shared_ptr<Core::FE::Discretization> target_dis,
+    std::shared_ptr<Core::FE::Discretization> source_dis, std::vector<int> coupleddof,
+    Teuchos::ParameterList& input, std::map<int, Core::Nodes::Node*>& target_global_nodes,
+    std::map<int, Core::Nodes::Node*>& source_global_nodes,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& target_elements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& source_elements,
     std::shared_ptr<CONTACT::Interface>& interface, int numcoupleddof)
 {
   auto* problem = &problem_;
@@ -247,15 +248,15 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
   // create an empty mortar interface
   interface = CONTACT::Interface::create(0, comm_, dim, input, false);
 
-  //  if((masterdis->NumDof(masterdis->lRowNode(0))!=dof and slavewithale==true and
+  //  if((target_dis->NumDof(target_dis->lRowNode(0))!=dof and slavewithale==true and
   //  slidingale==false) or
-  //      (slavedis->NumDof(slavedis->lRowNode(0))!=dof and slavewithale==false and
+  //      (source_dis->NumDof(source_dis->lRowNode(0))!=dof and slavewithale==false and
   //      slidingale==false))
   //  {
   //    FOUR_C_THROW("The size of the coupling vector coupleddof and dof defined in the
   //    discretization does not fit!! \n"
   //            "dof defined in the discretization: %i \n"
-  //            "length of coupleddof: %i",masterdis->NumDof(masterdis->lRowNode(0)), dof);
+  //            "length of coupleddof: %i",target_dis->NumDof(target_dis->lRowNode(0)), dof);
   //  }
 
   // ########## CHECK for a better implementation of this ###################
@@ -267,14 +268,14 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
   int dofoffset = 0;
   //  if(slidingale==true)
   //  {
-  //    nodeoffset = masterdis->NodeRowMap()->MaxAllGID()+1;
-  //    dofoffset = masterdis->dof_row_map()->MaxAllGID()+1;
+  //    nodeoffset = target_dis->NodeRowMap()->MaxAllGID()+1;
+  //    dofoffset = target_dis->dof_row_map()->MaxAllGID()+1;
   //  }
   // ########## CHECK for a better implementation of this ###################
 
   // feeding target nodes to the interface including ghosted nodes
   std::map<int, Core::Nodes::Node*>::const_iterator nodeiter;
-  for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
+  for (nodeiter = target_global_nodes.begin(); nodeiter != target_global_nodes.end(); ++nodeiter)
   {
     Core::Nodes::Node* node = nodeiter->second;
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
@@ -287,7 +288,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
       {
         // get the gid of the coupled dof (size dof)
         // and store it in the vector dofids containing only coupled dofs (size numcoupleddof)
-        dofids[ii] = masterdis->dof(0, node)[k];
+        dofids[ii] = target_dis->dof(0, node)[k];
         ii += 1;
       }
     }
@@ -305,7 +306,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
   }
 
   // feeding source nodes to the interface including ghosted nodes
-  for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
+  for (nodeiter = source_global_nodes.begin(); nodeiter != source_global_nodes.end(); ++nodeiter)
   {
     Core::Nodes::Node* node = nodeiter->second;
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
@@ -318,7 +319,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
       {
         // get the gid of the coupled dof (size dof)
         // and store it in the vector dofids containing only coupled dofs (size numcoupleddof)
-        dofids[ii] = slavedis->dof(0, node)[k] + dofoffset;
+        dofids[ii] = source_dis->dof(0, node)[k] + dofoffset;
         ii += 1;
       }
     }
@@ -341,10 +342,10 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
  |  add mortar elements                                      farah 10/14|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::add_mortar_elements(
-    std::shared_ptr<Core::FE::Discretization> masterdis,
-    std::shared_ptr<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements,
+    std::shared_ptr<Core::FE::Discretization> target_dis,
+    std::shared_ptr<Core::FE::Discretization> source_dis, Teuchos::ParameterList& input,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& target_elements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& source_elements,
     std::shared_ptr<CONTACT::Interface>& interface, int numcoupleddof)
 {
   auto* problem = &problem_;
@@ -364,8 +365,8 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
   // int dofoffset=0;
   //  if(slidingale==true)
   //  {
-  //    nodeoffset = masterdis->NodeRowMap()->MaxAllGID()+1;
-  //    dofoffset = masterdis->dof_row_map()->MaxAllGID()+1;
+  //    nodeoffset = target_dis->NodeRowMap()->MaxAllGID()+1;
+  //    dofoffset = target_dis->dof_row_map()->MaxAllGID()+1;
   //  }
   // ########## CHECK for a better implementation of this ###################
 
@@ -376,20 +377,20 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
   // overall number of target mortar elements (which is not equal to the number
   // of elements in the field that is chosen as target side).
   //
-  // If masterdis==slavedis, the element numbering is right without offset
+  // If target_dis==source_dis, the element numbering is right without offset
   int eleoffset = 0;
-  if (masterdis.get() != slavedis.get())
+  if (target_dis.get() != source_dis.get())
   {
-    int nummastermtreles = masterelements.size();
+    int nummastermtreles = target_elements.size();
     eleoffset = Core::Communication::sum_all(nummastermtreles, comm_);
   }
 
   //  if(slidingale==true)
-  //    eleoffset = masterdis->ElementRowMap()->MaxAllGID()+1;
+  //    eleoffset = target_dis->ElementRowMap()->MaxAllGID()+1;
 
   // feeding target elements to the interface
   std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
-  for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
+  for (elemiter = target_elements.begin(); elemiter != target_elements.end(); ++elemiter)
   {
     std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
     std::shared_ptr<CONTACT::Element> cele = std::make_shared<CONTACT::Element>(
@@ -398,7 +399,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
     if (isnurbs)
     {
       std::shared_ptr<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
-          std::dynamic_pointer_cast<Core::FE::Nurbs::NurbsDiscretization>(masterdis);
+          std::dynamic_pointer_cast<Core::FE::Nurbs::NurbsDiscretization>(target_dis);
 
       std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
@@ -420,7 +421,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
   }
 
   // feeding source elements to the interface
-  for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
+  for (elemiter = source_elements.begin(); elemiter != source_elements.end(); ++elemiter)
   {
     std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
 
@@ -435,7 +436,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
       if (isnurbs)
       {
         std::shared_ptr<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
-            std::dynamic_pointer_cast<Core::FE::Nurbs::NurbsDiscretization>(slavedis);
+            std::dynamic_pointer_cast<Core::FE::Nurbs::NurbsDiscretization>(source_dis);
 
         std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
         std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
@@ -507,7 +508,7 @@ void Adapter::CouplingNonLinMortar::init_matrices()
  |  complete interface (also print and parallel redist.)     farah 02/16|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::complete_interface(
-    std::shared_ptr<Core::FE::Discretization> masterdis,
+    std::shared_ptr<Core::FE::Discretization> target_dis,
     std::shared_ptr<CONTACT::Interface>& interface)
 {
   auto* problem = &problem_;
@@ -582,8 +583,8 @@ void Adapter::CouplingNonLinMortar::complete_interface(
  | setup contact elements for spring dashpot condition     pfaller Apr15|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
-    std::shared_ptr<Core::FE::Discretization> masterdis,
-    std::shared_ptr<Core::FE::Discretization> slavedis, const Core::Conditions::Condition& spring,
+    std::shared_ptr<Core::FE::Discretization> target_dis,
+    std::shared_ptr<Core::FE::Discretization> source_dis, const Core::Conditions::Condition& spring,
     const int coupling_id, MPI_Comm comm)
 {
   auto* problem = &problem_;
@@ -596,12 +597,12 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   std::map<int, Core::Nodes::Node*> masternodes;
 
   // initialize maps for column nodes
-  std::map<int, Core::Nodes::Node*> slavegnodes;
-  std::map<int, Core::Nodes::Node*> mastergnodes;
+  std::map<int, Core::Nodes::Node*> source_global_nodes;
+  std::map<int, Core::Nodes::Node*> target_global_nodes;
 
   // initialize maps for elements
-  std::map<int, std::shared_ptr<Core::Elements::Element>> slaveelements;
-  std::map<int, std::shared_ptr<Core::Elements::Element>> masterelements;
+  std::map<int, std::shared_ptr<Core::Elements::Element>> source_elements;
+  std::map<int, std::shared_ptr<Core::Elements::Element>> target_elements;
 
   // get the conditions for the current evaluation we use the SpringDashpot condition as a
   // substitute for the mortar source surface
@@ -610,7 +611,7 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
 
   // Coupling condition is defined by "DESIGN SURF SPRING DASHPOT COUPLING CONDITIONS"
   std::vector<const Core::Conditions::Condition*> coup_conds;
-  slavedis->get_condition("RobinSpringDashpotCoupling", coup_conds);
+  source_dis->get_condition("RobinSpringDashpotCoupling", coup_conds);
 
   // number of coupling conditions
   const int n_coup_conds = (int)coup_conds.size();
@@ -629,9 +630,9 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   if (!conds_master.size()) FOUR_C_THROW("Coupling ID not found.");
 
   Core::Conditions::find_condition_objects(
-      *slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
+      *source_dis, slavenodes, source_global_nodes, source_elements, conds_slave);
   Core::Conditions::find_condition_objects(
-      *masterdis, masternodes, mastergnodes, masterelements, conds_master);
+      *target_dis, masternodes, target_global_nodes, target_elements, conds_master);
 
   // get mortar coupling parameters
   Teuchos::ParameterList input;
@@ -676,35 +677,35 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
 
   // eleoffset is necessary because source and target elements are from different conditions
-  const int eleoffset = masterdis->element_row_map()->max_all_gid() + 1;
+  const int eleoffset = target_dis->element_row_map()->max_all_gid() + 1;
 
   // TARGET NODES
   // feeding target nodes to the interface including ghosted nodes
-  for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
+  for (nodeiter = target_global_nodes.begin(); nodeiter != target_global_nodes.end(); ++nodeiter)
   {
     Core::Nodes::Node* node = nodeiter->second;
 
     std::shared_ptr<CONTACT::Node> mrtrnode = std::make_shared<CONTACT::FriNode>(
-        node->id(), node->x(), node->owner(), masterdis->dof(node), false, false, false);
+        node->id(), node->x(), node->owner(), target_dis->dof(node), false, false, false);
 
     interface->add_node(mrtrnode);
   }
 
   // SOURCE NODES
   // feeding source nodes to the interface including ghosted nodes
-  for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
+  for (nodeiter = source_global_nodes.begin(); nodeiter != source_global_nodes.end(); ++nodeiter)
   {
     Core::Nodes::Node* node = nodeiter->second;
 
     std::shared_ptr<CONTACT::Node> mrtrnode = std::make_shared<CONTACT::FriNode>(
-        node->id(), node->x(), node->owner(), slavedis->dof(node), true, true, false);
+        node->id(), node->x(), node->owner(), source_dis->dof(node), true, true, false);
 
     interface->add_node(mrtrnode);
   }
 
   // TARGET ELEMENTS
   // feeding target elements to the interface
-  for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
+  for (elemiter = target_elements.begin(); elemiter != target_elements.end(); ++elemiter)
   {
     std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
 
@@ -716,7 +717,7 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
 
   // SOURCE ELEMENTS
   // feeding source elements to the interface
-  for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
+  for (elemiter = source_elements.begin(); elemiter != source_elements.end(); ++elemiter)
   {
     std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
 

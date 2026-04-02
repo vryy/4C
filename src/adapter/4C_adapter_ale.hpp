@@ -240,7 +240,7 @@ namespace Adapter
         std::shared_ptr<const ALE::Utils::MapExtractor> interface = nullptr) = 0;
 
     //! update source dofs for multifield simulations with ale mesh tying
-    virtual void update_slave_dof(std::shared_ptr<Core::LinAlg::Vector<double>>& a) = 0;
+    virtual void update_source_dof(std::shared_ptr<Core::LinAlg::Vector<double>>& a) = 0;
 
   };  // class Ale
 

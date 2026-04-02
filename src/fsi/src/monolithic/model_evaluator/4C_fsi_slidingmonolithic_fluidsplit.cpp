@@ -1380,7 +1380,7 @@ void FSI::SlidingMonolithicFluidSplit::extract_field_vectors(
   std::shared_ptr<Core::LinAlg::Vector<double>> a =
       fsi_ale_field()->fsi_interface()->insert_other_vector(*aox);
   ale_field()->interface()->insert_fsi_cond_vector(*acx, *a);
-  ale_field()->update_slave_dof(a);
+  ale_field()->update_source_dof(a);
   ax = a;
 
   // ---------------------------------------------------------------------------

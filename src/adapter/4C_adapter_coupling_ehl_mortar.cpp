@@ -54,26 +54,28 @@ Adapter::CouplingEhlMortar::CouplingEhlMortar(Global::Problem& problem, int spat
  |  read mortar condition                                               |
  *----------------------------------------------------------------------*/
 void Adapter::CouplingEhlMortar::read_mortar_condition(
-    std::shared_ptr<Core::FE::Discretization> masterdis,
-    std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    std::shared_ptr<Core::FE::Discretization> target_dis,
+    std::shared_ptr<Core::FE::Discretization> source_dis, std::vector<int> coupleddof,
     const std::string& couplingcond, Teuchos::ParameterList& input,
-    std::map<int, Core::Nodes::Node*>& mastergnodes, std::map<int, Core::Nodes::Node*>& slavegnodes,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
-    std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements)
+    std::map<int, Core::Nodes::Node*>& target_global_nodes,
+    std::map<int, Core::Nodes::Node*>& source_global_nodes,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& target_elements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& source_elements)
 {
-  Adapter::CouplingNonLinMortar::read_mortar_condition(masterdis, slavedis, coupleddof,
-      couplingcond, input, mastergnodes, slavegnodes, masterelements, slaveelements);
+  Adapter::CouplingNonLinMortar::read_mortar_condition(target_dis, source_dis, coupleddof,
+      couplingcond, input, target_global_nodes, source_global_nodes, target_elements,
+      source_elements);
 
   input.set<CONTACT::Problemtype>("PROBTYPE", CONTACT::Problemtype::ehl);
 }
 
-void Adapter::CouplingEhlMortar::setup(std::shared_ptr<Core::FE::Discretization> masterdis,
-    std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+void Adapter::CouplingEhlMortar::setup(std::shared_ptr<Core::FE::Discretization> target_dis,
+    std::shared_ptr<Core::FE::Discretization> source_dis, std::vector<int> coupleddof,
     const std::string& couplingcond)
 {
   auto* problem = &CouplingNonLinMortar::problem();
 
-  Adapter::CouplingNonLinMortar::setup(masterdis, slavedis, coupleddof, couplingcond);
+  Adapter::CouplingNonLinMortar::setup(target_dis, source_dis, coupleddof, couplingcond);
   z_ = std::make_shared<Core::LinAlg::Vector<double>>(*interface_->source_row_dofs(), true);
   fscn_ = std::make_shared<Core::LinAlg::Vector<double>>(*interface_->source_row_dofs(), true);
 
@@ -81,7 +83,7 @@ void Adapter::CouplingEhlMortar::setup(std::shared_ptr<Core::FE::Discretization>
       problem->contact_dynamic_params(), "FRICTION");
 
   std::vector<const Core::Conditions::Condition*> ehl_conditions;
-  masterdis->get_condition(couplingcond, ehl_conditions);
+  target_dis->get_condition(couplingcond, ehl_conditions);
   std::vector<const std::string*> sides((int)ehl_conditions.size());
   double fr_coeff = -1.;
   for (int i = 0; i < (int)ehl_conditions.size(); ++i)
