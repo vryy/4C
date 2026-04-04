@@ -11,6 +11,7 @@
         "CMAKE_C_COMPILER": "/usr/bin/mpicc",
         "CMAKE_INSTALL_PREFIX": "/home/user/4C",
         "FOUR_C_ENABLE_WARNINGS_AS_ERRORS": "ON",
+        "FOUR_C_ENABLE_FE_TRAPPING": "OFF",
         "FOUR_C_TRILINOS_ROOT": "/opt/4C-dependencies",
         "FOUR_C_DEAL_II_ROOT": "/opt/4C-dependencies",
         "FOUR_C_QHULL_ROOT": "/opt/4C-dependencies",
