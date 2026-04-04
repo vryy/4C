@@ -25,13 +25,13 @@ jobs:
           brew install cmake3
           echo "/opt/homebrew/opt/cmake3/bin" >> $GITHUB_PATH
           sudo ln -sf $(brew --prefix gcc@14)/bin/gfortran-14 /opt/homebrew/bin/gfortran
-          brew install openmpi hdf5 llvm boost cln metis netcdf lld scalapack fftw
+          brew install openmpi hdf5 llvm boost cln metis netcdf lld scalapack fftw vtk
           echo "DYLD_LIBRARY_PATH=/opt/homebrew/lib:${DYLD_LIBRARY_PATH}" >> $GITHUB_ENV
-      - name: Cache Dependencies
+      - name: Restore dependencies cache
         id: cache-deps
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
-          path: $HOME/opt
+          path: ${{ env.HOME }}/opt
           key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/darwin/compile_dependencies.sh') }}
       - name: Install the dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
@@ -39,12 +39,31 @@ jobs:
           echo "install the dependencies"
           cmake --version
           sh ./dependencies/darwin/compile_dependencies.sh
+      - name: Save dependencies cache
+        if: success() && steps.cache-deps.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.HOME }}/opt
+          key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/darwin/compile_dependencies.sh') }}
+      - name: Restore build cache
+        id: cache-build
+        uses: actions/cache/restore@v4
+        with:
+          path: build/
+          key: ${{ runner.os }}-build-${{ github.sha }}
       - name: Build 4C
+        if: steps.cache-build.outputs.cache-hit != 'true'
         run: |
           pwd
           g++ -v
-          cmake -B build/ --fresh --preset=darwin-debug
+          cmake -B build/ --fresh --preset=darwin
           cmake --build build/ --target full
+      - name: Save build cache
+        if: success() && steps.cache-build.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: build/
+          key: ${{ runner.os }}-build-${{ github.sha }}
       - name: Run tests
         run: |
           echo "tests"

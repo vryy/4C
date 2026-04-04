@@ -21,7 +21,7 @@
         "FOUR_C_WITH_BACKTRACE": "ON",
         "FOUR_C_BACKTRACE_ROOT": "$env{HOME}/opt/libbacktrace",
         "FOUR_C_WITH_MIRCO": "ON",
-        "FOUR_C_WITH_DEAL_II": "ON",
+        "FOUR_C_WITH_DEAL_II": "OFF",
         "FOUR_C_WITH_PYBIND11": "ON",
         "FOUR_C_WITH_GOOGLE_BENCHMARK": "ON",
         "FOUR_C_WITH_VTK": "ON",
