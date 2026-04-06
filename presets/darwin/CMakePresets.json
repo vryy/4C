@@ -26,7 +26,7 @@
         "FOUR_C_WITH_PYBIND11": "ON",
         "FOUR_C_WITH_GOOGLE_BENCHMARK": "ON",
         "FOUR_C_WITH_VTK": "ON",
-        "FOUR_C_WITH_GMSH": "OFF",
+        "FOUR_C_WITH_GMSH": "ON",
         "FOUR_C_WITH_FFTW": "ON",
         "FOUR_C_ENABLE_PYTHON_BINDINGS": "ON"
       }
