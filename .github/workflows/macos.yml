@@ -40,7 +40,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ env.HOME }}/opt
-          key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/darwin/compile_dependencies.sh') }}
+          key: v2-${{ runner.os }}-deps-${{ hashFiles('./dependencies/darwin/compile_dependencies.sh') }}
       - name: Restore build cache
         id: cache-build
         uses: actions/cache/restore@v4
