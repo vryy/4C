@@ -33,8 +33,8 @@ tar -xzf MUMPS_${VERSION}.tar.gz
 cd MUMPS_${VERSION}/
 cp Make.inc/Makefile.inc.generic Makefile.inc
 make -j${NPROCS} FC=mpif90 FL=mpif90 \
-  INCPAR="-I/opt/homebrew/include" \
-  LIBPAR="-L/opt/homebrew/lib -lmetis -lparmetis -lscalapack -llapack" \
+  INCPAR="-I/opt/homebrew/include -I$HOME/opt/parmetis/include" \
+  LIBPAR="-L/opt/homebrew/lib -lmetis -lscalapack -llapack -L$HOME/opt/parmetis/lib -lparmetis" \
   ORDERINGSF="-Dpord -Dparmetis" \
   OPTF="-O3 -fallow-argument-mismatch"
 mkdir -p ${INSTALL_DIR}
