@@ -99,8 +99,8 @@ $CMAKE_COMMAND \
   -D TPL_ENABLE_Netcdf:BOOL=ON \
   -D TPL_ENABLE_MPI:BOOL=ON \
   -D TPL_ENABLE_MUMPS:BOOL=ON \
-    -D MUMPS_INCLUDE_DIRS:FILEPATH="$DEP_DIR/mumps/include" \
-    -D MUMPS_LIBRARY_DIRS:FILEPATH="$DEP_DIR/mumps/lib" \
+    -D MUMPS_INCLUDE_DIRS:FILEPATH="$DEP_DIR/mumps/include;$DEP_DIR/parmetis/include;" \
+    -D MUMPS_LIBRARY_DIRS:FILEPATH="$DEP_DIR/mumps/lib;$DEP_DIR/parmetis/lib;" \
     -D MUMPS_LIBRARY_NAMES:STRING="dmumps;mumps_common;pord;mpi_usempif08;mpi_usempi_ignore_tkr;mpi_mpifh;metis;parmetis;scalapack;" \
   -D TPL_ENABLE_ScaLAPACK:BOOL=ON \
   -D ScaLAPACK_INCLUDE_DIRS:PATH="$BREW_DIR/include" \
