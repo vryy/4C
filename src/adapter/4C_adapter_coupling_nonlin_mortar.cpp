@@ -246,30 +246,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
   // create an empty mortar interface
   interface = CONTACT::Interface::create(0, comm_, dim, input, false);
 
-  //  if((target_dis->NumDof(target_dis->lRowNode(0))!=dof and slavewithale==true and
-  //  slidingale==false) or
-  //      (source_dis->NumDof(source_dis->lRowNode(0))!=dof and slavewithale==false and
-  //      slidingale==false))
-  //  {
-  //    FOUR_C_THROW("The size of the coupling vector coupleddof and dof defined in the
-  //    discretization does not fit!! \n"
-  //            "dof defined in the discretization: %i \n"
-  //            "length of coupleddof: %i",target_dis->NumDof(target_dis->lRowNode(0)), dof);
-  //  }
-
-  // ########## CHECK for a better implementation of this ###################
-  // If this option is used, check functionality ... not sure if this is correct!
-  // special case: sliding ale
-  // In the sliding ale framework two mortar discretizations are generated from identical
-  // masterelement and slaveelement sets. Since node-, dof- and element ids of the original
-  // elements are the same, an offset have to be defined int nodeoffset=0;
   int dofoffset = 0;
-  //  if(slidingale==true)
-  //  {
-  //    nodeoffset = target_dis->NodeRowMap()->MaxAllGID()+1;
-  //    dofoffset = target_dis->dof_row_map()->MaxAllGID()+1;
-  //  }
-  // ########## CHECK for a better implementation of this ###################
 
   // feeding target nodes to the interface including ghosted nodes
   std::map<int, Core::Nodes::Node*>::const_iterator nodeiter;
@@ -353,28 +330,8 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
   // get problem dimension (2D or 3D) and create (Mortar::Interface)
   const int dim = problem->n_dim();
 
-  // ########## CHECK for a better implementation of this ###################
-  // If this option is used, check functionality ... not sure if this is correct!
-  // special case: sliding ale
-  // In the sliding ale framework two mortar discretizations are generated from identical
-  // masterelement and slaveelement sets. Since node-, dof- and element ids of the original
-  // elements are the same, an offset have to be defined
   int nodeoffset = 0;
-  // int dofoffset=0;
-  //  if(slidingale==true)
-  //  {
-  //    nodeoffset = target_dis->NodeRowMap()->MaxAllGID()+1;
-  //    dofoffset = target_dis->dof_row_map()->MaxAllGID()+1;
-  //  }
-  // ########## CHECK for a better implementation of this ###################
 
-
-  // We need to determine an element offset to start the numbering of the source
-  // mortar elements AFTER the target mortar elements in order to ensure unique
-  // eleIDs in the interface discretization. The element offset equals the
-  // overall number of target mortar elements (which is not equal to the number
-  // of elements in the field that is chosen as target side).
-  //
   // If target_dis==source_dis, the element numbering is right without offset
   int eleoffset = 0;
   if (target_dis.get() != source_dis.get())
@@ -382,9 +339,6 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
     int num_target_mortar_elements = target_elements.size();
     eleoffset = Core::Communication::sum_all(num_target_mortar_elements, comm_);
   }
-
-  //  if(slidingale==true)
-  //    eleoffset = target_dis->ElementRowMap()->MaxAllGID()+1;
 
   // feeding target elements to the interface
   std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
@@ -468,8 +422,6 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
       interface->add_element(cele);
     }
   }
-
-  return;
 }
 
 
