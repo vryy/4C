@@ -47,8 +47,8 @@ Coupling::Adapter::MortarVolCoupl::MortarVolCoupl()
  |  init                                                     farah 10/13|
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::MortarVolCoupl::init(int spatial_dimension,
-    std::shared_ptr<Core::FE::Discretization> dis1,  // masterdis - on Omega_1
-    std::shared_ptr<Core::FE::Discretization> dis2,  // slavedis  - on Omega_2
+    std::shared_ptr<Core::FE::Discretization> dis1,  // target_dis - on Omega_1
+    std::shared_ptr<Core::FE::Discretization> dis2,  // source_dis  - on Omega_2
     std::vector<int>* coupleddof12, std::vector<int>* coupleddof21, std::pair<int, int>* dofsets12,
     std::pair<int, int>* dofsets21,
     std::shared_ptr<FourC::Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy,

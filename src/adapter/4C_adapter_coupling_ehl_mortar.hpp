@@ -152,7 +152,10 @@ namespace Adapter
     /// surfrace gradient operator
     virtual std::shared_ptr<Core::LinAlg::SparseMatrix> surf_grad_matrix() { return SurfGrad_; }
     /// source+target dof map
-    virtual std::shared_ptr<const Core::LinAlg::Map> s_mdof_map() { return smdofrowmap_; }
+    virtual std::shared_ptr<const Core::LinAlg::Map> s_mdof_map()
+    {
+      return source_target_dof_row_map_;
+    }
     //@}
 
    private:
@@ -178,7 +181,7 @@ namespace Adapter
         std::shared_ptr<Core::FE::Discretization> aledis,      ///< ALE discretization
         std::shared_ptr<Core::LinAlg::Vector<double>>& idisp,  ///< ALE displacements
         MPI_Comm comm,                                         ///< communicator
-        bool slavewithale                                      ///< flag defining if source is ALE
+        bool source_is_ale                                     ///< flag defining if source is ALE
         ) override
     {
       FOUR_C_THROW("stop");

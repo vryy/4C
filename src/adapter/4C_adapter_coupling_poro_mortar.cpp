@@ -32,8 +32,8 @@ Adapter::CouplingPoroMortar::CouplingPoroMortar(Global::Problem& problem, int sp
     : CouplingNonLinMortar(problem, spatial_dimension, mortar_coupling_params,
           contact_dynamic_params, shape_function_type),
       firstinit_(false),
-      slavetype_(-1),
-      mastertype_(-1)
+      source_type_(-1),
+      target_type_(-1)
 {
   // empty...
 }
@@ -123,23 +123,23 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
       {
         if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {
-          if (mastertype_ == 0)
+          if (target_type_ == 0)
             FOUR_C_THROW(
                 "struct and poro target elements on the same processor - no mixed interface "
                 "supported");
           cele->phys_type() = Mortar::Element::poro;
-          mastertype_ = 1;
+          target_type_ = 1;
           break;
         }
       }
     }
     if (cele->phys_type() == Mortar::Element::other)
     {
-      if (mastertype_ == 1)
+      if (target_type_ == 1)
         FOUR_C_THROW(
             "struct and poro target elements on the same processor - no mixed interface supported");
       cele->phys_type() = Mortar::Element::structure;
-      mastertype_ = 0;
+      target_type_ = 0;
     }
 
     cele->set_parent_target_element(faceele->parent_element(), faceele->face_parent_number());
@@ -157,7 +157,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
           std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
-          faceele->parent_target_element()->id(), faceele->face_master_number());
+          faceele->parent_target_element()->id(), faceele->face_target_number());
 
       // store nurbs specific data to node
       cele->zero_sized() = zero_size;
@@ -192,23 +192,23 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
       {
         if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {
-          if (slavetype_ == 0)
+          if (source_type_ == 0)
             FOUR_C_THROW(
                 "struct and poro source elements on the same processor - no mixed interface "
                 "supported");
           cele->phys_type() = Mortar::Element::poro;
-          slavetype_ = 1;
+          source_type_ = 1;
           break;
         }
       }
     }
     if (cele->phys_type() == Mortar::Element::other)
     {
-      if (slavetype_ == 1)
+      if (source_type_ == 1)
         FOUR_C_THROW(
             "struct and poro source elements on the same processor - no mixed interface supported");
       cele->phys_type() = Mortar::Element::structure;
-      slavetype_ = 0;
+      source_type_ = 0;
     }
     cele->set_parent_target_element(faceele->parent_element(), faceele->face_parent_number());
 
@@ -225,7 +225,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
           std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
-          faceele->parent_target_element()->id(), faceele->face_master_number());
+          faceele->parent_target_element()->id(), faceele->face_target_number());
 
       // store nurbs specific data to node
       cele->zero_sized() = zero_size;
@@ -258,37 +258,37 @@ void Adapter::CouplingPoroMortar::create_strategy(
   // bools to decide which side is structural and which side is poroelastic to manage all 4
   // constellations
   // s-s, p-s, s-p, p-p
-  bool poromaster = false;
-  bool poroslave = false;
-  bool structmaster = false;
-  bool structslave = false;
+  bool poro_target = false;
+  bool poro_source = false;
+  bool struct_target = false;
+  bool struct_source = false;
 
   // wait for all processors to determine if they have poro or structural target or source elements
   Core::Communication::barrier(comm_);
-  std::vector<int> slaveTypeList(Core::Communication::num_mpi_ranks(comm_));
-  std::vector<int> masterTypeList(Core::Communication::num_mpi_ranks(comm_));
-  Core::Communication::gather_all(&slavetype_, slaveTypeList.data(), 1, comm_);
-  Core::Communication::gather_all(&mastertype_, masterTypeList.data(), 1, comm_);
+  std::vector<int> source_type_list(Core::Communication::num_mpi_ranks(comm_));
+  std::vector<int> target_type_list(Core::Communication::num_mpi_ranks(comm_));
+  Core::Communication::gather_all(&source_type_, source_type_list.data(), 1, comm_);
+  Core::Communication::gather_all(&target_type_, target_type_list.data(), 1, comm_);
   Core::Communication::barrier(comm_);
 
   for (int i = 0; i < Core::Communication::num_mpi_ranks(comm_); ++i)
   {
-    switch (slaveTypeList[i])
+    switch (source_type_list[i])
     {
       case -1:
         break;
       case 1:
-        if (structslave)
+        if (struct_source)
           FOUR_C_THROW(
               "struct and poro source elements on the same adapter - no mixed interface supported");
         // adjust FOUR_C_THROW text, when more than one interface is supported
-        poroslave = true;
+        poro_source = true;
         break;
       case 0:
-        if (poroslave)
+        if (poro_source)
           FOUR_C_THROW(
               "struct and poro source elements on the same adapter - no mixed interface supported");
-        structslave = true;
+        struct_source = true;
         break;
       default:
         FOUR_C_THROW("this cannot happen");
@@ -298,22 +298,22 @@ void Adapter::CouplingPoroMortar::create_strategy(
 
   for (int i = 0; i < Core::Communication::num_mpi_ranks(comm_); ++i)
   {
-    switch (masterTypeList[i])
+    switch (target_type_list[i])
     {
       case -1:
         break;
       case 1:
-        if (structmaster)
+        if (struct_target)
           FOUR_C_THROW(
               "struct and poro target elements on the same adapter - no mixed interface supported");
         // adjust FOUR_C_THROW text, when more than one interface is supported
-        poromaster = true;
+        poro_target = true;
         break;
       case 0:
-        if (poromaster)
+        if (poro_target)
           FOUR_C_THROW(
               "struct and poro target elements on the same adapter - no mixed interface supported");
-        structmaster = true;
+        struct_target = true;
         break;
       default:
         FOUR_C_THROW("this cannot happen");
@@ -342,7 +342,7 @@ void Adapter::CouplingPoroMortar::create_strategy(
   // create contact poro lagrange strategy for mesh tying
   porolagstrategy_ = std::make_shared<CONTACT::LagrangeStrategyPoro>(data_ptr,
       target_dis->dof_row_map(), target_dis->node_row_map(), input, interfaces, dim, comm_, alphaf,
-      numcoupleddof, poroslave, poromaster);
+      numcoupleddof, poro_source, poro_target);
 
   porolagstrategy_->setup(false, true);
   porolagstrategy_->poro_mt_initialize();
@@ -368,9 +368,9 @@ void Adapter::CouplingPoroMortar::complete_interface(
   // interface->create_volume_ghosting(*target_dis);
 
   // store old row maps (before parallel redistribution)
-  sourcedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
-  targetdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
-  slavenoderowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_nodes());
+  source_dof_row_map_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
+  target_dof_row_map_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
+  source_node_row_map_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_nodes());
 
   // print parallel distribution
   interface->print_parallel_distribution();

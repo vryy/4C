@@ -47,19 +47,19 @@ std::shared_ptr<const Core::LinAlg::Map> Coupling::Adapter::CouplingTargetConver
 std::shared_ptr<const Core::LinAlg::Map> Coupling::Adapter::CouplingTargetConverter::perm_src_map()
     const
 {
-  return coup_.perm_master_dof_map();
+  return coup_.permuted_target_dof_map();
 }
 
 std::shared_ptr<const Core::LinAlg::Map> Coupling::Adapter::CouplingTargetConverter::perm_dst_map()
     const
 {
-  return coup_.perm_source_dof_map();
+  return coup_.permuted_source_dof_map();
 }
 
 void Coupling::Adapter::CouplingTargetConverter::fill_src_to_dst_map(
     std::map<int, int>& rowmap) const
 {
-  coup_.fill_master_to_slave_map(rowmap);
+  coup_.fill_target_to_source_map(rowmap);
 }
 
 
@@ -88,19 +88,19 @@ std::shared_ptr<const Core::LinAlg::Map> Coupling::Adapter::CouplingSlaveConvert
 std::shared_ptr<const Core::LinAlg::Map> Coupling::Adapter::CouplingSlaveConverter::perm_src_map()
     const
 {
-  return coup_.perm_source_dof_map();
+  return coup_.permuted_source_dof_map();
 }
 
 std::shared_ptr<const Core::LinAlg::Map> Coupling::Adapter::CouplingSlaveConverter::perm_dst_map()
     const
 {
-  return coup_.perm_master_dof_map();
+  return coup_.permuted_target_dof_map();
 }
 
 void Coupling::Adapter::CouplingSlaveConverter::fill_src_to_dst_map(
     std::map<int, int>& rowmap) const
 {
-  coup_.fill_slave_to_master_map(rowmap);
+  coup_.fill_source_to_target_map(rowmap);
 }
 
 /*----------------------------------------------------------------------*/

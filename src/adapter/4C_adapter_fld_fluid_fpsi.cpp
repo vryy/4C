@@ -41,10 +41,10 @@ void Adapter::FluidFPSI::init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Adapter::FluidFPSI::setup_interface(const int nds_master)
+void Adapter::FluidFPSI::setup_interface(const int nodes_target)
 {
-  // check nds_master
-  if (nds_master != 0) FOUR_C_THROW("nds_master is supposed to be 0 here");
+  // check nodes_target
+  if (nodes_target != 0) FOUR_C_THROW("nodes_target is supposed to be 0 here");
 
   interface_->setup(*dis_, false, true);  // create overlapping maps for fpsi problem
 }

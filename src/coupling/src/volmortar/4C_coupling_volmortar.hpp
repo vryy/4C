@@ -251,7 +251,7 @@ namespace Coupling::VolMortar
      \brief define vertices for 2D polygon clipping (target)
 
      */
-    virtual void define_vertices_master(
+    virtual void define_vertices_target(
         Core::Elements::Element& ele, std::vector<Mortar::Vertex>& source_vertices);
 
     /*!

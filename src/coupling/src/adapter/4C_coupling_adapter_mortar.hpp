@@ -96,9 +96,9 @@ namespace Coupling::Adapter
      *  - ALE discretization is nullptr in case of sliding ALE or fluid/scatra meshtying
      */
     void setup(
-        const std::shared_ptr<Core::FE::Discretization>& masterdis,  ///< target discretization
-        const std::shared_ptr<Core::FE::Discretization>& slavedis,   ///< source discretization
-        const std::shared_ptr<Core::FE::Discretization>& aledis,     ///< ALE discretization
+        const std::shared_ptr<Core::FE::Discretization>& target_dis,  ///< target discretization
+        const std::shared_ptr<Core::FE::Discretization>& source_dis,  ///< source discretization
+        const std::shared_ptr<Core::FE::Discretization>& aledis,      ///< ALE discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::string& couplingcond,     ///< string for coupling condition
         MPI_Comm comm,                       ///< communicator
@@ -107,10 +107,10 @@ namespace Coupling::Adapter
         const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
         std::shared_ptr<Core::IO::OutputControl> output_control,
         Core::FE::ShapeFunctionType spatial_approximation_type,
-        const bool slavewithale = false,  ///< flag defining if source is ALE
-        const bool slidingale = false,    ///< flag indicating sliding ALE case
-        const int nds_master = 0,         ///< target dofset number
-        const int nds_slave = 0           ///< source dofset number
+        const bool source_is_ale = false,  ///< flag defining if source is ALE
+        const bool slidingale = false,     ///< flag indicating sliding ALE case
+        const int nodes_target = 0,        ///< target dofset number
+        const int nodes_source = 0         ///< source dofset number
     );
 
     /*! setup the machinery (generalized version)
@@ -121,26 +121,26 @@ namespace Coupling::Adapter
      *  - ALE discretization is nullptr in case of sliding ALE or fluid/scatra meshtying
      */
     void setup_interface(
-        const std::shared_ptr<Core::FE::Discretization>& masterdis,  ///< target discretization
-        const std::shared_ptr<Core::FE::Discretization>& slavedis,   ///< source discretization
+        const std::shared_ptr<Core::FE::Discretization>& target_dis,  ///< target discretization
+        const std::shared_ptr<Core::FE::Discretization>& source_dis,  ///< source discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::map<int, Core::Nodes::Node*>&
-            mastergnodes,  ///< target nodes, including ghosted nodes
+            target_global_nodes,  ///< target nodes, including ghosted nodes
         const std::map<int, Core::Nodes::Node*>&
-            slavegnodes,  ///< source nodes, including ghosted nodes
+            source_global_nodes,  ///< source nodes, including ghosted nodes
         const std::map<int, std::shared_ptr<Core::Elements::Element>>&
-            masterelements,  ///< target elements
+            target_elements,  ///< target elements
         const std::map<int, std::shared_ptr<Core::Elements::Element>>&
-            slaveelements,                             ///< source elements
+            source_elements,                           ///< source elements
         MPI_Comm comm,                                 ///< communicator
         const Teuchos::ParameterList& binning_params,  ///< parameters for binning strategy
         const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
         std::shared_ptr<Core::IO::OutputControl> output_control,
         Core::FE::ShapeFunctionType spatial_approximation_type,
-        const bool slavewithale = false,  ///< flag defining if source is ALE
-        const bool slidingale = false,    ///< flag indicating sliding ALE case
-        const int nds_master = 0,         ///< target dofset number
-        const int nds_slave = 0           ///< source dofset number
+        const bool source_is_ale = false,  ///< flag defining if source is ALE
+        const bool slidingale = false,     ///< flag indicating sliding ALE case
+        const int nodes_target = 0,        ///< target dofset number
+        const int nodes_source = 0         ///< source dofset number
     );
 
     /// create integration cells
@@ -162,11 +162,11 @@ namespace Coupling::Adapter
 
     //! Compute mortar matrices after performing a mesh correction step
     virtual void evaluate_with_mesh_relocation(
-        std::shared_ptr<Core::FE::Discretization> slavedis,    ///< source discretization
+        std::shared_ptr<Core::FE::Discretization> source_dis,  ///< source discretization
         std::shared_ptr<Core::FE::Discretization> aledis,      ///< ALE discretization
         std::shared_ptr<Core::LinAlg::Vector<double>>& idisp,  ///< ALE displacements
         MPI_Comm comm,                                         ///< communicator
-        bool slavewithale                                      ///< flag defining if source is ALE
+        bool source_is_ale                                     ///< flag defining if source is ALE
     );
 
     //! Get the mortar interface itself
@@ -257,13 +257,13 @@ namespace Coupling::Adapter
     /// Get the interface dof row map of the target side
     std::shared_ptr<const Core::LinAlg::Map> target_dof_map() const override
     {
-      return ptargetdofrowmap_;
+      return ptarget_dof_row_map_;
     }
 
     /// Get the interface dof row map of the source side
     std::shared_ptr<const Core::LinAlg::Map> source_dof_map() const override
     {
-      return psourcedofrowmap_;
+      return psource_dof_row_map_;
     }
 
     //@}
@@ -300,7 +300,7 @@ namespace Coupling::Adapter
      *  [1] Puso, M and Laursen, TA: Mesh tying on curved interfaces in 3D,
      *      Engineering Computation, 20:305-319 (2003)
      */
-    void check_slave_dirichlet_overlap(const std::shared_ptr<Core::FE::Discretization>& slavedis,
+    void check_source_dirichlet_overlap(const std::shared_ptr<Core::FE::Discretization>& source_dis,
         MPI_Comm comm, const Core::Utils::FunctionManager& function_manager);
 
     /// back transformation to initial parallel distribution
@@ -317,15 +317,15 @@ namespace Coupling::Adapter
 
    private:
     /// perform mesh relocation
-    void mesh_relocation(Core::FE::Discretization& slavedis,  ///< [in] Source discretization
-        std::shared_ptr<Core::FE::Discretization> aledis,     ///< [in] ALE discretization
+    void mesh_relocation(Core::FE::Discretization& source_dis,  ///< [in] Source discretization
+        std::shared_ptr<Core::FE::Discretization> aledis,       ///< [in] ALE discretization
         std::shared_ptr<const Core::LinAlg::Map>
-            masterdofrowmap,  ///< [in] DOF row map of target discretization
+            target_dof_row_map,  ///< [in] DOF row map of target discretization
         std::shared_ptr<const Core::LinAlg::Map>
-            slavedofrowmap,  ///< [in] DOF row map of source discretization
+            source_dof_row_map,  ///< [in] DOF row map of source discretization
         std::shared_ptr<Core::LinAlg::Vector<double>>& idisp,  ///< [in] ALE displacements
         MPI_Comm comm,                                         ///< [in] Communicator
-        bool slavewithale  ///< [in] Flag defining if source is ALE
+        bool source_is_ale  ///< [in] Flag defining if source is ALE
     );
 
    protected:
@@ -347,16 +347,16 @@ namespace Coupling::Adapter
     std::shared_ptr<Mortar::Interface> interface_;
 
     /// Map of target row dofs (after parallel redist.)
-    std::shared_ptr<const Core::LinAlg::Map> targetdofrowmap_;
+    std::shared_ptr<const Core::LinAlg::Map> target_dof_row_map_;
 
     /// Map of source row dofs  (after parallel redist.)
-    std::shared_ptr<const Core::LinAlg::Map> sourcedofrowmap_;
+    std::shared_ptr<const Core::LinAlg::Map> source_dof_row_map_;
 
     /// Map of target row dofs (before parallel redist.)
-    std::shared_ptr<const Core::LinAlg::Map> ptargetdofrowmap_;
+    std::shared_ptr<const Core::LinAlg::Map> ptarget_dof_row_map_;
 
     /// Map of source row dofs  (before parallel redist.)
-    std::shared_ptr<const Core::LinAlg::Map> psourcedofrowmap_;
+    std::shared_ptr<const Core::LinAlg::Map> psource_dof_row_map_;
 
     /// Source side mortar matrix \f$D\f$
     std::shared_ptr<Core::LinAlg::SparseMatrix> D_;

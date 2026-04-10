@@ -123,8 +123,8 @@ namespace Adapter
     // firstinit
     bool firstinit_;
 
-    int slavetype_;   // 1 poro, 0 struct, -1 default
-    int mastertype_;  // 1 poro, 0 struct, -1 default
+    int source_type_;  // 1 poro, 0 struct, -1 default
+    int target_type_;  // 1 poro, 0 struct, -1 default
   };
 }  // namespace Adapter
 

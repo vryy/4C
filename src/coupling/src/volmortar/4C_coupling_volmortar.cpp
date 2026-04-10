@@ -927,7 +927,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_segments_2d(
   cells.resize(0);
 
   // build new polygons
-  define_vertices_master(Bele, target_vertices);
+  define_vertices_target(Bele, target_vertices);
   define_vertices_slave(Aele, source_vertices);
 
   double tol = 1e-12;
@@ -3773,7 +3773,7 @@ void Coupling::VolMortar::VolMortarCoupl::define_vertices_slave(
 /*----------------------------------------------------------------------*
  |  Define polygon of mortar vertices                        farah 01/14|
  *----------------------------------------------------------------------*/
-void Coupling::VolMortar::VolMortarCoupl::define_vertices_master(
+void Coupling::VolMortar::VolMortarCoupl::define_vertices_target(
     Core::Elements::Element& ele, std::vector<Mortar::Vertex>& source_vertices)
 {
   // project source nodes onto auxiliary plane

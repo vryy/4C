@@ -783,7 +783,7 @@ template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells_2d(
     Core::Elements::Element& sele, Core::Elements::Element& mele, Mortar::IntCell& cell,
     Core::LinAlg::SparseMatrix& dmatrix, Core::LinAlg::SparseMatrix& mmatrix,
-    const Core::FE::Discretization& slavedis, const Core::FE::Discretization& masterdis,
+    const Core::FE::Discretization& source_dis, const Core::FE::Discretization& target_dis,
     int sdofset, int mdofset)
 {
   // create empty vectors for shape fct. evaluation
@@ -831,25 +831,25 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
       for (int j = 0; j < ns_; ++j)
       {
         Core::Nodes::Node* cnode = sele.nodes()[j];
-        int nsdof = slavedis.num_dof(sdofset, cnode);
+        int nsdof = source_dis.num_dof(sdofset, cnode);
 
-        if (cnode->owner() != Core::Communication::my_mpi_rank(slavedis.get_comm())) continue;
+        if (cnode->owner() != Core::Communication::my_mpi_rank(source_dis.get_comm())) continue;
 
         // loop over source dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = slavedis.dof(sdofset, cnode, jdof);
+          int row = source_dis.dof(sdofset, cnode, jdof);
 
           ////////////////////////////////////////
           // integrate M
           for (int k = 0; k < nm_; ++k)
           {
             Core::Nodes::Node* mnode = mele.nodes()[k];
-            int nmdof = masterdis.num_dof(mdofset, mnode);
+            int nmdof = target_dis.num_dof(mdofset, mnode);
 
             for (int kdof = 0; kdof < nmdof; ++kdof)
             {
-              int col = masterdis.dof(mdofset, mnode, kdof);
+              int col = target_dis.dof(mdofset, mnode, kdof);
 
               // multiply the two shape functions
               double prod = sval(j) * mval(k) * jac * wgt;
@@ -867,11 +867,11 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
           for (int k = 0; k < ns_; ++k)
           {
             Core::Nodes::Node* snode = sele.nodes()[k];
-            int nddof = slavedis.num_dof(sdofset, snode);
+            int nddof = source_dis.num_dof(sdofset, snode);
 
             for (int kdof = 0; kdof < nddof; ++kdof)
             {
-              // int col = slavedis->Dof(sdofset,snode,kdof);
+              // int col = source_dis->Dof(sdofset,snode,kdof);
 
               // multiply the two shape functions
               double prod = sval(j) * sval(k) * jac * wgt;
@@ -892,25 +892,25 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
       {
         Core::Nodes::Node* cnode = sele.nodes()[j];
 
-        if (cnode->owner() != Core::Communication::my_mpi_rank(slavedis.get_comm())) continue;
+        if (cnode->owner() != Core::Communication::my_mpi_rank(source_dis.get_comm())) continue;
 
-        int nsdof = slavedis.num_dof(sdofset, cnode);
+        int nsdof = source_dis.num_dof(sdofset, cnode);
 
         // loop over source dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = slavedis.dof(sdofset, cnode, jdof);
+          int row = source_dis.dof(sdofset, cnode, jdof);
 
           ////////////////////////////////////////////////////////////////
           // integrate M and D
           for (int k = 0; k < nm_; ++k)
           {
             Core::Nodes::Node* mnode = mele.nodes()[k];
-            int nmdof = masterdis.num_dof(mdofset, mnode);
+            int nmdof = target_dis.num_dof(mdofset, mnode);
 
             for (int kdof = 0; kdof < nmdof; ++kdof)
             {
-              int col = masterdis.dof(mdofset, mnode, kdof);
+              int col = target_dis.dof(mdofset, mnode, kdof);
 
               // multiply the two shape functions
               double prod = lmval(j) * mval(k) * jac * wgt;

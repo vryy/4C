@@ -69,8 +69,8 @@ namespace Coupling::VolMortar
     */
     void integrate_cells_2d(Core::Elements::Element& sele, Core::Elements::Element& mele,
         Mortar::IntCell& cell, Core::LinAlg::SparseMatrix& dmatrix,
-        Core::LinAlg::SparseMatrix& mmatrix, const Core::FE::Discretization& slavedis,
-        const Core::FE::Discretization& masterdis, int sdofset, int mdofset);
+        Core::LinAlg::SparseMatrix& mmatrix, const Core::FE::Discretization& source_dis,
+        const Core::FE::Discretization& target_dis, int sdofset, int mdofset);
 
     /*!
     \brief Integrate cell for 3D problems

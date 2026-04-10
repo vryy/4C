@@ -227,13 +227,13 @@ namespace Adapter
     int myrank_;     ///< my proc id
 
     std::shared_ptr<Core::LinAlg::Map>
-        slavenoderowmap_;  ///< map of source row nodes (after parallel redist.)
+        source_node_row_map_;  ///< map of source row nodes (after parallel redist.)
     std::shared_ptr<Core::LinAlg::Map>
-        pslavenoderowmap_;  ///< map of source row nodes (before parallel redist.)
+        p_source_node_row_map_;  ///< map of source row nodes (before parallel redist.)
     std::shared_ptr<Core::LinAlg::Map>
-        smdofrowmap_;  ///< map of sm merged row dofs (after parallel redist.)
+        source_target_dof_row_map_;  ///< map of sm merged row dofs (after parallel redist.)
     std::shared_ptr<Core::LinAlg::Map>
-        psmdofrowmap_;  ///< map of sm merged row dofs (before parallel redist.)
+        p_source_target_dof_row_map_;  ///< map of sm merged row dofs (before parallel redist.)
 
     std::shared_ptr<Core::LinAlg::SparseMatrix> DLin_;  ///< linearization of D matrix
     std::shared_ptr<Core::LinAlg::SparseMatrix> MLin_;  ///< linearization of M matrix

@@ -42,7 +42,7 @@ Adapter::CouplingNonLinMortar::CouplingNonLinMortar(Global::Problem& problem, in
       issetup_(false),
       comm_(MPI_COMM_NULL),
       myrank_(-1),
-      slavenoderowmap_(nullptr),
+      source_node_row_map_(nullptr),
       DLin_(nullptr),
       MLin_(nullptr),
       H_(nullptr),
@@ -152,8 +152,8 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
   // - ....
 
   // initialize maps for row nodes
-  std::map<int, Core::Nodes::Node*> masternodes;
-  std::map<int, Core::Nodes::Node*> slavenodes;
+  std::map<int, Core::Nodes::Node*> target_nodes;
+  std::map<int, Core::Nodes::Node*> source_nodes;
 
   // Coupling condition is defined by "MORTAR COUPLING CONDITIONS"
   // There is only one discretization (target_dis == source_dis). Therefore, the node set have to be
@@ -161,26 +161,26 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
   if (couplingcond == "Mortar" || couplingcond == "Contact" || couplingcond == "EHLCoupling")
   {
     std::vector<const Core::Conditions::Condition*> conds;
-    std::vector<const Core::Conditions::Condition*> conds_master;
-    std::vector<const Core::Conditions::Condition*> conds_slave;
+    std::vector<const Core::Conditions::Condition*> conds_target;
+    std::vector<const Core::Conditions::Condition*> conds_source;
     target_dis->get_condition(couplingcond, conds);
 
     for (unsigned i = 0; i < conds.size(); i++)
     {
       const std::string& side = conds[i]->parameters().get<std::string>("Side");
 
-      if (side == "Target") conds_master.push_back(conds[i]);
+      if (side == "Master") conds_target.push_back(conds[i]);
 
-      if (side == "Source") conds_slave.push_back(conds[i]);
+      if (side == "Slave") conds_source.push_back(conds[i]);
     }
 
     // Fill maps based on condition for target side (target_dis == source_dis)
     Core::Conditions::find_condition_objects(
-        *target_dis, masternodes, target_global_nodes, target_elements, conds_master);
+        *target_dis, target_nodes, target_global_nodes, target_elements, conds_target);
 
     // Fill maps based on condition for source side (target_dis == source_dis)
     Core::Conditions::find_condition_objects(
-        *source_dis, slavenodes, source_global_nodes, source_elements, conds_slave);
+        *source_dis, source_nodes, source_global_nodes, source_elements, conds_source);
   }
   // Coupling condition is defined by "FSI COUPLING CONDITIONS"
   // There are two discretizations for the target and source side. Therefore, the target/source
@@ -190,7 +190,7 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
     // Fill maps based on condition for source side (target_dis != source_dis)
     if (source_dis != nullptr)
       Core::Conditions::find_condition_objects(
-          *source_dis, slavenodes, source_global_nodes, source_elements, couplingcond);
+          *source_dis, source_nodes, source_global_nodes, source_elements, couplingcond);
   }
 
   // get mortar coupling parameters
@@ -221,8 +221,6 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
 
   // as two half pass approach is not implemented for this approach set false
   input.set<bool>("Two_half_pass", false);
-
-  return;
 }
 
 
@@ -381,8 +379,8 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
   int eleoffset = 0;
   if (target_dis.get() != source_dis.get())
   {
-    int nummastermtreles = target_elements.size();
-    eleoffset = Core::Communication::sum_all(nummastermtreles, comm_);
+    int num_target_mortar_elements = target_elements.size();
+    eleoffset = Core::Communication::sum_all(num_target_mortar_elements, comm_);
   }
 
   //  if(slidingale==true)
@@ -409,7 +407,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
           std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
-          faceele->parent_target_element()->id(), faceele->face_master_number());
+          faceele->parent_target_element()->id(), faceele->face_target_number());
 
       // store nurbs specific data to node
       cele->zero_sized() = zero_size;
@@ -446,7 +444,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
             std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
         double normalfac = 0.0;
         bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots,
-            normalfac, faceele->parent_target_element()->id(), faceele->face_master_number());
+            normalfac, faceele->parent_target_element()->id(), faceele->face_target_number());
 
         // store nurbs specific data to node
         cele->zero_sized() = zero_size;
@@ -481,26 +479,23 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
 void Adapter::CouplingNonLinMortar::init_matrices()
 {
   // safety check
-  if (sourcedofrowmap_ == nullptr or slavenoderowmap_ == nullptr)
+  if (source_dof_row_map_ == nullptr or source_node_row_map_ == nullptr)
     FOUR_C_THROW("ERROR: Maps not initialized!");
 
   // init as standard sparse matrix --> local assembly
-  D_ = std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 81, false, false);
-  M_ = std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 81, false, false);
-  H_ = std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 81, false, false);
-  T_ = std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 81, false, false);
-  N_ = std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 81, false, false);
+  D_ = std::make_shared<Core::LinAlg::SparseMatrix>(*source_dof_row_map_, 81, false, false);
+  M_ = std::make_shared<Core::LinAlg::SparseMatrix>(*source_dof_row_map_, 81, false, false);
+  H_ = std::make_shared<Core::LinAlg::SparseMatrix>(*source_dof_row_map_, 81, false, false);
+  T_ = std::make_shared<Core::LinAlg::SparseMatrix>(*source_dof_row_map_, 81, false, false);
+  N_ = std::make_shared<Core::LinAlg::SparseMatrix>(*source_dof_row_map_, 81, false, false);
 
-  gap_ = std::make_shared<Core::LinAlg::Vector<double>>(*slavenoderowmap_, true);
+  gap_ = std::make_shared<Core::LinAlg::Vector<double>>(*source_node_row_map_, true);
 
   // init as fe matrix --> nonlocal assembly
   DLin_ = std::make_shared<Core::LinAlg::SparseMatrix>(
-      *sourcedofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+      *source_dof_row_map_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
   MLin_ = std::make_shared<Core::LinAlg::SparseMatrix>(
-      *targetdofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
-
-  // bye
-  return;
+      *target_dof_row_map_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 }
 
 
@@ -538,10 +533,11 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   interface->create_search_tree();
 
   // store old row maps (before parallel redistribution)
-  psourcedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
-  ptargetdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
-  pslavenoderowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_nodes());
-  psmdofrowmap_ = Core::LinAlg::merge_map(psourcedofrowmap_, ptargetdofrowmap_, false);
+  psource_dof_row_map_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
+  ptarget_dof_row_map_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
+  p_source_node_row_map_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_nodes());
+  p_source_target_dof_row_map_ =
+      Core::LinAlg::merge_map(psource_dof_row_map_, ptarget_dof_row_map_, false);
 
   // print parallel distribution
   interface->print_parallel_distribution();
@@ -567,10 +563,11 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   }
 
   // store row maps (after parallel redistribution)
-  sourcedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
-  targetdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
-  slavenoderowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_nodes());
-  smdofrowmap_ = Core::LinAlg::merge_map(sourcedofrowmap_, targetdofrowmap_, false);
+  source_dof_row_map_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
+  target_dof_row_map_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
+  source_node_row_map_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_nodes());
+  source_target_dof_row_map_ =
+      Core::LinAlg::merge_map(source_dof_row_map_, target_dof_row_map_, false);
 
   // store interface
   interface_ = interface;
@@ -593,8 +590,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
     std::cout << "Generating CONTACT interface for spring dashpot condition...\n" << std::endl;
 
   // initialize maps for row nodes
-  std::map<int, Core::Nodes::Node*> slavenodes;
-  std::map<int, Core::Nodes::Node*> masternodes;
+  std::map<int, Core::Nodes::Node*> source_nodes;
+  std::map<int, Core::Nodes::Node*> target_nodes;
 
   // initialize maps for column nodes
   std::map<int, Core::Nodes::Node*> source_global_nodes;
@@ -606,8 +603,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
 
   // get the conditions for the current evaluation we use the SpringDashpot condition as a
   // substitute for the mortar source surface
-  std::vector<const Core::Conditions::Condition*> conds_master;
-  std::vector<const Core::Conditions::Condition*> conds_slave;
+  std::vector<const Core::Conditions::Condition*> conds_target;
+  std::vector<const Core::Conditions::Condition*> conds_source;
 
   // Coupling condition is defined by "DESIGN SURF SPRING DASHPOT COUPLING CONDITIONS"
   std::vector<const Core::Conditions::Condition*> coup_conds;
@@ -619,20 +616,20 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
     FOUR_C_THROW("No section DESIGN SURF ROBIN SPRING DASHPOT COUPLING CONDITIONS found.");
 
   // source surface = spring dashpot condition
-  conds_slave.push_back(&(spring));
+  conds_source.push_back(&(spring));
 
   // find target surface: loop all coupling conditions
   for (int i = 0; i < n_coup_conds; i++)
   {
     if (coup_conds[i]->parameters().get<int>("COUPLING") == (coupling_id))
-      conds_master.push_back(coup_conds[i]);
+      conds_target.push_back(coup_conds[i]);
   }
-  if (!conds_master.size()) FOUR_C_THROW("Coupling ID not found.");
+  if (!conds_target.size()) FOUR_C_THROW("Coupling ID not found.");
 
   Core::Conditions::find_condition_objects(
-      *source_dis, slavenodes, source_global_nodes, source_elements, conds_slave);
+      *source_dis, source_nodes, source_global_nodes, source_elements, conds_source);
   Core::Conditions::find_condition_objects(
-      *target_dis, masternodes, target_global_nodes, target_elements, conds_master);
+      *target_dis, target_nodes, target_global_nodes, target_elements, conds_target);
 
   // get mortar coupling parameters
   Teuchos::ParameterList input;
@@ -748,8 +745,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   }
 
   // store old row maps (before parallel redistribution)
-  sourcedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
-  targetdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
+  source_dof_row_map_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
+  target_dof_row_map_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
 
   // store interface
   interface_ = interface;
@@ -759,7 +756,7 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
 
   // interface displacement (=0) has to be merged from source and target discretization
   std::shared_ptr<Core::LinAlg::Map> dofrowmap =
-      Core::LinAlg::merge_map(targetdofrowmap_, sourcedofrowmap_, false);
+      Core::LinAlg::merge_map(target_dof_row_map_, source_dof_row_map_, false);
   std::shared_ptr<Core::LinAlg::Vector<double>> dispn =
       std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
@@ -837,12 +834,13 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
   // only for parallel redistribution case
   if (parredist)
   {
-    if (psourcedofrowmap_ == nullptr)
+    if (psource_dof_row_map_ == nullptr)
       FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
-    D_ = Core::LinAlg::matrix_row_col_transform(*D_, *psourcedofrowmap_, *psourcedofrowmap_);
-    DLin_ = Core::LinAlg::matrix_row_col_transform(*DLin_, *psourcedofrowmap_, *psourcedofrowmap_);
+    D_ = Core::LinAlg::matrix_row_col_transform(*D_, *psource_dof_row_map_, *psource_dof_row_map_);
+    DLin_ = Core::LinAlg::matrix_row_col_transform(
+        *DLin_, *psource_dof_row_map_, *psource_dof_row_map_);
   }
 
   return;
@@ -879,9 +877,9 @@ void Adapter::CouplingNonLinMortar::integrate_lin_dm(const std::string& statenam
 
   // complete
   D_->complete();
-  M_->complete(*targetdofrowmap_, *sourcedofrowmap_);
-  DLin_->complete(*smdofrowmap_, *sourcedofrowmap_);
-  MLin_->complete(*smdofrowmap_, *targetdofrowmap_);
+  M_->complete(*target_dof_row_map_, *source_dof_row_map_);
+  DLin_->complete(*source_target_dof_row_map_, *source_dof_row_map_);
+  MLin_->complete(*source_target_dof_row_map_, *target_dof_row_map_);
 
   // Dinv * M
   create_p();
@@ -917,30 +915,35 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
   // transform everything back to old distribution
   if (parredist)
   {
-    if (psourcedofrowmap_ == nullptr or ptargetdofrowmap_ == nullptr or
-        pslavenoderowmap_ == nullptr or psmdofrowmap_ == nullptr)
+    if (psource_dof_row_map_ == nullptr or ptarget_dof_row_map_ == nullptr or
+        p_source_node_row_map_ == nullptr or p_source_target_dof_row_map_ == nullptr)
       FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     if (DLin_ != nullptr)
-      DLin_ = Core::LinAlg::matrix_row_col_transform(*DLin_, *psourcedofrowmap_, *psmdofrowmap_);
+      DLin_ = Core::LinAlg::matrix_row_col_transform(
+          *DLin_, *psource_dof_row_map_, *p_source_target_dof_row_map_);
 
     if (MLin_ != nullptr)
-      MLin_ = Core::LinAlg::matrix_row_col_transform(*MLin_, *ptargetdofrowmap_, *psmdofrowmap_);
+      MLin_ = Core::LinAlg::matrix_row_col_transform(
+          *MLin_, *ptarget_dof_row_map_, *p_source_target_dof_row_map_);
 
     if (H_ != nullptr)
-      H_ = Core::LinAlg::matrix_row_col_transform(*H_, *psourcedofrowmap_, *psourcedofrowmap_);
+      H_ =
+          Core::LinAlg::matrix_row_col_transform(*H_, *psource_dof_row_map_, *psource_dof_row_map_);
 
     if (T_ != nullptr)
-      T_ = Core::LinAlg::matrix_row_col_transform(*T_, *psourcedofrowmap_, *psourcedofrowmap_);
+      T_ =
+          Core::LinAlg::matrix_row_col_transform(*T_, *psource_dof_row_map_, *psource_dof_row_map_);
 
     if (N_ != nullptr)
-      N_ = Core::LinAlg::matrix_row_col_transform(*N_, *psourcedofrowmap_, *psmdofrowmap_);
+      N_ = Core::LinAlg::matrix_row_col_transform(
+          *N_, *psource_dof_row_map_, *p_source_target_dof_row_map_);
 
     // transform gap vector
     if (gap_ != nullptr)
     {
       std::shared_ptr<Core::LinAlg::Vector<double>> pgap =
-          std::make_shared<Core::LinAlg::Vector<double>>(*pslavenoderowmap_, true);
+          std::make_shared<Core::LinAlg::Vector<double>>(*p_source_node_row_map_, true);
       Core::LinAlg::export_to(*gap_, *pgap);
       gap_ = pgap;
     }
@@ -982,9 +985,9 @@ void Adapter::CouplingNonLinMortar::integrate_all(const std::string& statename,
 
   // complete
   D_->complete();
-  M_->complete(*targetdofrowmap_, *sourcedofrowmap_);
-  DLin_->complete(*smdofrowmap_, *sourcedofrowmap_);
-  MLin_->complete(*smdofrowmap_, *targetdofrowmap_);
+  M_->complete(*target_dof_row_map_, *source_dof_row_map_);
+  DLin_->complete(*source_target_dof_row_map_, *source_dof_row_map_);
+  MLin_->complete(*source_target_dof_row_map_, *target_dof_row_map_);
 
   // Dinv * M
   create_p();
@@ -1032,12 +1035,12 @@ void Adapter::CouplingNonLinMortar::evaluate_sliding(const std::string& statenam
 
   // complete
   D_->complete();
-  M_->complete(*targetdofrowmap_, *sourcedofrowmap_);
-  DLin_->complete(*smdofrowmap_, *sourcedofrowmap_);
-  MLin_->complete(*smdofrowmap_, *targetdofrowmap_);
+  M_->complete(*target_dof_row_map_, *source_dof_row_map_);
+  DLin_->complete(*source_target_dof_row_map_, *source_dof_row_map_);
+  MLin_->complete(*source_target_dof_row_map_, *target_dof_row_map_);
   H_->complete();
   T_->complete();
-  N_->complete(*smdofrowmap_, *sourcedofrowmap_);
+  N_->complete(*source_target_dof_row_map_, *source_dof_row_map_);
 
   // Dinv * M
   create_p();
@@ -1067,7 +1070,7 @@ void Adapter::CouplingNonLinMortar::create_p()
   D_->complete();
   Dinv_ = std::make_shared<Core::LinAlg::SparseMatrix>(*D_);
   std::shared_ptr<Core::LinAlg::Vector<double>> diag =
-      std::make_shared<Core::LinAlg::Vector<double>>(*sourcedofrowmap_, true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*source_dof_row_map_, true);
 
   // extract diagonal of invd into diag
   Dinv_->extract_diagonal_copy(*diag);
@@ -1096,10 +1099,7 @@ void Adapter::CouplingNonLinMortar::create_p()
   P_ = Core::LinAlg::matrix_multiply(*Dinv_, false, *M_, false, false, false, true);
 
   // complete the matrix
-  P_->complete(*targetdofrowmap_, *sourcedofrowmap_);
-
-  // bye
-  return;
+  P_->complete(*target_dof_row_map_, *source_dof_row_map_);
 }
 
 FOUR_C_NAMESPACE_CLOSE
