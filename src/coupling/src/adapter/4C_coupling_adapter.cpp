@@ -764,49 +764,6 @@ std::shared_ptr<Core::LinAlg::Map> Coupling::Adapter::Coupling::target_to_source
       -1, nummyele, globalelements.data(), 0, target.get_comm());
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::shared_ptr<Core::LinAlg::SparseMatrix> Coupling::Adapter::Coupling::master_to_perm_master(
-    const Core::LinAlg::SparseMatrix& sm) const
-{
-  auto permsm =
-      std::make_shared<Core::LinAlg::SparseMatrix>(*permuted_target_dof_map_, sm.max_num_entries());
-
-  // OK. You cannot use the same exporter for different matrices. So we
-  // recreate one all the time... This has to be optimized later on.
-  Core::LinAlg::Export exporter(*permuted_target_dof_map_, *target_dof_map_);
-  permsm->import(sm, exporter, Core::LinAlg::CombineMode::insert);
-  permsm->complete(sm.domain_map(), *permuted_target_dof_map_);
-
-  return permsm;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::shared_ptr<Core::LinAlg::SparseMatrix> Coupling::Adapter::Coupling::slave_to_perm_slave(
-    const Core::LinAlg::SparseMatrix& sm) const
-{
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not sm.row_map().point_same_as(*source_dof_map_))
-    FOUR_C_THROW("source dof map vector expected");
-  if (not sm.filled()) FOUR_C_THROW("matrix must be filled");
-#endif
-
-  auto permsm =
-      std::make_shared<Core::LinAlg::SparseMatrix>(*permuted_source_dof_map_, sm.max_num_entries());
-
-  // OK. You cannot use the same exporter for different matrices. So we
-  // recreate one all the time... This has to be optimized later on.
-  Core::LinAlg::Export exporter(*permuted_source_dof_map_, *source_dof_map_);
-  permsm->import(sm, exporter, Core::LinAlg::CombineMode::insert);
-  permsm->complete(sm.domain_map(), *permuted_source_dof_map_);
-
-  return permsm;
-}
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::Coupling::setup_coupling_matrices(

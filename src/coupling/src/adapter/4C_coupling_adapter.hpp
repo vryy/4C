@@ -365,14 +365,6 @@ namespace Coupling::Adapter
     /// fill partial source map with gid of partial target map
     std::shared_ptr<Core::LinAlg::Map> target_to_source_map(Core::LinAlg::Map& target);
 
-    /// redistribute crsmatrix from target row map to permuted target row map
-    std::shared_ptr<Core::LinAlg::SparseMatrix> master_to_perm_master(
-        const Core::LinAlg::SparseMatrix& sm) const;
-
-    /// redistribute crsmatrix from source row map to permuted source row map
-    std::shared_ptr<Core::LinAlg::SparseMatrix> slave_to_perm_slave(
-        const Core::LinAlg::SparseMatrix& sm) const;
-
     //@}
 
     /// \name Lagrangian coupling helpers
@@ -380,17 +372,6 @@ namespace Coupling::Adapter
     /// create coupling matrices for Lagrangian coupling conditions
     void setup_coupling_matrices(const Core::LinAlg::Map& shifted_target_map,
         const Core::LinAlg::Map& target_domain_map, const Core::LinAlg::Map& source_domain_map);
-
-    std::shared_ptr<Core::LinAlg::SparseMatrix> master_to_target_mat() const { return matmm_; }
-    std::shared_ptr<Core::LinAlg::SparseMatrix> slave_to_target_mat() const { return matsm_; }
-    std::shared_ptr<Core::LinAlg::SparseMatrix> master_to_target_mat_trans() const
-    {
-      return matmm_trans_;
-    }
-    std::shared_ptr<Core::LinAlg::SparseMatrix> slave_to_target_mat_trans() const
-    {
-      return matsm_trans_;
-    }
 
     //@}
 
