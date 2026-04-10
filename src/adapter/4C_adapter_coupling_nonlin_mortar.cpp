@@ -481,23 +481,23 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
 void Adapter::CouplingNonLinMortar::init_matrices()
 {
   // safety check
-  if (slavedofrowmap_ == nullptr or slavenoderowmap_ == nullptr)
+  if (sourcedofrowmap_ == nullptr or slavenoderowmap_ == nullptr)
     FOUR_C_THROW("ERROR: Maps not initialized!");
 
   // init as standard sparse matrix --> local assembly
-  D_ = std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
-  M_ = std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
-  H_ = std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
-  T_ = std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
-  N_ = std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
+  D_ = std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 81, false, false);
+  M_ = std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 81, false, false);
+  H_ = std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 81, false, false);
+  T_ = std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 81, false, false);
+  N_ = std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 81, false, false);
 
   gap_ = std::make_shared<Core::LinAlg::Vector<double>>(*slavenoderowmap_, true);
 
   // init as fe matrix --> nonlocal assembly
   DLin_ = std::make_shared<Core::LinAlg::SparseMatrix>(
-      *slavedofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+      *sourcedofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
   MLin_ = std::make_shared<Core::LinAlg::SparseMatrix>(
-      *masterdofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+      *targetdofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   // bye
   return;
@@ -538,10 +538,10 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   interface->create_search_tree();
 
   // store old row maps (before parallel redistribution)
-  pslavedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
-  pmasterdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
+  psourcedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
+  ptargetdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
   pslavenoderowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_nodes());
-  psmdofrowmap_ = Core::LinAlg::merge_map(pslavedofrowmap_, pmasterdofrowmap_, false);
+  psmdofrowmap_ = Core::LinAlg::merge_map(psourcedofrowmap_, ptargetdofrowmap_, false);
 
   // print parallel distribution
   interface->print_parallel_distribution();
@@ -567,10 +567,10 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   }
 
   // store row maps (after parallel redistribution)
-  slavedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
-  masterdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
+  sourcedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
+  targetdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
   slavenoderowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_nodes());
-  smdofrowmap_ = Core::LinAlg::merge_map(slavedofrowmap_, masterdofrowmap_, false);
+  smdofrowmap_ = Core::LinAlg::merge_map(sourcedofrowmap_, targetdofrowmap_, false);
 
   // store interface
   interface_ = interface;
@@ -748,8 +748,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   }
 
   // store old row maps (before parallel redistribution)
-  slavedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
-  masterdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
+  sourcedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
+  targetdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
 
   // store interface
   interface_ = interface;
@@ -759,7 +759,7 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
 
   // interface displacement (=0) has to be merged from source and target discretization
   std::shared_ptr<Core::LinAlg::Map> dofrowmap =
-      Core::LinAlg::merge_map(masterdofrowmap_, slavedofrowmap_, false);
+      Core::LinAlg::merge_map(targetdofrowmap_, sourcedofrowmap_, false);
   std::shared_ptr<Core::LinAlg::Vector<double>> dispn =
       std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
@@ -837,12 +837,12 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
   // only for parallel redistribution case
   if (parredist)
   {
-    if (pslavedofrowmap_ == nullptr)
+    if (psourcedofrowmap_ == nullptr)
       FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
-    D_ = Core::LinAlg::matrix_row_col_transform(*D_, *pslavedofrowmap_, *pslavedofrowmap_);
-    DLin_ = Core::LinAlg::matrix_row_col_transform(*DLin_, *pslavedofrowmap_, *pslavedofrowmap_);
+    D_ = Core::LinAlg::matrix_row_col_transform(*D_, *psourcedofrowmap_, *psourcedofrowmap_);
+    DLin_ = Core::LinAlg::matrix_row_col_transform(*DLin_, *psourcedofrowmap_, *psourcedofrowmap_);
   }
 
   return;
@@ -879,9 +879,9 @@ void Adapter::CouplingNonLinMortar::integrate_lin_dm(const std::string& statenam
 
   // complete
   D_->complete();
-  M_->complete(*masterdofrowmap_, *slavedofrowmap_);
-  DLin_->complete(*smdofrowmap_, *slavedofrowmap_);
-  MLin_->complete(*smdofrowmap_, *masterdofrowmap_);
+  M_->complete(*targetdofrowmap_, *sourcedofrowmap_);
+  DLin_->complete(*smdofrowmap_, *sourcedofrowmap_);
+  MLin_->complete(*smdofrowmap_, *targetdofrowmap_);
 
   // Dinv * M
   create_p();
@@ -917,24 +917,24 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
   // transform everything back to old distribution
   if (parredist)
   {
-    if (pslavedofrowmap_ == nullptr or pmasterdofrowmap_ == nullptr or
+    if (psourcedofrowmap_ == nullptr or ptargetdofrowmap_ == nullptr or
         pslavenoderowmap_ == nullptr or psmdofrowmap_ == nullptr)
       FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     if (DLin_ != nullptr)
-      DLin_ = Core::LinAlg::matrix_row_col_transform(*DLin_, *pslavedofrowmap_, *psmdofrowmap_);
+      DLin_ = Core::LinAlg::matrix_row_col_transform(*DLin_, *psourcedofrowmap_, *psmdofrowmap_);
 
     if (MLin_ != nullptr)
-      MLin_ = Core::LinAlg::matrix_row_col_transform(*MLin_, *pmasterdofrowmap_, *psmdofrowmap_);
+      MLin_ = Core::LinAlg::matrix_row_col_transform(*MLin_, *ptargetdofrowmap_, *psmdofrowmap_);
 
     if (H_ != nullptr)
-      H_ = Core::LinAlg::matrix_row_col_transform(*H_, *pslavedofrowmap_, *pslavedofrowmap_);
+      H_ = Core::LinAlg::matrix_row_col_transform(*H_, *psourcedofrowmap_, *psourcedofrowmap_);
 
     if (T_ != nullptr)
-      T_ = Core::LinAlg::matrix_row_col_transform(*T_, *pslavedofrowmap_, *pslavedofrowmap_);
+      T_ = Core::LinAlg::matrix_row_col_transform(*T_, *psourcedofrowmap_, *psourcedofrowmap_);
 
     if (N_ != nullptr)
-      N_ = Core::LinAlg::matrix_row_col_transform(*N_, *pslavedofrowmap_, *psmdofrowmap_);
+      N_ = Core::LinAlg::matrix_row_col_transform(*N_, *psourcedofrowmap_, *psmdofrowmap_);
 
     // transform gap vector
     if (gap_ != nullptr)
@@ -982,9 +982,9 @@ void Adapter::CouplingNonLinMortar::integrate_all(const std::string& statename,
 
   // complete
   D_->complete();
-  M_->complete(*masterdofrowmap_, *slavedofrowmap_);
-  DLin_->complete(*smdofrowmap_, *slavedofrowmap_);
-  MLin_->complete(*smdofrowmap_, *masterdofrowmap_);
+  M_->complete(*targetdofrowmap_, *sourcedofrowmap_);
+  DLin_->complete(*smdofrowmap_, *sourcedofrowmap_);
+  MLin_->complete(*smdofrowmap_, *targetdofrowmap_);
 
   // Dinv * M
   create_p();
@@ -1032,12 +1032,12 @@ void Adapter::CouplingNonLinMortar::evaluate_sliding(const std::string& statenam
 
   // complete
   D_->complete();
-  M_->complete(*masterdofrowmap_, *slavedofrowmap_);
-  DLin_->complete(*smdofrowmap_, *slavedofrowmap_);
-  MLin_->complete(*smdofrowmap_, *masterdofrowmap_);
+  M_->complete(*targetdofrowmap_, *sourcedofrowmap_);
+  DLin_->complete(*smdofrowmap_, *sourcedofrowmap_);
+  MLin_->complete(*smdofrowmap_, *targetdofrowmap_);
   H_->complete();
   T_->complete();
-  N_->complete(*smdofrowmap_, *slavedofrowmap_);
+  N_->complete(*smdofrowmap_, *sourcedofrowmap_);
 
   // Dinv * M
   create_p();
@@ -1067,7 +1067,7 @@ void Adapter::CouplingNonLinMortar::create_p()
   D_->complete();
   Dinv_ = std::make_shared<Core::LinAlg::SparseMatrix>(*D_);
   std::shared_ptr<Core::LinAlg::Vector<double>> diag =
-      std::make_shared<Core::LinAlg::Vector<double>>(*slavedofrowmap_, true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*sourcedofrowmap_, true);
 
   // extract diagonal of invd into diag
   Dinv_->extract_diagonal_copy(*diag);
@@ -1096,7 +1096,7 @@ void Adapter::CouplingNonLinMortar::create_p()
   P_ = Core::LinAlg::matrix_multiply(*Dinv_, false, *M_, false, false, false, true);
 
   // complete the matrix
-  P_->complete(*masterdofrowmap_, *slavedofrowmap_);
+  P_->complete(*targetdofrowmap_, *sourcedofrowmap_);
 
   // bye
   return;

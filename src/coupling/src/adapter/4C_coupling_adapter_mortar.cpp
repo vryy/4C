@@ -130,7 +130,7 @@ void Coupling::Adapter::CouplingMortar::setup(
 
   // interface displacement (=0) has to be merged from source and target discretization
   std::shared_ptr<Core::LinAlg::Map> dofrowmap =
-      Core::LinAlg::merge_map(masterdofrowmap_, slavedofrowmap_, false);
+      Core::LinAlg::merge_map(targetdofrowmap_, sourcedofrowmap_, false);
   std::shared_ptr<Core::LinAlg::Vector<double>> dispn =
       std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
@@ -181,7 +181,7 @@ void Coupling::Adapter::CouplingMortar::setup(
     // dimensions.
     std::shared_ptr<Core::LinAlg::Vector<double>> idisp(nullptr);
     mesh_relocation(
-        *slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
+        *slavedis, aledis, targetdofrowmap_, sourcedofrowmap_, idisp, comm, slavewithale);
   }
 
   // matrix transformation to initial parallel distribution
@@ -467,8 +467,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   issetup_ = true;
 
   // store old row maps (before parallel redistribution)
-  pslavedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface_->source_row_dofs());
-  pmasterdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface_->target_row_dofs());
+  psourcedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface_->source_row_dofs());
+  ptargetdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface_->target_row_dofs());
 
   // print parallel distribution
   interface_->print_parallel_distribution();
@@ -492,8 +492,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   //**********************************************************************
 
   // store row maps (after parallel redistribution)
-  slavedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface_->source_row_dofs());
-  masterdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface_->target_row_dofs());
+  sourcedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface_->source_row_dofs());
+  targetdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface_->target_row_dofs());
 
   // create binary search tree
   interface_->create_search_tree();
@@ -996,7 +996,7 @@ void Coupling::Adapter::CouplingMortar::create_p()
   D_->complete();
   Dinv_ = std::make_shared<Core::LinAlg::SparseMatrix>(*D_);
   std::shared_ptr<Core::LinAlg::Vector<double>> diag =
-      std::make_shared<Core::LinAlg::Vector<double>>(*slavedofrowmap_, true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*sourcedofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -1028,7 +1028,7 @@ void Coupling::Adapter::CouplingMortar::create_p()
   P_ = Core::LinAlg::matrix_multiply(*Dinv_, false, *M_, false, false, false, true);
 
   // complete the matrix
-  P_->complete(*masterdofrowmap_, *slavedofrowmap_);
+  P_->complete(*targetdofrowmap_, *sourcedofrowmap_);
 
   // bye
   return;
@@ -1066,12 +1066,12 @@ void Coupling::Adapter::CouplingMortar::evaluate(
       "Map of incoming source vector does not match the stored source dof row map.");
 
   const Core::LinAlg::Map stdmap = idispsl->get_map();
-  idispsl->replace_map(*slavedofrowmap_);
+  idispsl->replace_map(*sourcedofrowmap_);
 
   std::shared_ptr<Core::LinAlg::Map> dofrowmap =
-      Core::LinAlg::merge_map(*pmasterdofrowmap_, *pslavedofrowmap_, false);
-  Core::LinAlg::Import master_importer(*dofrowmap, *pmasterdofrowmap_);
-  Core::LinAlg::Import slaveImporter(*dofrowmap, *pslavedofrowmap_);
+      Core::LinAlg::merge_map(*ptargetdofrowmap_, *psourcedofrowmap_, false);
+  Core::LinAlg::Import master_importer(*dofrowmap, *ptargetdofrowmap_);
+  Core::LinAlg::Import slaveImporter(*dofrowmap, *psourcedofrowmap_);
 
   // Import target and source displacements into a single vector
   std::shared_ptr<Core::LinAlg::Vector<double>> idisp_master_slave =
@@ -1122,16 +1122,16 @@ void Coupling::Adapter::CouplingMortar::evaluate()
   // preparation for AssembleDM
   // (Note that redistslave and redistmaster are the source and target row maps
   // after parallel redistribution. If no redistribution was performed, they
-  // are of course identical to slavedofrowmap_/masterdofrowmap_!)
+  // are of course identical to sourcedofrowmap_/targetdofrowmap_!)
   std::shared_ptr<Core::LinAlg::SparseMatrix> dmatrix =
-      std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 10);
+      std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 10);
   std::shared_ptr<Core::LinAlg::SparseMatrix> mmatrix =
-      std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 100);
+      std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 100);
   interface_->assemble_dm(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
   dmatrix->complete();
-  mmatrix->complete(*masterdofrowmap_, *slavedofrowmap_);
+  mmatrix->complete(*targetdofrowmap_, *sourcedofrowmap_);
   D_ = dmatrix;
   M_ = mmatrix;
 
@@ -1159,14 +1159,14 @@ void Coupling::Adapter::CouplingMortar::matrix_row_col_transform()
   // only for parallel redistribution case
   if (parredist)
   {
-    if (pslavedofrowmap_ == nullptr or pmasterdofrowmap_ == nullptr)
+    if (psourcedofrowmap_ == nullptr or ptargetdofrowmap_ == nullptr)
       FOUR_C_THROW("Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
-    D_ = Core::LinAlg::matrix_row_col_transform(*D_, *pslavedofrowmap_, *pslavedofrowmap_);
-    M_ = Core::LinAlg::matrix_row_col_transform(*M_, *pslavedofrowmap_, *pmasterdofrowmap_);
-    Dinv_ = Core::LinAlg::matrix_row_col_transform(*Dinv_, *pslavedofrowmap_, *pslavedofrowmap_);
-    P_ = Core::LinAlg::matrix_row_col_transform(*P_, *pslavedofrowmap_, *pmasterdofrowmap_);
+    D_ = Core::LinAlg::matrix_row_col_transform(*D_, *psourcedofrowmap_, *psourcedofrowmap_);
+    M_ = Core::LinAlg::matrix_row_col_transform(*M_, *psourcedofrowmap_, *ptargetdofrowmap_);
+    Dinv_ = Core::LinAlg::matrix_row_col_transform(*Dinv_, *psourcedofrowmap_, *psourcedofrowmap_);
+    P_ = Core::LinAlg::matrix_row_col_transform(*P_, *psourcedofrowmap_, *ptargetdofrowmap_);
   }
 }
 
@@ -1191,16 +1191,16 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   // preparation for AssembleDM
   // (Note that redistslave and redistmaster are the source and target row maps
   // after parallel redistribution. If no redistribution was performed, they
-  // are of course identical to slavedofrowmap_/masterdofrowmap_!)
+  // are of course identical to sourcedofrowmap_/targetdofrowmap_!)
   std::shared_ptr<Core::LinAlg::SparseMatrix> dmatrix =
-      std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 10);
+      std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 10);
   std::shared_ptr<Core::LinAlg::SparseMatrix> mmatrix =
-      std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 100);
+      std::make_shared<Core::LinAlg::SparseMatrix>(*sourcedofrowmap_, 100);
   interface_->assemble_dm(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
   dmatrix->complete();
-  mmatrix->complete(*masterdofrowmap_, *slavedofrowmap_);
+  mmatrix->complete(*targetdofrowmap_, *sourcedofrowmap_);
   D_ = dmatrix;
   M_ = mmatrix;
 
@@ -1209,7 +1209,7 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
 
   // extract diagonal of invd into diag
   std::shared_ptr<Core::LinAlg::Vector<double>> diag =
-      std::make_shared<Core::LinAlg::Vector<double>>(*slavedofrowmap_, true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*sourcedofrowmap_, true);
   Dinv_->extract_diagonal_copy(*diag);
 
   // set zero diagonal values to dummy 1.0
@@ -1246,7 +1246,7 @@ Coupling::Adapter::CouplingMortar::target_to_source(
   M_->multiply(false, mv, tmp);
 
   std::shared_ptr<Core::LinAlg::MultiVector<double>> sv =
-      std::make_shared<Core::LinAlg::MultiVector<double>>(*pslavedofrowmap_, mv.num_vectors());
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*psourcedofrowmap_, mv.num_vectors());
 
   Dinv_->multiply(false, tmp, *sv);
 
@@ -1268,7 +1268,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar:
   M_->multiply(false, mv, tmp);
 
   std::shared_ptr<Core::LinAlg::Vector<double>> sv =
-      std::make_shared<Core::LinAlg::Vector<double>>(*pslavedofrowmap_);
+      std::make_shared<Core::LinAlg::Vector<double>>(*psourcedofrowmap_);
 
   Dinv_->multiply(false, tmp, *sv);
 
@@ -1321,7 +1321,7 @@ void Coupling::Adapter::CouplingMortar::source_to_target(
   Core::LinAlg::Vector<double> tmp = Core::LinAlg::Vector<double>(M_->range_map());
   std::copy(sv.get_values(), sv.get_values() + sv.local_length(), tmp.get_values());
 
-  Core::LinAlg::Vector<double> tempm(*pmasterdofrowmap_);
+  Core::LinAlg::Vector<double> tempm(*ptargetdofrowmap_);
   M_->multiply(true, tmp, tempm);
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
@@ -1346,7 +1346,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar:
   std::copy(sv.get_values(), sv.get_values() + sv.local_length(), tmp.get_values());
 
   std::shared_ptr<Core::LinAlg::Vector<double>> mv =
-      std::make_shared<Core::LinAlg::Vector<double>>(*pmasterdofrowmap_);
+      std::make_shared<Core::LinAlg::Vector<double>>(*ptargetdofrowmap_);
   M_->multiply(true, tmp, *mv);
 
   return mv;
@@ -1367,7 +1367,7 @@ Coupling::Adapter::CouplingMortar::source_to_target(
   std::copy(sv.get_values(), sv.get_values() + sv.local_length(), tmp.get_values());
 
   std::shared_ptr<Core::LinAlg::MultiVector<double>> mv =
-      std::make_shared<Core::LinAlg::MultiVector<double>>(*pmasterdofrowmap_, sv.num_vectors());
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*ptargetdofrowmap_, sv.num_vectors());
   M_->multiply(true, tmp, *mv);
 
   return mv;

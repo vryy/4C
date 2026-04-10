@@ -368,8 +368,8 @@ void Adapter::CouplingPoroMortar::complete_interface(
   // interface->create_volume_ghosting(*target_dis);
 
   // store old row maps (before parallel redistribution)
-  slavedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
-  masterdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
+  sourcedofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_dofs());
+  targetdofrowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->target_row_dofs());
   slavenoderowmap_ = std::make_shared<Core::LinAlg::Map>(*interface->source_row_nodes());
 
   // print parallel distribution

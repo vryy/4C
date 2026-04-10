@@ -257,13 +257,13 @@ namespace Coupling::Adapter
     /// Get the interface dof row map of the target side
     std::shared_ptr<const Core::LinAlg::Map> target_dof_map() const override
     {
-      return pmasterdofrowmap_;
+      return ptargetdofrowmap_;
     }
 
     /// Get the interface dof row map of the source side
     std::shared_ptr<const Core::LinAlg::Map> source_dof_map() const override
     {
-      return pslavedofrowmap_;
+      return psourcedofrowmap_;
     }
 
     //@}
@@ -347,16 +347,16 @@ namespace Coupling::Adapter
     std::shared_ptr<Mortar::Interface> interface_;
 
     /// Map of target row dofs (after parallel redist.)
-    std::shared_ptr<const Core::LinAlg::Map> masterdofrowmap_;
+    std::shared_ptr<const Core::LinAlg::Map> targetdofrowmap_;
 
     /// Map of source row dofs  (after parallel redist.)
-    std::shared_ptr<const Core::LinAlg::Map> slavedofrowmap_;
+    std::shared_ptr<const Core::LinAlg::Map> sourcedofrowmap_;
 
     /// Map of target row dofs (before parallel redist.)
-    std::shared_ptr<const Core::LinAlg::Map> pmasterdofrowmap_;
+    std::shared_ptr<const Core::LinAlg::Map> ptargetdofrowmap_;
 
     /// Map of source row dofs  (before parallel redist.)
-    std::shared_ptr<const Core::LinAlg::Map> pslavedofrowmap_;
+    std::shared_ptr<const Core::LinAlg::Map> psourcedofrowmap_;
 
     /// Source side mortar matrix \f$D\f$
     std::shared_ptr<Core::LinAlg::SparseMatrix> D_;
