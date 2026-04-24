@@ -47,17 +47,6 @@ namespace GeometryPair
   };
 
   /**
-   * \brief type of basis used for the shape functions.
-   */
-  enum class BasisType
-  {
-    //! standard
-    standard,
-    //! dual
-    dual,
-  };
-
-  /**
    * \brief This structure "converts" the discretization type to a geometry type.
    *
    * For some geometry pairs we need to know if a geometry is a triangle / a quad / tetrahedra or
@@ -165,7 +154,7 @@ namespace GeometryPair
    * of the element
    */
   template <Core::FE::CellType discretization, unsigned int values_per_node,
-      unsigned int spatial_dim = 3, BasisType type = BasisType::standard>
+      unsigned int spatial_dim = 3>
   class ElementDiscretizationBase
   {
    public:
@@ -187,9 +176,6 @@ namespace GeometryPair
     //! Number of unknowns for this element.
     static constexpr unsigned int n_dof_ = spatial_dim_ * n_val_ * n_nodes_;
 
-    //! Basis type used for shape function.
-    static constexpr BasisType type_ = type;
-
     //! Geometry type of the element.
     static constexpr GeometryPair::DiscretizationTypeGeometry geometry_type_ =
         ElementDiscretizationToGeometryType<discretization_>::geometry_type_;
@@ -202,8 +188,6 @@ namespace GeometryPair
 
   //! 1D elements
   using t_hermite = ElementDiscretizationBase<Core::FE::CellType::line2, 2>;
-  using t_hermite_dual =
-      ElementDiscretizationBase<Core::FE::CellType::line2, 2, 3, BasisType::dual>;
   using t_line2 = ElementDiscretizationBase<Core::FE::CellType::line2, 1>;
   using t_line2_scalar = ElementDiscretizationBase<Core::FE::CellType::line2, 1, 1>;
   using t_line3 = ElementDiscretizationBase<Core::FE::CellType::line3, 1>;
@@ -381,15 +365,6 @@ namespace GeometryPair
    */
   template <>
   struct ShapeFunctionData<t_hermite>
-  {
-    double ref_length_;
-  };
-
-  /**
-   * \brief Specialization for hermite elements which need a reference length
-   */
-  template <>
-  struct ShapeFunctionData<t_hermite_dual>
   {
     double ref_length_;
   };
@@ -618,24 +593,6 @@ namespace GeometryPair
   {
     template <typename ScalarType>
     static void print(const ElementData<t_hermite, ScalarType>& element_data, std::ostream& out)
-    {
-      constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
-      out << std::setprecision(max_precision);
-      out << "\nElement reference length: " << element_data.shape_function_data_.ref_length_;
-      out << "\nElement state vector: ";
-      element_data.element_position_.print(out);
-    }
-  };
-
-  /**
-   * \brief Specialization for dual Hermite elements
-   */
-  template <>
-  struct PrintElementData<t_hermite_dual>
-  {
-    template <typename ScalarType>
-    static void print(
-        const ElementData<t_hermite_dual, ScalarType>& element_data, std::ostream& out)
     {
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
       out << std::setprecision(max_precision);
