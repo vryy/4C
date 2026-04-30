@@ -333,7 +333,6 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
   isovisco_ = false;
   visco_generalized_maxwell_ = false;
   visco_fsls_ = false;
-  bool removed_genmax = false;
 
   summandProperties_.clear();
   elast_hyper_properties(potsum_, summandProperties_);
@@ -343,17 +342,8 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
   {
     for (auto& p : potsum_)
     {
-      p->specify_visco_formulation(
-          isovisco_, removed_genmax, visco_generalized_maxwell_, visco_fsls_);
+      p->specify_visco_formulation(isovisco_, visco_generalized_maxwell_, visco_fsls_);
     }
-  }
-
-  if (removed_genmax)
-  {
-    FOUR_C_THROW(
-        "VISCO_GenMax was removed in MAT_ViscoElastHyper (MAT {}). Use "
-        "VISCO_GeneralizedMaxwell with VISCO_GeneralizedMaxwellBranch instead.",
-        params_->id());
   }
 
   // Initialise/allocate history variables 09/13

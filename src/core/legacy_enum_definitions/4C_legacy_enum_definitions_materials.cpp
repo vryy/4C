@@ -213,14 +213,10 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "VISCO_CoupMyocard";
     case mes_isoratedep:
       return "VISCO_IsoRateDep";
-    case mes_genmax:
-      return "VISCO_GenMax";
+    case mes_generalizedmaxwell:
+      return "VISCO_GeneralizedMaxwell";
     case mes_fsls:
       return "VISCO_FSLS";
-    case mes_viscopart:
-      return "VISCO_PART";
-    case mes_generalizedgenmax:
-      return "VISCO_GeneralizedMaxwell";
     case mes_viscobranch:
       return "VISCO_GeneralizedMaxwellBranch";
     case m_cnst_art:

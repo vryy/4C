@@ -2418,7 +2418,7 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   /*--------------------------------------------------------------------*/
   // viscoelatic branches of a generalized Maxwell model
   {
-    known_materials[Core::Materials::mes_generalizedgenmax] = group("VISCO_GeneralizedMaxwell",
+    known_materials[Core::Materials::mes_generalizedmaxwell] = group("VISCO_GeneralizedMaxwell",
         {
             parameter<int>("NUMBRANCH", {.description = "number of viscoelastic branches"}),
             parameter<std::vector<int>>("MATIDS",

@@ -111,7 +111,6 @@ namespace Mat
       /// Indicator for the chosen viscoelastic formulations
       void specify_visco_formulation(
           bool& visco_iso_rate,  ///< global indicator for isotropic rate-dependent visco response
-          bool& visco_legacy_sls_removed,   ///< global indicator for removed legacy SLS model
           bool& visco_generalized_maxwell,  ///< global indicator for generalized Maxwell model
           bool& visco_fsls                  ///< global indicator for FSLS model
           ) override
