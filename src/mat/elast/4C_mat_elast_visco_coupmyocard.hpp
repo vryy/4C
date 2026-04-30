@@ -99,8 +99,8 @@ namespace Mat
           const Core::LinAlg::Matrix<3, 1>& prinv,  ///< invariants of right Cauchy-Green tensor
           Core::LinAlg::Matrix<8, 1>& mu,   ///< necessary coefficients for piola-kirchhoff-stress
           Core::LinAlg::Matrix<33, 1>& xi,  ///< necessary coefficients for viscosity tensor
-          Core::LinAlg::Matrix<7, 1>& rateinv, const Teuchos::ParameterList& params, int gp,
-          int eleGID) override;
+          Core::LinAlg::Matrix<7, 1>& rateinv, const Teuchos::ParameterList& params, double dt,
+          int gp, int eleGID) override;
 
       /// Indicator for formulation
       void specify_formulation(

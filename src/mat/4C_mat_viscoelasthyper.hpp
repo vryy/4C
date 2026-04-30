@@ -189,8 +189,7 @@ namespace Mat
     virtual void evaluate_kin_quant_vis(Core::LinAlg::Matrix<6, 1>& rcg,
         Core::LinAlg::Matrix<6, 1>& scg, Core::LinAlg::Matrix<6, 1>& icg,
         Core::LinAlg::Matrix<3, 1>& prinv, Core::LinAlg::Matrix<7, 1>& rateinv,
-        Core::LinAlg::Matrix<6, 1>& modrcg, const Teuchos::ParameterList& params,
-        const EvaluationContext<3>& context, Core::LinAlg::Matrix<6, 1>& scgrate,
+        Core::LinAlg::Matrix<6, 1>& modrcg, double dt, Core::LinAlg::Matrix<6, 1>& scgrate,
         Core::LinAlg::Matrix<6, 1>& modrcgrate, Core::LinAlg::Matrix<7, 1>& modrateinv, int gp);
 
     /// calculates the factors associated to the viscous laws
@@ -198,7 +197,7 @@ namespace Mat
         Core::LinAlg::Matrix<8, 1>& mu, Core::LinAlg::Matrix<8, 1>& modmu,
         Core::LinAlg::Matrix<33, 1>& xi, Core::LinAlg::Matrix<33, 1>& modxi,
         Core::LinAlg::Matrix<7, 1>& rateinv, Core::LinAlg::Matrix<7, 1>& modrateinv,
-        const Teuchos::ParameterList& params, int gp, int eleGID);
+        const Teuchos::ParameterList& params, double dt, int gp, int eleGID);
 
     /// calculates the isotropic stress and elasticity tensor for viscous principal configuration
     virtual void evaluate_iso_visco_principal(Core::LinAlg::Matrix<6, 1>& stress,
@@ -218,8 +217,7 @@ namespace Mat
 
     /// calculates the stress and elasticitiy tensor for the generalized Maxwell material
     virtual void evaluate_visco_generalized_maxwell(Core::LinAlg::Matrix<6, 1>& Q,
-        Core::LinAlg::Matrix<6, 6>& cmatq, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext<3>& context, const Core::LinAlg::Matrix<6, 1>* glstrain,
+        Core::LinAlg::Matrix<6, 6>& cmatq, double dt, const Core::LinAlg::Matrix<6, 1>* glstrain,
         int gp, int eleGID);
 
     /// calculates the stress and elasticity tensor for the VISCO_FSLS model
@@ -228,8 +226,7 @@ namespace Mat
     /// tensors are added
     virtual void evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress,
         Core::LinAlg::Matrix<6, 6> cmat, Core::LinAlg::Matrix<6, 1>& Q,
-        Core::LinAlg::Matrix<6, 6>& cmatq, const Teuchos::ParameterList& params,
-        const Mat::EvaluationContext<3>& context, int gp);
+        Core::LinAlg::Matrix<6, 6>& cmatq, double dt, int gp, int eleGID);
 
     /// @name Flags to specify the viscous formulations
     //@{

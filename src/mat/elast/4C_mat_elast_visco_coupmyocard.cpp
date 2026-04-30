@@ -24,13 +24,10 @@ Mat::Elastic::CoupMyocard::CoupMyocard(Mat::Elastic::PAR::CoupMyocard* params) :
 void Mat::Elastic::CoupMyocard::add_coefficients_visco_principal(
     const Core::LinAlg::Matrix<3, 1>& prinv, Core::LinAlg::Matrix<8, 1>& mu,
     Core::LinAlg::Matrix<33, 1>& xi, Core::LinAlg::Matrix<7, 1>& rateinv,
-    const Teuchos::ParameterList& params, const int gp, const int eleGID)
+    const Teuchos::ParameterList& /*params*/, const double dt, const int gp, const int eleGID)
 {
   // material parameter
   const double eta = params_->n_;
-
-  // get time algorithmic parameters.
-  const double dt = params.get<double>("delta time");
 
   // contribution: \dot{C}
   mu(2) = .5 * eta;

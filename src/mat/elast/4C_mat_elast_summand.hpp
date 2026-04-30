@@ -552,6 +552,7 @@ namespace Mat
           Core::LinAlg::Matrix<33, 1>& xi,        ///< see above
           Core::LinAlg::Matrix<7, 1>& rateinv,
           const Teuchos::ParameterList& params,  ///< Container for additional information
+          double dt,                             ///< time step size from evaluation context
           int gp,                                ///< Gauss point
           int eleGID) {};
 
@@ -560,7 +561,7 @@ namespace Mat
               modinv,                          ///< modified invariants of right Cauchy-Green tensor
           Core::LinAlg::Matrix<8, 1>& modmu,   ///< see above
           Core::LinAlg::Matrix<33, 1>& modxi,  ///< see above
-          Core::LinAlg::Matrix<7, 1>& modrateinv, const Teuchos::ParameterList& params,
+          Core::LinAlg::Matrix<7, 1>& modrateinv, const Teuchos::ParameterList& params, double dt,
           int gp,  ///< Gauss point
           int eleGID) {};
 

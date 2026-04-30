@@ -17,6 +17,13 @@ Mat::Elastic::PAR::Fsls::Fsls(const Core::Mat::PAR::Parameter::Data& matdata)
       alpha_(matdata.parameters.get<double>("ALPHA")),
       beta_(matdata.parameters.get<double>("BETA"))
 {
+  if (tau_ <= 0.0)
+    FOUR_C_THROW(
+        "Invalid TAU={} in VISCO_FSLS (MAT {}). TAU has to be positive.", tau_, matdata.id);
+
+  if (alpha_ < 0.0 || alpha_ >= 1.0)
+    FOUR_C_THROW(
+        "Invalid ALPHA={} in VISCO_FSLS (MAT {}). Expected 0 <= ALPHA < 1.", alpha_, matdata.id);
 }
 
 Mat::Elastic::Fsls::Fsls(Mat::Elastic::PAR::Fsls* params) : params_(params) {}

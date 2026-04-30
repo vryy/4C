@@ -15,6 +15,7 @@
 #include "4C_linalg_tensor_conversion.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_mat_elast_summand.hpp"
+#include "4C_mat_elast_visco_fsls.hpp"
 #include "4C_mat_elast_visco_generalizedmaxwell.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -367,7 +368,56 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
 
   if (visco_generalized_maxwell_)
   {
-    const std::vector<Core::LinAlg::Matrix<6, 1>> emptybigvec(true);
+    int generalized_maxwell_model_count = 0;
+    int generalized_maxwell_numbranch = -1;
+    std::string generalized_maxwell_solve;
+    const std::vector<int>* generalized_maxwell_matids = nullptr;
+
+    for (unsigned int p = 0; p < potsum_.size(); ++p)
+    {
+      std::shared_ptr<Mat::Elastic::GeneralizedMaxwell> generalized_maxwell =
+          std::dynamic_pointer_cast<Mat::Elastic::GeneralizedMaxwell>(potsum_[p]);
+      if (generalized_maxwell != nullptr)
+      {
+        ++generalized_maxwell_model_count;
+        generalized_maxwell->read_material_parameters(
+            generalized_maxwell_numbranch, generalized_maxwell_matids, generalized_maxwell_solve);
+      }
+    }
+
+    if (generalized_maxwell_model_count != 1)
+      FOUR_C_THROW(
+          "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): expected "
+          "exactly one VISCO_GeneralizedMaxwell summand but found {}.",
+          params_->id(), generalized_maxwell_model_count);
+
+    if (generalized_maxwell_numbranch <= 0)
+      FOUR_C_THROW(
+          "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): "
+          "NUMBRANCH={} is not positive.",
+          params_->id(), generalized_maxwell_numbranch);
+
+    if (generalized_maxwell_matids == nullptr)
+      FOUR_C_THROW(
+          "Failed to read MATIDS for VISCO_GeneralizedMaxwell in MAT_ViscoElastHyper (MAT "
+          "{}).",
+          params_->id());
+
+    if (generalized_maxwell_matids->size() !=
+        static_cast<unsigned int>(generalized_maxwell_numbranch))
+      FOUR_C_THROW(
+          "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): "
+          "NUMBRANCH={} but MATIDS has size {}.",
+          params_->id(), generalized_maxwell_numbranch, generalized_maxwell_matids->size());
+
+    if (generalized_maxwell_solve != "OneStepTheta" &&
+        generalized_maxwell_solve != "ExponentialTimeDiscretization")
+      FOUR_C_THROW(
+          "Invalid SOLVE='{}' in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper (MAT {}). "
+          "Use OneStepTheta or ExponentialTimeDiscretization.",
+          generalized_maxwell_solve, params_->id());
+
+    const std::vector<Core::LinAlg::Matrix<6, 1>> emptybigvec(generalized_maxwell_numbranch);
     histbranchstresscurr_ =
         std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
             numgp, emptybigvec);
@@ -461,7 +511,40 @@ void Mat::ViscoElastHyper::update()
     histbranchstresslast_ = histbranchstresscurr_;
     histbranchelaststresslast_ = histbranchelaststresscurr_;
 
-    const std::vector<Core::LinAlg::Matrix<6, 1>> emptybigvec(true);
+    if (histbranchstresslast_ == nullptr || histbranchelaststresslast_ == nullptr)
+      FOUR_C_THROW(
+          "Missing generalized Maxwell history state in MAT_ViscoElastHyper (MAT {}) during "
+          "update.",
+          params_ != nullptr ? params_->id() : -1);
+
+    if (histbranchstresslast_->size() != static_cast<unsigned int>(numgp) ||
+        histbranchelaststresslast_->size() != static_cast<unsigned int>(numgp))
+      FOUR_C_THROW(
+          "Invalid generalized Maxwell history container size in MAT_ViscoElastHyper (MAT {}) "
+          "during update: expected {} gauss points, got {} and {}.",
+          params_ != nullptr ? params_->id() : -1, numgp, histbranchstresslast_->size(),
+          histbranchelaststresslast_->size());
+
+    const std::size_t numbranch =
+        numgp > 0 ? histbranchstresslast_->at(0).size() : static_cast<std::size_t>(0);
+    if (numbranch == 0)
+      FOUR_C_THROW(
+          "Invalid generalized Maxwell history in MAT_ViscoElastHyper (MAT {}) during update: "
+          "branch history size is zero.",
+          params_ != nullptr ? params_->id() : -1);
+
+    for (int gp = 0; gp < numgp; ++gp)
+    {
+      if (histbranchstresslast_->at(gp).size() != numbranch ||
+          histbranchelaststresslast_->at(gp).size() != numbranch)
+        FOUR_C_THROW(
+            "Inconsistent generalized Maxwell history sizes in MAT_ViscoElastHyper (MAT {}) "
+            "during update at GP {}: expected {} branch entries, got {} and {}.",
+            params_ != nullptr ? params_->id() : -1, gp, numbranch,
+            histbranchstresslast_->at(gp).size(), histbranchelaststresslast_->at(gp).size());
+    }
+
+    const std::vector<Core::LinAlg::Matrix<6, 1>> emptybigvec(numbranch);
     histbranchstresscurr_ =
         std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
             numgp, emptybigvec);
@@ -520,6 +603,18 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
   Core::LinAlg::Voigt::Stresses::to_strain_like(iC_stress, iC_strain);
   Core::LinAlg::Voigt::Stresses::invariants_principal(prinv, C_stress);
 
+  const bool has_visco_contribution = isovisco_ || visco_generalized_maxwell_ || visco_fsls_;
+  double dt = 0.0;
+  if (has_visco_contribution)
+  {
+    if (context.time_step_size == nullptr)
+      FOUR_C_THROW(
+          "Missing EvaluationContext::time_step_size in MAT_ViscoElastHyper (MAT {}, GP {}, "
+          "ELE {}).",
+          params_ != nullptr ? params_->id() : -1, gp, eleGID);
+    dt = *context.time_step_size;
+  }
+
 
   Core::LinAlg::Voigt::identity_matrix(id2);
 
@@ -540,9 +635,10 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
       invariants_modified(modinv, prinv);
     }
     // calculate viscous quantities
-    evaluate_kin_quant_vis(C_strain, C_stress, iC_stress, prinv, rateinv, modC_strain, params,
-        context, scgrate, modrcgrate, modrateinv, gp);
-    evaluate_mu_xi(prinv, modinv, mu, modmu, xi, modxi, rateinv, modrateinv, params, gp, eleGID);
+    evaluate_kin_quant_vis(C_strain, C_stress, iC_stress, prinv, rateinv, modC_strain, dt, scgrate,
+        modrcgrate, modrateinv, gp);
+    evaluate_mu_xi(
+        prinv, modinv, mu, modmu, xi, modxi, rateinv, modrateinv, params, dt, gp, eleGID);
   }
 
   // blank resulting quantities
@@ -594,7 +690,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
   {
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(Core::LinAlg::Initialization::zero);
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(Core::LinAlg::Initialization::zero);
-    evaluate_visco_generalized_maxwell(Q, cmatq, params, context, &glstrain_mat, gp, eleGID);
+    evaluate_visco_generalized_maxwell(Q, cmatq, dt, &glstrain_mat, gp, eleGID);
     stress_view.update(1.0, Q, 1.0);
     cmat_view.update(1.0, cmatq, 1.0);
   }
@@ -605,7 +701,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(
         Core::LinAlg::Initialization::zero);  // artificial viscous stress
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(Core::LinAlg::Initialization::zero);
-    evaluate_visco_fsls(stress_view, cmat_view, Q, cmatq, params, context, gp);
+    evaluate_visco_fsls(stress_view, cmat_view, Q, cmatq, dt, gp, eleGID);
     stress_view.update(1.0, Q, 1.);
     cmat_view.update(1.0, cmatq, 1.);
   }
@@ -637,15 +733,14 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
 void Mat::ViscoElastHyper::evaluate_kin_quant_vis(Core::LinAlg::Matrix<6, 1>& rcg,
     Core::LinAlg::Matrix<6, 1>& scg, Core::LinAlg::Matrix<6, 1>& icg,
     Core::LinAlg::Matrix<3, 1>& prinv, Core::LinAlg::Matrix<7, 1>& rateinv,
-    Core::LinAlg::Matrix<6, 1>& modrcg, const Teuchos::ParameterList& params,
-    const EvaluationContext<3>& context, Core::LinAlg::Matrix<6, 1>& scgrate,
+    Core::LinAlg::Matrix<6, 1>& modrcg, const double dt, Core::LinAlg::Matrix<6, 1>& scgrate,
     Core::LinAlg::Matrix<6, 1>& modrcgrate, Core::LinAlg::Matrix<7, 1>& modrateinv, const int gp)
 {
-  // time derivative
-  // -------------------------------------------------------------------
-  // get time algorithmic parameters
-  FOUR_C_ASSERT(context.time_step_size, "Time step size not given in evaluation context.");
-  double dt = *context.time_step_size;
+  if (dt <= 0.0)
+    FOUR_C_THROW(
+        "Invalid time step size dt={} in MAT_ViscoElastHyper (MAT {}, GP {}) for "
+        "rate-dependent viscous update. Expected dt > 0.",
+        dt, params_ != nullptr ? params_->id() : -1, gp);
 
   // modrcg : \overline{C} = J^{-\frac{2}{3}} C
   const double modscale = std::pow(prinv(2), -1. / 3.);
@@ -711,8 +806,8 @@ void Mat::ViscoElastHyper::evaluate_mu_xi(Core::LinAlg::Matrix<3, 1>& prinv,
     Core::LinAlg::Matrix<3, 1>& modinv, Core::LinAlg::Matrix<8, 1>& mu,
     Core::LinAlg::Matrix<8, 1>& modmu, Core::LinAlg::Matrix<33, 1>& xi,
     Core::LinAlg::Matrix<33, 1>& modxi, Core::LinAlg::Matrix<7, 1>& rateinv,
-    Core::LinAlg::Matrix<7, 1>& modrateinv, const Teuchos::ParameterList& params, const int gp,
-    const int eleGID)
+    Core::LinAlg::Matrix<7, 1>& modrateinv, const Teuchos::ParameterList& params, const double dt,
+    const int gp, const int eleGID)
 {
   // principal materials
   if (summandProperties_.isoprinc)
@@ -720,7 +815,7 @@ void Mat::ViscoElastHyper::evaluate_mu_xi(Core::LinAlg::Matrix<3, 1>& prinv,
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
-      potsum_[p]->add_coefficients_visco_principal(prinv, mu, xi, rateinv, params, gp, eleGID);
+      potsum_[p]->add_coefficients_visco_principal(prinv, mu, xi, rateinv, params, dt, gp, eleGID);
     }
   }
 
@@ -731,7 +826,7 @@ void Mat::ViscoElastHyper::evaluate_mu_xi(Core::LinAlg::Matrix<3, 1>& prinv,
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
       potsum_[p]->add_coefficients_visco_modified(
-          modinv, modmu, modxi, modrateinv, params, gp, eleGID);
+          modinv, modmu, modxi, modrateinv, params, dt, gp, eleGID);
     }
   }
 }
@@ -823,10 +918,11 @@ void Mat::ViscoElastHyper::evaluate_iso_visco_modified(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matrix<6, 1>& Q,
-    Core::LinAlg::Matrix<6, 6>& cmatq, const Teuchos::ParameterList& params,
-    const Mat::EvaluationContext<3>& context, const Core::LinAlg::Matrix<6, 1>* glstrain,
+    Core::LinAlg::Matrix<6, 6>& cmatq, const double dt, const Core::LinAlg::Matrix<6, 1>* glstrain,
     const int gp, const int eleGID)
 {
+  const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
+
   int numbranch = -1;
   std::string solve = "";
   const std::vector<int>* matids = nullptr;
@@ -835,6 +931,7 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
   std::vector<std::vector<std::shared_ptr<Mat::Elastic::Summand>>> branchespotsum(
       0);  // vector for each branch of vectors of summands in each branch
   std::vector<double> branchtau(0);
+  int generalized_maxwell_model_count = 0;
 
   // get parameters of ViscoGeneralizedMaxwell
   for (unsigned int p = 0; p < potsum_.size(); ++p)
@@ -844,18 +941,38 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
 
     if (generalized_maxwell != nullptr)
     {
+      ++generalized_maxwell_model_count;
       generalized_maxwell->read_material_parameters(numbranch, matids, solve);
       branchespotsum = generalized_maxwell->get_branchespotsum();
       branchtau = generalized_maxwell->get_branchtaus();
     }
   }
 
+  if (generalized_maxwell_model_count != 1)
+    FOUR_C_THROW(
+        "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}): "
+        "expected exactly one VISCO_GeneralizedMaxwell summand but found {}.",
+        visco_mat_id, gp, eleGID, generalized_maxwell_model_count);
+
+  if (matids == nullptr)
+    FOUR_C_THROW(
+        "Failed to read MATIDS for VISCO_GeneralizedMaxwell in MAT_ViscoElastHyper (MAT {}, "
+        "GP {}, ELE {}).",
+        visco_mat_id, gp, eleGID);
+
+  if (numbranch != static_cast<int>(matids->size()))
+    FOUR_C_THROW(
+        "Invalid VISCO_GeneralizedMaxwell state in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}): "
+        "NUMBRANCH={} but MATIDS has size {}.",
+        visco_mat_id, gp, eleGID, numbranch, matids->size());
+
   if (numbranch < 0 || branchespotsum.size() != static_cast<unsigned int>(numbranch) ||
       branchtau.size() != static_cast<unsigned int>(numbranch))
     FOUR_C_THROW(
-        "Failed to initialize VISCO_GeneralizedMaxwell branches. Expected {} branches, got {} "
-        "branch definitions and {} branch relaxation times.",
-        numbranch, branchespotsum.size(), branchtau.size());
+        "Failed to initialize VISCO_GeneralizedMaxwell branches in MAT_ViscoElastHyper (MAT {}, "
+        "GP {}, ELE {}). Expected {} branches, got {} branch definitions and {} branch "
+        "relaxation times.",
+        visco_mat_id, gp, eleGID, numbranch, branchespotsum.size(), branchtau.size());
 
   Core::LinAlg::Matrix<6, 6> cmatqbranch(Core::LinAlg::Initialization::zero);
   std::vector<Core::LinAlg::Matrix<6, 1>> S(numbranch);
@@ -867,24 +984,17 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
   S_n = histbranchelaststresslast_->at(gp);
   Q_n = histbranchstresslast_->at(gp);
 
+  if (S_n.size() != static_cast<unsigned int>(numbranch))
+    FOUR_C_THROW(
+        "Invalid generalized Maxwell elastic branch history size in MAT_ViscoElastHyper (MAT {}, "
+        "GP {}, ELE {}): expected {} entries but got {}.",
+        visco_mat_id, gp, eleGID, numbranch, S_n.size());
 
-  // check size, correct if needed (only needed in the first time step)
-  if (S_n.size() != (unsigned int)(abs(numbranch)))
-  {
-    std::vector<Core::LinAlg::Matrix<6, 1>> S_n(numbranch);
-    for (int branch = 0; branch < numbranch; branch++) S_n.at(branch).clear();
-    histbranchelaststresslast_->at(gp) = S_n;
-  }
-
-  if (Q_n.size() != (unsigned int)(abs(numbranch)))
-  {
-    std::vector<Core::LinAlg::Matrix<6, 1>> Q_n(numbranch);
-    for (int branch = 0; branch < numbranch; branch++) Q_n.at(branch).clear();
-    histbranchstresslast_->at(gp) = Q_n;
-  }
-
-  S_n = histbranchelaststresslast_->at(gp);
-  Q_n = histbranchstresslast_->at(gp);
+  if (Q_n.size() != static_cast<unsigned int>(numbranch))
+    FOUR_C_THROW(
+        "Invalid generalized Maxwell viscous branch history size in MAT_ViscoElastHyper (MAT {}, "
+        "GP {}, ELE {}): expected {} entries but got {}.",
+        visco_mat_id, gp, eleGID, numbranch, Q_n.size());
 
   // save switches
   SummandProperties branchProperties;
@@ -902,11 +1012,20 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
     elast_hyper_properties(branchpotsum, branchProperties);
 
     if (isovisco_)
-      FOUR_C_THROW("case isovisco for branch in generalized Maxwell model not yet considered!");
+      FOUR_C_THROW(
+          "Unsupported branch formulation in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper "
+          "(MAT {}, GP {}, ELE {}): isovisco branch response is not implemented.",
+          visco_mat_id, gp, eleGID);
     if (branchProperties.anisoprinc)
-      FOUR_C_THROW("case anisoprinc for branch in generalized Maxwell model not yet considered!");
+      FOUR_C_THROW(
+          "Unsupported branch formulation in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper "
+          "(MAT {}, GP {}, ELE {}): anisoprinc branch response is not implemented.",
+          visco_mat_id, gp, eleGID);
     if (branchProperties.anisomod)
-      FOUR_C_THROW("case anisomod for branch in generalized Maxwell model not yet considered!");
+      FOUR_C_THROW(
+          "Unsupported branch formulation in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper "
+          "(MAT {}, GP {}, ELE {}): anisomod branch response is not implemented.",
+          visco_mat_id, gp, eleGID);
 
     Core::LinAlg::Matrix<6, 1> modrcg(Core::LinAlg::Initialization::zero);
     Core::LinAlg::Matrix<3, 1> prinv(Core::LinAlg::Initialization::zero);
@@ -971,9 +1090,6 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
       // get time algorithmic parameters
       // NOTE: dt can be zero (in restart of STI) for Generalized Maxwell model
       // there is no special treatment required. Adaptation for Kelvin-Voigt were necessary.
-      FOUR_C_ASSERT(context.time_step_size, "Time step size not given in evaluation context.");
-      double dt = *context.time_step_size;  // TIMESTEP in the input file
-
       // evaluate scalars to compute
       // Q^(n+1) = tau/(tau+theta*dt) [(tau-dt+theta*dt)/tau Q + beta(S^(n+1) - S^n)]
       lambdascalar1 = tau / (tau + theta * dt);
@@ -994,9 +1110,6 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
       // initialize scalars
       double xiscalar1(true);
       double xiscalar2(true);
-      FOUR_C_ASSERT(context.time_step_size, "Time step size not given in evaluation context.");
-      double dt = *context.time_step_size;
-
       xiscalar1 = exp(-dt / tau);
       xiscalar2 = exp(-dt / (2 * tau));
 
@@ -1010,9 +1123,9 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
     }
     else
       FOUR_C_THROW(
-          "Invalid input for SOLVE='{}'. Try valid input OneStepTheta or "
-          "ExponentialTimeDiscretization",
-          solve);
+          "Invalid SOLVE='{}' in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper (MAT {}, GP "
+          "{}, ELE {}). Use OneStepTheta or ExponentialTimeDiscretization.",
+          solve, visco_mat_id, gp, eleGID);
 
     // sum up branches
     Q.update(1.0, Qbranch.at(i), 1.0);
@@ -1030,40 +1143,76 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
 /*----------------------------------------------------------------------*/
 void Mat::ViscoElastHyper::evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress,
     Core::LinAlg::Matrix<6, 6> cmat, Core::LinAlg::Matrix<6, 1>& Q,
-    Core::LinAlg::Matrix<6, 6>& cmatq, const Teuchos::ParameterList& params,
-    const EvaluationContext<3>& context, const int gp)
+    Core::LinAlg::Matrix<6, 6>& cmatq, const double dt, const int gp, const int eleGID)
 {
+  const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
+
   // initialize parameters
-  double tau(true);
-  double alpha(true);
-  double beta(true);
+  double tau = 0.0;
+  double alpha = 0.0;
+  double beta = 0.0;
+  int fsls_model_count = 0;
+  int fsls_summand_mat_id = -1;
   // string not used in visco_fsls
   std::string solve = "";
 
   // read material parameters of FSLS material
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    potsum_[p]->read_material_parameters_visco(tau, beta, alpha, solve);
+    std::shared_ptr<Mat::Elastic::Fsls> fsls =
+        std::dynamic_pointer_cast<Mat::Elastic::Fsls>(potsum_[p]);
+
+    if (fsls != nullptr)
+    {
+      ++fsls_model_count;
+      fsls_summand_mat_id = params_ != nullptr ? mat_id(p) : -1;
+      fsls->read_material_parameters_visco(tau, beta, alpha, solve);
+    }
   }
 
-  // safety checks for alpha
-  if (alpha == 1)
+  if (fsls_model_count != 1)
     FOUR_C_THROW(
-        "Alpha cannot be 1 in fractional viscoelasticity. Use VISCO_GeneralizedMaxwell "
-        "instead.");
+        "Invalid VISCO_FSLS setup in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}): expected "
+        "exactly one VISCO_FSLS summand but found {}.",
+        visco_mat_id, gp, eleGID, fsls_model_count);
 
-  if (alpha < 0) FOUR_C_THROW("Alpha has to be between 0 and 1 in fractional viscoelasticity.");
+  if (tau <= 0.0)
+    FOUR_C_THROW(
+        "Invalid TAU={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP {}, "
+        "ELE {}). TAU has to be positive.",
+        tau, fsls_summand_mat_id, visco_mat_id, gp, eleGID);
 
-  // get time algorithmic parameters
-  // NOTE: dt can be zero (in restart of STI) for this model
-  // there is no special treatment required.
-  FOUR_C_ASSERT(context.time_step_size, "Time step size not given in evaluation context.");
-  double dt = *context.time_step_size;
+  if (alpha < 0.0 || alpha >= 1.0)
+    FOUR_C_THROW(
+        "Invalid ALPHA={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP "
+        "{}, ELE {}). Expected 0 <= ALPHA < 1.",
+        alpha, fsls_summand_mat_id, visco_mat_id, gp, eleGID);
 
+  if (dt < 0.0)
+    FOUR_C_THROW(
+        "Invalid time step size dt={} in VISCO_FSLS evaluation for MAT_ViscoElastHyper (MAT {}, "
+        "GP {}, ELE {}). Expected dt >= 0.",
+        dt, visco_mat_id, gp, eleGID);
+
+  if (histfslsartstresslastall_ == nullptr)
+    FOUR_C_THROW("Missing FSLS history state in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}).",
+        visco_mat_id, gp, eleGID);
+
+  if (gp < 0 || gp >= static_cast<int>(histfslsartstresslastall_->size()))
+    FOUR_C_THROW(
+        "Invalid Gauss point index GP={} for FSLS history in MAT_ViscoElastHyper (MAT {}, ELE "
+        "{}). History container size is {}.",
+        gp, visco_mat_id, eleGID, histfslsartstresslastall_->size());
 
   // read history of last time step at gp
   // -> Q_n and history size
-  int hs = histfslsartstresslastall_->at(0).size();  // history size
+  int hs = histfslsartstresslastall_->at(gp).size();  // history size
+  if (hs <= 0)
+    FOUR_C_THROW(
+        "Invalid FSLS history size {} at GP {} in MAT_ViscoElastHyper (MAT {}, ELE {}). "
+        "Expected at least one entry.",
+        hs, gp, visco_mat_id, eleGID);
+
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_n(histfslsartstresslastall_->at(gp).at(hs - 1));
 
 

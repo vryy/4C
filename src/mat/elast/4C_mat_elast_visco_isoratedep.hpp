@@ -91,8 +91,8 @@ namespace Mat
               modinv,                         ///< modified invariants of right Cauchy-Green tensor
           Core::LinAlg::Matrix<8, 1>& modmu,  ///< necessary coefficients for piola-kirchhoff-stress
           Core::LinAlg::Matrix<33, 1>& modxi,  ///< necessary coefficients for viscosity tensor
-          Core::LinAlg::Matrix<7, 1>& modrateinv, const Teuchos::ParameterList& params, int gp,
-          int eleGID) override;
+          Core::LinAlg::Matrix<7, 1>& modrateinv, const Teuchos::ParameterList& params, double dt,
+          int gp, int eleGID) override;
 
       /// Indicator for formulation
       void specify_formulation(
