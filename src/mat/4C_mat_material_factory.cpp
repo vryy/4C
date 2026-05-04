@@ -53,9 +53,8 @@
 #include "4C_mat_elast_isoyeoh.hpp"
 #include "4C_mat_elast_remodelfiber.hpp"
 #include "4C_mat_elast_visco_coupmyocard.hpp"
-#include "4C_mat_elast_visco_fract.hpp"
-#include "4C_mat_elast_visco_generalizedgenmax.hpp"
-#include "4C_mat_elast_visco_genmax.hpp"
+#include "4C_mat_elast_visco_fsls.hpp"
+#include "4C_mat_elast_visco_generalizedmaxwell.hpp"
 #include "4C_mat_elast_visco_isoratedep.hpp"
 #include "4C_mat_elast_vologden.hpp"
 #include "4C_mat_elast_volpenalty.hpp"
@@ -802,17 +801,13 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     {
       return make_parameter_impl<Mat::Elastic::PAR::CoupVarga>(id, type, input_data);
     }
-    case Core::Materials::mes_fract:
+    case Core::Materials::mes_fsls:
     {
-      return make_parameter_impl<Mat::Elastic::PAR::Fract>(id, type, input_data);
+      return make_parameter_impl<Mat::Elastic::PAR::Fsls>(id, type, input_data);
     }
-    case Core::Materials::mes_genmax:
+    case Core::Materials::mes_generalizedmaxwell:
     {
-      return make_parameter_impl<Mat::Elastic::PAR::GenMax>(id, type, input_data);
-    }
-    case Core::Materials::mes_generalizedgenmax:
-    {
-      return make_parameter_impl<Mat::Elastic::PAR::GeneralizedGenMax>(id, type, input_data);
+      return make_parameter_impl<Mat::Elastic::PAR::GeneralizedMaxwell>(id, type, input_data);
     }
     case Core::Materials::mes_isoanisoexpo:
     {
@@ -885,10 +880,6 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     case Core::Materials::mes_viscobranch:
     {
       return make_parameter_impl<Mat::Elastic::PAR::ViscoBranch>(id, type, input_data);
-    }
-    case Core::Materials::mes_viscopart:
-    {
-      return make_parameter_impl<Mat::Elastic::PAR::ViscoPart>(id, type, input_data);
     }
     case Core::Materials::mes_structuraltensorstratgy:
     {

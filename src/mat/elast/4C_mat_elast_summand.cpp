@@ -43,9 +43,8 @@
 #include "4C_mat_elast_isoyeoh.hpp"
 #include "4C_mat_elast_remodelfiber.hpp"
 #include "4C_mat_elast_visco_coupmyocard.hpp"
-#include "4C_mat_elast_visco_fract.hpp"
-#include "4C_mat_elast_visco_generalizedgenmax.hpp"
-#include "4C_mat_elast_visco_genmax.hpp"
+#include "4C_mat_elast_visco_fsls.hpp"
+#include "4C_mat_elast_visco_generalizedmaxwell.hpp"
 #include "4C_mat_elast_visco_isoratedep.hpp"
 #include "4C_mat_elast_vologden.hpp"
 #include "4C_mat_elast_volpenalty.hpp"
@@ -189,20 +188,15 @@ std::shared_ptr<Mat::Elastic::Summand> Mat::Elastic::Summand::factory(int matnum
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupVarga*>(curmat);
       return std::make_shared<CoupVarga>(params);
     }
-    case Core::Materials::mes_fract:
+    case Core::Materials::mes_fsls:
     {
-      auto* params = dynamic_cast<Mat::Elastic::PAR::Fract*>(curmat);
-      return std::make_shared<Fract>(params);
+      auto* params = dynamic_cast<Mat::Elastic::PAR::Fsls*>(curmat);
+      return std::make_shared<Fsls>(params);
     }
-    case Core::Materials::mes_genmax:
+    case Core::Materials::mes_generalizedmaxwell:
     {
-      auto* params = dynamic_cast<Mat::Elastic::PAR::GenMax*>(curmat);
-      return std::make_shared<GenMax>(params);
-    }
-    case Core::Materials::mes_generalizedgenmax:
-    {
-      auto* params = dynamic_cast<Mat::Elastic::PAR::GeneralizedGenMax*>(curmat);
-      return std::make_shared<GeneralizedGenMax>(params);
+      auto* params = dynamic_cast<Mat::Elastic::PAR::GeneralizedMaxwell*>(curmat);
+      return std::make_shared<GeneralizedMaxwell>(params);
     }
     case Core::Materials::mes_isoanisoexpo:
     {
@@ -294,11 +288,6 @@ std::shared_ptr<Mat::Elastic::Summand> Mat::Elastic::Summand::factory(int matnum
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::ViscoBranch*>(curmat);
       return std::make_shared<ViscoBranch>(params);
-    }
-    case Core::Materials::mes_viscopart:
-    {
-      auto* params = dynamic_cast<Mat::Elastic::PAR::ViscoPart*>(curmat);
-      return std::make_shared<ViscoPart>(params);
     }
     default:
       FOUR_C_THROW("cannot deal with type {}", curmat->type());

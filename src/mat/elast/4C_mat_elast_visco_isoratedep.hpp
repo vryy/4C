@@ -91,8 +91,8 @@ namespace Mat
               modinv,                         ///< modified invariants of right Cauchy-Green tensor
           Core::LinAlg::Matrix<8, 1>& modmu,  ///< necessary coefficients for piola-kirchhoff-stress
           Core::LinAlg::Matrix<33, 1>& modxi,  ///< necessary coefficients for viscosity tensor
-          Core::LinAlg::Matrix<7, 1>& modrateinv, const Teuchos::ParameterList& params, int gp,
-          int eleGID) override;
+          Core::LinAlg::Matrix<7, 1>& modrateinv, const Teuchos::ParameterList& params, double dt,
+          int gp, int eleGID) override;
 
       /// Indicator for formulation
       void specify_formulation(
@@ -110,14 +110,12 @@ namespace Mat
 
       /// Indicator for the chosen viscoelastic formulations
       void specify_visco_formulation(
-          bool& isovisco,     ///< global indicator for isotropic, split and viscous formulation
-          bool& viscogenmax,  ///< global indicator for viscous contribution according the SLS-Model
-          bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution
-                                         ///< according to the generalized Maxwell Model
-          bool& viscofract  ///< global indicator for viscous contribution according the FSLS-Model
+          bool& visco_iso_rate,  ///< global indicator for isotropic rate-dependent visco response
+          bool& visco_generalized_maxwell,  ///< global indicator for generalized Maxwell model
+          bool& visco_fsls                  ///< global indicator for FSLS model
           ) override
       {
-        isovisco = true;
+        visco_iso_rate = true;
         return;
       };
 
