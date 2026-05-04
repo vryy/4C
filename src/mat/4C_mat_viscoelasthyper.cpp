@@ -68,22 +68,7 @@ Mat::ViscoElastHyper::ViscoElastHyper() : Mat::ElastHyper()
   visco_generalized_maxwell_ = false;
   visco_fsls_ = false;
 
-  // history data 09/13
-  isinitvis_ = false;
-  histscgcurr_ = nullptr;
-  histscglast_ = nullptr;
-  histmodrcgcurr_ = nullptr;
-  histmodrcglast_ = nullptr;
-
-  // generalized Maxwell
-  histbranchstresscurr_ = nullptr;
-  histbranchstresslast_ = nullptr;
-  histbranchelaststresscurr_ = nullptr;
-  histbranchelaststresslast_ = nullptr;
-
-  // fsls
-  histfslsartstresscurr_ = nullptr;
-  histfslsartstresslastall_ = nullptr;
+  state_.clear();
 }
 
 
@@ -93,8 +78,7 @@ Mat::ViscoElastHyper::ViscoElastHyper(Mat::PAR::ViscoElastHyper* params)
     : Mat::ElastHyper(params),
       isovisco_(false),
       visco_generalized_maxwell_(false),
-      visco_fsls_(false),
-      isinitvis_(false)
+      visco_fsls_(false)
 {
 }
 
@@ -126,52 +110,14 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
     }
 
     //  pack history data
-    int histsize = 0;
-    if (initialized())
-    {
-      histsize = histscglast_->size();
-    }
+    const int histsize = state_.packed_history_size();
     add_to_pack(data, histsize);  // Length of history vector(s)
-    for (int var = 0; var < histsize; ++var)
-    {
-      // insert last converged states
-      add_to_pack(data, histscglast_->at(var));
-      add_to_pack(data, histmodrcglast_->at(var));
+    state_.pack_kinematic_history(data, histsize);
 
-      // insert current iteration states
-      add_to_pack(data, histscgcurr_->at(var));
-      add_to_pack(data, histmodrcgcurr_->at(var));
-    }
-
-    if (visco_generalized_maxwell_)
-    {
-      for (int var = 0; var < histsize; ++var)
-      {
-        // insert last converged states
-        add_to_pack(data, histbranchstresslast_->at(var));
-        add_to_pack(data, histbranchelaststresslast_->at(var));
-
-        // insert current iteration states
-        add_to_pack(data, histbranchstresscurr_->at(var));
-        add_to_pack(data, histbranchelaststresscurr_->at(var));
-      }
-    }
+    if (visco_generalized_maxwell_) state_.pack_generalized_maxwell_history(data, histsize);
 
     // pack history of FSLS-model
-    if (visco_fsls_)
-    {
-      // check if history exists
-      add_to_pack(data, (histfslsartstresslastall_ != nullptr));
-      if (!(int)(histfslsartstresslastall_ != nullptr))
-        FOUR_C_THROW("Something got wrong with your history data.");
-
-      // pack stepsize
-      add_to_pack(data, histfslsartstresslastall_->at(0).size());
-      // pack history values
-      for (std::size_t gp = 0; gp < histfslsartstresslastall_->size(); ++gp)
-        for (std::size_t step = 0; step < histfslsartstresslastall_->at(gp).size(); ++step)
-          add_to_pack(data, histfslsartstresslastall_->at(gp).at(step));
-    }
+    if (visco_fsls_) state_.pack_fsls_history(data);
   }
 }
 
@@ -188,6 +134,7 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   isovisco_ = false;
   visco_generalized_maxwell_ = false;
   visco_fsls_ = false;
+  state_.clear();
 
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -238,81 +185,18 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
     }
 
     // history data 09/13
-    isinitvis_ = true;
+    state_.set_state_initialized(true);
     int histsize;
     extract_from_pack(buffer, histsize);
 
-    if (histsize == 0) isinitvis_ = false;
+    if (histsize == 0) state_.set_state_initialized(false);
 
-    // initialize last variables
-    histscglast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
-    histmodrcglast_ =
-        std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
+    state_.unpack_kinematic_history(buffer, histsize);
 
-    // initialize current variables
-    histscgcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
-    histmodrcgcurr_ =
-        std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
-
-
-    for (int gp = 0; gp < histsize; ++gp)
-    {
-      // last vectors are unpacked
-      extract_from_pack(buffer, histscglast_->at(gp));
-      extract_from_pack(buffer, histmodrcglast_->at(gp));
-
-      // current iteration states are unpacked
-      extract_from_pack(buffer, histscgcurr_->at(gp));
-      extract_from_pack(buffer, histmodrcgcurr_->at(gp));
-    }
-
-    if (visco_generalized_maxwell_)
-    {
-      histbranchstresslast_ =
-          std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
-              histsize);
-      histbranchelaststresslast_ =
-          std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
-              histsize);
-      histbranchstresscurr_ =
-          std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
-              histsize);
-      histbranchelaststresscurr_ =
-          std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
-              histsize);
-
-      for (int gp = 0; gp < histsize; ++gp)
-      {
-        // last vectors are unpacked
-        extract_from_pack(buffer, histbranchstresslast_->at(gp));
-        extract_from_pack(buffer, histbranchelaststresslast_->at(gp));
-
-        // current iteration states are unpacked
-        extract_from_pack(buffer, histbranchstresscurr_->at(gp));
-        extract_from_pack(buffer, histbranchelaststresscurr_->at(gp));
-      }
-    }
+    if (visco_generalized_maxwell_) state_.unpack_generalized_maxwell_history(buffer, histsize);
 
     // for FSLS-model
-    if (visco_fsls_)
-    {
-      // check if history data is saved
-      bool have_historyalldata;
-      extract_from_pack(buffer, have_historyalldata);
-      if (!have_historyalldata) FOUR_C_THROW("Something got wrong with your history data.");
-
-      histfslsartstresscurr_ =
-          std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize);
-
-      std::size_t histfslsartstressall_stepsize;
-      extract_from_pack(buffer, histfslsartstressall_stepsize);
-      histfslsartstresslastall_ =
-          std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<6, 1>>>>(
-              histsize, std::vector<Core::LinAlg::Matrix<6, 1>>(histfslsartstressall_stepsize));
-      for (std::size_t gp = 0; gp < static_cast<std::size_t>(histsize); ++gp)
-        for (std::size_t step = 0; step < histfslsartstressall_stepsize; ++step)
-          extract_from_pack(buffer, histfslsartstresslastall_->at(gp).at(step));
-    }
+    if (visco_fsls_) state_.unpack_fsls_history(buffer, histsize);
   }
 }
 
@@ -347,14 +231,7 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
   }
 
   // Initialise/allocate history variables 09/13
-  const Core::LinAlg::Matrix<6, 1> emptyvec(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<6, 1> idvec(Core::LinAlg::Initialization::zero);
-  for (int i = 0; i < 3; ++i) idvec(i) = 1.;
-
-  histscgcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
-  histscglast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
-  histmodrcgcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
-  histmodrcglast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
+  state_.initialize_kinematic_history(numgp);
 
   if (visco_generalized_maxwell_)
   {
@@ -407,33 +284,16 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
           "Use OneStepTheta or ExponentialTimeDiscretization.",
           generalized_maxwell_solve, params_->id());
 
-    const std::vector<Core::LinAlg::Matrix<6, 1>> emptybigvec(generalized_maxwell_numbranch);
-    histbranchstresscurr_ =
-        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
-            numgp, emptybigvec);
-    histbranchstresslast_ =
-        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
-            numgp, emptybigvec);
-    histbranchelaststresscurr_ =
-        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
-            numgp, emptybigvec);
-    histbranchelaststresslast_ =
-        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
-            numgp, emptybigvec);
+    state_.initialize_generalized_maxwell_history(numgp, generalized_maxwell_numbranch);
   }
 
   // in case of FSLS-model
   if (visco_fsls_)
   {
-    histfslsartstresscurr_ =
-        std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
-    // set true that history size is known
-    histfslsartstresslastall_ =
-        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
-            numgp, std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(true));
+    state_.initialize_fsls_history(numgp);
   }
 
-  isinitvis_ = true;
+  state_.set_state_initialized(true);
 
   return;
 }
@@ -446,8 +306,7 @@ void Mat::ViscoElastHyper::update()
   Mat::ElastHyper::update();
 
   // Update history values 09/13
-  histscglast_ = histscgcurr_;
-  histmodrcglast_ = histmodrcgcurr_;
+  state_.commit_kinematic_history();
 
   // for FSLS-model
   if (visco_fsls_)
@@ -461,86 +320,17 @@ void Mat::ViscoElastHyper::update()
     // maximal size of history (in time steps)
     const unsigned int max_hist = numsteps + 1;
 
-    // for each gp
-    for (int gp = 0; gp < (int)histfslsartstresslastall_->size(); ++gp)
-    {
-      // add current stress (all gp) at the end of history data
-      histfslsartstresslastall_->at(gp).push_back(histfslsartstresscurr_->at(gp));
-
-      // this is in the moment not used, because all history data is saved
-      // if maximal size of history-vector is reached
-      if (histfslsartstresslastall_->at(gp).size() > max_hist)
-      {
-        // Hint: If you want to use this functionality, reimplement it with a pointer (abirzle
-        // 12/17)
-
-        // save current history data in tmp_vec, but skip the first data
-        // (= oldest data, which should deleted)
-        std::vector<Core::LinAlg::Matrix<6, 1>> tmp_vec(
-            ++histfslsartstresslastall_->at(gp).begin(), histfslsartstresslastall_->at(gp).end());
-        // save data back to history-vector
-        histfslsartstresslastall_->at(gp) = tmp_vec;
-      }
-    }
+    state_.append_fsls_history(max_hist);
   }
 
-  // initialize current data
-  const Core::LinAlg::Matrix<6, 1> emptyvec(Core::LinAlg::Initialization::zero);
-
-  Core::LinAlg::Matrix<6, 1> idvec(Core::LinAlg::Initialization::zero);
-  for (int i = 0; i < 3; ++i) idvec(i) = 1.;
-  const int numgp = histscglast_->size();
-
-  histscgcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
-  histmodrcgcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<6, 1>>>(numgp, idvec);
-  histfslsartstresscurr_ =
-      std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptyvec);
+  const int numgp = state_.gauss_point_count();
+  state_.reset_current_iteration(numgp);
 
   if (visco_generalized_maxwell_)
   {
-    histbranchstresslast_ = histbranchstresscurr_;
-    histbranchelaststresslast_ = histbranchelaststresscurr_;
-
-    if (histbranchstresslast_ == nullptr || histbranchelaststresslast_ == nullptr)
-      FOUR_C_THROW(
-          "Missing generalized Maxwell history state in MAT_ViscoElastHyper (MAT {}) during "
-          "update.",
-          params_ != nullptr ? params_->id() : -1);
-
-    if (histbranchstresslast_->size() != static_cast<unsigned int>(numgp) ||
-        histbranchelaststresslast_->size() != static_cast<unsigned int>(numgp))
-      FOUR_C_THROW(
-          "Invalid generalized Maxwell history container size in MAT_ViscoElastHyper (MAT {}) "
-          "during update: expected {} gauss points, got {} and {}.",
-          params_ != nullptr ? params_->id() : -1, numgp, histbranchstresslast_->size(),
-          histbranchelaststresslast_->size());
-
-    const std::size_t numbranch =
-        numgp > 0 ? histbranchstresslast_->at(0).size() : static_cast<std::size_t>(0);
-    if (numbranch == 0)
-      FOUR_C_THROW(
-          "Invalid generalized Maxwell history in MAT_ViscoElastHyper (MAT {}) during update: "
-          "branch history size is zero.",
-          params_ != nullptr ? params_->id() : -1);
-
-    for (int gp = 0; gp < numgp; ++gp)
-    {
-      if (histbranchstresslast_->at(gp).size() != numbranch ||
-          histbranchelaststresslast_->at(gp).size() != numbranch)
-        FOUR_C_THROW(
-            "Inconsistent generalized Maxwell history sizes in MAT_ViscoElastHyper (MAT {}) "
-            "during update at GP {}: expected {} branch entries, got {} and {}.",
-            params_ != nullptr ? params_->id() : -1, gp, numbranch,
-            histbranchstresslast_->at(gp).size(), histbranchelaststresslast_->at(gp).size());
-    }
-
-    const std::vector<Core::LinAlg::Matrix<6, 1>> emptybigvec(numbranch);
-    histbranchstresscurr_ =
-        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
-            numgp, emptybigvec);
-    histbranchelaststresscurr_ =
-        std::make_shared<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>(
-            numgp, emptybigvec);
+    const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
+    const std::size_t numbranch = state_.rollover_generalized_maxwell_history(numgp, visco_mat_id);
+    state_.reset_generalized_maxwell_current(numgp, numbranch);
   }
 
   return;
@@ -737,12 +527,12 @@ void Mat::ViscoElastHyper::evaluate_kin_quant_vis(Core::LinAlg::Matrix<6, 1>& rc
   modrcg.update(modscale, rcg);
 
   // read history
-  Core::LinAlg::Matrix<6, 1> scglast(histscglast_->at(gp));
-  Core::LinAlg::Matrix<6, 1> modrcglast(histmodrcglast_->at(gp));
+  Core::LinAlg::Matrix<6, 1> scglast(state_.scg_last_at(gp));
+  Core::LinAlg::Matrix<6, 1> modrcglast(state_.modrcg_last_at(gp));
 
   // Update history of Cauchy-Green Tensor
-  histscgcurr_->at(gp) = scg;        // principal material: store C^{n}
-  histmodrcgcurr_->at(gp) = modrcg;  // decoupled material: store \overline{C}^{n}
+  state_.set_scg_current_at(gp, scg);        // principal material: store C^{n}
+  state_.set_modrcg_current_at(gp, modrcg);  // decoupled material: store \overline{C}^{n}
 
   // rate of Cauchy-Green Tensor
   // REMARK: strain-like 6-Voigt vector
@@ -971,8 +761,8 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
   std::vector<Core::LinAlg::Matrix<6, 1>> Q_n(numbranch);
 
   // read history
-  S_n = histbranchelaststresslast_->at(gp);
-  Q_n = histbranchstresslast_->at(gp);
+  S_n = state_.branch_elastic_stress_last_at(gp);
+  Q_n = state_.branch_stress_last_at(gp);
 
   if (S_n.size() != static_cast<unsigned int>(numbranch))
     FOUR_C_THROW(
@@ -1124,8 +914,8 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
   }  // end for loop over branches
 
   // update history
-  histbranchelaststresscurr_->at(gp) = S;
-  histbranchstresscurr_->at(gp) = Qbranch;
+  state_.set_branch_elastic_stress_current_at(gp, S);
+  state_.set_branch_stress_current_at(gp, Qbranch);
 }  // evaluate_visco_generalized_maxwell
 
 
@@ -1184,26 +974,26 @@ void Mat::ViscoElastHyper::evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress
         "GP {}, ELE {}). Expected dt >= 0.",
         dt, visco_mat_id, gp, eleGID);
 
-  if (histfslsartstresslastall_ == nullptr)
+  if (!state_.has_fsls_history())
     FOUR_C_THROW("Missing FSLS history state in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}).",
         visco_mat_id, gp, eleGID);
 
-  if (gp < 0 || gp >= static_cast<int>(histfslsartstresslastall_->size()))
+  if (gp < 0 || gp >= state_.fsls_num_gauss_points())
     FOUR_C_THROW(
         "Invalid Gauss point index GP={} for FSLS history in MAT_ViscoElastHyper (MAT {}, ELE "
         "{}). History container size is {}.",
-        gp, visco_mat_id, eleGID, histfslsartstresslastall_->size());
+        gp, visco_mat_id, eleGID, state_.fsls_num_gauss_points());
 
   // read history of last time step at gp
   // -> Q_n and history size
-  int hs = histfslsartstresslastall_->at(gp).size();  // history size
+  const int hs = state_.fsls_history_size_at(gp);  // history size
   if (hs <= 0)
     FOUR_C_THROW(
         "Invalid FSLS history size {} at GP {} in MAT_ViscoElastHyper (MAT {}, ELE {}). "
         "Expected at least one entry.",
         hs, gp, visco_mat_id, eleGID);
 
-  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_n(histfslsartstresslastall_->at(gp).at(hs - 1));
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_n(state_.fsls_history_at(gp, hs - 1));
 
 
   // calculate artificial history stress Qq with weights b_j
@@ -1223,8 +1013,7 @@ void Mat::ViscoElastHyper::evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress
     fac = (j - 1. - alpha) / j;
     bj = bj * fac;
 
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Qj(
-        histfslsartstresslastall_->at(gp).at(hs - j));  //(hs-1) correlates with last entry = n
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Qj(state_.fsls_history_at(gp, hs - j));
     Qq.update(bj, Qj, 1.0);
   }
 
@@ -1253,7 +1042,7 @@ void Mat::ViscoElastHyper::evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress
 
 
   // update history for next step
-  histfslsartstresscurr_->at(gp) = Q;  // Q_n+1
+  state_.set_fsls_current_at(gp, Q);  // Q_n+1
 
 
   // calculate final stress here and in Evaluate

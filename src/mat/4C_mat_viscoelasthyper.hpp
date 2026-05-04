@@ -16,6 +16,7 @@
 #include "4C_mat_elasthyper.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_mat_viscoelast_state.hpp"
 #include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -167,7 +168,7 @@ namespace Mat
     }
 
     /// Check if history variables are already initialized
-    virtual bool initialized() const { return isinitvis_ && (histscgcurr_ != nullptr); }
+    virtual bool initialized() const { return state_.initialized(); }
 
     /// hyperelastic stress response plus elasticity tensor
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
@@ -237,29 +238,7 @@ namespace Mat
                        //@}
 
    private:
-    /// viscous history Cauchy-Green-Tensor
-    std::shared_ptr<std::vector<Core::LinAlg::Matrix<6, 1>>>
-        histscgcurr_;  ///< current Cauchy-Green-Tensor
-    std::shared_ptr<std::vector<Core::LinAlg::Matrix<6, 1>>>
-        histscglast_;  ///< Cauchy-Green-Tensor of last converged state
-    std::shared_ptr<std::vector<Core::LinAlg::Matrix<6, 1>>>
-        histmodrcgcurr_;  ///< current decoupled Cauchy-Green-Tensor
-    std::shared_ptr<std::vector<Core::LinAlg::Matrix<6, 1>>>
-        histmodrcglast_;  ///< decoupled Cauchy-Green-Tensor of last converged state
-    std::shared_ptr<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
-        histbranchstresscurr_;  ///< current stress of the branches
-    std::shared_ptr<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
-        histbranchstresslast_;  ///< stress of the branches of last converged state
-    std::shared_ptr<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
-        histbranchelaststresscurr_;  ///< current elastic stress of the branches
-    std::shared_ptr<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
-        histbranchelaststresslast_;  ///< elastic stress of the branches of last converged state
-    std::shared_ptr<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
-        histfslsartstresscurr_;  ///< current artificial stress of FSLS model
-    std::shared_ptr<std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>>
-        histfslsartstresslastall_;  ///< artificial FSLS stress history of converged states
-
-    bool isinitvis_;  ///< indicates if #Initialized routine has been called
+    ViscoElastState state_;  ///< unified viscoelastic history state
   };  // class ViscoElastHyper
 
 }  // namespace Mat
