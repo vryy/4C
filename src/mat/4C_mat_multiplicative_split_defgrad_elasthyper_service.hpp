@@ -19,6 +19,17 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
 {
+
+
+  /// Free-energy related stress factors, as presented in Holzapfel - Nonlinear Solid Mechanics.
+  struct StressFactors
+  {
+    /// 2nd Piola-Kirchhoff stress factors, cf. Holzapfel p. 216.
+    Core::LinAlg::Matrix<3, 1> gamma{Core::LinAlg::Initialization::zero};
+    /// Constitutive tensor factors, cf. Holzapfel p. 261.
+    Core::LinAlg::Matrix<8, 1> delta{Core::LinAlg::Initialization::zero};
+  };
+
   inline void evaluate_ce(const Core::LinAlg::Matrix<3, 3>& F,
       const Core::LinAlg::Matrix<3, 3>& iFin, Core::LinAlg::Matrix<3, 3>& Ce)
   {

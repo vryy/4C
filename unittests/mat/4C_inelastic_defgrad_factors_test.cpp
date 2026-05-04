@@ -10,6 +10,7 @@
 #include "4C_global_data.hpp"
 #include "4C_io_input_parameter_container.templates.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_funct.hpp"
 #include "4C_mat_elast_couptransverselyisotropic.hpp"
@@ -37,6 +38,18 @@ namespace
   {
    protected:
     static constexpr int problemid_ = 0;
+
+    struct ReformulatedJohnsonCookParameters
+    {
+      double strain_rate_prefac;
+      double strain_rate_exp_fac;
+      double init_yield_strength;
+      double isotrop_harden_prefac;
+      double isotrop_harden_exp;
+      double ref_temperature;
+      double melt_temperature;
+      double temperature_sens;
+    };
 
     void SetUp() override
     {
@@ -537,11 +550,11 @@ namespace
       transv.curr_delta(6, 0) = 75421.4154847960; transv.curr_delta(7, 0) = 0.0000000000;
       iso.curr_delta = transv.curr_delta;
 
-      // curr_Me_dev_sym_M_
-      transv.curr_Me_dev_sym_M(0, 0) = -19470.3479922481; transv.curr_Me_dev_sym_M(0, 1) = 4697.9637131783; transv.curr_Me_dev_sym_M(0, 2) = 8854.0883100775;
-      transv.curr_Me_dev_sym_M(1, 0) = 4697.9637131783; transv.curr_Me_dev_sym_M(1, 1) = -136.8589922481; transv.curr_Me_dev_sym_M(1, 2) = 6281.4860542636;
-      transv.curr_Me_dev_sym_M(2, 0) = 8854.0883100775; transv.curr_Me_dev_sym_M(2, 1) = 6281.4860542636; transv.curr_Me_dev_sym_M(2, 2) = 19607.2069844961;
-      iso.curr_Me_dev_sym_M = transv.curr_Me_dev_sym_M;
+      // curr_Mtheta_dev_sym_M_
+      transv.curr_Mtheta_dev_sym_M(0, 0) = -19470.3479922481; transv.curr_Mtheta_dev_sym_M(0, 1) = 4697.9637131783; transv.curr_Mtheta_dev_sym_M(0, 2) = 8854.0883100775;
+      transv.curr_Mtheta_dev_sym_M(1, 0) = 4697.9637131783; transv.curr_Mtheta_dev_sym_M(1, 1) = -136.8589922481; transv.curr_Mtheta_dev_sym_M(1, 2) = 6281.4860542636;
+      transv.curr_Mtheta_dev_sym_M(2, 0) = 8854.0883100775; transv.curr_Mtheta_dev_sym_M(2, 1) = 6281.4860542636; transv.curr_Mtheta_dev_sym_M(2, 2) = 19607.2069844961;
+      iso.curr_Mtheta_dev_sym_M = transv.curr_Mtheta_dev_sym_M;
 
       // curr_equiv_stress_
       transv.curr_equiv_stress = 58944.20584626558;
@@ -684,104 +697,104 @@ namespace
 
 
 
-      // curr_dMe_dev_sym_diFin_
-      transv.curr_dMe_dev_sym_diFin(0, 0) = 124028.1343669251;
-      transv.curr_dMe_dev_sym_diFin(0, 1) = -74339.3074935401;
-      transv.curr_dMe_dev_sym_diFin(0, 2) = -87346.0413436692;
-      transv.curr_dMe_dev_sym_diFin(0, 3) = -3559.7726098191;
-      transv.curr_dMe_dev_sym_diFin(0, 4) = -4337.7932816537;
-      transv.curr_dMe_dev_sym_diFin(0, 5) = -6261.5917312662;
-      transv.curr_dMe_dev_sym_diFin(0, 6) = 5558.1498708010;
-      transv.curr_dMe_dev_sym_diFin(0, 7) = -4460.9974160207;
-      transv.curr_dMe_dev_sym_diFin(0, 8) = 10846.3049095607;
-      transv.curr_dMe_dev_sym_diFin(1, 0) = -62014.0671834625;
-      transv.curr_dMe_dev_sym_diFin(1, 1) = 148678.6149870801;
-      transv.curr_dMe_dev_sym_diFin(1, 2) = -87346.0413436692;
-      transv.curr_dMe_dev_sym_diFin(1, 3) = 7119.5452196382;
-      transv.curr_dMe_dev_sym_diFin(1, 4) = -4337.7932816537;
-      transv.curr_dMe_dev_sym_diFin(1, 5) = -6261.5917312662;
-      transv.curr_dMe_dev_sym_diFin(1, 6) = -2779.0749354005;
-      transv.curr_dMe_dev_sym_diFin(1, 7) = 8921.9948320413;
-      transv.curr_dMe_dev_sym_diFin(1, 8) = -5423.1524547804;
-      transv.curr_dMe_dev_sym_diFin(2, 0) = -62014.0671834625;
-      transv.curr_dMe_dev_sym_diFin(2, 1) = -74339.3074935401;
-      transv.curr_dMe_dev_sym_diFin(2, 2) = 174692.0826873385;
-      transv.curr_dMe_dev_sym_diFin(2, 3) = -3559.7726098191;
-      transv.curr_dMe_dev_sym_diFin(2, 4) = 8675.5865633075;
-      transv.curr_dMe_dev_sym_diFin(2, 5) = 12523.1834625323;
-      transv.curr_dMe_dev_sym_diFin(2, 6) = -2779.0749354005;
-      transv.curr_dMe_dev_sym_diFin(2, 7) = -4460.9974160207;
-      transv.curr_dMe_dev_sym_diFin(2, 8) = -5423.1524547804;
-      transv.curr_dMe_dev_sym_diFin(3, 0) = 5339.6589147287;
-      transv.curr_dMe_dev_sym_diFin(3, 1) = 4168.6124031008;
-      transv.curr_dMe_dev_sym_diFin(3, 2) = 0.0000000000;
-      transv.curr_dMe_dev_sym_diFin(3, 3) = 93021.1007751938;
-      transv.curr_dMe_dev_sym_diFin(3, 4) = 0.0000000000;
-      transv.curr_dMe_dev_sym_diFin(3, 5) = 0.0000000000;
-      transv.curr_dMe_dev_sym_diFin(3, 6) = 111508.9612403101;
-      transv.curr_dMe_dev_sym_diFin(3, 7) = 8134.7286821705;
-      transv.curr_dMe_dev_sym_diFin(3, 8) = 6691.4961240310;
-      transv.curr_dMe_dev_sym_diFin(4, 0) = 0.0000000000;
-      transv.curr_dMe_dev_sym_diFin(4, 1) = 6506.6899224806;
-      transv.curr_dMe_dev_sym_diFin(4, 2) = 6691.4961240310;
-      transv.curr_dMe_dev_sym_diFin(4, 3) = 9392.3875968992;
-      transv.curr_dMe_dev_sym_diFin(4, 4) = 111508.9612403101;
-      transv.curr_dMe_dev_sym_diFin(4, 5) = 5339.6589147287;
-      transv.curr_dMe_dev_sym_diFin(4, 6) = 0.0000000000;
-      transv.curr_dMe_dev_sym_diFin(4, 7) = 131019.0620155039;
-      transv.curr_dMe_dev_sym_diFin(4, 8) = 0.0000000000;
-      transv.curr_dMe_dev_sym_diFin(5, 0) = 9392.3875968992;
-      transv.curr_dMe_dev_sym_diFin(5, 1) = 0.0000000000;
-      transv.curr_dMe_dev_sym_diFin(5, 2) = 8134.7286821705;
-      transv.curr_dMe_dev_sym_diFin(5, 3) = 0.0000000000;
-      transv.curr_dMe_dev_sym_diFin(5, 4) = 4168.6124031008;
-      transv.curr_dMe_dev_sym_diFin(5, 5) = 93021.1007751938;
-      transv.curr_dMe_dev_sym_diFin(5, 6) = 6506.6899224806;
-      transv.curr_dMe_dev_sym_diFin(5, 7) = 0.0000000000;
-      transv.curr_dMe_dev_sym_diFin(5, 8) = 131019.0620155039;
+      // curr_dMtheta_dev_sym_diFin_
+      transv.curr_dMtheta_dev_sym_diFin(0, 0) = 124028.1343669251;
+      transv.curr_dMtheta_dev_sym_diFin(0, 1) = -74339.3074935401;
+      transv.curr_dMtheta_dev_sym_diFin(0, 2) = -87346.0413436692;
+      transv.curr_dMtheta_dev_sym_diFin(0, 3) = -3559.7726098191;
+      transv.curr_dMtheta_dev_sym_diFin(0, 4) = -4337.7932816537;
+      transv.curr_dMtheta_dev_sym_diFin(0, 5) = -6261.5917312662;
+      transv.curr_dMtheta_dev_sym_diFin(0, 6) = 5558.1498708010;
+      transv.curr_dMtheta_dev_sym_diFin(0, 7) = -4460.9974160207;
+      transv.curr_dMtheta_dev_sym_diFin(0, 8) = 10846.3049095607;
+      transv.curr_dMtheta_dev_sym_diFin(1, 0) = -62014.0671834625;
+      transv.curr_dMtheta_dev_sym_diFin(1, 1) = 148678.6149870801;
+      transv.curr_dMtheta_dev_sym_diFin(1, 2) = -87346.0413436692;
+      transv.curr_dMtheta_dev_sym_diFin(1, 3) = 7119.5452196382;
+      transv.curr_dMtheta_dev_sym_diFin(1, 4) = -4337.7932816537;
+      transv.curr_dMtheta_dev_sym_diFin(1, 5) = -6261.5917312662;
+      transv.curr_dMtheta_dev_sym_diFin(1, 6) = -2779.0749354005;
+      transv.curr_dMtheta_dev_sym_diFin(1, 7) = 8921.9948320413;
+      transv.curr_dMtheta_dev_sym_diFin(1, 8) = -5423.1524547804;
+      transv.curr_dMtheta_dev_sym_diFin(2, 0) = -62014.0671834625;
+      transv.curr_dMtheta_dev_sym_diFin(2, 1) = -74339.3074935401;
+      transv.curr_dMtheta_dev_sym_diFin(2, 2) = 174692.0826873385;
+      transv.curr_dMtheta_dev_sym_diFin(2, 3) = -3559.7726098191;
+      transv.curr_dMtheta_dev_sym_diFin(2, 4) = 8675.5865633075;
+      transv.curr_dMtheta_dev_sym_diFin(2, 5) = 12523.1834625323;
+      transv.curr_dMtheta_dev_sym_diFin(2, 6) = -2779.0749354005;
+      transv.curr_dMtheta_dev_sym_diFin(2, 7) = -4460.9974160207;
+      transv.curr_dMtheta_dev_sym_diFin(2, 8) = -5423.1524547804;
+      transv.curr_dMtheta_dev_sym_diFin(3, 0) = 5339.6589147287;
+      transv.curr_dMtheta_dev_sym_diFin(3, 1) = 4168.6124031008;
+      transv.curr_dMtheta_dev_sym_diFin(3, 2) = 0.0000000000;
+      transv.curr_dMtheta_dev_sym_diFin(3, 3) = 93021.1007751938;
+      transv.curr_dMtheta_dev_sym_diFin(3, 4) = 0.0000000000;
+      transv.curr_dMtheta_dev_sym_diFin(3, 5) = 0.0000000000;
+      transv.curr_dMtheta_dev_sym_diFin(3, 6) = 111508.9612403101;
+      transv.curr_dMtheta_dev_sym_diFin(3, 7) = 8134.7286821705;
+      transv.curr_dMtheta_dev_sym_diFin(3, 8) = 6691.4961240310;
+      transv.curr_dMtheta_dev_sym_diFin(4, 0) = 0.0000000000;
+      transv.curr_dMtheta_dev_sym_diFin(4, 1) = 6506.6899224806;
+      transv.curr_dMtheta_dev_sym_diFin(4, 2) = 6691.4961240310;
+      transv.curr_dMtheta_dev_sym_diFin(4, 3) = 9392.3875968992;
+      transv.curr_dMtheta_dev_sym_diFin(4, 4) = 111508.9612403101;
+      transv.curr_dMtheta_dev_sym_diFin(4, 5) = 5339.6589147287;
+      transv.curr_dMtheta_dev_sym_diFin(4, 6) = 0.0000000000;
+      transv.curr_dMtheta_dev_sym_diFin(4, 7) = 131019.0620155039;
+      transv.curr_dMtheta_dev_sym_diFin(4, 8) = 0.0000000000;
+      transv.curr_dMtheta_dev_sym_diFin(5, 0) = 9392.3875968992;
+      transv.curr_dMtheta_dev_sym_diFin(5, 1) = 0.0000000000;
+      transv.curr_dMtheta_dev_sym_diFin(5, 2) = 8134.7286821705;
+      transv.curr_dMtheta_dev_sym_diFin(5, 3) = 0.0000000000;
+      transv.curr_dMtheta_dev_sym_diFin(5, 4) = 4168.6124031008;
+      transv.curr_dMtheta_dev_sym_diFin(5, 5) = 93021.1007751938;
+      transv.curr_dMtheta_dev_sym_diFin(5, 6) = 6506.6899224806;
+      transv.curr_dMtheta_dev_sym_diFin(5, 7) = 0.0000000000;
+      transv.curr_dMtheta_dev_sym_diFin(5, 8) = 131019.0620155039;
 
-      iso.curr_dMe_dev_sym_diFin = transv.curr_dMe_dev_sym_diFin;
+      iso.curr_dMtheta_dev_sym_diFin = transv.curr_dMtheta_dev_sym_diFin;
 
 
-      // curr_dMe_dev_sym_dC_
-      transv.curr_dMe_dev_sym_dC(0, 0) = 50444.1343669251;
-      transv.curr_dMe_dev_sym_dC(0, 1) = -25684.1085271318;
-      transv.curr_dMe_dev_sym_dC(0, 2) = -25787.7777777778;
-      transv.curr_dMe_dev_sym_dC(0, 3) = -409.0439276486;
-      transv.curr_dMe_dev_sym_dC(0, 4) = 155.5555555556;
-      transv.curr_dMe_dev_sym_dC(0, 5) = -359.3798449612;
-      transv.curr_dMe_dev_sym_dC(1, 0) = -25223.1524547804;
-      transv.curr_dMe_dev_sym_dC(1, 1) = 51368.9147286822;
-      transv.curr_dMe_dev_sym_dC(1, 2) = -25788.1653746770;
-      transv.curr_dMe_dev_sym_dC(1, 3) = 437.6227390181;
-      transv.curr_dMe_dev_sym_dC(1, 4) = -0.1808785530;
-      transv.curr_dMe_dev_sym_dC(1, 5) = -130.5426356589;
-      transv.curr_dMe_dev_sym_dC(2, 0) = -25220.9819121447;
-      transv.curr_dMe_dev_sym_dC(2, 1) = -25684.8062015504;
-      transv.curr_dMe_dev_sym_dC(2, 2) = 51575.9431524548;
-      transv.curr_dMe_dev_sym_dC(2, 3) = -28.5788113695;
-      transv.curr_dMe_dev_sym_dC(2, 4) = -155.3746770026;
-      transv.curr_dMe_dev_sym_dC(2, 5) = 489.9224806202;
-      transv.curr_dMe_dev_sym_dC(3, 0) = 459.5348837209;
-      transv.curr_dMe_dev_sym_dC(3, 1) = -386.4341085271;
-      transv.curr_dMe_dev_sym_dC(3, 2) = 0.4651162791;
-      transv.curr_dMe_dev_sym_dC(3, 3) = 38178.5271317829;
-      transv.curr_dMe_dev_sym_dC(3, 4) = -115.5426356589;
-      transv.curr_dMe_dev_sym_dC(3, 5) = -77.2868217054;
-      transv.curr_dMe_dev_sym_dC(4, 0) = 3.7209302326;
-      transv.curr_dMe_dev_sym_dC(4, 1) = -309.1472868217;
-      transv.curr_dMe_dev_sym_dC(4, 2) = -154.8837209302;
-      transv.curr_dMe_dev_sym_dC(4, 3) = 308.2170542636;
-      transv.curr_dMe_dev_sym_dC(4, 4) = 38605.0775193798;
-      transv.curr_dMe_dev_sym_dC(4, 5) = 231.7054263566;
-      transv.curr_dMe_dev_sym_dC(5, 0) = 612.7131782946;
-      transv.curr_dMe_dev_sym_dC(5, 1) = 1.5503875969;
-      transv.curr_dMe_dev_sym_dC(5, 2) = -232.3255813953;
-      transv.curr_dMe_dev_sym_dC(5, 3) = -154.7286821705;
-      transv.curr_dMe_dev_sym_dC(5, 4) = -193.1395348837;
-      transv.curr_dMe_dev_sym_dC(5, 5) = 38255.3488372093;
+      // curr_dMtheta_dev_sym_dC_
+      transv.curr_dMtheta_dev_sym_dC(0, 0) = 50444.1343669251;
+      transv.curr_dMtheta_dev_sym_dC(0, 1) = -25684.1085271318;
+      transv.curr_dMtheta_dev_sym_dC(0, 2) = -25787.7777777778;
+      transv.curr_dMtheta_dev_sym_dC(0, 3) = -409.0439276486;
+      transv.curr_dMtheta_dev_sym_dC(0, 4) = 155.5555555556;
+      transv.curr_dMtheta_dev_sym_dC(0, 5) = -359.3798449612;
+      transv.curr_dMtheta_dev_sym_dC(1, 0) = -25223.1524547804;
+      transv.curr_dMtheta_dev_sym_dC(1, 1) = 51368.9147286822;
+      transv.curr_dMtheta_dev_sym_dC(1, 2) = -25788.1653746770;
+      transv.curr_dMtheta_dev_sym_dC(1, 3) = 437.6227390181;
+      transv.curr_dMtheta_dev_sym_dC(1, 4) = -0.1808785530;
+      transv.curr_dMtheta_dev_sym_dC(1, 5) = -130.5426356589;
+      transv.curr_dMtheta_dev_sym_dC(2, 0) = -25220.9819121447;
+      transv.curr_dMtheta_dev_sym_dC(2, 1) = -25684.8062015504;
+      transv.curr_dMtheta_dev_sym_dC(2, 2) = 51575.9431524548;
+      transv.curr_dMtheta_dev_sym_dC(2, 3) = -28.5788113695;
+      transv.curr_dMtheta_dev_sym_dC(2, 4) = -155.3746770026;
+      transv.curr_dMtheta_dev_sym_dC(2, 5) = 489.9224806202;
+      transv.curr_dMtheta_dev_sym_dC(3, 0) = 459.5348837209;
+      transv.curr_dMtheta_dev_sym_dC(3, 1) = -386.4341085271;
+      transv.curr_dMtheta_dev_sym_dC(3, 2) = 0.4651162791;
+      transv.curr_dMtheta_dev_sym_dC(3, 3) = 38178.5271317829;
+      transv.curr_dMtheta_dev_sym_dC(3, 4) = -115.5426356589;
+      transv.curr_dMtheta_dev_sym_dC(3, 5) = -77.2868217054;
+      transv.curr_dMtheta_dev_sym_dC(4, 0) = 3.7209302326;
+      transv.curr_dMtheta_dev_sym_dC(4, 1) = -309.1472868217;
+      transv.curr_dMtheta_dev_sym_dC(4, 2) = -154.8837209302;
+      transv.curr_dMtheta_dev_sym_dC(4, 3) = 308.2170542636;
+      transv.curr_dMtheta_dev_sym_dC(4, 4) = 38605.0775193798;
+      transv.curr_dMtheta_dev_sym_dC(4, 5) = 231.7054263566;
+      transv.curr_dMtheta_dev_sym_dC(5, 0) = 612.7131782946;
+      transv.curr_dMtheta_dev_sym_dC(5, 1) = 1.5503875969;
+      transv.curr_dMtheta_dev_sym_dC(5, 2) = -232.3255813953;
+      transv.curr_dMtheta_dev_sym_dC(5, 3) = -154.7286821705;
+      transv.curr_dMtheta_dev_sym_dC(5, 4) = -193.1395348837;
+      transv.curr_dMtheta_dev_sym_dC(5, 5) = 38255.3488372093;
 
-      iso.curr_dMe_dev_sym_dC = transv.curr_dMe_dev_sym_dC;
+      iso.curr_dMtheta_dev_sym_dC = transv.curr_dMtheta_dev_sym_dC;
 
 
       // curr_dequiv_stress_diFin_ and curr_dequiv_stress_dC_
@@ -1193,18 +1206,22 @@ namespace
       iso.curr_dlpdepsp(2, 0) = iso.curr_ddpdepsp(2, 0);
     }
 
-    void set_up_local_newton_material(
+    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast>
+    set_up_isotropic_viscoplastic_material(
         const Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonParams&
             local_newton_params,
         std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>&
             local_newton_material_params,
-        std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast>& local_newton_material,
-        const bool use_substepping = false, const unsigned int max_substepping_halve_num = 0)
+        const bool use_substepping = false, const unsigned int max_substepping_halve_num = 0,
+        const Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LinearizationType
+            linearization_type =
+                Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LinearizationType::analytic,
+        const std::optional<ReformulatedJohnsonCookParameters>& viscoplastic_law_params =
+            std::nullopt)
     {
       Core::IO::InputParameterContainer material_data;
       material_data.add("FIBER_READER_ID", 5);
-      material_data.add("LINEARIZATION",
-          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LinearizationType::analytic);
+      material_data.add("LINEARIZATION", linearization_type);
       material_data.add("MATRIX_EXP_CALC_METHOD", Core::LinAlg::MatrixExpCalcMethod::automatic);
       material_data.add("MATRIX_EXP_DERIV_CALC_METHOD",
           Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::automatic);
@@ -1263,20 +1280,49 @@ namespace
                   fiber_reader_data)));
       Mat::Elastic::CoupTransverselyIsotropic fiber_reader{fiber_reader_params.get()};
 
-      auto viscoplastic_law = std::make_shared<Mat::Viscoplastic::ReformulatedJohnsonCook>(
-          Global::Problem::instance(problemid_)->materials()->parameter_by_id(400));
+      std::shared_ptr<Mat::Viscoplastic::ReformulatedJohnsonCook> viscoplastic_law;
+      if (viscoplastic_law_params.has_value())
+      {
+        Core::IO::InputParameterContainer viscoplastic_law_data;
+        viscoplastic_law_data.add(
+            "STRAIN_RATE_PREFAC", viscoplastic_law_params->strain_rate_prefac);
+        viscoplastic_law_data.add(
+            "STRAIN_RATE_EXP_FAC", viscoplastic_law_params->strain_rate_exp_fac);
+        viscoplastic_law_data.add(
+            "INIT_YIELD_STRENGTH", viscoplastic_law_params->init_yield_strength);
+        viscoplastic_law_data.add(
+            "ISOTROP_HARDEN_PREFAC", viscoplastic_law_params->isotrop_harden_prefac);
+        viscoplastic_law_data.add(
+            "ISOTROP_HARDEN_EXP", viscoplastic_law_params->isotrop_harden_exp);
+        viscoplastic_law_data.add("REF_TEMPERATURE", viscoplastic_law_params->ref_temperature);
+        viscoplastic_law_data.add("MELT_TEMPERATURE", viscoplastic_law_params->melt_temperature);
+        viscoplastic_law_data.add("TEMPERATURE_SENS", viscoplastic_law_params->temperature_sens);
+        owned_viscoplastic_law_params_.emplace_back(Mat::make_parameter(
+            401 + static_cast<int>(owned_viscoplastic_law_params_.size()),
+            Core::Materials::MaterialType::mvl_reformulated_Johnson_Cook, viscoplastic_law_data));
+
+        viscoplastic_law = std::make_shared<Mat::Viscoplastic::ReformulatedJohnsonCook>(
+            owned_viscoplastic_law_params_.back().get());
+      }
+      else
+      {
+        viscoplastic_law = std::make_shared<Mat::Viscoplastic::ReformulatedJohnsonCook>(
+            Global::Problem::instance(problemid_)->materials()->parameter_by_id(400));
+      }
 
       std::vector<std::shared_ptr<Mat::Elastic::Summand>> pot_sum_el;
       pot_sum_el.emplace_back(Mat::Elastic::Summand::factory(200));
       std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> pot_sum_el_transv_iso;
 
-      local_newton_material = std::make_shared<Mat::InelasticDefgradTransvIsotropElastViscoplast>(
-          local_newton_material_params.get(), viscoplastic_law, fiber_reader, pot_sum_el,
-          pot_sum_el_transv_iso);
+      auto isotropic_viscoplastic_material =
+          std::make_shared<Mat::InelasticDefgradTransvIsotropElastViscoplast>(
+              local_newton_material_params.get(), viscoplastic_law, fiber_reader, pot_sum_el,
+              pot_sum_el_transv_iso);
 
       Discret::Elements::Fibers fibers;
       fibers.element_fibers.emplace_back(Core::LinAlg::Tensor<double, 3>{{0.0, 0.0, 1.0}});
-      local_newton_material->setup(1, fibers, {});
+      isotropic_viscoplastic_material->setup(1, fibers, {});
+      return isotropic_viscoplastic_material;
     }
 
 
@@ -1340,6 +1386,9 @@ namespace
     std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> isotrop_vplast_refJC_;
     // pointer to InelasticDefgradTransvIsotropElastViscoplast (isotropic, logarithmic substepping)
     std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> isotrop_elast_viscoplast_;
+    // pointer to InelasticDefgradTransvIsotropElastViscoplast (isotropic, logarithmic substepping,
+    // reformulated Johnson-Cook thermo-viscoplasticity)
+    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> isotrop_thermo_vplast_refJC_;
     // pointer to parameters of InelasticDefgradTransvIsotropElastViscoplast (transversely
     // isotropic, logarithmic substepping, Reformulated Johnson-Cook viscoplasticity)
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>
@@ -1364,6 +1413,8 @@ namespace
     // (isotropic, logarithmic substepping, Reformulated Johnson-Cook viscoplasticity)
     Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::StateQuantityDerivatives
         state_quantity_derivatives_solution_isotrop_;
+
+    std::vector<std::shared_ptr<Core::Mat::PAR::Parameter>> owned_viscoplastic_law_params_;
 
     Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
   };
@@ -1671,7 +1722,8 @@ namespace
     // clang-format on
 
     // evaluate the method
-    lin_scalar_iso_->evaluate_od_stiff_mat(&FM_, iFin_lin_scalar_iso_solution_, dSdiFin_, dSdc);
+    lin_scalar_iso_->evaluate_od_stiff_mat(
+        &FM_, Core::LinAlg::identity_matrix<3>(), iFin_lin_scalar_iso_solution_, dSdiFin_, dSdc);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
@@ -1685,7 +1737,8 @@ namespace
     // clang-format on
 
     // evaluate the method
-    lin_scalar_aniso_->evaluate_od_stiff_mat(&FM_, iFin_lin_scalar_aniso_solution_, dSdiFin_, dSdc);
+    lin_scalar_aniso_->evaluate_od_stiff_mat(
+        &FM_, Core::LinAlg::identity_matrix<3>(), iFin_lin_scalar_aniso_solution_, dSdiFin_, dSdc);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
@@ -1699,8 +1752,8 @@ namespace
     // clang-format on
 
     // evaluate the method
-    poly_intercal_frac_iso_->evaluate_od_stiff_mat(
-        &FM_, iFin_poly_intercal_frac_iso_solution_, dSdiFin_, dSdc);
+    poly_intercal_frac_iso_->evaluate_od_stiff_mat(&FM_, Core::LinAlg::identity_matrix<3>(),
+        iFin_poly_intercal_frac_iso_solution_, dSdiFin_, dSdc);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
@@ -1714,8 +1767,8 @@ namespace
     // clang-format on
 
     // evaluate the method
-    poly_intercal_frac_aniso_->evaluate_od_stiff_mat(
-        &FM_, iFin_poly_intercal_frac_aniso_solution_, dSdiFin_, dSdc);
+    poly_intercal_frac_aniso_->evaluate_od_stiff_mat(&FM_, Core::LinAlg::identity_matrix<3>(),
+        iFin_poly_intercal_frac_aniso_solution_, dSdiFin_, dSdc);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
@@ -1729,7 +1782,8 @@ namespace
     // clang-format on
 
     // evaluate the method
-    lin_temp_iso_->evaluate_od_stiff_mat(&FM_, iFin_lin_temp_iso_solution_, dSdiFin_, dSdc);
+    lin_temp_iso_->evaluate_od_stiff_mat(
+        &FM_, Core::LinAlg::identity_matrix<3>(), iFin_lin_temp_iso_solution_, dSdiFin_, dSdc);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-15);
@@ -1782,10 +1836,10 @@ namespace
         computed_state_quantities_transv_isotrop.curr_delta, 1.0e-10);
     FOUR_C_EXPECT_NEAR(state_quantities_solution_isotrop_.curr_delta,
         computed_state_quantities_isotrop.curr_delta, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(state_quantities_solution_transv_isotrop_.curr_Me_dev_sym_M,
-        computed_state_quantities_transv_isotrop.curr_Me_dev_sym_M, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(state_quantities_solution_isotrop_.curr_Me_dev_sym_M,
-        computed_state_quantities_isotrop.curr_Me_dev_sym_M, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(state_quantities_solution_transv_isotrop_.curr_Mtheta_dev_sym_M,
+        computed_state_quantities_transv_isotrop.curr_Mtheta_dev_sym_M, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(state_quantities_solution_isotrop_.curr_Mtheta_dev_sym_M,
+        computed_state_quantities_isotrop.curr_Mtheta_dev_sym_M, 1.0e-10);
     EXPECT_NEAR(state_quantities_solution_transv_isotrop_.curr_equiv_stress,
         computed_state_quantities_transv_isotrop.curr_equiv_stress, 1.0e-8);
     EXPECT_NEAR(state_quantities_solution_isotrop_.curr_equiv_stress,
@@ -1869,8 +1923,7 @@ namespace
 
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast> material_params;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material;
-    set_up_local_newton_material(local_newton_params, material_params, material);
+    auto material = set_up_isotropic_viscoplastic_material(local_newton_params, material_params);
 
     Teuchos::ParameterList params_list;
     double total_time = 1.0e-6;
@@ -1909,8 +1962,7 @@ namespace
     };
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast> material_params;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material;
-    set_up_local_newton_material(local_newton_params, material_params, material);
+    auto material = set_up_isotropic_viscoplastic_material(local_newton_params, material_params);
 
     Teuchos::ParameterList params_list;
     double total_time = 1.0e-6;
@@ -1952,8 +2004,7 @@ namespace
     };
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast> material_params;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material;
-    set_up_local_newton_material(local_newton_params, material_params, material);
+    auto material = set_up_isotropic_viscoplastic_material(local_newton_params, material_params);
 
     Teuchos::ParameterList params_list;
     double total_time = 1.0e-6;
@@ -2004,8 +2055,7 @@ namespace
     };
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast> material_params;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material;
-    set_up_local_newton_material(local_newton_params, material_params, material);
+    auto material = set_up_isotropic_viscoplastic_material(local_newton_params, material_params);
 
     Teuchos::ParameterList params_list;
     double total_time = 1.0e-6;
@@ -2044,8 +2094,7 @@ namespace
     };
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast> material_params;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material;
-    set_up_local_newton_material(local_newton_params, material_params, material);
+    auto material = set_up_isotropic_viscoplastic_material(local_newton_params, material_params);
 
     Teuchos::ParameterList params_list;
     double total_time = 1.0e-6;
@@ -2083,8 +2132,7 @@ namespace
     };
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast> material_params;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material;
-    set_up_local_newton_material(local_newton_params, material_params, material);
+    auto material = set_up_isotropic_viscoplastic_material(local_newton_params, material_params);
 
     Teuchos::ParameterList params_list;
     double total_time = 1.0e-6;
@@ -2123,8 +2171,7 @@ namespace
     };
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast> material_params;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material;
-    set_up_local_newton_material(local_newton_params, material_params, material);
+    auto material = set_up_isotropic_viscoplastic_material(local_newton_params, material_params);
 
     Teuchos::ParameterList params_list;
     double total_time = 1.0e-6;
@@ -2162,8 +2209,7 @@ namespace
     };
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast> material_params;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material;
-    set_up_local_newton_material(local_newton_params, material_params, material);
+    auto material = set_up_isotropic_viscoplastic_material(local_newton_params, material_params);
 
     Teuchos::ParameterList params_list;
     double total_time = 1.0e-6;
@@ -2213,8 +2259,7 @@ namespace
     };
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast> material_params;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material;
-    set_up_local_newton_material(local_newton_params, material_params, material);
+    auto material = set_up_isotropic_viscoplastic_material(local_newton_params, material_params);
 
     Teuchos::ParameterList params_list;
     double total_time = 1.0e-6;
@@ -2252,8 +2297,7 @@ namespace
     };
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast> material_params;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material;
-    set_up_local_newton_material(local_newton_params, material_params, material);
+    auto material = set_up_isotropic_viscoplastic_material(local_newton_params, material_params);
 
     Teuchos::ParameterList params_list;
     double total_time = 1.0e-6;
@@ -2307,14 +2351,13 @@ namespace
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>
         material_params_one_step;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material_one_step;
-    set_up_local_newton_material(local_newton_params, material_params_one_step, material_one_step);
+    auto material_one_step =
+        set_up_isotropic_viscoplastic_material(local_newton_params, material_params_one_step);
 
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>
         material_params_substepping;
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> material_substepping;
-    set_up_local_newton_material(
-        local_newton_params, material_params_substepping, material_substepping, true, 10);
+    auto material_substepping = set_up_isotropic_viscoplastic_material(
+        local_newton_params, material_params_substepping, true, 10);
 
 
     Teuchos::ParameterList params_list;
@@ -2403,14 +2446,15 @@ namespace
         computed_state_quantity_derivatives_transv_isotrop.curr_dCediFin, 1.0e-10);
     FOUR_C_EXPECT_NEAR(state_quantity_derivatives_solution_isotrop_.curr_dCediFin,
         computed_state_quantity_derivatives_isotrop.curr_dCediFin, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(state_quantity_derivatives_solution_transv_isotrop_.curr_dMe_dev_sym_dC,
-        computed_state_quantity_derivatives_transv_isotrop.curr_dMe_dev_sym_dC, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(state_quantity_derivatives_solution_isotrop_.curr_dMe_dev_sym_dC,
-        computed_state_quantity_derivatives_isotrop.curr_dMe_dev_sym_dC, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(state_quantity_derivatives_solution_transv_isotrop_.curr_dMe_dev_sym_diFin,
-        computed_state_quantity_derivatives_transv_isotrop.curr_dMe_dev_sym_diFin, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(state_quantity_derivatives_solution_isotrop_.curr_dMe_dev_sym_diFin,
-        computed_state_quantity_derivatives_isotrop.curr_dMe_dev_sym_diFin, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(state_quantity_derivatives_solution_transv_isotrop_.curr_dMtheta_dev_sym_dC,
+        computed_state_quantity_derivatives_transv_isotrop.curr_dMtheta_dev_sym_dC, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(state_quantity_derivatives_solution_isotrop_.curr_dMtheta_dev_sym_dC,
+        computed_state_quantity_derivatives_isotrop.curr_dMtheta_dev_sym_dC, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(
+        state_quantity_derivatives_solution_transv_isotrop_.curr_dMtheta_dev_sym_diFin,
+        computed_state_quantity_derivatives_transv_isotrop.curr_dMtheta_dev_sym_diFin, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(state_quantity_derivatives_solution_isotrop_.curr_dMtheta_dev_sym_diFin,
+        computed_state_quantity_derivatives_isotrop.curr_dMtheta_dev_sym_diFin, 1.0e-10);
     FOUR_C_EXPECT_NEAR(state_quantity_derivatives_solution_transv_isotrop_.curr_dequiv_stress_diFin,
         computed_state_quantity_derivatives_transv_isotrop.curr_dequiv_stress_diFin, 1.0e-10);
     FOUR_C_EXPECT_NEAR(state_quantity_derivatives_solution_isotrop_.curr_dequiv_stress_diFin,
