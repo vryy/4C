@@ -499,6 +499,9 @@ namespace Mat
 
       //! derivative with respect to the plastic strain
       double deriv_plastic_strain;
+
+      //! derivative with respect to the temperature
+      double deriv_temperature;
     };
 
 
