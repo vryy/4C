@@ -7,405 +7,564 @@
 
 #include "4C_mat_viscoelast_state.hpp"
 
+#include <algorithm>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  void validate_kinematic_state(
+  Mat::ViscoElastState::StressVector make_zero_stress()
+  {
+    return Mat::ViscoElastState::StressVector(Core::LinAlg::Initialization::zero);
+  }
+
+
+  Mat::ViscoElastState::StressVector make_identity_strain_like()
+  {
+    Mat::ViscoElastState::StressVector identity(Core::LinAlg::Initialization::zero);
+    for (int i = 0; i < 3; ++i) identity(i) = 1.;
+    return identity;
+  }
+
+
+  void validate_iso_rate_state(
       const Mat::ViscoElastState::IsoRateState& iso_rate, const char* context)
   {
-    if (iso_rate.histscgcurr_ == nullptr || iso_rate.histscglast_ == nullptr ||
-        iso_rate.histmodrcgcurr_ == nullptr || iso_rate.histmodrcglast_ == nullptr)
-      FOUR_C_THROW("Incomplete kinematic visco history state while {}.", context);
-
-    const std::size_t numgp = iso_rate.histscgcurr_->size();
-    if (iso_rate.histscglast_->size() != numgp || iso_rate.histmodrcgcurr_->size() != numgp ||
-        iso_rate.histmodrcglast_->size() != numgp)
+    const std::size_t gp_count = iso_rate.scg_current_.size();
+    if (iso_rate.scg_previous_.size() != gp_count || iso_rate.modrcg_current_.size() != gp_count ||
+        iso_rate.modrcg_previous_.size() != gp_count)
       FOUR_C_THROW(
-          "Inconsistent kinematic visco history sizes while {}: curr={}, last={}, modcurr={}, "
-          "modlast={}",
-          context, iso_rate.histscgcurr_->size(), iso_rate.histscglast_->size(),
-          iso_rate.histmodrcgcurr_->size(), iso_rate.histmodrcglast_->size());
+          "Inconsistent iso-rate visco state sizes while {}: scg_current={}, scg_previous={}, "
+          "modrcg_current={}, modrcg_previous={}",
+          context, iso_rate.scg_current_.size(), iso_rate.scg_previous_.size(),
+          iso_rate.modrcg_current_.size(), iso_rate.modrcg_previous_.size());
+  }
+
+
+  void validate_generalized_maxwell_state(
+      const Mat::ViscoElastState::GeneralizedMaxwellState& generalized_maxwell,
+      const std::size_t gp_count, const char* context)
+  {
+    if (generalized_maxwell.branch_stress_current_.size() != gp_count ||
+        generalized_maxwell.branch_stress_previous_.size() != gp_count ||
+        generalized_maxwell.branch_elastic_stress_current_.size() != gp_count ||
+        generalized_maxwell.branch_elastic_stress_previous_.size() != gp_count)
+      FOUR_C_THROW(
+          "Inconsistent generalized Maxwell state sizes while {}: branch_stress_current={}, "
+          "branch_stress_previous={}, branch_elastic_stress_current={}, "
+          "branch_elastic_stress_previous={}, expected={}",
+          context, generalized_maxwell.branch_stress_current_.size(),
+          generalized_maxwell.branch_stress_previous_.size(),
+          generalized_maxwell.branch_elastic_stress_current_.size(),
+          generalized_maxwell.branch_elastic_stress_previous_.size(), gp_count);
   }
 }  // namespace
 
 
-bool Mat::ViscoElastState::initialized() const
-{
-  return isinitvis_ && (iso_rate_.histscgcurr_ != nullptr);
-}
+bool Mat::ViscoElastState::initialized() const { return isinitvis_; }
 
 
-void Mat::ViscoElastState::set_state_initialized(const bool initialized)
-{
-  isinitvis_ = initialized;
-}
+void Mat::ViscoElastState::mark_initialized(const bool initialized) { isinitvis_ = initialized; }
 
 
-int Mat::ViscoElastState::packed_history_size() const
+int Mat::ViscoElastState::serialized_gp_count() const
 {
   if (!initialized()) return 0;
-  return gauss_point_count();
+  return gp_count_;
 }
 
 
-void Mat::ViscoElastState::pack_kinematic_history(
-    Core::Communication::PackBuffer& data, const int histsize) const
+void Mat::ViscoElastState::serialize_state(Core::Communication::PackBuffer& data,
+    const bool has_iso_rate_state, const bool has_generalized_maxwell_state,
+    const bool has_fsls_state) const
 {
-  if (histsize == 0) return;
+  const int gp_count = serialized_gp_count();
+  add_to_pack(data, gp_count);
 
-  validate_kinematic_state(iso_rate_, "packing");
-  if (histsize != static_cast<int>(iso_rate_.histscglast_->size()))
-    FOUR_C_THROW("Invalid kinematic history size for packing: expected {}, got {}.",
-        iso_rate_.histscglast_->size(), histsize);
+  if (has_iso_rate_state) serialize_iso_rate_state(data, gp_count);
+  if (has_generalized_maxwell_state) serialize_generalized_maxwell_state(data, gp_count);
+  if (has_fsls_state) serialize_fsls_state(data);
+}
 
-  for (int gp = 0; gp < histsize; ++gp)
+
+void Mat::ViscoElastState::deserialize_state(Core::Communication::UnpackBuffer& buffer,
+    const bool has_iso_rate_state, const bool has_generalized_maxwell_state,
+    const bool has_fsls_state)
+{
+  has_iso_rate_state_ = has_iso_rate_state;
+  has_generalized_maxwell_state_ = has_generalized_maxwell_state;
+  has_fsls_state_ = has_fsls_state;
+
+  mark_initialized(true);
+
+  int gp_count = 0;
+  extract_from_pack(buffer, gp_count);
+  gp_count_ = gp_count;
+  if (gp_count == 0) mark_initialized(false);
+
+  if (has_iso_rate_state)
+    deserialize_iso_rate_state(buffer, gp_count);
+  else
   {
-    add_to_pack(data, iso_rate_.histscglast_->at(gp));
-    add_to_pack(data, iso_rate_.histmodrcglast_->at(gp));
-    add_to_pack(data, iso_rate_.histscgcurr_->at(gp));
-    add_to_pack(data, iso_rate_.histmodrcgcurr_->at(gp));
+    iso_rate_.scg_previous_.clear();
+    iso_rate_.modrcg_previous_.clear();
+    iso_rate_.scg_current_.clear();
+    iso_rate_.modrcg_current_.clear();
+  }
+
+  if (has_generalized_maxwell_state)
+    deserialize_generalized_maxwell_state(buffer, gp_count);
+  else
+  {
+    generalized_maxwell_.branch_stress_previous_.clear();
+    generalized_maxwell_.branch_elastic_stress_previous_.clear();
+    generalized_maxwell_.branch_stress_current_.clear();
+    generalized_maxwell_.branch_elastic_stress_current_.clear();
+  }
+
+  if (has_fsls_state)
+    deserialize_fsls_state(buffer, gp_count);
+  else
+  {
+    fsls_.artificial_stress_current_.clear();
+    fsls_.artificial_stress_previous_history_.clear();
   }
 }
 
 
-void Mat::ViscoElastState::pack_generalized_maxwell_history(
-    Core::Communication::PackBuffer& data, const int histsize) const
+void Mat::ViscoElastState::initialize_from_setup(const int gp_count, const bool has_iso_rate_state,
+    const bool has_generalized_maxwell_state, const std::size_t generalized_maxwell_branch_count,
+    const bool has_fsls_state)
 {
-  for (int gp = 0; gp < histsize; ++gp)
+  gp_count_ = gp_count;
+  has_iso_rate_state_ = has_iso_rate_state;
+  has_generalized_maxwell_state_ = has_generalized_maxwell_state;
+  has_fsls_state_ = has_fsls_state;
+
+  if (has_iso_rate_state)
+    initialize_iso_rate_state(gp_count);
+  else
   {
-    add_to_pack(data, generalized_maxwell_.histbranchstresslast_->at(gp));
-    add_to_pack(data, generalized_maxwell_.histbranchelaststresslast_->at(gp));
-    add_to_pack(data, generalized_maxwell_.histbranchstresscurr_->at(gp));
-    add_to_pack(data, generalized_maxwell_.histbranchelaststresscurr_->at(gp));
+    iso_rate_.scg_current_.clear();
+    iso_rate_.scg_previous_.clear();
+    iso_rate_.modrcg_current_.clear();
+    iso_rate_.modrcg_previous_.clear();
+  }
+
+  if (has_generalized_maxwell_state)
+  {
+    if (generalized_maxwell_branch_count == 0)
+      FOUR_C_THROW(
+          "Invalid setup for generalized Maxwell visco state: branch count must be positive.");
+    initialize_generalized_maxwell_state(gp_count, generalized_maxwell_branch_count);
+  }
+  else
+  {
+    generalized_maxwell_.branch_stress_current_.clear();
+    generalized_maxwell_.branch_stress_previous_.clear();
+    generalized_maxwell_.branch_elastic_stress_current_.clear();
+    generalized_maxwell_.branch_elastic_stress_previous_.clear();
+  }
+
+  if (has_fsls_state)
+    initialize_fsls_state(gp_count);
+  else
+  {
+    fsls_.artificial_stress_current_.clear();
+    fsls_.artificial_stress_previous_history_.clear();
+  }
+
+  mark_initialized(true);
+}
+
+
+void Mat::ViscoElastState::serialize_iso_rate_state(
+    Core::Communication::PackBuffer& data, const int gp_count) const
+{
+  if (gp_count == 0) return;
+
+  validate_iso_rate_state(iso_rate_, "serializing");
+  if (gp_count != static_cast<int>(iso_rate_.scg_previous_.size()))
+    FOUR_C_THROW("Invalid iso-rate state size for serialization: expected {}, got {}.",
+        iso_rate_.scg_previous_.size(), gp_count);
+
+  for (int gp = 0; gp < gp_count; ++gp)
+  {
+    add_to_pack(data, iso_rate_.scg_previous_.at(gp));
+    add_to_pack(data, iso_rate_.modrcg_previous_.at(gp));
+    add_to_pack(data, iso_rate_.scg_current_.at(gp));
+    add_to_pack(data, iso_rate_.modrcg_current_.at(gp));
   }
 }
 
 
-void Mat::ViscoElastState::pack_fsls_history(Core::Communication::PackBuffer& data) const
+void Mat::ViscoElastState::serialize_generalized_maxwell_state(
+    Core::Communication::PackBuffer& data, const int gp_count) const
 {
-  add_to_pack(data, (fsls_.histfslsartstresslastall_ != nullptr));
-  if (!(int)(fsls_.histfslsartstresslastall_ != nullptr))
-    FOUR_C_THROW("Something got wrong with your history data.");
+  if (gp_count == 0) return;
 
-  add_to_pack(data, fsls_.histfslsartstresslastall_->at(0).size());
-  for (std::size_t gp = 0; gp < fsls_.histfslsartstresslastall_->size(); ++gp)
-    for (std::size_t step = 0; step < fsls_.histfslsartstresslastall_->at(gp).size(); ++step)
-      add_to_pack(data, fsls_.histfslsartstresslastall_->at(gp).at(step));
-}
-
-
-void Mat::ViscoElastState::unpack_kinematic_history(
-    Core::Communication::UnpackBuffer& buffer, const int histsize)
-{
-  initialize_for_unpack(histsize);
-  for (int gp = 0; gp < histsize; ++gp)
+  validate_generalized_maxwell_state(generalized_maxwell_, gp_count, "serializing");
+  for (int gp = 0; gp < gp_count; ++gp)
   {
-    extract_from_pack(buffer, iso_rate_.histscglast_->at(gp));
-    extract_from_pack(buffer, iso_rate_.histmodrcglast_->at(gp));
-    extract_from_pack(buffer, iso_rate_.histscgcurr_->at(gp));
-    extract_from_pack(buffer, iso_rate_.histmodrcgcurr_->at(gp));
+    add_to_pack(data, generalized_maxwell_.branch_stress_previous_.at(gp));
+    add_to_pack(data, generalized_maxwell_.branch_elastic_stress_previous_.at(gp));
+    add_to_pack(data, generalized_maxwell_.branch_stress_current_.at(gp));
+    add_to_pack(data, generalized_maxwell_.branch_elastic_stress_current_.at(gp));
   }
 }
 
 
-void Mat::ViscoElastState::unpack_generalized_maxwell_history(
-    Core::Communication::UnpackBuffer& buffer, const int histsize)
+void Mat::ViscoElastState::serialize_fsls_state(Core::Communication::PackBuffer& data) const
 {
-  initialize_generalized_maxwell_for_unpack(histsize);
-  for (int gp = 0; gp < histsize; ++gp)
+  const bool have_previous_history = !fsls_.artificial_stress_previous_history_.empty();
+  add_to_pack(data, have_previous_history);
+  if (!have_previous_history) FOUR_C_THROW("Missing FSLS previous history for serialization.");
+
+  add_to_pack(data, fsls_.artificial_stress_previous_history_.at(0).size());
+  for (std::size_t gp = 0; gp < fsls_.artificial_stress_previous_history_.size(); ++gp)
+    for (std::size_t step = 0; step < fsls_.artificial_stress_previous_history_.at(gp).size();
+        ++step)
+      add_to_pack(data, fsls_.artificial_stress_previous_history_.at(gp).at(step));
+}
+
+
+void Mat::ViscoElastState::deserialize_iso_rate_state(
+    Core::Communication::UnpackBuffer& buffer, const int gp_count)
+{
+  initialize_iso_rate_state_for_deserialize(gp_count);
+  for (int gp = 0; gp < gp_count; ++gp)
   {
-    extract_from_pack(buffer, generalized_maxwell_.histbranchstresslast_->at(gp));
-    extract_from_pack(buffer, generalized_maxwell_.histbranchelaststresslast_->at(gp));
-    extract_from_pack(buffer, generalized_maxwell_.histbranchstresscurr_->at(gp));
-    extract_from_pack(buffer, generalized_maxwell_.histbranchelaststresscurr_->at(gp));
+    extract_from_pack(buffer, iso_rate_.scg_previous_.at(gp));
+    extract_from_pack(buffer, iso_rate_.modrcg_previous_.at(gp));
+    extract_from_pack(buffer, iso_rate_.scg_current_.at(gp));
+    extract_from_pack(buffer, iso_rate_.modrcg_current_.at(gp));
   }
 }
 
 
-void Mat::ViscoElastState::unpack_fsls_history(
-    Core::Communication::UnpackBuffer& buffer, const int histsize)
+void Mat::ViscoElastState::deserialize_generalized_maxwell_state(
+    Core::Communication::UnpackBuffer& buffer, const int gp_count)
 {
-  bool have_historyalldata;
-  extract_from_pack(buffer, have_historyalldata);
-  if (!have_historyalldata) FOUR_C_THROW("Something got wrong with your history data.");
-
-  std::size_t histfslsartstressall_stepsize;
-  extract_from_pack(buffer, histfslsartstressall_stepsize);
-  initialize_fsls_for_unpack(histsize, histfslsartstressall_stepsize);
-  for (std::size_t gp = 0; gp < static_cast<std::size_t>(histsize); ++gp)
-    for (std::size_t step = 0; step < histfslsartstressall_stepsize; ++step)
-      extract_from_pack(buffer, fsls_.histfslsartstresslastall_->at(gp).at(step));
+  initialize_generalized_maxwell_state_for_deserialize(gp_count);
+  for (int gp = 0; gp < gp_count; ++gp)
+  {
+    extract_from_pack(buffer, generalized_maxwell_.branch_stress_previous_.at(gp));
+    extract_from_pack(buffer, generalized_maxwell_.branch_elastic_stress_previous_.at(gp));
+    extract_from_pack(buffer, generalized_maxwell_.branch_stress_current_.at(gp));
+    extract_from_pack(buffer, generalized_maxwell_.branch_elastic_stress_current_.at(gp));
+  }
 }
 
 
-int Mat::ViscoElastState::gauss_point_count() const
+void Mat::ViscoElastState::deserialize_fsls_state(
+    Core::Communication::UnpackBuffer& buffer, const int gp_count)
 {
-  if (iso_rate_.histscglast_ == nullptr) return 0;
-  return static_cast<int>(iso_rate_.histscglast_->size());
+  bool have_previous_history;
+  extract_from_pack(buffer, have_previous_history);
+  if (!have_previous_history) FOUR_C_THROW("Missing FSLS previous history in serialized data.");
+
+  std::size_t fsls_previous_history_size;
+  extract_from_pack(buffer, fsls_previous_history_size);
+  initialize_fsls_state_for_deserialize(gp_count, fsls_previous_history_size);
+  for (std::size_t gp = 0; gp < static_cast<std::size_t>(gp_count); ++gp)
+    for (std::size_t step = 0; step < fsls_previous_history_size; ++step)
+      extract_from_pack(buffer, fsls_.artificial_stress_previous_history_.at(gp).at(step));
 }
 
 
-void Mat::ViscoElastState::initialize_kinematic_history(const int numgp)
-{
-  StressVector idvec(Core::LinAlg::Initialization::zero);
-  for (int i = 0; i < 3; ++i) idvec(i) = 1.;
+int Mat::ViscoElastState::gp_count() const { return gp_count_; }
 
-  iso_rate_.histscgcurr_ = std::make_shared<PointHistory>(numgp, idvec);
-  iso_rate_.histscglast_ = std::make_shared<PointHistory>(numgp, idvec);
-  iso_rate_.histmodrcgcurr_ = std::make_shared<PointHistory>(numgp, idvec);
-  iso_rate_.histmodrcglast_ = std::make_shared<PointHistory>(numgp, idvec);
+
+void Mat::ViscoElastState::initialize_iso_rate_state(const int gp_count)
+{
+  const StressVector identity = make_identity_strain_like();
+
+  iso_rate_.scg_current_.assign(gp_count, identity);
+  iso_rate_.scg_previous_.assign(gp_count, identity);
+  iso_rate_.modrcg_current_.assign(gp_count, identity);
+  iso_rate_.modrcg_previous_.assign(gp_count, identity);
 }
 
 
-void Mat::ViscoElastState::initialize_generalized_maxwell_history(
-    const int numgp, const std::size_t numbranch)
+void Mat::ViscoElastState::initialize_generalized_maxwell_state(
+    const int gp_count, const std::size_t branch_count)
 {
-  const PointHistory empty_branch_values(numbranch);
-  generalized_maxwell_.histbranchstresscurr_ =
-      std::make_shared<BranchHistory>(numgp, empty_branch_values);
-  generalized_maxwell_.histbranchstresslast_ =
-      std::make_shared<BranchHistory>(numgp, empty_branch_values);
-  generalized_maxwell_.histbranchelaststresscurr_ =
-      std::make_shared<BranchHistory>(numgp, empty_branch_values);
-  generalized_maxwell_.histbranchelaststresslast_ =
-      std::make_shared<BranchHistory>(numgp, empty_branch_values);
+  const PointHistory empty_branch_values(branch_count, make_zero_stress());
+  generalized_maxwell_.branch_stress_current_.assign(gp_count, empty_branch_values);
+  generalized_maxwell_.branch_stress_previous_.assign(gp_count, empty_branch_values);
+  generalized_maxwell_.branch_elastic_stress_current_.assign(gp_count, empty_branch_values);
+  generalized_maxwell_.branch_elastic_stress_previous_.assign(gp_count, empty_branch_values);
 }
 
 
-void Mat::ViscoElastState::initialize_fsls_history(const int numgp)
+void Mat::ViscoElastState::initialize_fsls_state(const int gp_count)
 {
-  const StressVector emptyvec(Core::LinAlg::Initialization::zero);
-  fsls_.histfslsartstresscurr_ = std::make_shared<PointHistory>(numgp, emptyvec);
-  fsls_.histfslsartstresslastall_ = std::make_shared<FslsHistory>(numgp, PointHistory(1, emptyvec));
+  const StressVector zero = make_zero_stress();
+  fsls_.artificial_stress_current_.assign(gp_count, zero);
+  fsls_.artificial_stress_previous_history_.assign(gp_count, PointHistory(1, zero));
 }
 
 
-void Mat::ViscoElastState::initialize_for_unpack(const int histsize)
+void Mat::ViscoElastState::initialize_iso_rate_state_for_deserialize(const int gp_count)
 {
-  iso_rate_.histscglast_ = std::make_shared<PointHistory>(histsize);
-  iso_rate_.histmodrcglast_ = std::make_shared<PointHistory>(histsize);
-  iso_rate_.histscgcurr_ = std::make_shared<PointHistory>(histsize);
-  iso_rate_.histmodrcgcurr_ = std::make_shared<PointHistory>(histsize);
+  const StressVector zero = make_zero_stress();
+  iso_rate_.scg_previous_.assign(gp_count, zero);
+  iso_rate_.modrcg_previous_.assign(gp_count, zero);
+  iso_rate_.scg_current_.assign(gp_count, zero);
+  iso_rate_.modrcg_current_.assign(gp_count, zero);
 }
 
 
-void Mat::ViscoElastState::initialize_generalized_maxwell_for_unpack(const int histsize)
+void Mat::ViscoElastState::initialize_generalized_maxwell_state_for_deserialize(const int gp_count)
 {
-  generalized_maxwell_.histbranchstresslast_ = std::make_shared<BranchHistory>(histsize);
-  generalized_maxwell_.histbranchelaststresslast_ = std::make_shared<BranchHistory>(histsize);
-  generalized_maxwell_.histbranchstresscurr_ = std::make_shared<BranchHistory>(histsize);
-  generalized_maxwell_.histbranchelaststresscurr_ = std::make_shared<BranchHistory>(histsize);
+  generalized_maxwell_.branch_stress_previous_.assign(gp_count, PointHistory{});
+  generalized_maxwell_.branch_elastic_stress_previous_.assign(gp_count, PointHistory{});
+  generalized_maxwell_.branch_stress_current_.assign(gp_count, PointHistory{});
+  generalized_maxwell_.branch_elastic_stress_current_.assign(gp_count, PointHistory{});
 }
 
 
-void Mat::ViscoElastState::initialize_fsls_for_unpack(
-    const int histsize, const std::size_t history_size)
+void Mat::ViscoElastState::initialize_fsls_state_for_deserialize(
+    const int gp_count, const std::size_t history_size)
 {
-  fsls_.histfslsartstresscurr_ = std::make_shared<PointHistory>(histsize);
-  fsls_.histfslsartstresslastall_ =
-      std::make_shared<FslsHistory>(histsize, PointHistory(history_size));
+  const StressVector zero = make_zero_stress();
+  fsls_.artificial_stress_current_.assign(gp_count, zero);
+  fsls_.artificial_stress_previous_history_.assign(gp_count, PointHistory(history_size, zero));
 }
 
 
-void Mat::ViscoElastState::commit_kinematic_history()
+void Mat::ViscoElastState::advance_time_step(const bool has_iso_rate_state,
+    const bool has_generalized_maxwell_state, const bool has_fsls_state,
+    const unsigned int fsls_max_history_size, const int visco_mat_id)
 {
-  validate_kinematic_state(iso_rate_, "updating");
-  iso_rate_.histscglast_ = iso_rate_.histscgcurr_;
-  iso_rate_.histmodrcglast_ = iso_rate_.histmodrcgcurr_;
+  has_iso_rate_state_ = has_iso_rate_state;
+  has_generalized_maxwell_state_ = has_generalized_maxwell_state;
+  has_fsls_state_ = has_fsls_state;
+
+  if (has_iso_rate_state) commit_iso_rate_to_previous();
+  if (has_fsls_state) append_fsls_current_to_previous_history(fsls_max_history_size);
+
+  const int gp_count = this->gp_count();
+  reset_current_state(gp_count, has_iso_rate_state, has_fsls_state);
+
+  if (has_generalized_maxwell_state)
+  {
+    const std::size_t branch_count = rotate_generalized_maxwell_to_previous(gp_count, visco_mat_id);
+    reset_generalized_maxwell_current_state(gp_count, branch_count);
+  }
 }
 
 
-void Mat::ViscoElastState::append_fsls_history(const unsigned int max_hist)
+void Mat::ViscoElastState::commit_iso_rate_to_previous()
 {
-  if (fsls_.histfslsartstresslastall_ == nullptr || fsls_.histfslsartstresscurr_ == nullptr)
-    FOUR_C_THROW("Missing FSLS history state in ViscoElastState during update.");
+  validate_iso_rate_state(iso_rate_, "advancing time step");
+  std::swap(iso_rate_.scg_previous_, iso_rate_.scg_current_);
+  std::swap(iso_rate_.modrcg_previous_, iso_rate_.modrcg_current_);
+}
 
-  if (fsls_.histfslsartstresslastall_->size() != fsls_.histfslsartstresscurr_->size())
+
+void Mat::ViscoElastState::append_fsls_current_to_previous_history(
+    const unsigned int max_history_size)
+{
+  if (fsls_.artificial_stress_previous_history_.size() != fsls_.artificial_stress_current_.size())
     FOUR_C_THROW(
-        "Inconsistent FSLS history sizes in ViscoElastState during update: {} gauss-point "
-        "histories but {} current entries.",
-        fsls_.histfslsartstresslastall_->size(), fsls_.histfslsartstresscurr_->size());
+        "Inconsistent FSLS state sizes while advancing time step: previous history gauss points "
+        "{}, current stress entries {}.",
+        fsls_.artificial_stress_previous_history_.size(), fsls_.artificial_stress_current_.size());
 
-  for (int gp = 0; gp < static_cast<int>(fsls_.histfslsartstresslastall_->size()); ++gp)
+  for (int gp = 0; gp < static_cast<int>(fsls_.artificial_stress_previous_history_.size()); ++gp)
   {
-    fsls_.histfslsartstresslastall_->at(gp).push_back(fsls_.histfslsartstresscurr_->at(gp));
+    fsls_.artificial_stress_previous_history_.at(gp).push_back(
+        fsls_.artificial_stress_current_.at(gp));
 
-    if (fsls_.histfslsartstresslastall_->at(gp).size() > max_hist)
+    const std::size_t max_history_size_per_gp = max_history_size;
+    if (fsls_.artificial_stress_previous_history_.at(gp).size() > max_history_size_per_gp)
     {
-      PointHistory tmp_vec(++fsls_.histfslsartstresslastall_->at(gp).begin(),
-          fsls_.histfslsartstresslastall_->at(gp).end());
-      fsls_.histfslsartstresslastall_->at(gp) = tmp_vec;
+      auto& gp_history = fsls_.artificial_stress_previous_history_.at(gp);
+      gp_history.erase(gp_history.begin(), gp_history.begin() + 1);
     }
   }
 }
 
 
-void Mat::ViscoElastState::reset_current_iteration(const int numgp)
+void Mat::ViscoElastState::reset_current_state(
+    const int gp_count, const bool has_iso_rate_state, const bool has_fsls_state)
 {
-  StressVector idvec(Core::LinAlg::Initialization::zero);
-  for (int i = 0; i < 3; ++i) idvec(i) = 1.;
+  const StressVector identity = make_identity_strain_like();
+  const StressVector zero = make_zero_stress();
 
-  const StressVector emptyvec(Core::LinAlg::Initialization::zero);
-  iso_rate_.histscgcurr_ = std::make_shared<PointHistory>(numgp, idvec);
-  iso_rate_.histmodrcgcurr_ = std::make_shared<PointHistory>(numgp, idvec);
-  fsls_.histfslsartstresscurr_ = std::make_shared<PointHistory>(numgp, emptyvec);
-}
-
-
-std::size_t Mat::ViscoElastState::rollover_generalized_maxwell_history(
-    const int numgp, const int visco_mat_id)
-{
-  generalized_maxwell_.histbranchstresslast_ = generalized_maxwell_.histbranchstresscurr_;
-  generalized_maxwell_.histbranchelaststresslast_ = generalized_maxwell_.histbranchelaststresscurr_;
-
-  if (generalized_maxwell_.histbranchstresslast_ == nullptr ||
-      generalized_maxwell_.histbranchelaststresslast_ == nullptr)
-    FOUR_C_THROW(
-        "Missing generalized Maxwell history state in MAT_ViscoElastHyper (MAT {}) during "
-        "update.",
-        visco_mat_id);
-
-  if (generalized_maxwell_.histbranchstresslast_->size() != static_cast<unsigned int>(numgp) ||
-      generalized_maxwell_.histbranchelaststresslast_->size() != static_cast<unsigned int>(numgp))
-    FOUR_C_THROW(
-        "Invalid generalized Maxwell history container size in MAT_ViscoElastHyper (MAT {}) "
-        "during update: expected {} gauss points, got {} and {}.",
-        visco_mat_id, numgp, generalized_maxwell_.histbranchstresslast_->size(),
-        generalized_maxwell_.histbranchelaststresslast_->size());
-
-  const std::size_t numbranch =
-      numgp > 0 ? generalized_maxwell_.histbranchstresslast_->at(0).size() : 0;
-  if (numbranch == 0)
-    FOUR_C_THROW(
-        "Invalid generalized Maxwell history in MAT_ViscoElastHyper (MAT {}) during update: "
-        "branch history size is zero.",
-        visco_mat_id);
-
-  for (int gp = 0; gp < numgp; ++gp)
+  if (has_iso_rate_state)
   {
-    if (generalized_maxwell_.histbranchstresslast_->at(gp).size() != numbranch ||
-        generalized_maxwell_.histbranchelaststresslast_->at(gp).size() != numbranch)
-      FOUR_C_THROW(
-          "Inconsistent generalized Maxwell history sizes in MAT_ViscoElastHyper (MAT {}) "
-          "during update at GP {}: expected {} branch entries, got {} and {}.",
-          visco_mat_id, gp, numbranch, generalized_maxwell_.histbranchstresslast_->at(gp).size(),
-          generalized_maxwell_.histbranchelaststresslast_->at(gp).size());
+    if (iso_rate_.scg_current_.size() != static_cast<std::size_t>(gp_count))
+      iso_rate_.scg_current_.assign(gp_count, identity);
+    else
+      std::fill(iso_rate_.scg_current_.begin(), iso_rate_.scg_current_.end(), identity);
+
+    if (iso_rate_.modrcg_current_.size() != static_cast<std::size_t>(gp_count))
+      iso_rate_.modrcg_current_.assign(gp_count, identity);
+    else
+      std::fill(iso_rate_.modrcg_current_.begin(), iso_rate_.modrcg_current_.end(), identity);
   }
 
-  return numbranch;
+  if (has_fsls_state)
+  {
+    if (fsls_.artificial_stress_current_.size() != static_cast<std::size_t>(gp_count))
+      fsls_.artificial_stress_current_.assign(gp_count, zero);
+    else
+      std::fill(
+          fsls_.artificial_stress_current_.begin(), fsls_.artificial_stress_current_.end(), zero);
+  }
 }
 
 
-void Mat::ViscoElastState::reset_generalized_maxwell_current(
-    const int numgp, const std::size_t numbranch)
+std::size_t Mat::ViscoElastState::rotate_generalized_maxwell_to_previous(
+    const int gp_count, const int visco_mat_id)
 {
-  const PointHistory empty_branch_values(numbranch);
-  generalized_maxwell_.histbranchstresscurr_ =
-      std::make_shared<BranchHistory>(numgp, empty_branch_values);
-  generalized_maxwell_.histbranchelaststresscurr_ =
-      std::make_shared<BranchHistory>(numgp, empty_branch_values);
+  std::swap(
+      generalized_maxwell_.branch_stress_previous_, generalized_maxwell_.branch_stress_current_);
+  std::swap(generalized_maxwell_.branch_elastic_stress_previous_,
+      generalized_maxwell_.branch_elastic_stress_current_);
+
+  validate_generalized_maxwell_state(generalized_maxwell_, gp_count, "advancing time step");
+
+  const std::size_t branch_count =
+      gp_count > 0 ? generalized_maxwell_.branch_stress_previous_.at(0).size() : 0;
+  if (branch_count == 0)
+    FOUR_C_THROW(
+        "Invalid generalized Maxwell state in MAT_ViscoElastHyper (MAT {}) during time-step "
+        "advance: branch count is zero.",
+        visco_mat_id);
+
+  for (int gp = 0; gp < gp_count; ++gp)
+  {
+    if (generalized_maxwell_.branch_stress_previous_.at(gp).size() != branch_count ||
+        generalized_maxwell_.branch_elastic_stress_previous_.at(gp).size() != branch_count)
+      FOUR_C_THROW(
+          "Inconsistent generalized Maxwell branch sizes in MAT_ViscoElastHyper (MAT {}) "
+          "during time-step advance at GP {}: expected {}, got branch_stress={} and "
+          "branch_elastic_stress={}",
+          visco_mat_id, gp, branch_count,
+          generalized_maxwell_.branch_stress_previous_.at(gp).size(),
+          generalized_maxwell_.branch_elastic_stress_previous_.at(gp).size());
+  }
+
+  return branch_count;
 }
 
 
-const Mat::ViscoElastState::StressVector& Mat::ViscoElastState::scg_last_at(const int gp) const
+void Mat::ViscoElastState::reset_generalized_maxwell_current_state(
+    const int gp_count, const std::size_t branch_count)
 {
-  return iso_rate_.histscglast_->at(gp);
+  const StressVector zero = make_zero_stress();
+
+  if (generalized_maxwell_.branch_stress_current_.size() != static_cast<std::size_t>(gp_count))
+    generalized_maxwell_.branch_stress_current_.assign(
+        gp_count, PointHistory(branch_count, make_zero_stress()));
+  if (generalized_maxwell_.branch_elastic_stress_current_.size() !=
+      static_cast<std::size_t>(gp_count))
+    generalized_maxwell_.branch_elastic_stress_current_.assign(
+        gp_count, PointHistory(branch_count, make_zero_stress()));
+
+  for (int gp = 0; gp < gp_count; ++gp)
+  {
+    auto& branch_stress_current = generalized_maxwell_.branch_stress_current_.at(gp);
+    auto& branch_elastic_stress_current =
+        generalized_maxwell_.branch_elastic_stress_current_.at(gp);
+
+    if (branch_stress_current.size() != branch_count)
+      branch_stress_current.assign(branch_count, zero);
+    else
+      std::fill(branch_stress_current.begin(), branch_stress_current.end(), zero);
+
+    if (branch_elastic_stress_current.size() != branch_count)
+      branch_elastic_stress_current.assign(branch_count, zero);
+    else
+      std::fill(branch_elastic_stress_current.begin(), branch_elastic_stress_current.end(), zero);
+  }
 }
 
 
-const Mat::ViscoElastState::StressVector& Mat::ViscoElastState::modrcg_last_at(const int gp) const
-{
-  return iso_rate_.histmodrcglast_->at(gp);
-}
-
-
-void Mat::ViscoElastState::set_scg_current_at(const int gp, const StressVector& value)
-{
-  iso_rate_.histscgcurr_->at(gp) = value;
-}
-
-
-void Mat::ViscoElastState::set_modrcg_current_at(const int gp, const StressVector& value)
-{
-  iso_rate_.histmodrcgcurr_->at(gp) = value;
-}
-
-
-const Mat::ViscoElastState::PointHistory& Mat::ViscoElastState::branch_elastic_stress_last_at(
+Mat::ViscoElastState::IsoRatePrevPointState Mat::ViscoElastState::iso_rate_prev_point(
     const int gp) const
 {
-  return generalized_maxwell_.histbranchelaststresslast_->at(gp);
+  if (!has_iso_rate_state_)
+    FOUR_C_THROW("Requested iso-rate previous state, but iso-rate visco model is inactive.");
+
+  return {iso_rate_.scg_previous_.at(gp), iso_rate_.modrcg_previous_.at(gp)};
 }
 
 
-const Mat::ViscoElastState::PointHistory& Mat::ViscoElastState::branch_stress_last_at(
-    const int gp) const
+void Mat::ViscoElastState::set_iso_rate_current_point(
+    const int gp, const StressVector& scg, const StressVector& modrcg)
 {
-  return generalized_maxwell_.histbranchstresslast_->at(gp);
+  if (!has_iso_rate_state_)
+    FOUR_C_THROW("Attempted to write iso-rate current state, but iso-rate model is inactive.");
+
+  iso_rate_.scg_current_.at(gp) = scg;
+  iso_rate_.modrcg_current_.at(gp) = modrcg;
 }
 
 
-void Mat::ViscoElastState::set_branch_elastic_stress_current_at(
-    const int gp, const PointHistory& value)
+Mat::ViscoElastState::GeneralizedMaxwellPrevPointState
+Mat::ViscoElastState::generalized_maxwell_prev_point(const int gp) const
 {
-  generalized_maxwell_.histbranchelaststresscurr_->at(gp) = value;
+  if (!has_generalized_maxwell_state_)
+    FOUR_C_THROW("Requested generalized Maxwell previous state, but model is inactive.");
+
+  return {generalized_maxwell_.branch_elastic_stress_previous_.at(gp),
+      generalized_maxwell_.branch_stress_previous_.at(gp)};
 }
 
 
-void Mat::ViscoElastState::set_branch_stress_current_at(const int gp, const PointHistory& value)
+void Mat::ViscoElastState::set_generalized_maxwell_current_point(
+    const int gp, const PointHistory& branch_elastic_stress, const PointHistory& branch_stress)
 {
-  generalized_maxwell_.histbranchstresscurr_->at(gp) = value;
+  if (!has_generalized_maxwell_state_)
+    FOUR_C_THROW("Attempted to write generalized Maxwell current state, but model is inactive.");
+
+  generalized_maxwell_.branch_elastic_stress_current_.at(gp) = branch_elastic_stress;
+  generalized_maxwell_.branch_stress_current_.at(gp) = branch_stress;
 }
 
 
-bool Mat::ViscoElastState::has_fsls_history() const
+const Mat::ViscoElastState::FslsHistory& Mat::ViscoElastState::fsls_previous_history() const
 {
-  return fsls_.histfslsartstresslastall_ != nullptr;
+  if (!has_fsls_state_)
+    FOUR_C_THROW("Requested FSLS previous history, but FSLS model is inactive.");
+
+  return fsls_.artificial_stress_previous_history_;
 }
 
 
-int Mat::ViscoElastState::fsls_num_gauss_points() const
+void Mat::ViscoElastState::set_fsls_current_artificial_stress(
+    const int gp, const StressVector& value)
 {
-  if (fsls_.histfslsartstresslastall_ == nullptr) return 0;
-  return static_cast<int>(fsls_.histfslsartstresslastall_->size());
-}
+  if (!has_fsls_state_)
+    FOUR_C_THROW("Attempted to write FSLS current state, but FSLS model is inactive.");
 
-
-int Mat::ViscoElastState::fsls_history_size_at(const int gp) const
-{
-  return static_cast<int>(fsls_.histfslsartstresslastall_->at(gp).size());
-}
-
-
-const Mat::ViscoElastState::StressVector& Mat::ViscoElastState::fsls_history_at(
-    const int gp, const int step) const
-{
-  return fsls_.histfslsartstresslastall_->at(gp).at(step);
-}
-
-
-void Mat::ViscoElastState::set_fsls_current_at(const int gp, const StressVector& value)
-{
-  fsls_.histfslsartstresscurr_->at(gp) = value;
+  fsls_.artificial_stress_current_.at(gp) = value;
 }
 
 
 void Mat::ViscoElastState::clear()
 {
-  iso_rate_.histscgcurr_ = nullptr;
-  iso_rate_.histscglast_ = nullptr;
-  iso_rate_.histmodrcgcurr_ = nullptr;
-  iso_rate_.histmodrcglast_ = nullptr;
+  iso_rate_.scg_current_.clear();
+  iso_rate_.scg_previous_.clear();
+  iso_rate_.modrcg_current_.clear();
+  iso_rate_.modrcg_previous_.clear();
 
-  generalized_maxwell_.histbranchstresscurr_ = nullptr;
-  generalized_maxwell_.histbranchstresslast_ = nullptr;
-  generalized_maxwell_.histbranchelaststresscurr_ = nullptr;
-  generalized_maxwell_.histbranchelaststresslast_ = nullptr;
+  generalized_maxwell_.branch_stress_current_.clear();
+  generalized_maxwell_.branch_stress_previous_.clear();
+  generalized_maxwell_.branch_elastic_stress_current_.clear();
+  generalized_maxwell_.branch_elastic_stress_previous_.clear();
 
-  fsls_.histfslsartstresscurr_ = nullptr;
-  fsls_.histfslsartstresslastall_ = nullptr;
+  fsls_.artificial_stress_current_.clear();
+  fsls_.artificial_stress_previous_history_.clear();
 
+  gp_count_ = 0;
+  has_iso_rate_state_ = false;
+  has_generalized_maxwell_state_ = false;
+  has_fsls_state_ = false;
   isinitvis_ = false;
 }
 

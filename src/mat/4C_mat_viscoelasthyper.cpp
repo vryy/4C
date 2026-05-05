@@ -109,15 +109,7 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
       potsum_[p]->pack_summand(data);
     }
 
-    //  pack history data
-    const int histsize = state_.packed_history_size();
-    add_to_pack(data, histsize);  // Length of history vector(s)
-    state_.pack_kinematic_history(data, histsize);
-
-    if (visco_generalized_maxwell_) state_.pack_generalized_maxwell_history(data, histsize);
-
-    // pack history of FSLS-model
-    if (visco_fsls_) state_.pack_fsls_history(data);
+    state_.serialize_state(data, isovisco_, visco_generalized_maxwell_, visco_fsls_);
   }
 }
 
@@ -184,19 +176,7 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
       p->register_anisotropy_extensions(anisotropy_);
     }
 
-    // history data 09/13
-    state_.set_state_initialized(true);
-    int histsize;
-    extract_from_pack(buffer, histsize);
-
-    if (histsize == 0) state_.set_state_initialized(false);
-
-    state_.unpack_kinematic_history(buffer, histsize);
-
-    if (visco_generalized_maxwell_) state_.unpack_generalized_maxwell_history(buffer, histsize);
-
-    // for FSLS-model
-    if (visco_fsls_) state_.unpack_fsls_history(buffer, histsize);
+    state_.deserialize_state(buffer, isovisco_, visco_generalized_maxwell_, visco_fsls_);
   }
 }
 
@@ -230,13 +210,12 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
     }
   }
 
-  // Initialise/allocate history variables 09/13
-  state_.initialize_kinematic_history(numgp);
+  std::size_t generalized_maxwell_numbranch = 0;
 
   if (visco_generalized_maxwell_)
   {
     int generalized_maxwell_model_count = 0;
-    int generalized_maxwell_numbranch = -1;
+    int generalized_maxwell_numbranch_value = -1;
     std::string generalized_maxwell_solve;
     const std::vector<int>* generalized_maxwell_matids = nullptr;
 
@@ -247,8 +226,8 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
       if (generalized_maxwell != nullptr)
       {
         ++generalized_maxwell_model_count;
-        generalized_maxwell->read_material_parameters(
-            generalized_maxwell_numbranch, generalized_maxwell_matids, generalized_maxwell_solve);
+        generalized_maxwell->read_material_parameters(generalized_maxwell_numbranch_value,
+            generalized_maxwell_matids, generalized_maxwell_solve);
       }
     }
 
@@ -258,11 +237,11 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
           "exactly one VISCO_GeneralizedMaxwell summand but found {}.",
           params_->id(), generalized_maxwell_model_count);
 
-    if (generalized_maxwell_numbranch <= 0)
+    if (generalized_maxwell_numbranch_value <= 0)
       FOUR_C_THROW(
           "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): "
           "NUMBRANCH={} is not positive.",
-          params_->id(), generalized_maxwell_numbranch);
+          params_->id(), generalized_maxwell_numbranch_value);
 
     if (generalized_maxwell_matids == nullptr)
       FOUR_C_THROW(
@@ -271,11 +250,11 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
           params_->id());
 
     if (generalized_maxwell_matids->size() !=
-        static_cast<unsigned int>(generalized_maxwell_numbranch))
+        static_cast<unsigned int>(generalized_maxwell_numbranch_value))
       FOUR_C_THROW(
           "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): "
           "NUMBRANCH={} but MATIDS has size {}.",
-          params_->id(), generalized_maxwell_numbranch, generalized_maxwell_matids->size());
+          params_->id(), generalized_maxwell_numbranch_value, generalized_maxwell_matids->size());
 
     if (generalized_maxwell_solve != "OneStepTheta" &&
         generalized_maxwell_solve != "ExponentialTimeDiscretization")
@@ -284,16 +263,11 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
           "Use OneStepTheta or ExponentialTimeDiscretization.",
           generalized_maxwell_solve, params_->id());
 
-    state_.initialize_generalized_maxwell_history(numgp, generalized_maxwell_numbranch);
+    generalized_maxwell_numbranch = static_cast<std::size_t>(generalized_maxwell_numbranch_value);
   }
 
-  // in case of FSLS-model
-  if (visco_fsls_)
-  {
-    state_.initialize_fsls_history(numgp);
-  }
-
-  state_.set_state_initialized(true);
+  state_.initialize_from_setup(
+      numgp, isovisco_, visco_generalized_maxwell_, generalized_maxwell_numbranch, visco_fsls_);
 
   return;
 }
@@ -305,33 +279,17 @@ void Mat::ViscoElastHyper::update()
 {
   Mat::ElastHyper::update();
 
-  // Update history values 09/13
-  state_.commit_kinematic_history();
-
-  // for FSLS-model
+  unsigned int max_hist = 0;
   if (visco_fsls_)
   {
-    // To calculate the fractional derivative the history of all previous timesteps is saved in each
-    // gauss-point
-
-    // numsteps
     const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
     const int numsteps = sdyn.get<int>("NUMSTEP");
-    // maximal size of history (in time steps)
-    const unsigned int max_hist = numsteps + 1;
-
-    state_.append_fsls_history(max_hist);
+    max_hist = numsteps + 1;
   }
 
-  const int numgp = state_.gauss_point_count();
-  state_.reset_current_iteration(numgp);
-
-  if (visco_generalized_maxwell_)
-  {
-    const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
-    const std::size_t numbranch = state_.rollover_generalized_maxwell_history(numgp, visco_mat_id);
-    state_.reset_generalized_maxwell_current(numgp, numbranch);
-  }
+  const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
+  state_.advance_time_step(
+      isovisco_, visco_generalized_maxwell_, visco_fsls_, max_hist, visco_mat_id);
 
   return;
 }
@@ -527,12 +485,12 @@ void Mat::ViscoElastHyper::evaluate_kin_quant_vis(Core::LinAlg::Matrix<6, 1>& rc
   modrcg.update(modscale, rcg);
 
   // read history
-  Core::LinAlg::Matrix<6, 1> scglast(state_.scg_last_at(gp));
-  Core::LinAlg::Matrix<6, 1> modrcglast(state_.modrcg_last_at(gp));
+  const auto iso_rate_previous = state_.iso_rate_prev_point(gp);
+  Core::LinAlg::Matrix<6, 1> scglast(iso_rate_previous.scg);
+  Core::LinAlg::Matrix<6, 1> modrcglast(iso_rate_previous.modrcg);
 
   // Update history of Cauchy-Green Tensor
-  state_.set_scg_current_at(gp, scg);        // principal material: store C^{n}
-  state_.set_modrcg_current_at(gp, modrcg);  // decoupled material: store \overline{C}^{n}
+  state_.set_iso_rate_current_point(gp, scg, modrcg);  // store C^{n} and \overline{C}^{n}
 
   // rate of Cauchy-Green Tensor
   // REMARK: strain-like 6-Voigt vector
@@ -761,8 +719,9 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
   std::vector<Core::LinAlg::Matrix<6, 1>> Q_n(numbranch);
 
   // read history
-  S_n = state_.branch_elastic_stress_last_at(gp);
-  Q_n = state_.branch_stress_last_at(gp);
+  const auto generalized_maxwell_previous = state_.generalized_maxwell_prev_point(gp);
+  S_n = generalized_maxwell_previous.branch_elastic_stress;
+  Q_n = generalized_maxwell_previous.branch_stress;
 
   if (S_n.size() != static_cast<unsigned int>(numbranch))
     FOUR_C_THROW(
@@ -914,8 +873,7 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
   }  // end for loop over branches
 
   // update history
-  state_.set_branch_elastic_stress_current_at(gp, S);
-  state_.set_branch_stress_current_at(gp, Qbranch);
+  state_.set_generalized_maxwell_current_point(gp, S, Qbranch);
 }  // evaluate_visco_generalized_maxwell
 
 
@@ -974,26 +932,29 @@ void Mat::ViscoElastHyper::evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress
         "GP {}, ELE {}). Expected dt >= 0.",
         dt, visco_mat_id, gp, eleGID);
 
-  if (!state_.has_fsls_history())
+  const auto& fsls_previous_history = state_.fsls_previous_history();
+  if (fsls_previous_history.empty())
     FOUR_C_THROW("Missing FSLS history state in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}).",
         visco_mat_id, gp, eleGID);
 
-  if (gp < 0 || gp >= state_.fsls_num_gauss_points())
+  if (gp < 0 || gp >= static_cast<int>(fsls_previous_history.size()))
     FOUR_C_THROW(
         "Invalid Gauss point index GP={} for FSLS history in MAT_ViscoElastHyper (MAT {}, ELE "
         "{}). History container size is {}.",
-        gp, visco_mat_id, eleGID, state_.fsls_num_gauss_points());
+        gp, visco_mat_id, eleGID, fsls_previous_history.size());
+
+  const auto& fsls_history_at_gp = fsls_previous_history.at(gp);
 
   // read history of last time step at gp
   // -> Q_n and history size
-  const int hs = state_.fsls_history_size_at(gp);  // history size
+  const int hs = fsls_history_at_gp.size();  // history size
   if (hs <= 0)
     FOUR_C_THROW(
         "Invalid FSLS history size {} at GP {} in MAT_ViscoElastHyper (MAT {}, ELE {}). "
         "Expected at least one entry.",
         hs, gp, visco_mat_id, eleGID);
 
-  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_n(state_.fsls_history_at(gp, hs - 1));
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_n(fsls_history_at_gp.at(hs - 1));
 
 
   // calculate artificial history stress Qq with weights b_j
@@ -1013,7 +974,7 @@ void Mat::ViscoElastHyper::evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress
     fac = (j - 1. - alpha) / j;
     bj = bj * fac;
 
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Qj(state_.fsls_history_at(gp, hs - j));
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Qj(fsls_history_at_gp.at(hs - j));
     Qq.update(bj, Qj, 1.0);
   }
 
@@ -1042,7 +1003,7 @@ void Mat::ViscoElastHyper::evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress
 
 
   // update history for next step
-  state_.set_fsls_current_at(gp, Q);  // Q_n+1
+  state_.set_fsls_current_artificial_stress(gp, Q);  // Q_n+1
 
 
   // calculate final stress here and in Evaluate
