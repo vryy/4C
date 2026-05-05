@@ -5,8 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_MAT_ELAST_VISCO_FSLS_HPP
-#define FOUR_C_MAT_ELAST_VISCO_FSLS_HPP
+#ifndef FOUR_C_MAT_VISCOELAST_COUPMYOCARD_HPP
+#define FOUR_C_MAT_VISCOELAST_COUPMYOCARD_HPP
 
 #include "4C_config.hpp"
 
@@ -22,24 +22,22 @@ namespace Mat
     namespace PAR
     {
       /*!
-       * @brief material parameters for viscous contribution according the FSLS-model
+       * @brief material parameters for viscous part of myocardial matrix
        *
        * <h3>Input line</h3>
-       * MAT 1 VISCO_FSLS TAU 0.1 ALPHA 0.5 BETA 1
+       * MAT 1 VISCO_CoupMyocard N 1
        */
-      class Fsls : public Core::Mat::PAR::Parameter
+      class CoupMyocard : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
-        Fsls(const Core::Mat::PAR::Parameter::Data& matdata);
+        CoupMyocard(const Core::Mat::PAR::Parameter::Data& matdata);
 
         /// @name material parameters
         //@{
 
         /// material parameters
-        double tau_;
-        double alpha_;
-        double beta_;
+        double n_;
 
         //@}
 
@@ -52,32 +50,38 @@ namespace Mat
               "Mat::Elastic::Summand::Factory.");
           return nullptr;
         };
-      };  // class Fsls
+      };  // class CoupMyocard
     }  // namespace PAR
 
-
     /*!
-     * @brief Material VISCO_FSLS
+     * @brief Isochoric coupled viscous material with pseudo-potential
      *
-     * This material offers a viscous and hyperelastic part. The model consists
-     * of one spring in parallel to one sequential branch of a spring and a springpot.
+     * Strain energy function is given by
+     * \f[
+     *   \Psi_v = \eta/2 tr(\dot{E}^2) = \eta/8 tr(\dot{C}^2).
+     * \f]
      *
-     * A springpot is between a spring and a dashpot. The parameter alpha regulates
-     * how much damping is introduced.
-     * Alpha=0, means the springpot is a spring
-     * Alpha=1, means the springpot is a dashpot; this is equal to a generalized Maxwell branch
+     * Viscous second Piola-Kirchhoff stress
+     * \f[
+     *   S_v =  2 \frac{\partial \Psi_v}{\partial \dot{C}} = \eta/2 \dot{C}.
+     * \f]
      *
-     * <h3>References</h3>
-     * <ul>
-     * <li> [1] Adolfson and Enelund (2003): Fractional Derivative Viscoelasticity at
-     *          Large Deformations
-     * </ul>
+     * Viscous constitutive tensor
+     * \f[
+     *   C_v =  4 \frac{\partial^2 W_v}{\partial \dot{C} \partial \dot{C}} = \eta I^\#,
+     * \f]
+     *
+     * with
+     *
+     * \f[
+     *   I^\#_{ijkl} = \frac{1}{2}(\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
+     * \f]
      */
-    class Fsls : public Summand
+    class CoupMyocard : public Summand
     {
      public:
       /// constructor with given material parameters
-      Fsls(Mat::Elastic::PAR::Fsls* params);
+      CoupMyocard(Mat::Elastic::PAR::CoupMyocard* params);
 
       /// @name Access material constants
       //@{
@@ -85,17 +89,18 @@ namespace Mat
       /// material type
       Core::Materials::MaterialType material_type() const override
       {
-        return Core::Materials::mes_fsls;
+        return Core::Materials::mes_coupmyocard;
       }
 
       //@}
 
-      /// Read material parameters
-      void read_material_parameters_visco(double& tau,  ///< relaxation parameter tau
-          double& beta,                                 ///< emphasis of viscous to elastic part
-          double& alpha,                                ///< fractional order derivative (for FSLS)
-          std::string& solve  ///< unused for FSLS; kept for interface compatibility
-          ) override;
+      /// Add modified coeffiencts.
+      void add_coefficients_visco_principal(
+          const Core::LinAlg::Matrix<3, 1>& prinv,  ///< invariants of right Cauchy-Green tensor
+          Core::LinAlg::Matrix<8, 1>& mu,   ///< necessary coefficients for piola-kirchhoff-stress
+          Core::LinAlg::Matrix<33, 1>& xi,  ///< necessary coefficients for viscosity tensor
+          Core::LinAlg::Matrix<7, 1>& rateinv, const Teuchos::ParameterList& params, double dt,
+          int gp, int eleGID) override;
 
       /// Indicator for formulation
       void specify_formulation(
@@ -106,6 +111,7 @@ namespace Mat
           bool& viscogeneral  ///< general indicator, if one viscoelastic formulation is used
           ) override
       {
+        isoprinc = true;
         viscogeneral = true;
         return;
       };
@@ -117,13 +123,14 @@ namespace Mat
           bool& visco_fsls                  ///< global indicator for FSLS model
           ) override
       {
-        visco_fsls = true;
+        visco_iso_rate = true;
         return;
       };
 
+
      private:
       /// my material parameters
-      Mat::Elastic::PAR::Fsls* params_;
+      Mat::Elastic::PAR::CoupMyocard* params_;
     };
 
   }  // namespace Elastic

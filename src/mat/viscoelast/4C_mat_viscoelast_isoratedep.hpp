@@ -5,8 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_MAT_ELAST_VISCO_ISORATEDEP_HPP
-#define FOUR_C_MAT_ELAST_VISCO_ISORATEDEP_HPP
+#ifndef FOUR_C_MAT_VISCOELAST_ISORATEDEP_HPP
+#define FOUR_C_MAT_VISCOELAST_ISORATEDEP_HPP
 
 #include "4C_config.hpp"
 

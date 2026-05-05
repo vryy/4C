@@ -15,12 +15,12 @@
 #include "4C_linalg_tensor_conversion.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_mat_elast_summand.hpp"
-#include "4C_mat_elast_visco_fsls.hpp"
-#include "4C_mat_elast_visco_generalizedmaxwell.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_mat_viscoelast_fsls.hpp"
+#include "4C_mat_viscoelast_generalizedmaxwell.hpp"
 #include "4C_utils_enum.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
