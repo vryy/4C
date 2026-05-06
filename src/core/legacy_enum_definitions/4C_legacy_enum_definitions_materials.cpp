@@ -41,6 +41,8 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "MAT_scatra";
     case m_scatra_gr:
       return "MAT_scatra_gr";
+    case m_scatra_nl_stimulus:
+      return "MAT_scatra_nl_stimulus";
     case m_scatra_reaction_poroECM:
       return "MAT_scatra_reaction_poro";
     case m_scatra_reaction:

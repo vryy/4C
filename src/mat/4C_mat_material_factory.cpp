@@ -124,6 +124,7 @@
 #include "4C_mat_scatra_growth_remodel.hpp"
 #include "4C_mat_scatra_multiporo.hpp"
 #include "4C_mat_scatra_multiscale.hpp"
+#include "4C_mat_scatra_nonlocal_stimulus.hpp"
 #include "4C_mat_scatra_poro_ecm.hpp"
 #include "4C_mat_scatra_reaction.hpp"
 #include "4C_mat_scl.hpp"
@@ -345,6 +346,10 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     case Core::Materials::m_scatra_gr:
     {
       return make_parameter_impl<Mat::PAR::ScatraGrowthRemodelMat>(id, type, input_data);
+    }
+    case Core::Materials::m_scatra_nl_stimulus:
+    {
+      return make_parameter_impl<Mat::PAR::ScatraNonlocalStimulusMat>(id, type, input_data);
     }
     case Core::Materials::m_muscle_combo:
     {

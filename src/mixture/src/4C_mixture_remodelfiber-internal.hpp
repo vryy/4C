@@ -126,6 +126,8 @@ namespace Mixture
 
       [[nodiscard]] T evaluate_growth_reaction_coefficient(
           T lambda_f, T lambda_r, T lambda_ext) const;
+      [[nodiscard]] T evaluate_growth_evolution_equation_dt_with_nonlocal_stimulus(
+          T psi, T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
       [[nodiscard]] T evaluate_growth_evolution_equation_dt(
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
       [[nodiscard]] T evaluate_d_growth_evolution_equation_dt_d_sig(
@@ -168,6 +170,9 @@ namespace Mixture
 
       [[nodiscard]] IntegrationState<numstates, T> get_integration_state_lambda_r() const;
 
+      [[nodiscard]] IntegrationState<numstates, T>
+      get_integration_state_growth_scalar_with_nonlocal_stimulus(T psi) const;
+
       /// @name Methods for doing explicit or implicit time integration
       /// @{
       /*!
@@ -183,6 +188,15 @@ namespace Mixture
        * @param dt (in) : timestep
        */
       void integrate_local_evolution_equations_explicit(T dt);
+
+      /*!
+       * @brief Integrate the local evolution equations explicitly, driven by a non-local stimulus
+       * \psi.
+       *
+       * @param psi (in) : non-local stimulus \psi
+       * @param dt (in) : timestep
+       */
+      void integrate_local_evolution_equations_explicit_with_nonlocal_stimulus(T psi, T dt);
       /// @}
       /// @brief Evaluation methods
       ///
