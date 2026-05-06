@@ -69,6 +69,7 @@ Mat::ViscoElastHyper::ViscoElastHyper() : Mat::ElastHyper()
   visco_fsls_ = false;
 
   state_.clear();
+  rebuild_active_model_sequence();
 }
 
 
@@ -80,14 +81,101 @@ Mat::ViscoElastHyper::ViscoElastHyper(Mat::PAR::ViscoElastHyper* params)
       visco_generalized_maxwell_(false),
       visco_fsls_(false)
 {
+  rebuild_active_model_sequence();
+}
+
+
+bool Mat::ViscoElastHyper::is_model_flag_enabled(const ViscoModelKind model_kind) const
+{
+  switch (model_kind)
+  {
+    case ViscoModelKind::iso_rate:
+      return isovisco_;
+    case ViscoModelKind::generalized_maxwell:
+      return visco_generalized_maxwell_;
+    case ViscoModelKind::fsls:
+      return visco_fsls_;
+  }
+
+  FOUR_C_THROW("Unsupported visco model kind.");
+}
+
+
+bool Mat::ViscoElastHyper::is_model_active(const ViscoModelKind model_kind) const
+{
+  for (const ViscoModelKind active_model_kind : active_model_sequence_)
+  {
+    if (active_model_kind == model_kind) return true;
+  }
+
+  return false;
+}
+
+
+void Mat::ViscoElastHyper::rebuild_active_model_sequence()
+{
+  active_model_sequence_.clear();
+  for (const ViscoModelKind model_kind : visco_model_registry())
+  {
+    if (is_model_flag_enabled(model_kind)) active_model_sequence_.push_back(model_kind);
+  }
+}
+
+
+Mat::ViscoElastState::ActiveModels Mat::ViscoElastHyper::active_models_from_flags() const
+{
+  return Mat::ViscoElastState::ActiveModels{.iso_rate = isovisco_,
+      .generalized_maxwell = visco_generalized_maxwell_,
+      .fsls = visco_fsls_};
+}
+
+
+Mat::ViscoElastState::ActiveModels Mat::ViscoElastHyper::active_models_from_sequence() const
+{
+  Mat::ViscoElastState::ActiveModels models;
+  for (const ViscoModelKind model_kind : active_model_sequence_)
+  {
+    switch (model_kind)
+    {
+      case ViscoModelKind::iso_rate:
+        models.iso_rate = true;
+        break;
+      case ViscoModelKind::generalized_maxwell:
+        models.generalized_maxwell = true;
+        break;
+      case ViscoModelKind::fsls:
+        models.fsls = true;
+        break;
+    }
+  }
+
+  return models;
+}
+
+
+void Mat::ViscoElastHyper::ensure_model_activation_consistency(const char* context) const
+{
+  const Mat::ViscoElastState::ActiveModels models_from_flags = active_models_from_flags();
+  const Mat::ViscoElastState::ActiveModels models_from_sequence = active_models_from_sequence();
+
+  if (models_from_flags.iso_rate != models_from_sequence.iso_rate ||
+      models_from_flags.generalized_maxwell != models_from_sequence.generalized_maxwell ||
+      models_from_flags.fsls != models_from_sequence.fsls)
+    FOUR_C_THROW(
+        "Inconsistent visco model activation while {} in MAT_ViscoElastHyper (MAT {}): "
+        "flags=(iso_rate={}, generalized_maxwell={}, fsls={}), "
+        "sequence=(iso_rate={}, generalized_maxwell={}, fsls={}).",
+        context, params_ != nullptr ? params_->id() : -1, models_from_flags.iso_rate,
+        models_from_flags.generalized_maxwell, models_from_flags.fsls,
+        models_from_sequence.iso_rate, models_from_sequence.generalized_maxwell,
+        models_from_sequence.fsls);
 }
 
 
 Mat::ViscoElastState::ActiveModels Mat::ViscoElastHyper::active_models() const
 {
-  return Mat::ViscoElastState::ActiveModels{.iso_rate = isovisco_,
-      .generalized_maxwell = visco_generalized_maxwell_,
-      .fsls = visco_fsls_};
+  ensure_model_activation_consistency("deriving active model descriptor");
+  return active_models_from_sequence();
 }
 
 
@@ -214,9 +302,10 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
   if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
   summandProperties_.pack(data);
-  add_to_pack(data, isovisco_);
-  add_to_pack(data, visco_generalized_maxwell_);
-  add_to_pack(data, visco_fsls_);
+  const Mat::ViscoElastState::ActiveModels models = active_models();
+  add_to_pack(data, models.iso_rate);
+  add_to_pack(data, models.generalized_maxwell);
+  add_to_pack(data, models.fsls);
 
   anisotropy_.pack_anisotropy(data);
 
@@ -247,6 +336,7 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   visco_generalized_maxwell_ = false;
   visco_fsls_ = false;
   state_.clear();
+  active_model_sequence_.clear();
 
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -273,6 +363,8 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   extract_from_pack(buffer, isovisco_);
   extract_from_pack(buffer, visco_generalized_maxwell_);
   extract_from_pack(buffer, visco_fsls_);
+  rebuild_active_model_sequence();
+  ensure_model_activation_consistency("unpack model activation");
 
   anisotropy_.unpack_anisotropy(buffer);
 
@@ -330,10 +422,16 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
     }
   }
 
+  rebuild_active_model_sequence();
+  ensure_model_activation_consistency("pre-loop setup orchestration");
+
   const Mat::ViscoElastState::ActiveModels models = active_models();
   std::size_t generalized_maxwell_numbranch = 0;
-  if (models.generalized_maxwell)
-    generalized_maxwell_numbranch = read_generalized_maxwell_branch_count_for_setup();
+  for (const ViscoModelKind model_kind : active_model_sequence_)
+  {
+    if (model_kind == ViscoModelKind::generalized_maxwell)
+      generalized_maxwell_numbranch = read_generalized_maxwell_branch_count_for_setup();
+  }
 
   state_.initialize_from_setup(numgp, models, generalized_maxwell_numbranch);
 
@@ -347,17 +445,21 @@ void Mat::ViscoElastHyper::update()
 {
   Mat::ElastHyper::update();
 
-  const Mat::ViscoElastState::ActiveModels models = active_models();
+  ensure_model_activation_consistency("pre-loop update orchestration");
+
   unsigned int max_hist = 0;
-  if (models.fsls)
+  for (const ViscoModelKind model_kind : active_model_sequence_)
   {
-    const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-    const int numsteps = sdyn.get<int>("NUMSTEP");
-    max_hist = numsteps + 1;
+    if (model_kind == ViscoModelKind::fsls)
+    {
+      const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
+      const int numsteps = sdyn.get<int>("NUMSTEP");
+      max_hist = numsteps + 1;
+    }
   }
 
   const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
-  state_.advance_time_step(models, max_hist, visco_mat_id);
+  state_.advance_time_step(active_models(), max_hist, visco_mat_id);
 
   return;
 }
@@ -370,6 +472,8 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
+  ensure_model_activation_consistency("pre-loop evaluate orchestration");
+
   const Core::LinAlg::Matrix<6, 1> glstrain_mat =
       Core::LinAlg::make_strain_like_voigt_matrix(glstrain);
   Core::LinAlg::Matrix<6, 1> stress_view = Core::LinAlg::make_stress_like_voigt_view(stress);
@@ -409,8 +513,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
   Core::LinAlg::Voigt::Stresses::to_strain_like(iC_stress, iC_strain);
   Core::LinAlg::Voigt::Stresses::invariants_principal(prinv, C_stress);
 
-  const Mat::ViscoElastState::ActiveModels models = active_models();
-  const bool has_visco_contribution = models.iso_rate || models.generalized_maxwell || models.fsls;
+  const bool has_visco_contribution = !active_model_sequence_.empty();
   double dt = 0.0;
   if (has_visco_contribution) dt = read_visco_time_step_size(context, gp, eleGID);
 
@@ -426,8 +529,10 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
   elast_hyper_evaluate_invariant_derivatives(
       prinv, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
 
-  if (models.iso_rate)
+  for (const ViscoModelKind model_kind : active_model_sequence_)
   {
+    if (model_kind != ViscoModelKind::iso_rate) continue;
+
     if (summandProperties_.isomod)
     {
       // calculate modified invariants
@@ -438,6 +543,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
         modrcgrate, modrateinv, gp);
     evaluate_mu_xi(
         prinv, modinv, mu, modmu, xi, modxi, rateinv, modrateinv, params, dt, gp, eleGID);
+    break;
   }
 
   // blank resulting quantities
@@ -450,59 +556,66 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
 
 
   // add viscous part
-  if (models.iso_rate)
+  for (const ViscoModelKind model_kind : active_model_sequence_)
   {
-    if (summandProperties_.isomod)
+    switch (model_kind)
     {
-      // add viscous part decoupled
-      Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisomodisovisco(
-          Core::LinAlg::Initialization::zero);
-      Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisomodisovisco(
-          Core::LinAlg::Initialization::zero);
-      Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisomodvolvisco(
-          Core::LinAlg::Initialization::zero);
-      Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisomodvolvisco(
-          Core::LinAlg::Initialization::zero);
-      evaluate_iso_visco_modified(stressisomodisovisco, stressisomodvolvisco, cmatisomodisovisco,
-          cmatisomodvolvisco, prinv, modinv, modmu, modxi, C_strain, id2, iC_stress, id4,
-          modrcgrate);
-      stress_view.update(1.0, stressisomodisovisco, 1.0);
-      stress_view.update(1.0, stressisomodvolvisco, 1.0);
-      cmat_view.update(1.0, cmatisomodisovisco, 1.0);
-      cmat_view.update(1.0, cmatisomodvolvisco, 1.0);
+      case ViscoModelKind::iso_rate:
+      {
+        if (summandProperties_.isomod)
+        {
+          // add viscous part decoupled
+          Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisomodisovisco(
+              Core::LinAlg::Initialization::zero);
+          Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisomodisovisco(
+              Core::LinAlg::Initialization::zero);
+          Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisomodvolvisco(
+              Core::LinAlg::Initialization::zero);
+          Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisomodvolvisco(
+              Core::LinAlg::Initialization::zero);
+          evaluate_iso_visco_modified(stressisomodisovisco, stressisomodvolvisco,
+              cmatisomodisovisco, cmatisomodvolvisco, prinv, modinv, modmu, modxi, C_strain, id2,
+              iC_stress, id4, modrcgrate);
+          stress_view.update(1.0, stressisomodisovisco, 1.0);
+          stress_view.update(1.0, stressisomodvolvisco, 1.0);
+          cmat_view.update(1.0, cmatisomodisovisco, 1.0);
+          cmat_view.update(1.0, cmatisomodvolvisco, 1.0);
+        }
+
+        if (summandProperties_.isoprinc)
+        {
+          // add viscous part coupled
+          Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisovisco(Core::LinAlg::Initialization::zero);
+          Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisovisco(
+              Core::LinAlg::Initialization::zero);
+          evaluate_iso_visco_principal(stressisovisco, cmatisovisco, mu, xi, id4sharp, scgrate);
+          stress_view.update(1.0, stressisovisco, 1.0);
+          cmat_view.update(1.0, cmatisovisco, 1.0);
+        }
+        break;
+      }
+      case ViscoModelKind::generalized_maxwell:
+      {
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(Core::LinAlg::Initialization::zero);
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(
+            Core::LinAlg::Initialization::zero);
+        evaluate_visco_generalized_maxwell(Q, cmatq, dt, &glstrain_mat, gp, eleGID);
+        stress_view.update(1.0, Q, 1.0);
+        cmat_view.update(1.0, cmatq, 1.0);
+        break;
+      }
+      case ViscoModelKind::fsls:
+      {
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(
+            Core::LinAlg::Initialization::zero);  // artificial viscous stress
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(
+            Core::LinAlg::Initialization::zero);
+        evaluate_visco_fsls(stress_view, cmat_view, Q, cmatq, dt, gp, eleGID);
+        stress_view.update(1.0, Q, 1.);
+        cmat_view.update(1.0, cmatq, 1.);
+        break;
+      }
     }
-
-    if (summandProperties_.isoprinc)
-    {
-      // add viscous part coupled
-      Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisovisco(Core::LinAlg::Initialization::zero);
-      Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisovisco(
-          Core::LinAlg::Initialization::zero);
-      evaluate_iso_visco_principal(stressisovisco, cmatisovisco, mu, xi, id4sharp, scgrate);
-      stress_view.update(1.0, stressisovisco, 1.0);
-      cmat_view.update(1.0, cmatisovisco, 1.0);
-    }
-  }
-
-  // add contribution of generalized Maxwell model
-  if (models.generalized_maxwell)
-  {
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(Core::LinAlg::Initialization::zero);
-    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(Core::LinAlg::Initialization::zero);
-    evaluate_visco_generalized_maxwell(Q, cmatq, dt, &glstrain_mat, gp, eleGID);
-    stress_view.update(1.0, Q, 1.0);
-    cmat_view.update(1.0, cmatq, 1.0);
-  }
-
-  // add contribution of FSLS material
-  if (models.fsls)
-  {
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(
-        Core::LinAlg::Initialization::zero);  // artificial viscous stress
-    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(Core::LinAlg::Initialization::zero);
-    evaluate_visco_fsls(stress_view, cmat_view, Q, cmatq, dt, gp, eleGID);
-    stress_view.update(1.0, Q, 1.);
-    cmat_view.update(1.0, cmatq, 1.);
   }
 
 
@@ -811,7 +924,7 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
     branchProperties.clear();
     elast_hyper_properties(branchpotsum, branchProperties);
 
-    if (isovisco_)
+    if (is_model_active(ViscoModelKind::iso_rate))
       FOUR_C_THROW(
           "Unsupported branch formulation in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper "
           "(MAT {}, GP {}, ELE {}): isovisco branch response is not implemented.",

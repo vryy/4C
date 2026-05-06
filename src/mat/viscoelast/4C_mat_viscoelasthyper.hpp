@@ -19,6 +19,9 @@
 #include "4C_mat_viscoelast_state.hpp"
 #include "4C_material_parameter_base.hpp"
 
+#include <array>
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration due to avoid header definition
@@ -246,12 +249,35 @@ namespace Mat
       int summand_mat_id = -1;
     };
 
+    enum class ViscoModelKind
+    {
+      iso_rate,
+      generalized_maxwell,
+      fsls
+    };
+
+    using ActiveModelSequence = std::vector<ViscoModelKind>;
+
+    [[nodiscard]] static constexpr std::array<ViscoModelKind, 3> visco_model_registry()
+    {
+      return {ViscoModelKind::iso_rate, ViscoModelKind::generalized_maxwell, ViscoModelKind::fsls};
+    }
+
+    [[nodiscard]] bool is_model_flag_enabled(ViscoModelKind model_kind) const;
+    [[nodiscard]] bool is_model_active(ViscoModelKind model_kind) const;
+    void rebuild_active_model_sequence();
+
+    [[nodiscard]] ViscoElastState::ActiveModels active_models_from_flags() const;
+    [[nodiscard]] ViscoElastState::ActiveModels active_models_from_sequence() const;
+    void ensure_model_activation_consistency(const char* context) const;
+
     [[nodiscard]] ViscoElastState::ActiveModels active_models() const;
     [[nodiscard]] std::size_t read_generalized_maxwell_branch_count_for_setup() const;
     [[nodiscard]] FslsParameters read_fsls_parameters(int gp, int eleGID) const;
     [[nodiscard]] double read_visco_time_step_size(
         const EvaluationContext<3>& context, int gp, int eleGID) const;
 
+    ActiveModelSequence active_model_sequence_;
     ViscoElastState state_;  ///< unified viscoelastic history state
   };  // class ViscoElastHyper
 
