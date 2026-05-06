@@ -26,6 +26,14 @@ namespace Mat
    *
    * This struct owns all time-dependent internal variables that must be stored,
    * advanced between previous/current time levels, and serialized for MPI/restart.
+   *
+   * Lifecycle contract:
+   * - `initialize_from_setup(...)` or `deserialize_state(...)` activates optional
+   *   model sub-states and prepares containers.
+   * - Constitutive kernels write current-step values via `set_*_current_*` accessors.
+   * - `advance_time_step(...)` commits current values to previous history and resets
+   *   current-step storage for the next evaluation cycle.
+   * - Access to inactive model state is rejected with explicit diagnostics.
    */
   struct ViscoElastState
   {
@@ -83,6 +91,14 @@ namespace Mat
       const PointHistory& branch_stress;
     };
 
+    /// \brief Activation flags for optional visco model histories.
+    struct ActiveModels
+    {
+      bool iso_rate = false;
+      bool generalized_maxwell = false;
+      bool fsls = false;
+    };
+
     /// Iso-rate model state containers.
     IsoRateState iso_rate_;
     /// Generalized Maxwell model state containers.
@@ -105,20 +121,19 @@ namespace Mat
     [[nodiscard]] bool initialized() const;
 
     /// \brief Serialize active model histories to communication buffer.
-    void serialize_state(Core::Communication::PackBuffer& data, bool has_iso_rate_state,
-        bool has_generalized_maxwell_state, bool has_fsls_state) const;
+    void serialize_state(
+        Core::Communication::PackBuffer& data, const ActiveModels& active_models) const;
     /// \brief Deserialize active model histories from communication buffer.
-    void deserialize_state(Core::Communication::UnpackBuffer& buffer, bool has_iso_rate_state,
-        bool has_generalized_maxwell_state, bool has_fsls_state);
+    void deserialize_state(
+        Core::Communication::UnpackBuffer& buffer, const ActiveModels& active_models);
 
     /// \brief Initialize state containers from setup metadata.
-    void initialize_from_setup(int gp_count, bool has_iso_rate_state,
-        bool has_generalized_maxwell_state, std::size_t generalized_maxwell_branch_count,
-        bool has_fsls_state);
+    void initialize_from_setup(int gp_count, const ActiveModels& active_models,
+        std::size_t generalized_maxwell_branch_count);
 
     /// \brief Advance active histories from current to previous and reset current state.
-    void advance_time_step(bool has_iso_rate_state, bool has_generalized_maxwell_state,
-        bool has_fsls_state, unsigned int fsls_max_history_size, int visco_mat_id);
+    void advance_time_step(
+        const ActiveModels& active_models, unsigned int fsls_max_history_size, int visco_mat_id);
 
     /// \brief Return read-only previous iso-rate state for one Gauss point.
     IsoRatePrevPointState iso_rate_prev_point(int gp) const;
@@ -141,14 +156,26 @@ namespace Mat
 
    private:
     void mark_initialized(bool initialized);
+    void configure_active_models(const ActiveModels& active_models);
+
+    [[nodiscard]] ActiveModels configured_active_models() const;
 
     [[nodiscard]] int serialized_gp_count() const;
     [[nodiscard]] int gp_count() const;
 
+    void clear_iso_rate_state();
+    void clear_generalized_maxwell_state();
+    void clear_fsls_state();
+
+    void ensure_initialized(const char* context) const;
+    void ensure_model_active(
+        bool model_is_active, const char* model_name, const char* context) const;
+    void ensure_gp_in_range(int gp, const char* model_name, const char* context) const;
+
     void serialize_iso_rate_state(Core::Communication::PackBuffer& data, int gp_count) const;
     void serialize_generalized_maxwell_state(
         Core::Communication::PackBuffer& data, int gp_count) const;
-    void serialize_fsls_state(Core::Communication::PackBuffer& data) const;
+    void serialize_fsls_state(Core::Communication::PackBuffer& data, int gp_count) const;
     void deserialize_iso_rate_state(Core::Communication::UnpackBuffer& buffer, int gp_count);
     void deserialize_generalized_maxwell_state(
         Core::Communication::UnpackBuffer& buffer, int gp_count);

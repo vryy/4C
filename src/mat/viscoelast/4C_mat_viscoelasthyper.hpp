@@ -238,6 +238,20 @@ namespace Mat
                        //@}
 
    private:
+    struct FslsParameters
+    {
+      double tau = 0.0;
+      double alpha = 0.0;
+      double beta = 0.0;
+      int summand_mat_id = -1;
+    };
+
+    [[nodiscard]] ViscoElastState::ActiveModels active_models() const;
+    [[nodiscard]] std::size_t read_generalized_maxwell_branch_count_for_setup() const;
+    [[nodiscard]] FslsParameters read_fsls_parameters(int gp, int eleGID) const;
+    [[nodiscard]] double read_visco_time_step_size(
+        const EvaluationContext<3>& context, int gp, int eleGID) const;
+
     ViscoElastState state_;  ///< unified viscoelastic history state
   };  // class ViscoElastHyper
 

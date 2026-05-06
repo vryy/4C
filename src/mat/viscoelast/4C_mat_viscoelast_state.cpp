@@ -13,6 +13,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
+  [[nodiscard]] bool activation_matches(
+      const Mat::ViscoElastState::ActiveModels& lhs, const Mat::ViscoElastState::ActiveModels& rhs)
+  {
+    return lhs.iso_rate == rhs.iso_rate && lhs.generalized_maxwell == rhs.generalized_maxwell &&
+           lhs.fsls == rhs.fsls;
+  }
+
+
   Mat::ViscoElastState::StressVector make_zero_stress()
   {
     return Mat::ViscoElastState::StressVector(Core::LinAlg::Initialization::zero);
@@ -57,6 +65,60 @@ namespace
           generalized_maxwell.branch_stress_previous_.size(),
           generalized_maxwell.branch_elastic_stress_current_.size(),
           generalized_maxwell.branch_elastic_stress_previous_.size(), gp_count);
+
+    std::size_t expected_branch_count = 0;
+    for (std::size_t gp = 0; gp < gp_count; ++gp)
+    {
+      const auto& branch_stress_current = generalized_maxwell.branch_stress_current_.at(gp);
+      const auto& branch_stress_previous = generalized_maxwell.branch_stress_previous_.at(gp);
+      const auto& branch_elastic_stress_current =
+          generalized_maxwell.branch_elastic_stress_current_.at(gp);
+      const auto& branch_elastic_stress_previous =
+          generalized_maxwell.branch_elastic_stress_previous_.at(gp);
+
+      if (branch_stress_current.size() != branch_stress_previous.size() ||
+          branch_stress_current.size() != branch_elastic_stress_current.size() ||
+          branch_stress_current.size() != branch_elastic_stress_previous.size())
+        FOUR_C_THROW(
+            "Inconsistent generalized Maxwell branch sizes while {} at GP {}: "
+            "branch_stress_current={}, branch_stress_previous={}, "
+            "branch_elastic_stress_current={}, branch_elastic_stress_previous={}",
+            context, gp, branch_stress_current.size(), branch_stress_previous.size(),
+            branch_elastic_stress_current.size(), branch_elastic_stress_previous.size());
+
+      if (gp == 0)
+        expected_branch_count = branch_stress_current.size();
+      else if (branch_stress_current.size() != expected_branch_count)
+        FOUR_C_THROW(
+            "Inconsistent generalized Maxwell branch count while {}: expected {} branches but "
+            "GP {} has {}.",
+            context, expected_branch_count, gp, branch_stress_current.size());
+    }
+  }
+
+
+  void validate_fsls_state(const Mat::ViscoElastState::FslsState& fsls_state,
+      const std::size_t gp_count, const char* context)
+  {
+    if (fsls_state.artificial_stress_current_.size() != gp_count ||
+        fsls_state.artificial_stress_previous_history_.size() != gp_count)
+      FOUR_C_THROW(
+          "Inconsistent FSLS state sizes while {}: artificial_stress_current={}, "
+          "artificial_stress_previous_history={}, expected={}",
+          context, fsls_state.artificial_stress_current_.size(),
+          fsls_state.artificial_stress_previous_history_.size(), gp_count);
+
+    if (gp_count == 0) return;
+
+    const std::size_t history_size = fsls_state.artificial_stress_previous_history_.at(0).size();
+    for (std::size_t gp = 0; gp < gp_count; ++gp)
+    {
+      if (fsls_state.artificial_stress_previous_history_.at(gp).size() != history_size)
+        FOUR_C_THROW(
+            "Inconsistent FSLS history sizes while {}: expected {} entries but GP {} has {}.",
+            context, history_size, gp,
+            fsls_state.artificial_stress_previous_history_.at(gp).size());
+    }
   }
 }  // namespace
 
@@ -67,6 +129,71 @@ bool Mat::ViscoElastState::initialized() const { return isinitvis_; }
 void Mat::ViscoElastState::mark_initialized(const bool initialized) { isinitvis_ = initialized; }
 
 
+void Mat::ViscoElastState::configure_active_models(const ActiveModels& active_models)
+{
+  has_iso_rate_state_ = active_models.iso_rate;
+  has_generalized_maxwell_state_ = active_models.generalized_maxwell;
+  has_fsls_state_ = active_models.fsls;
+}
+
+
+Mat::ViscoElastState::ActiveModels Mat::ViscoElastState::configured_active_models() const
+{
+  return ActiveModels{.iso_rate = has_iso_rate_state_,
+      .generalized_maxwell = has_generalized_maxwell_state_,
+      .fsls = has_fsls_state_};
+}
+
+
+void Mat::ViscoElastState::clear_iso_rate_state()
+{
+  iso_rate_.scg_previous_.clear();
+  iso_rate_.modrcg_previous_.clear();
+  iso_rate_.scg_current_.clear();
+  iso_rate_.modrcg_current_.clear();
+}
+
+
+void Mat::ViscoElastState::clear_generalized_maxwell_state()
+{
+  generalized_maxwell_.branch_stress_previous_.clear();
+  generalized_maxwell_.branch_elastic_stress_previous_.clear();
+  generalized_maxwell_.branch_stress_current_.clear();
+  generalized_maxwell_.branch_elastic_stress_current_.clear();
+}
+
+
+void Mat::ViscoElastState::clear_fsls_state()
+{
+  fsls_.artificial_stress_current_.clear();
+  fsls_.artificial_stress_previous_history_.clear();
+}
+
+
+void Mat::ViscoElastState::ensure_initialized(const char* context) const
+{
+  if (!initialized()) FOUR_C_THROW("Attempted visco state {} before initialization.", context);
+}
+
+
+void Mat::ViscoElastState::ensure_model_active(
+    const bool model_is_active, const char* model_name, const char* context) const
+{
+  if (!model_is_active)
+    FOUR_C_THROW(
+        "Attempted to {} {} state, but {} model is inactive.", context, model_name, model_name);
+}
+
+
+void Mat::ViscoElastState::ensure_gp_in_range(
+    const int gp, const char* model_name, const char* context) const
+{
+  if (gp < 0 || gp >= gp_count_)
+    FOUR_C_THROW("Invalid GP {} while attempting to {} {} state. Valid range is [0, {}).", gp,
+        context, model_name, gp_count_);
+}
+
+
 int Mat::ViscoElastState::serialized_gp_count() const
 {
   if (!initialized()) return 0;
@@ -74,84 +201,72 @@ int Mat::ViscoElastState::serialized_gp_count() const
 }
 
 
-void Mat::ViscoElastState::serialize_state(Core::Communication::PackBuffer& data,
-    const bool has_iso_rate_state, const bool has_generalized_maxwell_state,
-    const bool has_fsls_state) const
+void Mat::ViscoElastState::serialize_state(
+    Core::Communication::PackBuffer& data, const ActiveModels& active_models) const
 {
+  if (initialized() && !activation_matches(configured_active_models(), active_models))
+    FOUR_C_THROW(
+        "Inconsistent visco model activation while serializing state: "
+        "configured(iso_rate={}, generalized_maxwell={}, fsls={}), "
+        "requested(iso_rate={}, generalized_maxwell={}, fsls={}).",
+        has_iso_rate_state_, has_generalized_maxwell_state_, has_fsls_state_,
+        active_models.iso_rate, active_models.generalized_maxwell, active_models.fsls);
+
   const int gp_count = serialized_gp_count();
   add_to_pack(data, gp_count);
 
-  if (has_iso_rate_state) serialize_iso_rate_state(data, gp_count);
-  if (has_generalized_maxwell_state) serialize_generalized_maxwell_state(data, gp_count);
-  if (has_fsls_state) serialize_fsls_state(data);
+  if (active_models.iso_rate) serialize_iso_rate_state(data, gp_count);
+  if (active_models.generalized_maxwell) serialize_generalized_maxwell_state(data, gp_count);
+  if (active_models.fsls) serialize_fsls_state(data, gp_count);
 }
 
 
-void Mat::ViscoElastState::deserialize_state(Core::Communication::UnpackBuffer& buffer,
-    const bool has_iso_rate_state, const bool has_generalized_maxwell_state,
-    const bool has_fsls_state)
+void Mat::ViscoElastState::deserialize_state(
+    Core::Communication::UnpackBuffer& buffer, const ActiveModels& active_models)
 {
-  has_iso_rate_state_ = has_iso_rate_state;
-  has_generalized_maxwell_state_ = has_generalized_maxwell_state;
-  has_fsls_state_ = has_fsls_state;
+  configure_active_models(active_models);
 
   mark_initialized(true);
 
   int gp_count = 0;
   extract_from_pack(buffer, gp_count);
+  if (gp_count < 0)
+    FOUR_C_THROW("Invalid negative gp_count={} while deserializing visco state.", gp_count);
+
   gp_count_ = gp_count;
   if (gp_count == 0) mark_initialized(false);
 
-  if (has_iso_rate_state)
+  if (active_models.iso_rate)
     deserialize_iso_rate_state(buffer, gp_count);
   else
-  {
-    iso_rate_.scg_previous_.clear();
-    iso_rate_.modrcg_previous_.clear();
-    iso_rate_.scg_current_.clear();
-    iso_rate_.modrcg_current_.clear();
-  }
+    clear_iso_rate_state();
 
-  if (has_generalized_maxwell_state)
+  if (active_models.generalized_maxwell)
     deserialize_generalized_maxwell_state(buffer, gp_count);
   else
-  {
-    generalized_maxwell_.branch_stress_previous_.clear();
-    generalized_maxwell_.branch_elastic_stress_previous_.clear();
-    generalized_maxwell_.branch_stress_current_.clear();
-    generalized_maxwell_.branch_elastic_stress_current_.clear();
-  }
+    clear_generalized_maxwell_state();
 
-  if (has_fsls_state)
+  if (active_models.fsls)
     deserialize_fsls_state(buffer, gp_count);
   else
-  {
-    fsls_.artificial_stress_current_.clear();
-    fsls_.artificial_stress_previous_history_.clear();
-  }
+    clear_fsls_state();
 }
 
 
-void Mat::ViscoElastState::initialize_from_setup(const int gp_count, const bool has_iso_rate_state,
-    const bool has_generalized_maxwell_state, const std::size_t generalized_maxwell_branch_count,
-    const bool has_fsls_state)
+void Mat::ViscoElastState::initialize_from_setup(const int gp_count,
+    const ActiveModels& active_models, const std::size_t generalized_maxwell_branch_count)
 {
-  gp_count_ = gp_count;
-  has_iso_rate_state_ = has_iso_rate_state;
-  has_generalized_maxwell_state_ = has_generalized_maxwell_state;
-  has_fsls_state_ = has_fsls_state;
+  if (gp_count < 0) FOUR_C_THROW("Invalid setup for visco state: gp_count={}.", gp_count);
 
-  if (has_iso_rate_state)
+  gp_count_ = gp_count;
+  configure_active_models(active_models);
+
+  if (active_models.iso_rate)
     initialize_iso_rate_state(gp_count);
   else
-  {
-    iso_rate_.scg_current_.clear();
-    iso_rate_.scg_previous_.clear();
-    iso_rate_.modrcg_current_.clear();
-    iso_rate_.modrcg_previous_.clear();
-  }
+    clear_iso_rate_state();
 
-  if (has_generalized_maxwell_state)
+  if (active_models.generalized_maxwell)
   {
     if (generalized_maxwell_branch_count == 0)
       FOUR_C_THROW(
@@ -159,20 +274,12 @@ void Mat::ViscoElastState::initialize_from_setup(const int gp_count, const bool 
     initialize_generalized_maxwell_state(gp_count, generalized_maxwell_branch_count);
   }
   else
-  {
-    generalized_maxwell_.branch_stress_current_.clear();
-    generalized_maxwell_.branch_stress_previous_.clear();
-    generalized_maxwell_.branch_elastic_stress_current_.clear();
-    generalized_maxwell_.branch_elastic_stress_previous_.clear();
-  }
+    clear_generalized_maxwell_state();
 
-  if (has_fsls_state)
+  if (active_models.fsls)
     initialize_fsls_state(gp_count);
   else
-  {
-    fsls_.artificial_stress_current_.clear();
-    fsls_.artificial_stress_previous_history_.clear();
-  }
+    clear_fsls_state();
 
   mark_initialized(true);
 }
@@ -185,8 +292,8 @@ void Mat::ViscoElastState::serialize_iso_rate_state(
 
   validate_iso_rate_state(iso_rate_, "serializing");
   if (gp_count != static_cast<int>(iso_rate_.scg_previous_.size()))
-    FOUR_C_THROW("Invalid iso-rate state size for serialization: expected {}, got {}.",
-        iso_rate_.scg_previous_.size(), gp_count);
+    FOUR_C_THROW("Invalid iso-rate state size for serialization: expected {}, got {}.", gp_count,
+        iso_rate_.scg_previous_.size());
 
   for (int gp = 0; gp < gp_count; ++gp)
   {
@@ -214,8 +321,11 @@ void Mat::ViscoElastState::serialize_generalized_maxwell_state(
 }
 
 
-void Mat::ViscoElastState::serialize_fsls_state(Core::Communication::PackBuffer& data) const
+void Mat::ViscoElastState::serialize_fsls_state(
+    Core::Communication::PackBuffer& data, const int gp_count) const
 {
+  validate_fsls_state(fsls_, gp_count, "serializing");
+
   const bool have_previous_history = !fsls_.artificial_stress_previous_history_.empty();
   add_to_pack(data, have_previous_history);
   if (!have_previous_history) FOUR_C_THROW("Missing FSLS previous history for serialization.");
@@ -333,21 +443,39 @@ void Mat::ViscoElastState::initialize_fsls_state_for_deserialize(
 }
 
 
-void Mat::ViscoElastState::advance_time_step(const bool has_iso_rate_state,
-    const bool has_generalized_maxwell_state, const bool has_fsls_state,
+void Mat::ViscoElastState::advance_time_step(const ActiveModels& active_models,
     const unsigned int fsls_max_history_size, const int visco_mat_id)
 {
-  has_iso_rate_state_ = has_iso_rate_state;
-  has_generalized_maxwell_state_ = has_generalized_maxwell_state;
-  has_fsls_state_ = has_fsls_state;
+  if (!initialized())
+  {
+    if (active_models.iso_rate || active_models.generalized_maxwell || active_models.fsls)
+      FOUR_C_THROW(
+          "Attempted to advance visco state before initialization for "
+          "MAT_ViscoElastHyper (MAT {}).",
+          visco_mat_id);
 
-  if (has_iso_rate_state) commit_iso_rate_to_previous();
-  if (has_fsls_state) append_fsls_current_to_previous_history(fsls_max_history_size);
+    configure_active_models(active_models);
+    return;
+  }
+
+  if (!activation_matches(configured_active_models(), active_models))
+    FOUR_C_THROW(
+        "Inconsistent visco model activation while advancing state in "
+        "MAT_ViscoElastHyper (MAT {}): "
+        "configured(iso_rate={}, generalized_maxwell={}, fsls={}), "
+        "requested(iso_rate={}, generalized_maxwell={}, fsls={}).",
+        visco_mat_id, has_iso_rate_state_, has_generalized_maxwell_state_, has_fsls_state_,
+        active_models.iso_rate, active_models.generalized_maxwell, active_models.fsls);
+
+  configure_active_models(active_models);
+
+  if (active_models.iso_rate) commit_iso_rate_to_previous();
+  if (active_models.fsls) append_fsls_current_to_previous_history(fsls_max_history_size);
 
   const int gp_count = this->gp_count();
-  reset_current_state(gp_count, has_iso_rate_state, has_fsls_state);
+  reset_current_state(gp_count, active_models.iso_rate, active_models.fsls);
 
-  if (has_generalized_maxwell_state)
+  if (active_models.generalized_maxwell)
   {
     const std::size_t branch_count = rotate_generalized_maxwell_to_previous(gp_count, visco_mat_id);
     reset_generalized_maxwell_current_state(gp_count, branch_count);
@@ -366,6 +494,8 @@ void Mat::ViscoElastState::commit_iso_rate_to_previous()
 void Mat::ViscoElastState::append_fsls_current_to_previous_history(
     const unsigned int max_history_size)
 {
+  validate_fsls_state(fsls_, fsls_.artificial_stress_current_.size(), "advancing time step");
+
   if (fsls_.artificial_stress_previous_history_.size() != fsls_.artificial_stress_current_.size())
     FOUR_C_THROW(
         "Inconsistent FSLS state sizes while advancing time step: previous history gauss points "
@@ -487,8 +617,9 @@ void Mat::ViscoElastState::reset_generalized_maxwell_current_state(
 Mat::ViscoElastState::IsoRatePrevPointState Mat::ViscoElastState::iso_rate_prev_point(
     const int gp) const
 {
-  if (!has_iso_rate_state_)
-    FOUR_C_THROW("Requested iso-rate previous state, but iso-rate visco model is inactive.");
+  ensure_initialized("read previous");
+  ensure_model_active(has_iso_rate_state_, "iso-rate", "read previous");
+  ensure_gp_in_range(gp, "iso-rate", "read previous");
 
   return {iso_rate_.scg_previous_.at(gp), iso_rate_.modrcg_previous_.at(gp)};
 }
@@ -497,8 +628,9 @@ Mat::ViscoElastState::IsoRatePrevPointState Mat::ViscoElastState::iso_rate_prev_
 void Mat::ViscoElastState::set_iso_rate_current_point(
     const int gp, const StressVector& scg, const StressVector& modrcg)
 {
-  if (!has_iso_rate_state_)
-    FOUR_C_THROW("Attempted to write iso-rate current state, but iso-rate model is inactive.");
+  ensure_initialized("write current");
+  ensure_model_active(has_iso_rate_state_, "iso-rate", "write current");
+  ensure_gp_in_range(gp, "iso-rate", "write current");
 
   iso_rate_.scg_current_.at(gp) = scg;
   iso_rate_.modrcg_current_.at(gp) = modrcg;
@@ -508,8 +640,9 @@ void Mat::ViscoElastState::set_iso_rate_current_point(
 Mat::ViscoElastState::GeneralizedMaxwellPrevPointState
 Mat::ViscoElastState::generalized_maxwell_prev_point(const int gp) const
 {
-  if (!has_generalized_maxwell_state_)
-    FOUR_C_THROW("Requested generalized Maxwell previous state, but model is inactive.");
+  ensure_initialized("read previous");
+  ensure_model_active(has_generalized_maxwell_state_, "generalized Maxwell", "read previous");
+  ensure_gp_in_range(gp, "generalized Maxwell", "read previous");
 
   return {generalized_maxwell_.branch_elastic_stress_previous_.at(gp),
       generalized_maxwell_.branch_stress_previous_.at(gp)};
@@ -519,8 +652,23 @@ Mat::ViscoElastState::generalized_maxwell_prev_point(const int gp) const
 void Mat::ViscoElastState::set_generalized_maxwell_current_point(
     const int gp, const PointHistory& branch_elastic_stress, const PointHistory& branch_stress)
 {
-  if (!has_generalized_maxwell_state_)
-    FOUR_C_THROW("Attempted to write generalized Maxwell current state, but model is inactive.");
+  ensure_initialized("write current");
+  ensure_model_active(has_generalized_maxwell_state_, "generalized Maxwell", "write current");
+  ensure_gp_in_range(gp, "generalized Maxwell", "write current");
+
+  if (branch_elastic_stress.size() != branch_stress.size())
+    FOUR_C_THROW(
+        "Inconsistent generalized Maxwell current state write at GP {}: "
+        "branch_elastic_stress size {} does not match branch_stress size {}.",
+        gp, branch_elastic_stress.size(), branch_stress.size());
+
+  const std::size_t expected_branch_count =
+      generalized_maxwell_.branch_stress_current_.at(gp).size();
+  if (expected_branch_count != branch_stress.size())
+    FOUR_C_THROW(
+        "Invalid generalized Maxwell current state write at GP {}: expected {} branches but "
+        "received {}.",
+        gp, expected_branch_count, branch_stress.size());
 
   generalized_maxwell_.branch_elastic_stress_current_.at(gp) = branch_elastic_stress;
   generalized_maxwell_.branch_stress_current_.at(gp) = branch_stress;
@@ -529,8 +677,9 @@ void Mat::ViscoElastState::set_generalized_maxwell_current_point(
 
 const Mat::ViscoElastState::FslsHistory& Mat::ViscoElastState::fsls_previous_history() const
 {
-  if (!has_fsls_state_)
-    FOUR_C_THROW("Requested FSLS previous history, but FSLS model is inactive.");
+  ensure_initialized("read previous");
+  ensure_model_active(has_fsls_state_, "FSLS", "read previous");
+  validate_fsls_state(fsls_, fsls_.artificial_stress_previous_history_.size(), "reading previous");
 
   return fsls_.artificial_stress_previous_history_;
 }
@@ -539,8 +688,9 @@ const Mat::ViscoElastState::FslsHistory& Mat::ViscoElastState::fsls_previous_his
 void Mat::ViscoElastState::set_fsls_current_artificial_stress(
     const int gp, const StressVector& value)
 {
-  if (!has_fsls_state_)
-    FOUR_C_THROW("Attempted to write FSLS current state, but FSLS model is inactive.");
+  ensure_initialized("write current");
+  ensure_model_active(has_fsls_state_, "FSLS", "write current");
+  ensure_gp_in_range(gp, "FSLS", "write current");
 
   fsls_.artificial_stress_current_.at(gp) = value;
 }
@@ -548,23 +698,12 @@ void Mat::ViscoElastState::set_fsls_current_artificial_stress(
 
 void Mat::ViscoElastState::clear()
 {
-  iso_rate_.scg_current_.clear();
-  iso_rate_.scg_previous_.clear();
-  iso_rate_.modrcg_current_.clear();
-  iso_rate_.modrcg_previous_.clear();
-
-  generalized_maxwell_.branch_stress_current_.clear();
-  generalized_maxwell_.branch_stress_previous_.clear();
-  generalized_maxwell_.branch_elastic_stress_current_.clear();
-  generalized_maxwell_.branch_elastic_stress_previous_.clear();
-
-  fsls_.artificial_stress_current_.clear();
-  fsls_.artificial_stress_previous_history_.clear();
+  clear_iso_rate_state();
+  clear_generalized_maxwell_state();
+  clear_fsls_state();
 
   gp_count_ = 0;
-  has_iso_rate_state_ = false;
-  has_generalized_maxwell_state_ = false;
-  has_fsls_state_ = false;
+  configure_active_models(ActiveModels{});
   isinitvis_ = false;
 }
 

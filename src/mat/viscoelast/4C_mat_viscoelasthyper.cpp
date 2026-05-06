@@ -82,6 +82,126 @@ Mat::ViscoElastHyper::ViscoElastHyper(Mat::PAR::ViscoElastHyper* params)
 {
 }
 
+
+Mat::ViscoElastState::ActiveModels Mat::ViscoElastHyper::active_models() const
+{
+  return Mat::ViscoElastState::ActiveModels{.iso_rate = isovisco_,
+      .generalized_maxwell = visco_generalized_maxwell_,
+      .fsls = visco_fsls_};
+}
+
+
+std::size_t Mat::ViscoElastHyper::read_generalized_maxwell_branch_count_for_setup() const
+{
+  const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
+
+  int generalized_maxwell_model_count = 0;
+  int generalized_maxwell_numbranch_value = -1;
+  std::string generalized_maxwell_solve;
+  const std::vector<int>* generalized_maxwell_matids = nullptr;
+
+  for (unsigned int p = 0; p < potsum_.size(); ++p)
+  {
+    std::shared_ptr<Mat::Elastic::GeneralizedMaxwell> generalized_maxwell =
+        std::dynamic_pointer_cast<Mat::Elastic::GeneralizedMaxwell>(potsum_[p]);
+    if (generalized_maxwell != nullptr)
+    {
+      ++generalized_maxwell_model_count;
+      generalized_maxwell->read_material_parameters(generalized_maxwell_numbranch_value,
+          generalized_maxwell_matids, generalized_maxwell_solve);
+    }
+  }
+
+  if (generalized_maxwell_model_count != 1)
+    FOUR_C_THROW(
+        "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): expected "
+        "exactly one VISCO_GeneralizedMaxwell summand but found {}.",
+        visco_mat_id, generalized_maxwell_model_count);
+
+  if (generalized_maxwell_numbranch_value <= 0)
+    FOUR_C_THROW(
+        "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): "
+        "NUMBRANCH={} is not positive.",
+        visco_mat_id, generalized_maxwell_numbranch_value);
+
+  if (generalized_maxwell_matids == nullptr)
+    FOUR_C_THROW(
+        "Failed to read MATIDS for VISCO_GeneralizedMaxwell in MAT_ViscoElastHyper (MAT {}).",
+        visco_mat_id);
+
+  if (generalized_maxwell_matids->size() !=
+      static_cast<unsigned int>(generalized_maxwell_numbranch_value))
+    FOUR_C_THROW(
+        "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): "
+        "NUMBRANCH={} but MATIDS has size {}.",
+        visco_mat_id, generalized_maxwell_numbranch_value, generalized_maxwell_matids->size());
+
+  if (generalized_maxwell_solve != "OneStepTheta" &&
+      generalized_maxwell_solve != "ExponentialTimeDiscretization")
+    FOUR_C_THROW(
+        "Invalid SOLVE='{}' in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper (MAT {}). "
+        "Use OneStepTheta or ExponentialTimeDiscretization.",
+        generalized_maxwell_solve, visco_mat_id);
+
+  return static_cast<std::size_t>(generalized_maxwell_numbranch_value);
+}
+
+
+Mat::ViscoElastHyper::FslsParameters Mat::ViscoElastHyper::read_fsls_parameters(
+    const int gp, const int eleGID) const
+{
+  FslsParameters fsls_parameters;
+  const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
+  int fsls_model_count = 0;
+
+  std::string solve;
+  for (unsigned int p = 0; p < potsum_.size(); ++p)
+  {
+    std::shared_ptr<Mat::Elastic::Fsls> fsls =
+        std::dynamic_pointer_cast<Mat::Elastic::Fsls>(potsum_[p]);
+    if (fsls != nullptr)
+    {
+      ++fsls_model_count;
+      fsls_parameters.summand_mat_id = params_ != nullptr ? mat_id(p) : -1;
+      fsls->read_material_parameters_visco(
+          fsls_parameters.tau, fsls_parameters.beta, fsls_parameters.alpha, solve);
+    }
+  }
+
+  if (fsls_model_count != 1)
+    FOUR_C_THROW(
+        "Invalid VISCO_FSLS setup in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}): expected "
+        "exactly one VISCO_FSLS summand but found {}.",
+        visco_mat_id, gp, eleGID, fsls_model_count);
+
+  if (fsls_parameters.tau <= 0.0)
+    FOUR_C_THROW(
+        "Invalid TAU={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP {}, "
+        "ELE {}). TAU has to be positive.",
+        fsls_parameters.tau, fsls_parameters.summand_mat_id, visco_mat_id, gp, eleGID);
+
+  if (fsls_parameters.alpha < 0.0 || fsls_parameters.alpha >= 1.0)
+    FOUR_C_THROW(
+        "Invalid ALPHA={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP "
+        "{}, ELE {}). Expected 0 <= ALPHA < 1.",
+        fsls_parameters.alpha, fsls_parameters.summand_mat_id, visco_mat_id, gp, eleGID);
+
+  return fsls_parameters;
+}
+
+
+double Mat::ViscoElastHyper::read_visco_time_step_size(
+    const EvaluationContext<3>& context, const int gp, const int eleGID) const
+{
+  if (context.time_step_size == nullptr)
+    FOUR_C_THROW(
+        "Missing EvaluationContext::time_step_size in MAT_ViscoElastHyper (MAT {}, GP {}, ELE "
+        "{}).",
+        params_ != nullptr ? params_->id() : -1, gp, eleGID);
+
+  return *context.time_step_size;
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
@@ -109,7 +229,7 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
       potsum_[p]->pack_summand(data);
     }
 
-    state_.serialize_state(data, isovisco_, visco_generalized_maxwell_, visco_fsls_);
+    state_.serialize_state(data, active_models());
   }
 }
 
@@ -176,7 +296,7 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
       p->register_anisotropy_extensions(anisotropy_);
     }
 
-    state_.deserialize_state(buffer, isovisco_, visco_generalized_maxwell_, visco_fsls_);
+    state_.deserialize_state(buffer, active_models());
   }
 }
 
@@ -210,64 +330,12 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
     }
   }
 
+  const Mat::ViscoElastState::ActiveModels models = active_models();
   std::size_t generalized_maxwell_numbranch = 0;
+  if (models.generalized_maxwell)
+    generalized_maxwell_numbranch = read_generalized_maxwell_branch_count_for_setup();
 
-  if (visco_generalized_maxwell_)
-  {
-    int generalized_maxwell_model_count = 0;
-    int generalized_maxwell_numbranch_value = -1;
-    std::string generalized_maxwell_solve;
-    const std::vector<int>* generalized_maxwell_matids = nullptr;
-
-    for (unsigned int p = 0; p < potsum_.size(); ++p)
-    {
-      std::shared_ptr<Mat::Elastic::GeneralizedMaxwell> generalized_maxwell =
-          std::dynamic_pointer_cast<Mat::Elastic::GeneralizedMaxwell>(potsum_[p]);
-      if (generalized_maxwell != nullptr)
-      {
-        ++generalized_maxwell_model_count;
-        generalized_maxwell->read_material_parameters(generalized_maxwell_numbranch_value,
-            generalized_maxwell_matids, generalized_maxwell_solve);
-      }
-    }
-
-    if (generalized_maxwell_model_count != 1)
-      FOUR_C_THROW(
-          "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): expected "
-          "exactly one VISCO_GeneralizedMaxwell summand but found {}.",
-          params_->id(), generalized_maxwell_model_count);
-
-    if (generalized_maxwell_numbranch_value <= 0)
-      FOUR_C_THROW(
-          "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): "
-          "NUMBRANCH={} is not positive.",
-          params_->id(), generalized_maxwell_numbranch_value);
-
-    if (generalized_maxwell_matids == nullptr)
-      FOUR_C_THROW(
-          "Failed to read MATIDS for VISCO_GeneralizedMaxwell in MAT_ViscoElastHyper (MAT "
-          "{}).",
-          params_->id());
-
-    if (generalized_maxwell_matids->size() !=
-        static_cast<unsigned int>(generalized_maxwell_numbranch_value))
-      FOUR_C_THROW(
-          "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): "
-          "NUMBRANCH={} but MATIDS has size {}.",
-          params_->id(), generalized_maxwell_numbranch_value, generalized_maxwell_matids->size());
-
-    if (generalized_maxwell_solve != "OneStepTheta" &&
-        generalized_maxwell_solve != "ExponentialTimeDiscretization")
-      FOUR_C_THROW(
-          "Invalid SOLVE='{}' in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper (MAT {}). "
-          "Use OneStepTheta or ExponentialTimeDiscretization.",
-          generalized_maxwell_solve, params_->id());
-
-    generalized_maxwell_numbranch = static_cast<std::size_t>(generalized_maxwell_numbranch_value);
-  }
-
-  state_.initialize_from_setup(
-      numgp, isovisco_, visco_generalized_maxwell_, generalized_maxwell_numbranch, visco_fsls_);
+  state_.initialize_from_setup(numgp, models, generalized_maxwell_numbranch);
 
   return;
 }
@@ -279,8 +347,9 @@ void Mat::ViscoElastHyper::update()
 {
   Mat::ElastHyper::update();
 
+  const Mat::ViscoElastState::ActiveModels models = active_models();
   unsigned int max_hist = 0;
-  if (visco_fsls_)
+  if (models.fsls)
   {
     const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
     const int numsteps = sdyn.get<int>("NUMSTEP");
@@ -288,8 +357,7 @@ void Mat::ViscoElastHyper::update()
   }
 
   const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
-  state_.advance_time_step(
-      isovisco_, visco_generalized_maxwell_, visco_fsls_, max_hist, visco_mat_id);
+  state_.advance_time_step(models, max_hist, visco_mat_id);
 
   return;
 }
@@ -341,17 +409,10 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
   Core::LinAlg::Voigt::Stresses::to_strain_like(iC_stress, iC_strain);
   Core::LinAlg::Voigt::Stresses::invariants_principal(prinv, C_stress);
 
-  const bool has_visco_contribution = isovisco_ || visco_generalized_maxwell_ || visco_fsls_;
+  const Mat::ViscoElastState::ActiveModels models = active_models();
+  const bool has_visco_contribution = models.iso_rate || models.generalized_maxwell || models.fsls;
   double dt = 0.0;
-  if (has_visco_contribution)
-  {
-    if (context.time_step_size == nullptr)
-      FOUR_C_THROW(
-          "Missing EvaluationContext::time_step_size in MAT_ViscoElastHyper (MAT {}, GP {}, "
-          "ELE {}).",
-          params_ != nullptr ? params_->id() : -1, gp, eleGID);
-    dt = *context.time_step_size;
-  }
+  if (has_visco_contribution) dt = read_visco_time_step_size(context, gp, eleGID);
 
 
   Core::LinAlg::Voigt::identity_matrix(id2);
@@ -365,7 +426,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
   elast_hyper_evaluate_invariant_derivatives(
       prinv, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
 
-  if (isovisco_)
+  if (models.iso_rate)
   {
     if (summandProperties_.isomod)
     {
@@ -389,7 +450,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
 
 
   // add viscous part
-  if (isovisco_)
+  if (models.iso_rate)
   {
     if (summandProperties_.isomod)
     {
@@ -424,7 +485,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
   }
 
   // add contribution of generalized Maxwell model
-  if (visco_generalized_maxwell_)
+  if (models.generalized_maxwell)
   {
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(Core::LinAlg::Initialization::zero);
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(Core::LinAlg::Initialization::zero);
@@ -434,7 +495,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
   }
 
   // add contribution of FSLS material
-  if (visco_fsls_)
+  if (models.fsls)
   {
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(
         Core::LinAlg::Initialization::zero);  // artificial viscous stress
@@ -884,47 +945,10 @@ void Mat::ViscoElastHyper::evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress
     Core::LinAlg::Matrix<6, 6>& cmatq, const double dt, const int gp, const int eleGID)
 {
   const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
-
-  // initialize parameters
-  double tau = 0.0;
-  double alpha = 0.0;
-  double beta = 0.0;
-  int fsls_model_count = 0;
-  int fsls_summand_mat_id = -1;
-  // string not used in visco_fsls
-  std::string solve = "";
-
-  // read material parameters of FSLS material
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
-  {
-    std::shared_ptr<Mat::Elastic::Fsls> fsls =
-        std::dynamic_pointer_cast<Mat::Elastic::Fsls>(potsum_[p]);
-
-    if (fsls != nullptr)
-    {
-      ++fsls_model_count;
-      fsls_summand_mat_id = params_ != nullptr ? mat_id(p) : -1;
-      fsls->read_material_parameters_visco(tau, beta, alpha, solve);
-    }
-  }
-
-  if (fsls_model_count != 1)
-    FOUR_C_THROW(
-        "Invalid VISCO_FSLS setup in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}): expected "
-        "exactly one VISCO_FSLS summand but found {}.",
-        visco_mat_id, gp, eleGID, fsls_model_count);
-
-  if (tau <= 0.0)
-    FOUR_C_THROW(
-        "Invalid TAU={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP {}, "
-        "ELE {}). TAU has to be positive.",
-        tau, fsls_summand_mat_id, visco_mat_id, gp, eleGID);
-
-  if (alpha < 0.0 || alpha >= 1.0)
-    FOUR_C_THROW(
-        "Invalid ALPHA={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP "
-        "{}, ELE {}). Expected 0 <= ALPHA < 1.",
-        alpha, fsls_summand_mat_id, visco_mat_id, gp, eleGID);
+  const FslsParameters fsls_parameters = read_fsls_parameters(gp, eleGID);
+  const double tau = fsls_parameters.tau;
+  const double alpha = fsls_parameters.alpha;
+  const double beta = fsls_parameters.beta;
 
   if (dt < 0.0)
     FOUR_C_THROW(
