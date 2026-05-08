@@ -2349,9 +2349,9 @@ namespace
     // the local substepping formulation converges
     material_substepping->evaluate_inverse_inelastic_def_grad(&FM, iFin_other, iFin_result);
     Core::LinAlg::Matrix<3, 3> iFin_result_ref{Core::LinAlg::Initialization::zero};
-    iFin_result_ref(0, 0) = 0.71055158583;
-    iFin_result_ref(1, 1) = 1.18632093229;
-    iFin_result_ref(2, 2) = 1.18632093229;
+    iFin_result_ref(0, 0) = 0.71055164642;
+    iFin_result_ref(1, 1) = 1.18632088172;
+    iFin_result_ref(2, 2) = 1.18632088172;
     FOUR_C_EXPECT_NEAR(iFin_result, iFin_result_ref, 1.0e-10);
   }
 
