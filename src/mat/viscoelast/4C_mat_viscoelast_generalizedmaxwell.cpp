@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_mat_elast_visco_generalizedmaxwell.hpp"
+#include "4C_mat_viscoelast_generalizedmaxwell.hpp"
 
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
