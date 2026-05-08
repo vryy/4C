@@ -1902,15 +1902,12 @@ namespace Mat
      * \boldsymbol{F} \boldsymbol{F_{\text{in,other}}^{-1}} \f$ accounting for all the already
      * computed inelastic defgrad factors
      * @param[out] cmatadd Additional elasticity stiffness
-     * @param[in] iFin_other Already computed inverse inelastic deformation gradient
-     *              (from already computed inelastic factors in the multiplicative split material)
      * @param[in] dSdiFinj Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
      *                     deformation gradient of current inelastic contribution
      *
      */
     void evaluate_additional_cmat_perturb_based(const Core::LinAlg::Matrix<3, 3>& FredM,
-        Core::LinAlg::Matrix<6, 6>& cmatadd, const Core::LinAlg::Matrix<3, 3>& iFin_other,
-        const Core::LinAlg::Matrix<6, 9>& dSdiFinj);
+        Core::LinAlg::Matrix<6, 6>& cmatadd, const Core::LinAlg::Matrix<6, 9>& dSdiFinj);
 
     /*!
      * @brief Get an extensive error message to be displayed when the

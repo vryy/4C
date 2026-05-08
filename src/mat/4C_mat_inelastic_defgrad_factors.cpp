@@ -2560,7 +2560,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
             ViscoplastUtils::LinearizationType::perturbation_based ||
         err_status != ViscoplastUtils::ErrorType::no_errors)
     {
-      evaluate_additional_cmat_perturb_based(FredM, cmatadd, iFin_other, dSdiFinj);
+      evaluate_additional_cmat_perturb_based(FredM, cmatadd, dSdiFinj);
 
       return;
     }
@@ -2581,7 +2581,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
 
     if (err_status != ViscoplastUtils::ErrorType::no_errors)
     {
-      evaluate_additional_cmat_perturb_based(FredM, cmatadd, iFin_other, dSdiFinj);
+      evaluate_additional_cmat_perturb_based(FredM, cmatadd, dSdiFinj);
 
       return;
     }
@@ -2590,7 +2590,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
     if (abs(jacMat.determinant()) < 1.0e-10)
     {
       err_status = ViscoplastUtils::ErrorType::singular_jacobian;
-      evaluate_additional_cmat_perturb_based(FredM, cmatadd, iFin_other, dSdiFinj);
+      evaluate_additional_cmat_perturb_based(FredM, cmatadd, dSdiFinj);
 
       return;
     }
@@ -2645,7 +2645,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
     if ((err != 0) || (err2 != 0))
     {
       err_status = ViscoplastUtils::ErrorType::failed_solution_analytic_linearization;
-      evaluate_additional_cmat_perturb_based(FredM, cmatadd, iFin_other, dSdiFinj);
+      evaluate_additional_cmat_perturb_based(FredM, cmatadd, dSdiFinj);
       return;
     }
 
@@ -3648,7 +3648,7 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::halve_and_prepare_new_su
 
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat_perturb_based(
     const Core::LinAlg::Matrix<3, 3>& FredM, Core::LinAlg::Matrix<6, 6>& cmatadd,
-    const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<6, 9>& dSdiFinj)
+    const Core::LinAlg::Matrix<6, 9>& dSdiFinj)
 {
   // ----- FD-based linearization ----- //
   // approximation using perturbations of the right Cauchy-Green deformation tensor,
@@ -3676,7 +3676,6 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
 
   // declare perturbed variables
   Core::LinAlg::Matrix<3, 3> perturbed_FM(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<3, 3>* pointer_perturbed_FM = &perturbed_FM;
   Core::LinAlg::Matrix<3, 3> perturbed_CM(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<3, 3> perturbed_iFinM(Core::LinAlg::Initialization::zero);
 
@@ -3706,7 +3705,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
     perturbed_CM.multiply_tn(1.0, perturbed_FM, perturbed_FM, 0.0);
 
     // get corresponding inverse inelastic defgrad
-    evaluate_inverse_inelastic_def_grad(pointer_perturbed_FM, iFin_other, perturbed_iFinM);
+    perturbed_iFinM = return_mapping(perturbed_FM).inv_plastic_defgrad;
     Core::LinAlg::Matrix<9, 1> perturbed_iFinV(Core::LinAlg::Initialization::zero);
     Core::LinAlg::Voigt::matrix_3x3_to_9x1(perturbed_iFinM, perturbed_iFinV);
 
