@@ -180,11 +180,13 @@ namespace
         Core::LinAlg::assume_symmetry(
             cfr * Core::LinAlg::inv(jacobian) * Core::LinAlg::einsum<"bca">(cfr));
 
-    // Compute the consistent 3D deformation gradient that satisfies the plane-stress
-    // condition (F_zz determined by the local Newton above).
-    const Core::LinAlg::Tensor<double, 3, 3> defgrd_3d =
-        Discret::Elements::compute_deformation_gradient_from_gl_strains(
-            make_3d_tensor(defgrd, 1.0), gl_strain_3d);
+    // Use F_zz = 1 as a placeholder. The consistent 3D deformation gradient (with the
+    // F_zz that satisfies the plane-stress condition) requires an eigenvalue decomposition
+    // that can fail with sqrt(neg) for extreme contact/trial strains. Since this function
+    // is called in every nonlinear-solver iteration but defgrd_3d_ is only used by the
+    // runtime VTK output, the output pipeline reconstructs the correct defgrd_3d lazily
+    // from gl_strain_3d_ when needed.
+    const Core::LinAlg::Tensor<double, 3, 3> defgrd_3d = make_3d_tensor(defgrd, 1.0);
 
     return {.stress = {.pk2_ = extract_2d_part(pk2_3d),
                 .cmat_ = extract_2d_part(cmat_3d) - plane_stress_linearization,
@@ -291,6 +293,10 @@ Discret::Elements::Stress<celltype> Discret::Elements::evaluate_material_stress(
       // In plane stress (sigma_zz = 0): eps_zz = -nu/(1-nu) * tr(eps_2D), and F_zz follows
       // from the constraint sqrt(1 + 2*eps_zz) (uniaxial out-of-plane stretch).
       // Out-of-plane shear components are zero in both cases.
+      // Note: this is also called inside the nonlinear solver, where contact and trial
+      // strains can produce 1 + 2*eps_zz < 0. Clamp to 0 to avoid a FP exception; the
+      // resulting F_zz = 0 is unphysical but only affects the runtime VTK output, not
+      // the solver itself (which only reads pk2_ and cmat_).
       const double lamb_3d = ym * nu / ((1 + nu) * (1 - 2 * nu));
       const double sigma_zz = element_properties.plane_assumption == PlaneAssumption::plane_strain
                                   ? lamb_3d * Core::LinAlg::trace(gl_strain)
@@ -298,9 +304,10 @@ Discret::Elements::Stress<celltype> Discret::Elements::evaluate_material_stress(
       const double eps_zz = element_properties.plane_assumption == PlaneAssumption::plane_strain
                                 ? 0.0
                                 : -nu / (1.0 - nu) * Core::LinAlg::trace(gl_strain);
+      const double f_zz_sq = 1.0 + 2.0 * eps_zz;
       const double f_zz = element_properties.plane_assumption == PlaneAssumption::plane_strain
                               ? 1.0
-                              : std::sqrt(1.0 + 2.0 * eps_zz);
+                              : (f_zz_sq > 0.0 ? std::sqrt(f_zz_sq) : 0.0);
 
       stress.pk2_3d_ = make_3d_tensor(stress.pk2_, sigma_zz);
       stress.gl_strain_3d_ = make_3d_tensor(gl_strain, eps_zz);

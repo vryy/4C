@@ -165,11 +165,18 @@ namespace Discret::Elements
       {
         if constexpr (Core::FE::dim<celltype> == 2)
         {
-          // Use the consistent 3D GL strain and 3D deformation gradient for the
-          // push-forward to Euler-Almansi.
+          // For plane stress, the consistent F_zz is not stored in stress.defgrd_3d_
+          // (the solver path keeps a placeholder); reconstruct it lazily here from
+          // gl_strain_3d_ via an eigenvalue decomposition. For plane strain, F_zz = 1
+          // is already correct in stress.defgrd_3d_.
+          const Core::LinAlg::Tensor<double, 3, 3> defgrd_3d =
+              element_properties.plane_assumption == PlaneAssumption::plane_stress
+                  ? compute_deformation_gradient_from_gl_strains(
+                        stress.defgrd_3d_, stress.gl_strain_3d_)
+                  : stress.defgrd_3d_;
           const Core::LinAlg::SymmetricTensor<double, 3, 3> ea =
               Solid::Utils::green_lagrange_to_euler_almansi(
-                  element_properties, stress.gl_strain_3d_, stress.defgrd_3d_);
+                  element_properties, stress.gl_strain_3d_, defgrd_3d);
           Internal::assemble_symmetric_tensor_to_matrix_row(ea, data, row);
         }
         else
@@ -245,11 +252,16 @@ namespace Discret::Elements
       {
         if constexpr (Core::FE::dim<celltype> == 2)
         {
-          // For 2D elements, use the 3D PK2 stress and the consistent 3D deformation
-          // gradient stored in stress (F_zz = 1 for plane strain, F_zz from the local
-          // Newton for plane stress) to compute the full Cauchy stress.
+          // For plane stress, the consistent F_zz is not stored in stress.defgrd_3d_
+          // (the solver path keeps a placeholder); reconstruct it lazily here from
+          // gl_strain_3d_. For plane strain, F_zz = 1 is already correct.
+          const Core::LinAlg::Tensor<double, 3, 3> defgrd_3d =
+              element_properties.plane_assumption == PlaneAssumption::plane_stress
+                  ? compute_deformation_gradient_from_gl_strains(
+                        stress.defgrd_3d_, stress.gl_strain_3d_)
+                  : stress.defgrd_3d_;
           const Core::LinAlg::SymmetricTensor<double, 3, 3> cauchy =
-              Solid::Utils::pk2_to_cauchy(element_properties, stress.pk2_3d_, stress.defgrd_3d_);
+              Solid::Utils::pk2_to_cauchy(element_properties, stress.pk2_3d_, defgrd_3d);
           Internal::assemble_symmetric_tensor_to_matrix_row(cauchy, data, row);
         }
         else
