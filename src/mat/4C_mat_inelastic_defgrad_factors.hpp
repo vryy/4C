@@ -636,6 +636,8 @@ namespace Mat
      *        cross-linearizations
      *
      * @param[in] defgrad Deformation gradient
+     * @param[in] iFin_other Already computed inverse inelastic deformation gradient
+     *              (from already computed inelastic factors in the multiplicative split material)
      * @param[in] iFinjM  Inverse inelastic deformation gradient of current inelastic contribution
      *                    as 3x3 matrix
      * @param[in] dSdiFinj  Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
@@ -644,8 +646,8 @@ namespace Mat
      *                          of different field
      */
     virtual void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
-        Core::LinAlg::Matrix<6, 1>& dstressdx) = 0;
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 1>& dstressdx) = 0;
 
     /*!
      * @brief pre-evaluation, intended to be used for stuff that has to be done only once per
@@ -756,8 +758,8 @@ namespace Mat
         const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
-        Core::LinAlg::Matrix<6, 1>& dstressdx) override;
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 1>& dstressdx) override;
 
     PAR::InelasticSource get_inelastic_source() override;
 
@@ -810,7 +812,8 @@ namespace Mat
         Core::LinAlg::Matrix<3, 3>& iFinM) override = 0;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
         Core::LinAlg::Matrix<6, 1>& dstressdx) override = 0;
 
     PAR::InelasticSource get_inelastic_source() override = 0;
@@ -872,8 +875,8 @@ namespace Mat
         const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
-        Core::LinAlg::Matrix<6, 1>& dstressdx) override
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 1>& dstressdx) override
     {
     }
 
@@ -936,8 +939,8 @@ namespace Mat
         const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
-        Core::LinAlg::Matrix<6, 1>& dstressdx) override
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 1>& dstressdx) override
     {
     }
 
@@ -990,7 +993,8 @@ namespace Mat
         Core::LinAlg::Matrix<3, 3>& iFinM) override = 0;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
         Core::LinAlg::Matrix<6, 1>& dstressdx) override = 0;
 
     PAR::InelasticSource get_inelastic_source() override = 0;
@@ -1083,7 +1087,8 @@ namespace Mat
         double detjacobian, Core::LinAlg::Tensor<double, 3, 3>& dFindx) override = 0;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
         Core::LinAlg::Matrix<6, 1>& dstressdx) override = 0;
 
     Mat::PAR::InelasticSource get_inelastic_source() override;
@@ -1145,8 +1150,8 @@ namespace Mat
         double detjacobian, Core::LinAlg::Tensor<double, 3, 3>& dFindx) override;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
-        Core::LinAlg::Matrix<6, 1>& dstressdc) override;
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 1>& dstressdc) override;
 
     Mat::PAR::InelasticSource get_inelastic_source() override;
 
@@ -1216,8 +1221,8 @@ namespace Mat
         double detjacobian, Core::LinAlg::Tensor<double, 3, 3>& dFindx) override;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
-        Core::LinAlg::Matrix<6, 1>& dstressdc) override;
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 1>& dstressdc) override;
 
     Mat::PAR::InelasticSource get_inelastic_source() override;
 
@@ -1282,8 +1287,8 @@ namespace Mat
         double detjacobian, Core::LinAlg::Tensor<double, 3, 3>& dFindx) override;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
-        Core::LinAlg::Matrix<6, 1>& dstressdc) override;
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 1>& dstressdc) override;
 
     [[nodiscard]] Mat::PAR::InelasticDefgradPolyIntercalFrac* parameter() const override
     {
@@ -1347,8 +1352,8 @@ namespace Mat
         double detjacobian, Core::LinAlg::Tensor<double, 3, 3>& dFindx) override;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
-        Core::LinAlg::Matrix<6, 1>& dstressdc) override;
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 1>& dstressdc) override;
 
     [[nodiscard]] Mat::PAR::InelasticDefgradPolyIntercalFracAniso* parameter() const override
     {
@@ -1393,8 +1398,8 @@ namespace Mat
         const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
-        Core::LinAlg::Matrix<6, 1>& dstressdT) override;
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 1>& dstressdT) override;
 
     Mat::PAR::InelasticSource get_inelastic_source() override;
 
@@ -1501,7 +1506,8 @@ namespace Mat
         const Core::LinAlg::Matrix<3, 3>& iFin_other, Core::LinAlg::Matrix<3, 3>& iFinM) override;
 
     void evaluate_od_stiff_mat(const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
+        const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<3, 3>& iFinjM,
+        const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
         Core::LinAlg::Matrix<6, 1>& dstressdT) override {};
 
     Mat::PAR::InelasticSource get_inelastic_source() override { return PAR::InelasticSource::none; }
@@ -1828,6 +1834,17 @@ namespace Mat
 
 
     /*!
+     * @brief History variables computed by the return mapping procedure.
+     */
+    struct HistoryVariables
+    {
+      //! inverse plastic deformation gradient \f$ \boldsymbol{F}_{\mathrm{p}}^{-1} \f$
+      Core::LinAlg::Matrix<3, 3> inv_plastic_defgrad{Core::LinAlg::Initialization::zero};
+      //! equivalent plastic strain \f$ \varepsilon_{\mathrm{p}} \f$
+      double plastic_strain = 0.0;
+    };
+
+    /*!
      * @brief Performs return mapping (elastic predictor - viscoplastic / plastic corrector
      * procedure) at each GP. It first evaluates whether the elastic predictor is a consistent
      * solution, and performs the local time integration (Local Newton Loop) afterwards if that is
@@ -1836,11 +1853,10 @@ namespace Mat
      * @param[in] FredM reduced deformation gradient \f$ \boldsymbol{F}_{\text{red}} =
      * \boldsymbol{F} \boldsymbol{F_{\text{in,other}}^{-1}} \f$ accounting for all the already
      * computed inelastic defgrad factors
-     * @return inverse inelastic deformation gradient \boldsymbol{F}_{\text{in}}^{-1}
+     * @return inverse inelastic deformation gradient \boldsymbol{F}_{\text{in}}^{-1} and plastic
+     * strain
      */
-    Core::LinAlg::Matrix<3, 3> return_mapping(const Core::LinAlg::Matrix<3, 3>& FredM);
-
-
+    HistoryVariables return_mapping(const Core::LinAlg::Matrix<3, 3>& FredM);
 
     /*!
      * @brief Setup halved substep in case of an encountered evaluation error within the substep
@@ -1886,15 +1902,12 @@ namespace Mat
      * \boldsymbol{F} \boldsymbol{F_{\text{in,other}}^{-1}} \f$ accounting for all the already
      * computed inelastic defgrad factors
      * @param[out] cmatadd Additional elasticity stiffness
-     * @param[in] iFin_other Already computed inverse inelastic deformation gradient
-     *              (from already computed inelastic factors in the multiplicative split material)
      * @param[in] dSdiFinj Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
      *                     deformation gradient of current inelastic contribution
      *
      */
     void evaluate_additional_cmat_perturb_based(const Core::LinAlg::Matrix<3, 3>& FredM,
-        Core::LinAlg::Matrix<6, 6>& cmatadd, const Core::LinAlg::Matrix<3, 3>& iFin_other,
-        const Core::LinAlg::Matrix<6, 9>& dSdiFinj);
+        Core::LinAlg::Matrix<6, 6>& cmatadd, const Core::LinAlg::Matrix<6, 9>& dSdiFinj);
 
     /*!
      * @brief Get an extensive error message to be displayed when the

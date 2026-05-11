@@ -380,8 +380,8 @@ namespace Mat
       //! elastic stiffness tensor (specifically only transversely-isotropic components)
       Core::LinAlg::Matrix<6, 6> curr_dSedCe{Core::LinAlg::Initialization::zero};
 
-      //! deviatoric, symmetric part of the Mandel stress tensor
-      Core::LinAlg::Matrix<3, 3> curr_Me_dev_sym_M{Core::LinAlg::Initialization::zero};
+      //! deviatoric, symmetric part of the thermo-elastic Mandel stress tensor
+      Core::LinAlg::Matrix<3, 3> curr_Mtheta_dev_sym_M{Core::LinAlg::Initialization::zero};
 
       //! equivalent tensile stress
       double curr_equiv_stress{0.0};
@@ -443,12 +443,12 @@ namespace Mat
       //! tensor (Voigt stress form)
       Core::LinAlg::Matrix<1, 6> curr_dequiv_stress_dC{Core::LinAlg::Initialization::zero};
 
-      //! derivative of the deviatoric, symmetric part of the Mandel stress tensor w.r.t. the
-      //! inverse inelastic deformation gradient (Voigt stress form)
-      Core::LinAlg::Matrix<6, 9> curr_dMe_dev_sym_diFin{Core::LinAlg::Initialization::zero};
-      //! derivative of the deviatoric, symmetric part of the Mandel stress tensor w.r.t. the
-      //! right Cauchy-Green deformation tensor (Voigt stress-stress form)
-      Core::LinAlg::Matrix<6, 6> curr_dMe_dev_sym_dC{Core::LinAlg::Initialization::zero};
+      //! derivative of the deviatoric, symmetric part of the thermo-elastic Mandel stress tensor
+      //! w.r.t. the inverse inelastic deformation gradient (Voigt stress form)
+      Core::LinAlg::Matrix<6, 9> curr_dMtheta_dev_sym_diFin{Core::LinAlg::Initialization::zero};
+      //! derivative of the deviatoric, symmetric part of the thermo-elastic Mandel stress tensor
+      //! w.r.t. the right Cauchy-Green deformation tensor (Voigt stress-stress form)
+      Core::LinAlg::Matrix<6, 6> curr_dMtheta_dev_sym_dC{Core::LinAlg::Initialization::zero};
 
       //! derivative of the plastic strain rate w.r.t. the equivalent stress
       double curr_dpsr_dequiv_stress{0.0};
