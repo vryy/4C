@@ -160,6 +160,27 @@ namespace Mat
     };
 
 
+    /// struct: settings for registering errors within the procedures used for the constitutive
+    /// update
+    struct ErrorRegistrationSettings
+    {
+      //! should overflow error be registered via ErrorType when the plastic strain increment
+      //! exceeds the specified tolerance?
+      bool register_plastic_strain_incr_overflow;
+
+      //! maximum, numerically evaluable plastic strain increment before overflow error is
+      //! registered?
+      double max_plastic_strain_incr;
+
+      //! should overflow error be registered via ErrorType when any of the plastic strain
+      //! derivative increments exceeds the specified tolerance?
+      bool register_plastic_strain_deriv_incr_overflow;
+
+      //! maximum, numerically evaluable increment of plastic strain derivatives (time_step *
+      //! derivative)
+      double max_plastic_strain_deriv_incr;
+    };
+
     /// enum class for evaluation management actions in the iterations of the
     /// Local Newton loop
     enum class EvaluationAction
@@ -295,8 +316,8 @@ namespace Mat
        */
       void pre_evaluate(const unsigned int gp);
 
-      //!  Update values between time steps: last <- current
-      void update();
+      //!  Update values between time steps: last <- current, at a given Gauss points
+      void update(const unsigned int gp);
 
       //! Pack values
       void pack(Core::Communication::PackBuffer& data) const;
@@ -410,7 +431,7 @@ namespace Mat
       [[nodiscard]] std::string get_info() const
       {
         std::string out;
-        out += "Substepping info: \n";
+        out += "\nSubstepping info: \n";
         out += std::format(
             "t: {}, substep_counter: {}, curr_dt: {}, time_step_halving_counter: {}, "
             "total_num_of_substeps: {} \n",
@@ -821,7 +842,7 @@ namespace Mat
       double residual_norm;
 
       //! ratio of solution increment to current solution: \f$ \frac{\left| \Delta
-      //! \boldsymbol{s}^{l+1} \right|}{\left| \boldsymbol{s}^{l} \right|}  \f$
+      //! \boldsymbol{s}^{l} \right|}{\left| \boldsymbol{s}^{l} \right|}  \f$
       double increment_norm;
     };
 
@@ -831,29 +852,29 @@ namespace Mat
     struct LocalNewtonParams
     {
       //! convergence tolerance: absolute residual value
-      const double res_tol;
+      double res_tol;
 
       //! convergence tolerance: ratio of solution increment to current solution
-      const double incr_tol;
+      double incr_tol;
 
       //! convergence check strategy
-      const LocalNewtonConvCheck conv_check;
+      LocalNewtonConvCheck conv_check;
 
       //! strategy for dealing with divergence
-      const LocalNewtonDiverCont diver_cont;
+      LocalNewtonDiverCont diver_cont;
 
       //! maximum number of local iterations
-      const unsigned int max_iter;
+      int max_iter;
 
       //! maximum exceedance factor for the residual tolerance (to be used when
       //! employing the divergence management strategy for continuation with
       //! safeguard)
-      const double max_exceedance_fact_res_tol;
+      double max_exceedance_fact_res_tol;
 
       //! maximum exceedance factor for the solution increment tolerance (to be used when
       //! employing the divergence management strategy for continuation with
       //! safeguard)
-      const double max_exceedance_fact_incr_tol;
+      double max_exceedance_fact_incr_tol;
     };
 
     //! class for managing the Local Newton loop, containing the utilized parameters and iteration
@@ -876,18 +897,12 @@ namespace Mat
       /// getter for local iteration count
       [[nodiscard]] unsigned int iter() const { return iter_; }
 
-      /// setter for local iteration count
-      void set_iteration_count(const unsigned int iter) { iter_ = iter; }
-
       /// getter for total number of local iterations evaluated in this time step (vector over all
       /// Gauss points)
       [[nodiscard]] const std::vector<unsigned int>& curr_num_iters() const
       {
         return curr_num_iters_;
       }
-
-      /// increment iteration count by 1
-      void increment_iteration_count() { iter_++; }
 
       /*!
        * @brief Resizing based on a given number of Gauss points
@@ -897,14 +912,84 @@ namespace Mat
       void resize(const unsigned int numgp);
 
       /*!
+       * @brief Initialize the solution vector and the convergence quantities, for the
+       * subsequent Local Newton at the currently considered Gauss point
+       *
+       * @param[in] init_estimate initial estimate \f$ \boldsymbol{s}^{(0)} \f$
+       */
+      void save_init_estimate_and_reset_convergence_quantities(
+          const Core::LinAlg::Matrix<10, 1>& init_estimate);
+
+      /// reset iteration counter
+      void reset_iter() { iter_ = 0; }
+
+      /// sets the residual norm based on the given residual vector
+      void set_residual_norm(const Core::LinAlg::Matrix<10, 1>& residual)
+      {
+        convergence_quantities_.residual_norm = residual.norm2();
+      }
+
+      /*!
+       * @brief Determine whether the Local Newton Loop has converged, based on the saved
+       * convergence quantities and the specified convergence checks.
+       *
+       * @return boolean: true = converged
+       */
+      [[nodiscard]] bool is_local_newton_converged() const;
+
+
+      /*!
+       * @brief   After an unsuccessful convergence check: determine whether the Local Newton is
+       * stuck / stagnates, i.e., the relative solution increment is nearly 0, but there is no
+       * convergence yet, based on the saved convergence quantities.
+       *
+       * @return boolean: true = stuck
+       */
+      [[nodiscard]] bool is_local_newton_stuck() const;
+
+
+      /// is the maximum number of iterations reached?
+      [[nodiscard]] bool is_max_iter_reached()
+      {
+        return iter_ >= static_cast<unsigned int>(params_.max_iter);
+      }
+
+
+      /// increment iteration counter
+      void increment_iter() { ++iter_; }
+
+      /*!
+       * @brief Increments the solution vector \f$ \boldsymbol{s}^{(l+1)} = \boldsymbol{s}^{(l)}
+       * +
+       * \Delta \boldsymbol{s}^{(l+1)} \f$ after the current iteration \f$ l \f$
+       *
+       * @note Also updates the increment norm (ratio of increment to solution) internally based on
+       * the provided increment
+       *
+       * @param[in] delta_sol increment vector for the next iteration \f$\Delta
+       * \boldsymbol{s}^{(l+1)}\f$
+       */
+      void increment_solution_vector(const Core::LinAlg::Matrix<10, 1>& delta_sol);
+
+      /// getter for the solution vector
+      [[nodiscard]] Core::LinAlg::Matrix<10, 1> sol() const { return sol_; }
+
+
+      /// getter for the convergence quantities
+      [[nodiscard]] LocalNewtonConvQuantities convergence_quantities() const
+      {
+        return convergence_quantities_;
+      }
+
+      /*!
        * @brief Routine to be run after the Local Newton-Raphson at a given Gauss point
        *
        * @param[in] gp Gauss point index
        */
       void update_after_local_newton(const unsigned int gp);
 
-      //! reset method
-      void reset();
+      //! reset the saved number of iterations at a given Gauss point
+      void reset_curr_num_iters(const unsigned int gp);
 
       //! pack values
       void pack(Core::Communication::PackBuffer& data) const;
@@ -922,12 +1007,50 @@ namespace Mat
       //! total number of local iterations for the current timestep; vector of Gauss point values
       std::vector<unsigned int> curr_num_iters_;
 
+      //! solution vector in the current iteration \f$ \boldsymbol{s}^{(l)} \f$ (at the
+      //! currently considered Gauss point)
+      Core::LinAlg::Matrix<10, 1> sol_;
+
+      //! quantities used for convergence checks
+      LocalNewtonConvQuantities convergence_quantities_;
+
       //! tracks whether the resizing function has been called, to set the current number of
       //! Gauss points exactly once!
       bool resize_called_{false};
     };
 
+    //! helper struct containing deformation tensors passed as input
+    //! for the local time integration
+    struct LocalIntegrationDeformationTensors
+    {
+      /*!
+       * @brief constructor
+       *
+       * @param[in] F deformation gradient \f$ \mathbf{F}_{n+1} \f$
+       * @param[in] last_iFp previous inverse inelastic/plastic deformation gradient \f$
+       \mathbf{F}_{\text{p},n}^{-1} \f$
+       *
+       */
+      LocalIntegrationDeformationTensors(
+          const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<3, 3>& last_iFp);
 
+      //! deformation gradient \f$ \mathbf{F}_{n+1} \f$
+      Core::LinAlg::Matrix<3, 3> defgrad;
+
+      //! inverse deformation gradient \f$ \mathbf{F}_{n+1}^{-1} \f$
+      Core::LinAlg::Matrix<3, 3> inv_defgrad;
+
+      //! right Cauchy-Green deformation tensor \f$ \mathbf{C}_{n+1} \f$
+      Core::LinAlg::Matrix<3, 3> right_cg;
+
+      //! inverse plastic deformation gradient within the elastic predictor \f$
+      //! \left[ \mathbf{F}_{\mathrm{p},n+1}^{(\mathrm{E})} \right]^{-1} \f$
+      Core::LinAlg::Matrix<3, 3> elastic_predictor_inverse_plastic_defgrad;
+
+      //! elastic deformation gradient within the elastic predictor \f$
+      //! \mathbf{F}_{\mathrm{e},n+1}^{(\mathrm{E})} \f$
+      Core::LinAlg::Matrix<3, 3> elastic_predictor_elastic_defgrad;
+    };
 
   }  // namespace InelasticDefgradTransvIsotropElastViscoplastUtils
 

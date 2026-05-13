@@ -12,6 +12,7 @@
 #include "4C_comm_parobject.hpp"
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_mat_vplast_law.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -103,18 +104,22 @@ namespace Mat
     class ReformulatedJohnsonCook : public Law
     {
      public:
-      explicit ReformulatedJohnsonCook(Core::Mat::PAR::Parameter* params);
+      explicit ReformulatedJohnsonCook(Core::Mat::PAR::Parameter* params,
+          const InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorRegistrationSettings
+              error_registration_settings);
 
-      Mat::Viscoplastic::PAR::ReformulatedJohnsonCook* parameter() const override
+      [[nodiscard]] Mat::Viscoplastic::PAR::ReformulatedJohnsonCook* parameter() const override
       {
         return dynamic_cast<Mat::Viscoplastic::PAR::ReformulatedJohnsonCook*>(
             Mat::Viscoplastic::Law::parameter());
       }
 
-      Core::Materials::MaterialType material_type() const override
+      [[nodiscard]] Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mvl_reformulated_Johnson_Cook;
       };
+
+      [[nodiscard]] bool uses_yield_surface() const override { return true; }
 
       double evaluate_stress_ratio(
           const double equiv_stress, const double equiv_plastic_strain) override;
@@ -123,14 +128,13 @@ namespace Mat
           Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status) override;
 
       double evaluate_plastic_strain_rate(const double equiv_stress,
-          const double equiv_plastic_strain, const double dt, const double max_plastic_strain_incr,
+          const double equiv_plastic_strain, const double dt,
           Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
           const bool update_hist_var) override;
 
       InelasticDefgradTransvIsotropElastViscoplastUtils::PlasticStrainRateDerivs
       evaluate_derivatives_of_plastic_strain_rate(const double equiv_stress,
           const double equiv_plastic_strain, const double dt,
-          const double max_plastic_strain_deriv_incr,
           Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
           const bool update_hist_var) override;
 
@@ -140,9 +144,9 @@ namespace Mat
 
       void pre_evaluate(const Teuchos::ParameterList& params, int gp) override;
 
-      void update() override {};
+      void update(const unsigned int gp) override {};
 
-      void update_gp_state(int gp) override {};
+      void update_gp_state_after_substep(const unsigned int gp) override {};
 
       void pack_viscoplastic_law(Core::Communication::PackBuffer& data) const override;
 
