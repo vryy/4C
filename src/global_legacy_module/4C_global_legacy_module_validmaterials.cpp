@@ -918,8 +918,9 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
 
 
   /*----------------------------------------------------------------------*/
-  // electrode material (fang 02/15)
+  // electrode material
   {
+    using namespace Core::IO::InputSpecBuilders::Validators;
     known_materials[Core::Materials::m_electrode] = group("MAT_electrode",
         {
             // diffusivity and electronic conductivity
@@ -969,13 +970,15 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                     .size = from_parameter<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM")}),
             // saturation value of intercalated Lithium concentration
             parameter<double>(
-                "C_MAX", {.description = "saturation value of intercalated Lithium concentration"}),
+                "C_MAX", {.description = "saturation value of intercalated Lithium concentration",
+                             .validator = in_range(1.0e-12, std::numeric_limits<double>::max())}),
 
             // lithiation value corresponding to saturation value of intercalated Lithium
             // concentration
             parameter<double>(
                 "CHI_MAX", {.description = "lithiation value corresponding to saturation value of "
-                                           "intercalated Lithium concentration 'C_MAX'"}),
+                                           "intercalated Lithium concentration 'C_MAX'",
+                               .validator = positive<double>()}),
 
             // model for half cell open circuit potential of electrode
             group("OCP_MODEL",
@@ -993,35 +996,38 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                                 }),
                             group("Redlich-Kister",
                                 {
-                                    parameter<int>("OCP_PARA_NUM",
-                                        {
-                                            .description = "number of parameters underlying half "
-                                                           "cell open circuit potential model",
-                                        }),
-                                    parameter<std::vector<double>>("OCP_PARA",
-                                        {.description = "parameters underlying half cell open "
-                                                        "circuit potential model",
-                                            .size = from_parameter<int>("OCP_PARA_NUM")}),
+                                    parameter<std::vector<double>>(
+                                        "OCP_PARA", {.description = "parameters underlying open "
+                                                                    "circuit potential model"}),
                                 }),
                             group("Taralov",
                                 {
-                                    parameter<std::vector<double>>("OCP_PARA",
-                                        {.description = "parameters underlying half cell open "
-                                                        "circuit potential model",
-                                            .size = 13}),
+                                    parameter<std::vector<double>>(
+                                        "OCP_PARA", {.description = "parameters underlying open "
+                                                                    "circuit potential model",
+                                                        .size = 13}),
                                 }),
                         },
                         store_index_as<Mat::PAR::OCPModels>("OCP_MODEL")),
-                    parameter<double>(
-                        "X_MIN", {.description = "lower bound of range of validity as a fraction "
-                                                 "of C_MAX for ocp calculation model"}),
-                    parameter<double>(
-                        "X_MAX", {.description = "upper bound of range of validity as a fraction "
-                                                 "of C_MAX for ocp calculation model"}),
+
+                    group("LITHIATION_BOUNDS",
+                        {
+                            parameter<double>("X_MIN",
+                                {.description = "lower bound of range of validity as a fraction "
+                                                "of C_MAX for ocp calculation model",
+                                    .validator = in_range(0.0, 1.0)}),
+                            parameter<double>("X_MAX",
+                                {.description = "upper bound of range of validity as a fraction "
+                                                "of C_MAX for ocp calculation model",
+                                    .validator = in_range(0.0, 1.0)}),
+                        },
+                        {.description =
+                                "Optional lithiation bounds of range of validity as a fraction of "
+                                "C_MAX for ocp calculation model",
+                            .required = false}),
                 }),
         },
         {.description = "electrode material"});
-    ;
   }
 
   /*----------------------------------------------------------------------*/

@@ -52,8 +52,6 @@ MATERIALS:
       OCP_MODEL:
         Taralov:
           OCP_PARA: [-0.132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.41, -3.52, 0]
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 2
     MAT_elchmat:
       NUMDOF: 2
@@ -76,8 +74,6 @@ MATERIALS:
         Taralov:
           OCP_PARA: [4.06279, 0.0677504, -21.8502, 12.8268, -0.045, -71.69, -0.105734, 1.00167, 0.379571,
             -1.576, 0.01, -200, -0.19]
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 4
     MAT_elchphase:
       EPSILON: 1

@@ -236,8 +236,6 @@ namespace
       // create the chosen ocp model 'Function'
       auto& ocp_function = ocp_model.group("Function");
       ocp_function.add("OCP_FUNCT_NUM", 1);
-      ocp_model.add("X_MIN", -1.0);
-      ocp_model.add("X_MAX", -1.0);
       // add the ocp model
       electrode_data.add("OCP_MODEL", ocp_model);
 

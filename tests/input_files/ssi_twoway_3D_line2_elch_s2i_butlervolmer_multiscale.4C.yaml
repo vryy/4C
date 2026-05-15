@@ -73,8 +73,6 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 6
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 2
     MAT_elchmat:
       LOCAL: true
