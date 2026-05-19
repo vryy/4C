@@ -24,6 +24,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+#include <algorithm>
 #include <tuple>
 
 FOUR_C_NAMESPACE_OPEN
@@ -31,10 +32,43 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace
 {
+  // Peridynamic bonds are identified by the unordered pair of particle global ids.
+  // Canonicalize to (min, max) whenever a bond is serialized or deduplicated.
+  std::pair<int, int> canonical_pd_bond_ids(const int i, const int j)
+  {
+    return {std::min(i, j), std::max(i, j)};
+  }
+
   long compute_pd_pair_hash_key(const long i, const long j)
   {
     // create same hashes independent of order of i and j
-    return (0.5 * (i + j) * (i + j + 1)) + std::min(i, j);
+    const long sum = i + j;
+    return (sum * (sum + 1)) / 2 + std::min(i, j);
+  }
+
+  Particle::LocalGlobalIndexTuple make_default_peridynamic_bond_tuple(const int globalid)
+  {
+    // Initialize a bond tuple where only the global id is known so far. Type and status remain
+    // unresolved until the particle is found in a local container, and local id = -1 marks that
+    // "not yet resolved on this rank" state
+    return std::make_tuple(
+        Particle::UninitializedType, Particle::UninitializedStatus, -1, globalid);
+  }
+
+  std::set<long> build_known_peridynamic_bond_hashes(const std::shared_ptr<std::vector<
+          std::pair<Particle::LocalGlobalIndexTuple, Particle::LocalGlobalIndexTuple>>>& bondlist)
+  {
+    std::set<long> known_bond_hashes;
+
+    for (const auto& [first, second] : *bondlist)
+    {
+      const int globalid_i = std::get<3>(first);
+      const int globalid_j = std::get<3>(second);
+
+      known_bond_hashes.insert(compute_pd_pair_hash_key(globalid_i, globalid_j));
+    }
+
+    return known_bond_hashes;
   }
 
   bool is_valid_peridynamic_bond_entry(
@@ -228,18 +262,18 @@ void Particle::PDNeighborPairs::setup_peridynamic_pair_hashes()
   for (size_t iter = 0; iter < bondlist_->size(); ++iter)
   {
     const auto& pair = (*bondlist_)[iter];
-    // access values of local index tuples of particle i and j
-    Particle::TypeEnum type_i;
-    Particle::StatusEnum status_i;
-    int particle_i, globalid_i;
-    std::tie(type_i, status_i, particle_i, globalid_i) = pair.first;
-    Particle::TypeEnum type_j;
-    Particle::StatusEnum status_j;
-    int particle_j, globalid_j;
-    std::tie(type_j, status_j, particle_j, globalid_j) = pair.second;
-    long hash = compute_pd_pair_hash_key(globalid_i, globalid_j);
+    const int globalid_i = std::get<3>(pair.first);
+    const int globalid_j = std::get<3>(pair.second);
 
-    map_hashkey_to_bondlist_entry_.insert(std::make_pair(hash, iter));
+    const long hash = compute_pd_pair_hash_key(globalid_i, globalid_j);
+
+    const auto insert_result = map_hashkey_to_bondlist_entry_.insert(std::make_pair(hash, iter));
+    const bool inserted = insert_result.second;
+    if (!inserted)
+      FOUR_C_THROW(
+          "duplicate peridynamic bond entry detected for particle global ids ({}, {}) at bond "
+          "list entry {}!",
+          globalid_i, globalid_j, iter);
   }
 }
 
@@ -458,14 +492,8 @@ void Particle::PDNeighborPairs::communicate_bond_list(
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
   std::map<int, std::vector<char>> rdata;
-
-  Particle::TypeEnum type_i;
-  Particle::StatusEnum status_i;
-  int particle_i, globalid_i;
-
-  Particle::TypeEnum type_j;
-  Particle::StatusEnum status_j;
-  int particle_j, globalid_j;
+  std::vector<std::set<std::pair<int, int>>> communicated_bonds_per_target(
+      Core::Communication::num_mpi_ranks(comm_));
 
   // pack bond pair information
   // do not delete information on proc just add bond information while receiving
@@ -479,15 +507,22 @@ void Particle::PDNeighborPairs::communicate_bond_list(
     {
       for (const auto& pair : *bondlist_)
       {
-        std::tie(type_i, status_i, particle_i, globalid_i) = pair.first;
-        std::tie(type_j, status_j, particle_j, globalid_j) = pair.second;
+        const int globalid_i = std::get<3>(pair.first);
+        const int globalid_j = std::get<3>(pair.second);
 
         // if particle to be sent is in the bond list also send the bond list information
         if (globalid_i == globalid or globalid_j == globalid)
         {
+          const auto canonical_bond_ids = canonical_pd_bond_ids(globalid_i, globalid_j);
+          // A bond can be matched twice when both particles move to the same rank.
+          // Send each canonical bond at most once per target rank.
+          const bool inserted =
+              communicated_bonds_per_target[torank].insert(canonical_bond_ids).second;
+          if (!inserted) continue;
+
           Core::Communication::PackBuffer data;
-          data.add_to_pack(globalid_i);
-          data.add_to_pack(globalid_j);
+          data.add_to_pack(canonical_bond_ids.first);
+          data.add_to_pack(canonical_bond_ids.second);
           sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
         }
       }
@@ -497,11 +532,14 @@ void Particle::PDNeighborPairs::communicate_bond_list(
   // communicate data via non-buffered send from proc to proc
   ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
 
+  std::set<long> known_bond_hashes = build_known_peridynamic_bond_hashes(bondlist_);
+
   // unpack global ids and initialize remaining bond data
-  for (auto& p : rdata) unpack_peridynamic_bond_list_data(p.second);
+  for (auto& p : rdata) unpack_peridynamic_bond_list_data(p.second, known_bond_hashes);
 }
 
-void Particle::PDNeighborPairs::unpack_peridynamic_bond_list_data(const std::vector<char>& buffer)
+void Particle::PDNeighborPairs::unpack_peridynamic_bond_list_data(
+    const std::vector<char>& buffer, std::set<long>& known_bond_hashes)
 {
   Core::Communication::UnpackBuffer data(buffer);
   while (!data.at_end())
@@ -511,11 +549,17 @@ void Particle::PDNeighborPairs::unpack_peridynamic_bond_list_data(const std::vec
     int globalid_j;
     extract_from_pack(data, globalid_j);
 
+    const auto canonical_bond_ids = canonical_pd_bond_ids(globalid_i, globalid_j);
+    const long bond_hash = compute_pd_pair_hash_key(globalid_i, globalid_j);
+    // Guard against duplicate communication and duplicate restart payload entries.
+    const bool inserted = known_bond_hashes.insert(bond_hash).second;
+    if (!inserted) continue;
+
     // setup default tuples with proper global ids
-    Particle::LocalGlobalIndexTuple tuple_i = std::make_tuple(
-        ParticleType::UninitializedType, ParticleStatus::UninitializedStatus, -1, globalid_i);
-    Particle::LocalGlobalIndexTuple tuple_j = std::make_tuple(
-        ParticleType::UninitializedType, ParticleStatus::UninitializedStatus, -1, globalid_j);
+    Particle::LocalGlobalIndexTuple tuple_i =
+        make_default_peridynamic_bond_tuple(canonical_bond_ids.first);
+    Particle::LocalGlobalIndexTuple tuple_j =
+        make_default_peridynamic_bond_tuple(canonical_bond_ids.second);
 
     // add bond pair
     bondlist_->push_back(std::make_pair(tuple_i, tuple_j));
@@ -539,15 +583,22 @@ void Particle::PDNeighborPairs::write_restart() const
 
 void Particle::PDNeighborPairs::pack_bond_list_pairs(Core::Communication::PackBuffer& buffer) const
 {
+  std::set<std::pair<int, int>> packed_canonical_bonds;
+
   // iterate over bond list
   for (const auto& [first, second] : *bondlist_)
   {
     auto [type_i, status_i, particle_i, globalid_i] = first;
     auto [type_j, status_j, particle_j, globalid_j] = second;
+    const auto canonical_bond_ids = canonical_pd_bond_ids(globalid_i, globalid_j);
+
+    // Keep restart payload deterministic and free of duplicate unordered bonds.
+    const bool inserted = packed_canonical_bonds.insert(canonical_bond_ids).second;
+    if (!inserted) continue;
 
     // add bond pair to buffer
-    buffer.add_to_pack(globalid_i);
-    buffer.add_to_pack(globalid_j);
+    buffer.add_to_pack(canonical_bond_ids.first);
+    buffer.add_to_pack(canonical_bond_ids.second);
   }
 }
 
@@ -557,7 +608,11 @@ void Particle::PDNeighborPairs::read_restart(
   // peridynamic bond list
   std::shared_ptr<std::vector<char>> buffer = std::make_shared<std::vector<char>>();
   reader->read_char_vector(buffer, "PeridynamicBondList");
-  if (buffer->size() > 0) unpack_peridynamic_bond_list_data(*buffer);
+  if (!buffer->empty())
+  {
+    std::set<long> known_bond_hashes = build_known_peridynamic_bond_hashes(bondlist_);
+    unpack_peridynamic_bond_list_data(*buffer, known_bond_hashes);
+  }
 }
 
 namespace
