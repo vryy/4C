@@ -8,13 +8,14 @@
 import argparse
 import dataclasses
 import datetime
-from typing import Tuple
+from typing import Tuple, Optional
 import os
 import json
 import dateutil.parser
 import plotly.express as px
 import jinja2
 import pandas as pd
+import html
 
 
 @dataclasses.dataclass
@@ -22,7 +23,6 @@ class PerformanceItem:
     min: float
     mean: float
     max: float
-    mean_all: float
 
 
 @dataclasses.dataclass
@@ -30,11 +30,13 @@ class TimerResults:
     timestamps: list[datetime.datetime]
     results: list[PerformanceItem]
     commit_hashes: list[str]
+    contexts: list[str]
 
 
 @dataclasses.dataclass
 class PerformanceResults:
     name: str
+    unit: str
     timers: dict[str, TimerResults]
 
 
@@ -47,6 +49,25 @@ def parse_as_utc(date_str: str) -> datetime.datetime:
         return parsed_timestamp.astimezone(datetime.timezone.utc)
 
 
+def get_context_html(context: dict, indent: int) -> str:
+    """Converts the context dictionary into a human-readable string format."""
+
+    def format_value(value):
+        if isinstance(value, dict):
+            return get_context_html(value, indent + 1)
+        elif isinstance(value, list):
+            return "<br />" + "<br />".join(
+                f"{'&nbsp;' * (indent+1)*2}- {format_value(item)}" for item in value
+            )
+        else:
+            return html.escape(str(value))
+
+    return "<br />".join(
+        f"{'&nbsp;' * indent*2}<b>{html.escape(str(key))}:</b> {format_value(value)}"
+        for key, value in context.items()
+    )
+
+
 def read_performance_results(data_file: str) -> list[PerformanceResults]:
     """Reads the performance results from the given JSON file and organizes them into a list of PerformanceResults."""
     with open(data_file, "r") as f:
@@ -56,26 +77,37 @@ def read_performance_results(data_file: str) -> list[PerformanceResults]:
 
     for item in all_data:
         for name, data in item["data"].items():
+            # detect unit
+            if len(data["data"]) > 0:
+                unit = data["data"][0]["unit"]
+            else:
+                unit = "unknown unit"
+
             if name not in performance_tests:
-                performance_tests[name] = PerformanceResults(name, timers={})
+                performance_tests[name] = PerformanceResults(name, unit=unit, timers={})
 
             performance_test = performance_tests[name]
-            for timer_name in data["Timer names"]:
-                if timer_name not in performance_tests[name].timers:
-                    performance_tests[name].timers[timer_name] = TimerResults(
-                        [], [], []
+            for timers in data["data"]:
+                if timers["name"] not in performance_tests[name].timers:
+                    performance_tests[name].timers[timers["name"]] = TimerResults(
+                        [], [], [], []
                     )
 
-                timer = performance_test.timers[timer_name]
+                if timers["unit"] != performance_test.unit:
+                    raise RuntimeError(
+                        "Inconsistent units within one test group detected."
+                    )
 
-                timer.timestamps.append(parse_as_utc(item["date"]))
+                timer = performance_test.timers[timers["name"]]
+
+                timer.timestamps.append(parse_as_utc(data["context"]["date"]))
                 timer.commit_hashes.append(item["sha"])
+                timer.contexts.append(get_context_html(data["context"], 1))
                 timer.results.append(
                     PerformanceItem(
-                        min=data["Total times"][timer_name]["MinOverProcs"],
-                        mean=data["Total times"][timer_name]["MeanOverProcs"],
-                        max=data["Total times"][timer_name]["MaxOverProcs"],
-                        mean_all=data["Total times"][timer_name]["MeanOverCallCounts"],
+                        min=timers["measurements"]["min"],
+                        mean=timers["measurements"]["mean"],
+                        max=timers["measurements"]["max"],
                     )
                 )
 
@@ -86,12 +118,13 @@ def generate_plotly_report(
     performance_result: PerformanceResults,
     target_file: str,
     date_min_max: Tuple[datetime.datetime, datetime.datetime],
+    visible_timers: Optional[list[str]],
 ) -> None:
     """Generates a plotly report for a single performance test and saves it to the target html file."""
     all_data = []
     for timer_name, data in performance_result.timers.items():
-        for timestamp, result, sha in zip(
-            data.timestamps, data.results, data.commit_hashes
+        for timestamp, result, sha, context in zip(
+            data.timestamps, data.results, data.commit_hashes, data.contexts
         ):
             all_data.append(
                 {
@@ -100,6 +133,7 @@ def generate_plotly_report(
                     "Timer Name": timer_name,
                     "Commit Hash": sha,
                     "Commit URL": f"https://github.com/4C-multiphysics/4C/commit/{sha}",
+                    "Context": context,
                 }
             )
 
@@ -113,13 +147,13 @@ def generate_plotly_report(
         trendline_options=dict(halflife=4),
         # trendline_options=dict(window=3),
         title=None,
-        hover_data=["Commit Hash", "Commit URL"],
+        hover_data=["Commit Hash", "Commit URL", "Context"],
         template="plotly_white",
     )
 
     fig.update_layout(
         xaxis_title="date of measurement",
-        yaxis_title="runtime in seconds",
+        yaxis_title=f"runtime in {performance_result.unit}",
     )
     fig.update_xaxes(range=[date_min_max[0], date_min_max[1]])
 
@@ -131,16 +165,16 @@ def generate_plotly_report(
         ),
         line=dict(width=3),
         hovertemplate="<b>%{fullData.name}</b><br />"
-        + "Runtime: %{y}s<br />"
+        + f"Runtime: %{{y}} {performance_result.unit}<br />"
         + "Timestamp: %{x}<br />"
+        + "Context:<br />%{customdata[2]}<br />"
         + "<a href='%{customdata[1]}'>%{customdata[0]}</a><extra></extra>",
     )
 
-    visible_timers = ["Input", "Calculation"]
     fig.for_each_trace(
         lambda trace: (
             trace.update(visible="legendonly")
-            if trace.name not in visible_timers
+            if visible_timers is not None and trace.name not in visible_timers
             else ()
         )
     )
@@ -170,6 +204,14 @@ def main():
     )
     parser.add_argument("test_data")
     parser.add_argument("output_dir")
+    parser.add_argument(
+        "--title", default="4C Performance Report", help="Title of the report"
+    )
+    parser.add_argument(
+        "--visible-timers",
+        nargs="+",
+        help="List of timer names to be visible by default in the plotly report (all others will be hidden by default)",
+    )
 
     args = parser.parse_args()
 
@@ -193,7 +235,7 @@ def main():
 
         file_name = f"{sanitize_filename(test.name)}.html"
         target_file = os.path.join(args.output_dir, file_name)
-        generate_plotly_report(test, target_file, date_min_max)
+        generate_plotly_report(test, target_file, date_min_max, args.visible_timers)
 
         # append to overview of reports
         test_overview.append({"title": test.name, "url": file_name})
@@ -206,7 +248,9 @@ def main():
         autoescape=True,
     )
     template = env.get_template("template.html.j2")
-    output_from_parsed_template = template.render(performance_tests=test_overview)
+    output_from_parsed_template = template.render(
+        performance_tests=test_overview, title=args.title
+    )
     with open(os.path.join(args.output_dir, "report.html"), "w") as f:
         f.write(output_from_parsed_template)
 

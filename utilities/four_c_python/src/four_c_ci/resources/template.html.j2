@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4C Performance Test Results</title>
+    <title>{{ title }}</title>
     <style>
         :root {
             --bg-color: #f4f7f6;
@@ -132,7 +132,7 @@
 
 <body>
     <div class="container">
-        <h1>4C Performance test results</h1>
+        <h1>{{ title }}</h1>
         {% for performance_test in performance_tests %}
         <details>
             <summary>{{ performance_test.title }}</summary>
