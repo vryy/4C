@@ -110,6 +110,17 @@ namespace Mixture
      * @param dt (in) : timestep
      */
     void integrate_local_evolution_equations_explicit(double dt);
+
+    /*!
+     * @brief Integrate the evolution equations for one time step explicitly using an external
+     * non-local stimulus \psi (from the Helmholtz Scatra field) instead of the locally computed
+     * stress-deviation. Analogous to integrate_local_evolution_equations_explicit but driven by
+     * \psi.
+     *
+     * @param psi (in) : non-local stimulus \psi (from Scatra DOF)
+     * @param dt (in) : timestep
+     */
+    void integrate_local_evolution_equations_explicit_with_nonlocal_stimulus(double psi, double dt);
     /// @}
     [[nodiscard]] double evaluate_current_homeostatic_fiber_cauchy_stress() const;
     [[nodiscard]] double evaluate_current_fiber_cauchy_stress() const;

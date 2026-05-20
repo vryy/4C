@@ -20,6 +20,7 @@
 #include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_mat_micromaterial.hpp"
 #include "4C_mat_scatra_growth_remodel.hpp"
+#include "4C_mat_scatra_nonlocal_stimulus.hpp"
 #include "4C_porofluid_pressure_based_elast_scatra_input.hpp"
 
 #include <filesystem>
@@ -397,6 +398,22 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
         },
         {.description = "Simple transport material with linear reaction used in growth "
                         "and remodeling"});
+  }
+
+  /*----------------------------------------------------------------------*/
+  // scalar transport material for non-local G&R stimulus (Helmholtz smoothing)
+  {
+    known_materials[Core::Materials::m_scatra_nl_stimulus] = group("MAT_scatra_nl_stimulus",
+        {
+            parameter<double>("CHAR_LENGTH_SQ",
+                {.description =
+                        "Squared characteristic length scale lc for the Helmholtz equation"}),
+            parameter<int>("STRUCTURE_MAT_ID",
+                {.description = "Material ID of the MixtureConstituentRemodelFiberSsi constituent "
+                                "that provides the local stimulus"}),
+        },
+        {.description = "Helmholtz equation for non-local G&R stimulus: "
+                        "psi - lc^2 * laplace(psi) = (sigma-sigma_h)"});
   }
 
   /*----------------------------------------------------------------------*/
@@ -4331,17 +4348,25 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<bool>("INELASTIC_GROWTH",
                 {.description = "Mixture rule has inelastic growth (default false)",
                     .default_value = false}),
-            parameter<int>("GROWTH_SCALAR_ID",
+            parameter<std::optional<int>>("GROWTH_SCALAR_ID",
                 {.description =
-                        "Index of the corresponding growth scalar material in the scatra matlist",
-                    .validator = positive_or_zero<int>()}),
-            parameter<int>(
-                "REMODELING_SCALAR_ID", {.description = "Index of the corresponding remodeling "
-                                                        "scalar material in the scatra matlist",
-                                            .validator = positive_or_zero<int>()}),
+                        "Index of the corresponding growth scalar material in the scatra matlist "
+                        "(leave unset to disable)",
+                    .validator = null_or(positive_or_zero<int>())}),
+            parameter<std::optional<int>>("REMODELING_SCALAR_ID",
+                {.description =
+                        "Index of the corresponding remodeling scalar material in the scatra "
+                        "matlist (leave unset to disable)",
+                    .validator = null_or(positive_or_zero<int>())}),
+            parameter<std::optional<int>>("NONLOCAL_STIMULUS_SCALAR_ID",
+                {.description = "Index of the non-local stimulus scalar in the scatra matlist "
+                                "(leave unset to disable)",
+                    .validator = null_or(positive_or_zero<int>())}),
         },
         {.description =
-                "A 1D constituent where the g&r evolution is solved in a coupled ssi framework"});
+                "A 1D constituent where the g&r evolution ODEs can be solved either as own scatra "
+                "dofs (using GROWTH_SCALAR_ID & REMODELING_SCALAR_ID) or Gauss-point wise based on "
+                "a non-local stimulus (using NONLOCAL_STIMULUS_SCALAR_ID)."});
   }
 
   /*----------------------------------------------------------------------*/

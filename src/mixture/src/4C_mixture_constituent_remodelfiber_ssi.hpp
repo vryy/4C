@@ -56,8 +56,9 @@ namespace Mixture
 
       const bool inelastic_external_deformation_;
 
-      const int growth_scalar_id_;
-      const int remodeling_scalar_id_;
+      const std::optional<int> growth_scalar_id_;
+      const std::optional<int> remodeling_scalar_id_;
+      const std::optional<int> nonlocal_stimulus_scalar_id_;
     };
   }  // namespace PAR
 
@@ -110,6 +111,13 @@ namespace Mixture
 
     [[nodiscard]] double evaluate_growth_reaction_coefficient(int gp) const;
     [[nodiscard]] double evaluate_remodeling_reaction_coefficient(int gp) const;
+
+    [[nodiscard]] double evaluate_local_stimulus(int gp) const;
+
+    [[nodiscard]] bool is_nonlocal_stimulus_mode() const
+    {
+      return params_->nonlocal_stimulus_scalar_id_.has_value();
+    }
 
     void set_current_growth_scalar(const Teuchos::ParameterList& params, int gp);
     void set_current_lambda_r(const Teuchos::ParameterList& params, int gp);

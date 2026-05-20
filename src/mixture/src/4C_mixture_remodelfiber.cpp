@@ -179,6 +179,23 @@ void Mixture::Implementation::RemodelFiberImplementation<numstates, T>::set_lamb
 template <int numstates, typename T>
 Mixture::Implementation::IntegrationState<numstates, T>
 Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::get_integration_state_growth_scalar_with_nonlocal_stimulus(const T psi) const
+{
+  IntegrationState<numstates, T> growth_state;
+  std::transform(states_.begin(), states_.end(), growth_state.x.begin(),
+      [](const GRState& state) { return state.growth_scalar; });
+  std::transform(states_.begin(), states_.end(), growth_state.f.begin(),
+      [&](const GRState& state)
+      {
+        return evaluate_growth_evolution_equation_dt_with_nonlocal_stimulus(
+            psi, state.lambda_f, state.lambda_r, state.lambda_ext, state.growth_scalar);
+      });
+  return growth_state;
+}
+
+template <int numstates, typename T>
+Mixture::Implementation::IntegrationState<numstates, T>
+Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::get_integration_state_growth_scalar() const
 {
   return std::invoke(
@@ -322,6 +339,20 @@ void Mixture::Implementation::RemodelFiberImplementation<numstates,
 }
 
 
+template <int numstates, typename T>
+void Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::integrate_local_evolution_equations_explicit_with_nonlocal_stimulus(const T psi, const T dt)
+{
+  const IntegrationState<numstates, T> growth_state =
+      get_integration_state_growth_scalar_with_nonlocal_stimulus(psi);
+  const IntegrationState<numstates, T> remodel_state = get_integration_state_lambda_r();
+
+  states_.back().growth_scalar = ExplicitIntegration<numstates, T>::integrate(growth_state, dt);
+  states_.back().lambda_r = ExplicitIntegration<numstates, T>::integrate(remodel_state, dt);
+
+  d_growth_scalar_d_lambda_f_sq_ = 0.0;
+  d_lambda_r_d_lambda_f_sq_ = 0.0;
+}
 
 template <int numstates, typename T>
 void Mixture::Implementation::RemodelFiberImplementation<numstates,
@@ -350,6 +381,17 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
   const T dsig = (evaluate_fiber_cauchy_stress(lambda_f, lambda_r, lambda_ext) - sig_h_) / sig_h_;
   return (growth_evolution_.evaluate_true_mass_production_rate(dsig) +
           growth_evolution_.evaluate_true_mass_removal_rate(dsig));
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_growth_evolution_equation_dt_with_nonlocal_stimulus(const T psi, const T lambda_f,
+    const T lambda_r, const T lambda_ext, const T growth_scalar) const
+{
+  const T dsig = psi / sig_h_;
+  return (growth_evolution_.evaluate_true_mass_production_rate(dsig) +
+             growth_evolution_.evaluate_true_mass_removal_rate(dsig)) *
+         growth_scalar;
 }
 
 template <int numstates, typename T>
@@ -790,6 +832,14 @@ template <int numstates>
 void Mixture::RemodelFiber<numstates>::integrate_local_evolution_equations_explicit(const double dt)
 {
   impl_->integrate_local_evolution_equations_explicit(dt);
+}
+
+template <int numstates>
+void Mixture::RemodelFiber<numstates>::
+    integrate_local_evolution_equations_explicit_with_nonlocal_stimulus(
+        const double psi, const double dt)
+{
+  impl_->integrate_local_evolution_equations_explicit_with_nonlocal_stimulus(psi, dt);
 }
 
 template <int numstates>

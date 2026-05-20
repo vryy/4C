@@ -167,6 +167,7 @@ namespace Core::Materials
     m_scatra_reaction,          ///< reaction definition and parameters
     m_scatra_chemotaxis,        ///< chemotaxis definition parameters
     m_scatra_gr,                ///< scalar transport for growth and remodeling
+    m_scatra_nl_stimulus,       ///< scalar transport for non-local G&R stimulus (Helmholtz)
     m_scl,                      ///< material for modeling space charge layers in solid electrolytes
     m_soret,   ///< material for heat transport due to Fourier-type thermal conduction and the
                ///< Soret effect
