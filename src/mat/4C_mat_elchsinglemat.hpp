@@ -132,7 +132,6 @@ namespace Mat
     static constexpr int CONDUCT = -5;
     static constexpr int GOLDIN = -11;
     static constexpr int ARRHENIUS = -14;
-    static constexpr int INVERSE_LINEAR = -15;
     ///@}
 
    protected:

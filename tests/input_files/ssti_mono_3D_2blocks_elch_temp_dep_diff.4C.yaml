@@ -9,7 +9,6 @@ TITLE:
   - '- stationary elch problem'
   - '- flux of species (phi1) and charge (phi2) in'
   - '- diffusion coefficient: Arrhenius ansatz (function: -14)'
-  - '- conductivity: reciprocal linear law (function: -15)'
 PROBLEM TYPE:
   PROBLEMTYPE: "Structure_Scalar_Thermo_Interaction"
 IO:
@@ -72,15 +71,13 @@ MATERIALS:
       DIFF_COEF_CONC_DEP_FUNCT: -1
       DIFF_COEF_TEMP_SCALE_FUNCT: -14
       COND_CONC_DEP_FUNCT: -1
-      COND_TEMP_SCALE_FUNCT: -15
+      COND_TEMP_SCALE_FUNCT: 6
       DIFF_PARA_NUM: 1
       DIFF_PARA: [1]
       DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM: 1
       DIFF_COEF_TEMP_SCALE_FUNCT_PARA: [5]
       COND_PARA_NUM: 1
       COND_PARA: [1]
-      COND_TEMP_SCALE_FUNCT_PARA_NUM: 2
-      COND_TEMP_SCALE_FUNCT_PARA: [1, 0.5]
       C_MAX: 50000
       CHI_MAX: 1
       OCP_MODEL:
@@ -155,6 +152,8 @@ FUNCT5:
   - FASTPOLYNOMIAL:
       NUMCOEFF: 1
       COEFF: [0]
+FUNCT6:
+  - SYMBOLIC_FUNCTION_OF_TIME: "1.0/(1.0+1.0*(t-0.5))"
 RESULT DESCRIPTION:
   - STRUCTURE:
       DIS: "structure"

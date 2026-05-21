@@ -136,17 +136,6 @@ void Mat::PAR::ElchSingleMat::check_provided_params(
         nfunctparams = 1;
         break;
       }
-      case Mat::ElchSingleMat::INVERSE_LINEAR:
-      {
-        // Temperature dependent factor for electric conductivity (sigma)
-        // electric conductivity is the inverse electric resistivity (rho)
-        // for "small" temperature differences the temperature dependence of the specific electric
-        // resistance follows rho = rho_0 * (1 + alpha(T - T_0))
-        functionname =
-            "'Linear approximation of specific electrical resistance/electric conductivity'";
-        nfunctparams = 2;
-        break;
-      }
       default:
       {
         FOUR_C_THROW("Curve number {} is not implemented", functnr);
@@ -507,17 +496,6 @@ double Mat::ElchSingleMat::eval_pre_defined_funct(
       functval = std::exp(-functparams[0] / (R * scalar));
       break;
     }
-    case INVERSE_LINEAR:
-    {
-      // Temperature dependent factor for electric conductivity (sigma)
-      // electric conductivity is the inverse electric resistivity (rho)
-      // for "small" temperature differences the temperature dependence of the specific electric
-      // resistance follows rho = rho_0 * (1 + alpha(T - T_0)) sigma(c,T) = sigma(c) * sigma(T) =
-      // 1/rho_0(c) * 1/(1 + alpha*(T - T_0))
-      // functval = 1/(1 + a0*(T - a1))
-      functval = 1.0 / (1.0 + functparams[0] * (scalar - functparams[1]));
-      break;
-    }
     default:
     {
       FOUR_C_THROW("Curve number {} is not implemented!", functnr);
@@ -603,17 +581,6 @@ double Mat::ElchSingleMat::eval_first_deriv_pre_defined_funct(
       const double R = static_cast<Mat::PAR::ElchSingleMat*>(parameter())->R_;
       firstderivfunctval = std::exp(-functparams[0] / (R * scalar)) * functparams[0] / R * 1.0 /
                            std::pow(scalar, 2.0);
-      break;
-    }
-    case INVERSE_LINEAR:
-    {
-      // Temperature dependent factor for electric conductivity (sigma)
-      // electric conductivity is the inverse  electric resistivity (rho)
-      // for "small" temperature differences the temperature dependence of the specific electric
-      // resistivity follows rho = rho_0 * (1 + alpha(T - T_0)) sigma(c,T) = sigma(c) * sigma(T) =
-      // 1/rho_0(c) * 1/(1 + alpha*(T - T_0))
-      double base = 1.0 + functparams[0] * (scalar - functparams[1]);
-      firstderivfunctval = -functparams[0] * std::pow(base, -2.0);
       break;
     }
     default:
