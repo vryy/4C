@@ -130,14 +130,7 @@ namespace Mat
     static constexpr int QUADRATIC_FUNCTION = -3;
     static constexpr int POWER_FUNCTION = -4;
     static constexpr int CONDUCT = -5;
-    static constexpr int MOD_CUBIC_FUNCTION = -6;
-    static constexpr int CUBIC_FUNCTION = -7;
-    static constexpr int NYMAN = -8;
-    static constexpr int DEBYE_HUECKEL = -9;
-    static constexpr int KOHLRAUSCH_SQUAREROOT = -10;
     static constexpr int GOLDIN = -11;
-    static constexpr int STEWART_NEWMAN = -12;
-    static constexpr int TDF = -13;
     static constexpr int ARRHENIUS = -14;
     static constexpr int INVERSE_LINEAR = -15;
     ///@}

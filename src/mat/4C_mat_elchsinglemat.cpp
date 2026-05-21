@@ -115,41 +115,6 @@ void Mat::PAR::ElchSingleMat::check_provided_params(
         nfunctparams = 4;
         break;
       }
-      case Mat::ElchSingleMat::MOD_CUBIC_FUNCTION:
-      {
-        // a0*c + a1*c^1.5 + a2*c^3
-        functionname = "'a0*c + a1*c^1.5 + a2*c^3'";
-        nfunctparams = 3;
-        break;
-      }
-      case Mat::ElchSingleMat::CUBIC_FUNCTION:
-      {
-        // a0 + a1*c + a2*c^2 + a3*c^3
-        functionname = "'a0 + a1*c + a2*c^2 + a3*c^3'";
-        nfunctparams = 4;
-        break;
-      }
-      case Mat::ElchSingleMat::NYMAN:
-      {
-        // thermodynamic factor Nyman 2008
-        functionname = "'function thermodynamic factor (Nyman 2008)'";
-        nfunctparams = 7;
-        break;
-      }
-      case Mat::ElchSingleMat::DEBYE_HUECKEL:
-      {
-        // linear thermodynamic factor including Debye-Hueckel theory
-        functionname = "'function linear thermodynamic factor (including Debye Hueckel theory)'";
-        nfunctparams = 2;
-        break;
-      }
-      case Mat::ElchSingleMat::KOHLRAUSCH_SQUAREROOT:
-      {
-        // function 1 for conductivity
-        functionname = "'function 1 for conductivity: own definition'";
-        nfunctparams = 6;
-        break;
-      }
       case Mat::ElchSingleMat::GOLDIN:
       {
         // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann,
@@ -157,28 +122,6 @@ void Mat::PAR::ElchSingleMat::check_provided_params(
         functionname =
             "'conductivity as a function of concentration according to Goldin, Colclasure, "
             "Wiedemann, Kee (2012)'";
-        nfunctparams = 3;
-        break;
-      }
-      case Mat::ElchSingleMat::STEWART_NEWMAN:
-      {
-        // diffusion coefficient based on a function defined in
-        // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion
-        // Coefficients in LiPF6 Electrolytic Solutions Journal of The Electrochemical Society,
-        // 2008, 155, F13-F16 diff = a0*exp(-a1*c^a2)
-        functionname = "'diffusion coefficient as an exponential function: a1*exp(a2*c)'";
-        nfunctparams = 2;
-        break;
-      }
-      case Mat::ElchSingleMat::TDF:
-      {
-        // TDF based on a function defined in
-        // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical
-        // determination of activity coefficients in aprotic binary electrolytes TDF = 1.0 - 0.5 a1
-        // sqrt(c)/(1+a2*sqrt(c)) + a2*c
-        functionname =
-            "'TDF as as a function of concentration according to Landesfeind, Ehrl, Graf, Wall, "
-            "Gasteiger (2015)'";
         nfunctparams = 3;
         break;
       }
@@ -536,50 +479,6 @@ double Mat::ElchSingleMat::eval_pre_defined_funct(
       break;
     }
 
-    // a0*c + a1*c^1.5 + a2*c^3
-    case MOD_CUBIC_FUNCTION:
-      functval = functparams[0] * scalar + functparams[1] * std::pow(scalar, 1.5) +
-                 functparams[2] * scalar * scalar * scalar;
-      break;
-
-    // a0 + a1*c + a2*c^2 + a3*c^3
-    case CUBIC_FUNCTION:
-      functval = functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar +
-                 functparams[3] * scalar * scalar * scalar;
-      break;
-
-    // thermodynamic factor Nyman 2008
-    case NYMAN:
-    {
-      const double num =
-          functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar;
-      const double denom = functparams[3] + functparams[4] * scalar +
-                           functparams[5] * scalar * scalar +
-                           functparams[6] * scalar * scalar * scalar;
-      functval = num / denom;
-      break;
-    }
-
-    // linear thermodynamic factor including Debye-Hueckel theory
-    // 1 + a1*0.5*c^0.5 + a2*c
-    case DEBYE_HUECKEL:
-      functval = 1.0 + functparams[0] * 0.5 * std::pow(scalar, 0.5) + functparams[1] * scalar;
-      break;
-
-    // conductivity: own definition which also fulfills the Kohlrausches Square root law
-    case KOHLRAUSCH_SQUAREROOT:
-    {
-      const double num = functparams[0] * scalar + functparams[1] * std::pow(scalar, 1.5) +
-                         functparams[2] * scalar * scalar +
-                         functparams[3] * scalar * scalar * scalar;
-      const double denom = (1.0 + functparams[4] * scalar * scalar +
-                            functparams[5] * scalar * scalar * scalar * scalar);
-      // functparams[0]*(functparams[1]*concentration/nenner) + 0.01 -> constant level 0.01 deleted
-      // since it does not have a physical meaning (28.04.2014)
-      functval = num / denom;
-      break;
-    }
-
     // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee
     // (2012) kappa = a0*c*exp(a1*c^a2)
     case GOLDIN:
@@ -596,27 +495,6 @@ double Mat::ElchSingleMat::eval_pre_defined_funct(
 
       functval = functparams[0] * scalar * std::exp(exponent);
 
-      break;
-    }
-    // diffusion coefficient based on a function defined in
-    // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion Coefficients in
-    // LiPF6 Electrolytic Solutions Journal of The Electrochemical Society, 2008, 155, F13-F16 diff
-    // = a0*exp(-a1*c^a2)
-    case STEWART_NEWMAN:
-    {
-      functval = functparams[0] * std::exp(functparams[1] * scalar);
-      break;
-    }
-    case TDF:
-    {
-      // TDF based on a function defined in
-      // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical
-      // determination of activity coefficients in aprotic binary electrolytes TDF = 1.0 - 0.5 a1
-      // sqrt(c)/(1+a2*sqrt(c)) + a2*c
-      functval = 1.0 -
-                 (0.5 * functparams[0] * std::pow(scalar, 0.5)) /
-                     (std::pow((1 + functparams[1] * std::pow(scalar, 0.5)), 2)) +
-                 functparams[2] * scalar;
       break;
     }
     case ARRHENIUS:
@@ -694,58 +572,6 @@ double Mat::ElchSingleMat::eval_first_deriv_pre_defined_funct(
       break;
     }
 
-    // d/dc: a0*c + a1*c^1.5 + a2*c^3
-    case MOD_CUBIC_FUNCTION:
-      firstderivfunctval = functparams[0] + 1.5 * functparams[1] * std::pow(scalar, 0.5) +
-                           3 * functparams[2] * scalar * scalar;
-      break;
-
-    // d/dc: a0 + a1*c + a2*c^2 + a3*c^3
-    case CUBIC_FUNCTION:
-      firstderivfunctval =
-          functparams[1] + 2 * functparams[2] * scalar + 3 * functparams[3] * scalar * scalar;
-      break;
-
-    // d/dc: thermodynamic factor Nyman 2008
-    case NYMAN:
-    {
-      const double num =
-          functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar;
-      const double denom = functparams[3] + functparams[4] * scalar +
-                           functparams[5] * scalar * scalar +
-                           functparams[6] * scalar * scalar * scalar;
-      const double denomdenom = denom * denom;
-      const double derivnum = functparams[1] + 2 * functparams[2] * scalar;
-      const double derivdenom =
-          functparams[4] + 2 * functparams[5] * scalar + 3 * functparams[6] * scalar * scalar;
-      firstderivfunctval = (derivnum * denom - num * derivdenom) / denomdenom;
-      break;
-    }
-
-    // linear thermodynamic factor including Debye-Hueckel theory
-    // d/dc: 1 + a1*0.5*c^0.5 + a2*c
-    case DEBYE_HUECKEL:
-      firstderivfunctval = functparams[0] * 0.5 * 0.5 * std::pow(scalar, -0.5) + functparams[1];
-      break;
-
-    // d/dc: conductivity: own definition which also fulfills the Kohlrausches Square root law
-    case KOHLRAUSCH_SQUAREROOT:
-    {
-      const double num = functparams[0] * scalar + functparams[1] * std::pow(scalar, 1.5) +
-                         functparams[2] * scalar * scalar +
-                         functparams[3] * scalar * scalar * scalar;
-      const double denom = (1.0 + functparams[4] * scalar * scalar +
-                            functparams[5] * scalar * scalar * scalar * scalar);
-      const double denomdenom = denom * denom;
-      const double derivnum = functparams[0] + 1.5 * functparams[1] * std::pow(scalar, 0.5) +
-                              2.0 * functparams[2] * scalar +
-                              3.0 * functparams[3] * scalar * scalar;
-      const double derivdenom =
-          2.0 * functparams[4] * scalar + 4.0 * functparams[5] * scalar * scalar * scalar;
-      firstderivfunctval = ((derivnum * denom - num * derivdenom) / denomdenom);
-      break;
-    }
-
     // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee
     // (2012) d/dc: kappa = a0*c*exp(a1*c^a2)
     case GOLDIN:
@@ -767,28 +593,6 @@ double Mat::ElchSingleMat::eval_first_deriv_pre_defined_funct(
       firstderivfunctval = functparams[0] * std::exp(exponent) *
                            (1 + functparams[1] * functparams[2] * std::pow(scalar, functparams[2]));
 
-      break;
-    }
-    // diffusion coefficient based on a function defined in
-    // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion Coefficients in
-    // LiPF6 Electrolytic Solutions Journal of The Electrochemical Society, 2008, 155, F13-F16 diff
-    // = a0*exp(-a1*c^a2) deriv (diff) = a0*a1*exp(a1*c^a2)
-    case STEWART_NEWMAN:
-    {
-      firstderivfunctval = functparams[0] * functparams[1] * std::exp(functparams[1] * scalar);
-      break;
-    }
-    case TDF:
-    {
-      // TDF based on a function defined in
-      // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical
-      // determination of activity coefficients in aprotic binary electrolytes TDF = 1.0 - 0.5 a1
-      // sqrt(c)/(1+a2*sqrt(c)) + a2*c
-      firstderivfunctval = -(0.25 * functparams[0] * std::pow(scalar, -0.5)) /
-                               (std::pow((1 + functparams[1] * std::pow(scalar, 0.5)), 2)) +
-                           (0.5 * functparams[0] * functparams[1]) /
-                               (std::pow((1 + functparams[1] * std::pow(scalar, 0.5)), 3)) +
-                           functparams[2];
       break;
     }
     case ARRHENIUS:
