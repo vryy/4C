@@ -116,6 +116,30 @@ def get_target_artifact_url(
     return None
 
 
+def translate_old_performance_data_format(entry: dict) -> None:
+    context = {"date": entry["date"]}
+
+    for group_name, group in entry["data"].items():
+        data = []
+        for name, timing_data in group["Total times"].items():
+            data.append(
+                {
+                    "name": name,
+                    "unit": group["Time unit"],
+                    "measurements": {
+                        "min": timing_data["MinOverProcs"],
+                        "max": timing_data["MaxOverProcs"],
+                        "mean": timing_data["MeanOverProcs"],
+                    },
+                }
+            )
+
+        entry["data"][group_name] = {
+            "context": context,
+            "data": data,
+        }
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Collect performance data for four_c_ci"
@@ -150,6 +174,19 @@ def main():
     if args.previous_data:
         with open(args.previous_data, "r") as f:
             old_data = json.load(f)
+
+    # We might need to update the old data and convert it to the our new format (generalized data format, not the Trilinos format)
+    if len(old_data) > 0:
+        is_legacy = False
+        for group in old_data[0]["data"].values():
+            if "Output mode" in group:
+                is_legacy = True
+                break
+
+        if is_legacy:
+            print("Upgrading previous performance data to new format...")
+            for entry in old_data:
+                translate_old_performance_data_format(entry)
 
     largest_id = max((entry["run_id"] for entry in old_data), default=0)
 
