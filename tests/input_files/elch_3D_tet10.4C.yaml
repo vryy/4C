@@ -46,8 +46,9 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 2
-        X_MIN: 0.3
-        X_MAX: 1
+        LITHIATION_BOUNDS:
+          X_MIN: 0.3
+          X_MAX: 1
 FUNCT1:
   - COMPONENT: 0
     SYMBOLIC_FUNCTION_OF_SPACE_TIME: "43196.78-1.0e10*x^2"

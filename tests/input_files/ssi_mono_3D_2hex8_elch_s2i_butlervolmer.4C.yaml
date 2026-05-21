@@ -97,8 +97,6 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 4
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 6
     MAT_elchmat:
       NUMDOF: 2

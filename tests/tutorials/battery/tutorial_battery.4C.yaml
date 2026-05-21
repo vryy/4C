@@ -79,8 +79,6 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 6
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1
@@ -157,8 +155,6 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 7
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 12
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1
@@ -191,8 +187,6 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 7
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 16
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1
@@ -219,8 +213,6 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 7
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 20
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1

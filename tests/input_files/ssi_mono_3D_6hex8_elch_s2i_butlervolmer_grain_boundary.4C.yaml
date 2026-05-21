@@ -95,8 +95,6 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 5
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 7
     MAT_elchmat:
       NUMDOF: 2
@@ -118,8 +116,6 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 5
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 9
     MAT_elchphase:
       EPSILON: 1

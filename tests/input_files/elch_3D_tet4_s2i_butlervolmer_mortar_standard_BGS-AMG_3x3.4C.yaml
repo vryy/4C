@@ -55,11 +55,8 @@ MATERIALS:
       CHI_MAX: 1
       OCP_MODEL:
         Redlich-Kister:
-          OCP_PARA_NUM: 16
           OCP_PARA: [11652, -3268, 3955, -4573, 6147, -3339, 11170, 299.7, -48660, 136.2, 137300, -21290,
             -172200, 39560, 93020, -32800]
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 2
     MAT_elchmat:
       NUMDOF: 2
@@ -80,11 +77,8 @@ MATERIALS:
       CHI_MAX: 1
       OCP_MODEL:
         Redlich-Kister:
-          OCP_PARA_NUM: 21
           OCP_PARA: [395461.6, -76760, 37990, -28730, 11690, 14510, -89380, 167100, -72360, -174600, -406700,
             953400, 589700, -745500, -1.102e+06, -292700, 721400, 902900, -159900, 665800, -1.084e+06]
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 4
     MAT_elchphase:
       EPSILON: 1

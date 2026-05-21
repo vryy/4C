@@ -73,8 +73,9 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 4
-        X_MIN: 0.3
-        X_MAX: 0.96
+        LITHIATION_BOUNDS:
+          X_MIN: 0.3
+          X_MAX: 0.96
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1
@@ -146,8 +147,6 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 5
-        X_MIN: -1
-        X_MAX: -1
   - MAT: 12
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1
