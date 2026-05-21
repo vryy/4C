@@ -7,7 +7,6 @@
 
 #include "4C_mat_elchsinglemat.hpp"
 
-#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_utils_enum.hpp"
@@ -72,12 +71,12 @@ void Mat::PAR::ElchSingleMat::check_provided_params(
   // name of specified curve
   std::string functionname;
 
-  // expected number of parameters for specified curve
-  unsigned int nfunctparams = 0;
-
   // check set of implemented functions with negative curve number
   if (functnr < 0)
   {
+    // expected number of parameters for specified curve
+    unsigned int nfunctparams = 0;
+
     switch (functnr)
     {
       case Mat::ElchSingleMat::CONSTANT_FUNCTION:
@@ -208,7 +207,6 @@ void Mat::PAR::ElchSingleMat::check_provided_params(
       default:
       {
         FOUR_C_THROW("Curve number {} is not implemented", functnr);
-        break;
       }
     }
 
@@ -645,7 +643,6 @@ double Mat::ElchSingleMat::eval_pre_defined_funct(
     default:
     {
       FOUR_C_THROW("Curve number {} is not implemented!", functnr);
-      break;
     }
   }
 
@@ -818,7 +815,6 @@ double Mat::ElchSingleMat::eval_first_deriv_pre_defined_funct(
     default:
     {
       FOUR_C_THROW("Curve number {} is not implemented!", functnr);
-      break;
     }
   }
 

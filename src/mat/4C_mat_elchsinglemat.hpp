@@ -10,7 +10,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
 
@@ -25,7 +24,7 @@ namespace Mat
     {
      public:
       //! @name parameters for abstract battery material
-      //@{
+      ///@{
       //! function number to describe concentration dependence of diffusion coefficient
       const int diffusion_coefficient_concentration_dependence_funct_num_;
 
@@ -67,13 +66,14 @@ namespace Mat
       //! universal gas constant for evaluation of diffusion coefficient by means of
       //! Arrhenius-ansatz
       const double R_;
-      //@}
+      ///@}
 
      protected:
       //! constructor
       explicit ElchSingleMat(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      //! check whether number of parameters is consistent with curve number
+      //! check whether the number of @p functparams is consistent with the function chosen by
+      //! @p functnr
       void check_provided_params(int functnr, const std::vector<double>& functparams);
     };  // class Mat::PAR::ElchSingleMat
   }  // namespace PAR
@@ -85,70 +85,46 @@ namespace Mat
   {
    public:
     //! @name packing and unpacking
-    /*!
-      \brief Return unique ParObject id
+    ///@{
+    [[nodiscard]] int unique_par_object_id() const override = 0;
 
-      Every class implementing ParObject needs a unique id defined at the
-      top of parobject.H (this file) and should return it in this method.
-    */
-    int unique_par_object_id() const override = 0;
-
-    /*!
-      \brief Pack this class so it can be communicated
-
-      Resizes the vector data and stores all information of a class in it.
-      The first information to be stored in data has to be the
-      unique ParObject ID delivered by unique_par_object_id() which will then
-      identify the exact class on the receiving processor.
-
-      \param data (in/out): char vector to store class information
-    */
     void pack(Core::Communication::PackBuffer& data) const override = 0;
 
-    /*!
-      \brief Unpack data from a char vector into this class
-
-      The vector data contains all information to rebuild the
-      exact copy of an instance of a class on a different processor.
-      The first entry in data has to be an integer which is the unique
-      parobject id defined at the top of this file and delivered by
-      unique_par_object_id().
-
-      \param data (in) : vector storing all data to be unpacked into this instance.
-    */
     void unpack(Core::Communication::UnpackBuffer& buffer) override = 0;
-    //@}
+    ///@}
 
     //! compute diffusion coefficient accounting for concentration and temperature dependence
-    virtual double compute_diffusion_coefficient(double concentration, double temperature) const;
+    [[nodiscard]] virtual double compute_diffusion_coefficient(
+        double concentration, double temperature) const;
 
-    //! compute concentration dependent diffusion coefficient according to function number
-    double compute_diffusion_coefficient_concentration_dependent(double concentration) const;
+    //! compute concentration-dependent diffusion coefficient according to function number
+    [[nodiscard]] double compute_diffusion_coefficient_concentration_dependent(
+        double concentration) const;
 
     //! compute first derivative of diffusion coefficient w.r.t. concentration
-    virtual double compute_concentration_derivative_of_diffusion_coefficient(
+    [[nodiscard]] virtual double compute_concentration_derivative_of_diffusion_coefficient(
         double concentration, double temperature) const;
 
     //! compute first derivative of diffusion coefficient w.r.t. temperature
-    double compute_temperature_derivative_of_diffusion_coefficient(
+    [[nodiscard]] double compute_temperature_derivative_of_diffusion_coefficient(
         double concentration, double temperature) const;
 
     //! compute conductivity accounting for concentration and temperature dependence
-    double compute_conductivity(double concentration, double temperature) const;
+    [[nodiscard]] double compute_conductivity(double concentration, double temperature) const;
 
-    //! compute concentration dependent conductivity according to function number
-    double compute_conductivity_concentration_dependent(double concentration) const;
+    //! compute concentration-dependent conductivity according to function number
+    [[nodiscard]] double compute_conductivity_concentration_dependent(double concentration) const;
 
-    //! compute first derivative of conductivity w.r.t. concentration
-    double compute_concentration_derivative_of_conductivity(
+    //! compute the first derivative of conductivity w.r.t. concentration
+    [[nodiscard]] double compute_concentration_derivative_of_conductivity(
         double concentration, double temperature) const;
 
-    //! compute first derivative of conductivity w.r.t. temperature
-    double compute_temperature_derivative_of_conductivity(
+    //! compute the first derivative of conductivity w.r.t. temperature
+    [[nodiscard]] double compute_temperature_derivative_of_conductivity(
         double concentration, double temperature) const;
 
     //! abbreviations for pre-defined functions
-    //@{
+    ///@{
     static constexpr int CONSTANT_FUNCTION = -1;
     static constexpr int LINEAR_FUNCTION = -2;
     static constexpr int QUADRATIC_FUNCTION = -3;
@@ -164,70 +140,70 @@ namespace Mat
     static constexpr int TDF = -13;
     static constexpr int ARRHENIUS = -14;
     static constexpr int INVERSE_LINEAR = -15;
-    //@}
+    ///@}
 
    protected:
     //! compute temperature dependent scale factor
-    double compute_temperature_dependent_scale_factor(
+    [[nodiscard]] double compute_temperature_dependent_scale_factor(
         double temperature, int functionNumber, const std::vector<double>& functionParams) const;
 
     //! compute derivative of temperature dependent scale factor w.r.t. temperature
-    double compute_temperature_dependent_scale_factor_deriv(
+    [[nodiscard]] double compute_temperature_dependent_scale_factor_deriv(
         double temperature, int functionNumber, const std::vector<double>& functionParams) const;
 
     //! return function number describing concentration dependence of the diffusion coefficient
-    int diffusion_coefficient_concentration_dependence_funct_num() const
+    [[nodiscard]] int diffusion_coefficient_concentration_dependence_funct_num() const
     {
       return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->diffusion_coefficient_concentration_dependence_funct_num_;
-    };
+    }
 
     //! return the function number describing the temperature scaling of the diffusion coefficient
-    int diffusion_coefficient_temperature_scaling_funct_num() const
+    [[nodiscard]] int diffusion_coefficient_temperature_scaling_funct_num() const
     {
       return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->diffusion_coefficient_temperature_scaling_funct_num_;
-    };
+    }
 
     //! return function number describing concentration dependence of the conductivity
-    int conductivity_concentration_dependence_funct_num() const
+    [[nodiscard]] int conductivity_concentration_dependence_funct_num() const
     {
       return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->conductivity_concentration_dependence_funct_num_;
-    };
+    }
 
     //! return the function number describing the temperature scaling of the conductivity
-    int conductivity_temperature_scaling_funct_num() const
+    [[nodiscard]] int conductivity_temperature_scaling_funct_num() const
     {
       return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->conductivity_temperature_scaling_funct_num_;
-    };
+    }
 
     //! return parameters for diffusion coefficient
-    const std::vector<double>& diffusion_coefficient_params() const
+    [[nodiscard]] const std::vector<double>& diffusion_coefficient_params() const
     {
       return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())->diffusion_coefficient_params_;
-    };
+    }
 
     //! return parameters for temperature scaling function for diffusion coefficient
-    const std::vector<double>& temp_scale_function_params_diff() const
+    [[nodiscard]] const std::vector<double>& temp_scale_function_params_diff() const
     {
       return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->diffusion_temp_scale_funct_params_;
-    };
+    }
 
     //! return parameters for conductivity
-    const std::vector<double>& conductivity_params() const
+    [[nodiscard]] const std::vector<double>& conductivity_params() const
     {
       return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())->conductivity_params_;
-    };
+    }
 
     //! return parameters for temperature scaling function for conductivity
-    const std::vector<double>& temp_scale_function_params_cond() const
+    [[nodiscard]] const std::vector<double>& temp_scale_function_params_cond() const
     {
       return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->conductivity_temp_scale_funct_params_;
-    };
+    }
 
     //! evaluate value as predefined function of any scalar (e.g. concentration, temperature)
     //!
@@ -235,12 +211,12 @@ namespace Mat
     //! \param scalar       scalar value to insert into function
     //! \param functparams  constants that define the functions
     //! \return             function evaluated at value of scalar
-    double eval_pre_defined_funct(
+    [[nodiscard]] double eval_pre_defined_funct(
         int functnr, double scalar, const std::vector<double>& functparams) const;
 
-    //! evaluate first derivative of predefined function of any scalar (e.g. concentration,
+    //! evaluate the first derivative of a predefined function of any scalar (e.g. concentration,
     //! temperature)
-    double eval_first_deriv_pre_defined_funct(
+    [[nodiscard]] double eval_first_deriv_pre_defined_funct(
         int functnr, double scalar, const std::vector<double>& functparams) const;
   };
 }  // namespace Mat

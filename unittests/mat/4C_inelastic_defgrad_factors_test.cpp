@@ -17,6 +17,7 @@
 #include "4C_mat_electrode.hpp"
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 #include "4C_mat_inelastic_defgrad_factors_service.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_mat_vplast_reform_johnsoncook.hpp"
@@ -33,7 +34,7 @@
 namespace
 {
   using namespace FourC;
-  namespace ViscoplastUtils = FourC::Mat::InelasticDefgradTransvIsotropElastViscoplastUtils;
+  namespace ViscoplastUtils = Mat::InelasticDefgradTransvIsotropElastViscoplastUtils;
 
   struct ReformulatedJohnsonCookParameters
   {
