@@ -9,6 +9,7 @@
 #define FOUR_C_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_HPP
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
@@ -18,10 +19,39 @@
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_service.hpp"
 
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
 {
+  /*!
+   * @brief Mechanical heat source contribution produced by the material and the linearizations
+   * needed by thermomechanical coupling. Default constructed with zero values.
+   */
+  struct MechanicalDissipation
+  {
+    double value = 0.0;
+    //! derivative of the mechanical dissipation heat source w.r.t. temperature
+    double derivative_wrt_temperature = 0.0;
+    //! derivative of the mechanical dissipation heat source w.r.t. the right Cauchy-Green tensor
+    //! (stress-form)
+    Core::LinAlg::Matrix<1, 6> derivative_wrt_cauchy_green{Core::LinAlg::Initialization::zero};
+
+    //! pack a vector of MechanicalDissipation
+    static void pack(Core::Communication::PackBuffer& data,
+        const std::vector<MechanicalDissipation>& mech_dissipation)
+    {
+      Core::Communication::add_to_pack(data, static_cast<int>(mech_dissipation.size()));
+
+      for (const auto& md : mech_dissipation)
+      {
+        Core::Communication::add_to_pack(data, md.value);
+        Core::Communication::add_to_pack(data, md.derivative_wrt_temperature);
+        Core::Communication::add_to_pack(data, md.derivative_wrt_cauchy_green);
+      }
+    }
+  };
 
 
   /// Free-energy related stress factors, as presented in Holzapfel - Nonlinear Solid Mechanics.
@@ -253,7 +283,7 @@ namespace Mat
    * @brief Compute thermal stretch quantities for isotropic thermal expansion.
    *
    * @param[in] delta_temperature current absolute temperature minus reference temperature
-   * @param[in] thermal_expansion_fac isotropic thermal expansion factor
+   * @param[in] thermal_expansion_coefficient isotropic thermal expansion coefficient
    * @param[in] iFinM inverse inelastic deformation gradient
    * @param[in] gp Gauss point
    * @param[in] eleGID element global ID
@@ -261,8 +291,9 @@ namespace Mat
    * @return collected thermal kinematic quantities and invariant derivatives
    */
   inline ThermalQuantities evaluate_thermal_quantities(const double delta_temperature,
-      const double thermal_expansion_fac, const Core::LinAlg::Matrix<3, 3>& iFinM, const int gp,
-      const int eleGID, const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsumel)
+      const double thermal_expansion_coefficient, const Core::LinAlg::Matrix<3, 3>& iFinM,
+      const int gp, const int eleGID,
+      const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsumel)
   {
     ThermalQuantities quantities{};
 
@@ -271,10 +302,10 @@ namespace Mat
     Core::LinAlg::SymmetricTensor<double, 3, 3> thermal_right_cg_tensor{
         Core::LinAlg::TensorGenerators::identity<double, 3, 3>};
     Core::LinAlg::SymmetricTensor<double, 3, 3> thermal_right_cg_temp_deriv_tensor{};
-    thermal_right_cg_tensor += 2 * thermal_expansion_fac * delta_temperature *
+    thermal_right_cg_tensor += 2 * thermal_expansion_coefficient * delta_temperature *
                                Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
     thermal_right_cg_temp_deriv_tensor +=
-        2 * thermal_expansion_fac * Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
+        2 * thermal_expansion_coefficient * Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
 
     // compute inverse of the thermal stretch
     Core::LinAlg::SymmetricTensor<double, 3, 3> inv_thermal_right_cg_tensor =
