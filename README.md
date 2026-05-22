@@ -18,6 +18,7 @@
 [![docs/doxygen](./utilities/assets/badges/documentation_doxygen.svg)](https://4c-multiphysics.github.io/4C/doxygen/)
 [![coverage report](https://4c-multiphysics.github.io/4C/coverage_report/badge_coverage.svg)](https://4c-multiphysics.github.io/4C/coverage_report)
 [![performance_results](./utilities/assets/badges/performance_results.svg)](https://4c-multiphysics.github.io/4C/performance_report/report.html)
+[![benchmark_results](./utilities/assets/badges/benchmark_results.svg)](https://4c-multiphysics.github.io/4C/benchmark_test_report/report.html)
 
 </div>
 
