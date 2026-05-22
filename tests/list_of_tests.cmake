@@ -825,6 +825,8 @@ four_c_test(TEST_FILE hdg_weakly_compressible_poiseuille.4C.yaml NP 2 REQUIRED_D
 four_c_test(TEST_FILE hdg_weakly_compressible_poiseuille.4C.yaml REQUIRED_DEPENDENCIES TRILINOS_MUMPS)
 four_c_test(TEST_FILE homogenized-constrained-mixture-cube-aniso-expl.4C.yaml NP 2 RETURN_AS current REQUIRED_DEPENDENCIES TRILINOS_MUMPS)
 __four_c_test_restart(BASED_ON ${current} SAME_FILE NP 2 RESTART_STEP 5 REQUIRED_DEPENDENCIES TRILINOS_MUMPS)
+four_c_test(TEST_FILE homogenized-constrained-mixture-cube-aniso-impl.4C.yaml NP 2 RETURN_AS current REQUIRED_DEPENDENCIES TRILINOS_MUMPS)
+__four_c_test_restart(BASED_ON ${current} SAME_FILE NP 2 RESTART_STEP 5 REQUIRED_DEPENDENCIES TRILINOS_MUMPS)
 four_c_test(TEST_FILE homogenized-constrained-mixture-cube-iso-expl.4C.yaml NP 2 RETURN_AS current REQUIRED_DEPENDENCIES TRILINOS_MUMPS)
 __four_c_test_restart(BASED_ON ${current} SAME_FILE NP 2 RESTART_STEP 5 REQUIRED_DEPENDENCIES TRILINOS_MUMPS)
 four_c_test(TEST_FILE homogenized-constrained-mixture-cube-stiffness-expl.4C.yaml NP 2 RETURN_AS current REQUIRED_DEPENDENCIES TRILINOS_MUMPS)

@@ -87,6 +87,8 @@ namespace Mixture
     void set_state(double lambda_f, double lambda_ext);
     void set_growth_scalar(double growth_scalar);
     void set_lambda_r(double lambda_r);
+    void set_d_lambda_ext_d_growth_scalar(double value);
+    [[nodiscard]] double get_d_lambda_ext_d_growth_scalar() const;
 
    public:
     /// @brief Evaluation methods
@@ -127,6 +129,7 @@ namespace Mixture
     [[nodiscard]] double evaluate_current_fiber_pk2_stress() const;
     [[nodiscard]] double evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq() const;
     [[nodiscard]] double evaluate_d_current_fiber_pk2_stress_d_lambda_r() const;
+    [[nodiscard]] double evaluate_d_current_fiber_pk2_stress_d_lambda_ext() const;
     [[nodiscard]] double
     evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
         double dt) const;

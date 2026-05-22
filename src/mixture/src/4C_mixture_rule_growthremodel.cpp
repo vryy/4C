@@ -126,6 +126,16 @@ void Mixture::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Tensor<doub
 
     growth_strategy_->evaluate_inverse_growth_deformation_gradient(
         iF_gM, *this, currentReferenceGrowthScalar, context, gp, eleGID);
+
+    const Core::LinAlg::Tensor<double, 3, 3> d_iFg_d_growth_scalar =
+        growth_strategy_->evaluate_d_inverse_growth_deformation_gradient_d_growth_scalar(
+            currentReferenceGrowthScalar, context, gp, eleGID);
+
+    // d_iFg_d_growth_scalar w.r.t. the mixture reference growth scalar and additional
+    // chain factor d_growth_scalar_mix_d_growth_scalar_i = w_i per constituent
+    for (std::size_t i = 0; i < constituents().size(); ++i)
+      constituents()[i]->prepare_inelastic_growth_tangent(
+          iF_gM, params_->mass_fractions_[i] * d_iFg_d_growth_scalar, context, gp, eleGID);
   }
 
   // define temporary matrices
