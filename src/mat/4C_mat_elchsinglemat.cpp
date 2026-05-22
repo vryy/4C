@@ -86,35 +86,6 @@ void Mat::PAR::ElchSingleMat::check_provided_params(
         nfunctparams = 1;
         break;
       }
-      case Mat::ElchSingleMat::LINEAR_FUNCTION:
-      {
-        // linear function: functval=functparams[0]+functparams[1]*concentration;
-        functionname = "'linear function'";
-        nfunctparams = 2;
-        break;
-      }
-      case Mat::ElchSingleMat::QUADRATIC_FUNCTION:
-      {
-        // quadratic function:
-        // functval=functparams[0]+functparams[1]*concentration+functparams[2]*concentration*concentration;
-        functionname = "'quadratic function'";
-        nfunctparams = 3;
-        break;
-      }
-      case Mat::ElchSingleMat::POWER_FUNCTION:
-      {
-        // power function: functval=functparams[0]*pow(concentration,functparams[1]);
-        functionname = "'power function'";
-        nfunctparams = 2;
-        break;
-      }
-      case Mat::ElchSingleMat::CONDUCT:
-      {
-        // function 1 for conductivity;
-        functionname = "'function 1 for conductivity'";
-        nfunctparams = 4;
-        break;
-      }
       case Mat::ElchSingleMat::GOLDIN:
       {
         // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann,
@@ -442,32 +413,6 @@ double Mat::ElchSingleMat::eval_pre_defined_funct(
       functval = functparams[0];
       break;
 
-    // a0 + a1*c
-    case LINEAR_FUNCTION:
-      functval = functparams[0] + functparams[1] * scalar;
-      break;
-
-    // a0 + a1*c + a2*c^2
-    case QUADRATIC_FUNCTION:
-      functval = functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar;
-      break;
-
-    // a0*c^a1
-    case POWER_FUNCTION:
-      functval = functparams[0] * std::pow(scalar, functparams[1]);
-      break;
-
-    // conductivity
-    case CONDUCT:
-    {
-      const double nenner = (1.0 + functparams[2] * scalar * scalar -
-                             functparams[3] * scalar * scalar * scalar * scalar);
-      // functparams[0]*(functparams[1]*concentration/nenner) + 0.01 -> constant level 0.01 deleted
-      // since it does not have a physical meaning (28.04.2014)
-      functval = functparams[0] * (functparams[1] * scalar / nenner);
-      break;
-    }
-
     // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee
     // (2012) kappa = a0*c*exp(a1*c^a2)
     case GOLDIN:
@@ -519,36 +464,6 @@ double Mat::ElchSingleMat::eval_first_deriv_pre_defined_funct(
     case CONSTANT_FUNCTION:
       firstderivfunctval = 0.0;
       break;
-
-    // d/dc: a0 + a1*c
-    case LINEAR_FUNCTION:
-      firstderivfunctval = functparams[1];
-      break;
-
-    // d/dc: a0 + a1*c + a2*c^2
-    case QUADRATIC_FUNCTION:
-      firstderivfunctval = functparams[1] + 2 * functparams[2] * scalar;
-      break;
-
-    // d/dc: a0 + c^a1
-    case POWER_FUNCTION:
-      firstderivfunctval = functparams[0] * functparams[1] * std::pow(scalar, functparams[1] - 1.0);
-      break;
-
-    // d/dc: conductivity
-    case CONDUCT:
-    {
-      const double nenner = (1.0 + functparams[2] * scalar * scalar -
-                             functparams[3] * scalar * scalar * scalar * scalar);
-      const double nennernenner = nenner * nenner;
-      firstderivfunctval =
-          functparams[0] *
-          ((functparams[1] * nenner -
-               functparams[1] * scalar *
-                   (2 * functparams[2] * scalar - 4 * functparams[3] * scalar * scalar * scalar)) /
-              nennernenner);
-      break;
-    }
 
     // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee
     // (2012) d/dc: kappa = a0*c*exp(a1*c^a2)
