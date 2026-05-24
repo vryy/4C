@@ -104,6 +104,9 @@ namespace Solid
       //! [derived]
       double get_int_param() const override;
 
+      //! Refresh cached force pointers and map-dependent helper vectors after redistribution.
+      void remap_vectors_and_helpers() override;
+
       //! @name Monolithic update routines
       //! @{
       //! Update configuration after time step [derived]

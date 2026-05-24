@@ -9,6 +9,7 @@
 
 #include "4C_global_data.hpp"
 #include "4C_structure_new_input.hpp"
+#include "4C_structure_new_timint_base.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -60,6 +61,9 @@ int Adapter::StructureTimeLoop::integrate()
 
       // write output
       output();
+      // dynamic rebalance is only implemented for the new time integration
+      if (auto* timint = dynamic_cast<Solid::TimeInt::Base*>(structure_.get()))
+        if (timint->should_perform_dynamic_rebalance()) timint->perform_dynamic_rebalance();
 
       // print info about finished time step
       print_step();

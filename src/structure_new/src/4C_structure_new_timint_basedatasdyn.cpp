@@ -281,6 +281,23 @@ void Solid::TimeInt::BaseDataSDyn::setup()
 {
   check_init();
 
+  if (get_sdyn_params().isParameter("DYNAMIC REBALANCE"))
+  {
+    DynamicRebalanceConfig config =
+        get_sdyn_params().get<DynamicRebalanceConfig>("DYNAMIC REBALANCE");
+    dynamic_rebalance_config_ = config.enabled ? std::make_optional(config) : std::nullopt;
+  }
+  else
+  {
+    dynamic_rebalance_config_ = std::nullopt;
+  }
+
+  if (dynamic_rebalance_config_.has_value() &&
+      (modeltypes_->size() != 1 || !modeltypes_->contains(Solid::model_structure)))
+  {
+    FOUR_C_THROW("Dynamic rebalance is currently only supported for pure structure problems.");
+  }
+
   std::set<Solid::ModelType>::const_iterator it;
   // setup model type specific data containers
   for (it = (*modeltypes_).begin(); it != (*modeltypes_).end(); ++it)

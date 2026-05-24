@@ -111,8 +111,7 @@ void Solid::ModelEvaluatorManager::setup_multi_map_extractor()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::ModelEvaluatorManager::initialize_inertia_and_damping(
-    const Core::LinAlg::Vector<double>& x)
+bool Solid::ModelEvaluatorManager::initialize_inertia_and_damping()
 {
   check_init_setup();
 
@@ -120,7 +119,7 @@ bool Solid::ModelEvaluatorManager::initialize_inertia_and_damping(
   Solid::ModelEvaluator::Structure& str_model =
       dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Solid::model_structure));
 
-  str_model.reset(x);
+  str_model.reset(*gstate_ptr_->get_dis_np());
 
   return str_model.initialize_inertia_and_damping();
 }

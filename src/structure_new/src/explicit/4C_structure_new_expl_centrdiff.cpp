@@ -57,6 +57,19 @@ void Solid::EXPLICIT::CentrDiff::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void Solid::EXPLICIT::CentrDiff::remap_vectors_and_helpers()
+{
+  check_init();
+
+  finertian_ptr_ = global_state().get_finertial_n();
+  finertianp_ptr_ = global_state().get_finertial_np();
+
+  fviscon_ptr_ = global_state().get_fvisco_n();
+  fvisconp_ptr_ = global_state().get_fvisco_np();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void Solid::EXPLICIT::CentrDiff::post_setup()
 {
   check_init_setup();

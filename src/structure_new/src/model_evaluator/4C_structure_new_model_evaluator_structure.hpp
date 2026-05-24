@@ -46,6 +46,8 @@ namespace Solid
 
       void setup() override;
 
+      void remap_after_redistribution();
+
       //! @name Derived public Solid::ModelEvaluator::Generic methods
       //! @{
 
@@ -76,7 +78,7 @@ namespace Solid
        *  Rayleigh damping matrix only once during the compute_mass_matrix_and_init_acc routine.
        *
 
-       *  */
+      *  */
       bool initialize_inertia_and_damping();
 
       //! derived

@@ -11,6 +11,8 @@
 #include "4C_fem_condition_definition.hpp"
 #include "4C_io_input_spec.hpp"
 #include "4C_io_input_spec_builders.hpp"
+#include "4C_rebalance.hpp"
+#include "4C_structure_new_timint_basedatasdyn.hpp"
 #include "4C_utils_enum.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -420,9 +422,72 @@ namespace Solid
 
             // Function to evaluate initial displacement
             parameter<int>("STARTFUNCNO",
-                {.description = "Function for Initial displacement", .default_value = -1})},
-        {.required =
-                false})); /*--------------------------------------------------------------------*/
+                {.description = "Function for Initial displacement", .default_value = -1}),
+
+            group<Solid::TimeInt::DynamicRebalanceConfig>("DYNAMIC REBALANCE",
+                {
+                    parameter<bool>("ENABLED",
+                        {.description = "Enable dynamic rebalance for this run.",
+                            .default_value = false,
+                            .store = in_struct(&Solid::TimeInt::DynamicRebalanceConfig::enabled)}),
+                    parameter<double>("IMBALANCE_THRESHOLD",
+                        {.description =
+                                "Trigger rebalance if the rolling average of the "
+                                "max-to-mean rank evaluation time ratio exceeds this value.",
+                            .default_value = 1.5,
+                            .store = in_struct(
+                                &Solid::TimeInt::DynamicRebalanceConfig::imbalance_threshold)}),
+                    parameter<int>("WINDOW_STEPS",
+                        {.description =
+                                "Number of time steps used in the rolling imbalance average.",
+                            .default_value = 3,
+                            .store =
+                                in_struct(&Solid::TimeInt::DynamicRebalanceConfig::window_steps)}),
+                    parameter<int>("COOLDOWN_STEPS",
+                        {.description =
+                                "Minimum number of converged time steps between rebalances.",
+                            .default_value = 5,
+                            .store = in_struct(
+                                &Solid::TimeInt::DynamicRebalanceConfig::cooldown_steps)}),
+                    parameter<double>("EDGE_WEIGHT_MULTIPLIER",
+                        {.description =
+                                "Multiplier applied graph edge weights during dynamic rebalance. "
+                                "Represents the inter-rank communication overhead per edge.",
+                            .default_value = 2.0,
+                            .store = in_struct(
+                                &Solid::TimeInt::DynamicRebalanceConfig::edge_weight_multiplier)}),
+                    group<Core::Rebalance::MeshPartitioningParameters>("MESH PARTITIONING",
+                        {
+                            parameter<Core::Rebalance::RebalanceType>("METHOD",
+                                {.description =
+                                        "Type of rebalance/partition algorithm to be used for "
+                                        "dynamic rebalances.",
+                                    .default_value = Core::Rebalance::RebalanceType::hypergraph,
+                                    .store = in_struct(&Core::Rebalance::
+                                            MeshPartitioningParameters::rebalance_type)}),
+                            parameter<double>("IMBALANCE_TOL",
+                                {.description =
+                                        "Target vertex imbalance passed to the repartitioner. "
+                                        "Higher values allow edge weights to have greater effect.",
+                                    .default_value = 1.4,
+                                    .store = in_struct(&Core::Rebalance::
+                                            MeshPartitioningParameters::imbalance_tol)}),
+                            parameter<int>("MIN_ELE_PER_PROC",
+                                {.description =
+                                        "Minimum number of elements per processor used for dynamic "
+                                        "rebalances.",
+                                    .default_value = 0,
+                                    .store = in_struct(&Core::Rebalance::
+                                            MeshPartitioningParameters::min_ele_per_proc)}),
+                        },
+                        {.required = false,
+                            .store = in_struct(&Solid::TimeInt::DynamicRebalanceConfig::
+                                    mesh_partitioning_parameters)}),
+                },
+                {.required = false})},
+        {.required = false}));
+
+    /*--------------------------------------------------------------------*/
     /* parameters for time step size adaptivity in structural dynamics */
     specs.push_back(group("STRUCTURAL DYNAMIC/TIMEADAPTIVITY",
         {
