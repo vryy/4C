@@ -132,6 +132,13 @@ jobs:
           path: |
             ${{ github.workspace }}/build/4C_schema.json
           retention-days: 30
+      - name: Upload 4C completion schema
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ github.job }}-completion-schema
+          path: |
+            ${{ github.workspace }}/build/4C_schema_completion.json
+          retention-days: 30
       - name: Upload 4C metadata
         uses: actions/upload-artifact@v7
         with:
