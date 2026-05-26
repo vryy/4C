@@ -249,6 +249,35 @@ namespace Mat
       int summand_mat_id = -1;
     };
 
+    struct EvaluateWorkspace
+    {
+      EvaluateWorkspace();
+
+      Core::LinAlg::Matrix<6, 1> glstrain_mat;
+      Core::LinAlg::Matrix<6, 1> c_stress;
+      Core::LinAlg::Matrix<6, 1> i_c_stress;
+      Core::LinAlg::Matrix<6, 1> c_strain;
+      Core::LinAlg::Matrix<6, 1> mod_c_strain;
+      Core::LinAlg::Matrix<6, 1> id2;
+      Core::LinAlg::Matrix<6, 6> id4;
+      Core::LinAlg::Matrix<6, 6> id4sharp;
+      Core::LinAlg::Matrix<3, 1> prinv;
+      Core::LinAlg::Matrix<3, 1> modinv;
+      Core::LinAlg::Matrix<7, 1> rateinv;
+      Core::LinAlg::Matrix<7, 1> modrateinv;
+      Core::LinAlg::Matrix<3, 1> dPI;
+      Core::LinAlg::Matrix<6, 1> ddPII;
+      Core::LinAlg::Matrix<6, 1> scgrate;
+      Core::LinAlg::Matrix<6, 1> modrcgrate;
+      Core::LinAlg::Matrix<8, 1> mu;
+      Core::LinAlg::Matrix<8, 1> modmu;
+      Core::LinAlg::Matrix<33, 1> xi;
+      Core::LinAlg::Matrix<33, 1> modxi;
+      Core::LinAlg::SymmetricTensor<double, 3, 3> c{};
+      Core::LinAlg::SymmetricTensor<double, 3, 3> i_c{};
+      double dt = 0.0;
+    };
+
     enum class ViscoModelKind
     {
       iso_rate,
@@ -276,6 +305,31 @@ namespace Mat
     [[nodiscard]] FslsParameters read_fsls_parameters(int gp, int eleGID) const;
     [[nodiscard]] double read_visco_time_step_size(
         const EvaluationContext<3>& context, int gp, int eleGID) const;
+
+    void prepare_evaluate_kinematics(const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
+        const EvaluationContext<3>& context, EvaluateWorkspace& workspace, int gp,
+        int eleGID) const;
+    void prepare_iso_rate_visco_inputs_if_active(
+        const Teuchos::ParameterList& params, EvaluateWorkspace& workspace, int gp, int eleGID);
+    void initialize_elastic_response(const EvaluateWorkspace& workspace,
+        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view,
+        Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
+        Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat) const;
+    void add_iso_rate_contribution(const EvaluateWorkspace& workspace,
+        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view);
+    void add_generalized_maxwell_contribution(const EvaluateWorkspace& workspace,
+        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, int gp,
+        int eleGID);
+    void add_fsls_contribution(const EvaluateWorkspace& workspace,
+        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, int gp,
+        int eleGID);
+    void add_visco_contributions_in_sequence(const EvaluateWorkspace& workspace,
+        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, int gp,
+        int eleGID);
+    void add_post_elastic_composition_hooks(const Teuchos::ParameterList& params,
+        const EvaluationContext<3>& context, const EvaluateWorkspace& workspace,
+        Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
+        Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID);
 
     ActiveModelSequence active_model_sequence_;
     ViscoElastState state_;  ///< unified viscoelastic history state

@@ -85,6 +85,31 @@ Mat::ViscoElastHyper::ViscoElastHyper(Mat::PAR::ViscoElastHyper* params)
 }
 
 
+Mat::ViscoElastHyper::EvaluateWorkspace::EvaluateWorkspace()
+    : glstrain_mat(Core::LinAlg::Initialization::zero),
+      c_stress(Core::LinAlg::Initialization::zero),
+      i_c_stress(Core::LinAlg::Initialization::zero),
+      c_strain(Core::LinAlg::Initialization::zero),
+      mod_c_strain(Core::LinAlg::Initialization::zero),
+      id2(Core::LinAlg::Initialization::zero),
+      id4(Core::LinAlg::Initialization::zero),
+      id4sharp(Core::LinAlg::Initialization::zero),
+      prinv(Core::LinAlg::Initialization::zero),
+      modinv(Core::LinAlg::Initialization::zero),
+      rateinv(Core::LinAlg::Initialization::zero),
+      modrateinv(Core::LinAlg::Initialization::zero),
+      dPI(Core::LinAlg::Initialization::zero),
+      ddPII(Core::LinAlg::Initialization::zero),
+      scgrate(Core::LinAlg::Initialization::zero),
+      modrcgrate(Core::LinAlg::Initialization::zero),
+      mu(Core::LinAlg::Initialization::zero),
+      modmu(Core::LinAlg::Initialization::zero),
+      xi(Core::LinAlg::Initialization::zero),
+      modxi(Core::LinAlg::Initialization::zero)
+{
+}
+
+
 bool Mat::ViscoElastHyper::is_model_flag_enabled(const ViscoModelKind model_kind) const
 {
   switch (model_kind)
@@ -464,6 +489,208 @@ void Mat::ViscoElastHyper::update()
   return;
 }
 
+void Mat::ViscoElastHyper::prepare_evaluate_kinematics(
+    const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
+    const EvaluationContext<3>& context, EvaluateWorkspace& workspace, const int gp,
+    const int eleGID) const
+{
+  workspace.glstrain_mat = Core::LinAlg::make_strain_like_voigt_matrix(glstrain);
+
+  evaluate_right_cauchy_green_strain_like_voigt(glstrain, workspace.c);
+  workspace.i_c = Core::LinAlg::inv(workspace.c);
+
+  workspace.c_stress = Core::LinAlg::make_stress_like_voigt_view(workspace.c);
+  workspace.i_c_stress = Core::LinAlg::make_stress_like_voigt_view(workspace.i_c);
+
+  Core::LinAlg::Voigt::Stresses::to_strain_like(workspace.c_stress, workspace.c_strain);
+  Core::LinAlg::Voigt::Stresses::invariants_principal(workspace.prinv, workspace.c_stress);
+
+  workspace.dt = 0.0;
+  if (!active_model_sequence_.empty())
+    workspace.dt = read_visco_time_step_size(context, gp, eleGID);
+
+  Core::LinAlg::Voigt::identity_matrix(workspace.id2);
+
+  using VoigtNotation = Core::LinAlg::Voigt::NotationType;
+  Core::LinAlg::Voigt::fourth_order_identity_matrix<VoigtNotation::stress, VoigtNotation::stress>(
+      workspace.id4sharp);
+  Core::LinAlg::Voigt::fourth_order_identity_matrix<VoigtNotation::stress, VoigtNotation::strain>(
+      workspace.id4);
+
+  elast_hyper_evaluate_invariant_derivatives(
+      workspace.prinv, workspace.dPI, workspace.ddPII, potsum_, summandProperties_, gp, eleGID);
+}
+
+
+void Mat::ViscoElastHyper::prepare_iso_rate_visco_inputs_if_active(
+    const Teuchos::ParameterList& params, EvaluateWorkspace& workspace, const int gp,
+    const int eleGID)
+{
+  for (const ViscoModelKind model_kind : active_model_sequence_)
+  {
+    if (model_kind != ViscoModelKind::iso_rate) continue;
+
+    if (summandProperties_.isomod)
+    {
+      // calculate modified invariants
+      invariants_modified(workspace.modinv, workspace.prinv);
+    }
+
+    // calculate viscous quantities
+    evaluate_kin_quant_vis(workspace.c_strain, workspace.c_stress, workspace.i_c_stress,
+        workspace.prinv, workspace.rateinv, workspace.mod_c_strain, workspace.dt, workspace.scgrate,
+        workspace.modrcgrate, workspace.modrateinv, gp);
+    evaluate_mu_xi(workspace.prinv, workspace.modinv, workspace.mu, workspace.modmu, workspace.xi,
+        workspace.modxi, workspace.rateinv, workspace.modrateinv, params, workspace.dt, gp, eleGID);
+    break;
+  }
+}
+
+
+void Mat::ViscoElastHyper::initialize_elastic_response(const EvaluateWorkspace& workspace,
+    Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view,
+    Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
+    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat) const
+{
+  // blank resulting quantities
+  // ... even if it is an implicit law that cmat is zero upon input
+  stress_view.clear();
+  cmat_view.clear();
+
+  // add isotropic part
+  elast_hyper_add_isotropic_stress_cmat(
+      stress, cmat, workspace.c, workspace.i_c, workspace.prinv, workspace.dPI, workspace.ddPII);
+}
+
+
+void Mat::ViscoElastHyper::add_iso_rate_contribution(const EvaluateWorkspace& workspace,
+    Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view)
+{
+  if (summandProperties_.isomod)
+  {
+    // add viscous part decoupled
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisomodisovisco(Core::LinAlg::Initialization::zero);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisomodisovisco(
+        Core::LinAlg::Initialization::zero);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisomodvolvisco(Core::LinAlg::Initialization::zero);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisomodvolvisco(
+        Core::LinAlg::Initialization::zero);
+    Core::LinAlg::Matrix<3, 1> prinv(workspace.prinv);
+    Core::LinAlg::Matrix<3, 1> modinv(workspace.modinv);
+    Core::LinAlg::Matrix<8, 1> modmu(workspace.modmu);
+    Core::LinAlg::Matrix<33, 1> modxi(workspace.modxi);
+    Core::LinAlg::Matrix<6, 1> c_strain(workspace.c_strain);
+    Core::LinAlg::Matrix<6, 1> id2(workspace.id2);
+    Core::LinAlg::Matrix<6, 1> i_c_stress(workspace.i_c_stress);
+    Core::LinAlg::Matrix<6, 6> id4(workspace.id4);
+    Core::LinAlg::Matrix<6, 1> modrcgrate(workspace.modrcgrate);
+    evaluate_iso_visco_modified(stressisomodisovisco, stressisomodvolvisco, cmatisomodisovisco,
+        cmatisomodvolvisco, prinv, modinv, modmu, modxi, c_strain, id2, i_c_stress, id4,
+        modrcgrate);
+    stress_view.update(1.0, stressisomodisovisco, 1.0);
+    stress_view.update(1.0, stressisomodvolvisco, 1.0);
+    cmat_view.update(1.0, cmatisomodisovisco, 1.0);
+    cmat_view.update(1.0, cmatisomodvolvisco, 1.0);
+  }
+
+  if (summandProperties_.isoprinc)
+  {
+    // add viscous part coupled
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisovisco(Core::LinAlg::Initialization::zero);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisovisco(
+        Core::LinAlg::Initialization::zero);
+    Core::LinAlg::Matrix<8, 1> mu(workspace.mu);
+    Core::LinAlg::Matrix<33, 1> xi(workspace.xi);
+    Core::LinAlg::Matrix<6, 6> id4sharp(workspace.id4sharp);
+    Core::LinAlg::Matrix<6, 1> scgrate(workspace.scgrate);
+    evaluate_iso_visco_principal(stressisovisco, cmatisovisco, mu, xi, id4sharp, scgrate);
+    stress_view.update(1.0, stressisovisco, 1.0);
+    cmat_view.update(1.0, cmatisovisco, 1.0);
+  }
+}
+
+
+void Mat::ViscoElastHyper::add_generalized_maxwell_contribution(const EvaluateWorkspace& workspace,
+    Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, const int gp,
+    const int eleGID)
+{
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> q(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(Core::LinAlg::Initialization::zero);
+  evaluate_visco_generalized_maxwell(q, cmatq, workspace.dt, &workspace.glstrain_mat, gp, eleGID);
+  stress_view.update(1.0, q, 1.0);
+  cmat_view.update(1.0, cmatq, 1.0);
+}
+
+
+void Mat::ViscoElastHyper::add_fsls_contribution(const EvaluateWorkspace& workspace,
+    Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, const int gp,
+    const int eleGID)
+{
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> q(
+      Core::LinAlg::Initialization::zero);  // artificial viscous stress
+  Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(Core::LinAlg::Initialization::zero);
+  evaluate_visco_fsls(stress_view, cmat_view, q, cmatq, workspace.dt, gp, eleGID);
+  stress_view.update(1.0, q, 1.);
+  cmat_view.update(1.0, cmatq, 1.);
+}
+
+
+void Mat::ViscoElastHyper::add_visco_contributions_in_sequence(const EvaluateWorkspace& workspace,
+    Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, const int gp,
+    const int eleGID)
+{
+  // add viscous part
+  for (const ViscoModelKind model_kind : active_model_sequence_)
+  {
+    switch (model_kind)
+    {
+      case ViscoModelKind::iso_rate:
+      {
+        add_iso_rate_contribution(workspace, stress_view, cmat_view);
+        break;
+      }
+      case ViscoModelKind::generalized_maxwell:
+      {
+        add_generalized_maxwell_contribution(workspace, stress_view, cmat_view, gp, eleGID);
+        break;
+      }
+      case ViscoModelKind::fsls:
+      {
+        add_fsls_contribution(workspace, stress_view, cmat_view, gp, eleGID);
+        break;
+      }
+    }
+  }
+}
+
+
+void Mat::ViscoElastHyper::add_post_elastic_composition_hooks(const Teuchos::ParameterList& params,
+    const EvaluationContext<3>& context, const EvaluateWorkspace& workspace,
+    Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
+    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, const int gp, const int eleGID)
+{
+  /*----------------------------------------------------------------------*/
+  // coefficients in principal stretches
+  if (summandProperties_.coeffStretchesPrinc || summandProperties_.coeffStretchesMod)
+  {
+    elast_hyper_add_response_stretches(
+        cmat, stress, workspace.c, potsum_, summandProperties_, gp, eleGID);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Do all the anisotropic stuff!
+  if (summandProperties_.anisoprinc)
+  {
+    elast_hyper_add_anisotropic_princ(stress, cmat, workspace.c, params, gp, eleGID, potsum_);
+  }
+
+  if (summandProperties_.anisomod)
+  {
+    elast_hyper_add_anisotropic_mod(
+        stress, cmat, workspace.c, workspace.i_c, workspace.prinv, gp, eleGID, context, potsum_);
+  }
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
@@ -473,170 +700,16 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* de
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
   ensure_model_activation_consistency("pre-loop evaluate orchestration");
-
-  const Core::LinAlg::Matrix<6, 1> glstrain_mat =
-      Core::LinAlg::make_strain_like_voigt_matrix(glstrain);
   Core::LinAlg::Matrix<6, 1> stress_view = Core::LinAlg::make_stress_like_voigt_view(stress);
   Core::LinAlg::Matrix<6, 6> cmat_view = Core::LinAlg::make_stress_like_voigt_view(cmat);
 
-  Core::LinAlg::Matrix<6, 1> modC_strain(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<6, 1> id2(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<6, 1> modrcg(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<6, 6> id4(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<6, 6> id4sharp(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<3, 1> prinv(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<3, 1> modinv(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<7, 1> rateinv(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<7, 1> modrateinv(Core::LinAlg::Initialization::zero);
+  EvaluateWorkspace workspace;
 
-  Core::LinAlg::Matrix<3, 1> dPI(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<6, 1> ddPII(Core::LinAlg::Initialization::zero);
-
-  Core::LinAlg::Matrix<6, 1> scgrate(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<6, 1> modrcgrate(Core::LinAlg::Initialization::zero);
-
-  // for extension: Core::LinAlg::Matrix<6,1> modicgrate(true);
-  Core::LinAlg::Matrix<8, 1> mu(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<8, 1> modmu(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<33, 1> xi(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<33, 1> modxi(Core::LinAlg::Initialization::zero);
-
-  Core::LinAlg::SymmetricTensor<double, 3, 3> C{};
-  evaluate_right_cauchy_green_strain_like_voigt(glstrain, C);
-  Core::LinAlg::SymmetricTensor<double, 3, 3> iC = Core::LinAlg::inv(C);
-
-  Core::LinAlg::Matrix<6, 1> C_stress = Core::LinAlg::make_stress_like_voigt_view(C);
-  Core::LinAlg::Matrix<6, 1> iC_stress = Core::LinAlg::make_stress_like_voigt_view(iC);
-  Core::LinAlg::Matrix<6, 1> C_strain;
-  Core::LinAlg::Voigt::Stresses::to_strain_like(C_stress, C_strain);
-  Core::LinAlg::Matrix<6, 1> iC_strain;
-  Core::LinAlg::Voigt::Stresses::to_strain_like(iC_stress, iC_strain);
-  Core::LinAlg::Voigt::Stresses::invariants_principal(prinv, C_stress);
-
-  const bool has_visco_contribution = !active_model_sequence_.empty();
-  double dt = 0.0;
-  if (has_visco_contribution) dt = read_visco_time_step_size(context, gp, eleGID);
-
-
-  Core::LinAlg::Voigt::identity_matrix(id2);
-
-  using VoigtNotation = Core::LinAlg::Voigt::NotationType;
-  Core::LinAlg::Voigt::fourth_order_identity_matrix<VoigtNotation::stress, VoigtNotation::stress>(
-      id4sharp);
-  Core::LinAlg::Voigt::fourth_order_identity_matrix<VoigtNotation::stress, VoigtNotation::strain>(
-      id4);
-
-  elast_hyper_evaluate_invariant_derivatives(
-      prinv, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
-
-  for (const ViscoModelKind model_kind : active_model_sequence_)
-  {
-    if (model_kind != ViscoModelKind::iso_rate) continue;
-
-    if (summandProperties_.isomod)
-    {
-      // calculate modified invariants
-      invariants_modified(modinv, prinv);
-    }
-    // calculate viscous quantities
-    evaluate_kin_quant_vis(C_strain, C_stress, iC_stress, prinv, rateinv, modC_strain, dt, scgrate,
-        modrcgrate, modrateinv, gp);
-    evaluate_mu_xi(
-        prinv, modinv, mu, modmu, xi, modxi, rateinv, modrateinv, params, dt, gp, eleGID);
-    break;
-  }
-
-  // blank resulting quantities
-  // ... even if it is an implicit law that cmat is zero upon input
-  stress_view.clear();
-  cmat_view.clear();
-
-  // add isotropic part
-  elast_hyper_add_isotropic_stress_cmat(stress, cmat, C, iC, prinv, dPI, ddPII);
-
-
-  // add viscous part
-  for (const ViscoModelKind model_kind : active_model_sequence_)
-  {
-    switch (model_kind)
-    {
-      case ViscoModelKind::iso_rate:
-      {
-        if (summandProperties_.isomod)
-        {
-          // add viscous part decoupled
-          Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisomodisovisco(
-              Core::LinAlg::Initialization::zero);
-          Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisomodisovisco(
-              Core::LinAlg::Initialization::zero);
-          Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisomodvolvisco(
-              Core::LinAlg::Initialization::zero);
-          Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisomodvolvisco(
-              Core::LinAlg::Initialization::zero);
-          evaluate_iso_visco_modified(stressisomodisovisco, stressisomodvolvisco,
-              cmatisomodisovisco, cmatisomodvolvisco, prinv, modinv, modmu, modxi, C_strain, id2,
-              iC_stress, id4, modrcgrate);
-          stress_view.update(1.0, stressisomodisovisco, 1.0);
-          stress_view.update(1.0, stressisomodvolvisco, 1.0);
-          cmat_view.update(1.0, cmatisomodisovisco, 1.0);
-          cmat_view.update(1.0, cmatisomodvolvisco, 1.0);
-        }
-
-        if (summandProperties_.isoprinc)
-        {
-          // add viscous part coupled
-          Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisovisco(Core::LinAlg::Initialization::zero);
-          Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisovisco(
-              Core::LinAlg::Initialization::zero);
-          evaluate_iso_visco_principal(stressisovisco, cmatisovisco, mu, xi, id4sharp, scgrate);
-          stress_view.update(1.0, stressisovisco, 1.0);
-          cmat_view.update(1.0, cmatisovisco, 1.0);
-        }
-        break;
-      }
-      case ViscoModelKind::generalized_maxwell:
-      {
-        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(Core::LinAlg::Initialization::zero);
-        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(
-            Core::LinAlg::Initialization::zero);
-        evaluate_visco_generalized_maxwell(Q, cmatq, dt, &glstrain_mat, gp, eleGID);
-        stress_view.update(1.0, Q, 1.0);
-        cmat_view.update(1.0, cmatq, 1.0);
-        break;
-      }
-      case ViscoModelKind::fsls:
-      {
-        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(
-            Core::LinAlg::Initialization::zero);  // artificial viscous stress
-        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(
-            Core::LinAlg::Initialization::zero);
-        evaluate_visco_fsls(stress_view, cmat_view, Q, cmatq, dt, gp, eleGID);
-        stress_view.update(1.0, Q, 1.);
-        cmat_view.update(1.0, cmatq, 1.);
-        break;
-      }
-    }
-  }
-
-
-  /*----------------------------------------------------------------------*/
-  // coefficients in principal stretches
-  if (summandProperties_.coeffStretchesPrinc || summandProperties_.coeffStretchesMod)
-  {
-    elast_hyper_add_response_stretches(cmat, stress, C, potsum_, summandProperties_, gp, eleGID);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // Do all the anisotropic stuff!
-  if (summandProperties_.anisoprinc)
-  {
-    elast_hyper_add_anisotropic_princ(stress, cmat, C, params, gp, eleGID, potsum_);
-  }
-
-  if (summandProperties_.anisomod)
-  {
-    elast_hyper_add_anisotropic_mod(stress, cmat, C, iC, prinv, gp, eleGID, context, potsum_);
-  }
+  prepare_evaluate_kinematics(glstrain, context, workspace, gp, eleGID);
+  prepare_iso_rate_visco_inputs_if_active(params, workspace, gp, eleGID);
+  initialize_elastic_response(workspace, stress_view, cmat_view, stress, cmat);
+  add_visco_contributions_in_sequence(workspace, stress_view, cmat_view, gp, eleGID);
+  add_post_elastic_composition_hooks(params, context, workspace, stress, cmat, gp, eleGID);
 }
 
 /*----------------------------------------------------------------------*/
