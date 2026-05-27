@@ -309,6 +309,22 @@ namespace Mat
       std::vector<GeneralizedMaxwellBranchMetadata> branches;
     };
 
+    struct GeneralizedMaxwellRuntimeContext
+    {
+      double one_step_theta = 0.5;
+    };
+
+    struct FslsRuntimeContext
+    {
+      unsigned int max_history_size = 0;
+    };
+
+    struct ViscoRuntimeContext
+    {
+      std::optional<GeneralizedMaxwellRuntimeContext> generalized_maxwell;
+      std::optional<FslsRuntimeContext> fsls;
+    };
+
     enum class ViscoModelKind
     {
       iso_rate,
@@ -337,6 +353,10 @@ namespace Mat
     void clear_generalized_maxwell_metadata();
     void build_generalized_maxwell_metadata_for_setup(int gp, int eleGID);
     [[nodiscard]] const GeneralizedMaxwellMetadata& require_generalized_maxwell_metadata(
+        const char* context, int gp, int eleGID) const;
+    void clear_runtime_context();
+    void build_runtime_context_for_setup(int gp, int eleGID);
+    [[nodiscard]] const ViscoRuntimeContext& require_runtime_context(
         const char* context, int gp, int eleGID) const;
     void clear_fsls_metadata();
     void build_fsls_metadata_for_setup(int gp, int eleGID);
@@ -375,6 +395,7 @@ namespace Mat
 
     ActiveModelSequence active_model_sequence_;
     std::optional<GeneralizedMaxwellMetadata> generalized_maxwell_metadata_;
+    std::optional<ViscoRuntimeContext> runtime_context_;
     std::optional<FslsMetadata> fsls_metadata_;
     ViscoElastState state_;  ///< unified viscoelastic history state
   };  // class ViscoElastHyper

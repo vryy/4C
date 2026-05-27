@@ -62,6 +62,8 @@ Mat::Elastic::GeneralizedMaxwell::GeneralizedMaxwell(Mat::Elastic::PAR::Generali
         "{}.",
         params_->id(), params_->numbranch_, params_->matids_.size());
 
+  // Integration-boundary access: branch material validation currently depends on the global
+  // material bundle and remains outside constitutive evaluate/update hot paths.
   if (Global::Problem::instance()->materials() == nullptr)
     FOUR_C_THROW(
         "Cannot validate VISCO_GeneralizedMaxwell branches for MAT {} because no global material "

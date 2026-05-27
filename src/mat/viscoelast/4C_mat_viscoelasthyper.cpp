@@ -227,6 +227,9 @@ void Mat::ViscoElastHyper::clear_generalized_maxwell_metadata()
 }
 
 
+void Mat::ViscoElastHyper::clear_runtime_context() { runtime_context_.reset(); }
+
+
 void Mat::ViscoElastHyper::clear_fsls_metadata() { fsls_metadata_.reset(); }
 
 
@@ -373,6 +376,79 @@ std::size_t Mat::ViscoElastHyper::read_generalized_maxwell_branch_count_for_setu
 }
 
 
+void Mat::ViscoElastHyper::build_runtime_context_for_setup(const int gp, const int eleGID)
+{
+  clear_runtime_context();
+
+  ViscoRuntimeContext runtime_context;
+  const bool requires_structural_dynamic_parameters =
+      is_model_active(ViscoModelKind::generalized_maxwell) || is_model_active(ViscoModelKind::fsls);
+  if (!requires_structural_dynamic_parameters)
+  {
+    runtime_context_ = std::move(runtime_context);
+    return;
+  }
+
+  // Integration-boundary access: read structural-dynamic runtime settings once and cache them
+  // for visco update/evaluation code paths.
+  const Teuchos::ParameterList& structural_dynamic_parameters =
+      Global::Problem::instance()->structural_dynamic_params();
+
+  if (is_model_active(ViscoModelKind::generalized_maxwell))
+  {
+    if (!structural_dynamic_parameters.isParameter("DYNAMICTYPE"))
+      FOUR_C_THROW(
+          "Missing DYNAMICTYPE in STRUCTURAL DYNAMIC parameters while building generalized "
+          "Maxwell runtime context for MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}).",
+          params_ != nullptr ? params_->id() : -1, gp, eleGID);
+
+    GeneralizedMaxwellRuntimeContext generalized_maxwell_runtime_context;
+    const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
+        structural_dynamic_parameters, "DYNAMICTYPE");
+    if (dyntype == Inpar::Solid::DynamicType::OneStepTheta)
+      generalized_maxwell_runtime_context.one_step_theta =
+          structural_dynamic_parameters.sublist("ONESTEPTHETA").get<double>("THETA");
+
+    runtime_context.generalized_maxwell = generalized_maxwell_runtime_context;
+  }
+
+  if (is_model_active(ViscoModelKind::fsls))
+  {
+    if (!structural_dynamic_parameters.isParameter("NUMSTEP"))
+      FOUR_C_THROW(
+          "Missing NUMSTEP in STRUCTURAL DYNAMIC parameters while deriving FSLS history "
+          "capacity for MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}).",
+          params_ != nullptr ? params_->id() : -1, gp, eleGID);
+
+    const int numsteps = structural_dynamic_parameters.get<int>("NUMSTEP");
+    if (numsteps < 0)
+      FOUR_C_THROW(
+          "Invalid NUMSTEP={} while deriving FSLS history capacity for MAT_ViscoElastHyper (MAT "
+          "{}, GP {}, ELE {}). Expected NUMSTEP >= 0.",
+          numsteps, params_ != nullptr ? params_->id() : -1, gp, eleGID);
+
+    FslsRuntimeContext fsls_runtime_context;
+    fsls_runtime_context.max_history_size = static_cast<unsigned int>(numsteps + 1);
+    runtime_context.fsls = fsls_runtime_context;
+  }
+
+  runtime_context_ = std::move(runtime_context);
+}
+
+
+const Mat::ViscoElastHyper::ViscoRuntimeContext& Mat::ViscoElastHyper::require_runtime_context(
+    const char* context, const int gp, const int eleGID) const
+{
+  if (!runtime_context_.has_value())
+    FOUR_C_THROW(
+        "Missing visco runtime context while {} in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}). "
+        "Run setup() before evaluation or update.",
+        context, params_ != nullptr ? params_->id() : -1, gp, eleGID);
+
+  return runtime_context_.value();
+}
+
+
 void Mat::ViscoElastHyper::build_fsls_metadata_for_setup(const int gp, const int eleGID)
 {
   clear_fsls_metadata();
@@ -449,23 +525,22 @@ unsigned int Mat::ViscoElastHyper::read_fsls_max_history_size_for_update() const
 {
   if (!is_model_active(ViscoModelKind::fsls)) return 0;
 
-  const Teuchos::ParameterList& structural_dynamic_parameters =
-      Global::Problem::instance()->structural_dynamic_params();
-
-  if (!structural_dynamic_parameters.isParameter("NUMSTEP"))
+  const ViscoRuntimeContext& runtime_context =
+      require_runtime_context("reading FSLS history capacity", -1, -1);
+  if (!runtime_context.fsls.has_value())
     FOUR_C_THROW(
-        "Missing NUMSTEP in STRUCTURAL DYNAMIC parameters while deriving FSLS history capacity "
-        "for MAT_ViscoElastHyper (MAT {}).",
+        "Missing FSLS runtime context while reading FSLS history capacity in "
+        "MAT_ViscoElastHyper (MAT {}).",
         params_ != nullptr ? params_->id() : -1);
 
-  const int numsteps = structural_dynamic_parameters.get<int>("NUMSTEP");
-  if (numsteps < 0)
+  const unsigned int max_history_size = runtime_context.fsls->max_history_size;
+  if (max_history_size == 0)
     FOUR_C_THROW(
-        "Invalid NUMSTEP={} while deriving FSLS history capacity for MAT_ViscoElastHyper (MAT "
-        "{}). Expected NUMSTEP >= 0.",
-        numsteps, params_ != nullptr ? params_->id() : -1);
+        "Invalid FSLS runtime history capacity {} in MAT_ViscoElastHyper (MAT {}). Expected a "
+        "positive history capacity.",
+        max_history_size, params_ != nullptr ? params_->id() : -1);
 
-  return static_cast<unsigned int>(numsteps + 1);
+  return max_history_size;
 }
 
 
@@ -529,10 +604,13 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   state_.clear();
   active_model_sequence_.clear();
   clear_generalized_maxwell_metadata();
+  clear_runtime_context();
   clear_fsls_metadata();
 
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
+  // Integration-boundary access: unpack resolves parameter material from the global
+  // material bundle and then hands explicit data to visco internals.
   // matid and recover params_
   int matid;
   extract_from_pack(buffer, matid);
@@ -586,6 +664,8 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
       build_generalized_maxwell_metadata_for_setup(-1, -1);
     }
 
+    build_runtime_context_for_setup(-1, -1);
+
     if (is_model_active(ViscoModelKind::fsls))
     {
       build_fsls_metadata_for_setup(-1, -1);
@@ -629,11 +709,13 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
   ensure_model_activation_consistency("pre-loop setup orchestration");
 
   clear_generalized_maxwell_metadata();
+  clear_runtime_context();
   clear_fsls_metadata();
   if (is_model_active(ViscoModelKind::generalized_maxwell))
   {
     build_generalized_maxwell_metadata_for_setup(-1, -1);
   }
+  build_runtime_context_for_setup(-1, -1);
   if (is_model_active(ViscoModelKind::fsls))
   {
     build_fsls_metadata_for_setup(-1, -1);
@@ -1087,6 +1169,19 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
   const auto& generalized_maxwell_metadata =
       require_generalized_maxwell_metadata("evaluating generalized Maxwell response", gp, eleGID);
   const int numbranch = static_cast<int>(generalized_maxwell_metadata.branches.size());
+  const ViscoRuntimeContext& runtime_context =
+      require_runtime_context("evaluating generalized Maxwell response", gp, eleGID);
+  double one_step_theta = 0.5;
+  if (generalized_maxwell_metadata.solve_kind == GeneralizedMaxwellSolveKind::one_step_theta)
+  {
+    if (!runtime_context.generalized_maxwell.has_value())
+      FOUR_C_THROW(
+          "Missing generalized Maxwell runtime context while evaluating generalized Maxwell "
+          "response in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}).",
+          visco_mat_id, gp, eleGID);
+
+    one_step_theta = runtime_context.generalized_maxwell->one_step_theta;
+  }
 
   Core::LinAlg::Matrix<6, 1> gl_stress(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Voigt::Strains::to_stress_like(glstrain, gl_stress);
@@ -1159,17 +1254,7 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
     {
       case GeneralizedMaxwellSolveKind::one_step_theta:
       {
-        double theta = 0.5;
-        // get theta of global time integration scheme to use it here
-        // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5
-        // (abirzle 09/14)
-        const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
-            Global::Problem::instance()->structural_dynamic_params(), "DYNAMICTYPE");
-        if (dyntype == Inpar::Solid::DynamicType::OneStepTheta)
-          theta = Global::Problem::instance()
-                      ->structural_dynamic_params()
-                      .sublist("ONESTEPTHETA")
-                      .get<double>("THETA");
+        const double theta = one_step_theta;
 
         // get time algorithmic parameters
         // NOTE: dt can be zero (in restart of STI) for Generalized Maxwell model
