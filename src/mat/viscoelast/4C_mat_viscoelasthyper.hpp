@@ -20,6 +20,8 @@
 #include "4C_material_parameter_base.hpp"
 
 #include <array>
+#include <optional>
+#include <string>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -221,7 +223,7 @@ namespace Mat
 
     /// calculates the stress and elasticitiy tensor for the generalized Maxwell material
     virtual void evaluate_visco_generalized_maxwell(Core::LinAlg::Matrix<6, 1>& Q,
-        Core::LinAlg::Matrix<6, 6>& cmatq, double dt, const Core::LinAlg::Matrix<6, 1>* glstrain,
+        Core::LinAlg::Matrix<6, 6>& cmatq, double dt, const Core::LinAlg::Matrix<6, 1>& glstrain,
         int gp, int eleGID);
 
     /// calculates the stress and elasticity tensor for the VISCO_FSLS model
@@ -278,6 +280,27 @@ namespace Mat
       double dt = 0.0;
     };
 
+    struct GeneralizedMaxwellBranchMetadata
+    {
+      std::vector<std::shared_ptr<Mat::Elastic::Summand>> summands;
+      double tau = 0.0;
+      SummandProperties properties;
+    };
+
+    enum class GeneralizedMaxwellSolveKind
+    {
+      one_step_theta,
+      exponential_time_discretization
+    };
+
+    struct GeneralizedMaxwellMetadata
+    {
+      int summand_mat_id = -1;
+      GeneralizedMaxwellSolveKind solve_kind =
+          GeneralizedMaxwellSolveKind::exponential_time_discretization;
+      std::vector<GeneralizedMaxwellBranchMetadata> branches;
+    };
+
     enum class ViscoModelKind
     {
       iso_rate,
@@ -301,6 +324,12 @@ namespace Mat
     void ensure_model_activation_consistency(const char* context) const;
 
     [[nodiscard]] ViscoElastState::ActiveModels active_models() const;
+    [[nodiscard]] GeneralizedMaxwellSolveKind parse_generalized_maxwell_solve_kind(
+        const std::string& solve, int gp, int eleGID) const;
+    void clear_generalized_maxwell_metadata();
+    void build_generalized_maxwell_metadata_for_setup(int gp, int eleGID);
+    [[nodiscard]] const GeneralizedMaxwellMetadata& require_generalized_maxwell_metadata(
+        const char* context, int gp, int eleGID) const;
     [[nodiscard]] std::size_t read_generalized_maxwell_branch_count_for_setup() const;
     [[nodiscard]] FslsParameters read_fsls_parameters(int gp, int eleGID) const;
     [[nodiscard]] double read_visco_time_step_size(
@@ -332,6 +361,7 @@ namespace Mat
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID);
 
     ActiveModelSequence active_model_sequence_;
+    std::optional<GeneralizedMaxwellMetadata> generalized_maxwell_metadata_;
     ViscoElastState state_;  ///< unified viscoelastic history state
   };  // class ViscoElastHyper
 

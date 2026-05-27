@@ -204,22 +204,52 @@ Mat::ViscoElastState::ActiveModels Mat::ViscoElastHyper::active_models() const
 }
 
 
-std::size_t Mat::ViscoElastHyper::read_generalized_maxwell_branch_count_for_setup() const
+Mat::ViscoElastHyper::GeneralizedMaxwellSolveKind
+Mat::ViscoElastHyper::parse_generalized_maxwell_solve_kind(
+    const std::string& solve, const int gp, const int eleGID) const
 {
-  const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
+  if (solve == "OneStepTheta") return GeneralizedMaxwellSolveKind::one_step_theta;
+  if (solve == "ExponentialTimeDiscretization")
+    return GeneralizedMaxwellSolveKind::exponential_time_discretization;
 
+  FOUR_C_THROW(
+      "Invalid SOLVE='{}' in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper (MAT {}, GP {}, "
+      "ELE {}). Use OneStepTheta or ExponentialTimeDiscretization.",
+      solve, params_ != nullptr ? params_->id() : -1, gp, eleGID);
+
+  return GeneralizedMaxwellSolveKind::exponential_time_discretization;
+}
+
+
+void Mat::ViscoElastHyper::clear_generalized_maxwell_metadata()
+{
+  generalized_maxwell_metadata_.reset();
+}
+
+
+void Mat::ViscoElastHyper::build_generalized_maxwell_metadata_for_setup(
+    const int gp, const int eleGID)
+{
+  clear_generalized_maxwell_metadata();
+
+  const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
   int generalized_maxwell_model_count = 0;
   int generalized_maxwell_numbranch_value = -1;
   std::string generalized_maxwell_solve;
   const std::vector<int>* generalized_maxwell_matids = nullptr;
 
+  std::shared_ptr<Mat::Elastic::GeneralizedMaxwell> generalized_maxwell = nullptr;
+  int generalized_maxwell_summand_mat_id = -1;
+
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    std::shared_ptr<Mat::Elastic::GeneralizedMaxwell> generalized_maxwell =
+    auto current_generalized_maxwell =
         std::dynamic_pointer_cast<Mat::Elastic::GeneralizedMaxwell>(potsum_[p]);
-    if (generalized_maxwell != nullptr)
+    if (current_generalized_maxwell != nullptr)
     {
       ++generalized_maxwell_model_count;
+      generalized_maxwell = current_generalized_maxwell;
+      generalized_maxwell_summand_mat_id = params_ != nullptr ? mat_id(p) : -1;
       generalized_maxwell->read_material_parameters(generalized_maxwell_numbranch_value,
           generalized_maxwell_matids, generalized_maxwell_solve);
     }
@@ -230,6 +260,11 @@ std::size_t Mat::ViscoElastHyper::read_generalized_maxwell_branch_count_for_setu
         "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): expected "
         "exactly one VISCO_GeneralizedMaxwell summand but found {}.",
         visco_mat_id, generalized_maxwell_model_count);
+
+  if (generalized_maxwell == nullptr)
+    FOUR_C_THROW(
+        "Failed to resolve VISCO_GeneralizedMaxwell summand in MAT_ViscoElastHyper (MAT {}).",
+        visco_mat_id);
 
   if (generalized_maxwell_numbranch_value <= 0)
     FOUR_C_THROW(
@@ -249,14 +284,89 @@ std::size_t Mat::ViscoElastHyper::read_generalized_maxwell_branch_count_for_setu
         "NUMBRANCH={} but MATIDS has size {}.",
         visco_mat_id, generalized_maxwell_numbranch_value, generalized_maxwell_matids->size());
 
-  if (generalized_maxwell_solve != "OneStepTheta" &&
-      generalized_maxwell_solve != "ExponentialTimeDiscretization")
-    FOUR_C_THROW(
-        "Invalid SOLVE='{}' in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper (MAT {}). "
-        "Use OneStepTheta or ExponentialTimeDiscretization.",
-        generalized_maxwell_solve, visco_mat_id);
+  const auto& branchespotsum = generalized_maxwell->get_branchespotsum();
+  const auto& branchtau = generalized_maxwell->get_branchtaus();
 
-  return static_cast<std::size_t>(generalized_maxwell_numbranch_value);
+  if (branchespotsum.size() != static_cast<unsigned int>(generalized_maxwell_numbranch_value) ||
+      branchtau.size() != static_cast<unsigned int>(generalized_maxwell_numbranch_value))
+    FOUR_C_THROW(
+        "Failed to initialize VISCO_GeneralizedMaxwell branches in MAT_ViscoElastHyper (MAT {}, "
+        "GP {}, ELE {}). Expected {} branches, got {} branch definitions and {} branch "
+        "relaxation times.",
+        visco_mat_id, gp, eleGID, generalized_maxwell_numbranch_value, branchespotsum.size(),
+        branchtau.size());
+
+  if (is_model_active(ViscoModelKind::iso_rate))
+    FOUR_C_THROW(
+        "Unsupported branch formulation in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper "
+        "(MAT {}, GP {}, ELE {}): isovisco branch response is not implemented.",
+        visco_mat_id, gp, eleGID);
+
+  GeneralizedMaxwellMetadata generalized_maxwell_metadata;
+  generalized_maxwell_metadata.summand_mat_id = generalized_maxwell_summand_mat_id;
+  generalized_maxwell_metadata.solve_kind =
+      parse_generalized_maxwell_solve_kind(generalized_maxwell_solve, gp, eleGID);
+  generalized_maxwell_metadata.branches.reserve(generalized_maxwell_numbranch_value);
+
+  for (int i = 0; i < generalized_maxwell_numbranch_value; ++i)
+  {
+    GeneralizedMaxwellBranchMetadata branch_metadata;
+    branch_metadata.summands = branchespotsum.at(i);
+    branch_metadata.tau = branchtau.at(i);
+
+    if (branch_metadata.tau <= 0.0)
+      FOUR_C_THROW(
+          "Invalid branch relaxation time TAU={} in VISCO_GeneralizedMaxwell (MAT {}, branch {}, "
+          "GP {}, ELE {}). Expected TAU > 0.",
+          branch_metadata.tau, generalized_maxwell_summand_mat_id, i, gp, eleGID);
+
+    branch_metadata.properties.clear();
+    elast_hyper_properties(branch_metadata.summands, branch_metadata.properties);
+
+    if (branch_metadata.properties.anisoprinc)
+      FOUR_C_THROW(
+          "Unsupported branch formulation in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper "
+          "(MAT {}, GP {}, ELE {}): anisoprinc branch response is not implemented.",
+          visco_mat_id, gp, eleGID);
+
+    if (branch_metadata.properties.anisomod)
+      FOUR_C_THROW(
+          "Unsupported branch formulation in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper "
+          "(MAT {}, GP {}, ELE {}): anisomod branch response is not implemented.",
+          visco_mat_id, gp, eleGID);
+
+    generalized_maxwell_metadata.branches.push_back(std::move(branch_metadata));
+  }
+
+  generalized_maxwell_metadata_ = std::move(generalized_maxwell_metadata);
+}
+
+
+const Mat::ViscoElastHyper::GeneralizedMaxwellMetadata&
+Mat::ViscoElastHyper::require_generalized_maxwell_metadata(
+    const char* context, const int gp, const int eleGID) const
+{
+  if (!generalized_maxwell_metadata_.has_value())
+    FOUR_C_THROW(
+        "Missing VISCO_GeneralizedMaxwell metadata cache while {} in MAT_ViscoElastHyper (MAT "
+        "{}, GP {}, ELE {}). Run setup() before evaluation.",
+        context, params_ != nullptr ? params_->id() : -1, gp, eleGID);
+
+  if (generalized_maxwell_metadata_->branches.empty())
+    FOUR_C_THROW(
+        "Invalid VISCO_GeneralizedMaxwell metadata cache while {} in MAT_ViscoElastHyper (MAT "
+        "{}, GP {}, ELE {}): no branch metadata available.",
+        context, params_ != nullptr ? params_->id() : -1, gp, eleGID);
+
+  return generalized_maxwell_metadata_.value();
+}
+
+
+std::size_t Mat::ViscoElastHyper::read_generalized_maxwell_branch_count_for_setup() const
+{
+  if (!is_model_active(ViscoModelKind::generalized_maxwell)) return 0;
+
+  return require_generalized_maxwell_metadata("reading branch count", -1, -1).branches.size();
 }
 
 
@@ -362,6 +472,7 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   visco_fsls_ = false;
   state_.clear();
   active_model_sequence_.clear();
+  clear_generalized_maxwell_metadata();
 
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -413,6 +524,11 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
       p->register_anisotropy_extensions(anisotropy_);
     }
 
+    if (is_model_active(ViscoModelKind::generalized_maxwell))
+    {
+      build_generalized_maxwell_metadata_for_setup(-1, -1);
+    }
+
     state_.deserialize_state(buffer, active_models());
   }
 }
@@ -450,13 +566,15 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
   rebuild_active_model_sequence();
   ensure_model_activation_consistency("pre-loop setup orchestration");
 
-  const Mat::ViscoElastState::ActiveModels models = active_models();
-  std::size_t generalized_maxwell_numbranch = 0;
-  for (const ViscoModelKind model_kind : active_model_sequence_)
+  clear_generalized_maxwell_metadata();
+  if (is_model_active(ViscoModelKind::generalized_maxwell))
   {
-    if (model_kind == ViscoModelKind::generalized_maxwell)
-      generalized_maxwell_numbranch = read_generalized_maxwell_branch_count_for_setup();
+    build_generalized_maxwell_metadata_for_setup(-1, -1);
   }
+
+  const Mat::ViscoElastState::ActiveModels models = active_models();
+  const std::size_t generalized_maxwell_numbranch =
+      read_generalized_maxwell_branch_count_for_setup();
 
   state_.initialize_from_setup(numgp, models, generalized_maxwell_numbranch);
 
@@ -616,7 +734,7 @@ void Mat::ViscoElastHyper::add_generalized_maxwell_contribution(const EvaluateWo
 {
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> q(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(Core::LinAlg::Initialization::zero);
-  evaluate_visco_generalized_maxwell(q, cmatq, workspace.dt, &workspace.glstrain_mat, gp, eleGID);
+  evaluate_visco_generalized_maxwell(q, cmatq, workspace.dt, workspace.glstrain_mat, gp, eleGID);
   stress_view.update(1.0, q, 1.0);
   cmat_view.update(1.0, cmatq, 1.0);
 }
@@ -903,72 +1021,39 @@ void Mat::ViscoElastHyper::evaluate_iso_visco_modified(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matrix<6, 1>& Q,
-    Core::LinAlg::Matrix<6, 6>& cmatq, const double dt, const Core::LinAlg::Matrix<6, 1>* glstrain,
+    Core::LinAlg::Matrix<6, 6>& cmatq, const double dt, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {
   const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
 
-  int numbranch = -1;
-  std::string solve = "";
-  const std::vector<int>* matids = nullptr;
-  std::vector<std::shared_ptr<Mat::Elastic::Summand>> branchpotsum(
-      0);  // vector of summands in one branch
-  std::vector<std::vector<std::shared_ptr<Mat::Elastic::Summand>>> branchespotsum(
-      0);  // vector for each branch of vectors of summands in each branch
-  std::vector<double> branchtau(0);
-  int generalized_maxwell_model_count = 0;
+  const auto& generalized_maxwell_metadata =
+      require_generalized_maxwell_metadata("evaluating generalized Maxwell response", gp, eleGID);
+  const int numbranch = static_cast<int>(generalized_maxwell_metadata.branches.size());
 
-  // get parameters of ViscoGeneralizedMaxwell
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
-  {
-    std::shared_ptr<Mat::Elastic::GeneralizedMaxwell> generalized_maxwell =
-        std::dynamic_pointer_cast<Mat::Elastic::GeneralizedMaxwell>(potsum_[p]);
+  Core::LinAlg::Matrix<6, 1> gl_stress(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Voigt::Strains::to_stress_like(glstrain, gl_stress);
 
-    if (generalized_maxwell != nullptr)
-    {
-      ++generalized_maxwell_model_count;
-      generalized_maxwell->read_material_parameters(numbranch, matids, solve);
-      branchespotsum = generalized_maxwell->get_branchespotsum();
-      branchtau = generalized_maxwell->get_branchtaus();
-    }
-  }
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> gl =
+      Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(gl_stress);
 
-  if (generalized_maxwell_model_count != 1)
-    FOUR_C_THROW(
-        "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}): "
-        "expected exactly one VISCO_GeneralizedMaxwell summand but found {}.",
-        visco_mat_id, gp, eleGID, generalized_maxwell_model_count);
+  Core::LinAlg::SymmetricTensor<double, 3, 3> C;
+  evaluate_right_cauchy_green_strain_like_voigt(gl, C);
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> iC = Core::LinAlg::inv(C);
 
-  if (matids == nullptr)
-    FOUR_C_THROW(
-        "Failed to read MATIDS for VISCO_GeneralizedMaxwell in MAT_ViscoElastHyper (MAT {}, "
-        "GP {}, ELE {}).",
-        visco_mat_id, gp, eleGID);
+  Core::LinAlg::Matrix<6, 1> C_strain(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Voigt::Stresses::to_strain_like(
+      Core::LinAlg::make_stress_like_voigt_view(C), C_strain);
 
-  if (numbranch != static_cast<int>(matids->size()))
-    FOUR_C_THROW(
-        "Invalid VISCO_GeneralizedMaxwell state in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}): "
-        "NUMBRANCH={} but MATIDS has size {}.",
-        visco_mat_id, gp, eleGID, numbranch, matids->size());
-
-  if (numbranch < 0 || branchespotsum.size() != static_cast<unsigned int>(numbranch) ||
-      branchtau.size() != static_cast<unsigned int>(numbranch))
-    FOUR_C_THROW(
-        "Failed to initialize VISCO_GeneralizedMaxwell branches in MAT_ViscoElastHyper (MAT {}, "
-        "GP {}, ELE {}). Expected {} branches, got {} branch definitions and {} branch "
-        "relaxation times.",
-        visco_mat_id, gp, eleGID, numbranch, branchespotsum.size(), branchtau.size());
+  Core::LinAlg::Matrix<3, 1> prinv(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Voigt::Strains::invariants_principal(prinv, C_strain);
 
   Core::LinAlg::Matrix<6, 6> cmatqbranch(Core::LinAlg::Initialization::zero);
   std::vector<Core::LinAlg::Matrix<6, 1>> S(numbranch);
   std::vector<Core::LinAlg::Matrix<6, 1>> Qbranch(numbranch);
-  std::vector<Core::LinAlg::Matrix<6, 1>> S_n(numbranch);
-  std::vector<Core::LinAlg::Matrix<6, 1>> Q_n(numbranch);
 
-  // read history
-  const auto generalized_maxwell_previous = state_.generalized_maxwell_prev_point(gp);
-  S_n = generalized_maxwell_previous.branch_elastic_stress;
-  Q_n = generalized_maxwell_previous.branch_stress;
+  // Read generalized Maxwell history
+  const auto& S_n = state_.generalized_maxwell_prev_branch_elastic_stress(gp);
+  const auto& Q_n = state_.generalized_maxwell_prev_branch_stress(gp);
 
   if (S_n.size() != static_cast<unsigned int>(numbranch))
     FOUR_C_THROW(
@@ -982,63 +1067,20 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
         "GP {}, ELE {}): expected {} entries but got {}.",
         visco_mat_id, gp, eleGID, numbranch, Q_n.size());
 
-  // save switches
-  SummandProperties branchProperties;
-
   /////////////////////////////////////////////////
   // Loop over all viscoelastic Maxwell branches //
   /////////////////////////////////////////////////
   for (int i = 0; i < numbranch; ++i)
   {
-    // get parameter of each visco branch
-    branchpotsum = branchespotsum[i];
-    const double tau = branchtau.at(i);
+    const auto& branch_metadata = generalized_maxwell_metadata.branches.at(i);
+    const auto& branchpotsum = branch_metadata.summands;
+    const double tau = branch_metadata.tau;
 
-    branchProperties.clear();
-    elast_hyper_properties(branchpotsum, branchProperties);
-
-    if (is_model_active(ViscoModelKind::iso_rate))
-      FOUR_C_THROW(
-          "Unsupported branch formulation in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper "
-          "(MAT {}, GP {}, ELE {}): isovisco branch response is not implemented.",
-          visco_mat_id, gp, eleGID);
-    if (branchProperties.anisoprinc)
-      FOUR_C_THROW(
-          "Unsupported branch formulation in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper "
-          "(MAT {}, GP {}, ELE {}): anisoprinc branch response is not implemented.",
-          visco_mat_id, gp, eleGID);
-    if (branchProperties.anisomod)
-      FOUR_C_THROW(
-          "Unsupported branch formulation in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper "
-          "(MAT {}, GP {}, ELE {}): anisomod branch response is not implemented.",
-          visco_mat_id, gp, eleGID);
-
-    Core::LinAlg::Matrix<6, 1> modrcg(Core::LinAlg::Initialization::zero);
-    Core::LinAlg::Matrix<3, 1> prinv(Core::LinAlg::Initialization::zero);
     Core::LinAlg::Matrix<3, 1> dPI(Core::LinAlg::Initialization::zero);
     Core::LinAlg::Matrix<6, 1> ddPII(Core::LinAlg::Initialization::zero);
 
-    Core::LinAlg::Matrix<6, 1> gl_stress;
-    Core::LinAlg::Voigt::Strains::to_stress_like(*glstrain, gl_stress);
-
-    Core::LinAlg::SymmetricTensor<double, 3, 3> gl =
-        Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(gl_stress);
-
-    Core::LinAlg::SymmetricTensor<double, 3, 3> C;
-    evaluate_right_cauchy_green_strain_like_voigt(gl, C);
-
-    Core::LinAlg::SymmetricTensor<double, 3, 3> iC = Core::LinAlg::inv(C);
-
-    Core::LinAlg::Matrix<6, 1> C_strain(Core::LinAlg::Initialization::zero);
-    Core::LinAlg::Matrix<6, 1> iC_strain(Core::LinAlg::Initialization::zero);
-    Core::LinAlg::Voigt::Stresses::to_strain_like(
-        Core::LinAlg::make_stress_like_voigt_view(C), C_strain);
-    Core::LinAlg::Voigt::Stresses::to_strain_like(
-        Core::LinAlg::make_stress_like_voigt_view(iC), iC_strain);
-
-    Core::LinAlg::Voigt::Strains::invariants_principal(prinv, C_strain);
     elast_hyper_evaluate_invariant_derivatives(
-        prinv, dPI, ddPII, branchpotsum, branchProperties, gp, eleGID);
+        prinv, dPI, ddPII, branchpotsum, branch_metadata.properties, gp, eleGID);
 
     // blank resulting quantities
     // ... even if it is an implicit law that cmat is zero upon input
@@ -1055,63 +1097,56 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_maxwell(Core::LinAlg::Matr
     // make sure Qbranch in this branch is empty
     Qbranch.at(i).clear();
     double deltascalar = 1.0;
-    if (solve == "OneStepTheta")
+    switch (generalized_maxwell_metadata.solve_kind)
     {
-      // initialize scalars
-      double lambdascalar1(true);
-      double lambdascalar2(true);
-      double theta = 0.5;
+      case GeneralizedMaxwellSolveKind::one_step_theta:
+      {
+        double theta = 0.5;
+        // get theta of global time integration scheme to use it here
+        // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5
+        // (abirzle 09/14)
+        const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
+            Global::Problem::instance()->structural_dynamic_params(), "DYNAMICTYPE");
+        if (dyntype == Inpar::Solid::DynamicType::OneStepTheta)
+          theta = Global::Problem::instance()
+                      ->structural_dynamic_params()
+                      .sublist("ONESTEPTHETA")
+                      .get<double>("THETA");
 
-      // get theta of global time integration scheme to use it here
-      // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5 (abirzle
-      // 09/14)
-      const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
-          Global::Problem::instance()->structural_dynamic_params(), "DYNAMICTYPE");
-      if (dyntype == Inpar::Solid::DynamicType::OneStepTheta)
-        theta = Global::Problem::instance()
-                    ->structural_dynamic_params()
-                    .sublist("ONESTEPTHETA")
-                    .get<double>("THETA");
+        // get time algorithmic parameters
+        // NOTE: dt can be zero (in restart of STI) for Generalized Maxwell model
+        // there is no special treatment required. Adaptation for Kelvin-Voigt were necessary.
+        // evaluate scalars to compute
+        // Q^(n+1) = tau/(tau+theta*dt) [(tau-dt+theta*dt)/tau Q + beta(S^(n+1) - S^n)]
+        double lambdascalar1 = tau / (tau + theta * dt);
+        double lambdascalar2 = (tau - dt + theta * dt) / tau;
 
-      // get time algorithmic parameters
-      // NOTE: dt can be zero (in restart of STI) for Generalized Maxwell model
-      // there is no special treatment required. Adaptation for Kelvin-Voigt were necessary.
-      // evaluate scalars to compute
-      // Q^(n+1) = tau/(tau+theta*dt) [(tau-dt+theta*dt)/tau Q + beta(S^(n+1) - S^n)]
-      lambdascalar1 = tau / (tau + theta * dt);
-      lambdascalar2 = (tau - dt + theta * dt) / tau;
+        // same branch update factor as in the one-branch Maxwell case
+        deltascalar = lambdascalar1;
 
-      // same branch update factor as in the one-branch Maxwell case
-      deltascalar = lambdascalar1;
+        // calculate artificial viscous stresses Q
+        // Q_(n+1) = lambdascalar1*[lamdascalar2* Q_n + (Sa_(n+1) - Sa_n)]
+        Qbranch.at(i).update(lambdascalar2, Q_n.at(i), 1.0);
+        Qbranch.at(i).update(1.0, S.at(i), 1.0);
+        Qbranch.at(i).update(-1.0, S_n.at(i), 1.0);
+        Qbranch.at(i).scale(lambdascalar1);
+        break;
+      }
+      case GeneralizedMaxwellSolveKind::exponential_time_discretization:
+      {
+        double xiscalar1 = exp(-dt / tau);
+        double xiscalar2 = exp(-dt / (2 * tau));
 
-      // calculate artificial viscous stresses Q
-      // Q_(n+1) = lambdascalar1*[lamdascalar2* Q_n + (Sa_(n+1) - Sa_n)]
-      Qbranch.at(i).update(lambdascalar2, Q_n.at(i), 1.0);
-      Qbranch.at(i).update(1.0, S.at(i), 1.0);
-      Qbranch.at(i).update(-1.0, S_n.at(i), 1.0);
-      Qbranch.at(i).scale(lambdascalar1);
+        deltascalar = xiscalar2;
+
+        // calculate artificial stresses Q
+        // Q_(n+1) = xiscalar1* Q_n + xiscalar2*(Sa_(n+1) - Sa_n)
+        Qbranch.at(i).update(xiscalar1, Q_n.at(i), 1.0);
+        Qbranch.at(i).update(xiscalar2, S.at(i), 1.0);
+        Qbranch.at(i).update(-xiscalar2, S_n.at(i), 1.0);
+        break;
+      }
     }
-    else if (solve == "ExponentialTimeDiscretization")
-    {
-      // initialize scalars
-      double xiscalar1(true);
-      double xiscalar2(true);
-      xiscalar1 = exp(-dt / tau);
-      xiscalar2 = exp(-dt / (2 * tau));
-
-      deltascalar = xiscalar2;
-
-      // calculate artificial stresses Q
-      // Q_(n+1) = xiscalar1* Q_n + xiscalar2*(Sa_(n+1) - Sa_n)
-      Qbranch.at(i).update(xiscalar1, Q_n.at(i), 1.0);
-      Qbranch.at(i).update(xiscalar2, S.at(i), 1.0);
-      Qbranch.at(i).update(-xiscalar2, S_n.at(i), 1.0);
-    }
-    else
-      FOUR_C_THROW(
-          "Invalid SOLVE='{}' in VISCO_GeneralizedMaxwell for MAT_ViscoElastHyper (MAT {}, GP "
-          "{}, ELE {}). Use OneStepTheta or ExponentialTimeDiscretization.",
-          solve, visco_mat_id, gp, eleGID);
 
     // sum up branches
     Q.update(1.0, Qbranch.at(i), 1.0);

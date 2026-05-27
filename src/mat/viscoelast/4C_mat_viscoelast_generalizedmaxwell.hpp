@@ -114,12 +114,13 @@ namespace Mat
 
       /// @name Access methods
       //@{
-      std::vector<std::vector<std::shared_ptr<Mat::Elastic::Summand>>> get_branchespotsum() const
+      const std::vector<std::vector<std::shared_ptr<Mat::Elastic::Summand>>>& get_branchespotsum()
+          const
       {
         return branchespotsum_;
       }
 
-      std::vector<double> get_branchtaus() const { return branchtau_; }
+      const std::vector<double>& get_branchtaus() const { return branchtau_; }
       //@}
 
       /// Indicator for formulation

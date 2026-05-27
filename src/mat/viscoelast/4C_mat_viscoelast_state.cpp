@@ -649,6 +649,28 @@ Mat::ViscoElastState::generalized_maxwell_prev_point(const int gp) const
 }
 
 
+const Mat::ViscoElastState::PointHistory&
+Mat::ViscoElastState::generalized_maxwell_prev_branch_elastic_stress(const int gp) const
+{
+  ensure_initialized("read previous");
+  ensure_model_active(has_generalized_maxwell_state_, "generalized Maxwell", "read previous");
+  ensure_gp_in_range(gp, "generalized Maxwell", "read previous");
+
+  return generalized_maxwell_.branch_elastic_stress_previous_.at(gp);
+}
+
+
+const Mat::ViscoElastState::PointHistory&
+Mat::ViscoElastState::generalized_maxwell_prev_branch_stress(const int gp) const
+{
+  ensure_initialized("read previous");
+  ensure_model_active(has_generalized_maxwell_state_, "generalized Maxwell", "read previous");
+  ensure_gp_in_range(gp, "generalized Maxwell", "read previous");
+
+  return generalized_maxwell_.branch_stress_previous_.at(gp);
+}
+
+
 void Mat::ViscoElastState::set_generalized_maxwell_current_point(
     const int gp, const PointHistory& branch_elastic_stress, const PointHistory& branch_stress)
 {

@@ -142,6 +142,10 @@ namespace Mat
 
     /// \brief Return read-only previous generalized Maxwell state for one Gauss point.
     GeneralizedMaxwellPrevPointState generalized_maxwell_prev_point(int gp) const;
+    /// \brief Return read-only previous generalized Maxwell elastic branch stresses for one GP.
+    const PointHistory& generalized_maxwell_prev_branch_elastic_stress(int gp) const;
+    /// \brief Return read-only previous generalized Maxwell viscous branch stresses for one GP.
+    const PointHistory& generalized_maxwell_prev_branch_stress(int gp) const;
     /// \brief Store current generalized Maxwell state for one Gauss point.
     void set_generalized_maxwell_current_point(
         int gp, const PointHistory& branch_elastic_stress, const PointHistory& branch_stress);
