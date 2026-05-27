@@ -86,16 +86,6 @@ void Mat::PAR::ElchSingleMat::check_provided_params(
         nfunctparams = 1;
         break;
       }
-      case Mat::ElchSingleMat::GOLDIN:
-      {
-        // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann,
-        // Kee (2012) kappa = a0*c*exp(a1*c^a2)
-        functionname =
-            "'conductivity as a function of concentration according to Goldin, Colclasure, "
-            "Wiedemann, Kee (2012)'";
-        nfunctparams = 3;
-        break;
-      }
       case Mat::ElchSingleMat::ARRHENIUS:
       {
         // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
@@ -413,24 +403,6 @@ double Mat::ElchSingleMat::eval_pre_defined_funct(
       functval = functparams[0];
       break;
 
-    // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee
-    // (2012) kappa = a0*c*exp(a1*c^a2)
-    case GOLDIN:
-    {
-      // safety check
-      if (scalar < 1.e-12) FOUR_C_THROW("scalar value {} is zero or negative!", scalar);
-
-      const double exponent = functparams[1] * std::pow(scalar, functparams[2]);
-
-      // safety check
-      if (exponent > 20.)
-        FOUR_C_THROW("Overflow detected during conductivity evaluation! Exponent is too large: {}",
-            exponent);
-
-      functval = functparams[0] * scalar * std::exp(exponent);
-
-      break;
-    }
     case ARRHENIUS:
     {
       // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
@@ -465,29 +437,6 @@ double Mat::ElchSingleMat::eval_first_deriv_pre_defined_funct(
       firstderivfunctval = 0.0;
       break;
 
-    // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee
-    // (2012) d/dc: kappa = a0*c*exp(a1*c^a2)
-    case GOLDIN:
-    {
-      // safety check
-      if (scalar < 1.0e-12) FOUR_C_THROW("scalar value {} is zero or negative!", scalar);
-
-      const double exponent = functparams[1] * std::pow(scalar, functparams[2]);
-
-      // safety check
-      if (std::abs(exponent) > 20.0)
-      {
-        FOUR_C_THROW(
-            "Overflow detected during conductivity evaluation! Absolute value of exponent is too "
-            "large: {}",
-            exponent);
-      }
-
-      firstderivfunctval = functparams[0] * std::exp(exponent) *
-                           (1 + functparams[1] * functparams[2] * std::pow(scalar, functparams[2]));
-
-      break;
-    }
     case ARRHENIUS:
     {
       // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
