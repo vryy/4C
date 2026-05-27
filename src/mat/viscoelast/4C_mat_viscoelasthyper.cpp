@@ -227,6 +227,9 @@ void Mat::ViscoElastHyper::clear_generalized_maxwell_metadata()
 }
 
 
+void Mat::ViscoElastHyper::clear_fsls_metadata() { fsls_metadata_.reset(); }
+
+
 void Mat::ViscoElastHyper::build_generalized_maxwell_metadata_for_setup(
     const int gp, const int eleGID)
 {
@@ -370,10 +373,11 @@ std::size_t Mat::ViscoElastHyper::read_generalized_maxwell_branch_count_for_setu
 }
 
 
-Mat::ViscoElastHyper::FslsParameters Mat::ViscoElastHyper::read_fsls_parameters(
-    const int gp, const int eleGID) const
+void Mat::ViscoElastHyper::build_fsls_metadata_for_setup(const int gp, const int eleGID)
 {
-  FslsParameters fsls_parameters;
+  clear_fsls_metadata();
+
+  FslsMetadata fsls_metadata;
   const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
   int fsls_model_count = 0;
 
@@ -385,9 +389,9 @@ Mat::ViscoElastHyper::FslsParameters Mat::ViscoElastHyper::read_fsls_parameters(
     if (fsls != nullptr)
     {
       ++fsls_model_count;
-      fsls_parameters.summand_mat_id = params_ != nullptr ? mat_id(p) : -1;
+      fsls_metadata.summand_mat_id = params_ != nullptr ? mat_id(p) : -1;
       fsls->read_material_parameters_visco(
-          fsls_parameters.tau, fsls_parameters.beta, fsls_parameters.alpha, solve);
+          fsls_metadata.tau, fsls_metadata.beta, fsls_metadata.alpha, solve);
     }
   }
 
@@ -397,19 +401,71 @@ Mat::ViscoElastHyper::FslsParameters Mat::ViscoElastHyper::read_fsls_parameters(
         "exactly one VISCO_FSLS summand but found {}.",
         visco_mat_id, gp, eleGID, fsls_model_count);
 
-  if (fsls_parameters.tau <= 0.0)
+  if (fsls_metadata.tau <= 0.0)
     FOUR_C_THROW(
         "Invalid TAU={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP {}, "
         "ELE {}). TAU has to be positive.",
-        fsls_parameters.tau, fsls_parameters.summand_mat_id, visco_mat_id, gp, eleGID);
+        fsls_metadata.tau, fsls_metadata.summand_mat_id, visco_mat_id, gp, eleGID);
 
-  if (fsls_parameters.alpha < 0.0 || fsls_parameters.alpha >= 1.0)
+  if (fsls_metadata.alpha < 0.0 || fsls_metadata.alpha >= 1.0)
     FOUR_C_THROW(
         "Invalid ALPHA={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP "
         "{}, ELE {}). Expected 0 <= ALPHA < 1.",
-        fsls_parameters.alpha, fsls_parameters.summand_mat_id, visco_mat_id, gp, eleGID);
+        fsls_metadata.alpha, fsls_metadata.summand_mat_id, visco_mat_id, gp, eleGID);
+
+  fsls_metadata_ = std::move(fsls_metadata);
+}
+
+
+const Mat::ViscoElastHyper::FslsMetadata& Mat::ViscoElastHyper::require_fsls_metadata(
+    const char* context, const int gp, const int eleGID) const
+{
+  if (!fsls_metadata_.has_value())
+    FOUR_C_THROW(
+        "Missing VISCO_FSLS metadata cache while {} in MAT_ViscoElastHyper (MAT {}, GP {}, ELE "
+        "{}). Run setup() before evaluation.",
+        context, params_ != nullptr ? params_->id() : -1, gp, eleGID);
+
+  return fsls_metadata_.value();
+}
+
+
+Mat::ViscoElastHyper::FslsParameters Mat::ViscoElastHyper::read_fsls_parameters(
+    const int gp, const int eleGID) const
+{
+  const FslsMetadata& fsls_metadata = require_fsls_metadata("reading FSLS parameters", gp, eleGID);
+
+  FslsParameters fsls_parameters;
+  fsls_parameters.tau = fsls_metadata.tau;
+  fsls_parameters.alpha = fsls_metadata.alpha;
+  fsls_parameters.beta = fsls_metadata.beta;
+  fsls_parameters.summand_mat_id = fsls_metadata.summand_mat_id;
 
   return fsls_parameters;
+}
+
+
+unsigned int Mat::ViscoElastHyper::read_fsls_max_history_size_for_update() const
+{
+  if (!is_model_active(ViscoModelKind::fsls)) return 0;
+
+  const Teuchos::ParameterList& structural_dynamic_parameters =
+      Global::Problem::instance()->structural_dynamic_params();
+
+  if (!structural_dynamic_parameters.isParameter("NUMSTEP"))
+    FOUR_C_THROW(
+        "Missing NUMSTEP in STRUCTURAL DYNAMIC parameters while deriving FSLS history capacity "
+        "for MAT_ViscoElastHyper (MAT {}).",
+        params_ != nullptr ? params_->id() : -1);
+
+  const int numsteps = structural_dynamic_parameters.get<int>("NUMSTEP");
+  if (numsteps < 0)
+    FOUR_C_THROW(
+        "Invalid NUMSTEP={} while deriving FSLS history capacity for MAT_ViscoElastHyper (MAT "
+        "{}). Expected NUMSTEP >= 0.",
+        numsteps, params_ != nullptr ? params_->id() : -1);
+
+  return static_cast<unsigned int>(numsteps + 1);
 }
 
 
@@ -473,6 +529,7 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   state_.clear();
   active_model_sequence_.clear();
   clear_generalized_maxwell_metadata();
+  clear_fsls_metadata();
 
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -529,6 +586,11 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
       build_generalized_maxwell_metadata_for_setup(-1, -1);
     }
 
+    if (is_model_active(ViscoModelKind::fsls))
+    {
+      build_fsls_metadata_for_setup(-1, -1);
+    }
+
     state_.deserialize_state(buffer, active_models());
   }
 }
@@ -567,9 +629,14 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
   ensure_model_activation_consistency("pre-loop setup orchestration");
 
   clear_generalized_maxwell_metadata();
+  clear_fsls_metadata();
   if (is_model_active(ViscoModelKind::generalized_maxwell))
   {
     build_generalized_maxwell_metadata_for_setup(-1, -1);
+  }
+  if (is_model_active(ViscoModelKind::fsls))
+  {
+    build_fsls_metadata_for_setup(-1, -1);
   }
 
   const Mat::ViscoElastState::ActiveModels models = active_models();
@@ -590,16 +657,7 @@ void Mat::ViscoElastHyper::update()
 
   ensure_model_activation_consistency("pre-loop update orchestration");
 
-  unsigned int max_hist = 0;
-  for (const ViscoModelKind model_kind : active_model_sequence_)
-  {
-    if (model_kind == ViscoModelKind::fsls)
-    {
-      const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-      const int numsteps = sdyn.get<int>("NUMSTEP");
-      max_hist = numsteps + 1;
-    }
-  }
+  const unsigned int max_hist = read_fsls_max_history_size_for_update();
 
   const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
   state_.advance_time_step(active_models(), max_hist, visco_mat_id);
@@ -1191,15 +1249,12 @@ void Mat::ViscoElastHyper::evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress
   const auto& fsls_history_at_gp = fsls_previous_history.at(gp);
 
   // read history of last time step at gp
-  // -> Q_n and history size
   const int hs = fsls_history_at_gp.size();  // history size
   if (hs <= 0)
     FOUR_C_THROW(
         "Invalid FSLS history size {} at GP {} in MAT_ViscoElastHyper (MAT {}, ELE {}). "
         "Expected at least one entry.",
         hs, gp, visco_mat_id, eleGID);
-
-  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_n(fsls_history_at_gp.at(hs - 1));
 
 
   // calculate artificial history stress Qq with weights b_j
@@ -1238,10 +1293,17 @@ void Mat::ViscoElastHyper::evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress
   //              2.) Introduce beta
   // Q^(n+1) = (dt^alpha / (dt^alpha + tau^alpha))*S^(n+1) - (tau^alpha / (dt^alpha +
   // tau^alpha))*Qq^n
-  double dtalpha = std::pow(dt, alpha);
-  double taualpha = std::pow(tau, alpha);
-  double lambdascalar1 = dtalpha / (dtalpha + taualpha);
-  double lambdascalar2 = -1. * taualpha / (dtalpha + taualpha);
+  const double dtalpha = std::pow(dt, alpha);
+  const double taualpha = std::pow(tau, alpha);
+  const double denominator = dtalpha + taualpha;
+  if (denominator <= 0.0)
+    FOUR_C_THROW(
+        "Invalid FSLS update denominator dt^alpha + tau^alpha = {} in MAT_ViscoElastHyper "
+        "(MAT {}, GP {}, ELE {}): dt={}, tau={}, alpha={}. Expected a positive denominator.",
+        denominator, visco_mat_id, gp, eleGID, dt, tau, alpha);
+
+  const double lambdascalar1 = dtalpha / denominator;
+  const double lambdascalar2 = -1. * taualpha / denominator;
 
   Q.update(lambdascalar1 * beta, stress, 0.);
   Q.update(lambdascalar2, Qq, 1.);

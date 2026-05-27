@@ -251,6 +251,14 @@ namespace Mat
       int summand_mat_id = -1;
     };
 
+    struct FslsMetadata
+    {
+      double tau = 0.0;
+      double alpha = 0.0;
+      double beta = 0.0;
+      int summand_mat_id = -1;
+    };
+
     struct EvaluateWorkspace
     {
       EvaluateWorkspace();
@@ -330,8 +338,13 @@ namespace Mat
     void build_generalized_maxwell_metadata_for_setup(int gp, int eleGID);
     [[nodiscard]] const GeneralizedMaxwellMetadata& require_generalized_maxwell_metadata(
         const char* context, int gp, int eleGID) const;
+    void clear_fsls_metadata();
+    void build_fsls_metadata_for_setup(int gp, int eleGID);
+    [[nodiscard]] const FslsMetadata& require_fsls_metadata(
+        const char* context, int gp, int eleGID) const;
     [[nodiscard]] std::size_t read_generalized_maxwell_branch_count_for_setup() const;
     [[nodiscard]] FslsParameters read_fsls_parameters(int gp, int eleGID) const;
+    [[nodiscard]] unsigned int read_fsls_max_history_size_for_update() const;
     [[nodiscard]] double read_visco_time_step_size(
         const EvaluationContext<3>& context, int gp, int eleGID) const;
 
@@ -362,6 +375,7 @@ namespace Mat
 
     ActiveModelSequence active_model_sequence_;
     std::optional<GeneralizedMaxwellMetadata> generalized_maxwell_metadata_;
+    std::optional<FslsMetadata> fsls_metadata_;
     ViscoElastState state_;  ///< unified viscoelastic history state
   };  // class ViscoElastHyper
 
