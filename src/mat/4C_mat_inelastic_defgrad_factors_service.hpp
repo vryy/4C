@@ -276,7 +276,7 @@ namespace Mat
        * @param ref_temperature Reference temperature used to set initial values of last/current
        * temperature.
        */
-      void init(const double& ref_temperature);
+      void init(const double ref_temperature);
 
       /*!
        * @brief Resizing based on a given number of Gauss points
@@ -544,8 +544,8 @@ namespace Mat
       //! derivative of the deviatoric, symmetric part of the thermo-elastic Mandel stress tensor
       //! w.r.t. the right Cauchy-Green deformation tensor (Voigt stress-stress form)
       Core::LinAlg::Matrix<6, 6> curr_dMtheta_dev_sym_dC{Core::LinAlg::Initialization::zero};
-      //! derivative of the deviatoric, symmetric part of the Mandel stress tensor w.r.t. the
-      //! temperature (Voigt stress form)
+      //! derivative of the deviatoric, symmetric part of the thermo-elastic Mandel stress tensor
+      //! w.r.t. the temperature (Voigt stress form)
       Core::LinAlg::Matrix<6, 1> curr_dMtheta_dev_sym_dT{Core::LinAlg::Initialization::zero};
 
       //! derivative of the plastic strain rate w.r.t. the equivalent stress
@@ -616,7 +616,7 @@ namespace Mat
     {
       //! derivative of the inverse plastic deformation gradient w.r.t. the right Cauchy-Green
       //! tensor \f$ \frac{\mathrm{d}\boldsymbol{F}_\mathrm{p}^{-1}}{\mathrm{d}\boldsymbol{C}} \f$
-      //! in Voigt notation (second dimension in in stress-form)
+      //! in Voigt notation (second dimension in stress-form)
       Core::LinAlg::Matrix<9, 6> inv_plastic_defgrad_wrt_cauchy_green{
           Core::LinAlg::Initialization::zero};
       //! derivative of the equivalent plastic strain w.r.t. the right Cauchy-Green tensor
@@ -732,7 +732,7 @@ namespace Mat
 
 
     /**
-     * Returns the derivative of the taylor-quinney term wrt. the right Cauchy-Green tensor
+     * Returns the derivative of the Taylor-Quinney term wrt. the right Cauchy-Green tensor
      * \f[\frac{\mathrm{d}}{\mathrm{d}\mathbf{C}}\left(
      * \xi_\mathrm{TQ}\,\bar{\sigma}\,\dot{\varepsilon}_\mathrm{p}\right)
      * =\xi_\mathrm{TQ}\left(

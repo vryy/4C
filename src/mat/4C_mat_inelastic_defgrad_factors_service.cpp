@@ -190,7 +190,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalSubsteppingUti
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::init(
-    const double& ref_temperature)
+    const double ref_temperature)
 {
   // auxiliaries
   Core::LinAlg::Matrix<3, 3> id3x3{Core::LinAlg::Initialization::zero};
@@ -358,10 +358,11 @@ Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::compute_taylor_quinney_w
   total_dequiv_stress_dC.multiply(1.0, state_derivatives.equiv_stress_wrt_inverse_plastic_defgrad,
       history_variables_derivatives.inv_plastic_defgrad_wrt_cauchy_green, 1.0);
 
-  Core::LinAlg::Matrix<1, 6> total_dpsr_dC = total_dequiv_stress_dC;
+  Core::LinAlg::Matrix<1, 6> total_dpsr_dC{Core::LinAlg::Initialization::zero};
   total_dpsr_dC.update(state_derivatives.plastic_strain_rate_derivs.deriv_plastic_strain,
-      history_variables_derivatives.plastic_strain_wrt_cauchy_green,
-      state_derivatives.plastic_strain_rate_derivs.deriv_equiv_stress);
+      history_variables_derivatives.plastic_strain_wrt_cauchy_green, 0.0);
+  total_dpsr_dC.update(
+      state_derivatives.plastic_strain_rate_derivs.deriv_equiv_stress, total_dequiv_stress_dC, 1.0);
 
   Core::LinAlg::Matrix<1, 6> dR_TQ_dCV{Core::LinAlg::Initialization::zero};
   dR_TQ_dCV.update(

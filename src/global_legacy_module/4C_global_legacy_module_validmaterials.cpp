@@ -2654,7 +2654,8 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 parameter<double>("DENS", {.description = "material mass density"}),
                 parameter<double>("REF_TEMPERATURE",
                     {.description = "reference temperature for thermoelastic expansion.",
-                        .default_value = 0.0}),
+                        .default_value = 0.0,
+                        .validator = Validators::positive_or_zero<double>()}),
                 parameter<double>("THERMAL_EXPANSION_COEFFICIENT",
                     {.description = "coefficient of thermal expansion $\\alpha_T$",
                         .default_value = 0.0}),
@@ -2841,8 +2842,7 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 {.description =
                         "Taylor-Quinney coefficient $\\xi_{TQ}$ modeling the internal dissipation",
                     .default_value = 0.0,
-                    .validator =
-                        Core::IO::InputSpecBuilders::Validators::positive_or_zero<double>()}),
+                    .validator = positive_or_zero<double>()}),
             parameter<std::optional<double>>(
                 "YIELD_COND_A", {.description = "transversely isotropic version of the Hill(1948) "
                                                 "yield condition: parameter A, following the "

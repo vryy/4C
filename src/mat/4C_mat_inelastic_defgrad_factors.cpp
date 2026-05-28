@@ -41,6 +41,7 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <algorithm>
+#include <array>
 #include <map>
 #include <memory>
 #include <optional>
@@ -65,9 +66,12 @@ namespace
     return diff.norm2();
   }
 
+  /// Holds Kinematic quantities reduced by the preceding inelastic factors
   struct ReducedKinematics
   {
+    /// The deformation gradient reduced by the preceding inelastic factors
     Core::LinAlg::Matrix<3, 3> defgrad{Core::LinAlg::Initialization::zero};
+    /// The right cauchy gree tensor obtained from the reduced deformation gradient
     Core::LinAlg::Matrix<3, 3> right_cauchy_green{Core::LinAlg::Initialization::zero};
   };
 
@@ -389,9 +393,11 @@ namespace
 
   /**
    * @brief Extract the derivative of the plastic strain w.r.t. right CG tensor from the
-   solution of the linear system of equations arising in the additional cmat calculation.
+   solution of the linear system of equations arising in
+   evaluate_history_variables_wrt_cauchy_green.
    *
-   * @param SOL
+   * @param SOL Solution arising from the linear system of equations in
+   evaluate_history_variables_wrt_cauchy_green
    * @return Core::LinAlg::Matrix<1, 6> \f[ \frac{\mathrm{d} \varepsilon_p}{\mathrm{d}
    \boldsymbol{C}}
    \f] in Voigt Notation
@@ -2729,18 +2735,10 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
       reduced_kinematics.right_cauchy_green, temperature, err_status)
                              .inv_plastic_defgrad_wrt_cauchy_green;
 
-  if (err_status != ViscoplastUtils::ErrorType::no_errors)
-  {
-    // if we get an error in evaluating the history variable derivatives: perform
-    // perturbation-based linearization
-    std::cout << "Warning: Error encountered in evaluating history variable derivatives: "
-              << ViscoplastUtils::get_detailed_error_message_for_error_type(err_status) << "\n"
-              << "Performing perturbation-based linearization for the additional stiffness "
-                 "contribution.\n";
-    evaluate_additional_cmat_perturb_based(
-        reduced_kinematics.defgrad, temperature, cmatadd, dSdiFinj);
-    return;
-  }
+  FOUR_C_ASSERT_ALWAYS(err_status == ViscoplastUtils::ErrorType::no_errors,
+      "Could not evaluate additional stiffness matrix: {}",
+      ViscoplastUtils::get_detailed_error_message_for_error_type(err_status));
+
   // compute additional term to stiffness matrix additional_cmat
   cmatadd.multiply_nn(2.0, dSdiFinj, diFinjdC, 1.0);
 }
@@ -2752,6 +2750,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
 {
   if (thermo_mechanical_coupling_cache_.history_variables_wrt_temperature.is_evaluated(gp_))
   {
+    err_status = ViscoplastUtils::ErrorType::no_errors;
     return thermo_mechanical_coupling_cache_.history_variables_wrt_temperature.value(gp_);
   }
 
@@ -2780,7 +2779,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
         err_status == InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::no_errors,
         "Could not evaluate Jacobian in off-diagonal stiffness evaluation!");
 
-    // if we get singular Jacobian: throw exception -> go to FD-based linearization
+    // Assert that jacobian is not singular
     FOUR_C_ASSERT_ALWAYS(abs(jacMat.determinant()) > 1.0e-10,
         "Singular Jacobian in off-diagonal stiffness evaluation! Jacobian determinant: {}",
         abs(jacMat.determinant()));
@@ -2804,8 +2803,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
       rhs_iFin_V.update(-time_step_tracker_.dt, state_quantity_derivatives_.curr_dlpdT, 0.0);
 
       // calculate RHS of the equation for the plastic strain
-      /** \f$\texttt{rhs\_epsp\_V} =\frac{\partial r_{\varepsilon_{\text{p}}}}{\partial T_{n+1}}
-      = - \Delta t \cdot \left(\underbrace{\frac{\partial \dot{\varepsilon}_{\text{p}}}{\partial
+      /** \f$\texttt{rhs\_epsp\_V} = - \frac{\partial r_{\varepsilon_{\text{p}}}}{\partial T_{n+1}}
+      = \Delta t \cdot \left(\underbrace{\frac{\partial \dot{\varepsilon}_{\text{p}}}{\partial
       \sigma_{\text{yield}}} \cdot
       \frac{\partial\sigma_{\text{yield}}}{\partial T}}_\texttt{curr\_dpsr\_dT} + \frac{\partial
       v_{\text{p}}}{\partial \sigma_\text{eq}}
@@ -2838,7 +2837,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
     if ((err != 0) || (err2 != 0))
     {
       err_status = ViscoplastUtils::ErrorType::failed_solution_analytic_linearization;
-      FOUR_C_THROW("Evaluation of linear system for off-diagonal stiffness has failed!");
+      FOUR_C_THROW("Evaluation of linear system for off-diagonal stiffness has failed: {}",
+          get_detailed_error_message_for_error_type(err_status));
     }
 
     // disassemble the solution vector
@@ -2906,7 +2906,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_mechanical_dissipati
 
   ViscoplastUtils::ErrorType err_status = ViscoplastUtils::ErrorType::no_errors;
 
-  const double& tol = ViscoplastUtils::thermo_mechanical_state_equality_tolerance;
+  const double tol = ViscoplastUtils::thermo_mechanical_state_equality_tolerance;
 
   // First determine current state, then pre_evaluate, because pre_evaluate sets state.
   const bool is_current_state =
@@ -3061,6 +3061,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
   if (thermo_mechanical_coupling_cache_.history_variables_wrt_cauchy_green.is_evaluated(gp_))
   {
     // return the cached values.
+    err_status = ViscoplastUtils::ErrorType::no_errors;
     return thermo_mechanical_coupling_cache_.history_variables_wrt_cauchy_green.value(gp_);
   }
 
@@ -4230,14 +4231,22 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat_pe
   const auto unperturbed_time_step_quantities = time_step_quantities_;
 
   const double perturbation_factor = 1.0e-7;
-  const double delta_T_perturbation =
-      std::max(perturbation_factor * std::abs(temperature), perturbation_factor);
+  const double delta_T_perturbation = std::max(perturbation_factor * temperature,
+      perturbation_factor);  // ensure a minimum perturbation size for small temperatures
+
+  const std::array<double, 2> perturbed_temperatures = {temperature + delta_T_perturbation,
+      std::max(
+          0.0, temperature - delta_T_perturbation)};  // ensure non-negative absolute temperature
+
+  std::array<double, 2> delta_signs = {1.0, -1.0};
+  const double delta_T_perturbation_used = perturbed_temperatures[0] - perturbed_temperatures[1];
+
 
   Core::LinAlg::Matrix<9, 1> diFindT_FD(Core::LinAlg::Initialization::zero);
 
-  for (const double delta_sign : {1.0, -1.0})
+  for (int index : {0, 1})
   {
-    const double perturbed_temperature = temperature + delta_T_perturbation * delta_sign;
+    const double perturbed_temperature = perturbed_temperatures[index];
 
     // set the perturbed temperature in the viscoplastic law.
     params_.set<double>("temperature", perturbed_temperature);
@@ -4251,7 +4260,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat_pe
     Core::LinAlg::Voigt::matrix_3x3_to_9x1(
         perturbed_history_variables.inv_plastic_defgrad, perturbed_iFinV);
 
-    diFindT_FD.update(delta_sign / (2.0 * delta_T_perturbation), perturbed_iFinV, 1.0);
+    diFindT_FD.update(delta_signs[index] / delta_T_perturbation_used, perturbed_iFinV, 1.0);
   }
 
   // update dstressdT by the contribution of the variation of the inverse inelastic defgrad with
