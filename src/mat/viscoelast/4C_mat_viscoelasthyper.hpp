@@ -205,22 +205,6 @@ namespace Mat
         Core::LinAlg::Matrix<7, 1>& rateinv, Core::LinAlg::Matrix<7, 1>& modrateinv,
         const Teuchos::ParameterList& params, double dt, int gp, int eleGID);
 
-    /// calculates the isotropic stress and elasticity tensor for viscous principal configuration
-    virtual void evaluate_iso_visco_principal(Core::LinAlg::Matrix<6, 1>& stress,
-        Core::LinAlg::Matrix<6, 6>& cmat, Core::LinAlg::Matrix<8, 1>& mu,
-        Core::LinAlg::Matrix<33, 1>& xi, Core::LinAlg::Matrix<6, 6>& id4sharp,
-        Core::LinAlg::Matrix<6, 1>& scgrate);
-
-    /// calculates the isotropic stress and elasticity tensor for viscous decoupled configuration
-    virtual void evaluate_iso_visco_modified(Core::LinAlg::Matrix<6, 1>& stressisomodisovisco,
-        Core::LinAlg::Matrix<6, 1>& stressisomodvolvisco,
-        Core::LinAlg::Matrix<6, 6>& cmatisomodisovisco,
-        Core::LinAlg::Matrix<6, 6>& cmatisomodvolvisco, Core::LinAlg::Matrix<3, 1>& prinv,
-        Core::LinAlg::Matrix<3, 1>& modinv, Core::LinAlg::Matrix<8, 1>& modmu,
-        Core::LinAlg::Matrix<33, 1>& modxi, Core::LinAlg::Matrix<6, 1>& rcg,
-        Core::LinAlg::Matrix<6, 1>& id2, Core::LinAlg::Matrix<6, 1>& icg,
-        Core::LinAlg::Matrix<6, 6>& id4, Core::LinAlg::Matrix<6, 1>& modrcgrate);
-
     /// calculates the stress and elasticitiy tensor for the generalized Maxwell material
     virtual void evaluate_visco_generalized_maxwell(Core::LinAlg::Matrix<6, 1>& Q,
         Core::LinAlg::Matrix<6, 6>& cmatq, double dt, const Core::LinAlg::Matrix<6, 1>& glstrain,

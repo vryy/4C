@@ -10,8 +10,11 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_elast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
+
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -127,6 +130,33 @@ namespace Mat
     };
 
   }  // namespace Elastic
+
+
+  namespace ViscoElast
+  {
+    namespace Kernels
+    {
+      using FslsStressVector = Core::LinAlg::Matrix<6, 1>;
+      using FslsTangentMatrix = Core::LinAlg::Matrix<6, 6>;
+      using FslsHistory = std::vector<std::vector<FslsStressVector>>;
+
+      struct FslsKernelInput
+      {
+        int visco_mat_id = -1;
+        int gp = -1;
+        int ele_gid = -1;
+        double dt = 0.0;
+        double tau = 0.0;
+        double alpha = 0.0;
+        double beta = 0.0;
+        const FslsHistory* previous_history = nullptr;
+      };
+
+      void evaluate_fsls_kernel(const FslsStressVector& stress, const FslsTangentMatrix& cmat,
+          FslsStressVector& q_current_for_history, FslsStressVector& q_additive,
+          FslsTangentMatrix& cmatq_additive, const FslsKernelInput& input);
+    }  // namespace Kernels
+  }  // namespace ViscoElast
 }  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
