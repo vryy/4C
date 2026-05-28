@@ -258,7 +258,10 @@ namespace
     double temperature = 313.0;
     double total_time = 1.0e-6;
     double time_step_size = 1.0e-6;
-    Core::LinAlg::Matrix<3, 3> id3x3 = Core::LinAlg::identity_matrix<3>();
+    Mat::EvaluationContext<3> context{.total_time = &total_time,
+        .time_step_size = &time_step_size,
+        .xi = {},
+        .ref_coords = nullptr};
     Core::LinAlg::Matrix<3, 3> FM{Core::LinAlg::Initialization::zero};
     Core::LinAlg::Matrix<3, 3> iFin_analytic{Core::LinAlg::Initialization::zero};
     Core::LinAlg::Matrix<3, 3> iFin_fd{Core::LinAlg::Initialization::zero};
@@ -300,12 +303,8 @@ namespace
 
     Teuchos::ParameterList param_list;
     param_list.set<double>("temperature", comparison.temperature);
-    Mat::EvaluationContext<3> context{.total_time = &comparison.total_time,
-        .time_step_size = &comparison.time_step_size,
-        .xi = {},
-        .ref_coords = nullptr};
-    comparison.analytic_material.material->pre_evaluate(param_list, context, 0, 0);
-    comparison.fd_material.material->pre_evaluate(param_list, context, 0, 0);
+    comparison.analytic_material.material->pre_evaluate(param_list, comparison.context, 0, 0);
+    comparison.fd_material.material->pre_evaluate(param_list, comparison.context, 0, 0);
 
     comparison.FM(0, 0) = 1.55;
     comparison.FM(1, 1) = 1.0;
@@ -313,9 +312,9 @@ namespace
     comparison.FM(0, 1) = 0.15;
 
     comparison.analytic_material.material->evaluate_inverse_inelastic_def_grad(
-        &comparison.FM, comparison.id3x3, comparison.iFin_analytic);
+        &comparison.FM, Core::LinAlg::identity_matrix<3>(), comparison.iFin_analytic);
     comparison.fd_material.material->evaluate_inverse_inelastic_def_grad(
-        &comparison.FM, comparison.id3x3, comparison.iFin_fd);
+        &comparison.FM, Core::LinAlg::identity_matrix<3>(), comparison.iFin_fd);
 
     Core::LinAlg::Matrix<3, 3> CM(Core::LinAlg::Initialization::zero);
     Core::LinAlg::Matrix<3, 3> iCM(Core::LinAlg::Initialization::zero);
@@ -2745,9 +2744,11 @@ namespace
     Core::LinAlg::Matrix<6, 6> cmatadd_analytic(Core::LinAlg::Initialization::zero);
     Core::LinAlg::Matrix<6, 6> cmatadd_fd(Core::LinAlg::Initialization::zero);
     comparison.analytic_material.material->evaluate_additional_cmat(&comparison.FM,
-        comparison.id3x3, comparison.iFin_analytic, comparison.iCV, dSdiFin_, cmatadd_analytic);
-    comparison.fd_material.material->evaluate_additional_cmat(
-        &comparison.FM, comparison.id3x3, comparison.iFin_fd, comparison.iCV, dSdiFin_, cmatadd_fd);
+        Core::LinAlg::identity_matrix<3>(), comparison.iFin_analytic, comparison.iCV, dSdiFin_,
+        cmatadd_analytic);
+    comparison.fd_material.material->evaluate_additional_cmat(&comparison.FM,
+        Core::LinAlg::identity_matrix<3>(), comparison.iFin_fd, comparison.iCV, dSdiFin_,
+        cmatadd_fd);
 
     ASSERT_GT(cmatadd_analytic.norm2(), 0.0);
     expect_near_relative(cmatadd_analytic, cmatadd_fd, 1.0e-6, 1.0e-9);
@@ -2760,10 +2761,10 @@ namespace
 
     Core::LinAlg::Matrix<6, 1> dstressdT_analytic(Core::LinAlg::Initialization::zero);
     Core::LinAlg::Matrix<6, 1> dstressdT_fd(Core::LinAlg::Initialization::zero);
-    comparison.analytic_material.material->evaluate_od_stiff_mat(
-        &comparison.FM, comparison.id3x3, comparison.iFin_analytic, dSdiFin_, dstressdT_analytic);
-    comparison.fd_material.material->evaluate_od_stiff_mat(
-        &comparison.FM, comparison.id3x3, comparison.iFin_fd, dSdiFin_, dstressdT_fd);
+    comparison.analytic_material.material->evaluate_od_stiff_mat(&comparison.FM,
+        Core::LinAlg::identity_matrix<3>(), comparison.iFin_analytic, dSdiFin_, dstressdT_analytic);
+    comparison.fd_material.material->evaluate_od_stiff_mat(&comparison.FM,
+        Core::LinAlg::identity_matrix<3>(), comparison.iFin_fd, dSdiFin_, dstressdT_fd);
 
     ASSERT_GT(dstressdT_analytic.norm2(), 0.0);
     expect_near_relative(dstressdT_analytic, dstressdT_fd, 1.0e-6, 1.0e-9);
@@ -2775,11 +2776,11 @@ namespace
     FOUR_C_EXPECT_NEAR(comparison.iFin_analytic, comparison.iFin_fd, 1.0e-10);
 
     const Mat::MechanicalDissipation analytic_dissipation =
-        comparison.analytic_material.material->evaluate_mechanical_dissipation(
-            0, &comparison.FM, comparison.id3x3, comparison.temperature);
+        comparison.analytic_material.material->evaluate_mechanical_dissipation(comparison.context,
+            0, 0, &comparison.FM, Core::LinAlg::identity_matrix<3>(), comparison.temperature);
     const Mat::MechanicalDissipation fd_dissipation =
-        comparison.fd_material.material->evaluate_mechanical_dissipation(
-            0, &comparison.FM, comparison.id3x3, comparison.temperature);
+        comparison.fd_material.material->evaluate_mechanical_dissipation(comparison.context, 0, 0,
+            &comparison.FM, Core::LinAlg::identity_matrix<3>(), comparison.temperature);
 
     ASSERT_GT(std::abs(analytic_dissipation.value), 0.0);
     ASSERT_GT(analytic_dissipation.derivative_wrt_cauchy_green.norm2(), 0.0);
@@ -2794,21 +2795,51 @@ namespace
 
   TEST_F(InelasticDefgradFactorsTest, ThermoViscoplastPublicEvaluationsCanBeCalledInAnyOrder)
   {
+    // The viscoplastic factor has two public evaluation paths: one from the solid field (through
+    // pre_evaluate, evaluate_inverse_inelastic_def_grad, evaluate_additional_cmat and (for
+    // monolithic solvers) evaluate_od_stiff_mat) and one from the thermo field (through
+    // evaluate_mechanical_dissipation).
+
+    // This test tests that both evaluation paths are independent of each other, i.e. they can be
+    // called in arbitrary order.
+
+    // Since internally, both evaluation paths are coupled via Gauss point caches, we must also
+    // ensure that either evaluation path uses wrong caches. This is done by letting the second
+    // public evaluation request results at a different gauss point, temperature or deformation
+    // gradient respectively.
+
+    // requested_* values are the values we actually test on. stale_* values are used to show that
+    // those values are not leaking into the evaluations with the requested_* values.
+
     const double requested_temperature = 313.0;
     const double stale_temperature = 312.0;
 
-    const Core::LinAlg::Matrix<3, 3> id3x3 = Core::LinAlg::identity_matrix<3>();
+    Core::LinAlg::Matrix<3, 3> requested_FM(Core::LinAlg::Initialization::zero);
+    requested_FM(0, 0) = 1.55;
+    requested_FM(0, 1) = 0.15;
+    requested_FM(1, 1) = 1.0;
+    requested_FM(2, 2) = 1.0;
+
+    Core::LinAlg::Matrix<3, 3> stale_FM(Core::LinAlg::Initialization::zero);
+    stale_FM(0, 0) = 1.50;
+    stale_FM(0, 1) = 0.15;
+    stale_FM(1, 1) = 1.3;
+    stale_FM(2, 2) = 0.8;
 
     const int requested_gp = 0;
-    const int next_gp = 1;
+    const int stale_gp = 1;
     const int numgp = 2;
 
     double total_time = 1.0e-6;
     double time_step_size = 1.0e-6;
-    Mat::EvaluationContext<3> context{.total_time = &total_time,
+    const Mat::EvaluationContext<3> context{.total_time = &total_time,
         .time_step_size = &time_step_size,
         .xi = {},
         .ref_coords = nullptr};
+
+    // auxiliaries
+    const Core::LinAlg::Matrix<3, 3> id3x3 = Core::LinAlg::identity_matrix<3>();
+    using ViscoPlastMaterial = std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast>;
 
     const ReformulatedJohnsonCookParameters viscoplastic_law_params{.strain_rate_prefac = 1.0,
         .strain_rate_exp_fac = 0.014,
@@ -2819,248 +2850,245 @@ namespace
         .melt_temperature = 1793.0,
         .temperature_sens = 1.03};
 
-    Core::LinAlg::Matrix<3, 3> requested_FM(Core::LinAlg::Initialization::zero);
-    requested_FM(0, 0) = 1.55;
-    requested_FM(0, 1) = 0.15;
-    requested_FM(1, 1) = 1.0;
-    requested_FM(2, 2) = 1.0;
-
-    Core::LinAlg::Matrix<3, 3> stale_FM(Core::LinAlg::Initialization::zero);
-    stale_FM(0, 0) = 1.50;
-    stale_FM(0, 1) = 0.10;
-    stale_FM(1, 1) = 1.0;
-    stale_FM(2, 2) = 1.0;
-
-    auto make_material_and_pre_evaluate =
-        [&context, &viscoplastic_law_params](
-            const double material_temperature, const int material_gp)
+    // create a new clean material instance
+    auto make_material = [&viscoplastic_law_params]()
     {
-      auto material =
-          set_up_viscoplastic_material({.numgp = numgp,
-                                           .taylor_quinney_coefficient = 0.85,
-                                           .viscoplastic_law_params = viscoplastic_law_params})
-              .material;
-      Teuchos::ParameterList param_list;
-      param_list.set<double>("temperature", material_temperature);
-      material->pre_evaluate(param_list, context, material_gp, 0);
-      return material;
+      return set_up_viscoplastic_material({.numgp = numgp,
+                                              .taylor_quinney_coefficient = 0.85,
+                                              .viscoplastic_law_params = viscoplastic_law_params})
+          .material;
     };
 
-    auto evaluate_inverse_inelastic_defgrad =
-        [&](const auto& material, const Core::LinAlg::Matrix<3, 3>& defgrad)
-    {
-      Core::LinAlg::Matrix<3, 3> iFin(Core::LinAlg::Initialization::zero);
-      try
-      {
-        material->evaluate_inverse_inelastic_def_grad(&defgrad, id3x3, iFin);
-      }
-      catch (const std::exception& exception)
-      {
-        ADD_FAILURE() << "evaluate_inverse_inelastic_def_grad threw an exception:\n"
-                      << exception.what();
-      }
-      return iFin;
-    };
-
-    auto evaluate_additional_cmat = [&](const auto& material,
-                                        const Core::LinAlg::Matrix<3, 3>& defgrad,
-                                        const Core::LinAlg::Matrix<3, 3>& iFin)
-    {
-      Core::LinAlg::Matrix<3, 3> CM(Core::LinAlg::Initialization::zero);
-      Core::LinAlg::Matrix<3, 3> iCM(Core::LinAlg::Initialization::zero);
-      Core::LinAlg::Matrix<6, 1> iCV(Core::LinAlg::Initialization::zero);
-      CM.multiply_tn(1.0, defgrad, defgrad, 0.0);
-      iCM.invert(CM);
-      Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCM, iCV);
-
-      Core::LinAlg::Matrix<6, 6> cmatadd(Core::LinAlg::Initialization::zero);
-      material->evaluate_additional_cmat(&defgrad, id3x3, iFin, iCV, dSdiFin_, cmatadd);
-
-      EXPECT_GT(cmatadd.norm2(), 0.0);
-      return cmatadd;
-    };
-
-    auto evaluate_od_stiff_mat = [&](const auto& material,
-                                     const Core::LinAlg::Matrix<3, 3>& defgrad,
-                                     const Core::LinAlg::Matrix<3, 3>& iFin)
-    {
-      Core::LinAlg::Matrix<6, 1> dstressdT(Core::LinAlg::Initialization::zero);
-      try
-      {
-        material->evaluate_od_stiff_mat(&defgrad, id3x3, iFin, dSdiFin_, dstressdT);
-      }
-      catch (const std::exception& exception)
-      {
-        ADD_FAILURE() << "evaluate_od_stiff_mat threw an exception:\n" << exception.what();
-      }
-
-      EXPECT_GT(dstressdT.norm2(), 0.0);
-
-      return dstressdT;
-    };
-
-    struct EvaluationResults
+    struct SolidEvaluationResults
     {
       Core::LinAlg::Matrix<3, 3> iFin;
       Core::LinAlg::Matrix<6, 6> cmatadd;
       Core::LinAlg::Matrix<6, 1> dstressdT;
-      Mat::MechanicalDissipation dissipation;
+      static void assert_equal(
+          const SolidEvaluationResults& actual, const SolidEvaluationResults& expected)
+      {
+        FOUR_C_EXPECT_NEAR(actual.iFin, expected.iFin, 1.0e-16);
+        FOUR_C_EXPECT_NEAR(actual.cmatadd, expected.cmatadd, 1.0e-16);
+        FOUR_C_EXPECT_NEAR(actual.dstressdT, expected.dstressdT, 1.0e-16);
+      }
     };
 
-    const auto full_evaluation = [&](const auto& material, const int gp,
-                                     const Core::LinAlg::Matrix<3, 3>& defgrad,
-                                     const double temperature) -> EvaluationResults
+    struct ThermoEvaluationResults
     {
+      Mat::MechanicalDissipation dissipation;
+      static void assert_equal(
+          const ThermoEvaluationResults& actual, const ThermoEvaluationResults& expected)
+      {
+        ASSERT_DOUBLE_EQ(actual.dissipation.value, expected.dissipation.value);
+        FOUR_C_EXPECT_NEAR(actual.dissipation.derivative_wrt_cauchy_green,
+            expected.dissipation.derivative_wrt_cauchy_green, 1.0e-16);
+        ASSERT_DOUBLE_EQ(actual.dissipation.derivative_wrt_temperature,
+            expected.dissipation.derivative_wrt_temperature);
+      }
+    };
+
+    // helper to store a full evaluation result
+    struct EvaluationResults
+    {
+      SolidEvaluationResults solid_results;
+      ThermoEvaluationResults thermo_results;
+
+      // assert that two EvaluationResults are near each other (used for comparing results from
+      // different evaluation orders)
+      static void assert_equal(const EvaluationResults& actual, const EvaluationResults& expected)
+      {
+        SolidEvaluationResults::assert_equal(actual.solid_results, expected.solid_results);
+        ThermoEvaluationResults::assert_equal(actual.thermo_results, expected.thermo_results);
+      };
+    };
+
+    // perform a full solid evaluation of the material
+    const auto solid_evaluation = [&context, this](const ViscoPlastMaterial& material, const int gp,
+                                      const Core::LinAlg::Matrix<3, 3>& defgrad,
+                                      const double temperature) -> SolidEvaluationResults
+    {
+      // pre-evaluate (sets the gauss point index and temperature)
       Teuchos::ParameterList param_list;
       param_list.set<double>("temperature", temperature);
       material->pre_evaluate(param_list, context, gp, 0);
-      const Core::LinAlg::Matrix<3, 3> iFin = evaluate_inverse_inelastic_defgrad(material, defgrad);
-      EvaluationResults results;
-      results.iFin = iFin;
-      results.cmatadd = evaluate_additional_cmat(material, defgrad, iFin);
-      results.dstressdT = evaluate_od_stiff_mat(material, defgrad, iFin);
-      results.dissipation =
-          material->evaluate_mechanical_dissipation(gp, &defgrad, id3x3, temperature);
+
+      SolidEvaluationResults results;
+
+      try
+      {
+        // evaluate and return the inverse inelastic defgrad (relies on pre_evaluate being called
+        // first)
+        material->evaluate_inverse_inelastic_def_grad(
+            &defgrad, Core::LinAlg::identity_matrix<3>(), results.iFin);
+
+        // evaluate the additional cmat contribution (relies on
+        // evaluate_inverse_inelastic_defgrad being called first).
+        // We simply use dSiFin_ from the SetUp(), it does not matter here
+        Core::LinAlg::Matrix<3, 3> CM(Core::LinAlg::Initialization::zero);
+        Core::LinAlg::Matrix<3, 3> iCM(Core::LinAlg::Initialization::zero);
+        Core::LinAlg::Matrix<6, 1> iCV(Core::LinAlg::Initialization::zero);
+        CM.multiply_tn(1.0, defgrad, defgrad, 0.0);
+        iCM.invert(CM);
+        Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCM, iCV);
+        material->evaluate_additional_cmat(&defgrad, Core::LinAlg::identity_matrix<3>(),
+            results.iFin, iCV, dSdiFin_, results.cmatadd);
+        EXPECT_GT(results.cmatadd.norm2(), 0.0);
+
+        // evaluate the off-diagonal stiffness matrix contribution (relies on
+        // evaluate_inverse_inelastic_defgrad being called first)
+        material->evaluate_od_stiff_mat(&defgrad, Core::LinAlg::identity_matrix<3>(), results.iFin,
+            dSdiFin_, results.dstressdT);
+        EXPECT_GT(results.dstressdT.norm2(), 0.0);
+      }
+      catch (const std::exception& exception)
+      {
+        ADD_FAILURE() << "Solid evaluation failed:\n" << exception.what();
+      }
+
       return results;
     };
 
-    auto expect_results_match =
-        [&](const EvaluationResults& actual, const EvaluationResults& expected)
-    {
-      FOUR_C_EXPECT_NEAR(actual.iFin, expected.iFin, 1.0e-16);
-      FOUR_C_EXPECT_NEAR(actual.cmatadd, expected.cmatadd, 1.0e-16);
-      FOUR_C_EXPECT_NEAR(actual.dstressdT, expected.dstressdT, 1.0e-16);
-      EXPECT_NEAR(actual.dissipation.value, expected.dissipation.value, 1.0e-16);
-      FOUR_C_EXPECT_NEAR(actual.dissipation.derivative_wrt_cauchy_green,
-          expected.dissipation.derivative_wrt_cauchy_green, 1.0e-16);
-      EXPECT_NEAR(actual.dissipation.derivative_wrt_temperature,
-          expected.dissipation.derivative_wrt_temperature, 1.0e-16);
-    };
 
-    EvaluationResults expected;
+    //************************* Actual test starts here *************************
+
+    // container to hold the reference evaluation result obtained from solid first
+    EvaluationResults reference;
+
     {
-      SCOPED_TRACE("reference full evaluation");
-      auto eager_material = make_material_and_pre_evaluate(requested_temperature, requested_gp);
-      expected = full_evaluation(eager_material, requested_gp, requested_FM, requested_temperature);
-      ASSERT_GT(expected.cmatadd.norm2(), 0.0);
-      ASSERT_GT(expected.dstressdT.norm2(), 0.0);
-      ASSERT_GT(std::abs(expected.dissipation.value), 0.0);
-      ASSERT_GT(expected.dissipation.derivative_wrt_cauchy_green.norm2(), 0.0);
-      ASSERT_GT(std::abs(expected.dissipation.derivative_wrt_temperature), 0.0);
+      SCOPED_TRACE("Solid evaluation first, thermo evaluation second.");
+
+      {
+        SCOPED_TRACE(
+            "Thermo evaluation requests same temperature and deformation gradient as the solid "
+            "evaluation.");
+        auto material = make_material();
+        // 1.: solid evaluation
+        reference.solid_results =
+            solid_evaluation(material, requested_gp, requested_FM, requested_temperature);
+        // 2.: thermo evaluation
+        reference.thermo_results.dissipation = material->evaluate_mechanical_dissipation(
+            context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
+
+        // Since we are using this result as reference,assert that all values are non-zero to ensure
+        // full evaluation paths (no early returns due to no plastic strain)
+        ASSERT_GT(reference.solid_results.cmatadd.norm2(), 0.0);
+        ASSERT_GT(reference.solid_results.dstressdT.norm2(), 0.0);
+        ASSERT_GT(std::abs(reference.thermo_results.dissipation.value), 0.0);
+        ASSERT_GT(reference.thermo_results.dissipation.derivative_wrt_cauchy_green.norm2(), 0.0);
+        ASSERT_GT(std::abs(reference.thermo_results.dissipation.derivative_wrt_temperature), 0.0);
+      }
+      {
+        SCOPED_TRACE(
+            "Thermo evaluation requests a different temperature than the previous solid "
+            "evaluation.");
+        auto material = make_material();
+        ThermoEvaluationResults current;
+        // 1.: solid evaluation with stale temperature
+        solid_evaluation(material, requested_gp, requested_FM, stale_temperature);
+        // 2.: thermo evaluation with the requested temperature
+        current.dissipation = material->evaluate_mechanical_dissipation(
+            context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
+
+        ThermoEvaluationResults::assert_equal(current, reference.thermo_results);
+      }
+      {
+        SCOPED_TRACE(
+            "Thermo evaluation requests a different deformation gradient than the previous solid "
+            "evaluation.");
+        auto material = make_material();
+        ThermoEvaluationResults current;
+        // 1.: solid evaluation with stale deformation gradient
+        solid_evaluation(material, requested_gp, stale_FM, requested_temperature);
+        // 2.: thermo evaluation with the requested deformation gradient
+        current.dissipation = material->evaluate_mechanical_dissipation(
+            context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
+        ThermoEvaluationResults::assert_equal(current, reference.thermo_results);
+      }
+      {
+        SCOPED_TRACE(
+            "Thermo evaluation requests a different gauss point than the previous solid "
+            "evaluation.");
+        auto material = make_material();
+        EvaluationResults current;
+        // 1.: solid evaluation at two different gauss points, the most previous one with stale
+        // values
+        current.solid_results =
+            solid_evaluation(material, requested_gp, requested_FM, requested_temperature);
+        solid_evaluation(material, stale_gp, stale_FM,
+            stale_temperature);  // evaluate the next gauss point with different values to test that
+                                 // gauss point caches are not leaking into each other
+        // 2.: thermo evaluation at the requested gauss point (should use the cache filled by the
+        // first solid evaluation)
+        current.thermo_results.dissipation = material->evaluate_mechanical_dissipation(
+            context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
+        EvaluationResults::assert_equal(current, reference);
+      }
     }
 
     {
-      SCOPED_TRACE("mechanical dissipation is evaluated first");
-      auto material = make_material_and_pre_evaluate(requested_temperature, requested_gp);
-      EvaluationResults actual;
-      actual.dissipation = material->evaluate_mechanical_dissipation(
-          requested_gp, &requested_FM, id3x3, requested_temperature);
+      SCOPED_TRACE("Thermo evaluation first, solid evaluation second.");
 
-      // only for comparison
-      actual.iFin = evaluate_inverse_inelastic_defgrad(material, requested_FM);
-      actual.cmatadd = evaluate_additional_cmat(material, requested_FM, actual.iFin);
-      actual.dstressdT = evaluate_od_stiff_mat(material, requested_FM, actual.iFin);
-      expect_results_match(actual, expected);
-    }
+      {
+        SCOPED_TRACE(
+            "Thermo evaluation requests same temperature and deformation gradient as the solid "
+            "evaluation.");
+        auto material = make_material();
+        EvaluationResults current;
+        // 1.: thermo evaluation
+        current.thermo_results.dissipation = material->evaluate_mechanical_dissipation(
+            context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
+        // 2.: solid evaluation
+        current.solid_results =
+            solid_evaluation(material, requested_gp, requested_FM, requested_temperature);
 
-    {
-      SCOPED_TRACE("mechanical dissipation is evaluated after inverse inelastic defgrad");
-      auto material = make_material_and_pre_evaluate(requested_temperature, requested_gp);
-      EvaluationResults actual;
-      actual.iFin = evaluate_inverse_inelastic_defgrad(material, requested_FM);
-      // evaluate the dissipation while using the cached inverse inelastic defgrad
-      actual.dissipation = material->evaluate_mechanical_dissipation(
-          requested_gp, &requested_FM, id3x3, requested_temperature);
+        EvaluationResults::assert_equal(current, reference);
+      }
+      {
+        SCOPED_TRACE(
+            "Solid evaluation requests a different temperature than the previous thermo "
+            "evaluation.");
+        auto material = make_material();
+        // 1.: thermo evaluation with stale temperature
+        (void)material->evaluate_mechanical_dissipation(
+            context, requested_gp, 0, &requested_FM, id3x3, stale_temperature);
+        // 2.: solid evaluation with the requested temperature
+        const auto current =
+            solid_evaluation(material, requested_gp, requested_FM, requested_temperature);
 
-      // only for comparison
-      actual.cmatadd = evaluate_additional_cmat(material, requested_FM, actual.iFin);
-      actual.dstressdT = evaluate_od_stiff_mat(material, requested_FM, actual.iFin);
-      expect_results_match(actual, expected);
-    }
-
-    {
-      SCOPED_TRACE("mechanical dissipation is evaluated after additional cmat");
-      auto material = make_material_and_pre_evaluate(requested_temperature, requested_gp);
-      EvaluationResults actual;
-      actual.iFin = evaluate_inverse_inelastic_defgrad(material, requested_FM);
-      actual.cmatadd = evaluate_additional_cmat(material, requested_FM, actual.iFin);
-      // evaluate the dissipation while using the cached inverse inelastic defgrad and solid
-      // linearization
-      actual.dissipation = material->evaluate_mechanical_dissipation(
-          requested_gp, &requested_FM, id3x3, requested_temperature);
-      actual.dstressdT = evaluate_od_stiff_mat(material, requested_FM, actual.iFin);
-      expect_results_match(actual, expected);
-    }
-
-    {
-      SCOPED_TRACE("mechanical dissipation is evaluated after od stiff mat");
-      auto material = make_material_and_pre_evaluate(requested_temperature, requested_gp);
-      EvaluationResults actual;
-      actual.iFin = evaluate_inverse_inelastic_defgrad(material, requested_FM);
-      actual.dstressdT = evaluate_od_stiff_mat(material, requested_FM, actual.iFin);
-      // evaluate the dissipation while using the cached inverse inelastic defgrad and od stiff mat
-      actual.dissipation = material->evaluate_mechanical_dissipation(
-          requested_gp, &requested_FM, id3x3, requested_temperature);
-      actual.cmatadd = evaluate_additional_cmat(material, requested_FM, actual.iFin);
-      expect_results_match(actual, expected);
-    }
-
-    {
-      SCOPED_TRACE("mechanical dissipation is evaluated after another defgrad was current");
-
-      // setup material with stale defgrad
-      auto material = make_material_and_pre_evaluate(requested_temperature, requested_gp);
-      evaluate_inverse_inelastic_defgrad(material, stale_FM);
-
-      EvaluationResults actual;
-      // evaluate the dissipation. This re-runs the return mapping for the new state
-      actual.dissipation = material->evaluate_mechanical_dissipation(
-          requested_gp, &requested_FM, id3x3, requested_temperature);
-      // only for comparison
-      actual.iFin = evaluate_inverse_inelastic_defgrad(material, requested_FM);
-      actual.cmatadd = evaluate_additional_cmat(material, requested_FM, actual.iFin);
-      actual.dstressdT = evaluate_od_stiff_mat(material, requested_FM, actual.iFin);
-      expect_results_match(actual, expected);
-    }
-
-    {
-      SCOPED_TRACE("mechanical dissipation is evaluated after another temperature was current");
-
-      // setup material with stale temperature
-      auto material = make_material_and_pre_evaluate(stale_temperature, requested_gp);
-      evaluate_inverse_inelastic_defgrad(material, requested_FM);
-
-      EvaluationResults actual;
-      // evaluate the dissipation. This re-runs the return mapping for the new state
-      actual.dissipation = material->evaluate_mechanical_dissipation(
-          requested_gp, &requested_FM, id3x3, requested_temperature);
-      actual.iFin = evaluate_inverse_inelastic_defgrad(material, requested_FM);
-      actual.cmatadd = evaluate_additional_cmat(material, requested_FM, actual.iFin);
-      actual.dstressdT = evaluate_od_stiff_mat(material, requested_FM, actual.iFin);
-      expect_results_match(actual, expected);
-    }
-
-    {
-      SCOPED_TRACE("mechanical dissipation is requested for a different gp than previous calls");
-
-      auto material = make_material_and_pre_evaluate(requested_temperature, next_gp);
-
-      // evaluate at the requested gauss point
-      auto actual = full_evaluation(material, requested_gp, requested_FM, requested_temperature);
-
-      // evaluate at the next gauss point with stale state
-      full_evaluation(material, next_gp, stale_FM, stale_temperature);
-
-      Teuchos::ParameterList params;
-      params.set<double>("temperature", requested_temperature);
-      material->pre_evaluate(params, context, requested_gp, 0);
-
-      // evaluate the dissipation at the requested gauss point, using the cache stored at the last
-      // requested gauss point.
-      actual.dissipation = material->evaluate_mechanical_dissipation(
-          requested_gp, &requested_FM, id3x3, requested_temperature);
-
-      expect_results_match(actual, expected);
+        SolidEvaluationResults::assert_equal(current, reference.solid_results);
+      }
+      {
+        SCOPED_TRACE(
+            "Solid evaluation requests a different deformation gradient than the previous thermo "
+            "evaluation.");
+        auto material = make_material();
+        // 1.: thermo evaluation with stale deformation gradient
+        (void)material->evaluate_mechanical_dissipation(
+            context, requested_gp, 0, &stale_FM, id3x3, requested_temperature);
+        // 2.: solid evaluation with the requested deformation gradient
+        const auto current =
+            solid_evaluation(material, requested_gp, requested_FM, requested_temperature);
+        SolidEvaluationResults::assert_equal(current, reference.solid_results);
+      }
+      {
+        SCOPED_TRACE(
+            "Solid evaluation requests a different gauss point than the previous thermo "
+            "evaluation.");
+        auto material = make_material();
+        EvaluationResults current;
+        // 1.: thermo evaluation at two different gauss points, the most previous one with stale
+        // values
+        current.thermo_results.dissipation = material->evaluate_mechanical_dissipation(
+            context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
+        (void)material->evaluate_mechanical_dissipation(context, stale_gp, 0, &stale_FM, id3x3,
+            stale_temperature);  // evaluate the next gauss point with different values to test that
+                                 // gauss point caches are not leaking into each other
+        // 2.: solid evaluation at the requested gauss point (should use the cache filled by the
+        // first thermo evaluation)
+        current.solid_results =
+            solid_evaluation(material, requested_gp, requested_FM, requested_temperature);
+        EvaluationResults::assert_equal(current, reference);
+      }
     }
   }
 }  // namespace

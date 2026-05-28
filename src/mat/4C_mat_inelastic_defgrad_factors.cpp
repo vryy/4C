@@ -31,6 +31,7 @@
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
+#include "4C_mat_so3_material.hpp"
 #include "4C_mat_vplast_law.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -1835,7 +1836,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pre_evaluate(
   }
 
   // invalidate the caches if the temperature changed
-  if (std::abs(time_step_quantities_.current_temperature[gp] - previous_temperature) > 1.0e-16)
+  if (std::abs(time_step_quantities_.current_temperature[gp] - previous_temperature) >
+      ViscoplastUtils::thermo_mechanical_state_equality_tolerance)
   {
     time_step_quantities_.current_defgrad[gp].clear();
     thermo_mechanical_coupling_cache_.reset(gp);
@@ -2895,7 +2897,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat(
 }
 
 Mat::MechanicalDissipation
-Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_mechanical_dissipation(const int gp,
+Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_mechanical_dissipation(
+    const Mat::EvaluationContext<3>& context, const int gp, const int eleGID,
     const Core::LinAlg::Matrix<3, 3>* defgrad, const Core::LinAlg::Matrix<3, 3>& iFin_other,
     const double& temperature)
 {
@@ -2903,19 +2906,22 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_mechanical_dissipati
 
   ViscoplastUtils::ErrorType err_status = ViscoplastUtils::ErrorType::no_errors;
 
-  gp_ = gp;
+  const double& tol = ViscoplastUtils::thermo_mechanical_state_equality_tolerance;
+
+  // First determine current state, then pre_evaluate, because pre_evaluate sets state.
+  const bool is_current_state =
+      defgrad_difference_norm(
+          reduced_kinematics.defgrad, time_step_quantities_.current_defgrad[gp]) < tol &&
+      std::abs(temperature - time_step_quantities_.current_temperature[gp]) < tol;
+
+  // set the new temperature and pre-evaluate
+  params_.set<double>("temperature", temperature);
+  pre_evaluate(params_, context, gp, eleGID);
 
   if (parameter()->linearization_type() == ViscoplastUtils::LinearizationType::perturbation_based)
   {
     return evaluate_mechanical_dissipation_perturb_based(reduced_kinematics.defgrad, temperature);
   }
-
-  const double& tol = ViscoplastUtils::thermo_mechanical_state_equality_tolerance;
-
-  const bool is_current_state =
-      defgrad_difference_norm(
-          reduced_kinematics.defgrad, time_step_quantities_.current_defgrad[gp]) < tol &&
-      std::abs(temperature - time_step_quantities_.current_temperature[gp]) < tol;
 
   // Note: In monolithic tsi, the thermo-predictor comes in with the last state,
   // so it would be possible to store the computed dissipation of the last step and
@@ -2924,11 +2930,6 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_mechanical_dissipati
 
   if (not is_current_state)
   {
-    // new state, i.e. we need to recompute history variables for the incoming state.
-
-    // set the new temperature
-    params_.set<double>("temperature", temperature);
-    viscoplastic_law_->pre_evaluate(params_, gp);
     // recompute the current history variables for the incoming state. This also sets the new state.
     return_mapping(reduced_kinematics.defgrad, temperature);
   }
@@ -2997,6 +2998,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
   // If this is a "new" deformation gradient, evaluate the inverse inelastic deformation gradient
   // via return mapping.
 
+  // temperature was set by pre_evaluate
   const double temperature =
       params_.isParameter("temperature") ? params_.get<double>("temperature") : ref_temperature_;
   iFinM = return_mapping(reduced_kinematics.defgrad, temperature).inv_plastic_defgrad;

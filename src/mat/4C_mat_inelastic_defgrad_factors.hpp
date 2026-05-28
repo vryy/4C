@@ -1526,7 +1526,10 @@ namespace Mat
      * @brief Evaluate the mechanical dissipation heat source and its linearizations introduced by
      * this inelastic factor.
      *
+     * @param[in] context Evaluation context, providing access to the current timestep and total
+     * time
      * @param[in] gp Gauss point
+     * @param[in] eleGID global element ID
      * @param[in] defgrad Deformation gradient
      * @param[in] iFin_other Already computed inverse inelastic deformation gradient
      *              (from already computed inelastic factors in the multiplicative split material)
@@ -1534,9 +1537,10 @@ namespace Mat
      * @return mechanical dissipation heat source and derivatives w.r.t. temperature and the right
      *         Cauchy-Green tensor
      */
-    [[nodiscard]] MechanicalDissipation evaluate_mechanical_dissipation(const int gp,
+    [[nodiscard]] MechanicalDissipation evaluate_mechanical_dissipation(
+        const EvaluationContext<3>& context, const int gp, const int eleGID,
         const Core::LinAlg::Matrix<3, 3>* defgrad, const Core::LinAlg::Matrix<3, 3>& iFin_other,
-        const double& current_temperature);
+        const double& temperature);
 
     Mat::PAR::InelasticSource get_inelastic_source() override
     {
