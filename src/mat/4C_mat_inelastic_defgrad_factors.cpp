@@ -42,6 +42,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <map>
 #include <memory>
 #include <optional>
@@ -3600,6 +3601,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::viscoplastic_correction(
 
   // declare current right CG (tensor interpolated later on in each substep)
   Core::LinAlg::Matrix<3, 3> curr_CM(Core::LinAlg::Initialization::zero);
+  // declare current temperature (interpolated later on in each substep)
+  double curr_temp = 0.0;
 
   // reset substep parameters
   if (parameter()->use_local_substepping())
@@ -3625,10 +3628,12 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::viscoplastic_correction(
           tensor_interp_err_status == Core::LinAlg::TensorInterpolationErrorType::NoErrors,
           "Tensor interpolation failed with err: {}",
           Core::LinAlg::make_error_message(tensor_interp_err_status));
+      // interpolate temperature
+      curr_temp = std::lerp(time_step_quantities_.last_temperature[gp_], temperature,
+          local_substepping_utils_.get_normalized_next_time_param(time_step_tracker_.dt));
 
       // perform substep local Newton loop
-      local_newton_loop(curr_CM, temperature,
-          time_step_quantities_.last_substep_plastic_strain[gp_],
+      local_newton_loop(curr_CM, curr_temp, time_step_quantities_.last_substep_plastic_strain[gp_],
           time_step_quantities_.last_substep_plastic_defgrad_inverse[gp_],
           local_substepping_utils_.get_substep_size(), sol, err_status);
       // update Local Newton quantities
