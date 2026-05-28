@@ -31,8 +31,7 @@ Mat::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
       poissonratio_(matdata.parameters.get<double>("NUE")),
       density_(matdata.parameters.get<double>("DENS")),
       thermexpans_(matdata.parameters.get<double>("THEXPANS")),
-      thetainit_(matdata.parameters.get<double>("INITTEMP")),
-      thermomat_(matdata.parameters.get<int>("THERMOMAT"))
+      thetainit_(matdata.parameters.get<double>("INITTEMP"))
 {
   if (poissonratio_ >= 0.5 || poissonratio_ < -1.)
     FOUR_C_THROW("Poisson's ratio must be in [-1;0.5)");
@@ -78,16 +77,7 @@ Mat::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(Mat::PAR::ThermoStVenantKi
   create_thermo_material_if_set();
 }
 
-void Mat::ThermoStVenantKirchhoff::create_thermo_material_if_set()
-{
-  const int thermoMatId = this->params_->thermomat_;
-  if (thermoMatId != -1)
-  {
-    auto mat = Mat::factory(thermoMatId);
-    if (mat == nullptr) FOUR_C_THROW("Failed to create thermo material, id={}", thermoMatId);
-    thermo_ = std::dynamic_pointer_cast<Mat::Trait::Thermo>(mat);
-  }
-}
+void Mat::ThermoStVenantKirchhoff::create_thermo_material_if_set() {}
 
 
 /*----------------------------------------------------------------------*

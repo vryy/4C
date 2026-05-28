@@ -59,8 +59,6 @@ namespace Mat
       const double hardsoft_;
       //! tolerance for local Newton iteration
       const double abstol_;
-      //! thermal material id, -1 if not used (old interface)
-      const int thermomat_;
 
       //@}
 

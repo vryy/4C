@@ -52,8 +52,6 @@ namespace Mat
       const double thermexpans_;
       //! initial temperature (constant) \f$ \theta_0 \f$
       const double thetainit_;
-      //! thermal material id, -1 if not used (old interface)
-      const int thermomat_;
       //@}
 
       //! create material instance of matching type with my parameters

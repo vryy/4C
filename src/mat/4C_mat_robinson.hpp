@@ -78,8 +78,6 @@ namespace Mat
       //! Arya_NarloyZ: \f$H = 1.67e4 . (6.895)^(beta - 1) / (3 . K_0^2)\f$ [N^3/m^6]
       //! Arya_CrMoSteel: [N/m^2]
       const double h_;
-      //! thermal material id, -1 if not used (old interface)
-      const int thermomat_;
 
       //@}
 

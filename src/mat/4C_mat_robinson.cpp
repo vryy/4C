@@ -42,8 +42,7 @@ Mat::PAR::Robinson::Robinson(const Core::Mat::PAR::Parameter::Data& matdata)
       g0_(matdata.parameters.get<double>("G0")),
       m_(matdata.parameters.get<double>("M_EXPO")),
       beta_((matdata.parameters.get<std::vector<double>>("BETA"))),
-      h_(matdata.parameters.get<double>("H_FACT")),
-      thermomat_(matdata.parameters.get<int>("THERMOMAT"))
+      h_(matdata.parameters.get<double>("H_FACT"))
 {
 }
 
@@ -83,16 +82,7 @@ Mat::Robinson::Robinson() : params_(nullptr), thermo_(nullptr) {}
 /*----------------------------------------------------------------------*
  | copy-constructor (public) --> called in create_material()  dano 11/11 |
  *----------------------------------------------------------------------*/
-Mat::Robinson::Robinson(Mat::PAR::Robinson* params) : params_(params), thermo_(nullptr)
-{
-  const int thermoMatId = this->params_->thermomat_;
-  if (thermoMatId != -1)
-  {
-    auto mat = Mat::factory(thermoMatId);
-    if (mat == nullptr) FOUR_C_THROW("Failed to create thermo material, id={}", thermoMatId);
-    thermo_ = std::dynamic_pointer_cast<Mat::Trait::Thermo>(mat);
-  }
-}
+Mat::Robinson::Robinson(Mat::PAR::Robinson* params) : params_(params), thermo_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*

@@ -33,8 +33,7 @@ Mat::PAR::ThermoPlasticLinElast::ThermoPlasticLinElast(
       kinhard_(matdata.parameters.get<double>("KINHARD")),
       sigma_y_((matdata.parameters.get<std::vector<double>>("SIGMA_Y"))),
       strainbar_p_ref_((matdata.parameters.get<std::vector<double>>("EPSBAR_P"))),
-      abstol_(matdata.parameters.get<double>("TOL")),
-      thermomat_(matdata.parameters.get<int>("THERMOMAT"))
+      abstol_(matdata.parameters.get<double>("TOL"))
 {
 }
 
@@ -76,13 +75,6 @@ Mat::ThermoPlasticLinElast::ThermoPlasticLinElast() : params_(nullptr), thermo_(
 Mat::ThermoPlasticLinElast::ThermoPlasticLinElast(Mat::PAR::ThermoPlasticLinElast* params)
     : params_(params), thermo_(nullptr), plastic_step_(false)
 {
-  const int thermoMatId = this->params_->thermomat_;
-  if (thermoMatId != -1)
-  {
-    auto mat = Mat::factory(thermoMatId);
-    if (mat == nullptr) FOUR_C_THROW("Failed to create thermo material, id={}", thermoMatId);
-    thermo_ = std::dynamic_pointer_cast<Mat::Trait::Thermo>(mat);
-  }
 }
 
 

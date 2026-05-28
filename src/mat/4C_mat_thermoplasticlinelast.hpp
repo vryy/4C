@@ -61,8 +61,6 @@ namespace Mat
       const std::vector<double> strainbar_p_ref_;
       //! tolerance for local Newton iteration
       const double abstol_;
-      //! thermal material id, -1 if not used (old interface)
-      const int thermomat_;
 
       //@}
 

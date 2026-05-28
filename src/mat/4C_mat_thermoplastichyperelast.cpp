@@ -37,8 +37,7 @@ Mat::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(
       hardexpo_(matdata.parameters.get<double>("HARDEXPO")),
       yieldsoft_(matdata.parameters.get<double>("YIELDSOFT")),
       hardsoft_(matdata.parameters.get<double>("HARDSOFT")),
-      abstol_(matdata.parameters.get<double>("TOL")),
-      thermomat_(matdata.parameters.get<int>("THERMOMAT"))
+      abstol_(matdata.parameters.get<double>("TOL"))
 {
   if (sathardening_ < yield_)
     FOUR_C_THROW("Saturation hardening must not be less than initial yield stress!");
@@ -81,13 +80,6 @@ Mat::ThermoPlasticHyperElast::ThermoPlasticHyperElast() : params_(nullptr), ther
 Mat::ThermoPlasticHyperElast::ThermoPlasticHyperElast(Mat::PAR::ThermoPlasticHyperElast* params)
     : params_(params), thermo_(nullptr), plastic_step_(false)
 {
-  const int thermoMatId = this->params_->thermomat_;
-  if (thermoMatId != -1)
-  {
-    auto mat = Mat::factory(thermoMatId);
-    if (mat == nullptr) FOUR_C_THROW("Failed to create thermo material, id={}", thermoMatId);
-    thermo_ = std::dynamic_pointer_cast<Mat::Trait::Thermo>(mat);
-  }
 }
 
 

@@ -130,7 +130,6 @@ MATERIALS:
       DENS: 1000
       THEXPANS: 6e-05
       INITTEMP: 293
-      THERMOMAT: 4
   - MAT: 3
     MAT_Struct_StVenantKirchhoff:
       YOUNG: 1
