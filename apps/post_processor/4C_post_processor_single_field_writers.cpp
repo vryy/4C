@@ -124,8 +124,6 @@ void StructureFilter::write_all_results(PostField* field)
 
   // additional output for poro problems
   writer_->write_result("porosity_p1", "porosity_p1", dofbased, 1);
-  writer_->write_result(
-      "poronopencond_lambda", "poronopencond_lambda", dofbased, field->problem()->num_dim());
 
   // monolithic scalar-structure interaction involving scatra-scatra interface coupling outputs
   // nodal Cauchy stresses instead of Gauss-point ones

@@ -18,7 +18,6 @@
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -55,6 +54,25 @@ PoroElast::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(MPI_Comm c
   mortar_adapter_ = std::make_shared<Adapter::CouplingNonLinMortar>(problem, problem.n_dim(),
       problem.mortar_coupling_params(), problem.contact_dynamic_params(),
       problem.spatial_approximation_type());
+
+  auto structure_dis = structure_field()->discretization();
+  double time(0.0);
+
+  // update time if it is a restarted simulation
+  if (const int restart_step = problem.restart(); restart_step > 0)
+  {
+    Core::IO::DiscretizationReader reader(
+        *structure_dis, Global::Problem::instance()->input_control_file(), restart_step);
+
+    time = reader.read_double("time");
+  }
+
+  auto use_all_elements = [](const Core::Elements::Element* element) { return true; };
+  visualization_writer_ = std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(
+      structure_dis,
+      Core::IO::visualization_parameters_factory(
+          problem.io_params().sublist("RUNTIME VTK OUTPUT"), *problem.output_control_file(), time),
+      use_all_elements, "poroelast_monolithicsplit_nopenetration");
 }
 
 void PoroElast::MonolithicSplitNoPenetration::setup_system()
@@ -602,7 +620,29 @@ void PoroElast::MonolithicSplitNoPenetration::output(const bool forced_writerest
   // call base class
   MonolithicSplit::output(forced_writerestart);
 
-  // for now, we always write the lagrange multiplier
+  // do the runtime output
+  {
+    visualization_writer_->reset();
+
+    // for now, we always write the lagrange multiplier
+    auto full_lambda = Core::LinAlg::Vector<double>(*structure_field()->dof_row_map());
+    Core::LinAlg::export_to(*lambdanp_, full_lambda);
+
+    const auto struct_dis = structure_field()->discretization();
+    const int numdof = struct_dis->num_dof(0, struct_dis->l_row_node(0));
+    const std::vector<std::optional<std::string>> context(numdof, "poronopencond_lambda");
+
+    visualization_writer_->append_result_data_vector_with_context(
+        full_lambda, Core::IO::OutputEntity::dof, context);
+
+    visualization_writer_->write_to_disk(time(), step());
+  }
+
+  output_restart();
+}
+
+void PoroElast::MonolithicSplitNoPenetration::output_restart()
+{
   const auto full_lambda =
       std::make_shared<Core::LinAlg::Vector<double>>(*structure_field()->dof_row_map());
   Core::LinAlg::export_to(*lambdanp_, *full_lambda);

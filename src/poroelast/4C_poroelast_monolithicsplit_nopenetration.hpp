@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_poroelast_monolithicsplit.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -45,6 +46,8 @@ namespace PoroElast
     void recover_lagrange_multiplier_after_time_step() override;
 
     void output(bool forced_writerestart = false) override;
+
+    void output_restart();
 
     void prepare_time_step() override;
 
@@ -127,6 +130,8 @@ namespace PoroElast
     //!@}
 
     std::shared_ptr<Adapter::CouplingNonLinMortar> mortar_adapter_;
+
+    std::unique_ptr<Core::IO::DiscretizationVisualizationWriterMesh> visualization_writer_;
   };
 
 }  // namespace PoroElast
