@@ -56,6 +56,12 @@ namespace
   {
     return 1.0 / std::pow(lambda_r * lambda_ext, 2);
   }
+
+  template <typename T>
+  [[nodiscard]] T evaluate_di4_dlambda_ext(T lambda_f, T lambda_r, T lambda_ext)
+  {
+    return -2.0 * std::pow(lambda_f, 2) / (std::pow(lambda_r * lambda_ext, 2) * lambda_ext);
+  }
 }  // namespace
 
 template <int numstates, typename T>
@@ -177,6 +183,20 @@ void Mixture::Implementation::RemodelFiberImplementation<numstates, T>::set_lamb
 }
 
 template <int numstates, typename T>
+void Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::set_d_lambda_ext_d_growth_scalar(const T value)
+{
+  d_lambda_ext_d_growth_scalar_ = value;
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::get_d_lambda_ext_d_growth_scalar() const
+{
+  return d_lambda_ext_d_growth_scalar_;
+}
+
+template <int numstates, typename T>
 Mixture::Implementation::IntegrationState<numstates, T>
 Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::get_integration_state_growth_scalar_with_nonlocal_stimulus(const T psi) const
@@ -274,6 +294,16 @@ void Mixture::Implementation::RemodelFiberImplementation<numstates,
         ImplicitIntegration<numstates, T>::get_partial_derivative_xnp(remodel_state, dt) +
         ImplicitIntegration<numstates, T>::get_partial_derivative_fnp(remodel_state, dt) *
             evaluate_d_remodel_evolution_equation_dt_d_remodel(lambda_f, lambda_r_np, lambda_ext);
+
+    // d_lambda_ext/d_growth_scalar contribution
+    drdx(0, 0) += ImplicitIntegration<numstates, T>::get_partial_derivative_fnp(growth_state, dt) *
+                  evaluate_d_growth_evolution_equation_dt_d_lambda_ext(
+                      lambda_f, lambda_r_np, lambda_ext, growth_scalar_np) *
+                  d_lambda_ext_d_growth_scalar_;
+    drdx(1, 0) +=
+        ImplicitIntegration<numstates, T>::get_partial_derivative_fnp(remodel_state, dt) *
+        evaluate_d_remodel_evolution_equation_dt_d_lambda_ext(lambda_f, lambda_r_np, lambda_ext) *
+        d_lambda_ext_d_growth_scalar_;
 
     return std::make_tuple(drdx, residuum);
   };
@@ -461,6 +491,26 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
 
 template <int numstates, typename T>
 T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_d_growth_evolution_equation_dt_d_lambda_ext(const T lambda_f, const T lambda_r,
+    const T lambda_ext, const T growth_scalar) const
+{
+  return evaluate_d_growth_evolution_equation_dt_d_sig(
+             lambda_f, lambda_r, lambda_ext, growth_scalar) *
+         evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext) *
+         evaluate_di4_dlambda_ext(lambda_f, lambda_r, lambda_ext);
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_d_remodel_evolution_equation_dt_d_lambda_ext(const T lambda_f, const T lambda_r,
+    const T lambda_ext) const
+{
+  return evaluate_d_remodel_evolution_equation_dt_d_i4(lambda_f, lambda_r, lambda_ext) *
+         evaluate_di4_dlambda_ext(lambda_f, lambda_r, lambda_ext);
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_remodeling_reaction_coefficient(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
@@ -635,6 +685,21 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
 
 template <int numstates, typename T>
 T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_d_current_fiber_pk2_stress_d_lambda_ext() const
+{
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
+  const T lambda_f = states_.back().lambda_f;
+  const T lambda_r = states_.back().lambda_r;
+  const T lambda_ext = states_.back().lambda_ext;
+  const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
+
+  const T dI4dlambdaext = evaluate_di4_dlambda_ext(lambda_f, lambda_r, lambda_ext);
+
+  return fiber_material_->get_d_cauchy_stress_d_i4(I4) * dI4dlambdaext / std::pow(lambda_f, 2);
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq(T dt)
     const
 {
@@ -740,9 +805,11 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
 
   const T d_i4_d_lambda_f_sq = evaluate_di4_dlambda_f_sq(lambda_f, lambda_r, lambda_ext);
   const T d_i4_d_lambda_r = evaluate_di4_dlambda_r(lambda_f, lambda_r, lambda_ext);
+  const T d_i4_d_lambda_ext = evaluate_di4_dlambda_ext(lambda_f, lambda_r, lambda_ext);
 
   return fiber_material_->get_d_cauchy_stress_d_i4(I4) *
-         (d_i4_d_lambda_f_sq + d_i4_d_lambda_r * d_lambda_r_d_lambda_f_sq_);
+         (d_i4_d_lambda_f_sq + d_i4_d_lambda_r * d_lambda_r_d_lambda_f_sq_ +
+             d_i4_d_lambda_ext * d_lambda_ext_d_growth_scalar_ * d_growth_scalar_d_lambda_f_sq_);
 }
 
 template <int numstates, typename T>
@@ -823,6 +890,18 @@ void Mixture::RemodelFiber<numstates>::set_lambda_r(const double lambda_r)
 }
 
 template <int numstates>
+void Mixture::RemodelFiber<numstates>::set_d_lambda_ext_d_growth_scalar(const double value)
+{
+  impl_->set_d_lambda_ext_d_growth_scalar(value);
+}
+
+template <int numstates>
+double Mixture::RemodelFiber<numstates>::get_d_lambda_ext_d_growth_scalar() const
+{
+  return impl_->get_d_lambda_ext_d_growth_scalar();
+}
+
+template <int numstates>
 void Mixture::RemodelFiber<numstates>::integrate_local_evolution_equations_implicit(const double dt)
 {
   impl_->integrate_local_evolution_equations_implicit(dt);
@@ -870,6 +949,12 @@ template <int numstates>
 double Mixture::RemodelFiber<numstates>::evaluate_d_current_fiber_pk2_stress_d_lambda_r() const
 {
   return impl_->evaluate_d_current_fiber_pk2_stress_d_lambda_r();
+};
+
+template <int numstates>
+double Mixture::RemodelFiber<numstates>::evaluate_d_current_fiber_pk2_stress_d_lambda_ext() const
+{
+  return impl_->evaluate_d_current_fiber_pk2_stress_d_lambda_ext();
 };
 
 template <int numstates>

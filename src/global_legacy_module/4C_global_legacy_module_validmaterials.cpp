@@ -4428,6 +4428,9 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 {.description = "Id of the time function to scale the deposition stretch "
                                 "(Default: 0=None)",
                     .default_value = 0}),
+            parameter<bool>("INELASTIC_GROWTH",
+                {.description = "Mixture rule has inelastic growth (default false)",
+                    .default_value = false}),
         },
         {.description = "A 1D constituent that remodels"});
   }

@@ -140,6 +140,8 @@ namespace Mixture
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
       [[nodiscard]] T evaluate_d_growth_evolution_equation_dt_d_remodel(
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
+      [[nodiscard]] T evaluate_d_growth_evolution_equation_dt_d_lambda_ext(
+          T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
 
       [[nodiscard]] T evaluate_remodel_evolution_equation_dt(
           T lambda_f, T lambda_r, T lambda_ext) const;
@@ -156,6 +158,8 @@ namespace Mixture
       [[nodiscard]] T evaluate_d_remodel_evolution_equation_dt_d_growth(
           T lambda_f, T lambda_r, T lambda_ext) const;
       [[nodiscard]] T evaluate_d_remodel_evolution_equation_dt_d_remodel(
+          T lambda_f, T lambda_r, T lambda_ext) const;
+      [[nodiscard]] T evaluate_d_remodel_evolution_equation_dt_d_lambda_ext(
           T lambda_f, T lambda_r, T lambda_ext) const;
 
       [[nodiscard]] T evaluate_fiber_cauchy_stress(T lambda_f, T lambda_r, T lambda_ext) const;
@@ -208,6 +212,9 @@ namespace Mixture
       [[nodiscard]] T evaluate_current_fiber_pk2_stress() const;
       [[nodiscard]] T evaluate_d_current_fiber_pk2_stress_d_lambda_f_sq() const;
       [[nodiscard]] T evaluate_d_current_fiber_pk2_stress_d_lambda_r() const;
+      [[nodiscard]] T evaluate_d_current_fiber_pk2_stress_d_lambda_ext() const;
+      void set_d_lambda_ext_d_growth_scalar(T value);
+      [[nodiscard]] T get_d_lambda_ext_d_growth_scalar() const;
       [[nodiscard]] T
       evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
           T dt) const;
@@ -232,6 +239,10 @@ namespace Mixture
       T d_growth_scalar_d_lambda_f_sq_ = 0.0;
       T d_lambda_r_d_lambda_f_sq_ = 0.0;
       /// @}
+
+      /// d_lambda_ext_d_growth_scalar_ - set from outside (growth strategy via mixture rule).
+      /// Non-zero only for inelastic growth strategies where Fg depends on growth_scalar.
+      T d_lambda_ext_d_growth_scalar_ = 0.0;
 
       /// homeostatic quantities
       /// @{
