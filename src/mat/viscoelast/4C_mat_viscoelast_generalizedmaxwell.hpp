@@ -10,8 +10,12 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_elast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
+
+#include <functional>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -114,12 +118,13 @@ namespace Mat
 
       /// @name Access methods
       //@{
-      std::vector<std::vector<std::shared_ptr<Mat::Elastic::Summand>>> get_branchespotsum() const
+      const std::vector<std::vector<std::shared_ptr<Mat::Elastic::Summand>>>& get_branchespotsum()
+          const
       {
         return branchespotsum_;
       }
 
-      std::vector<double> get_branchtaus() const { return branchtau_; }
+      const std::vector<double>& get_branchtaus() const { return branchtau_; }
       //@}
 
       /// Indicator for formulation
@@ -204,6 +209,44 @@ namespace Mat
 
 
   }  // namespace Elastic
+
+
+  namespace ViscoElast
+  {
+    namespace Kernels
+    {
+      enum class GeneralizedMaxwellSolveKind
+      {
+        one_step_theta,
+        exponential_time_discretization
+      };
+
+      using StressVector = Core::LinAlg::Matrix<6, 1>;
+      using TangentMatrix = Core::LinAlg::Matrix<6, 6>;
+      using PointHistory = std::vector<StressVector>;
+
+      struct GeneralizedMaxwellKernelInput
+      {
+        int visco_mat_id = -1;
+        int gp = -1;
+        int ele_gid = -1;
+        double dt = 0.0;
+        double one_step_theta = 0.5;
+        GeneralizedMaxwellSolveKind solve_kind =
+            GeneralizedMaxwellSolveKind::exponential_time_discretization;
+        const PointHistory* previous_branch_elastic_stress = nullptr;
+        const PointHistory* previous_branch_stress = nullptr;
+      };
+
+      using BranchResponseEvaluator = std::function<void(
+          int branch_index, StressVector& branch_elastic_stress, TangentMatrix& branch_cmat)>;
+
+      void evaluate_generalized_maxwell_kernel(StressVector& q_total, TangentMatrix& cmatq_total,
+          PointHistory& current_branch_elastic_stress, PointHistory& current_branch_stress,
+          const std::vector<double>& branch_taus, const GeneralizedMaxwellKernelInput& input,
+          const BranchResponseEvaluator& evaluate_branch_response);
+    }  // namespace Kernels
+  }  // namespace ViscoElast
 }  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE

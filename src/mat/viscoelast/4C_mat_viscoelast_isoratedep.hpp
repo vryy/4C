@@ -10,8 +10,17 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_elast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
+
+#include <memory>
+#include <vector>
+
+namespace Teuchos
+{
+  class ParameterList;
+}
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -125,6 +134,40 @@ namespace Mat
     };
 
   }  // namespace Elastic
+
+
+  namespace ViscoElast
+  {
+    namespace Kernels
+    {
+      using Matrix61 = Core::LinAlg::Matrix<6, 1>;
+      using Matrix66 = Core::LinAlg::Matrix<6, 6>;
+      using Matrix31 = Core::LinAlg::Matrix<3, 1>;
+      using Matrix71 = Core::LinAlg::Matrix<7, 1>;
+      using Matrix81 = Core::LinAlg::Matrix<8, 1>;
+      using Matrix331 = Core::LinAlg::Matrix<33, 1>;
+
+      void evaluate_mu_xi_kernel(
+          const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& summands, bool isoprinc_active,
+          bool isomod_active, Matrix31& prinv, Matrix31& modinv, Matrix81& mu, Matrix81& modmu,
+          Matrix331& xi, Matrix331& modxi, Matrix71& rateinv, Matrix71& modrateinv,
+          const Teuchos::ParameterList& params, double dt, int gp, int ele_gid);
+
+      void evaluate_kin_quant_vis_kernel(const Matrix61& rcg, const Matrix61& scg,
+          const Matrix31& prinv, const Matrix61& scg_previous, const Matrix61& modrcg_previous,
+          double dt, Matrix61& modrcg, Matrix61& scgrate, Matrix61& modrcgrate,
+          Matrix71& modrateinv, int visco_mat_id, int gp);
+
+      void evaluate_iso_visco_principal_kernel(Matrix61& stress, Matrix66& cmat, const Matrix81& mu,
+          const Matrix331& xi, const Matrix66& id4sharp, const Matrix61& scgrate);
+
+      void evaluate_iso_visco_modified_kernel(Matrix61& stressisomodisovisco,
+          Matrix61& stressisomodvolvisco, Matrix66& cmatisomodisovisco,
+          Matrix66& cmatisomodvolvisco, const Matrix31& prinv, const Matrix31& modinv,
+          const Matrix81& modmu, const Matrix331& modxi, const Matrix61& rcg, const Matrix61& id2,
+          const Matrix61& icg, const Matrix66& id4, const Matrix61& modrcgrate);
+    }  // namespace Kernels
+  }  // namespace ViscoElast
 }  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE

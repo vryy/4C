@@ -11,6 +11,8 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"
 
+#include <cmath>
+
 FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::PAR::GeneralizedMaxwell::GeneralizedMaxwell(
@@ -62,6 +64,8 @@ Mat::Elastic::GeneralizedMaxwell::GeneralizedMaxwell(Mat::Elastic::PAR::Generali
         "{}.",
         params_->id(), params_->numbranch_, params_->matids_.size());
 
+  // Integration-boundary access: branch material validation currently depends on the global
+  // material bundle and remains outside constitutive evaluate/update hot paths.
   if (Global::Problem::instance()->materials() == nullptr)
     FOUR_C_THROW(
         "Cannot validate VISCO_GeneralizedMaxwell branches for MAT {} because no global material "
@@ -173,6 +177,95 @@ void Mat::Elastic::ViscoBranch::read_material_parameters(double& tau, int& matid
 {
   tau = params_->tau_;
   matid = params_->matid_;
+}
+
+
+void Mat::ViscoElast::Kernels::evaluate_generalized_maxwell_kernel(StressVector& q_total,
+    TangentMatrix& cmatq_total, PointHistory& current_branch_elastic_stress,
+    PointHistory& current_branch_stress, const std::vector<double>& branch_taus,
+    const GeneralizedMaxwellKernelInput& input,
+    const BranchResponseEvaluator& evaluate_branch_response)
+{
+  if (input.previous_branch_elastic_stress == nullptr)
+    FOUR_C_THROW(
+        "Missing previous generalized Maxwell elastic branch history in kernel evaluation (MAT "
+        "{}, GP {}, ELE {}).",
+        input.visco_mat_id, input.gp, input.ele_gid);
+
+  if (input.previous_branch_stress == nullptr)
+    FOUR_C_THROW(
+        "Missing previous generalized Maxwell viscous branch history in kernel evaluation (MAT "
+        "{}, GP {}, ELE {}).",
+        input.visco_mat_id, input.gp, input.ele_gid);
+
+  const PointHistory& previous_branch_elastic_stress = *input.previous_branch_elastic_stress;
+  const PointHistory& previous_branch_stress = *input.previous_branch_stress;
+
+  const int numbranch = static_cast<int>(branch_taus.size());
+  if (previous_branch_elastic_stress.size() != static_cast<unsigned int>(numbranch))
+    FOUR_C_THROW(
+        "Invalid generalized Maxwell elastic branch history size in kernel evaluation (MAT {}, "
+        "GP {}, ELE {}): expected {} entries but got {}.",
+        input.visco_mat_id, input.gp, input.ele_gid, numbranch,
+        previous_branch_elastic_stress.size());
+
+  if (previous_branch_stress.size() != static_cast<unsigned int>(numbranch))
+    FOUR_C_THROW(
+        "Invalid generalized Maxwell viscous branch history size in kernel evaluation (MAT {}, "
+        "GP {}, ELE {}): expected {} entries but got {}.",
+        input.visco_mat_id, input.gp, input.ele_gid, numbranch, previous_branch_stress.size());
+
+  current_branch_elastic_stress.assign(numbranch, StressVector(Core::LinAlg::Initialization::zero));
+  current_branch_stress.assign(numbranch, StressVector(Core::LinAlg::Initialization::zero));
+
+  for (int branch_index = 0; branch_index < numbranch; ++branch_index)
+  {
+    const double tau = branch_taus.at(branch_index);
+    if (tau <= 0.0)
+      FOUR_C_THROW(
+          "Invalid generalized Maxwell branch relaxation time TAU={} in kernel evaluation (MAT "
+          "{}, GP {}, ELE {}, branch {}).",
+          tau, input.visco_mat_id, input.gp, input.ele_gid, branch_index);
+
+    StressVector& branch_elastic_stress = current_branch_elastic_stress.at(branch_index);
+    TangentMatrix branch_cmat(Core::LinAlg::Initialization::zero);
+    evaluate_branch_response(branch_index, branch_elastic_stress, branch_cmat);
+
+    StressVector& branch_stress = current_branch_stress.at(branch_index);
+    branch_stress.clear();
+
+    double branch_cmat_scale = 1.0;
+    switch (input.solve_kind)
+    {
+      case GeneralizedMaxwellSolveKind::one_step_theta:
+      {
+        const double theta = input.one_step_theta;
+        const double lambda_1 = tau / (tau + theta * input.dt);
+        const double lambda_2 = (tau - input.dt + theta * input.dt) / tau;
+
+        branch_cmat_scale = lambda_1;
+        branch_stress.update(lambda_2, previous_branch_stress.at(branch_index), 1.0);
+        branch_stress.update(1.0, branch_elastic_stress, 1.0);
+        branch_stress.update(-1.0, previous_branch_elastic_stress.at(branch_index), 1.0);
+        branch_stress.scale(lambda_1);
+        break;
+      }
+      case GeneralizedMaxwellSolveKind::exponential_time_discretization:
+      {
+        const double xi_1 = std::exp(-input.dt / tau);
+        const double xi_2 = std::exp(-input.dt / (2.0 * tau));
+
+        branch_cmat_scale = xi_2;
+        branch_stress.update(xi_1, previous_branch_stress.at(branch_index), 1.0);
+        branch_stress.update(xi_2, branch_elastic_stress, 1.0);
+        branch_stress.update(-xi_2, previous_branch_elastic_stress.at(branch_index), 1.0);
+        break;
+      }
+    }
+
+    q_total.update(1.0, branch_stress, 1.0);
+    cmatq_total.update(branch_cmat_scale, branch_cmat, 1.0);
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE

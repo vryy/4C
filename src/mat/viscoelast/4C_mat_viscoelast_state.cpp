@@ -494,6 +494,12 @@ void Mat::ViscoElastState::commit_iso_rate_to_previous()
 void Mat::ViscoElastState::append_fsls_current_to_previous_history(
     const unsigned int max_history_size)
 {
+  if (max_history_size == 0)
+    FOUR_C_THROW(
+        "Invalid FSLS max history size {} while advancing time step. Expected max history size "
+        "to be positive.",
+        max_history_size);
+
   validate_fsls_state(fsls_, fsls_.artificial_stress_current_.size(), "advancing time step");
 
   if (fsls_.artificial_stress_previous_history_.size() != fsls_.artificial_stress_current_.size())
@@ -504,14 +510,13 @@ void Mat::ViscoElastState::append_fsls_current_to_previous_history(
 
   for (int gp = 0; gp < static_cast<int>(fsls_.artificial_stress_previous_history_.size()); ++gp)
   {
-    fsls_.artificial_stress_previous_history_.at(gp).push_back(
-        fsls_.artificial_stress_current_.at(gp));
+    auto& gp_history = fsls_.artificial_stress_previous_history_.at(gp);
+    gp_history.push_back(fsls_.artificial_stress_current_.at(gp));
 
-    const std::size_t max_history_size_per_gp = max_history_size;
-    if (fsls_.artificial_stress_previous_history_.at(gp).size() > max_history_size_per_gp)
+    if (gp_history.size() > max_history_size)
     {
-      auto& gp_history = fsls_.artificial_stress_previous_history_.at(gp);
-      gp_history.erase(gp_history.begin(), gp_history.begin() + 1);
+      const std::size_t overflow = gp_history.size() - max_history_size;
+      gp_history.erase(gp_history.begin(), gp_history.begin() + overflow);
     }
   }
 }
@@ -646,6 +651,28 @@ Mat::ViscoElastState::generalized_maxwell_prev_point(const int gp) const
 
   return {generalized_maxwell_.branch_elastic_stress_previous_.at(gp),
       generalized_maxwell_.branch_stress_previous_.at(gp)};
+}
+
+
+const Mat::ViscoElastState::PointHistory&
+Mat::ViscoElastState::generalized_maxwell_prev_branch_elastic_stress(const int gp) const
+{
+  ensure_initialized("read previous");
+  ensure_model_active(has_generalized_maxwell_state_, "generalized Maxwell", "read previous");
+  ensure_gp_in_range(gp, "generalized Maxwell", "read previous");
+
+  return generalized_maxwell_.branch_elastic_stress_previous_.at(gp);
+}
+
+
+const Mat::ViscoElastState::PointHistory&
+Mat::ViscoElastState::generalized_maxwell_prev_branch_stress(const int gp) const
+{
+  ensure_initialized("read previous");
+  ensure_model_active(has_generalized_maxwell_state_, "generalized Maxwell", "read previous");
+  ensure_gp_in_range(gp, "generalized Maxwell", "read previous");
+
+  return generalized_maxwell_.branch_stress_previous_.at(gp);
 }
 
 
