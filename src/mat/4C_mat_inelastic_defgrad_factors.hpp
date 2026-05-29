@@ -1523,7 +1523,7 @@ namespace Mat
         const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 1>& dstressdT) override;
 
     /*!
-     * @brief Evaluate the mechanical dissipation heat source and its linearizations introduced by
+     * @brief Evaluate the Tayor-Quinney heat source and its linearizations introduced by
      * this inelastic factor.
      *
      * @param[in] context Evaluation context, providing access to the current timestep and total
@@ -1537,7 +1537,7 @@ namespace Mat
      * @return mechanical dissipation heat source and derivatives w.r.t. temperature and the right
      *         Cauchy-Green tensor
      */
-    [[nodiscard]] MechanicalDissipation evaluate_mechanical_dissipation(
+    [[nodiscard]] HeatSource evaluate_taylor_quinney_heat_source(
         const EvaluationContext<3>& context, const int gp, const int eleGID,
         const Core::LinAlg::Matrix<3, 3>* defgrad, const Core::LinAlg::Matrix<3, 3>& iFin_other,
         const double& temperature);
@@ -2072,13 +2072,13 @@ namespace Mat
         const Core::LinAlg::Matrix<6, 9>& dSdiFinj);
 
     /*!
-     * @brief Evaluate derivatives of \f$ R_{TQ} \f$ by perturbing the reduced deformation
-     * gradient and the temperature.
+     * @brief Evaluate derivatives of the Taylor-Quinney heat source by perturbing the reduced
+     * deformation gradient and the temperature.
      *
      * @param[in] FredM reduced deformation gradient
      * @param[in] temperature absolute temperature
      */
-    MechanicalDissipation evaluate_mechanical_dissipation_perturb_based(
+    HeatSource evaluate_taylor_quinney_heat_source_perturb_based(
         const Core::LinAlg::Matrix<3, 3>& FredM, const double temperature);
 
     /*!

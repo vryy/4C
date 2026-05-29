@@ -2770,27 +2770,28 @@ namespace
     expect_near_relative(dstressdT_analytic, dstressdT_fd, 1.0e-6, 1.0e-9);
   }
 
-  TEST_F(InelasticDefgradFactorsTest, ThermoViscoplastMechanicalDissipationLinearizationMatchesFD)
+  TEST_F(InelasticDefgradFactorsTest, ThermoViscoplastTaylorQuinneyHeatSourceLinearizationMatchesFD)
   {
     auto comparison = set_up_thermo_viscoplast_linearization_comparison();
     FOUR_C_EXPECT_NEAR(comparison.iFin_analytic, comparison.iFin_fd, 1.0e-10);
 
-    const Mat::MechanicalDissipation analytic_dissipation =
-        comparison.analytic_material.material->evaluate_mechanical_dissipation(comparison.context,
-            0, 0, &comparison.FM, Core::LinAlg::identity_matrix<3>(), comparison.temperature);
-    const Mat::MechanicalDissipation fd_dissipation =
-        comparison.fd_material.material->evaluate_mechanical_dissipation(comparison.context, 0, 0,
-            &comparison.FM, Core::LinAlg::identity_matrix<3>(), comparison.temperature);
+    const Mat::HeatSource tq_heat_analytic =
+        comparison.analytic_material.material->evaluate_taylor_quinney_heat_source(
+            comparison.context, 0, 0, &comparison.FM, Core::LinAlg::identity_matrix<3>(),
+            comparison.temperature);
+    const Mat::HeatSource tq_heat_fd =
+        comparison.fd_material.material->evaluate_taylor_quinney_heat_source(comparison.context, 0,
+            0, &comparison.FM, Core::LinAlg::identity_matrix<3>(), comparison.temperature);
 
-    ASSERT_GT(std::abs(analytic_dissipation.value), 0.0);
-    ASSERT_GT(analytic_dissipation.derivative_wrt_cauchy_green.norm2(), 0.0);
-    ASSERT_GT(std::abs(analytic_dissipation.derivative_wrt_temperature), 0.0);
+    ASSERT_GT(std::abs(tq_heat_analytic.value), 0.0);
+    ASSERT_GT(tq_heat_analytic.derivative_wrt_cauchy_green.norm2(), 0.0);
+    ASSERT_GT(std::abs(tq_heat_analytic.derivative_wrt_temperature), 0.0);
 
-    ASSERT_DOUBLE_EQ(analytic_dissipation.value, fd_dissipation.value);
-    expect_near_relative(analytic_dissipation.derivative_wrt_cauchy_green,
-        fd_dissipation.derivative_wrt_cauchy_green, 1.0e-7, 1.0e-16);
-    expect_near_relative(analytic_dissipation.derivative_wrt_temperature,
-        fd_dissipation.derivative_wrt_temperature, 1.0e-8, 1.0e-16);
+    ASSERT_DOUBLE_EQ(tq_heat_analytic.value, tq_heat_fd.value);
+    expect_near_relative(tq_heat_analytic.derivative_wrt_cauchy_green,
+        tq_heat_fd.derivative_wrt_cauchy_green, 1.0e-7, 1.0e-16);
+    expect_near_relative(tq_heat_analytic.derivative_wrt_temperature,
+        tq_heat_fd.derivative_wrt_temperature, 1.0e-8, 1.0e-16);
   }
 
   TEST_F(InelasticDefgradFactorsTest, ThermoViscoplastPublicEvaluationsCanBeCalledInAnyOrder)
@@ -2875,15 +2876,15 @@ namespace
 
     struct ThermoEvaluationResults
     {
-      Mat::MechanicalDissipation dissipation;
+      Mat::HeatSource heat_source;
       static void assert_equal(
           const ThermoEvaluationResults& actual, const ThermoEvaluationResults& expected)
       {
-        ASSERT_DOUBLE_EQ(actual.dissipation.value, expected.dissipation.value);
-        FOUR_C_EXPECT_NEAR(actual.dissipation.derivative_wrt_cauchy_green,
-            expected.dissipation.derivative_wrt_cauchy_green, 1.0e-16);
-        ASSERT_DOUBLE_EQ(actual.dissipation.derivative_wrt_temperature,
-            expected.dissipation.derivative_wrt_temperature);
+        ASSERT_DOUBLE_EQ(actual.heat_source.value, expected.heat_source.value);
+        FOUR_C_EXPECT_NEAR(actual.heat_source.derivative_wrt_cauchy_green,
+            expected.heat_source.derivative_wrt_cauchy_green, 1.0e-16);
+        ASSERT_DOUBLE_EQ(actual.heat_source.derivative_wrt_temperature,
+            expected.heat_source.derivative_wrt_temperature);
       }
     };
 
@@ -2966,16 +2967,16 @@ namespace
         reference.solid_results =
             solid_evaluation(material, requested_gp, requested_FM, requested_temperature);
         // 2.: thermo evaluation
-        reference.thermo_results.dissipation = material->evaluate_mechanical_dissipation(
+        reference.thermo_results.heat_source = material->evaluate_taylor_quinney_heat_source(
             context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
 
         // Since we are using this result as reference,assert that all values are non-zero to ensure
         // full evaluation paths (no early returns due to no plastic strain)
         ASSERT_GT(reference.solid_results.cmatadd.norm2(), 0.0);
         ASSERT_GT(reference.solid_results.dstressdT.norm2(), 0.0);
-        ASSERT_GT(std::abs(reference.thermo_results.dissipation.value), 0.0);
-        ASSERT_GT(reference.thermo_results.dissipation.derivative_wrt_cauchy_green.norm2(), 0.0);
-        ASSERT_GT(std::abs(reference.thermo_results.dissipation.derivative_wrt_temperature), 0.0);
+        ASSERT_GT(std::abs(reference.thermo_results.heat_source.value), 0.0);
+        ASSERT_GT(reference.thermo_results.heat_source.derivative_wrt_cauchy_green.norm2(), 0.0);
+        ASSERT_GT(std::abs(reference.thermo_results.heat_source.derivative_wrt_temperature), 0.0);
       }
       {
         SCOPED_TRACE(
@@ -2986,7 +2987,7 @@ namespace
         // 1.: solid evaluation with stale temperature
         solid_evaluation(material, requested_gp, requested_FM, stale_temperature);
         // 2.: thermo evaluation with the requested temperature
-        current.dissipation = material->evaluate_mechanical_dissipation(
+        current.heat_source = material->evaluate_taylor_quinney_heat_source(
             context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
 
         ThermoEvaluationResults::assert_equal(current, reference.thermo_results);
@@ -3000,7 +3001,7 @@ namespace
         // 1.: solid evaluation with stale deformation gradient
         solid_evaluation(material, requested_gp, stale_FM, requested_temperature);
         // 2.: thermo evaluation with the requested deformation gradient
-        current.dissipation = material->evaluate_mechanical_dissipation(
+        current.heat_source = material->evaluate_taylor_quinney_heat_source(
             context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
         ThermoEvaluationResults::assert_equal(current, reference.thermo_results);
       }
@@ -3019,7 +3020,7 @@ namespace
                                  // gauss point caches are not leaking into each other
         // 2.: thermo evaluation at the requested gauss point (should use the cache filled by the
         // first solid evaluation)
-        current.thermo_results.dissipation = material->evaluate_mechanical_dissipation(
+        current.thermo_results.heat_source = material->evaluate_taylor_quinney_heat_source(
             context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
         EvaluationResults::assert_equal(current, reference);
       }
@@ -3035,7 +3036,7 @@ namespace
         auto material = make_material();
         EvaluationResults current;
         // 1.: thermo evaluation
-        current.thermo_results.dissipation = material->evaluate_mechanical_dissipation(
+        current.thermo_results.heat_source = material->evaluate_taylor_quinney_heat_source(
             context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
         // 2.: solid evaluation
         current.solid_results =
@@ -3049,7 +3050,7 @@ namespace
             "evaluation.");
         auto material = make_material();
         // 1.: thermo evaluation with stale temperature
-        (void)material->evaluate_mechanical_dissipation(
+        (void)material->evaluate_taylor_quinney_heat_source(
             context, requested_gp, 0, &requested_FM, id3x3, stale_temperature);
         // 2.: solid evaluation with the requested temperature
         const auto current =
@@ -3063,7 +3064,7 @@ namespace
             "evaluation.");
         auto material = make_material();
         // 1.: thermo evaluation with stale deformation gradient
-        (void)material->evaluate_mechanical_dissipation(
+        (void)material->evaluate_taylor_quinney_heat_source(
             context, requested_gp, 0, &stale_FM, id3x3, requested_temperature);
         // 2.: solid evaluation with the requested deformation gradient
         const auto current =
@@ -3078,9 +3079,9 @@ namespace
         EvaluationResults current;
         // 1.: thermo evaluation at two different gauss points, the most previous one with stale
         // values
-        current.thermo_results.dissipation = material->evaluate_mechanical_dissipation(
+        current.thermo_results.heat_source = material->evaluate_taylor_quinney_heat_source(
             context, requested_gp, 0, &requested_FM, id3x3, requested_temperature);
-        (void)material->evaluate_mechanical_dissipation(context, stale_gp, 0, &stale_FM, id3x3,
+        (void)material->evaluate_taylor_quinney_heat_source(context, stale_gp, 0, &stale_FM, id3x3,
             stale_temperature);  // evaluate the next gauss point with different values to test that
                                  // gauss point caches are not leaking into each other
         // 2.: solid evaluation at the requested gauss point (should use the cache filled by the

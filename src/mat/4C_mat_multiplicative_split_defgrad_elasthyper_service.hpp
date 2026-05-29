@@ -29,7 +29,7 @@ namespace Mat
    * @brief Mechanical heat source contribution produced by the material and the linearizations
    * needed by thermomechanical coupling. Default constructed with zero values.
    */
-  struct MechanicalDissipation
+  struct HeatSource
   {
     double value = 0.0;
     //! derivative of the mechanical dissipation heat source w.r.t. temperature
@@ -39,12 +39,12 @@ namespace Mat
     Core::LinAlg::Matrix<1, 6> derivative_wrt_cauchy_green{Core::LinAlg::Initialization::zero};
 
     //! pack a vector of MechanicalDissipation
-    static void pack(Core::Communication::PackBuffer& data,
-        const std::vector<MechanicalDissipation>& mech_dissipation)
+    static void pack(
+        Core::Communication::PackBuffer& data, const std::vector<HeatSource>& heat_source)
     {
-      Core::Communication::add_to_pack(data, static_cast<int>(mech_dissipation.size()));
+      Core::Communication::add_to_pack(data, static_cast<int>(heat_source.size()));
 
-      for (const auto& md : mech_dissipation)
+      for (const auto& md : heat_source)
       {
         Core::Communication::add_to_pack(data, md.value);
         Core::Communication::add_to_pack(data, md.derivative_wrt_temperature);

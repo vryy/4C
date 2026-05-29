@@ -2902,8 +2902,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat(
   dstressdT.multiply_nn(1.0, dSdiFinj, diFinjTV, 1.0);
 }
 
-Mat::MechanicalDissipation
-Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_mechanical_dissipation(
+Mat::HeatSource
+Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_taylor_quinney_heat_source(
     const Mat::EvaluationContext<3>& context, const int gp, const int eleGID,
     const Core::LinAlg::Matrix<3, 3>* defgrad, const Core::LinAlg::Matrix<3, 3>& iFin_other,
     const double& temperature)
@@ -2926,7 +2926,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_mechanical_dissipati
 
   if (parameter()->linearization_type() == ViscoplastUtils::LinearizationType::perturbation_based)
   {
-    return evaluate_mechanical_dissipation_perturb_based(reduced_kinematics.defgrad, temperature);
+    return evaluate_taylor_quinney_heat_source_perturb_based(
+        reduced_kinematics.defgrad, temperature);
   }
 
   // Note: In monolithic tsi, the thermo-predictor comes in with the last state,
@@ -2969,18 +2970,18 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_mechanical_dissipati
       "evaluation! Error: {}",
       ViscoplastUtils::get_detailed_error_message_for_error_type(err_status));
 
-  MechanicalDissipation mechanical_dissipation;
-  mechanical_dissipation.value = parameter()->taylor_quinney_coefficient() *
-                                 thermo_mechanical_coupling_state.equiv_stress *
-                                 thermo_mechanical_coupling_state.plastic_strain_rate;
-  mechanical_dissipation.derivative_wrt_cauchy_green = compute_taylor_quinney_wrt_cauchygreen(
+  HeatSource heat_source;
+  heat_source.value = parameter()->taylor_quinney_coefficient() *
+                      thermo_mechanical_coupling_state.equiv_stress *
+                      thermo_mechanical_coupling_state.plastic_strain_rate;
+  heat_source.derivative_wrt_cauchy_green = compute_taylor_quinney_wrt_cauchygreen(
       parameter()->taylor_quinney_coefficient(), thermo_mechanical_coupling_state,
       thermo_mechanical_coupling_state_derivatives, history_variables_wrt_cauchy_green);
-  mechanical_dissipation.derivative_wrt_temperature = compute_taylor_quinney_wrt_temperature(
+  heat_source.derivative_wrt_temperature = compute_taylor_quinney_wrt_temperature(
       parameter()->taylor_quinney_coefficient(), thermo_mechanical_coupling_state,
       thermo_mechanical_coupling_state_derivatives, history_variables_wrt_temperature);
 
-  return mechanical_dissipation;
+  return heat_source;
 }
 
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelastic_def_grad(
@@ -4285,14 +4286,14 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat_pe
   update_hist_var_ = true;
 }
 
-Mat::MechanicalDissipation
-Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_mechanical_dissipation_perturb_based(
-    const Core::LinAlg::Matrix<3, 3>& FredM, const double temperature)
+Mat::HeatSource Mat::InelasticDefgradTransvIsotropElastViscoplast::
+    evaluate_taylor_quinney_heat_source_perturb_based(
+        const Core::LinAlg::Matrix<3, 3>& FredM, const double temperature)
 {
   Core::LinAlg::Matrix<3, 3> CredM{Core::LinAlg::Initialization::zero};
   CredM.multiply_tn(1.0, FredM, FredM, 0.0);
 
-  Mat::MechanicalDissipation result{};
+  Mat::HeatSource result{};
 
   const auto evaluate_taylor_quinney = [this](const ViscoplastUtils::StateQuantities& state)
   {
