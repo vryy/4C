@@ -10,7 +10,6 @@
 #include "4C_adapter_coupling_nonlin_mortar.hpp"
 #include "4C_adapter_fld_poro.hpp"
 #include "4C_adapter_str_fpsiwrapper.hpp"
-#include "4C_contact_interface.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_fem_discretization.hpp"
@@ -27,13 +26,15 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+#include <utility>
+
 FOUR_C_NAMESPACE_OPEN
 
 
 PoroElast::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(MPI_Comm comm,
     const Teuchos::ParameterList& timeparams,
     std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter)
-    : MonolithicSplit(comm, timeparams, porosity_splitter), normrhs_nopenetration_(-1.0)
+    : MonolithicSplit(comm, timeparams, std::move(porosity_splitter)), normrhs_nopenetration_(-1.0)
 {
   auto& problem = *Global::Problem::instance();
 
@@ -523,9 +524,9 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   {
     if (diag->local_values_as_span()[i] == 0.0)
     {
-      (*diag).get_values()[i] = 1.0;
+      diag->get_values()[i] = 1.0;
       std::cout << "--- --- --- WARNING: D-Matrix Diagonal Element " << i
-                << " is zero!!! --- --- ---" << std::endl;
+                << " is zero!!! --- --- ---\n";
     }
   }
 
@@ -572,8 +573,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
 }
 
 void PoroElast::MonolithicSplitNoPenetration::apply_str_coupl_matrix(
-    std::shared_ptr<Core::LinAlg::SparseOperator> k_sf  //!< off-diagonal tangent matrix term
-)
+    const std::shared_ptr<Core::LinAlg::SparseOperator> k_sf)
 {
   // call base class
   Monolithic::apply_str_coupl_matrix(k_sf);
@@ -597,16 +597,16 @@ void PoroElast::MonolithicSplitNoPenetration::update()
       *k_d_, Core::LinAlg::DataAccess::Copy);  // store D-Matrix from last timestep
 }
 
-void PoroElast::MonolithicSplitNoPenetration::output(bool forced_writerestart)
+void PoroElast::MonolithicSplitNoPenetration::output(const bool forced_writerestart)
 {
   // call base class
   MonolithicSplit::output(forced_writerestart);
 
   // for now, we always write the lagrange multiplier
-  std::shared_ptr<Core::LinAlg::Vector<double>> fulllambda =
+  const auto full_lambda =
       std::make_shared<Core::LinAlg::Vector<double>>(*structure_field()->dof_row_map());
-  Core::LinAlg::export_to(*lambdanp_, *fulllambda);
-  structure_field()->disc_writer()->write_vector("poronopencond_lambda", fulllambda);
+  Core::LinAlg::export_to(*lambdanp_, *full_lambda);
+  structure_field()->disc_writer()->write_vector("poronopencond_lambda", full_lambda);
 }
 
 void PoroElast::MonolithicSplitNoPenetration::setup_coupling_and_matrices()
@@ -662,12 +662,18 @@ void PoroElast::MonolithicSplitNoPenetration::setup_coupling_and_matrices()
 void PoroElast::MonolithicSplitNoPenetration::prepare_time_step()
 {
   // call base class
+  // note: after discussion with a former user of this framework it is very likely that this is the
+  // desired behavior. Static analyzers are complaining as MonolithicSplitNoPenetration should not
+  // inherit from MonolithicSplit
   PoroElast::Monolithic::prepare_time_step();
 }
 
 void PoroElast::MonolithicSplitNoPenetration::read_restart(const int step)
 {
   // call base class
+  // note: after discussion with a former user of this framework it is very likely that this is the
+  // desired behavior. Static analyzers are complaining as MonolithicSplitNoPenetration should not
+  // inherit from MonolithicSplit
   PoroElast::PoroBase::read_restart(step);
 
   // get lagrange multiplier and D matrix
@@ -676,14 +682,14 @@ void PoroElast::MonolithicSplitNoPenetration::read_restart(const int step)
     // get the structure reader (this is where the lagrange multiplier was saved)
     Core::IO::DiscretizationReader reader(*structure_field()->discretization(),
         Global::Problem::instance()->input_control_file(), structure_field()->step());
-    std::shared_ptr<Core::LinAlg::Vector<double>> fulllambda =
+    const auto full_lambda =
         std::make_shared<Core::LinAlg::Vector<double>>(*structure_field()->dof_row_map());
 
     // this is the lagrange multiplier on the whole structure field
-    reader.read_vector(fulllambda, "poronopencond_lambda");
+    reader.read_vector(full_lambda, "poronopencond_lambda");
 
     // extract lambda on fsi interface vector
-    lambda_ = structure_field()->interface()->extract_fsi_cond_vector(*fulllambda);
+    lambda_ = structure_field()->interface()->extract_fsi_cond_vector(*full_lambda);
     lambdanp_->update(1.0, *lambda_, 0.0);
 
     // call an additional evaluate to get the old D matrix
