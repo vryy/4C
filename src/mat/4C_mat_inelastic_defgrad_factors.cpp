@@ -1846,8 +1846,13 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pre_evaluate(
   if (std::abs(time_step_quantities_.current_temperature[gp] - previous_temperature) >
       ViscoplastUtils::thermo_mechanical_state_equality_tolerance)
   {
-    time_step_quantities_.current_defgrad[gp].clear();
     thermo_mechanical_coupling_cache_.reset(gp);
+
+    // We use the current defgrad stored in time_step_quantities in
+    // evalate_inverse_inelastic_defgrad to determine whether or not there is a new state. Since a
+    // changed temperature alone is enough to have a new state, we invalidate the stored current
+    // defgrad here by setting it to a physically meaningless value.
+    time_step_quantities_.current_defgrad[gp].clear();
   }
 
   // set time step

@@ -615,12 +615,14 @@ namespace Mat
     struct HistoryVariablesDerivativesWrtCauchyGreen
     {
       //! derivative of the inverse plastic deformation gradient w.r.t. the right Cauchy-Green
-      //! tensor \f$ \frac{\mathrm{d}\boldsymbol{F}_\mathrm{p}^{-1}}{\mathrm{d}\boldsymbol{C}} \f$
-      //! in Voigt notation (second dimension in stress-form)
+      //! tensor \f$
+      //! \frac{\mathrm{d}\boldsymbol{F}_{\mathrm{p},\,n+1}^{-1}}{\mathrm{d}\boldsymbol{C}_{n+1}}
+      //! \f$ in Voigt notation (second dimension in stress-form)
       Core::LinAlg::Matrix<9, 6> inv_plastic_defgrad_wrt_cauchy_green{
           Core::LinAlg::Initialization::zero};
       //! derivative of the equivalent plastic strain w.r.t. the right Cauchy-Green tensor
-      //! \f$ \frac{\mathrm{d}\varepsilon_\mathrm{p}}{\mathrm{d}\boldsymbol{C}} \f$ in stress-form
+      //! \f$ \frac{\mathrm{d}\varepsilon_{\mathrm{p},\,n+1}}{\mathrm{d}\boldsymbol{C}_{n+1}} \f$ in
+      //! stress-form
       Core::LinAlg::Matrix<1, 6> plastic_strain_wrt_cauchy_green{
           Core::LinAlg::Initialization::zero};
     };
@@ -629,11 +631,12 @@ namespace Mat
     struct HistoryVariablesDerivativesWrtTemperature
     {
       //! derivative of the inverse plastic deformation gradient w.r.t. temperature
-      //! \f$ \frac{\mathrm{d}\boldsymbol{F}_\mathrm{p}^{-1}}{\mathrm{d}T} \f$ in Voigt notation
+      //! \f$ \frac{\mathrm{d}\boldsymbol{F}_{\mathrm{p},\,n+1}^{-1}}{\mathrm{d}T_{n+1}} \f$ in
+      //! Voigt notation
       Core::LinAlg::Matrix<9, 1> inv_plastic_defgrad_wrt_temperature{
           Core::LinAlg::Initialization::zero};
       //! derivative of the equivalent plastic strain w.r.t. temperature
-      //! \f$ \frac{\mathrm{d}\varepsilon_\mathrm{p}}{\mathrm{d}T} \f$
+      //! \f$ \frac{\mathrm{d}\varepsilon_{\mathrm{p},\,n+1}}{\mathrm{d}T_{n+1}} \f$
       double plastic_strain_wrt_temperature{0.0};
     };
 
@@ -732,7 +735,7 @@ namespace Mat
 
 
     /**
-     * Returns the derivative of the Taylor-Quinney term wrt. the right Cauchy-Green tensor
+     * Returns the derivative of the Taylor-Quinney term wrt. the right Cauchy-Green tensor at time
      * \f[\frac{\mathrm{d}}{\mathrm{d}\mathbf{C}}\left(
      * \xi_\mathrm{TQ}\,\bar{\sigma}\,\dot{\varepsilon}_\mathrm{p}\right)
      * =\xi_\mathrm{TQ}\left(
@@ -744,12 +747,12 @@ namespace Mat
      * \f[\frac{\mathrm{d}\bar{\sigma}}{\mathrm{d}\mathbf{C}}
      * =\frac{\partial \bar{\sigma}}{\partial \mathbf{C}}
      * +\frac{\partial \bar{\sigma}}{\partial \mathbf{F}_\mathrm{p}^{-1}}
-     * :\frac{\partial \mathbf{F}_\mathrm{p}^{-1}}{\partial \mathbf{C}}\f]
+     * :\frac{\mathrm{d} \mathbf{F}_{\mathrm{p},\,n+1}^{-1}}{\mathrm{d} \mathbf{C}_{n+1}}\f]
      *
      * and
      * \f[\frac{\mathrm{d}\dot{\varepsilon}_\mathrm{p}}{\mathrm{d}\mathbf{C}}
      * =\frac{\partial \dot{\varepsilon}_\mathrm{p}}{\partial \varepsilon_\mathrm{p}}
-     * \frac{\partial \varepsilon_\mathrm{p}}{\partial \mathbf{C}}
+     * \frac{\mathrm{d} \varepsilon_{\mathrm{p},\,n+1}}{\mathrm{d} \mathbf{C}_{n+1}}
      * +\frac{\partial \dot{\varepsilon}_\mathrm{p}}{\partial \bar{\sigma}}
      * \frac{\mathrm{d}\bar{\sigma}}{\mathrm{d}\mathbf{C}}\f]
      */
@@ -770,13 +773,13 @@ namespace Mat
      * \f[\frac{\mathrm{d}\bar{\sigma}}{\mathrm{d}T}
      * =\frac{\partial \bar{\sigma}}{\partial T}
      * +\frac{\partial \bar{\sigma}}{\partial \mathbf{F}_\mathrm{p}^{-1}}
-     * :\frac{\partial \mathbf{F}_\mathrm{p}^{-1}}{\partial T}\f]
+     * :\frac{\mathrm{d} \mathbf{F}_{\mathrm{p},\,n+1}^{-1}}{\mathrm{d} T_{n+1}}\f]
      *
      * and
      * \f[\frac{\mathrm{d}\dot{\varepsilon}_\mathrm{p}}{\mathrm{d}T}
      * =\frac{\partial \dot{\varepsilon}_\mathrm{p}}{\partial T}
      * +\frac{\partial \dot{\varepsilon}_\mathrm{p}}{\partial \varepsilon_\mathrm{p}}
-     * \frac{\partial \varepsilon_\mathrm{p}}{\partial T}
+     * \frac{\mathrm{d} \varepsilon_{\mathrm{p},\,n+1}}{\mathrm{d} T_{n+1}}
      * +\frac{\partial \dot{\varepsilon}_\mathrm{p}}{\partial \bar{\sigma}}
      * \frac{\mathrm{d}\bar{\sigma}}{\mathrm{d}T}\f]
      */
