@@ -287,9 +287,7 @@ namespace Mat
         const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int gp,
         int eleGID) override;
 
-    void reinit(const Core::LinAlg::Tensor<double, 3, 3>* defgrd,
-        const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain, double temperature,
-        unsigned gp) override { /* do nothing */ };
+    void reinit(double temperature, unsigned gp) override { /* do nothing */ };
 
     void stress_temperature_modulus_and_deriv(Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, const int gp) override;
@@ -372,11 +370,6 @@ namespace Mat
     };
 
     double capacity_deriv_t() const override
-    {
-      FOUR_C_THROW("This material does not wrap an internal thermo material");
-    };
-
-    void reinit(double temperature, unsigned gp) override
     {
       FOUR_C_THROW("This material does not wrap an internal thermo material");
     };

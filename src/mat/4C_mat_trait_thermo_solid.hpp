@@ -25,18 +25,13 @@ namespace Mat
     {
      public:
       /*!
-       * Set current quantities for this material
+       * Set the current temperature for this material
        *
-       * The quantities are used for evaluation and possibly in CommitCurrentState()
-       * @param defgrd
-       * @param glstrain
        * @param temperature
        * @param gp
        *
        */
-      virtual void reinit(const Core::LinAlg::Tensor<double, 3, 3>* defgrd,
-          const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain, double temperature,
-          unsigned gp) = 0;
+      void reinit(double temperature, unsigned gp) override = 0;
 
       /*!
        * Return stress-temperature modulus and thermal derivative for coupled thermomechanics

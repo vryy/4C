@@ -242,10 +242,6 @@ namespace Mat
     //! check if history variables are already initialised
     bool initialized() const { return (isinit_ and (!strainplcurr_.empty())); }
 
-    void reinit(const Core::LinAlg::Tensor<double, 3, 3>* defgrd,
-        const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain, double temperature,
-        unsigned gp) override;
-
     void stress_temperature_modulus_and_deriv(Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, int gp) override;
 

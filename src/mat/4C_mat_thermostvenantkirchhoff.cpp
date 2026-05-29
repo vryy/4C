@@ -161,7 +161,7 @@ void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Tensor<double, 3
     }
   }();
 
-  reinit(defgrad, glstrain, temperature, gp);  // fixme call this before
+  reinit(temperature, gp);  // fixme call this before
 
   setup_cmat(cmat);
   // purely mechanical part
@@ -251,12 +251,6 @@ void Mat::ThermoStVenantKirchhoff::commit_current_state()
   if (thermo_ != nullptr) thermo_->commit_current_state();
 }
 
-void Mat::ThermoStVenantKirchhoff::reinit(const Core::LinAlg::Tensor<double, 3, 3>* defgrd,
-    const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain, double temperature, unsigned gp)
-{
-  reinit(temperature, gp);
-}
-
 Core::LinAlg::SymmetricTensor<double, 3, 3>
 Mat::ThermoStVenantKirchhoff::evaluate_d_stress_d_scalar(
     const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
@@ -275,7 +269,7 @@ Mat::ThermoStVenantKirchhoff::evaluate_d_stress_d_scalar(
     }
   }();
 
-  reinit(&defgrad, glstrain, temperature, gp);  // fixme call this before
+  reinit(temperature, gp);  // fixme call this before
 
   Core::LinAlg::SymmetricTensor<double, 3, 3> dS_dT{};
 

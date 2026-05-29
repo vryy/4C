@@ -752,15 +752,6 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Tensor<double, 3, 
 }  // evaluate()
 
 /*----------------------------------------------------------------------*
- | Set current quantities for this material                             |
- *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::reinit(const Core::LinAlg::Tensor<double, 3, 3>* defgrd,
-    const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain, double temperature, unsigned gp)
-{
-  reinit(temperature, gp);
-}
-
-/*----------------------------------------------------------------------*
  | calculate stress-temperature modulus and thermal derivative          |
  |   for coupled thermomechanics                                        |
  *----------------------------------------------------------------------*/

@@ -515,15 +515,6 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
 }  // evaluate()
 
 /*----------------------------------------------------------------------*
- | Set current quantities for this material                             |
- *----------------------------------------------------------------------*/
-void Mat::Robinson::reinit(const Core::LinAlg::Tensor<double, 3, 3>* defgrd,
-    const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain, double temperature, unsigned gp)
-{
-  reinit(temperature, gp);
-}
-
-/*----------------------------------------------------------------------*
  | calculate stress-temperature modulus and thermal derivative          |
  |   for coupled thermomechanics                                        |
  *----------------------------------------------------------------------*/
