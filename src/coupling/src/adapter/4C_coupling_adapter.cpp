@@ -44,7 +44,7 @@ void Coupling::Adapter::Coupling::setup_condition_coupling(
     const Core::FE::Discretization& source_dis,
     std::shared_ptr<const Core::LinAlg::Map> source_cond_map, const std::string& condname,
     const std::vector<int>& target_dofs, const std::vector<int>& source_dofs, bool matchall,
-    const int nodes_target, const int nodes_source)
+    const int target_dofset_number, const int source_dofset_number)
 {
   const int numdof = target_dofs.size();
   const int num_dof_source = source_dofs.size();
@@ -71,7 +71,7 @@ void Coupling::Adapter::Coupling::setup_condition_coupling(
         "got {} target nodes but {} source nodes for coupling", target_count, source_count);
 
   setup_coupling(target_dis, source_dis, target_nodes, source_nodes, target_dofs, source_dofs,
-      matchall, 1.0e-3, nodes_target, nodes_source);
+      matchall, 1.0e-3, target_dofset_number, source_dofset_number);
 
   // test for completeness
   if (static_cast<int>(target_nodes.size()) * numdof != target_dof_map_->num_my_elements())
@@ -110,11 +110,11 @@ void Coupling::Adapter::Coupling::setup_condition_coupling(
     std::shared_ptr<const Core::LinAlg::Map> target_cond_map,
     const Core::FE::Discretization& source_dis,
     std::shared_ptr<const Core::LinAlg::Map> source_cond_map, const std::string& condname,
-    const int numdof, bool matchall, const int nodes_target, const int nodes_source)
+    const int numdof, bool matchall, const int target_dofset_number, const int source_dofset_number)
 {
   setup_condition_coupling(target_dis, target_cond_map, source_dis, source_cond_map, condname,
       build_dof_vector_from_num_dof(numdof), build_dof_vector_from_num_dof(numdof), matchall,
-      nodes_target, nodes_source);
+      target_dofset_number, source_dofset_number);
 }
 
 /*----------------------------------------------------------------------*/
@@ -123,7 +123,7 @@ void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization&
     const Core::FE::Discretization& source_dis, const std::vector<int>& target_nodes,
     const std::vector<int>& source_nodes, const std::vector<int>& target_dofs,
     const std::vector<int>& source_dofs, const bool matchall, const double tolerance,
-    const int nodes_target, const int nodes_source)
+    const int target_dofset_number, const int source_dofset_number)
 {
   std::vector<int> patched_target_nodes(target_nodes);
   std::vector<int> permuted_source_nodes;
@@ -142,7 +142,8 @@ void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization&
       -1, permuted_source_nodes.size(), permuted_source_nodes.data(), 0, source_dis.get_comm());
 
   finish_coupling(target_dis, source_dis, target_node_map, source_node_map,
-      permuted_source_node_map, target_dofs, source_dofs, nodes_target, nodes_source);
+      permuted_source_node_map, target_dofs, source_dofs, target_dofset_number,
+      source_dofset_number);
 }
 
 /*----------------------------------------------------------------------*/
@@ -150,11 +151,11 @@ void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization&
 void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization& target_dis,
     const Core::FE::Discretization& source_dis, const std::vector<int>& target_nodes,
     const std::vector<int>& source_nodes, const int numdof, const bool matchall,
-    const double tolerance, const int nodes_target, const int nodes_source)
+    const double tolerance, const int target_dofset_number, const int source_dofset_number)
 {
   setup_coupling(target_dis, source_dis, target_nodes, source_nodes,
       build_dof_vector_from_num_dof(numdof), build_dof_vector_from_num_dof(numdof), matchall,
-      tolerance, nodes_target, nodes_source);
+      tolerance, target_dofset_number, source_dofset_number);
 }
 
 /*----------------------------------------------------------------------*/
@@ -182,7 +183,7 @@ void Coupling::Adapter::Coupling::setup_coupling(
 void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization& target_dis,
     const Core::FE::Discretization& source_dis, const Core::LinAlg::Map& target_nodes,
     const Core::LinAlg::Map& source_nodes, const int numdof, const bool matchall,
-    const double tolerance, const int nodes_target, const int nodes_source)
+    const double tolerance, const int target_dofset_number, const int source_dofset_number)
 {
   if (target_nodes.num_global_elements() != source_nodes.num_global_elements() and matchall)
     FOUR_C_THROW("got {} target nodes but {} source nodes for coupling",
@@ -210,7 +211,7 @@ void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization&
 
   finish_coupling(target_dis, source_dis, target_node_map, source_node_map,
       permuted_source_node_map, build_dof_vector_from_num_dof(numdof),
-      build_dof_vector_from_num_dof(numdof), nodes_target, nodes_source);
+      build_dof_vector_from_num_dof(numdof), target_dofset_number, source_dofset_number);
 }
 
 
@@ -273,7 +274,7 @@ void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization&
     const Core::FE::Discretization& source_dis,
     const std::vector<std::vector<int>>& target_nodes_vec,
     const std::vector<std::vector<int>>& source_nodes_vec, const int numdof, const bool matchall,
-    const double tolerance, const int nodes_target, const int nodes_source)
+    const double tolerance, const int target_dofset_number, const int source_dofset_number)
 {
   // vectors with target and source node maps (from input) for every coupling condition
   // Permuted source node map for each coupling conditions from match_nodes()
@@ -310,7 +311,7 @@ void Coupling::Adapter::Coupling::setup_coupling(const Core::FE::Discretization&
 
   finish_coupling(target_dis, source_dis, target_node_map, source_node_map,
       permuted_source_node_map, build_dof_vector_from_num_dof(numdof),
-      build_dof_vector_from_num_dof(numdof), nodes_target, nodes_source);
+      build_dof_vector_from_num_dof(numdof), target_dofset_number, source_dofset_number);
 }
 
 /*----------------------------------------------------------------------*/
@@ -364,7 +365,7 @@ void Coupling::Adapter::Coupling::finish_coupling(const Core::FE::Discretization
     std::shared_ptr<Core::LinAlg::Map> source_node_map,
     std::shared_ptr<Core::LinAlg::Map> permuted_source_node_map,
     const std::vector<int>& target_dofs, const std::vector<int>& source_dofs,
-    const int nodes_target, const int nodes_source)
+    const int target_dofset_number, const int source_dofset_number)
 {
   // we expect to get maps of exactly the same shape
   if (not target_node_map->point_same_as(*permuted_source_node_map))
@@ -397,7 +398,8 @@ void Coupling::Adapter::Coupling::finish_coupling(const Core::FE::Discretization
   permuted_target_node_vec = nullptr;
 
   build_dof_maps(target_dis, source_dis, target_node_map, source_node_map, permuted_target_node_map,
-      permuted_source_node_map, target_dofs, source_dofs, nodes_target, nodes_source);
+      permuted_source_node_map, target_dofs, source_dofs, target_dofset_number,
+      source_dofset_number);
 }
 
 /*----------------------------------------------------------------------*/
@@ -409,12 +411,12 @@ void Coupling::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization&
     const std::shared_ptr<const Core::LinAlg::Map>& permuted_target_node_map,
     const std::shared_ptr<const Core::LinAlg::Map>& permuted_source_node_map,
     const std::vector<int>& target_dofs, const std::vector<int>& source_dofs,
-    const int nodes_target, const int nodes_source)
+    const int target_dofset_number, const int source_dofset_number)
 {
   build_dof_maps(target_dis, *target_node_map, *permuted_target_node_map, target_dof_map_,
-      permuted_target_dof_map_, target_export_, target_dofs, nodes_target);
+      permuted_target_dof_map_, target_export_, target_dofs, target_dofset_number);
   build_dof_maps(source_dis, *source_node_map, *permuted_source_node_map, source_dof_map_,
-      permuted_source_dof_map_, source_export_, source_dofs, nodes_source);
+      permuted_source_dof_map_, source_export_, source_dofs, source_dofset_number);
 }
 
 /*----------------------------------------------------------------------*/

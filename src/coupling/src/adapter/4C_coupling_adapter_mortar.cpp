@@ -51,7 +51,7 @@ void Coupling::Adapter::CouplingMortar::setup(
     const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
     std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type, const bool source_is_ale,
-    const bool slidingale, const int nodes_target, const int nodes_source)
+    const bool slidingale, const int target_dofset_number, const int source_dofset_number)
 {
   // initialize maps for row nodes
   std::map<int, Core::Nodes::Node*> target_nodes;
@@ -115,7 +115,8 @@ void Coupling::Adapter::CouplingMortar::setup(
   // setup mortar interface
   setup_interface(target_dis, source_dis, coupleddof, target_global_nodes, source_global_nodes,
       target_elements, source_elements, comm, binning_params, discretization_map, output_control,
-      spatial_approximation_type, source_is_ale, slidingale, nodes_target, nodes_source);
+      spatial_approximation_type, source_is_ale, slidingale, target_dofset_number,
+      source_dofset_number);
 
   // all the following stuff has to be done once in setup
   // in order to get initial D_ and M_
@@ -264,7 +265,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
     const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
     std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type, const bool source_is_ale,
-    const bool slidingale, const int nodes_target, const int nodes_source)
+    const bool slidingale, const int target_dofset_number, const int source_dofset_number)
 {
   // vector coupleddof defines degree of freedom which are coupled (1: coupled; 0: not coupled),
   // e.g.:
@@ -298,10 +299,10 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   // number of dofs per node based on the coupling vector coupleddof
   const int dof = coupleddof.size();
   if ((target_dis->num_my_row_nodes() > 0 and
-          (target_dis->num_dof(nodes_target, target_dis->l_row_node(0)) != dof and
+          (target_dis->num_dof(target_dofset_number, target_dis->l_row_node(0)) != dof and
               source_is_ale == true and slidingale == false)) or
       (source_dis->num_my_row_nodes() > 0 and
-          (source_dis->num_dof(nodes_source, source_dis->l_row_node(0)) != dof and
+          (source_dis->num_dof(source_dofset_number, source_dis->l_row_node(0)) != dof and
               source_is_ale == false and slidingale == false)))
   {
     FOUR_C_THROW(
@@ -309,7 +310,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
         "fit!! \n"
         "dof defined in the discretization: {} \n"
         "length of coupleddof: {}",
-        target_dis->num_dof(nodes_target, target_dis->l_row_node(0)), dof);
+        target_dis->num_dof(target_dofset_number, target_dis->l_row_node(0)), dof);
   }
 
   // special case: sliding ale
@@ -321,7 +322,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   if (slidingale == true)
   {
     nodeoffset = target_dis->node_row_map()->max_all_gid() + 1;
-    dofoffset = target_dis->dof_row_map(nodes_target)->max_all_gid() + 1;
+    dofoffset = target_dis->dof_row_map(target_dofset_number)->max_all_gid() + 1;
   }
 
   // number of coupled dofs (defined in coupleddof by a 1)
@@ -344,7 +345,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
       {
         // get the gid of the coupled dof (size dof)
         // and store it in the vector dofids containing only coupled dofs (size numcoupleddof)
-        dofids[ii] = target_dis->dof(nodes_target, node)[k];
+        dofids[ii] = target_dis->dof(target_dofset_number, node)[k];
         ii += 1;
       }
     }
@@ -369,7 +370,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
       {
         // get the gid of the coupled dof (size dof)
         // and store it in the vector dofids containing only coupled dofs (size numcoupleddof)
-        dofids[ii] = source_dis->dof(nodes_source, node)[k] + dofoffset;
+        dofids[ii] = source_dis->dof(source_dofset_number, node)[k] + dofoffset;
         ii += 1;
       }
     }

@@ -120,7 +120,7 @@ namespace Adapter
     void apply_mesh_velocity(std::shared_ptr<const Core::LinAlg::Vector<double>> gridvel) override;
 
     void set_mesh_map(
-        std::shared_ptr<const Core::LinAlg::Map> mm, const int nodes_target = 0) override;
+        std::shared_ptr<const Core::LinAlg::Map> mm, const int target_dofset_number = 0) override;
 
     //! @name Conversion between displacement and velocity at interface
 
@@ -219,7 +219,7 @@ namespace Adapter
 
    protected:
     /// create conditioned dof-map extractor for the fluid
-    virtual void setup_interface(const int nodes_target = 0);
+    virtual void setup_interface(const int target_dofset_number = 0);
 
     /*! \brief Build inner velocity map
      *

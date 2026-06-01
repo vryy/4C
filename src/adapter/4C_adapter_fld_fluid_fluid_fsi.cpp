@@ -267,10 +267,10 @@ std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> Adapter::FluidFluidFSI::sha
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Adapter::FluidFluidFSI::setup_interface(const int nodes_target)
+void Adapter::FluidFluidFSI::setup_interface(const int target_dofset_number)
 {
-  // check nodes_target
-  if (nodes_target != 0) FOUR_C_THROW("nodes_target is supposed to be 0 here");
+  // check target_dofset_number
+  if (target_dofset_number != 0) FOUR_C_THROW("target_dofset_number is supposed to be 0 here");
 
   if (mergedfluidinterface_ == nullptr)
   {

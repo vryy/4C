@@ -95,15 +95,16 @@ namespace Coupling::Adapter
         std::shared_ptr<const Core::LinAlg::Map> target_cond_map,
         const Core::FE::Discretization& source_dis,
         std::shared_ptr<const Core::LinAlg::Map> source_cond_map, const std::string& condname,
-        const int numdof, bool matchall = true, const int nodes_target = 0,
-        const int nodes_source = 0);
+        const int numdof, bool matchall = true, const int target_dofset_number = 0,
+        const int source_dofset_number = 0);
 
     void setup_condition_coupling(const Core::FE::Discretization& target_dis,
         std::shared_ptr<const Core::LinAlg::Map> target_cond_map,
         const Core::FE::Discretization& source_dis,
         std::shared_ptr<const Core::LinAlg::Map> source_cond_map, const std::string& condname,
         const std::vector<int>& target_dofs, const std::vector<int>& source_dofs,
-        bool matchall = true, const int nodes_target = 0, const int nodes_source = 0);
+        bool matchall = true, const int target_dofset_number = 0,
+        const int source_dofset_number = 0);
 
     /*! \brief Setup coupling of given nodes
      *
@@ -134,7 +135,8 @@ namespace Coupling::Adapter
         const Core::FE::Discretization& source_dis, const std::vector<int>& target_nodes,
         const std::vector<int>& source_nodes, const std::vector<int>& target_dofs,
         const std::vector<int>& source_dofs, const bool matchall = true,
-        const double tolerance = 1.e-3, const int nodes_target = 0, const int nodes_source = 0);
+        const double tolerance = 1.e-3, const int target_dofset_number = 0,
+        const int source_dofset_number = 0);
 
     /*! \brief Setup coupling of given nodes
      *
@@ -146,7 +148,8 @@ namespace Coupling::Adapter
     void setup_coupling(const Core::FE::Discretization& target_dis,
         const Core::FE::Discretization& source_dis, const std::vector<int>& target_nodes,
         const std::vector<int>& source_nodes, const int numdof, const bool matchall = true,
-        const double tolerance = 1.e-3, const int nodes_target = 0, const int nodes_source = 0);
+        const double tolerance = 1.e-3, const int target_dofset_number = 0,
+        const int source_dofset_number = 0);
 
     /*! \brief Setup coupling of given nodes
      *
@@ -173,7 +176,8 @@ namespace Coupling::Adapter
     void setup_coupling(const Core::FE::Discretization& target_dis,
         const Core::FE::Discretization& source_dis, const Core::LinAlg::Map& target_nodes,
         const Core::LinAlg::Map& source_nodes, const int numdof, const bool matchall = true,
-        const double tolerance = 1.e-3, const int nodes_target = 0, const int nodes_source = 0);
+        const double tolerance = 1.e-3, const int target_dofset_number = 0,
+        const int source_dofset_number = 0);
 
     /*! \brief Setup coupling of given nodes and node maps
      *
@@ -235,15 +239,15 @@ namespace Coupling::Adapter
      *  \param numdof          (i) number of dofs per node to be coupled
      *  \param matchall        (i) flag indicating matching source and target nodes
      *  \param tolerance       (i) tolerance for octree for node matching
-     *  \param nodes_target      (i) dofset ID of target side
-     *  \param nodes_source       (i) dofset ID of source side
+     *  \param target_dofset_number      (i) dofset ID of target side
+     *  \param source_dofset_number       (i) dofset ID of source side
      */
     void setup_coupling(const Core::FE::Discretization& target_dis,
         const Core::FE::Discretization& source_dis,
         const std::vector<std::vector<int>>& target_nodes_vec,
         const std::vector<std::vector<int>>& source_nodes_vec, const int numdof,
-        const bool matchall = true, const double tolerance = 1.0e-3, const int nodes_target = 0,
-        const int nodes_source = 0);
+        const bool matchall = true, const double tolerance = 1.0e-3,
+        const int target_dofset_number = 0, const int source_dofset_number = 0);
 
     /*! Setup coupling based on dof maps. This can be used if no search is required anymore and
      * all dof maps are known already
@@ -383,7 +387,7 @@ namespace Coupling::Adapter
         const std::shared_ptr<const Core::LinAlg::Map>& permuted_target_node_map,
         const std::shared_ptr<const Core::LinAlg::Map>& permuted_source_node_map,
         const std::vector<int>& target_dofs, const std::vector<int>& source_dofs,
-        const int nodes_target = 0, const int nodes_source = 0);
+        const int target_dofset_number = 0, const int source_dofset_number = 0);
 
     /*! \brief Helper function for creating vector from numdof
      *
@@ -420,7 +424,7 @@ namespace Coupling::Adapter
         std::shared_ptr<Core::LinAlg::Map> source_node_map,
         std::shared_ptr<Core::LinAlg::Map> permuted_source_node_map,
         const std::vector<int>& target_dofs, const std::vector<int>& source_dofs,
-        const int nodes_target = 0, const int nodes_source = 0);
+        const int target_dofset_number = 0, const int source_dofset_number = 0);
 
     /// build dof maps from node maps
     /*!

@@ -107,10 +107,10 @@ namespace Coupling::Adapter
         const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
         std::shared_ptr<Core::IO::OutputControl> output_control,
         Core::FE::ShapeFunctionType spatial_approximation_type,
-        const bool source_is_ale = false,  ///< flag defining if source is ALE
-        const bool slidingale = false,     ///< flag indicating sliding ALE case
-        const int nodes_target = 0,        ///< target dofset number
-        const int nodes_source = 0         ///< source dofset number
+        const bool source_is_ale = false,    ///< flag defining if source is ALE
+        const bool slidingale = false,       ///< flag indicating sliding ALE case
+        const int target_dofset_number = 0,  ///< target dofset number
+        const int source_dofset_number = 0   ///< source dofset number
     );
 
     /*! setup the machinery (generalized version)
@@ -137,10 +137,10 @@ namespace Coupling::Adapter
         const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
         std::shared_ptr<Core::IO::OutputControl> output_control,
         Core::FE::ShapeFunctionType spatial_approximation_type,
-        const bool source_is_ale = false,  ///< flag defining if source is ALE
-        const bool slidingale = false,     ///< flag indicating sliding ALE case
-        const int nodes_target = 0,        ///< target dofset number
-        const int nodes_source = 0         ///< source dofset number
+        const bool source_is_ale = false,    ///< flag defining if source is ALE
+        const bool slidingale = false,       ///< flag indicating sliding ALE case
+        const int target_dofset_number = 0,  ///< target dofset number
+        const int source_dofset_number = 0   ///< source dofset number
     );
 
     /// create integration cells
