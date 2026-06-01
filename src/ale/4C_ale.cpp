@@ -776,7 +776,7 @@ void ALE::Ale::update_source_dof(std::shared_ptr<Core::LinAlg::Vector<double>>& 
 {
   if (msht_ != ALE::no_meshtying)
   {
-    meshtying_->update_slave_dof(a, dispnp_);
+    meshtying_->update_source_dof(a, dispnp_);
     meshtying_->recover(a);
   }
 }

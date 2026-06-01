@@ -399,7 +399,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
               if (slavedofgid < 0) FOUR_C_THROW("Couldn't find local ID {} in map!", slavedoflid);
 
               // determine global ID of associated master-side matrix column
-              const int masterdofgid = icoup_->perm_master_dof_map()->gid(slavedoflid);
+              const int masterdofgid = icoup_->permuted_target_dof_map()->gid(slavedoflid);
               if (masterdofgid < 0)
                 FOUR_C_THROW("Couldn't find local ID {} in permuted map!", slavedoflid);
 
@@ -2176,8 +2176,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
         const int condid = kinetics_slave_cond.first;
 
         // initialize maps for row nodes associated with current condition
-        std::map<int, Core::Nodes::Node*> masternodes;
-        std::map<int, Core::Nodes::Node*> slavenodes;
+        std::map<int, Core::Nodes::Node*> target_nodes;
+        std::map<int, Core::Nodes::Node*> source_nodes;
 
         // initialize maps for column nodes associated with current condition
         std::map<int, Core::Nodes::Node*> mastergnodes;
@@ -2195,9 +2195,9 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
             1, kinetics_slave_cond.second);
 
         // fill maps
-        Core::Conditions::find_condition_objects(*scatratimint_->discretization(), masternodes,
+        Core::Conditions::find_condition_objects(*scatratimint_->discretization(), target_nodes,
             mastergnodes, masterelements, mastercondition);
-        Core::Conditions::find_condition_objects(*scatratimint_->discretization(), slavenodes,
+        Core::Conditions::find_condition_objects(*scatratimint_->discretization(), source_nodes,
             slavegnodes, slaveelements, slavecondition);
 
         // initialize mortar coupling adapter

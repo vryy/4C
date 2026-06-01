@@ -1216,7 +1216,7 @@ void FSI::SlidingMonolithicStructureSplit::extract_field_vectors(
   // ---------------------------------------------------------------------------
   // extract fluid solution increment from NOX increment
   std::shared_ptr<Core::LinAlg::Vector<double>> f = extractor().extract_vector(*x, 1);
-  fluid_field()->update_slave_dof(f);
+  fluid_field()->update_source_dof(f);
   fx = f;
 
   // ---------------------------------------------------------------------------

@@ -893,9 +893,9 @@ SSI::ManifoldMeshTyingStrategyBlock::ManifoldMeshTyingStrategyBlock(
     {
       auto coupling_adapter = meshtying->slave_master_coupling();
       auto source_dof_map = coupling_adapter->source_dof_map();
-      auto perm_source_dof_map = coupling_adapter->perm_source_dof_map();
+      auto permuted_source_dof_map = coupling_adapter->permuted_source_dof_map();
       auto target_dof_map = coupling_adapter->target_dof_map();
-      auto perm_master_dof_map = coupling_adapter->perm_master_dof_map();
+      auto permuted_target_dof_map = coupling_adapter->permuted_target_dof_map();
 
       // split maps according to split of matrix blocks, i.e. block maps
       std::vector<std::shared_ptr<const Core::LinAlg::Map>> partial_maps_slave_block_dof_map;
@@ -904,11 +904,11 @@ SSI::ManifoldMeshTyingStrategyBlock::ManifoldMeshTyingStrategyBlock(
       {
         auto [slave_block_map, perm_master_block_map] =
             intersect_coupling_maps_block_map(*ssi_maps_->block_map_scatra_manifold()->map(i),
-                *source_dof_map, *perm_master_dof_map, scatra_manifold_dis.get_comm());
+                *source_dof_map, *permuted_target_dof_map, scatra_manifold_dis.get_comm());
 
         auto [master_block_map, perm_slave_block_map] =
             intersect_coupling_maps_block_map(*ssi_maps_->block_map_scatra_manifold()->map(i),
-                *target_dof_map, *perm_source_dof_map, scatra_manifold_dis.get_comm());
+                *target_dof_map, *permuted_source_dof_map, scatra_manifold_dis.get_comm());
 
         auto coupling_adapter_block = std::make_shared<Coupling::Adapter::Coupling>();
         coupling_adapter_block->setup_coupling(

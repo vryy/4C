@@ -51,10 +51,10 @@ int Core::GeometricSearch::MatchingOctree::setup()
 
   const unsigned int nummygids = masterentityids_->size();
 
-  // extract all masternodes on this proc from the list masternodeids
+  // extract all target_nodes on this proc from the list masternodeids
   std::vector<int> masternodesonthisproc;
 
-  // construct octree if proc has masternodes
+  // construct octree if proc has target_nodes
   if (nummygids > 0)
   {
     // create initial bounding box for all nodes
@@ -168,7 +168,7 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
   // counterpart
   std::map<int, double> diststom;
 
-  // 1) each proc generates a list of its slavenodes
+  // 1) each proc generates a list of its source_nodes
   // 2) the list is communicated in a round robin pattern to all the
   //    other procs.
   //
@@ -396,7 +396,7 @@ void Core::GeometricSearch::MatchingOctree::find_match(const Core::FE::Discretiz
   if (Core::Communication::num_mpi_ranks(slavedis.get_comm()) != numprocs)
     FOUR_C_THROW("compared discretizations must live on same procs");
 
-  // 1) each proc generates a list of its slavenodes
+  // 1) each proc generates a list of its source_nodes
   //
   // 2) the list is communicated in a round robin pattern to all the
   //    other procs.
@@ -545,7 +545,7 @@ void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
   if (Core::Communication::num_mpi_ranks(slavedis.get_comm()) != numprocs)
     FOUR_C_THROW("compared discretizations must live on same procs");
 
-  // 1) each proc generates a list of its slavenodes
+  // 1) each proc generates a list of its source_nodes
   //
   // 2) the list is communicated in a round robin pattern to all the
   //    other procs.
@@ -1009,7 +1009,7 @@ int Core::GeometricSearch::OctreeElement::setup()
   }
 
   const int numnodestoadd = static_cast<int>(nodeids_.size());
-  // if number of slavenodes on this proc is too large split the element
+  // if number of source_nodes on this proc is too large split the element
   if (numnodestoadd > maxtreenodesperleaf_)
   {
     // mean coordinate value in direction of the longest edge
@@ -1158,7 +1158,7 @@ int Core::GeometricSearch::OctreeElement::setup()
 
     octreechild2_ = create_octree_element(childnodeids2, childboundingbox2, layer_ + 1);
 
-  }  // end number of slavenodes on this proc is too large split the element
+  }  // end number of source_nodes on this proc is too large split the element
   else
   {
     if ((int)nodeids_.size() == 0)

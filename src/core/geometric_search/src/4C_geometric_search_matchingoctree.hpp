@@ -184,7 +184,7 @@ namespace Core::GeometricSearch
                                  (used to "shift" nodes in the normal
                                   direction)
     \param  rotangle         (i) angle (RAD) for rotation of slave plane
-    \param  midtosid         (o) map from master to slavenodes
+    \param  midtosid         (o) map from master to source_nodes
 
     \return void  */
     virtual void create_global_entity_matching(const std::vector<int>& slavenodeids,

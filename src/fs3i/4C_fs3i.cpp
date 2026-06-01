@@ -92,9 +92,9 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
       scatravec_[1]->scatra_field()->discretization();
 
   std::shared_ptr<const Core::LinAlg::Map> mastermap = scatracoup_->target_dof_map();
-  std::shared_ptr<const Core::LinAlg::Map> permmastermap = scatracoup_->perm_master_dof_map();
+  std::shared_ptr<const Core::LinAlg::Map> permmastermap = scatracoup_->permuted_target_dof_map();
   std::shared_ptr<const Core::LinAlg::Map> slavemap = scatracoup_->source_dof_map();
-  std::shared_ptr<const Core::LinAlg::Map> permslavemap = scatracoup_->perm_source_dof_map();
+  std::shared_ptr<const Core::LinAlg::Map> permslavemap = scatracoup_->permuted_source_dof_map();
 
   const std::shared_ptr<const Core::LinAlg::MapExtractor> masterdirichmapex =
       scatravec_[0]->scatra_field()->dirich_maps();
