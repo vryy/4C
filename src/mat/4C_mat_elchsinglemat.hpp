@@ -126,11 +126,6 @@ namespace Mat
     //! abbreviations for pre-defined functions
     ///@{
     static constexpr int CONSTANT_FUNCTION = -1;
-    static constexpr int LINEAR_FUNCTION = -2;
-    static constexpr int QUADRATIC_FUNCTION = -3;
-    static constexpr int POWER_FUNCTION = -4;
-    static constexpr int CONDUCT = -5;
-    static constexpr int GOLDIN = -11;
     static constexpr int ARRHENIUS = -14;
     ///@}
 

@@ -103,14 +103,12 @@ MATERIALS:
       DIFF_COEF_TEMP_SCALE_FUNCT: 0
       TRANSNR: -1
       THERMFAC: 0
-      COND_CONC_DEP_FUNCT: -11
+      COND_CONC_DEP_FUNCT: 5
       COND_TEMP_SCALE_FUNCT: 0
       DIFF_PARA_NUM: 1
       DIFF_PARA: [0.00026]
       TRANS_PARA_NUM: 1
       TRANS_PARA: [0.363]
-      COND_PARA_NUM: 3
-      COND_PARA: [1580, 0.85, 1.4]
   - MAT: 6
     MAT_soret:
       CAPA: 1050
@@ -160,6 +158,9 @@ FUNCT3:
 FUNCT4:
   - COMPONENT: 0
     SYMBOLIC_FUNCTION_OF_SPACE_TIME: "300.0"
+FUNCT5:
+  # conductivity as a function of concentration according to Goldin et al. 2012; 10.1016/j.electacta.2011.12.119
+  - SYMBOLIC_FUNCTION_OF_TIME: "1580.0*t*exp(0.85*t^1.4)"
 RESULT DESCRIPTION:
   - SCATRA:
       DIS: "scatra"
@@ -201,19 +202,19 @@ RESULT DESCRIPTION:
       DIS: "thermo"
       NODE: 41
       QUANTITY: "flux_boundary_1_x"
-      VALUE: 3.258961e-03
+      VALUE: 3.25895402760233675e-03
       TOLERANCE: 3.3e-09
   - SCATRA:
       DIS: "thermo"
       NODE: 41
       QUANTITY: "flux_boundary_1_y"
-      VALUE: -2.321262e-02
+      VALUE: -2.32125649991784047e-02
       TOLERANCE: 2.3e-08
   - SCATRA:
       DIS: "thermo"
       NODE: 41
       QUANTITY: "flux_boundary_1_z"
-      VALUE: 6.377826e-03
+      VALUE: 6.37781257307946416e-03
       TOLERANCE: 6.4e-09
   - SCATRA:
       DIS: "scatra"
