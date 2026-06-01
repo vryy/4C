@@ -33,6 +33,7 @@ Mat::PAR::Scl::Scl(const Core::Mat::PAR::Parameter::Data& matdata)
       susceptibility_(matdata.parameters.get<double>("SUSCEPT")),
       delta_nu_(matdata.parameters.get<double>("DELTA_NU")),
       faraday_(Global::Problem::instance()->elch_control_params().get<double>("FARADAY_CONSTANT")),
+      R_(Global::Problem::instance()->elch_control_params().get<double>("GAS_CONSTANT")),
       epsilon_0_(Global::Problem::instance()
               ->elch_control_params()
               .sublist("DIFFCOND")

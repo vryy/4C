@@ -37,8 +37,7 @@ Mat::PAR::ElchSingleMat::ElchSingleMat(const Core::Mat::PAR::Parameter::Data& ma
       number_conductivity_temp_scale_funct_params_(
           matdata.parameters.get<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM")),
       conductivity_temp_scale_funct_params_(
-          matdata.parameters.get<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA")),
-      R_(Global::Problem::instance()->elch_control_params().get<double>("GAS_CONSTANT"))
+          matdata.parameters.get<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA"))
 {
   // safety checks
   if (number_diffusion_coefficient_params_ !=
@@ -83,17 +82,6 @@ void Mat::PAR::ElchSingleMat::check_provided_params(
       {
         // constant value: functval=functparams[0];
         functionname = "'constant function'";
-        nfunctparams = 1;
-        break;
-      }
-      case Mat::ElchSingleMat::ARRHENIUS:
-      {
-        // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
-        // exp(-Q/(R*T)) Q: activation energy, R: universal gas constant, T: temperature, D0: max
-        // diffusion coefficient D0 is provided by DIFF PARA and R is a constant which is already
-        // defined
-        functionname =
-            "'Arrhenius Ansatz for temperature dependent diffusion coefficient in solids'";
         nfunctparams = 1;
         break;
       }
@@ -403,16 +391,6 @@ double Mat::ElchSingleMat::eval_pre_defined_funct(
       functval = functparams[0];
       break;
 
-    case ARRHENIUS:
-    {
-      // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
-      // exp(-Q/(R*T)) Q: activation energy, R: universal gas constant, T:temperature, D0: max
-      // diffusion coefficient D0 is provided by DIFF PARA
-      // functval = exp(-a0/(R * T)
-      const double R = static_cast<Mat::PAR::ElchSingleMat*>(parameter())->R_;
-      functval = std::exp(-functparams[0] / (R * scalar));
-      break;
-    }
     default:
     {
       FOUR_C_THROW("Curve number {} is not implemented!", functnr);
@@ -437,16 +415,6 @@ double Mat::ElchSingleMat::eval_first_deriv_pre_defined_funct(
       firstderivfunctval = 0.0;
       break;
 
-    case ARRHENIUS:
-    {
-      // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
-      // exp(-Q/(R*T)) Q: activation energy, R: universal gasconstant, T:temperature, D0: max
-      // diffusioncoefficient D0 is provided by DIFF PARA
-      const double R = static_cast<Mat::PAR::ElchSingleMat*>(parameter())->R_;
-      firstderivfunctval = std::exp(-functparams[0] / (R * scalar)) * functparams[0] / R * 1.0 /
-                           std::pow(scalar, 2.0);
-      break;
-    }
     default:
     {
       FOUR_C_THROW("Curve number {} is not implemented!", functnr);

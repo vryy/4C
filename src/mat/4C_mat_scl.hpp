@@ -24,7 +24,7 @@ namespace Mat
     class Scl : public ElchSingleMat
     {
      public:
-      Scl(const Core::Mat::PAR::Parameter::Data& matdata);
+      explicit Scl(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{
@@ -53,7 +53,7 @@ namespace Mat
       //! bulk concentration i.e. anion concentration for equal transference numbers
       const double cbulk_;
 
-      //! dieelectric susceptibility of electrolyte material
+      //! dielectric susceptibility of electrolyte material
       const double susceptibility_;
 
       //! difference in partial molar volumes (vacancy <=> interstitial)
@@ -61,6 +61,9 @@ namespace Mat
 
       //! Faraday constant
       const double faraday_;
+
+      //! universal gas constant
+      const double R_;
 
       //! vacuum Permittivity
       const double epsilon_0_;
