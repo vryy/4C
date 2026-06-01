@@ -252,13 +252,13 @@ namespace Coupling::VolMortar
 
      */
     virtual void define_vertices_target(
-        Core::Elements::Element& ele, std::vector<Mortar::Vertex>& source_vertices);
+        Core::Elements::Element& ele, std::vector<Mortar::Vertex>& target_vertices);
 
     /*!
      \brief define vertices for 2D polygon clipping (source)
 
      */
-    virtual void define_vertices_slave(
+    virtual void define_vertices_source(
         Core::Elements::Element& ele, std::vector<Mortar::Vertex>& source_vertices);
 
     /*!

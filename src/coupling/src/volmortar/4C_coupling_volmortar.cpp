@@ -928,7 +928,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_segments_2d(
 
   // build new polygons
   define_vertices_target(Bele, target_vertices);
-  define_vertices_slave(Aele, source_vertices);
+  define_vertices_source(Aele, source_vertices);
 
   double tol = 1e-12;
   polygon_clipping_convex_hull(source_vertices, target_vertices, ClippedPolygon, Aele, Bele, tol);
@@ -3742,13 +3742,13 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
 /*----------------------------------------------------------------------*
  |  Define polygon of mortar vertices                        farah 01/14|
  *----------------------------------------------------------------------*/
-void Coupling::VolMortar::VolMortarCoupl::define_vertices_slave(
+void Coupling::VolMortar::VolMortarCoupl::define_vertices_source(
     Core::Elements::Element& ele, std::vector<Mortar::Vertex>& source_vertices)
 {
   // project source nodes onto auxiliary plane
   int nnodes = ele.num_node();
   Core::Nodes::Node** mynodes = ele.nodes();
-  if (!mynodes) FOUR_C_THROW("ERROR: project_slave: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("ERROR: project_source: Null pointer!");
 
   // initialize storage for source coords + their ids
   std::vector<double> vertices(3);
@@ -3767,23 +3767,22 @@ void Coupling::VolMortar::VolMortarCoupl::define_vertices_slave(
     source_vertices.push_back(Mortar::Vertex(
         vertices, Mortar::Vertex::source, snodeids, nullptr, nullptr, false, false, nullptr, -1.0));
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Define polygon of mortar vertices                        farah 01/14|
  *----------------------------------------------------------------------*/
 void Coupling::VolMortar::VolMortarCoupl::define_vertices_target(
-    Core::Elements::Element& ele, std::vector<Mortar::Vertex>& source_vertices)
+    Core::Elements::Element& ele, std::vector<Mortar::Vertex>& target_vertices)
 {
-  // project source nodes onto auxiliary plane
+  // project target nodes onto auxiliary plane
   int nnodes = ele.num_node();
   Core::Nodes::Node** mynodes = ele.nodes();
-  if (!mynodes) FOUR_C_THROW("ERROR: project_slave: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("ERROR: project_target: Null pointer!");
 
-  // initialize storage for source coords + their ids
+  // initialize storage for target coords + their ids
   std::vector<double> vertices(3);
-  std::vector<int> snodeids(1);
+  std::vector<int> tnodeids(1);
 
   for (int i = 0; i < nnodes; ++i)
   {
@@ -3792,13 +3791,12 @@ void Coupling::VolMortar::VolMortarCoupl::define_vertices_target(
     for (size_t k = 0; k < x.size(); ++k) vertices[k] = x[k];
 
     // get node id, too
-    snodeids[0] = mynodes[i]->id();
+    tnodeids[0] = mynodes[i]->id();
 
     // store into vertex data structure
-    source_vertices.push_back(Mortar::Vertex(vertices, Mortar::Vertex::projtarget, snodeids,
+    target_vertices.push_back(Mortar::Vertex(vertices, Mortar::Vertex::projtarget, tnodeids,
         nullptr, nullptr, false, false, nullptr, -1.0));
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
