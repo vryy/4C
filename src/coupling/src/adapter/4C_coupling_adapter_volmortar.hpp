@@ -218,8 +218,8 @@ namespace Coupling::Adapter
     std::shared_ptr<Core::LinAlg::SparseMatrix>
         p21_;  ///< global Mortar projection matrix P Omega_1 -> Omega_2
 
-    std::shared_ptr<Core::FE::Discretization> masterdis_;
-    std::shared_ptr<Core::FE::Discretization> slavedis_;
+    std::shared_ptr<Core::FE::Discretization> target_dis_;
+    std::shared_ptr<Core::FE::Discretization> source_dis_;
 
     std::vector<int>* coupleddof12_;
     std::vector<int>* coupleddof21_;

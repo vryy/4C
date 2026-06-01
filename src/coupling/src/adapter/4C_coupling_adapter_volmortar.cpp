@@ -31,8 +31,8 @@ Coupling::Adapter::MortarVolCoupl::MortarVolCoupl()
       isinit_(false),
       p12_(nullptr),
       p21_(nullptr),
-      masterdis_(nullptr),
-      slavedis_(nullptr),
+      target_dis_(nullptr),
+      source_dis_(nullptr),
       coupleddof12_(nullptr),
       coupleddof21_(nullptr),
       dofsets12_(nullptr),
@@ -64,8 +64,8 @@ void Coupling::Adapter::MortarVolCoupl::init(int spatial_dimension,
   spatial_dimension_ = spatial_dimension;
 
   // set pointers to discretizations
-  masterdis_ = dis1;
-  slavedis_ = dis2;
+  target_dis_ = dis1;
+  source_dis_ = dis2;
 
   // set various pointers
   coupleddof12_ = coupleddof12;
@@ -102,8 +102,8 @@ void Coupling::Adapter::MortarVolCoupl::setup(
 
   // create coupling instance
   std::shared_ptr<FourC::Coupling::VolMortar::VolMortarCoupl> coupdis =
-      std::make_shared<FourC::Coupling::VolMortar::VolMortarCoupl>(spatial_dimension_, masterdis_,
-          slavedis_, params, cut_params, coupleddof12_, coupleddof21_, dofsets12_, dofsets21_,
+      std::make_shared<FourC::Coupling::VolMortar::VolMortarCoupl>(spatial_dimension_, target_dis_,
+          source_dis_, params, cut_params, coupleddof12_, coupleddof21_, dofsets12_, dofsets21_,
           materialstrategy_);
 
   //-----------------------
@@ -149,8 +149,8 @@ void Coupling::Adapter::MortarVolCoupl::redistribute(const Teuchos::ParameterLis
 
   // create vector of discr.
   std::vector<std::shared_ptr<Core::FE::Discretization>> dis;
-  dis.push_back(masterdis_);
-  dis.push_back(slavedis_);
+  dis.push_back(target_dis_);
+  dis.push_back(source_dis_);
 
   Core::Rebalance::rebalance_discretizations_by_binning(binning_params, output_control, dis,
       std::move(correct_node), std::move(determine_relevant_points), false);
