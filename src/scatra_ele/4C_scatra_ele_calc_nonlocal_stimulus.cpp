@@ -9,10 +9,12 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
+#include "4C_linalg_tensor_conversion.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_mixture.hpp"
 #include "4C_mat_scatra_nonlocal_stimulus.hpp"
 #include "4C_mixture_constituent_remodelfiber_ssi.hpp"
+#include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_calc.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_singleton_owner.hpp"
@@ -190,6 +192,107 @@ Discret::Elements::ScaTraEleCalcNonlocalStimulus<distype, probdim>::get_struct_m
   return mixture;
 }
 
+
+template <Core::FE::CellType distype, int probdim>
+int Discret::Elements::ScaTraEleCalcNonlocalStimulus<distype, probdim>::evaluate_action_od(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, const ScaTra::Action& action,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+    Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
+{
+  // base class call
+  const int result = my::evaluate_action_od(
+      ele, params, discretization, action, la, elemat1, elemat2, elevec1, elevec2, elevec3);
+
+  // nonlocal stimulus specific contribution to the off-diagonal block
+  if (action == ScaTra::Action::calc_scatra_mono_odblock_mesh)
+    sysmat_od_mesh_nls(elemat1, my::nsd_);
+
+  return result;
+}
+
+template <Core::FE::CellType distype, int probdim>
+void Discret::Elements::ScaTraEleCalcNonlocalStimulus<distype, probdim>::sysmat_od_mesh_nls(
+    Core::LinAlg::SerialDenseMatrix& emat, const int ndofpernodemesh)
+{
+  if constexpr (probdim == 3 && Core::FE::dim<distype> == 3)
+  {
+    Core::FE::IntPointsAndWeights<Core::FE::dim<distype>> intpoints(
+        ScaTra::DisTypeToOptGaussRule<distype>::rule);
+
+    for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
+    {
+      const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
+      my::set_internal_variables_for_mat_and_rhs();
+
+      // Reference coordinates: xyze_ - edispnp_
+      Core::LinAlg::Matrix<my::nsd_, my::nen_> nodal_reference_coords(my::xyze_);
+      nodal_reference_coords.update(-1.0, my::edispnp_, 1.0);
+
+      // Reference Jacobian J = dX/dxi and its inverse
+      Core::LinAlg::Matrix<my::nsd_, my::nsd_> xjm0;
+      xjm0.multiply_nt(nodal_reference_coords, my::deriv_);
+      Core::LinAlg::Matrix<my::nsd_, my::nsd_> xji0(Core::LinAlg::Initialization::zero);
+      xji0.invert(xjm0);
+
+      // Reference shape derivatives dN_i/dX_r: chain rule dN/dxi * dxi/dX
+      Core::LinAlg::Matrix<my::nen_, my::nsd_> dN_dX;
+      dN_dX.multiply_tn(my::deriv_, xji0);
+
+      // Deformation gradient F = dx/dX
+      Core::LinAlg::Matrix<my::nsd_, my::nsd_> defgrd;
+      defgrd.multiply(my::xyze_, dN_dX);
+
+      // loop over all scalars
+      for (int k = 0; k < my::numscal_; ++k)
+      {
+        if (constituent_[k] == nullptr) continue;
+
+        const double d_sigma_d_lf2 = constituent_[k]->evaluate_d_cauchy_stress_d_lambda_f_sq(iquad);
+
+        if (d_sigma_d_lf2 == 0.0) continue;
+
+        // Eulerian structural tensor: b_alpha = F * A_alpha * F^T
+        const Core::LinAlg::Matrix<my::nsd_, my::nsd_> A_alpha_mat = Core::LinAlg::make_matrix(
+            Core::LinAlg::get_full(constituent_[k]->get_structural_tensor(iquad)));
+        Core::LinAlg::Matrix<my::nsd_, my::nsd_> FA;
+        FA.multiply(defgrd, A_alpha_mat);
+        Core::LinAlg::Matrix<my::nsd_, my::nsd_> b_alpha;
+        b_alpha.multiply_nt(FA, defgrd);
+
+        // K_psi_u^{vi*numdof+k, ui*ndofmesh+d}
+        //   += -fac * d_sigma_d_lf2 * funct_(vi) * 2 * (b_alpha_{d,c} * derxy_(c,ui))
+
+        // loop over the scatra nodes with usually one numdofpernode_
+        for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+        {
+          const int fvi = vi * my::numdofpernode_ + k;
+          const double val = -fac * d_sigma_d_lf2 * my::funct_(vi);
+
+          // loop over the mesh nodes
+          for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
+          {
+            // loop over the spatial dimensions of the mesh node
+            for (unsigned int d = 0; d < my::nsd_; ++d)
+            {
+              double b_dot_derxy = 0.0;
+              // compute scalar product
+              for (unsigned int c = 0; c < my::nsd_; ++c)
+                b_dot_derxy += b_alpha(d, c) * my::derxy_(c, ui);
+
+              emat(fvi, ui * ndofpernodemesh + d) += val * 2.0 * b_dot_derxy;
+            }
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    FOUR_C_THROW("sysmat_od_mesh_nls is only implemented for 3D elements.");
+  }
+}
 
 // template classes
 

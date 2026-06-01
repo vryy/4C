@@ -201,6 +201,17 @@ namespace Mixture
        * @param dt (in) : timestep
        */
       void integrate_local_evolution_equations_explicit_with_nonlocal_stimulus(T psi, T dt);
+
+      /*!
+       * @brief Integrate the local evolution equations implicitly, driven by a non-local stimulus
+       * \psi.
+       *
+       * @param psi (in) : non-local stimulus \psi
+       * @param dt (in) : timestep
+       */
+      void integrate_local_evolution_equations_implicit_with_nonlocal_stimulus(
+          const T psi, const T dt);
+
       /// @}
       /// @brief Evaluation methods
       ///
@@ -229,6 +240,9 @@ namespace Mixture
       [[nodiscard]] T evaluate_d_current_growth_scalar_d_lambda_f_sq() const;
       [[nodiscard]] T evaluate_d_current_lambda_r_d_lambda_f_sq() const;
       [[nodiscard]] T evaluate_d_current_cauchy_stress_d_lambda_f_sq() const;
+      [[nodiscard]] T evaluate_d_growth_scalar_d_nonlocal_stimulus() const;
+
+
       /// @}
 
       /// array of G&R states (the last state in the array is the current state)
@@ -239,6 +253,10 @@ namespace Mixture
       T d_growth_scalar_d_lambda_f_sq_ = 0.0;
       T d_lambda_r_d_lambda_f_sq_ = 0.0;
       /// @}
+
+      /// d_growth_scalar^{n+1}_d_psi - stored during integrate_..._with_nonlocal_stimulus calls.
+      /// Used for K_u_psi assembly without recomputing from scratch.
+      T d_growth_scalar_d_stimulus_ = 0.0;
 
       /// d_lambda_ext_d_growth_scalar_ - set from outside (growth strategy via mixture rule).
       /// Non-zero only for inelastic growth strategies where Fg depends on growth_scalar.

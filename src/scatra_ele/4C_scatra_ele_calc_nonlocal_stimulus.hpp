@@ -66,7 +66,15 @@ namespace Discret::Elements
 
     void get_rhs_int(double& rhsint, const double densnp, const int k) override;
 
+    int evaluate_action_od(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+        Core::FE::Discretization& discretization, const ScaTra::Action& action,
+        Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+        Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseVector& elevec2,
+        Core::LinAlg::SerialDenseVector& elevec3) override;
+
    private:
+    void sysmat_od_mesh_nls(Core::LinAlg::SerialDenseMatrix& emat, int ndofpernodemesh);
     static std::shared_ptr<Mat::Mixture> get_struct_material(const Core::Elements::Element* ele);
 
     /// SSI RemodelFiber constituents per scalar (set in setup_calc)

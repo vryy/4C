@@ -4368,6 +4368,11 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 {.description = "Index of the non-local stimulus scalar in the scatra matlist "
                                 "(leave unset to disable)",
                     .validator = null_or(positive_or_zero<int>())}),
+            parameter<bool>("IMPLICIT_INTEGRATION",
+                {.description =
+                        "Integrate growth_scalar and lambda_r implicitly at each Newton iteration. "
+                        "Default: false.",
+                    .default_value = false}),
         },
         {.description =
                 "A 1D constituent where the g&r evolution ODEs can be solved either as own scatra "

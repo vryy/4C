@@ -664,16 +664,6 @@ void SSI::SsiMono::setup()
   // call base class routine
   SSIBase::setup();
 
-  // safety checks
-  if (scatra_field()->num_scal() != 1)
-  {
-    FOUR_C_THROW(
-        "Since the ssi_monolithic framework is only implemented for usage in combination with "
-        "volume change laws 'MAT_InelasticDefgradLinScalarIso' or "
-        "'MAT_InelasticDefgradLinScalarAniso' so far and these laws are implemented for only "
-        "one transported scalar at the moment it is not reasonable to use them with more than one "
-        "transported scalar. So you need to cope with it or change implementation! ;-)");
-  }
   const auto ssi_params = SSI::Utils::problem_from_instance()->ssi_control_params();
 
   const bool calc_initial_pot_elch =
