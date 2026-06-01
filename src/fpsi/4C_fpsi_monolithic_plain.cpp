@@ -362,15 +362,6 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
     // added FPSI-Coupling terms have to be added again!!!
     Core::LinAlg::matrix_add(fpsi_coupl()->c_ff().matrix(fidx_fsi, fidx_other), false, 1.0, fgi,
         1.0);  // is missing in old implementation
-    // fg_gfpsi.Add(FPSICoupl()->C_ff().Matrix(fidx_fsi,fidx_fpsi),false,1.0,1.0);  //is missing in
-    // old implementation fgg.Add(FPSICoupl()->C_ff().Matrix(fidx_fsi,fidx_fsi),false,1.0,1.0);
-    //        (*fggtransform_)( fgg,
-    //                         (1.0-stiparam)/(1.0-ftiparam)*scale*timescale*1,
-    //                         Adapter::CouplingSlaveConverter(coupsf_fsi),
-    //                         Adapter::CouplingSlaveConverter(coupsf_fsi),
-    //                         *p,
-    //                         true,
-    //                         true); //not required anymore --> done at (1)
 
     (*fgitransform1_)(fgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
         Coupling::Adapter::CouplingSourceConverter(coupsf_fsi),
@@ -412,7 +403,7 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
       (*couplingcoltransform_)(fluid_field()->block_system_matrix()->full_row_map(),
           fluid_field()->block_system_matrix()->full_col_map(), fluidalematrix_ii, 1.0,
           Coupling::Adapter::CouplingTargetConverter(
-              coupfa),  // row converter: important to use slave converter
+              coupfa),  // row converter: important to use source converter
           mat.matrix(fluid_block_, ale_i_block_),
           false,  // bool exactmatch = true (default)
           true);
@@ -517,18 +508,6 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
         Coupling::Adapter::CouplingSourceConverter(coupsf_fsi),
         mat.matrix(structure_block_, porofluid_block_),
         true);  // Addmatrix
-
-    // FPSICoupl()->C_pf().Complete();
-    // TODO: scaled by zero??
-    //    (*figtransform4_)(
-    //        fluid_field()->block_system_matrix()->FullRowMap(),
-    //        fluid_field()->block_system_matrix()->FullColMap(),
-    //        FPSICoupl()->C_pf(),
-    //        timescale * 0,
-    //        Adapter::CouplingSlaveConverter(coupsf_fsi),
-    //        mat.Matrix(poro_block_, poro_block_),
-    //        false, //no exactmatch! (just FSI Part should be extracted)
-    //        true); //Add
   }
 
   //    //+++ part in the f...Matrix from overlap will be removed by apply_dbc of condensed velocity
