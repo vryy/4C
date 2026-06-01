@@ -10,14 +10,14 @@
 
 #include "4C_config.hpp"
 
-#include "4C_mat_elast_summand.hpp"
+#include "4C_mat_viscoelast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
 {
-  namespace Elastic
+  namespace ViscoElast
   {
     namespace PAR
     {
@@ -47,7 +47,7 @@ namespace Mat
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "Mat::Elastic::Summand::Factory.");
+              "Mat::ViscoElast::Summand::Factory.");
           return nullptr;
         };
       };  // class CoupMyocard
@@ -77,11 +77,11 @@ namespace Mat
      *   I^\#_{ijkl} = \frac{1}{2}(\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
      * \f]
      */
-    class CoupMyocard : public Summand
+    class CoupMyocard : public Mat::ViscoElast::Summand
     {
      public:
       /// constructor with given material parameters
-      CoupMyocard(Mat::Elastic::PAR::CoupMyocard* params);
+      CoupMyocard(Mat::ViscoElast::PAR::CoupMyocard* params);
 
       /// @name Access material constants
       //@{
@@ -130,10 +130,10 @@ namespace Mat
 
      private:
       /// my material parameters
-      Mat::Elastic::PAR::CoupMyocard* params_;
+      Mat::ViscoElast::PAR::CoupMyocard* params_;
     };
 
-  }  // namespace Elastic
+  }  // namespace ViscoElast
 }  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE

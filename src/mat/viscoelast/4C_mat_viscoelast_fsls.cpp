@@ -13,7 +13,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Mat::Elastic::PAR::Fsls::Fsls(const Core::Mat::PAR::Parameter::Data& matdata)
+Mat::ViscoElast::PAR::Fsls::Fsls(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
       tau_(matdata.parameters.get<double>("TAU")),
       alpha_(matdata.parameters.get<double>("ALPHA")),
@@ -28,9 +28,9 @@ Mat::Elastic::PAR::Fsls::Fsls(const Core::Mat::PAR::Parameter::Data& matdata)
         "Invalid ALPHA={} in VISCO_FSLS (MAT {}). Expected 0 <= ALPHA < 1.", alpha_, matdata.id);
 }
 
-Mat::Elastic::Fsls::Fsls(Mat::Elastic::PAR::Fsls* params) : params_(params) {}
+Mat::ViscoElast::Fsls::Fsls(Mat::ViscoElast::PAR::Fsls* params) : params_(params) {}
 
-void Mat::Elastic::Fsls::read_material_parameters_visco(
+void Mat::ViscoElast::Fsls::read_material_parameters_visco(
     double& tau, double& beta, double& alpha, std::string& solve)
 {
   tau = params_->tau_;

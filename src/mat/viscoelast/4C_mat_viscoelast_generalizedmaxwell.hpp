@@ -12,6 +12,7 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_elast_summand.hpp"
+#include "4C_mat_viscoelast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
 
 #include <functional>
@@ -21,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
 {
-  namespace Elastic
+  namespace ViscoElast
   {
     namespace PAR
     {
@@ -85,7 +86,7 @@ namespace Mat
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "Mat::Elastic::Summand::Factory.");
+              "Mat::ViscoElast::Summand::Factory.");
           return nullptr;
         };
       };  // class ViscoBranch
@@ -94,11 +95,11 @@ namespace Mat
 
 
 
-    class GeneralizedMaxwell : public Summand
+    class GeneralizedMaxwell : public Mat::ViscoElast::Summand
     {
      public:
       /// constructor with given material parameters
-      GeneralizedMaxwell(Mat::Elastic::PAR::GeneralizedMaxwell* params);
+      GeneralizedMaxwell(Mat::ViscoElast::PAR::GeneralizedMaxwell* params);
 
       /// @name Access material constants
       //@{
@@ -154,7 +155,7 @@ namespace Mat
 
      private:
       /// my material parameters
-      Mat::Elastic::PAR::GeneralizedMaxwell* params_;
+      Mat::ViscoElast::PAR::GeneralizedMaxwell* params_;
 
      protected:
       /// summands of the GeneralizedMaxwell material or each branch
@@ -165,11 +166,11 @@ namespace Mat
       std::vector<std::shared_ptr<Mat::Elastic::Summand>> internalpotsum_;
     };
 
-    class ViscoBranch : public Summand
+    class ViscoBranch : public Mat::ViscoElast::Summand
     {
      public:
       /// constructor with given material parameters
-      ViscoBranch(Mat::Elastic::PAR::ViscoBranch* params);
+      ViscoBranch(Mat::ViscoElast::PAR::ViscoBranch* params);
 
       /// @name Access material constants
       //@{
@@ -203,12 +204,12 @@ namespace Mat
 
      private:
       /// my material parameters
-      Mat::Elastic::PAR::ViscoBranch* params_;
+      Mat::ViscoElast::PAR::ViscoBranch* params_;
 
     };  // class ViscoBranch
 
 
-  }  // namespace Elastic
+  }  // namespace ViscoElast
 
 
   namespace ViscoElast

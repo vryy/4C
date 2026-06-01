@@ -34,6 +34,11 @@ namespace Mat
     class Summand;
   }
 
+  namespace ViscoElast
+  {
+    class Summand;
+  }
+
   // forward declaration
   class ViscoElastHyper;
 
@@ -59,6 +64,21 @@ namespace Mat
 
       /// create material instance of matching type with my parameters
       std::shared_ptr<Core::Mat::Material> create_material() override;
+
+      /// number of elastic summands in split-mode input
+      const int numelast_;
+
+      /// list of elastic summand material IDs in split-mode input
+      const std::vector<int> elast_matids_;
+
+      /// number of visco summands in split-mode input
+      const int numvisco_;
+
+      /// list of visco summand material IDs in split-mode input
+      const std::vector<int> visco_matids_;
+
+      /// true if legacy NUMMAT/MATIDS input was used and auto-partitioned
+      const bool uses_legacy_matids_;
 
       //@}
 
@@ -323,6 +343,12 @@ namespace Mat
       return {ViscoModelKind::iso_rate, ViscoModelKind::generalized_maxwell, ViscoModelKind::fsls};
     }
 
+    [[nodiscard]] static bool is_visco_material_type(Core::Materials::MaterialType material_type);
+    [[nodiscard]] const Mat::PAR::ViscoElastHyper* visco_params() const;
+    [[nodiscard]] int visco_mat_id(unsigned index) const;
+    void rebuild_summand_sets();
+    void rebuild_effective_summand_properties();
+
     [[nodiscard]] bool is_model_flag_enabled(ViscoModelKind model_kind) const;
     [[nodiscard]] bool is_model_active(ViscoModelKind model_kind) const;
     void rebuild_active_model_sequence();
@@ -378,6 +404,10 @@ namespace Mat
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID);
 
     ActiveModelSequence active_model_sequence_;
+    std::vector<std::shared_ptr<Mat::Elastic::Summand>> elast_potsum_;
+    std::vector<std::shared_ptr<Mat::ViscoElast::Summand>> visco_potsum_;
+    SummandProperties elast_summand_properties_;
+    SummandProperties effective_summand_properties_;
     std::optional<GeneralizedMaxwellMetadata> generalized_maxwell_metadata_;
     std::optional<ViscoRuntimeContext> runtime_context_;
     std::optional<FslsMetadata> fsls_metadata_;

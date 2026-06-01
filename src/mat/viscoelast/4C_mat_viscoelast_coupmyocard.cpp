@@ -14,14 +14,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::CoupMyocard::CoupMyocard(const Core::Mat::PAR::Parameter::Data& matdata)
+Mat::ViscoElast::PAR::CoupMyocard::CoupMyocard(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata), n_(matdata.parameters.get<double>("N"))
 {
 }
 
-Mat::Elastic::CoupMyocard::CoupMyocard(Mat::Elastic::PAR::CoupMyocard* params) : params_(params) {}
+Mat::ViscoElast::CoupMyocard::CoupMyocard(Mat::ViscoElast::PAR::CoupMyocard* params)
+    : params_(params)
+{
+}
 
-void Mat::Elastic::CoupMyocard::add_coefficients_visco_principal(
+void Mat::ViscoElast::CoupMyocard::add_coefficients_visco_principal(
     const Core::LinAlg::Matrix<3, 1>& prinv, Core::LinAlg::Matrix<8, 1>& mu,
     Core::LinAlg::Matrix<33, 1>& xi, Core::LinAlg::Matrix<7, 1>& rateinv,
     const Teuchos::ParameterList& /*params*/, const double dt, const int gp, const int eleGID)

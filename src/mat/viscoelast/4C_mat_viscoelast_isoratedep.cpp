@@ -17,14 +17,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Mat::Elastic::PAR::IsoRateDep::IsoRateDep(const Core::Mat::PAR::Parameter::Data& matdata)
+Mat::ViscoElast::PAR::IsoRateDep::IsoRateDep(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata), n_(matdata.parameters.get<double>("N"))
 {
 }
 
-Mat::Elastic::IsoRateDep::IsoRateDep(Mat::Elastic::PAR::IsoRateDep* params) : params_(params) {}
+Mat::ViscoElast::IsoRateDep::IsoRateDep(Mat::ViscoElast::PAR::IsoRateDep* params) : params_(params)
+{
+}
 
-void Mat::Elastic::IsoRateDep::add_coefficients_visco_modified(
+void Mat::ViscoElast::IsoRateDep::add_coefficients_visco_modified(
     const Core::LinAlg::Matrix<3, 1>& modinv, Core::LinAlg::Matrix<8, 1>& modmu,
     Core::LinAlg::Matrix<33, 1>& modxi, Core::LinAlg::Matrix<7, 1>& modrateinv,
     const Teuchos::ParameterList& /*params*/, const double dt, const int gp, const int eleGID)
@@ -40,10 +42,11 @@ void Mat::Elastic::IsoRateDep::add_coefficients_visco_modified(
 
 
 void Mat::ViscoElast::Kernels::evaluate_mu_xi_kernel(
-    const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& summands, const bool isoprinc_active,
-    const bool isomod_active, Matrix31& prinv, Matrix31& modinv, Matrix81& mu, Matrix81& modmu,
-    Matrix331& xi, Matrix331& modxi, Matrix71& rateinv, Matrix71& modrateinv,
-    const Teuchos::ParameterList& params, const double dt, const int gp, const int ele_gid)
+    const std::vector<std::shared_ptr<Mat::ViscoElast::Summand>>& summands,
+    const bool isoprinc_active, const bool isomod_active, Matrix31& prinv, Matrix31& modinv,
+    Matrix81& mu, Matrix81& modmu, Matrix331& xi, Matrix331& modxi, Matrix71& rateinv,
+    Matrix71& modrateinv, const Teuchos::ParameterList& params, const double dt, const int gp,
+    const int ele_gid)
 {
   if (isoprinc_active)
   {

@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_mat_elast_summand.hpp"
+#include "4C_mat_viscoelast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
 
 #include <memory>
@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
 {
-  namespace Elastic
+  namespace ViscoElast
   {
     namespace PAR
     {
@@ -57,7 +57,7 @@ namespace Mat
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "Mat::Elastic::Summand::Factory.");
+              "Mat::ViscoElast::Summand::Factory.");
           return nullptr;
         };
       };  // class IsoRateDep
@@ -77,11 +77,11 @@ namespace Mat
      * \f]
      * (n = \eta)
      */
-    class IsoRateDep : public Summand
+    class IsoRateDep : public Mat::ViscoElast::Summand
     {
      public:
       /// constructor with given material parameters
-      IsoRateDep(Mat::Elastic::PAR::IsoRateDep* params);
+      IsoRateDep(Mat::ViscoElast::PAR::IsoRateDep* params);
 
       /// @name Access material constants
       //@{
@@ -130,10 +130,10 @@ namespace Mat
 
      private:
       /// my material parameters
-      Mat::Elastic::PAR::IsoRateDep* params_;
+      Mat::ViscoElast::PAR::IsoRateDep* params_;
     };
 
-  }  // namespace Elastic
+  }  // namespace ViscoElast
 
 
   namespace ViscoElast
@@ -148,9 +148,9 @@ namespace Mat
       using Matrix331 = Core::LinAlg::Matrix<33, 1>;
 
       void evaluate_mu_xi_kernel(
-          const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& summands, bool isoprinc_active,
-          bool isomod_active, Matrix31& prinv, Matrix31& modinv, Matrix81& mu, Matrix81& modmu,
-          Matrix331& xi, Matrix331& modxi, Matrix71& rateinv, Matrix71& modrateinv,
+          const std::vector<std::shared_ptr<Mat::ViscoElast::Summand>>& summands,
+          bool isoprinc_active, bool isomod_active, Matrix31& prinv, Matrix31& modinv, Matrix81& mu,
+          Matrix81& modmu, Matrix331& xi, Matrix331& modxi, Matrix71& rateinv, Matrix71& modrateinv,
           const Teuchos::ParameterList& params, double dt, int gp, int ele_gid);
 
       void evaluate_kin_quant_vis_kernel(const Matrix61& rcg, const Matrix61& scg,

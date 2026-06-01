@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Mat::Elastic::PAR::GeneralizedMaxwell::GeneralizedMaxwell(
+Mat::ViscoElast::PAR::GeneralizedMaxwell::GeneralizedMaxwell(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
       numbranch_(matdata.parameters.get<int>("NUMBRANCH")),
@@ -51,7 +51,8 @@ Mat::Elastic::PAR::GeneralizedMaxwell::GeneralizedMaxwell(
         solve_, matdata.id);
 }
 
-Mat::Elastic::GeneralizedMaxwell::GeneralizedMaxwell(Mat::Elastic::PAR::GeneralizedMaxwell* params)
+Mat::ViscoElast::GeneralizedMaxwell::GeneralizedMaxwell(
+    Mat::ViscoElast::PAR::GeneralizedMaxwell* params)
     : params_(params), branchespotsum_(0), branchtau_(0), internalpotsum_(0)
 {
   if (params_->numbranch_ <= 0)
@@ -99,9 +100,10 @@ Mat::Elastic::GeneralizedMaxwell::GeneralizedMaxwell(Mat::Elastic::PAR::Generali
           "refers to material type {}. Expected VISCO_GeneralizedMaxwellBranch.",
           params_->id(), branch_index, matid, branch_parameter->type());
 
-    std::shared_ptr<Mat::Elastic::Summand> visco_branch = Mat::Elastic::Summand::factory(matid);
-    std::shared_ptr<Mat::Elastic::ViscoBranch> visco_branch_typed =
-        std::dynamic_pointer_cast<Mat::Elastic::ViscoBranch>(visco_branch);
+    std::shared_ptr<Mat::ViscoElast::Summand> visco_branch =
+        Mat::ViscoElast::Summand::factory(matid);
+    std::shared_ptr<Mat::ViscoElast::ViscoBranch> visco_branch_typed =
+        std::dynamic_pointer_cast<Mat::ViscoElast::ViscoBranch>(visco_branch);
     if (visco_branch_typed == nullptr)
       FOUR_C_THROW(
           "Failed to create VISCO_GeneralizedMaxwellBranch summand from MAT {} referenced by "
@@ -145,7 +147,7 @@ Mat::Elastic::GeneralizedMaxwell::GeneralizedMaxwell(Mat::Elastic::PAR::Generali
   }  // end for-loop over branches
 }
 
-void Mat::Elastic::GeneralizedMaxwell::read_material_parameters(
+void Mat::ViscoElast::GeneralizedMaxwell::read_material_parameters(
     int& numbranch, const std::vector<int>*& matids, std::string& solve)
 {
   numbranch = params_->numbranch_;
@@ -154,7 +156,7 @@ void Mat::Elastic::GeneralizedMaxwell::read_material_parameters(
 }
 
 // Viscobranch
-Mat::Elastic::PAR::ViscoBranch::ViscoBranch(const Core::Mat::PAR::Parameter::Data& matdata)
+Mat::ViscoElast::PAR::ViscoBranch::ViscoBranch(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
       tau_(matdata.parameters.get<double>("TAU")),
       matid_(matdata.parameters.get<int>("MATID"))
@@ -171,9 +173,12 @@ Mat::Elastic::PAR::ViscoBranch::ViscoBranch(const Core::Mat::PAR::Parameter::Dat
         matid_, matdata.id);
 }
 
-Mat::Elastic::ViscoBranch::ViscoBranch(Mat::Elastic::PAR::ViscoBranch* params) : params_(params) {}
+Mat::ViscoElast::ViscoBranch::ViscoBranch(Mat::ViscoElast::PAR::ViscoBranch* params)
+    : params_(params)
+{
+}
 
-void Mat::Elastic::ViscoBranch::read_material_parameters(double& tau, int& matid)
+void Mat::ViscoElast::ViscoBranch::read_material_parameters(double& tau, int& matid)
 {
   tau = params_->tau_;
   matid = params_->matid_;

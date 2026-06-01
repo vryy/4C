@@ -1617,12 +1617,26 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<int>("NUMMAT", {.description = "number of materials/potentials in list"}),
             parameter<std::vector<int>>("MATIDS", {.description = "the list material/potential IDs",
                                                       .size = from_parameter<int>("NUMMAT")}),
+            parameter<int>(
+                "NUMELAST", {.description = "optional split-mode number of purely elastic summands",
+                                .default_value = 0}),
+            parameter<std::vector<int>>(
+                "ELAST_MATIDS", {.description = "optional split-mode purely elastic summand IDs",
+                                    .default_value = std::vector<int>{},
+                                    .size = from_parameter<int>("NUMELAST")}),
+            parameter<int>(
+                "NUMVISCO", {.description = "optional split-mode number of visco summands",
+                                .default_value = 0}),
+            parameter<std::vector<int>>(
+                "VISCO_MATIDS", {.description = "optional split-mode visco summand IDs",
+                                    .default_value = std::vector<int>{},
+                                    .size = from_parameter<int>("NUMVISCO")}),
             parameter<double>("DENS", {.description = "material mass density"}),
             parameter<int>("POLYCONVEX",
                 {.description = "1.0 if polyconvexity of system is checked", .default_value = 0}),
         },
-        {.description = "Viscohyperelastic material compatible with the collection of hyperelastic "
-                        "materials"});
+        {.description = "Viscohyperelastic material. Supports legacy NUMMAT/MATIDS and optional "
+                        "split mode NUMELAST/ELAST_MATIDS + NUMVISCO/VISCO_MATIDS."});
   }
 
   /*----------------------------------------------------------------------*/

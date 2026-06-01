@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_mat_elast_summand.hpp"
+#include "4C_mat_viscoelast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
 
 #include <vector>
@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
 {
-  namespace Elastic
+  namespace ViscoElast
   {
     namespace PAR
     {
@@ -52,7 +52,7 @@ namespace Mat
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "Mat::Elastic::Summand::Factory.");
+              "Mat::ViscoElast::Summand::Factory.");
           return nullptr;
         };
       };  // class Fsls
@@ -76,11 +76,11 @@ namespace Mat
      *          Large Deformations
      * </ul>
      */
-    class Fsls : public Summand
+    class Fsls : public Mat::ViscoElast::Summand
     {
      public:
       /// constructor with given material parameters
-      Fsls(Mat::Elastic::PAR::Fsls* params);
+      Fsls(Mat::ViscoElast::PAR::Fsls* params);
 
       /// @name Access material constants
       //@{
@@ -126,10 +126,10 @@ namespace Mat
 
      private:
       /// my material parameters
-      Mat::Elastic::PAR::Fsls* params_;
+      Mat::ViscoElast::PAR::Fsls* params_;
     };
 
-  }  // namespace Elastic
+  }  // namespace ViscoElast
 
 
   namespace ViscoElast

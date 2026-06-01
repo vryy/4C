@@ -21,17 +21,195 @@
 #include "4C_mat_viscoelast_fsls.hpp"
 #include "4C_mat_viscoelast_generalizedmaxwell.hpp"
 #include "4C_mat_viscoelast_isoratedep.hpp"
+#include "4C_mat_viscoelast_summand.hpp"
 #include "4C_utils_enum.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace
+{
+  bool is_visco_material_type_for_split_input(const Core::Materials::MaterialType material_type)
+  {
+    switch (material_type)
+    {
+      case Core::Materials::mes_isoratedep:
+      case Core::Materials::mes_fsls:
+      case Core::Materials::mes_generalizedmaxwell:
+      case Core::Materials::mes_viscobranch:
+      case Core::Materials::mes_coupmyocard:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+}  // namespace
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::PAR::ViscoElastHyper::ViscoElastHyper(const Core::Mat::PAR::Parameter::Data& matdata)
-    : Mat::PAR::ElastHyper(matdata)
+    : Mat::PAR::ElastHyper(matdata),
+      numelast_(
+          [&matdata, this]() -> int
+          {
+            const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
+            const std::vector<int>* elast_matids =
+                matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
+            const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
+            const std::vector<int>* visco_matids =
+                matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
+
+            const bool has_partial_split = numelast != nullptr || elast_matids != nullptr ||
+                                           numvisco != nullptr || visco_matids != nullptr;
+            const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
+                                            numvisco != nullptr && visco_matids != nullptr;
+            const bool explicit_split =
+                has_complete_split && !elast_matids->empty() && !visco_matids->empty();
+            if (has_partial_split && !has_complete_split)
+              FOUR_C_THROW(
+                  "Split MAT_ViscoElastHyper input requires NUMELAST, ELAST_MATIDS, "
+                  "NUMVISCO and VISCO_MATIDS together (MAT {}).",
+                  id());
+            if (explicit_split)
+            {
+              return *numelast;
+            }
+
+            int derived_numelast = 0;
+            const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
+            for (const int summand_mat_id : matids_)
+            {
+              auto* sumpar =
+                  Global::Problem::instance(probinst)->materials()->parameter_by_id(summand_mat_id);
+              if (!is_visco_material_type_for_split_input(sumpar->type())) ++derived_numelast;
+            }
+            return derived_numelast;
+          }()),
+      elast_matids_(
+          [&matdata, this]() -> std::vector<int>
+          {
+            const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
+            const std::vector<int>* elast_matids =
+                matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
+            const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
+            const std::vector<int>* visco_matids =
+                matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
+
+            const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
+                                            numvisco != nullptr && visco_matids != nullptr;
+            const bool explicit_split =
+                has_complete_split && !elast_matids->empty() && !visco_matids->empty();
+            if (explicit_split) return *elast_matids;
+
+            std::vector<int> derived_elast;
+            const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
+            for (const int summand_mat_id : matids_)
+            {
+              auto* sumpar =
+                  Global::Problem::instance(probinst)->materials()->parameter_by_id(summand_mat_id);
+              if (!is_visco_material_type_for_split_input(sumpar->type()))
+                derived_elast.push_back(summand_mat_id);
+            }
+            return derived_elast;
+          }()),
+      numvisco_(
+          [&matdata, this]() -> int
+          {
+            const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
+            const std::vector<int>* elast_matids =
+                matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
+            const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
+            const std::vector<int>* visco_matids =
+                matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
+
+            const bool has_partial_split = numelast != nullptr || elast_matids != nullptr ||
+                                           numvisco != nullptr || visco_matids != nullptr;
+            const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
+                                            numvisco != nullptr && visco_matids != nullptr;
+            const bool explicit_split =
+                has_complete_split && !elast_matids->empty() && !visco_matids->empty();
+            if (has_partial_split && !has_complete_split)
+              FOUR_C_THROW(
+                  "Split MAT_ViscoElastHyper input requires NUMELAST, ELAST_MATIDS, "
+                  "NUMVISCO and VISCO_MATIDS together (MAT {}).",
+                  id());
+            if (explicit_split)
+            {
+              return *numvisco;
+            }
+
+            int derived_numvisco = 0;
+            const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
+            for (const int summand_mat_id : matids_)
+            {
+              auto* sumpar =
+                  Global::Problem::instance(probinst)->materials()->parameter_by_id(summand_mat_id);
+              if (is_visco_material_type_for_split_input(sumpar->type())) ++derived_numvisco;
+            }
+            return derived_numvisco;
+          }()),
+      visco_matids_(
+          [&matdata, this]() -> std::vector<int>
+          {
+            const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
+            const std::vector<int>* elast_matids =
+                matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
+            const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
+            const std::vector<int>* visco_matids =
+                matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
+
+            const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
+                                            numvisco != nullptr && visco_matids != nullptr;
+            const bool explicit_split =
+                has_complete_split && !elast_matids->empty() && !visco_matids->empty();
+            if (explicit_split) return *visco_matids;
+
+            std::vector<int> derived_visco;
+            const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
+            for (const int summand_mat_id : matids_)
+            {
+              auto* sumpar =
+                  Global::Problem::instance(probinst)->materials()->parameter_by_id(summand_mat_id);
+              if (is_visco_material_type_for_split_input(sumpar->type()))
+                derived_visco.push_back(summand_mat_id);
+            }
+            return derived_visco;
+          }()),
+      uses_legacy_matids_(
+          [&matdata]() -> bool
+          {
+            const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
+            const std::vector<int>* elast_matids =
+                matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
+            const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
+            const std::vector<int>* visco_matids =
+                matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
+            const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
+                                            numvisco != nullptr && visco_matids != nullptr;
+            const bool explicit_split =
+                has_complete_split && !elast_matids->empty() && !visco_matids->empty();
+            return !explicit_split;
+          }())
 {
+  if (numelast_ != static_cast<int>(elast_matids_.size()))
+    FOUR_C_THROW(
+        "Invalid MAT_ViscoElastHyper setup (MAT {}): NUMELAST={} but ELAST_MATIDS has size {}.",
+        id(), numelast_, elast_matids_.size());
+
+  if (numvisco_ != static_cast<int>(visco_matids_.size()))
+    FOUR_C_THROW(
+        "Invalid MAT_ViscoElastHyper setup (MAT {}): NUMVISCO={} but VISCO_MATIDS has size {}.",
+        id(), numvisco_, visco_matids_.size());
+
+  if (uses_legacy_matids_ &&
+      static_cast<int>(elast_matids_.size() + visco_matids_.size()) != nummat_)
+    FOUR_C_THROW(
+        "Invalid MAT_ViscoElastHyper legacy partitioning (MAT {}): NUMMAT={} but partitioned "
+        "ELAST_MATIDS({}) + VISCO_MATIDS({}) do not match.",
+        id(), nummat_, elast_matids_.size(), visco_matids_.size());
+
   // polyconvexity check is just implemented for isotropic hyperlastic materials
   if (polyconvex_)
     FOUR_C_THROW(
@@ -76,12 +254,82 @@ Mat::ViscoElastHyper::ViscoElastHyper() : Mat::ElastHyper()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::ViscoElastHyper::ViscoElastHyper(Mat::PAR::ViscoElastHyper* params)
-    : Mat::ElastHyper(params),
-      isovisco_(false),
-      visco_generalized_maxwell_(false),
-      visco_fsls_(false)
+    : Mat::ElastHyper(), isovisco_(false), visco_generalized_maxwell_(false), visco_fsls_(false)
 {
+  params_ = params;
+  rebuild_summand_sets();
   rebuild_active_model_sequence();
+}
+
+
+bool Mat::ViscoElastHyper::is_visco_material_type(const Core::Materials::MaterialType material_type)
+{
+  return is_visco_material_type_for_split_input(material_type);
+}
+
+
+const Mat::PAR::ViscoElastHyper* Mat::ViscoElastHyper::visco_params() const
+{
+  return static_cast<const Mat::PAR::ViscoElastHyper*>(params_);
+}
+
+
+int Mat::ViscoElastHyper::visco_mat_id(const unsigned index) const
+{
+  const Mat::PAR::ViscoElastHyper* visco_par = visco_params();
+  if (visco_par == nullptr) return -1;
+  if (index >= visco_par->visco_matids_.size())
+    FOUR_C_THROW(
+        "Invalid visco summand index {} for MAT_ViscoElastHyper (MAT {}).", index, visco_par->id());
+  return visco_par->visco_matids_.at(index);
+}
+
+
+void Mat::ViscoElastHyper::rebuild_summand_sets()
+{
+  elast_potsum_.clear();
+  visco_potsum_.clear();
+
+  const Mat::PAR::ViscoElastHyper* visco_par = visco_params();
+  if (visco_par == nullptr) return;
+
+  for (const int summand_mat_id : visco_par->elast_matids_)
+  {
+    auto sum = Mat::Elastic::Summand::factory(summand_mat_id);
+    if (sum == nullptr) FOUR_C_THROW("Failed to allocate elastic summand MAT {}.", summand_mat_id);
+    elast_potsum_.push_back(sum);
+    sum->register_anisotropy_extensions(anisotropy_);
+  }
+
+  for (const int summand_mat_id : visco_par->visco_matids_)
+  {
+    auto sum = Mat::ViscoElast::Summand::factory(summand_mat_id);
+    if (sum == nullptr) FOUR_C_THROW("Failed to allocate visco summand MAT {}.", summand_mat_id);
+    visco_potsum_.push_back(sum);
+  }
+}
+
+
+void Mat::ViscoElastHyper::rebuild_effective_summand_properties()
+{
+  effective_summand_properties_.clear();
+  effective_summand_properties_.merge(elast_summand_properties_);
+
+  SummandProperties visco_formulation_properties;
+  visco_formulation_properties.clear();
+
+  for (const auto& p : visco_potsum_)
+  {
+    p->specify_formulation(visco_formulation_properties.isoprinc,
+        visco_formulation_properties.isomod, visco_formulation_properties.anisoprinc,
+        visco_formulation_properties.anisomod, visco_formulation_properties.viscoGeneral);
+  }
+
+  effective_summand_properties_.merge(visco_formulation_properties);
+
+  // Keep stretch coefficient flags tied to elastic constitutive summands.
+  effective_summand_properties_.coeffStretchesPrinc = elast_summand_properties_.coeffStretchesPrinc;
+  effective_summand_properties_.coeffStretchesMod = elast_summand_properties_.coeffStretchesMod;
 }
 
 
@@ -244,18 +492,18 @@ void Mat::ViscoElastHyper::build_generalized_maxwell_metadata_for_setup(
   std::string generalized_maxwell_solve;
   const std::vector<int>* generalized_maxwell_matids = nullptr;
 
-  std::shared_ptr<Mat::Elastic::GeneralizedMaxwell> generalized_maxwell = nullptr;
+  std::shared_ptr<Mat::ViscoElast::GeneralizedMaxwell> generalized_maxwell = nullptr;
   int generalized_maxwell_summand_mat_id = -1;
 
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
+  for (unsigned int p = 0; p < visco_potsum_.size(); ++p)
   {
     auto current_generalized_maxwell =
-        std::dynamic_pointer_cast<Mat::Elastic::GeneralizedMaxwell>(potsum_[p]);
+        std::dynamic_pointer_cast<Mat::ViscoElast::GeneralizedMaxwell>(visco_potsum_[p]);
     if (current_generalized_maxwell != nullptr)
     {
       ++generalized_maxwell_model_count;
       generalized_maxwell = current_generalized_maxwell;
-      generalized_maxwell_summand_mat_id = params_ != nullptr ? mat_id(p) : -1;
+      generalized_maxwell_summand_mat_id = this->visco_mat_id(p);
       generalized_maxwell->read_material_parameters(generalized_maxwell_numbranch_value,
           generalized_maxwell_matids, generalized_maxwell_solve);
     }
@@ -458,14 +706,14 @@ void Mat::ViscoElastHyper::build_fsls_metadata_for_setup(const int gp, const int
   int fsls_model_count = 0;
 
   std::string solve;
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
+  for (unsigned int p = 0; p < visco_potsum_.size(); ++p)
   {
-    std::shared_ptr<Mat::Elastic::Fsls> fsls =
-        std::dynamic_pointer_cast<Mat::Elastic::Fsls>(potsum_[p]);
+    std::shared_ptr<Mat::ViscoElast::Fsls> fsls =
+        std::dynamic_pointer_cast<Mat::ViscoElast::Fsls>(visco_potsum_[p]);
     if (fsls != nullptr)
     {
       ++fsls_model_count;
-      fsls_metadata.summand_mat_id = params_ != nullptr ? mat_id(p) : -1;
+      fsls_metadata.summand_mat_id = this->visco_mat_id(p);
       fsls->read_material_parameters_visco(
           fsls_metadata.tau, fsls_metadata.beta, fsls_metadata.alpha, solve);
     }
@@ -567,7 +815,7 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
   int matid = -1;
   if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-  summandProperties_.pack(data);
+  elast_summand_properties_.pack(data);
   const Mat::ViscoElastState::ActiveModels models = active_models();
   add_to_pack(data, models.iso_rate);
   add_to_pack(data, models.generalized_maxwell);
@@ -578,11 +826,8 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PotentiallyUnusedBufferScope summand_scope{data};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
-    // loop map of associated potential summands
-    for (unsigned int p = 0; p < potsum_.size(); ++p)
-    {
-      potsum_[p]->pack_summand(data);
-    }
+    for (auto& p : elast_potsum_) p->pack_summand(data);
+    for (auto& p : visco_potsum_) p->pack_summand(data);
 
     state_.serialize_state(data, active_models());
   }
@@ -595,9 +840,10 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   params_ = nullptr;
-  potsum_.clear();
-
-  summandProperties_.clear();
+  elast_potsum_.clear();
+  visco_potsum_.clear();
+  elast_summand_properties_.clear();
+  effective_summand_properties_.clear();
   isovisco_ = false;
   visco_generalized_maxwell_ = false;
   visco_fsls_ = false;
@@ -630,7 +876,7 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
     }
   }
 
-  summandProperties_.unpack(buffer);
+  elast_summand_properties_.unpack(buffer);
   extract_from_pack(buffer, isovisco_);
   extract_from_pack(buffer, visco_generalized_maxwell_);
   extract_from_pack(buffer, visco_fsls_);
@@ -642,22 +888,10 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   Core::Communication::PotentiallyUnusedBufferScope summand_scope{buffer};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
-    // make sure the referenced materials in material list have quick access parameters
-    std::vector<int>::const_iterator m;
-    for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
-    {
-      const int matid = *m;
-      std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-      if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
-      potsum_.push_back(sum);
-    }
+    rebuild_summand_sets();
 
-    // loop map of associated potential summands
-    for (auto& p : potsum_)
-    {
-      p->unpack_summand(buffer);
-      p->register_anisotropy_extensions(anisotropy_);
-    }
+    for (auto& p : elast_potsum_) p->unpack_summand(buffer);
+    for (auto& p : visco_potsum_) p->unpack_summand(buffer);
 
     if (is_model_active(ViscoModelKind::generalized_maxwell))
     {
@@ -671,7 +905,13 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
       build_fsls_metadata_for_setup(-1, -1);
     }
 
+    rebuild_effective_summand_properties();
+
     state_.deserialize_state(buffer, active_models());
+  }
+  else
+  {
+    effective_summand_properties_.update(elast_summand_properties_);
   }
 }
 
@@ -685,25 +925,23 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
   anisotropy_.set_number_of_gauss_points(numgp);
   anisotropy_.read_anisotropy_from_element(fibers, coord_system);
 
-  // Setup summands
-  for (auto& p : potsum_) p->setup(numgp, fibers, coord_system);
+  for (auto& p : elast_potsum_)
+  {
+    p->setup(numgp, fibers, coord_system);
+  }
+  for (auto& p : visco_potsum_) p->setup(numgp, fibers, coord_system);
 
   // find out which formulations are used
   isovisco_ = false;
   visco_generalized_maxwell_ = false;
   visco_fsls_ = false;
 
-  summandProperties_.clear();
-  elast_hyper_properties(potsum_, summandProperties_);
+  elast_summand_properties_.clear();
+  elast_hyper_properties(elast_potsum_, elast_summand_properties_);
+  rebuild_effective_summand_properties();
 
-
-  if (summandProperties_.viscoGeneral)
-  {
-    for (auto& p : potsum_)
-    {
-      p->specify_visco_formulation(isovisco_, visco_generalized_maxwell_, visco_fsls_);
-    }
-  }
+  for (auto& p : visco_potsum_)
+    p->specify_visco_formulation(isovisco_, visco_generalized_maxwell_, visco_fsls_);
 
   rebuild_active_model_sequence();
   ensure_model_activation_consistency("pre-loop setup orchestration");
@@ -735,7 +973,8 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
  *----------------------------------------------------------------------*/
 void Mat::ViscoElastHyper::update()
 {
-  Mat::ElastHyper::update();
+  for (auto& p : elast_potsum_) p->update();
+  for (auto& p : visco_potsum_) p->update();
 
   ensure_model_activation_consistency("pre-loop update orchestration");
 
@@ -775,8 +1014,8 @@ void Mat::ViscoElastHyper::prepare_evaluate_kinematics(
   Core::LinAlg::Voigt::fourth_order_identity_matrix<VoigtNotation::stress, VoigtNotation::strain>(
       workspace.id4);
 
-  elast_hyper_evaluate_invariant_derivatives(
-      workspace.prinv, workspace.dPI, workspace.ddPII, potsum_, summandProperties_, gp, eleGID);
+  elast_hyper_evaluate_invariant_derivatives(workspace.prinv, workspace.dPI, workspace.ddPII,
+      elast_potsum_, elast_summand_properties_, gp, eleGID);
 }
 
 
@@ -788,7 +1027,7 @@ void Mat::ViscoElastHyper::prepare_iso_rate_visco_inputs_if_active(
   {
     if (model_kind != ViscoModelKind::iso_rate) continue;
 
-    if (summandProperties_.isomod)
+    if (effective_summand_properties_.isomod)
     {
       // calculate modified invariants
       invariants_modified(workspace.modinv, workspace.prinv);
@@ -824,7 +1063,7 @@ void Mat::ViscoElastHyper::initialize_elastic_response(const EvaluateWorkspace& 
 void Mat::ViscoElastHyper::add_iso_rate_contribution(const EvaluateWorkspace& workspace,
     Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view)
 {
-  if (summandProperties_.isomod)
+  if (effective_summand_properties_.isomod)
   {
     // add viscous part decoupled
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisomodisovisco(Core::LinAlg::Initialization::zero);
@@ -843,7 +1082,7 @@ void Mat::ViscoElastHyper::add_iso_rate_contribution(const EvaluateWorkspace& wo
     cmat_view.update(1.0, cmatisomodvolvisco, 1.0);
   }
 
-  if (summandProperties_.isoprinc)
+  if (effective_summand_properties_.isoprinc)
   {
     // add viscous part coupled
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisovisco(Core::LinAlg::Initialization::zero);
@@ -918,23 +1157,23 @@ void Mat::ViscoElastHyper::add_post_elastic_composition_hooks(const Teuchos::Par
 {
   /*----------------------------------------------------------------------*/
   // coefficients in principal stretches
-  if (summandProperties_.coeffStretchesPrinc || summandProperties_.coeffStretchesMod)
+  if (elast_summand_properties_.coeffStretchesPrinc || elast_summand_properties_.coeffStretchesMod)
   {
     elast_hyper_add_response_stretches(
-        cmat, stress, workspace.c, potsum_, summandProperties_, gp, eleGID);
+        cmat, stress, workspace.c, elast_potsum_, elast_summand_properties_, gp, eleGID);
   }
 
   /*----------------------------------------------------------------------*/
   // Do all the anisotropic stuff!
-  if (summandProperties_.anisoprinc)
+  if (elast_summand_properties_.anisoprinc)
   {
-    elast_hyper_add_anisotropic_princ(stress, cmat, workspace.c, params, gp, eleGID, potsum_);
+    elast_hyper_add_anisotropic_princ(stress, cmat, workspace.c, params, gp, eleGID, elast_potsum_);
   }
 
-  if (summandProperties_.anisomod)
+  if (elast_summand_properties_.anisomod)
   {
-    elast_hyper_add_anisotropic_mod(
-        stress, cmat, workspace.c, workspace.i_c, workspace.prinv, gp, eleGID, context, potsum_);
+    elast_hyper_add_anisotropic_mod(stress, cmat, workspace.c, workspace.i_c, workspace.prinv, gp,
+        eleGID, context, elast_potsum_);
   }
 }
 
@@ -987,9 +1226,9 @@ void Mat::ViscoElastHyper::evaluate_mu_xi(Core::LinAlg::Matrix<3, 1>& prinv,
     Core::LinAlg::Matrix<7, 1>& modrateinv, const Teuchos::ParameterList& params, const double dt,
     const int gp, const int eleGID)
 {
-  Mat::ViscoElast::Kernels::evaluate_mu_xi_kernel(potsum_, summandProperties_.isoprinc,
-      summandProperties_.isomod, prinv, modinv, mu, modmu, xi, modxi, rateinv, modrateinv, params,
-      dt, gp, eleGID);
+  Mat::ViscoElast::Kernels::evaluate_mu_xi_kernel(visco_potsum_,
+      effective_summand_properties_.isoprinc, effective_summand_properties_.isomod, prinv, modinv,
+      mu, modmu, xi, modxi, rateinv, modrateinv, params, dt, gp, eleGID);
 }
 
 /*----------------------------------------------------------------------*/
