@@ -152,7 +152,7 @@ namespace Adapter
     /// surfrace gradient operator
     virtual std::shared_ptr<Core::LinAlg::SparseMatrix> surf_grad_matrix() { return SurfGrad_; }
     /// source+target dof map
-    virtual std::shared_ptr<const Core::LinAlg::Map> s_mdof_map()
+    virtual std::shared_ptr<const Core::LinAlg::Map> source_target_dof_map()
     {
       return source_target_dof_row_map_;
     }

@@ -244,8 +244,8 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
   // complete all those linearizations
   //                             colmap        rowmap
-  linDcontactLM.complete(*s_mdof_map(), *interface_->source_row_dofs());
-  linMcontactLM.complete(*s_mdof_map(), *interface_->target_row_dofs());
+  linDcontactLM.complete(*source_target_dof_map(), *interface_->source_row_dofs());
+  linMcontactLM.complete(*source_target_dof_map(), *interface_->target_row_dofs());
 
   // normal contact
   std::shared_ptr<Core::LinAlg::Vector<double>> gact;
@@ -269,7 +269,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // complete all the new matrix blocks
   // Note: since the contact interface assemled them, they are all based
   //       on displacement row and col maps. Hence, some still need to be transformed
-  dcsdd->complete(*s_mdof_map(), *interface_->active_dofs());
+  dcsdd->complete(*source_target_dof_map(), *interface_->active_dofs());
   dcsdLMc->complete(*interface_->active_dofs(), *interface_->active_dofs());
 
   // get the separate blocks of the 2x2 TSI block system

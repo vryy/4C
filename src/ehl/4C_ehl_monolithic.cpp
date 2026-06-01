@@ -512,8 +512,8 @@ void EHL::Monolithic::setup_system_matrix()
   lin_poiseuille_force_disp(*ds_dd, *dm_dd);
 
   // complete matrices
-  ds_dd->complete(*mortaradapter_->s_mdof_map(), *mortaradapter_->source_dof_map());
-  dm_dd->complete(*mortaradapter_->s_mdof_map(), *mortaradapter_->target_dof_map());
+  ds_dd->complete(*mortaradapter_->source_target_dof_map(), *mortaradapter_->source_dof_map());
+  dm_dd->complete(*mortaradapter_->source_target_dof_map(), *mortaradapter_->target_dof_map());
 
   // Add the negative midpoint values (remember, we are linearizing an extforce-like term)
   Core::LinAlg::matrix_add(*ds_dd, false, -(1.0 - alphaf), *k_ss, 1.0);
@@ -1655,7 +1655,8 @@ void EHL::Monolithic::lin_poiseuille_force_disp(
   h_derivGrad_nodalP->left_scale(nodal_gap);
   Core::LinAlg::matrix_add(*h_derivGrad_nodalP, false, -.5, *deriv_Poiseuille, 1.);
 
-  deriv_Poiseuille->complete(*mortaradapter_->s_mdof_map(), *mortaradapter_->source_dof_map());
+  deriv_Poiseuille->complete(
+      *mortaradapter_->source_target_dof_map(), *mortaradapter_->source_dof_map());
 
   std::shared_ptr<Core::LinAlg::SparseMatrix> tmp = Core::LinAlg::matrix_multiply(
       *mortaradapter_->get_mortar_matrix_d(), true, *deriv_Poiseuille, false, false, false, true);
@@ -1720,7 +1721,8 @@ void EHL::Monolithic::lin_couette_force_disp(
     tmp.left_scale(hinv_hinv_visc_vel);
     Core::LinAlg::matrix_add(tmp, false, 1., *deriv_Couette, 1.);
   }
-  deriv_Couette->complete(*mortaradapter_->s_mdof_map(), *mortaradapter_->source_dof_map());
+  deriv_Couette->complete(
+      *mortaradapter_->source_target_dof_map(), *mortaradapter_->source_dof_map());
 
   std::shared_ptr<Core::LinAlg::SparseMatrix> tmp = Core::LinAlg::matrix_multiply(
       *mortaradapter_->get_mortar_matrix_d(), true, *deriv_Couette, false, false, false, true);
