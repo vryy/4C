@@ -677,13 +677,14 @@ void FS3I::FS3IBase::setup_coupled_scatra_matrix() const
     scatrasystemmatrix_->assign(1, 1, Core::LinAlg::DataAccess::Share, blockscatra2->matrix(0, 0));
 
     (*sibtransform_)(blockscatra2->full_row_map(), blockscatra2->full_col_map(),
-        blockscatra2->matrix(0, 1), 1.0, Coupling::Adapter::CouplingSlaveConverter(*scatracoup_),
+        blockscatra2->matrix(0, 1), 1.0, Coupling::Adapter::CouplingSourceConverter(*scatracoup_),
         scatrasystemmatrix_->matrix(1, 0));
     (*sbitransform_)(blockscatra2->matrix(1, 0), 1.0,
-        Coupling::Adapter::CouplingSlaveConverter(*scatracoup_), scatrasystemmatrix_->matrix(0, 1));
+        Coupling::Adapter::CouplingSourceConverter(*scatracoup_),
+        scatrasystemmatrix_->matrix(0, 1));
     (*sbbtransform_)(blockscatra2->matrix(1, 1), 1.0,
-        Coupling::Adapter::CouplingSlaveConverter(*scatracoup_),
-        Coupling::Adapter::CouplingSlaveConverter(*scatracoup_), *scatra1, true, true);
+        Coupling::Adapter::CouplingSourceConverter(*scatracoup_),
+        Coupling::Adapter::CouplingSourceConverter(*scatracoup_), *scatra1, true, true);
 
     // fluid scatra
     scatrasystemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::Share, *scatra1);
@@ -717,7 +718,8 @@ void FS3I::FS3IBase::setup_coupled_scatra_matrix() const
             *coup2, *(scatrafieldexvec_[1]), *(scatrafieldexvec_[1]));
     coupblock2->complete();
     (*sbitransform_)(coupblock2->matrix(1, 1), -1.0,
-        Coupling::Adapter::CouplingSlaveConverter(*scatracoup_), scatrasystemmatrix_->matrix(0, 1));
+        Coupling::Adapter::CouplingSourceConverter(*scatracoup_),
+        scatrasystemmatrix_->matrix(0, 1));
   }
 
   scatrasystemmatrix_->complete();

@@ -1741,7 +1741,7 @@ void EHL::Monolithic::lin_pressure_force_pres(
       *mortaradapter_->source_dof_map(), 81, false, false);
 
   Coupling::Adapter::MatrixRowTransform().operator()(*lubrimaptransform_, 1.,
-      Coupling::Adapter::CouplingSlaveConverter(*ada_strDisp_to_lubDisp_), *tmp, false);
+      Coupling::Adapter::CouplingSourceConverter(*ada_strDisp_to_lubDisp_), *tmp, false);
 
   tmp->complete(
       *lubrication_->lubrication_field()->dof_row_map(0), *mortaradapter_->source_dof_map());
@@ -1846,7 +1846,7 @@ void EHL::Monolithic::lin_couette_force_pres(
       std::make_shared<Core::LinAlg::SparseMatrix>(*mortaradapter_->source_dof_map(), 81);
 
   Coupling::Adapter::MatrixRowTransform().operator()(*dVisc_dp, 1.,
-      Coupling::Adapter::CouplingSlaveConverter(*ada_strDisp_to_lubDisp_), *dVisc_str_dp, false);
+      Coupling::Adapter::CouplingSourceConverter(*ada_strDisp_to_lubDisp_), *dVisc_str_dp, false);
 
   dVisc_str_dp->complete(*lub_dis.dof_row_map(0), *mortaradapter_->source_dof_map());
 

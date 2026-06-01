@@ -86,10 +86,10 @@ namespace Coupling::Adapter
   };
 
   /// source to target converter
-  class CouplingSlaveConverter : public CouplingConverter
+  class CouplingSourceConverter : public CouplingConverter
   {
    public:
-    explicit CouplingSlaveConverter(const Coupling& coup) : coup_(coup) {}
+    explicit CouplingSourceConverter(const Coupling& coup) : coup_(coup) {}
 
     std::shared_ptr<Core::LinAlg::Vector<double>> src_to_dst(
         std::shared_ptr<const Core::LinAlg::Vector<double>> s) const override;

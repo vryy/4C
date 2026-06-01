@@ -937,7 +937,7 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
 
       Core::LinAlg::matrix_add(*system_matrix(), false, 1.0, *sparse_systemmatrix, 1.0);
 
-      Coupling::Adapter::CouplingSlaveConverter micro_side_converter(
+      Coupling::Adapter::CouplingSourceConverter micro_side_converter(
           *macro_micro_coupling_adapter_);
 
       // micro: interior - interior
@@ -968,7 +968,7 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
 
       Core::LinAlg::matrix_add(*system_matrix(), false, 1.0, block_systemmatrix->matrix(0, 0), 1.0);
 
-      Coupling::Adapter::CouplingSlaveConverter micro_side_converter(
+      Coupling::Adapter::CouplingSourceConverter micro_side_converter(
           *macro_micro_coupling_adapter_);
 
       // micro: interior - interior
