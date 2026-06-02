@@ -1533,14 +1533,14 @@ namespace Mat
      * @param[in] defgrad Deformation gradient
      * @param[in] iFin_other Already computed inverse inelastic deformation gradient
      *              (from already computed inelastic factors in the multiplicative split material)
-     * @param[in] current_temperature Absolute current temperature
+     * @param[in] temperature Absolute current temperature
      * @return mechanical dissipation heat source and derivatives w.r.t. temperature and the right
      *         Cauchy-Green tensor
      */
     [[nodiscard]] HeatSource evaluate_taylor_quinney_heat_source(
         const EvaluationContext<3>& context, const int gp, const int eleGID,
         const Core::LinAlg::Matrix<3, 3>* defgrad, const Core::LinAlg::Matrix<3, 3>& iFin_other,
-        const double& temperature);
+        const double temperature);
 
     Mat::PAR::InelasticSource get_inelastic_source() override
     {
