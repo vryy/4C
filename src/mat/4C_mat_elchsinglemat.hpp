@@ -62,10 +62,6 @@ namespace Mat
 
       //! parameters for scaling function describing temperature dependence conductivity
       const std::vector<double> conductivity_temp_scale_funct_params_;
-
-      //! universal gas constant for evaluation of diffusion coefficient by means of
-      //! Arrhenius-ansatz
-      const double R_;
       ///@}
 
      protected:
@@ -126,7 +122,6 @@ namespace Mat
     //! abbreviations for pre-defined functions
     ///@{
     static constexpr int CONSTANT_FUNCTION = -1;
-    static constexpr int ARRHENIUS = -14;
     ///@}
 
    protected:
