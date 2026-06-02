@@ -495,6 +495,15 @@ void Particle::PDNeighborPairs::communicate_bond_list(
   std::vector<std::set<std::pair<int, int>>> communicated_bonds_per_target(
       Core::Communication::num_mpi_ranks(comm_));
 
+  // build an index mapping particle global id -> bond indices for O(1) lookup
+  std::unordered_map<int, std::vector<std::size_t>> particle_to_bond_indices;
+  for (std::size_t bond_idx = 0; bond_idx < bondlist_->size(); ++bond_idx)
+  {
+    const auto& bond = (*bondlist_)[bond_idx];
+    particle_to_bond_indices[std::get<3>(bond.first)].push_back(bond_idx);
+    particle_to_bond_indices[std::get<3>(bond.second)].push_back(bond_idx);
+  }
+
   // pack bond pair information
   // do not delete information on proc just add bond information while receiving
   // during later evaluation if any particle of that bond is not available remove the bond
@@ -505,26 +514,26 @@ void Particle::PDNeighborPairs::communicate_bond_list(
 
     for (int globalid : particletargets[torank])
     {
-      for (const auto& pair : *bondlist_)
+      auto it = particle_to_bond_indices.find(globalid);
+      if (it == particle_to_bond_indices.end()) continue;
+
+      for (std::size_t bond_idx : it->second)
       {
-        const int globalid_i = std::get<3>(pair.first);
-        const int globalid_j = std::get<3>(pair.second);
+        const auto& bond = (*bondlist_)[bond_idx];
+        const int globalid_i = std::get<3>(bond.first);
+        const int globalid_j = std::get<3>(bond.second);
 
-        // if particle to be sent is in the bond list also send the bond list information
-        if (globalid_i == globalid or globalid_j == globalid)
-        {
-          const auto canonical_bond_ids = canonical_pd_bond_ids(globalid_i, globalid_j);
-          // A bond can be matched twice when both particles move to the same rank.
-          // Send each canonical bond at most once per target rank.
-          const bool inserted =
-              communicated_bonds_per_target[torank].insert(canonical_bond_ids).second;
-          if (!inserted) continue;
+        const auto canonical_bond_ids = canonical_pd_bond_ids(globalid_i, globalid_j);
+        // A bond can be matched twice when both particles move to the same rank.
+        // Send each canonical bond at most once per target rank.
+        const bool inserted =
+            communicated_bonds_per_target[torank].insert(canonical_bond_ids).second;
+        if (!inserted) continue;
 
-          Core::Communication::PackBuffer data;
-          data.add_to_pack(canonical_bond_ids.first);
-          data.add_to_pack(canonical_bond_ids.second);
-          sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
-        }
+        Core::Communication::PackBuffer data;
+        data.add_to_pack(canonical_bond_ids.first);
+        data.add_to_pack(canonical_bond_ids.second);
+        sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
       }
     }
   }
