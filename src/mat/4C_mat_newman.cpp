@@ -59,15 +59,9 @@ Core::Communication::ParObject* Mat::NewmanType::create(Core::Communication::Unp
   return newman;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::Newman::Newman() : params_(nullptr) { return; }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Mat::Newman::Newman(Mat::PAR::Newman* params) : params_(params) { return; }
+Mat::Newman::Newman(Mat::PAR::Newman* params) : ElchSingleMat(params), params_(params) {}
 
 
 /*----------------------------------------------------------------------*/
@@ -82,8 +76,6 @@ void Mat::Newman::pack(Core::Communication::PackBuffer& data) const
   int matid = -1;
   if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
-
-  return;
 }
 
 
@@ -104,15 +96,14 @@ void Mat::Newman::unpack(Core::Communication::UnpackBuffer& buffer)
       Core::Mat::PAR::Parameter* mat =
           Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
       if (mat->type() == material_type())
+      {
         params_ = static_cast<Mat::PAR::Newman*>(mat);
+        set_elch_single_mat_params(params_);
+      }
       else
         FOUR_C_THROW("Type of parameter material {} does not fit to calling type {}", mat->type(),
             material_type());
     }
-
-
-
-  return;
 }
 
 

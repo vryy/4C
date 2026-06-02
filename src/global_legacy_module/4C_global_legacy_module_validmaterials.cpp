@@ -714,40 +714,38 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   }
 
   /*----------------------------------------------------------------------*/
-  // material parameters for ion species in electrolyte solution (ehrl 07/12)
+  // material parameters for ion species in electrolyte solution
   {
+    using namespace Core::IO::InputSpecBuilders::Validators;
     known_materials[Core::Materials::m_newman] = group("MAT_newman",
         {
             parameter<double>("VALENCE", {.description = "valence (= charge number)"}),
-            parameter<int>("DIFF_COEF_CONC_DEP_FUNCT",
-                {.description = "function number of function describing concentration dependence "
-                                "of diffusion coefficient"}),
-            parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT",
-                {.description =
-                        "FUNCT number describing temperature scaling of diffusion coefficient"}),
+            parameter<double>(
+                "DIFF_COEF", {.description = "value of the diffusion coefficient without "
+                                             "concentration or temperature dependence",
+                                 .validator = positive<double>()}),
+            parameter<std::optional<int>>("DIFF_COEF_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing concentration scaling of the "
+                                "diffusion coefficient",
+                    .validator = null_or(positive<int>())}),
+            parameter<std::optional<int>>("DIFF_COEF_TEMP_SCALE_FUNCT",
+                {.description = "optional function number describing temperature scaling of the"
+                                "diffusion coefficient",
+                    .validator = null_or(positive<int>())}),
             parameter<int>("TRANSNR", {.description = "curve number for transference number"}),
             parameter<int>("THERMFAC", {.description = "curve number for thermodynamic factor"}),
-            parameter<int>(
-                "COND_CONC_DEP_FUNCT", {.description = "function number of function describing "
-                                                       "concentration dependence of conductivity"}),
-            parameter<int>("COND_TEMP_SCALE_FUNCT",
-                {.description = "FUNCT number describing temperature scaling of conductivity"}),
-            parameter<int>(
-                "DIFF_PARA_NUM", {.description = "number of parameters for diffusion coefficient",
-                                     .default_value = 0}),
-            parameter<std::vector<double>>(
-                "DIFF_PARA", {.description = "parameters for diffusion coefficient",
-                                 .default_value = std::vector<double>{},
-                                 .size = from_parameter<int>("DIFF_PARA_NUM")}),
-            parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM",
-                {.description = "number of parameters for scaling function describing temperature "
-                                "dependence of diffusion coefficient",
-                    .default_value = 0}),
-            parameter<std::vector<double>>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA",
-                {.description = "parameters for function describing temperature dependence of "
-                                "diffusion coefficient",
-                    .default_value = std::vector<double>{},
-                    .size = from_parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM")}),
+            parameter<double>("COND",
+                {.description =
+                        "value of the conductivity without concentration or temperature dependence",
+                    .validator = positive<double>()}),
+            parameter<std::optional<int>>("COND_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing the concentration scaling of "
+                                "the conductivity",
+                    .validator = null_or(positive<int>())}),
+            parameter<std::optional<int>>("COND_TEMP_SCALE_FUNCT",
+                {.description = "optional function number describing the temperature scaling of "
+                                "the conductivity",
+                    .validator = null_or(positive<int>())}),
             parameter<int>(
                 "TRANS_PARA_NUM", {.description = "number of parameters for transference number",
                                       .default_value = 0}),
@@ -762,43 +760,43 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 "THERM_PARA", {.description = "parameters for thermodynamic factor",
                                   .default_value = std::vector<double>{},
                                   .size = from_parameter<int>("THERM_PARA_NUM")}),
-            parameter<int>("COND_PARA_NUM",
-                {.description = "number of parameters for conductivity", .default_value = 0}),
-            parameter<std::vector<double>>(
-                "COND_PARA", {.description = "parameters for conductivity",
-                                 .default_value = std::vector<double>{},
-                                 .size = from_parameter<int>("COND_PARA_NUM")}),
-            parameter<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM",
-                {.description = "number of parameters for temperature scaling of conductivity",
-                    .default_value = 0}),
-            parameter<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA",
-                {.description = "parameters for temperature scaling of conductivity",
-                    .default_value = std::vector<double>{},
-                    .size = from_parameter<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM")}),
         },
         {.description = "material parameters for ion species in electrolyte solution"});
   }
 
   /*----------------------------------------------------------------------*/
-  // material parameters for ion species in electrolyte solution for multi-scale approach (fang
-  // 07/17)
+  // material parameters for ion species in electrolyte solution for multiscale approach
   {
+    using namespace Core::IO::InputSpecBuilders::Validators;
     known_materials[Core::Materials::m_newman_multiscale] = group("MAT_newman_multiscale",
         {
             parameter<double>("VALENCE", {.description = "valence (= charge number)"}),
-            parameter<int>("DIFF_COEF_CONC_DEP_FUNCT",
-                {.description = "function number of function describing concentration dependence "
-                                "of diffusion coefficient"}),
-            parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT",
-                {.description =
-                        "FUNCT number describing temperature scaling of diffusion coefficient"}),
+            parameter<double>(
+                "DIFF_COEF", {.description = "value of the diffusion coefficient without "
+                                             "concentration or temperature dependence",
+                                 .validator = positive<double>()}),
+            parameter<std::optional<int>>("DIFF_COEF_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing concentration scaling of the "
+                                "diffusion coefficient",
+                    .validator = null_or(positive<int>())}),
+            parameter<std::optional<int>>("DIFF_COEF_TEMP_SCALE_FUNCT",
+                {.description = "optional function number describing temperature scaling of the"
+                                "diffusion coefficient",
+                    .validator = null_or(positive<int>())}),
             parameter<int>("TRANSNR", {.description = "curve number for transference number"}),
             parameter<int>("THERMFAC", {.description = "curve number for thermodynamic factor"}),
-            parameter<int>(
-                "COND_CONC_DEP_FUNCT", {.description = "function number of function describing "
-                                                       "concentration dependence of conductivity"}),
-            parameter<int>("COND_TEMP_SCALE_FUNCT",
-                {.description = "FUNCT number describing temperature scaling of conductivity"}),
+            parameter<double>("COND",
+                {.description =
+                        "value of the conductivity without concentration or temperature dependence",
+                    .validator = positive<double>()}),
+            parameter<std::optional<int>>("COND_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing the concentration scaling of "
+                                "the conductivity",
+                    .validator = null_or(positive<int>())}),
+            parameter<std::optional<int>>("COND_TEMP_SCALE_FUNCT",
+                {.description = "optional function number describing the temperature scaling of "
+                                "the conductivity",
+                    .validator = null_or(positive<int>())}),
             parameter<double>("ELECTRONIC_COND", {.description = "electronic conductivity"}),
             parameter<int>("ELECTRONIC_COND_CONC_SCALE_FUNC_NUM",
                 {.description = "FUNCT number describing concentration dependence of electronic "
@@ -809,22 +807,6 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<int>("MICRODIS_NUM", {.description = "number of micro-scale discretization"}),
             // optional parameters for implemented concentration-depending functions
             parameter<int>(
-                "DIFF_PARA_NUM", {.description = "number of parameters for diffusion coefficient",
-                                     .default_value = 0}),
-            parameter<std::vector<double>>(
-                "DIFF_PARA", {.description = "parameters for diffusion coefficient",
-                                 .default_value = std::vector<double>{},
-                                 .size = from_parameter<int>("DIFF_PARA_NUM")}),
-            parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM",
-                {.description = "number of parameters for scaling function describing temperature "
-                                "dependence of diffusion coefficient",
-                    .default_value = 0}),
-            parameter<std::vector<double>>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA",
-                {.description = "parameters for function describing temperature dependence of "
-                                "diffusion coefficient",
-                    .default_value = std::vector<double>{},
-                    .size = from_parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM")}),
-            parameter<int>(
                 "TRANS_PARA_NUM", {.description = "number of parameters for transference number",
                                       .default_value = 0}),
             parameter<std::vector<double>>(
@@ -838,56 +820,41 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 "THERM_PARA", {.description = "parameters for thermodynamic factor",
                                   .default_value = std::vector<double>{},
                                   .size = from_parameter<int>("THERM_PARA_NUM")}),
-            parameter<int>("COND_PARA_NUM",
-                {.description = "number of parameters for ionic conductivity", .default_value = 0}),
-            parameter<std::vector<double>>(
-                "COND_PARA", {.description = "parameters for ionic conductivity",
-                                 .default_value = std::vector<double>{},
-                                 .size = from_parameter<int>("COND_PARA_NUM")}),
-            parameter<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM",
-                {.description = "number of parameters for temperature scaling of conductivity",
-                    .default_value = 0}),
-            parameter<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA",
-                {.description = "parameters for temperature scaling of conductivity",
-                    .default_value = std::vector<double>{},
-                    .size = from_parameter<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM")}),
         },
         {.description = "material parameters for ion species in electrolyte solution for "
                         "multi-scale approach"});
   }
 
   {
+    using namespace Core::IO::InputSpecBuilders::Validators;
     known_materials[Core::Materials::m_scl] = group("MAT_scl",
         {
             parameter<double>("VALENCE", {.description = "valence/charge number"}),
-            parameter<int>("DIFF_COEF_CONC_DEP_FUNCT",
-                {.description = "function number of function describing concentration dependence "
-                                "of diffusion coefficient"}),
-            parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT",
-                {.description =
-                        "function number describing temperature scaling of diffusion coefficient"}),
-            parameter<int>("TRANSNR", {.description = "curve number for transference number"}),
-            parameter<int>(
-                "COND_CONC_DEP_FUNCT", {.description = "function number of function describing "
-                                                       "concentration dependence of conductivity"}),
-            parameter<int>("COND_TEMP_SCALE_FUNCT",
-                {.description = "function number describing temperature scaling of conductivity"}),
-            parameter<int>(
-                "DIFF_PARA_NUM", {.description = "number of parameters for diffusion coefficient",
-                                     .default_value = 0}),
-            parameter<std::vector<double>>(
-                "DIFF_PARA", {.description = "parameters for diffusion coefficient",
-                                 .default_value = std::vector<double>{},
-                                 .size = from_parameter<int>("DIFF_PARA_NUM")}),
-            parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM",
-                {.description = "number of parameters for scaling function describing temperature "
-                                "dependence of diffusion coefficient",
-                    .default_value = 0}),
-            parameter<std::vector<double>>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA",
-                {.description = "parameters for function describing temperature dependence of "
+            parameter<double>(
+                "DIFF_COEF", {.description = "value of the diffusion coefficient without "
+                                             "concentration or temperature dependence",
+                                 .validator = positive<double>()}),
+            parameter<std::optional<int>>("DIFF_COEF_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing concentration scaling of the "
                                 "diffusion coefficient",
-                    .default_value = std::vector<double>{},
-                    .size = from_parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM")}),
+                    .validator = null_or(positive<int>())}),
+            parameter<std::optional<int>>("DIFF_COEF_TEMP_SCALE_FUNCT",
+                {.description = "optional function number describing temperature scaling of the"
+                                "diffusion coefficient",
+                    .validator = null_or(positive<int>())}),
+            parameter<int>("TRANSNR", {.description = "curve number for transference number"}),
+            parameter<double>("COND",
+                {.description =
+                        "value of the conductivity without concentration or temperature dependence",
+                    .validator = positive<double>()}),
+            parameter<std::optional<int>>("COND_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing the concentration scaling of "
+                                "the conductivity",
+                    .validator = null_or(positive<int>())}),
+            parameter<std::optional<int>>("COND_TEMP_SCALE_FUNCT",
+                {.description = "optional function number describing the temperature scaling of "
+                                "the conductivity",
+                    .validator = null_or(positive<int>())}),
             parameter<int>(
                 "TRANS_PARA_NUM", {.description = "number of parameters for transference number",
                                       .default_value = 0}),
@@ -895,19 +862,6 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 "TRANS_PARA", {.description = "parameters for transference number",
                                   .default_value = std::vector<double>{},
                                   .size = from_parameter<int>("TRANS_PARA_NUM")}),
-            parameter<int>("COND_PARA_NUM",
-                {.description = "number of parameters for conductivity", .default_value = 0}),
-            parameter<std::vector<double>>(
-                "COND_PARA", {.description = "parameters for conductivity",
-                                 .default_value = std::vector<double>{},
-                                 .size = from_parameter<int>("COND_PARA_NUM")}),
-            parameter<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM",
-                {.description = "number of parameters for temperature scaling of conductivity",
-                    .default_value = 0}),
-            parameter<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA",
-                {.description = "parameters for temperature scaling of conductivity",
-                    .default_value = std::vector<double>{},
-                    .size = from_parameter<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM")}),
             parameter<double>("MAX_CONC", {.description = "maximum cation concentration"}),
             parameter<int>("EXTRAPOL_DIFF",
                 {.description = "strategy for extrapolation of diffusion coefficient below 0 and "
@@ -930,50 +884,30 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
     known_materials[Core::Materials::m_electrode] = group("MAT_electrode",
         {
             // diffusivity and electronic conductivity
-            parameter<int>("DIFF_COEF_CONC_DEP_FUNCT",
-                {.description = "function number of function describing concentration dependence "
-                                "of diffusion coefficient"}),
-            parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT",
-                {.description =
-                        "FUNCT number describing temperature scaling of diffusion coefficient"}),
-            parameter<int>(
-                "COND_CONC_DEP_FUNCT", {.description = "function number of function describing "
-                                                       "concentration dependence of conductivity"}),
-            parameter<int>("COND_TEMP_SCALE_FUNCT",
-                {.description = "FUNCT number describing temperature scaling of conductivity"}),
-
-            // optional parameters for concentration dependency of diffusivity and electronic
-            // conductivity
-            parameter<int>(
-                "DIFF_PARA_NUM", {.description = "number of parameters for diffusion coefficient",
-                                     .default_value = 0}),
-            parameter<std::vector<double>>(
-                "DIFF_PARA", {.description = "parameters for diffusion coefficient",
-                                 .default_value = std::vector<double>{},
-                                 .size = from_parameter<int>("DIFF_PARA_NUM")}),
-            parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM",
-                {.description = "number of parameters for scaling function describing temperature "
-                                "dependence of diffusion coefficient",
-                    .default_value = 0}),
-            parameter<std::vector<double>>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA",
-                {.description = "parameters for function describing temperature dependence of "
+            parameter<double>(
+                "DIFF_COEF", {.description = "value of the diffusion coefficient without "
+                                             "concentration or temperature dependence",
+                                 .validator = positive<double>()}),
+            parameter<std::optional<int>>("DIFF_COEF_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing concentration scaling of the "
                                 "diffusion coefficient",
-                    .default_value = std::vector<double>{},
-                    .size = from_parameter<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM")}),
-            parameter<int>(
-                "COND_PARA_NUM", {.description = "number of parameters for electronic conductivity",
-                                     .default_value = 0}),
-            parameter<std::vector<double>>(
-                "COND_PARA", {.description = "parameters for electronic conductivity",
-                                 .default_value = std::vector<double>{},
-                                 .size = from_parameter<int>("COND_PARA_NUM")}),
-            parameter<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM",
-                {.description = "number of parameters for temperature scaling of conductivity",
-                    .default_value = 0}),
-            parameter<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA",
-                {.description = "parameters for temperature scaling of conductivity",
-                    .default_value = std::vector<double>{},
-                    .size = from_parameter<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM")}),
+                    .validator = null_or(positive<int>())}),
+            parameter<std::optional<int>>("DIFF_COEF_TEMP_SCALE_FUNCT",
+                {.description = "optional function number describing temperature scaling of the"
+                                "diffusion coefficient",
+                    .validator = null_or(positive<int>())}),
+            parameter<double>("COND",
+                {.description =
+                        "value of the conductivity without concentration or temperature dependence",
+                    .validator = positive<double>()}),
+            parameter<std::optional<int>>("COND_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing the concentration scaling of "
+                                "the conductivity",
+                    .validator = null_or(positive<int>())}),
+            parameter<std::optional<int>>("COND_TEMP_SCALE_FUNCT",
+                {.description = "optional function number describing the temperature scaling of "
+                                "the conductivity",
+                    .validator = null_or(positive<int>())}),
             // saturation value of intercalated Lithium concentration
             parameter<double>(
                 "C_MAX", {.description = "saturation value of intercalated Lithium concentration",

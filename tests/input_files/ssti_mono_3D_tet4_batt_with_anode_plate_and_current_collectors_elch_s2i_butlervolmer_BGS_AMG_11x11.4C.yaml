@@ -79,14 +79,8 @@ SOLVER 3:
 MATERIALS:
   - MAT: 1
     MAT_electrode:
-      DIFF_COEF_CONC_DEP_FUNCT: -1
-      DIFF_COEF_TEMP_SCALE_FUNCT: 0
-      COND_CONC_DEP_FUNCT: -1
-      COND_TEMP_SCALE_FUNCT: 0
-      DIFF_PARA_NUM: 1
-      DIFF_PARA: [5e-10]
-      COND_PARA_NUM: 1
-      COND_PARA: [100000]
+      DIFF_COEF: 5e-10
+      COND: 100000.0
       C_MAX: 47933
       CHI_MAX: 1
       OCP_MODEL:
@@ -135,18 +129,12 @@ MATERIALS:
   - MAT: 9
     MAT_newman:
       VALENCE: 1
-      DIFF_COEF_CONC_DEP_FUNCT: -1
-      DIFF_COEF_TEMP_SCALE_FUNCT: 0
       TRANSNR: -1
       THERMFAC: 0
-      COND_CONC_DEP_FUNCT: -1
-      COND_TEMP_SCALE_FUNCT: 0
-      DIFF_PARA_NUM: 1
-      DIFF_PARA: [1]
+      DIFF_COEF: 1.0
       TRANS_PARA_NUM: 1
       TRANS_PARA: [1]
-      COND_PARA_NUM: 1
-      COND_PARA: [34]
+      COND: 34.0
   - MAT: 10
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1
@@ -171,14 +159,8 @@ MATERIALS:
         constant: [10000]
   - MAT: 15
     MAT_electrode:
-      DIFF_COEF_CONC_DEP_FUNCT: -1
-      DIFF_COEF_TEMP_SCALE_FUNCT: 0
-      COND_CONC_DEP_FUNCT: -1
-      COND_TEMP_SCALE_FUNCT: 0
-      DIFF_PARA_NUM: 1
-      DIFF_PARA: [1]
-      COND_PARA_NUM: 1
-      COND_PARA: [1.17e+10]
+      DIFF_COEF: 1.0
+      COND: 1.17e+10
       C_MAX: 1e+06
       CHI_MAX: 1
       OCP_MODEL:
@@ -212,14 +194,8 @@ MATERIALS:
         constant: [85000]
   - MAT: 21
     MAT_electrode:
-      DIFF_COEF_CONC_DEP_FUNCT: -1
-      DIFF_COEF_TEMP_SCALE_FUNCT: 0
-      COND_CONC_DEP_FUNCT: -1
-      COND_TEMP_SCALE_FUNCT: 0
-      DIFF_PARA_NUM: 1
-      DIFF_PARA: [1]
-      COND_PARA_NUM: 1
-      COND_PARA: [5.81e+10]
+      DIFF_COEF: 1.0
+      COND: 5.81e+10
       C_MAX: 1e+06
       CHI_MAX: 1
       OCP_MODEL:
@@ -243,14 +219,8 @@ MATERIALS:
         constant: [400000]
   - MAT: 27
     MAT_electrode:
-      DIFF_COEF_CONC_DEP_FUNCT: -1
-      DIFF_COEF_TEMP_SCALE_FUNCT: 0
-      COND_CONC_DEP_FUNCT: -1
-      COND_TEMP_SCALE_FUNCT: 0
-      DIFF_PARA_NUM: 1
-      DIFF_PARA: [1]
-      COND_PARA_NUM: 1
-      COND_PARA: [3.77e+10]
+      DIFF_COEF: 1.0
+      COND: 3.77e+10
       C_MAX: 1e+06
       CHI_MAX: 1
       OCP_MODEL:

@@ -124,7 +124,7 @@ Core::Communication::ParObject* Mat::ElectrodeType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mat::Electrode::Electrode(Mat::PAR::Electrode* params) : params_(params) {}
+Mat::Electrode::Electrode(Mat::PAR::Electrode* params) : ElchSingleMat(params), params_(params) {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -157,7 +157,10 @@ void Mat::Electrode::unpack(Core::Communication::UnpackBuffer& buffer)
       Core::Mat::PAR::Parameter* mat =
           Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
       if (mat->type() == material_type())
+      {
         params_ = static_cast<Mat::PAR::Electrode*>(mat);
+        set_elch_single_mat_params(params_);
+      }
       else
         FOUR_C_THROW("Type of parameter material {} does not fit to calling type {}", mat->type(),
             material_type());

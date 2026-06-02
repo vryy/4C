@@ -25,7 +25,7 @@ namespace Mat
     {
      public:
       /// standard constructor
-      Newman(const Core::Mat::PAR::Parameter::Data& matdata);
+      explicit Newman(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// @name material parameters
       //@{
@@ -79,9 +79,7 @@ namespace Mat
   class Newman : public ElchSingleMat
   {
    public:
-    /// construct empty material object
-    Newman();
-
+    Newman() = default;
     /// construct the material object given material parameters
     explicit Newman(Mat::PAR::Newman* params);
 

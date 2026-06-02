@@ -51,12 +51,6 @@ Core::Communication::ParObject* Mat::NewmanMultiScaleType::create(
 }
 
 
-/*--------------------------------------------------------------------*
- | construct empty Newman multi-scale material             fang 07/17 |
- *--------------------------------------------------------------------*/
-Mat::NewmanMultiScale::NewmanMultiScale() : params_(nullptr) {}
-
-
 /*--------------------------------------------------------------------------------------*
  | construct Newman multi-scale material with specific material parameters   fang 07/17 |
  *--------------------------------------------------------------------------------------*/

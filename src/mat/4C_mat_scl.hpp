@@ -93,9 +93,7 @@ namespace Mat
   class Scl : public ElchSingleMat
   {
    public:
-    /// construct empty material object
-    Scl();
-
+    Scl() = default;
     /// construct the material object given material parameters
     explicit Scl(Mat::PAR::Scl* params);
 

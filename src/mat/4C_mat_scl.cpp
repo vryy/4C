@@ -67,11 +67,7 @@ Core::Communication::ParObject* Mat::SclType::create(Core::Communication::Unpack
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Mat::Scl::Scl() : params_(nullptr) {}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Mat::Scl::Scl(Mat::PAR::Scl* params) : params_(params) {}
+Mat::Scl::Scl(Mat::PAR::Scl* params) : ElchSingleMat(params), params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -105,7 +101,10 @@ void Mat::Scl::unpack(Core::Communication::UnpackBuffer& buffer)
       Core::Mat::PAR::Parameter* mat =
           Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
       if (mat->type() == material_type())
+      {
         params_ = static_cast<Mat::PAR::Scl*>(mat);
+        set_elch_single_mat_params(params_);
+      }
       else
         FOUR_C_THROW("Type of parameter material {} does not fit to calling type {}", mat->type(),
             material_type());
