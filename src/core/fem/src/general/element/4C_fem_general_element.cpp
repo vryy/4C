@@ -834,10 +834,10 @@ Core::GeometricSearch::BoundingVolume Core::Elements::Element::get_bounding_volu
  *----------------------------------------------------------------------*/
 Core::Elements::FaceElement::FaceElement(const int id, const int owner)
     : Element(id, owner),
-      parent_master_(nullptr),
-      parent_slave_(nullptr),
-      lface_master_(-1),
-      lface_slave_(-1),
+      parent_target_(nullptr),
+      parent_source_(nullptr),
+      lface_target_(-1),
+      lface_source_(-1),
       parent_id_(-1)
 {
 }
@@ -849,10 +849,10 @@ Core::Elements::FaceElement::FaceElement(const int id, const int owner)
  *----------------------------------------------------------------------*/
 Core::Elements::FaceElement::FaceElement(const Core::Elements::FaceElement& old)
     : Element(old),
-      parent_master_(old.parent_master_),
-      parent_slave_(old.parent_slave_),
-      lface_master_(old.lface_master_),
-      lface_slave_(old.lface_slave_),
+      parent_target_(old.parent_target_),
+      parent_source_(old.parent_source_),
+      lface_target_(old.lface_target_),
+      lface_source_(old.lface_source_),
       localtrafomap_(old.localtrafomap_),
       parent_id_(old.parent_id_)
 {
@@ -869,7 +869,7 @@ void Core::Elements::FaceElement::pack(Core::Communication::PackBuffer& data) co
   // add base class Discret::Element
   Core::Elements::Element::pack(data);
   // add lface_master_
-  add_to_pack(data, lface_master_);
+  add_to_pack(data, lface_target_);
   // Pack Parent Id, used to set parent_master_ after parallel communication!
   add_to_pack(data, parent_id_);
 }
@@ -887,7 +887,7 @@ void Core::Elements::FaceElement::unpack(Core::Communication::UnpackBuffer& buff
   Core::Elements::Element::unpack(buffer);
 
   // lface_master_
-  extract_from_pack(buffer, lface_master_);
+  extract_from_pack(buffer, lface_target_);
   // Parent Id
   extract_from_pack(buffer, parent_id_);
 }

@@ -560,10 +560,10 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   // Transform also column map of D-Matrix
   (*k_d_transform_)(*fluid_field()->interface()->fsi_cond_map(),
       fluid_field()->block_system_matrix()->matrix(1, 1).col_map(), *tmp_k_D, 1.0,
-      Coupling::Adapter::CouplingSlaveConverter(*icoupfs_), *k_d_);
+      Coupling::Adapter::CouplingSourceConverter(*icoupfs_), *k_d_);
 
   (*k_inv_d_transform_)(
-      *invd, 1.0, Coupling::Adapter::CouplingSlaveConverter(*icoupfs_), *k_inv_d_, false);
+      *invd, 1.0, Coupling::Adapter::CouplingSourceConverter(*icoupfs_), *k_inv_d_, false);
 
   double stiparam = structure_field()->tim_int_param();
 
@@ -574,7 +574,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   (*k_d_lin_transform_)(*fluid_field()->interface()->fsi_cond_map(),
       fluid_field()->block_system_matrix()->matrix(1, 1).col_map(), *tmp_k_DLin,
       1.0 - stiparam,  // *= b
-      Coupling::Adapter::CouplingSlaveConverter(*icoupfs_),
+      Coupling::Adapter::CouplingSourceConverter(*icoupfs_),
       (std::static_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(k_fs))->matrix(1, 1), true,
       true);
 

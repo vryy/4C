@@ -444,7 +444,7 @@ void Coupling::VolMortar::VolMortarCoupl::assign_materials()
    **************************************************/
   for (int j = 0; j < dis1_->num_my_col_elements(); ++j)
   {
-    // get master element
+    // get target element
     Core::Elements::Element* Aele = dis1_->l_col_element(j);
 
     std::vector<int> found = search(*Aele, SearchTreeB, CurrentDOPsB);
@@ -460,7 +460,7 @@ void Coupling::VolMortar::VolMortarCoupl::assign_materials()
    **************************************************/
   for (int j = 0; j < dis2_->num_my_col_elements(); ++j)
   {
-    // get master element
+    // get target element
     Core::Elements::Element* Bele = dis2_->l_col_element(j);
 
     std::vector<int> found = search(*Bele, SearchTreeA, CurrentDOPsA);
@@ -645,7 +645,7 @@ void Coupling::VolMortar::VolMortarCoupl::create_trafo_operator(Core::Elements::
     {
       int nsdof = searchdis->num_dof(1, cnode);
 
-      // loop over slave dofs
+      // loop over source dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
         int row = searchdis->dof(1, cnode, jdof);
@@ -799,7 +799,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_elements()
   {
     // print_status(j,false);
 
-    // get master element
+    // get target element
     Core::Elements::Element* Aele = dis1_->l_col_element(j);
 
     std::vector<int> found = search(*Aele, SearchTreeB, CurrentDOPsB);
@@ -824,7 +824,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_elements()
   {
     // print_status(j,true);
 
-    // get master element
+    // get target element
     Core::Elements::Element* Bele = dis2_->l_col_element(j);
 
     std::vector<int> found = search(*Bele, SearchTreeA, CurrentDOPsA);
@@ -849,14 +849,14 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_segments()
   std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPsB = calc_background_dops(dis2_);
 
   /**************************************************
-   * loop over all slave elements                   *
+   * loop over all source elements                   *
    **************************************************/
   for (int i = 0; i < dis1_->num_my_col_elements(); ++i)
   {
     // output of coupling status
     // print_status(i);
 
-    // get slave element
+    // get source element
     Core::Elements::Element* Aele = dis1_->l_col_element(i);
 
     // get found elements from other discr.
@@ -868,7 +868,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_segments()
     materialstrategy_->assign_material2_to1(this, Aele, found, dis1_, dis2_);
 
     /**************************************************
-     * loop over all master elements                  *
+     * loop over all target elements                  *
      **************************************************/
     for (int foundeles = 0; foundeles < (int)found.size(); ++foundeles)
     {
@@ -903,8 +903,8 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_segments()
       else
         FOUR_C_THROW("ERROR: Problem dimension is not correct!");
 
-    }  // end master element loop
-  }  // end slave element loop
+    }  // end target element loop
+  }  // end source element loop
 }
 
 /*----------------------------------------------------------------------*
@@ -927,8 +927,8 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_segments_2d(
   cells.resize(0);
 
   // build new polygons
-  define_vertices_master(Bele, target_vertices);
-  define_vertices_slave(Aele, source_vertices);
+  define_vertices_target(Bele, target_vertices);
+  define_vertices_source(Aele, source_vertices);
 
   double tol = 1e-12;
   polygon_clipping_convex_hull(source_vertices, target_vertices, ClippedPolygon, Aele, Bele, tol);
@@ -1082,7 +1082,7 @@ void Coupling::VolMortar::VolMortarCoupl::check_initial_residuum()
       Core::Nodes::Node* cnode = Aele->nodes()[j];
       int nsdof = discret1()->num_dof(0, cnode);
 
-      // loop over slave dofs
+      // loop over source dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
         int id = discret1()->dof(0, cnode, jdof);
@@ -1102,7 +1102,7 @@ void Coupling::VolMortar::VolMortarCoupl::check_initial_residuum()
       Core::Nodes::Node* cnode = Bele->nodes()[j];
       int nsdof = discret2()->num_dof(1, cnode);
 
-      // loop over slave dofs
+      // loop over source dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
         int id = discret2()->dof(1, cnode, jdof);
@@ -1113,7 +1113,7 @@ void Coupling::VolMortar::VolMortarCoupl::check_initial_residuum()
     }
   }
 
-  // std::cout << "vector of slave positions " << *var_B << std::endl;
+  // std::cout << "vector of source positions " << *var_B << std::endl;
 
   // do: D*db - M*da
   // int err1 = dmatrixB_->Multiply(false, *var_B, *result_B);
@@ -1202,7 +1202,7 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     std::set<int> donebeforea;
     for (int j = 0; j < dis1_->num_my_col_elements(); ++j)
     {
-      // get master element
+      // get target element
       Core::Elements::Element* Aele = dis1_->l_col_element(j);
 
       std::vector<int> found = search(*Aele, SearchTreeB, CurrentDOPsB);
@@ -1215,7 +1215,7 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     std::set<int> donebeforeb;
     for (int j = 0; j < dis2_->num_my_col_elements(); ++j)
     {
-      // get master element
+      // get target element
       Core::Elements::Element* Bele = dis2_->l_col_element(j);
 
       std::vector<int> found = search(*Bele, SearchTreeA, CurrentDOPsA);
@@ -1411,7 +1411,7 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
         int nsdof = discret1()->num_dof(dofseta, cnode);
         std::vector<double> nvector(3);
 
-        // loop over slave dofs
+        // loop over source dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
           const int lid = sola->get_map().lid(discret1()->dof(dofseta, cnode, jdof));
@@ -1430,7 +1430,7 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
         int nsdof = discret2()->num_dof(dofsetb, cnode);
         std::vector<double> nvector(3);
 
-        // loop over slave dofs
+        // loop over source dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
           const int lid = solb->get_map().lid(discret2()->dof(dofsetb, cnode, jdof));
@@ -1580,9 +1580,9 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
 
   // the cut wizard wants discretizations to perform the cut. One is supposed to be the background
   // discretization and the other the interface discretization. As we want to cut only two 3D
-  // elements, we build two auxiliary discretizations. The first holds only a copy of the master
+  // elements, we build two auxiliary discretizations. The first holds only a copy of the target
   // element, acting as background mesh, and the other one is build of the surface elements of the
-  // slave element, being the interface discretization. We use temporary copies of all elements and
+  // source element, being the interface discretization. We use temporary copies of all elements and
   // nodes, as we only need the geometry to perform the cut, but want to make sure that the gids
   // and dofs of the original elements are kept untouched.
 
@@ -1591,12 +1591,12 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
   std::shared_ptr<Core::FE::Discretization> mauxdis =
       std::make_shared<Core::FE::Discretization>((std::string) "masterauxdis", comm_, dim_);
 
-  // build surface elements for all surfaces of slave element
+  // build surface elements for all surfaces of source element
   std::vector<std::shared_ptr<Core::Elements::Element>> sele_surfs = sele->surfaces();
   const int numsurf = sele_surfs.size();
   for (int isurf = 0; isurf < numsurf; ++isurf)
   {
-    // add all surface elements to auxiliary slave discretization (no need for cloning, as surface
+    // add all surface elements to auxiliary source discretization (no need for cloning, as surface
     // elements are
     // rebuild every time when calling Surfaces(), anyway)
     sauxdis->add_element(sele_surfs[isurf]);
@@ -1759,7 +1759,7 @@ bool Coupling::VolMortar::VolMortarCoupl::check_ele_integration(
   double xgl[3] = {0.0, 0.0, 0.0};
 
   //--------------------------------------------------------
-  // 1. all slave nodes within with master ele ?
+  // 1. all source nodes within with target ele ?
   for (int u = 0; u < sele.num_node(); ++u)
   {
     xgl[0] = sele.nodes()[u]->x()[0];
@@ -1979,7 +1979,7 @@ bool Coupling::VolMortar::VolMortarCoupl::check_cut(
   }
 
   //--------------------------------------------------------
-  // 3. master nodes within slave parameter space?
+  // 3. target nodes within source parameter space?
   for (int u = 0; u < mele.num_node(); ++u)
   {
     xgl[0] = mele.nodes()[u]->x()[0];
@@ -2026,7 +2026,7 @@ bool Coupling::VolMortar::VolMortarCoupl::check_cut(
   }
 
   //--------------------------------------------------------
-  // 4. slave nodes within master parameter space?
+  // 4. source nodes within target parameter space?
   for (int u = 0; u < sele.num_node(); ++u)
   {
     xgl[0] = sele.nodes()[u]->x()[0];
@@ -3628,9 +3628,9 @@ void Coupling::VolMortar::VolMortarCoupl::initialize()
 {
   /* ******************************************************************
    * (re)setup global Mortar Core::LinAlg::SparseMatrices                   *
-   * unknowns which are going to be condensed are defined on the slave*
+   * unknowns which are going to be condensed are defined on the source*
    * side. Therefore, the rows are the auxiliary variables on the     *
-   * slave side!                                                      *
+   * source side!                                                      *
    * ******************************************************************/
 
   d1_ = std::make_shared<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 10);
@@ -3742,15 +3742,15 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
 /*----------------------------------------------------------------------*
  |  Define polygon of mortar vertices                        farah 01/14|
  *----------------------------------------------------------------------*/
-void Coupling::VolMortar::VolMortarCoupl::define_vertices_slave(
+void Coupling::VolMortar::VolMortarCoupl::define_vertices_source(
     Core::Elements::Element& ele, std::vector<Mortar::Vertex>& source_vertices)
 {
-  // project slave nodes onto auxiliary plane
+  // project source nodes onto auxiliary plane
   int nnodes = ele.num_node();
   Core::Nodes::Node** mynodes = ele.nodes();
-  if (!mynodes) FOUR_C_THROW("ERROR: project_slave: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("ERROR: project_source: Null pointer!");
 
-  // initialize storage for slave coords + their ids
+  // initialize storage for source coords + their ids
   std::vector<double> vertices(3);
   std::vector<int> snodeids(1);
 
@@ -3767,23 +3767,22 @@ void Coupling::VolMortar::VolMortarCoupl::define_vertices_slave(
     source_vertices.push_back(Mortar::Vertex(
         vertices, Mortar::Vertex::source, snodeids, nullptr, nullptr, false, false, nullptr, -1.0));
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Define polygon of mortar vertices                        farah 01/14|
  *----------------------------------------------------------------------*/
-void Coupling::VolMortar::VolMortarCoupl::define_vertices_master(
-    Core::Elements::Element& ele, std::vector<Mortar::Vertex>& source_vertices)
+void Coupling::VolMortar::VolMortarCoupl::define_vertices_target(
+    Core::Elements::Element& ele, std::vector<Mortar::Vertex>& target_vertices)
 {
-  // project slave nodes onto auxiliary plane
+  // project target nodes onto auxiliary plane
   int nnodes = ele.num_node();
   Core::Nodes::Node** mynodes = ele.nodes();
-  if (!mynodes) FOUR_C_THROW("ERROR: project_slave: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("ERROR: project_target: Null pointer!");
 
-  // initialize storage for slave coords + their ids
+  // initialize storage for target coords + their ids
   std::vector<double> vertices(3);
-  std::vector<int> snodeids(1);
+  std::vector<int> tnodeids(1);
 
   for (int i = 0; i < nnodes; ++i)
   {
@@ -3792,13 +3791,12 @@ void Coupling::VolMortar::VolMortarCoupl::define_vertices_master(
     for (size_t k = 0; k < x.size(); ++k) vertices[k] = x[k];
 
     // get node id, too
-    snodeids[0] = mynodes[i]->id();
+    tnodeids[0] = mynodes[i]->id();
 
     // store into vertex data structure
-    source_vertices.push_back(Mortar::Vertex(vertices, Mortar::Vertex::projtarget, snodeids,
+    target_vertices.push_back(Mortar::Vertex(vertices, Mortar::Vertex::projtarget, tnodeids,
         nullptr, nullptr, false, false, nullptr, -1.0));
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3821,7 +3819,7 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
   if ((int)poly1.size() < 3 || (int)poly2.size() < 3)
     FOUR_C_THROW("ERROR: Input Polygons must consist of min. 3 vertices each");
 
-  // check for rotation of polygon1 (slave) and polygon 2 (master)
+  // check for rotation of polygon1 (source) and polygon 2 (target)
   // note that we implicitly already rely on convexity here!
   // first get geometric centers of polygon1 and polygon2
   std::array<double, 3> center1 = {0.0, 0.0, 0.0};
@@ -3863,7 +3861,7 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
   double check2 = cross2[0] * auxn()[0] + cross2[1] * auxn()[1] + cross2[2] * auxn()[2];
 
   // check polygon 1 and throw dserror if not c-clockwise
-  if (check1 <= 0) FOUR_C_THROW("ERROR: Polygon 1 (slave) not ordered counter-clockwise!");
+  if (check1 <= 0) FOUR_C_THROW("ERROR: Polygon 1 (source) not ordered counter-clockwise!");
 
   // check polygon 2 and reorder in c-clockwise direction
   if (check2 < 0) std::reverse(poly2.begin(), poly2.end());
@@ -3959,7 +3957,7 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
 
   //**********************************************************************
   // STEP2: Extend Vertex data structures
-  // - note that poly1 is the slave element and poly2 the master element
+  // - note that poly1 is the source element and poly2 the target element
   // - assign Next() and Prev() pointers to initialize linked structure
   //**********************************************************************
   // set previous and next Vertex pointer for all elements in lists
@@ -4074,7 +4072,7 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
             if (abs(iq[k]) < tol) iq[k] = 0.0;
           }
 
-          // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
+          // generate vectors of underlying node ids for lineclip (2x source, 2x target)
           std::vector<int> lcids(4);
           lcids[0] = (int)(poly1[i].nodeids()[0]);
           lcids[1] = (int)((poly1[i].next())->nodeids()[0]);
@@ -4101,7 +4099,7 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
     // keep track of comparisons
     bool close = false;
 
-    // check against all poly1 (slave) points
+    // check against all poly1 (source) points
     for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // distance vector
@@ -4117,10 +4115,10 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
       }
     }
 
-    // do only if no close poly1 (slave) point found
+    // do only if no close poly1 (source) point found
     if (!close)
     {
-      // check against all poly2 (master) points
+      // check against all poly2 (target) points
       for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // distance vector
@@ -4157,7 +4155,7 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
     // keep track of inside / outside status
     bool outside = false;
 
-    // check against all poly1 (slave) edges
+    // check against all poly1 (source) edges
     for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // we need diff vector and edge2 first
@@ -4187,10 +4185,10 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
       }
     }
 
-    // do only if not already outside w.r.t. to a poly1 (slave) edge
+    // do only if not already outside w.r.t. to a poly1 (source) edge
     if (!outside)
     {
-      // check against all poly2 (master) edges
+      // check against all poly2 (target) edges
       for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // we need diff vector and edge2 first
@@ -4231,7 +4229,7 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
     // keep track of inside / outside status
     bool outside = false;
 
-    // check against all poly1 (slave) edges
+    // check against all poly1 (source) edges
     for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // we need diff vector and edge2 first
@@ -4261,10 +4259,10 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
       }
     }
 
-    // do only if not already outside w.r.t. to a poly1 (slave) edge
+    // do only if not already outside w.r.t. to a poly1 (source) edge
     if (!outside)
     {
-      // check against all poly2 (master) edges
+      // check against all poly2 (target) edges
       for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // we need diff vector and edge2 first
@@ -4305,7 +4303,7 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
     // keep track of inside / outside status
     bool outside = false;
 
-    // check against all poly1 (slave) edges
+    // check against all poly1 (source) edges
     for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // we need diff vector and edge2 first
@@ -4335,10 +4333,10 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
       }
     }
 
-    // do only if not already outside w.r.t. to a poly1 (slave) edge
+    // do only if not already outside w.r.t. to a poly1 (source) edge
     if (!outside)
     {
-      // check against all poly2 (master) edges
+      // check against all poly2 (target) edges
       for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // we need diff vector and edge2 first
@@ -4388,17 +4386,17 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
     // keep track of comparisons
     bool close = false;
 
-    // do not collapse poly1 (slave) points
+    // do not collapse poly1 (source) points
     if (convexhull[i].v_type() == Mortar::Vertex::source)
     {
       collconvexhull.push_back(convexhull[i]);
       continue;
     }
 
-    // check remaining poly2 (master) and intersec points against poly1 (slave) points
+    // check remaining poly2 (target) and intersec points against poly1 (source) points
     for (int j = 0; j < (int)convexhull.size(); ++j)
     {
-      // only collapse with poly1 (slave) points
+      // only collapse with poly1 (source) points
       if (convexhull[j].v_type() != Mortar::Vertex::source) continue;
 
       // distance vector
@@ -4414,19 +4412,19 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
       }
     }
 
-    // do not check poly2 (master) points
+    // do not check poly2 (target) points
     if (convexhull[i].v_type() == Mortar::Vertex::projtarget)
     {
       if (!close) collconvexhull.push_back(convexhull[i]);
       continue;
     }
 
-    // check intersec points against poly2 (master) points
+    // check intersec points against poly2 (target) points
     if (!close && convexhull[i].v_type() == Mortar::Vertex::lineclip)
     {
       for (int j = 0; j < (int)convexhull.size(); ++j)
       {
-        // only collapse with poly2 (master) points
+        // only collapse with poly2 (target) points
         if (convexhull[j].v_type() != Mortar::Vertex::projtarget) continue;
 
         // distance vector

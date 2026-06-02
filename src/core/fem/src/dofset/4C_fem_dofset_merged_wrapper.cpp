@@ -69,39 +69,39 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   if (sourcedis_ == nullptr) FOUR_C_THROW("No source discretization assigned to mapping dof set!");
 
   // get nodes to be coupled
-  auto masternodes_set = Core::Conditions::find_conditioned_node_ids(
+  auto target_nodes_set = Core::Conditions::find_conditioned_node_ids(
       *sourcedis_, couplingcond_master_, Core::Conditions::LookFor::locally_owned);
-  std::vector<int> masternodes(masternodes_set.begin(), masternodes_set.end());
-  std::set<int> slavenodes_set = Core::Conditions::find_conditioned_node_ids(
+  std::vector<int> target_nodes(target_nodes_set.begin(), target_nodes_set.end());
+  std::set<int> source_nodes_set = Core::Conditions::find_conditioned_node_ids(
       dis, couplingcond_slave_, Core::Conditions::LookFor::locally_owned);
-  std::vector<int> slavenodes(slavenodes_set.begin(), slavenodes_set.end());
+  std::vector<int> source_nodes(source_nodes_set.begin(), source_nodes_set.end());
 
 
   // initialize search tree
   auto tree = Core::GeometricSearch::NodeMatchingOctree();
-  tree.init(*sourcedis_, masternodes, 150);
+  tree.init(*sourcedis_, target_nodes, 150);
   tree.setup();
 
   // match master and slave nodes using octtree
   // master id -> slave id, distance
   std::map<int, std::pair<int, double>> coupling;
-  tree.find_match(dis, slavenodes, coupling);
+  tree.find_match(dis, source_nodes, coupling);
 
   // all nodes should be coupled
-  if (masternodes.size() != coupling.size())
+  if (target_nodes.size() != coupling.size())
     FOUR_C_THROW(
         "Did not get 1:1 correspondence. \nmasternodes.size()={}, coupling.size()={}."
         "DofSetMergedWrapper requires matching slave and master meshes!",
-        masternodes.size(), coupling.size());
+        target_nodes.size(), coupling.size());
 
   // initialize final mapping
   Core::LinAlg::Vector<int> my_master_nodegids_row_layout(*dis.node_row_map());
 
   // loop over all coupled nodes
-  for (unsigned i = 0; i < masternodes.size(); ++i)
+  for (unsigned i = 0; i < target_nodes.size(); ++i)
   {
     // get master gid
-    int gid = masternodes[i];
+    int gid = target_nodes[i];
 
     // We allow to hand in master nodes that do not take part in the
     // coupling. If this is undesired behaviour the user has to make
@@ -130,38 +130,38 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   ////////////////////////////////////////////////////
 
   // get nodes to be coupled
-  masternodes_set = Core::Conditions::find_conditioned_node_ids(
+  target_nodes_set = Core::Conditions::find_conditioned_node_ids(
       dis, couplingcond_slave_, Core::Conditions::LookFor::locally_owned);
-  masternodes = std::vector<int>(masternodes_set.begin(), masternodes_set.end());
-  slavenodes_set = Core::Conditions::find_conditioned_node_ids(
+  target_nodes = std::vector<int>(target_nodes_set.begin(), target_nodes_set.end());
+  source_nodes_set = Core::Conditions::find_conditioned_node_ids(
       *sourcedis_, couplingcond_slave_, Core::Conditions::LookFor::locally_owned);
-  slavenodes = std::vector<int>(slavenodes_set.begin(), slavenodes_set.end());
+  source_nodes = std::vector<int>(source_nodes_set.begin(), source_nodes_set.end());
 
 
   // initialize search tree
-  tree.init(*sourcedis_, masternodes, 150);
+  tree.init(*sourcedis_, target_nodes, 150);
   tree.setup();
 
   // match master and slave nodes using octtree
   // master id -> slave id, distance
   coupling.clear();
-  tree.find_match(dis, slavenodes, coupling);
+  tree.find_match(dis, source_nodes, coupling);
 
   // all nodes should be coupled
-  if (masternodes.size() != coupling.size())
+  if (target_nodes.size() != coupling.size())
     FOUR_C_THROW(
         "Did not get 1:1 correspondence. \nmasternodes.size()={}, coupling.size()={}."
         "DofSetMergedWrapper requires matching slave and master meshes!",
-        masternodes.size(), coupling.size());
+        target_nodes.size(), coupling.size());
 
   // initialize final mapping
   Core::LinAlg::Vector<int> my_slave_nodegids_row_layout(*dis.node_row_map());
 
   // loop over all coupled nodes
-  for (unsigned i = 0; i < masternodes.size(); ++i)
+  for (unsigned i = 0; i < target_nodes.size(); ++i)
   {
     // get master gid
-    int gid = masternodes[i];
+    int gid = target_nodes[i];
 
     // We allow to hand in master nodes that do not take part in the
     // coupling. If this is undesired behaviour the user has to make
