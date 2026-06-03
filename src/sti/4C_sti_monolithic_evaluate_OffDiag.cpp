@@ -653,7 +653,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   // create strategy for assembly of auxiliary system matrices
   ScaTra::MortarCellAssemblyStrategy strategyscatrathermos2i(slavematrix, S2I::side_source,
       S2I::side_source, nullptr, S2I::side_undefined, S2I::side_undefined, mastermatrix_sparse,
-      S2I::side_master, S2I::side_source, nullptr, S2I::side_undefined, S2I::side_undefined,
+      S2I::side_target, S2I::side_source, nullptr, S2I::side_undefined, S2I::side_undefined,
       nullptr, S2I::side_undefined, nullptr, S2I::side_undefined, 0, 1);
 
   // extract scatra-scatra interface kinetics conditions
@@ -796,7 +796,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
 
   // create strategy for assembly of auxiliary system matrix
   ScaTra::MortarCellAssemblyStrategy strategythermoscatras2i(slavematrix, S2I::side_source,
-      S2I::side_source, slavematrix, S2I::side_source, S2I::side_master, nullptr,
+      S2I::side_source, slavematrix, S2I::side_source, S2I::side_target, nullptr,
       S2I::side_undefined, S2I::side_undefined, nullptr, S2I::side_undefined, S2I::side_undefined,
       nullptr, S2I::side_undefined, nullptr, S2I::side_undefined, 0, 1);
 
