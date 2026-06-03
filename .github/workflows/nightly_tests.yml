@@ -2,7 +2,9 @@ name: nightly_tests
 
 on:
   schedule:
-    - cron: "0 22 * * *"
+    # GitHub recommends avoiding scheduling at the start of the hour to avoid delays; thus, a random minute is set.
+    - cron: "11 20 * * *"
+      timezone: "Europe/Berlin"
 
 jobs:
   gcc13_assertions_build:

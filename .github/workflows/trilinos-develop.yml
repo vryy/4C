@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 8 * * 6'
+      timezone: "Europe/Berlin"
 
 env:
   IMAGE_NAME: ghcr.io/4c-multiphysics/4c-dependencies-trilinos
