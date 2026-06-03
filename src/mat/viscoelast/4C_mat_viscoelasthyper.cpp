@@ -66,11 +66,10 @@ Mat::PAR::ViscoElastHyper::ViscoElastHyper(const Core::Mat::PAR::Parameter::Data
                                             numvisco != nullptr && visco_matids != nullptr;
             const bool explicit_split =
                 has_complete_split && !elast_matids->empty() && !visco_matids->empty();
-            if (has_partial_split && !has_complete_split)
-              FOUR_C_THROW(
-                  "Split MAT_ViscoElastHyper input requires NUMELAST, ELAST_MATIDS, "
-                  "NUMVISCO and VISCO_MATIDS together (MAT {}).",
-                  id());
+            FOUR_C_ASSERT_ALWAYS(!(has_partial_split && !has_complete_split),
+                "Split MAT_ViscoElastHyper input requires NUMELAST, ELAST_MATIDS, "
+                "NUMVISCO and VISCO_MATIDS together (MAT {}).",
+                id());
             if (explicit_split)
             {
               return *numelast;
@@ -129,11 +128,10 @@ Mat::PAR::ViscoElastHyper::ViscoElastHyper(const Core::Mat::PAR::Parameter::Data
                                             numvisco != nullptr && visco_matids != nullptr;
             const bool explicit_split =
                 has_complete_split && !elast_matids->empty() && !visco_matids->empty();
-            if (has_partial_split && !has_complete_split)
-              FOUR_C_THROW(
-                  "Split MAT_ViscoElastHyper input requires NUMELAST, ELAST_MATIDS, "
-                  "NUMVISCO and VISCO_MATIDS together (MAT {}).",
-                  id());
+            FOUR_C_ASSERT_ALWAYS(!(has_partial_split && !has_complete_split),
+                "Split MAT_ViscoElastHyper input requires NUMELAST, ELAST_MATIDS, "
+                "NUMVISCO and VISCO_MATIDS together (MAT {}).",
+                id());
             if (explicit_split)
             {
               return *numvisco;
@@ -192,22 +190,19 @@ Mat::PAR::ViscoElastHyper::ViscoElastHyper(const Core::Mat::PAR::Parameter::Data
             return !explicit_split;
           }())
 {
-  if (numelast_ != static_cast<int>(elast_matids_.size()))
-    FOUR_C_THROW(
-        "Invalid MAT_ViscoElastHyper setup (MAT {}): NUMELAST={} but ELAST_MATIDS has size {}.",
-        id(), numelast_, elast_matids_.size());
+  FOUR_C_ASSERT_ALWAYS(numelast_ == static_cast<int>(elast_matids_.size()),
+      "Invalid MAT_ViscoElastHyper setup (MAT {}): NUMELAST={} but ELAST_MATIDS has size {}.", id(),
+      numelast_, elast_matids_.size());
 
-  if (numvisco_ != static_cast<int>(visco_matids_.size()))
-    FOUR_C_THROW(
-        "Invalid MAT_ViscoElastHyper setup (MAT {}): NUMVISCO={} but VISCO_MATIDS has size {}.",
-        id(), numvisco_, visco_matids_.size());
+  FOUR_C_ASSERT_ALWAYS(numvisco_ == static_cast<int>(visco_matids_.size()),
+      "Invalid MAT_ViscoElastHyper setup (MAT {}): NUMVISCO={} but VISCO_MATIDS has size {}.", id(),
+      numvisco_, visco_matids_.size());
 
-  if (uses_legacy_matids_ &&
-      static_cast<int>(elast_matids_.size() + visco_matids_.size()) != nummat_)
-    FOUR_C_THROW(
-        "Invalid MAT_ViscoElastHyper legacy partitioning (MAT {}): NUMMAT={} but partitioned "
-        "ELAST_MATIDS({}) + VISCO_MATIDS({}) do not match.",
-        id(), nummat_, elast_matids_.size(), visco_matids_.size());
+  FOUR_C_ASSERT_ALWAYS(!uses_legacy_matids_ ||
+                           static_cast<int>(elast_matids_.size() + visco_matids_.size()) == nummat_,
+      "Invalid MAT_ViscoElastHyper legacy partitioning (MAT {}): NUMMAT={} but partitioned "
+      "ELAST_MATIDS({}) + VISCO_MATIDS({}) do not match.",
+      id(), nummat_, elast_matids_.size(), visco_matids_.size());
 
   // polyconvexity check is just implemented for isotropic hyperlastic materials
   if (polyconvex_)
@@ -279,9 +274,8 @@ int Mat::ViscoElastHyper::visco_mat_id(const unsigned index) const
 {
   const Mat::PAR::ViscoElastHyper* visco_par = visco_params();
   if (visco_par == nullptr) return -1;
-  if (index >= visco_par->visco_matids_.size())
-    FOUR_C_THROW(
-        "Invalid visco summand index {} for MAT_ViscoElastHyper (MAT {}).", index, visco_par->id());
+  FOUR_C_ASSERT_ALWAYS(index < visco_par->visco_matids_.size(),
+      "Invalid visco summand index {} for MAT_ViscoElastHyper (MAT {}).", index, visco_par->id());
   return visco_par->visco_matids_.at(index);
 }
 
@@ -297,7 +291,8 @@ void Mat::ViscoElastHyper::rebuild_summand_sets()
   for (const int summand_mat_id : visco_par->elast_matids_)
   {
     auto sum = Mat::Elastic::Summand::factory(summand_mat_id);
-    if (sum == nullptr) FOUR_C_THROW("Failed to allocate elastic summand MAT {}.", summand_mat_id);
+    FOUR_C_ASSERT_ALWAYS(
+        sum != nullptr, "Failed to allocate elastic summand MAT {}.", summand_mat_id);
     elast_potsum_.push_back(sum);
     sum->register_anisotropy_extensions(anisotropy_);
   }
@@ -305,7 +300,8 @@ void Mat::ViscoElastHyper::rebuild_summand_sets()
   for (const int summand_mat_id : visco_par->visco_matids_)
   {
     auto sum = ViscoElast::Summand::factory(summand_mat_id);
-    if (sum == nullptr) FOUR_C_THROW("Failed to allocate visco summand MAT {}.", summand_mat_id);
+    FOUR_C_ASSERT_ALWAYS(
+        sum != nullptr, "Failed to allocate visco summand MAT {}.", summand_mat_id);
     visco_potsum_.push_back(sum);
   }
 }
@@ -423,10 +419,10 @@ void Mat::ViscoElastHyper::setup_contributions(const int gp, const int eleGID)
   const Mat::PAR::ViscoElastHyper* visco_par = visco_params();
   if (visco_par == nullptr)
   {
-    if (contributions_.empty()) return;
-    FOUR_C_THROW(
+    FOUR_C_ASSERT_ALWAYS(contributions_.empty(),
         "Cannot setup visco contributions without MAT_ViscoElastHyper parameters (GP {}, ELE {}).",
         gp, eleGID);
+    return;
   }
 
   const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
@@ -480,17 +476,16 @@ void Mat::ViscoElastHyper::ensure_model_activation_consistency(const char* conte
   const Mat::ViscoElastState::ActiveModels models_from_flags = active_models_from_flags();
   const Mat::ViscoElastState::ActiveModels models_from_sequence = active_models_from_sequence();
 
-  if (models_from_flags.iso_rate != models_from_sequence.iso_rate ||
-      models_from_flags.generalized_maxwell != models_from_sequence.generalized_maxwell ||
-      models_from_flags.fsls != models_from_sequence.fsls)
-    FOUR_C_THROW(
-        "Inconsistent visco model activation while {} in MAT_ViscoElastHyper (MAT {}): "
-        "flags=(iso_rate={}, generalized_maxwell={}, fsls={}), "
-        "sequence=(iso_rate={}, generalized_maxwell={}, fsls={}).",
-        context, params_ != nullptr ? params_->id() : -1, models_from_flags.iso_rate,
-        models_from_flags.generalized_maxwell, models_from_flags.fsls,
-        models_from_sequence.iso_rate, models_from_sequence.generalized_maxwell,
-        models_from_sequence.fsls);
+  FOUR_C_ASSERT_ALWAYS(
+      models_from_flags.iso_rate == models_from_sequence.iso_rate &&
+          models_from_flags.generalized_maxwell == models_from_sequence.generalized_maxwell &&
+          models_from_flags.fsls == models_from_sequence.fsls,
+      "Inconsistent visco model activation while {} in MAT_ViscoElastHyper (MAT {}): "
+      "flags=(iso_rate={}, generalized_maxwell={}, fsls={}), "
+      "sequence=(iso_rate={}, generalized_maxwell={}, fsls={}).",
+      context, params_ != nullptr ? params_->id() : -1, models_from_flags.iso_rate,
+      models_from_flags.generalized_maxwell, models_from_flags.fsls, models_from_sequence.iso_rate,
+      models_from_sequence.generalized_maxwell, models_from_sequence.fsls);
 }
 
 
@@ -542,11 +537,10 @@ unsigned int Mat::ViscoElastHyper::history_capacity_for_update(
 double Mat::ViscoElastHyper::read_visco_time_step_size(
     const EvaluationContext<3>& context, const int gp, const int eleGID) const
 {
-  if (context.time_step_size == nullptr)
-    FOUR_C_THROW(
-        "Missing EvaluationContext::time_step_size in MAT_ViscoElastHyper (MAT {}, GP {}, ELE "
-        "{}).",
-        params_ != nullptr ? params_->id() : -1, gp, eleGID);
+  FOUR_C_ASSERT_ALWAYS(context.time_step_size != nullptr,
+      "Missing EvaluationContext::time_step_size in MAT_ViscoElastHyper (MAT {}, GP {}, ELE "
+      "{}).",
+      params_ != nullptr ? params_->id() : -1, gp, eleGID);
 
   return *context.time_step_size;
 }
@@ -613,11 +607,10 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
           Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
           Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
-      if (mat->type() == material_type())
-        params_ = static_cast<Mat::PAR::ViscoElastHyper*>(mat);
-      else
-        FOUR_C_THROW("Type of parameter material {} does not fit to calling type {}", mat->type(),
-            material_type());
+      FOUR_C_ASSERT_ALWAYS(mat->type() == material_type(),
+          "Type of parameter material {} does not fit to calling type {}", mat->type(),
+          material_type());
+      params_ = static_cast<Mat::PAR::ViscoElastHyper*>(mat);
     }
   }
 
@@ -784,11 +777,10 @@ void Mat::ViscoElastHyper::add_visco_contributions_in_sequence(const Teuchos::Pa
       if (contribution == nullptr || contribution->kind() != kind) continue;
 
       auto* typed_contribution = dynamic_cast<ContributionType*>(contribution.get());
-      if (typed_contribution == nullptr)
-        FOUR_C_THROW(
-            "Visco contribution type mismatch while evaluating MAT_ViscoElastHyper (MAT {}, GP {}, "
-            "ELE {}): expected {} contribution.",
-            visco_mat_id, gp, eleGID, model_name);
+      FOUR_C_ASSERT_ALWAYS(typed_contribution != nullptr,
+          "Visco contribution type mismatch while evaluating MAT_ViscoElastHyper (MAT {}, GP {}, "
+          "ELE {}): expected {} contribution.",
+          visco_mat_id, gp, eleGID, model_name);
 
       return *typed_contribution;
     }

@@ -153,11 +153,10 @@ namespace Mat::ViscoElast
       const double dt, Matrix61& modrcg, Matrix61& scgrate, Matrix61& modrcgrate,
       Matrix71& modrateinv, const int visco_mat_id, const int gp)
   {
-    if (dt <= 0.0)
-      FOUR_C_THROW(
-          "Invalid time step size dt={} in MAT_ViscoElastHyper (MAT {}, GP {}) for "
-          "rate-dependent viscous update. Expected dt > 0.",
-          dt, visco_mat_id, gp);
+    FOUR_C_ASSERT_ALWAYS(dt > 0.0,
+        "Invalid time step size dt={} in MAT_ViscoElastHyper (MAT {}, GP {}) for "
+        "rate-dependent viscous update. Expected dt > 0.",
+        dt, visco_mat_id, gp);
 
     const double modscale = std::pow(prinv(2), -1. / 3.);
     modrcg.update(modscale, rcg, 0.0);

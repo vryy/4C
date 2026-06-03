@@ -33,62 +33,54 @@ namespace Mat::ViscoElast
         matids_(matdata.parameters.get<std::vector<int>>("MATIDS")),
         solve_(matdata.parameters.get<std::string>("SOLVE"))
   {
-    if (numbranch_ <= 0)
-      FOUR_C_THROW(
-          "Invalid NUMBRANCH={} in VISCO_GeneralizedMaxwell (MAT {}). NUMBRANCH has to be "
-          "positive.",
-          numbranch_, matdata.id);
+    FOUR_C_ASSERT_ALWAYS(numbranch_ > 0,
+        "Invalid NUMBRANCH={} in VISCO_GeneralizedMaxwell (MAT {}). NUMBRANCH has to be "
+        "positive.",
+        numbranch_, matdata.id);
 
-    if (static_cast<int>(matids_.size()) != numbranch_)
-      FOUR_C_THROW(
-          "Invalid VISCO_GeneralizedMaxwell branch declaration in MAT {}: NUMBRANCH={} but "
-          "MATIDS has size {}.",
-          matdata.id, numbranch_, matids_.size());
+    FOUR_C_ASSERT_ALWAYS(static_cast<int>(matids_.size()) == numbranch_,
+        "Invalid VISCO_GeneralizedMaxwell branch declaration in MAT {}: NUMBRANCH={} but "
+        "MATIDS has size {}.",
+        matdata.id, numbranch_, matids_.size());
 
     for (int branch_index = 0; branch_index < numbranch_; ++branch_index)
     {
       const int branch_mat = matids_.at(branch_index);
-      if (branch_mat <= 0)
-        FOUR_C_THROW(
-            "Invalid MATIDS[{}]={} in VISCO_GeneralizedMaxwell (MAT {}). Branch material ids "
-            "have to be positive.",
-            branch_index, branch_mat, matdata.id);
+      FOUR_C_ASSERT_ALWAYS(branch_mat > 0,
+          "Invalid MATIDS[{}]={} in VISCO_GeneralizedMaxwell (MAT {}). Branch material ids "
+          "have to be positive.",
+          branch_index, branch_mat, matdata.id);
     }
 
-    if (solve_ != "OneStepTheta" && solve_ != "ExponentialTimeDiscretization")
-      FOUR_C_THROW(
-          "Invalid input for SOLVE='{}' in VISCO_GeneralizedMaxwell (MAT {}). Use "
-          "OneStepTheta or ExponentialTimeDiscretization.",
-          solve_, matdata.id);
+    FOUR_C_ASSERT_ALWAYS(solve_ == "OneStepTheta" || solve_ == "ExponentialTimeDiscretization",
+        "Invalid input for SOLVE='{}' in VISCO_GeneralizedMaxwell (MAT {}). Use "
+        "OneStepTheta or ExponentialTimeDiscretization.",
+        solve_, matdata.id);
   }
 
   GeneralizedMaxwell::GeneralizedMaxwell(PAR::GeneralizedMaxwell* params)
       : params_(params), branchespotsum_(0), branchtau_(0), internalpotsum_(0)
   {
-    if (params_->numbranch_ <= 0)
-      FOUR_C_THROW(
-          "Invalid VISCO_GeneralizedMaxwell setup for MAT {}: NUMBRANCH={} is not positive.",
-          params_->id(), params_->numbranch_);
+    FOUR_C_ASSERT_ALWAYS(params_->numbranch_ > 0,
+        "Invalid VISCO_GeneralizedMaxwell setup for MAT {}: NUMBRANCH={} is not positive.",
+        params_->id(), params_->numbranch_);
 
-    if (static_cast<int>(params_->matids_.size()) != params_->numbranch_)
-      FOUR_C_THROW(
-          "Invalid VISCO_GeneralizedMaxwell setup for MAT {}: NUMBRANCH={} but MATIDS has size "
-          "{}.",
-          params_->id(), params_->numbranch_, params_->matids_.size());
+    FOUR_C_ASSERT_ALWAYS(static_cast<int>(params_->matids_.size()) == params_->numbranch_,
+        "Invalid VISCO_GeneralizedMaxwell setup for MAT {}: NUMBRANCH={} but MATIDS has size "
+        "{}.",
+        params_->id(), params_->numbranch_, params_->matids_.size());
 
     // Integration-boundary access: branch material validation currently depends on the global
     // material bundle and remains outside constitutive evaluate/update hot paths.
-    if (Global::Problem::instance()->materials() == nullptr)
-      FOUR_C_THROW(
-          "Cannot validate VISCO_GeneralizedMaxwell branches for MAT {} because no global material "
-          "bundle is available.",
-          params_->id());
+    FOUR_C_ASSERT_ALWAYS(Global::Problem::instance()->materials() != nullptr,
+        "Cannot validate VISCO_GeneralizedMaxwell branches for MAT {} because no global material "
+        "bundle is available.",
+        params_->id());
 
-    if (Global::Problem::instance()->materials()->num() == 0)
-      FOUR_C_THROW(
-          "Cannot validate VISCO_GeneralizedMaxwell branches for MAT {} because the global "
-          "material bundle is empty.",
-          params_->id());
+    FOUR_C_ASSERT_ALWAYS(Global::Problem::instance()->materials()->num() != 0,
+        "Cannot validate VISCO_GeneralizedMaxwell branches for MAT {} because the global "
+        "material bundle is empty.",
+        params_->id());
 
     const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
@@ -105,45 +97,40 @@ namespace Mat::ViscoElast
 
       auto* branch_parameter =
           Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
-      if (branch_parameter->type() != Core::Materials::mes_viscobranch)
-        FOUR_C_THROW(
-            "Invalid branch declaration in VISCO_GeneralizedMaxwell (MAT {}): MATIDS[{}]={} "
-            "refers to material type {}. Expected VISCO_GeneralizedMaxwellBranch.",
-            params_->id(), branch_index, matid, branch_parameter->type());
+      FOUR_C_ASSERT_ALWAYS(branch_parameter->type() == Core::Materials::mes_viscobranch,
+          "Invalid branch declaration in VISCO_GeneralizedMaxwell (MAT {}): MATIDS[{}]={} "
+          "refers to material type {}. Expected VISCO_GeneralizedMaxwellBranch.",
+          params_->id(), branch_index, matid, branch_parameter->type());
 
       std::shared_ptr<Summand> visco_branch = Summand::factory(matid);
       std::shared_ptr<ViscoBranch> visco_branch_typed =
           std::dynamic_pointer_cast<ViscoBranch>(visco_branch);
-      if (visco_branch_typed == nullptr)
-        FOUR_C_THROW(
-            "Failed to create VISCO_GeneralizedMaxwellBranch summand from MAT {} referenced by "
-            "VISCO_GeneralizedMaxwell (MAT {}, MATIDS[{}]).",
-            matid, params_->id(), branch_index);
+      FOUR_C_ASSERT_ALWAYS(visco_branch_typed != nullptr,
+          "Failed to create VISCO_GeneralizedMaxwellBranch summand from MAT {} referenced by "
+          "VISCO_GeneralizedMaxwell (MAT {}, MATIDS[{}]).",
+          matid, params_->id(), branch_index);
 
       double tau = -1.0;
       int branchmatid = -1;
 
       visco_branch_typed->read_material_parameters(tau, branchmatid);
 
-      if (tau <= 0.0)
-        FOUR_C_THROW(
-            "Invalid TAU={} in VISCO_GeneralizedMaxwellBranch (MAT {}, referenced by "
-            "VISCO_GeneralizedMaxwell MAT {}, MATIDS[{}]). TAU has to be positive.",
-            tau, matid, params_->id(), branch_index);
+      FOUR_C_ASSERT_ALWAYS(tau > 0.0,
+          "Invalid TAU={} in VISCO_GeneralizedMaxwellBranch (MAT {}, referenced by "
+          "VISCO_GeneralizedMaxwell MAT {}, MATIDS[{}]). TAU has to be positive.",
+          tau, matid, params_->id(), branch_index);
 
-      if (branchmatid <= 0)
-        FOUR_C_THROW(
-            "Invalid MATID={} in VISCO_GeneralizedMaxwellBranch (MAT {}, referenced by "
-            "VISCO_GeneralizedMaxwell MAT {}, MATIDS[{}]). MATID has to be positive.",
-            branchmatid, matid, params_->id(), branch_index);
+      FOUR_C_ASSERT_ALWAYS(branchmatid > 0,
+          "Invalid MATID={} in VISCO_GeneralizedMaxwellBranch (MAT {}, referenced by "
+          "VISCO_GeneralizedMaxwell MAT {}, MATIDS[{}]). MATID has to be positive.",
+          branchmatid, matid, params_->id(), branch_index);
 
       std::shared_ptr<Elastic::Summand> sum = Elastic::Summand::factory(branchmatid);
-      if (sum == nullptr)
-        FOUR_C_THROW(
-            "Failed to create branch elasticity summand for MATID {} in "
-            "VISCO_GeneralizedMaxwellBranch (MAT {}, referenced by VISCO_GeneralizedMaxwell MAT "
-            "{}, MATIDS[{}]).",
-            branchmatid, matid, params_->id(), branch_index);
+      FOUR_C_ASSERT_ALWAYS(sum != nullptr,
+          "Failed to create branch elasticity summand for MATID {} in "
+          "VISCO_GeneralizedMaxwellBranch (MAT {}, referenced by VISCO_GeneralizedMaxwell MAT "
+          "{}, MATIDS[{}]).",
+          branchmatid, matid, params_->id(), branch_index);
 
       // write summand in the vector of summands of each branch
       internalpotsum_.push_back(sum);
@@ -171,16 +158,14 @@ namespace Mat::ViscoElast
         tau_(matdata.parameters.get<double>("TAU")),
         matid_(matdata.parameters.get<int>("MATID"))
   {
-    if (tau_ <= 0.0)
-      FOUR_C_THROW(
-          "Invalid TAU={} in VISCO_GeneralizedMaxwellBranch (MAT {}). TAU has to be positive.",
-          tau_, matdata.id);
+    FOUR_C_ASSERT_ALWAYS(tau_ > 0.0,
+        "Invalid TAU={} in VISCO_GeneralizedMaxwellBranch (MAT {}). TAU has to be positive.", tau_,
+        matdata.id);
 
-    if (matid_ <= 0)
-      FOUR_C_THROW(
-          "Invalid MATID={} in VISCO_GeneralizedMaxwellBranch (MAT {}). MATID has to be "
-          "positive.",
-          matid_, matdata.id);
+    FOUR_C_ASSERT_ALWAYS(matid_ > 0,
+        "Invalid MATID={} in VISCO_GeneralizedMaxwellBranch (MAT {}). MATID has to be "
+        "positive.",
+        matid_, matdata.id);
   }
 
   ViscoBranch::ViscoBranch(PAR::ViscoBranch* params) : params_(params) {}
@@ -338,17 +323,15 @@ namespace Mat::ViscoElast
   const GeneralizedMaxwellContribution::Metadata& GeneralizedMaxwellContribution::require_metadata(
       const char* context, const int gp, const int ele_gid) const
   {
-    if (!metadata_.has_value())
-      FOUR_C_THROW(
-          "Missing VISCO_GeneralizedMaxwell metadata cache while {} in MAT_ViscoElastHyper (GP {}, "
-          "ELE {}). Run setup() before evaluation.",
-          context, gp, ele_gid);
+    FOUR_C_ASSERT_ALWAYS(metadata_.has_value(),
+        "Missing VISCO_GeneralizedMaxwell metadata cache while {} in MAT_ViscoElastHyper (GP {}, "
+        "ELE {}). Run setup() before evaluation.",
+        context, gp, ele_gid);
 
-    if (metadata_->branches.empty())
-      FOUR_C_THROW(
-          "Invalid VISCO_GeneralizedMaxwell metadata cache while {} in MAT_ViscoElastHyper (GP {}, "
-          "ELE {}): no branch metadata available.",
-          context, gp, ele_gid);
+    FOUR_C_ASSERT_ALWAYS(!metadata_->branches.empty(),
+        "Invalid VISCO_GeneralizedMaxwell metadata cache while {} in MAT_ViscoElastHyper (GP {}, "
+        "ELE {}): no branch metadata available.",
+        context, gp, ele_gid);
 
     return metadata_.value();
   }
@@ -358,11 +341,10 @@ namespace Mat::ViscoElast
   GeneralizedMaxwellContribution::require_runtime_context(
       const char* context, const int gp, const int ele_gid) const
   {
-    if (!runtime_context_.has_value())
-      FOUR_C_THROW(
-          "Missing generalized Maxwell runtime context while {} in MAT_ViscoElastHyper (GP {}, "
-          "ELE {}). Run setup() before evaluation.",
-          context, gp, ele_gid);
+    FOUR_C_ASSERT_ALWAYS(runtime_context_.has_value(),
+        "Missing generalized Maxwell runtime context while {} in MAT_ViscoElastHyper (GP {}, "
+        "ELE {}). Run setup() before evaluation.",
+        context, gp, ele_gid);
 
     return runtime_context_.value();
   }
@@ -373,11 +355,10 @@ namespace Mat::ViscoElast
     metadata_.reset();
     const auto& point = context.point;
 
-    if (context.visco_summands.size() != context.visco_summand_mat_ids.size())
-      FOUR_C_THROW(
-          "Invalid generalized Maxwell setup context in MAT_ViscoElastHyper (MAT {}): visco "
-          "summand count {} does not match MAT id count {}.",
-          point.visco_mat_id, context.visco_summands.size(), context.visco_summand_mat_ids.size());
+    FOUR_C_ASSERT_ALWAYS(context.visco_summands.size() == context.visco_summand_mat_ids.size(),
+        "Invalid generalized Maxwell setup context in MAT_ViscoElastHyper (MAT {}): visco "
+        "summand count {} does not match MAT id count {}.",
+        point.visco_mat_id, context.visco_summands.size(), context.visco_summand_mat_ids.size());
 
     int generalized_maxwell_model_count = 0;
     int generalized_maxwell_numbranch_value = -1;
@@ -401,48 +382,42 @@ namespace Mat::ViscoElast
       }
     }
 
-    if (generalized_maxwell_model_count != 1)
-      FOUR_C_THROW(
-          "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): expected "
-          "exactly one VISCO_GeneralizedMaxwell summand but found {}.",
-          point.visco_mat_id, generalized_maxwell_model_count);
+    FOUR_C_ASSERT_ALWAYS(generalized_maxwell_model_count == 1,
+        "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): expected "
+        "exactly one VISCO_GeneralizedMaxwell summand but found {}.",
+        point.visco_mat_id, generalized_maxwell_model_count);
 
-    if (generalized_maxwell == nullptr)
-      FOUR_C_THROW(
-          "Failed to resolve VISCO_GeneralizedMaxwell summand in MAT_ViscoElastHyper (MAT {}).",
-          point.visco_mat_id);
+    FOUR_C_ASSERT_ALWAYS(generalized_maxwell != nullptr,
+        "Failed to resolve VISCO_GeneralizedMaxwell summand in MAT_ViscoElastHyper (MAT {}).",
+        point.visco_mat_id);
 
-    if (generalized_maxwell_numbranch_value <= 0)
-      FOUR_C_THROW(
-          "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): NUMBRANCH={} "
-          "is not positive.",
-          point.visco_mat_id, generalized_maxwell_numbranch_value);
+    FOUR_C_ASSERT_ALWAYS(generalized_maxwell_numbranch_value > 0,
+        "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): NUMBRANCH={} "
+        "is not positive.",
+        point.visco_mat_id, generalized_maxwell_numbranch_value);
 
-    if (generalized_maxwell_matids == nullptr)
-      FOUR_C_THROW(
-          "Failed to read MATIDS for VISCO_GeneralizedMaxwell in MAT_ViscoElastHyper (MAT {}).",
-          point.visco_mat_id);
+    FOUR_C_ASSERT_ALWAYS(generalized_maxwell_matids != nullptr,
+        "Failed to read MATIDS for VISCO_GeneralizedMaxwell in MAT_ViscoElastHyper (MAT {}).",
+        point.visco_mat_id);
 
-    if (generalized_maxwell_matids->size() !=
-        static_cast<unsigned int>(generalized_maxwell_numbranch_value))
-      FOUR_C_THROW(
-          "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): NUMBRANCH={} "
-          "but MATIDS has size {}.",
-          point.visco_mat_id, generalized_maxwell_numbranch_value,
-          generalized_maxwell_matids->size());
+    FOUR_C_ASSERT_ALWAYS(generalized_maxwell_matids->size() ==
+                             static_cast<unsigned int>(generalized_maxwell_numbranch_value),
+        "Invalid VISCO_GeneralizedMaxwell setup in MAT_ViscoElastHyper (MAT {}): NUMBRANCH={} "
+        "but MATIDS has size {}.",
+        point.visco_mat_id, generalized_maxwell_numbranch_value,
+        generalized_maxwell_matids->size());
 
     const auto& branchespotsum = generalized_maxwell->get_branchespotsum();
     const auto& branchtau = generalized_maxwell->get_branchtaus();
 
-    if (branchespotsum.size() != static_cast<unsigned int>(generalized_maxwell_numbranch_value) ||
-        branchtau.size() != static_cast<unsigned int>(generalized_maxwell_numbranch_value))
-      FOUR_C_THROW(
-          "Failed to initialize VISCO_GeneralizedMaxwell branches in MAT_ViscoElastHyper (MAT {}, "
-          "GP {}, ELE {}). Expected {} branches, got {} branch definitions and {} branch "
-          "relaxation "
-          "times.",
-          point.visco_mat_id, point.gp, point.ele_gid, generalized_maxwell_numbranch_value,
-          branchespotsum.size(), branchtau.size());
+    FOUR_C_ASSERT_ALWAYS(
+        branchespotsum.size() == static_cast<unsigned int>(generalized_maxwell_numbranch_value) &&
+            branchtau.size() == static_cast<unsigned int>(generalized_maxwell_numbranch_value),
+        "Failed to initialize VISCO_GeneralizedMaxwell branches in MAT_ViscoElastHyper (MAT {}, "
+        "GP {}, ELE {}). Expected {} branches, got {} branch definitions and {} branch relaxation "
+        "times.",
+        point.visco_mat_id, point.gp, point.ele_gid, generalized_maxwell_numbranch_value,
+        branchespotsum.size(), branchtau.size());
 
     if (context.active_models.iso_rate)
       FOUR_C_THROW(
@@ -462,11 +437,10 @@ namespace Mat::ViscoElast
       branch_metadata.summands = branchespotsum.at(i);
       branch_metadata.tau = branchtau.at(i);
 
-      if (branch_metadata.tau <= 0.0)
-        FOUR_C_THROW(
-            "Invalid branch relaxation time TAU={} in VISCO_GeneralizedMaxwell (MAT {}, branch {}, "
-            "GP {}, ELE {}). Expected TAU > 0.",
-            branch_metadata.tau, generalized_maxwell_summand_mat_id, i, point.gp, point.ele_gid);
+      FOUR_C_ASSERT_ALWAYS(branch_metadata.tau > 0.0,
+          "Invalid branch relaxation time TAU={} in VISCO_GeneralizedMaxwell (MAT {}, branch {}, "
+          "GP {}, ELE {}). Expected TAU > 0.",
+          branch_metadata.tau, generalized_maxwell_summand_mat_id, i, point.gp, point.ele_gid);
 
       branch_metadata.properties.clear();
       elast_hyper_properties(branch_metadata.summands, branch_metadata.properties);
@@ -499,11 +473,10 @@ namespace Mat::ViscoElast
     const Teuchos::ParameterList& structural_dynamic_parameters =
         Global::Problem::instance()->structural_dynamic_params();
 
-    if (!structural_dynamic_parameters.isParameter("DYNAMICTYPE"))
-      FOUR_C_THROW(
-          "Missing DYNAMICTYPE in STRUCTURAL DYNAMIC parameters while building generalized Maxwell "
-          "runtime context for MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}).",
-          point.visco_mat_id, point.gp, point.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(structural_dynamic_parameters.isParameter("DYNAMICTYPE"),
+        "Missing DYNAMICTYPE in STRUCTURAL DYNAMIC parameters while building generalized Maxwell "
+        "runtime context for MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}).",
+        point.visco_mat_id, point.gp, point.ele_gid);
 
     RuntimeContext runtime_context;
     const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
@@ -522,34 +495,31 @@ namespace Mat::ViscoElast
       const GeneralizedMaxwellKernelInput& input,
       const BranchResponseEvaluator& evaluate_branch_response)
   {
-    if (input.previous_branch_elastic_stress == nullptr)
-      FOUR_C_THROW(
-          "Missing previous generalized Maxwell elastic branch history in kernel evaluation (MAT "
-          "{}, GP {}, ELE {}).",
-          input.visco_mat_id, input.gp, input.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(input.previous_branch_elastic_stress != nullptr,
+        "Missing previous generalized Maxwell elastic branch history in kernel evaluation (MAT "
+        "{}, GP {}, ELE {}).",
+        input.visco_mat_id, input.gp, input.ele_gid);
 
-    if (input.previous_branch_stress == nullptr)
-      FOUR_C_THROW(
-          "Missing previous generalized Maxwell viscous branch history in kernel evaluation (MAT "
-          "{}, GP {}, ELE {}).",
-          input.visco_mat_id, input.gp, input.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(input.previous_branch_stress != nullptr,
+        "Missing previous generalized Maxwell viscous branch history in kernel evaluation (MAT "
+        "{}, GP {}, ELE {}).",
+        input.visco_mat_id, input.gp, input.ele_gid);
 
     const PointHistory& previous_branch_elastic_stress = *input.previous_branch_elastic_stress;
     const PointHistory& previous_branch_stress = *input.previous_branch_stress;
 
     const int numbranch = static_cast<int>(branch_taus.size());
-    if (previous_branch_elastic_stress.size() != static_cast<unsigned int>(numbranch))
-      FOUR_C_THROW(
-          "Invalid generalized Maxwell elastic branch history size in kernel evaluation (MAT {}, "
-          "GP {}, ELE {}): expected {} entries but got {}.",
-          input.visco_mat_id, input.gp, input.ele_gid, numbranch,
-          previous_branch_elastic_stress.size());
+    FOUR_C_ASSERT_ALWAYS(
+        previous_branch_elastic_stress.size() == static_cast<unsigned int>(numbranch),
+        "Invalid generalized Maxwell elastic branch history size in kernel evaluation (MAT {}, "
+        "GP {}, ELE {}): expected {} entries but got {}.",
+        input.visco_mat_id, input.gp, input.ele_gid, numbranch,
+        previous_branch_elastic_stress.size());
 
-    if (previous_branch_stress.size() != static_cast<unsigned int>(numbranch))
-      FOUR_C_THROW(
-          "Invalid generalized Maxwell viscous branch history size in kernel evaluation (MAT {}, "
-          "GP {}, ELE {}): expected {} entries but got {}.",
-          input.visco_mat_id, input.gp, input.ele_gid, numbranch, previous_branch_stress.size());
+    FOUR_C_ASSERT_ALWAYS(previous_branch_stress.size() == static_cast<unsigned int>(numbranch),
+        "Invalid generalized Maxwell viscous branch history size in kernel evaluation (MAT {}, "
+        "GP {}, ELE {}): expected {} entries but got {}.",
+        input.visco_mat_id, input.gp, input.ele_gid, numbranch, previous_branch_stress.size());
 
     current_branch_elastic_stress.assign(
         numbranch, StressVector(Core::LinAlg::Initialization::zero));
@@ -558,11 +528,10 @@ namespace Mat::ViscoElast
     for (int branch_index = 0; branch_index < numbranch; ++branch_index)
     {
       const double tau = branch_taus.at(branch_index);
-      if (tau <= 0.0)
-        FOUR_C_THROW(
-            "Invalid generalized Maxwell branch relaxation time TAU={} in kernel evaluation (MAT "
-            "{}, GP {}, ELE {}, branch {}).",
-            tau, input.visco_mat_id, input.gp, input.ele_gid, branch_index);
+      FOUR_C_ASSERT_ALWAYS(tau > 0.0,
+          "Invalid generalized Maxwell branch relaxation time TAU={} in kernel evaluation (MAT "
+          "{}, GP {}, ELE {}, branch {}).",
+          tau, input.visco_mat_id, input.gp, input.ele_gid, branch_index);
 
       StressVector& branch_elastic_stress = current_branch_elastic_stress.at(branch_index);
       TangentMatrix branch_cmat(Core::LinAlg::Initialization::zero);

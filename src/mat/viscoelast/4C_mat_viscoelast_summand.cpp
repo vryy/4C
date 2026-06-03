@@ -71,11 +71,11 @@ void Mat::ViscoElast::Summand::specify_visco_formulation(
 
 std::shared_ptr<Mat::ViscoElast::Summand> Mat::ViscoElast::Summand::factory(const int matnum)
 {
-  if (Global::Problem::instance()->materials() == nullptr)
-    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
+  FOUR_C_ASSERT_ALWAYS(Global::Problem::instance()->materials() != nullptr,
+      "List of materials cannot be accessed in the global problem instance.");
 
-  if (Global::Problem::instance()->materials()->num() == 0)
-    FOUR_C_THROW("List of materials in the global problem instance is empty.");
+  FOUR_C_ASSERT_ALWAYS(Global::Problem::instance()->materials()->num() != 0,
+      "List of materials in the global problem instance is empty.");
 
   const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
   auto* curmat = Global::Problem::instance(probinst)->materials()->parameter_by_id(matnum);

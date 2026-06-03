@@ -26,13 +26,11 @@ namespace Mat::ViscoElast
         alpha_(matdata.parameters.get<double>("ALPHA")),
         beta_(matdata.parameters.get<double>("BETA"))
   {
-    if (tau_ <= 0.0)
-      FOUR_C_THROW(
-          "Invalid TAU={} in VISCO_FSLS (MAT {}). TAU has to be positive.", tau_, matdata.id);
+    FOUR_C_ASSERT_ALWAYS(tau_ > 0.0,
+        "Invalid TAU={} in VISCO_FSLS (MAT {}). TAU has to be positive.", tau_, matdata.id);
 
-    if (alpha_ < 0.0 || alpha_ >= 1.0)
-      FOUR_C_THROW(
-          "Invalid ALPHA={} in VISCO_FSLS (MAT {}). Expected 0 <= ALPHA < 1.", alpha_, matdata.id);
+    FOUR_C_ASSERT_ALWAYS(alpha_ >= 0.0 && alpha_ < 1.0,
+        "Invalid ALPHA={} in VISCO_FSLS (MAT {}). Expected 0 <= ALPHA < 1.", alpha_, matdata.id);
   }
 
   Fsls::Fsls(PAR::Fsls* params) : params_(params) {}
@@ -92,11 +90,10 @@ namespace Mat::ViscoElast
     const RuntimeContext& runtime_context =
         require_runtime_context("reading FSLS history capacity", -1, -1);
 
-    if (runtime_context.max_history_size == 0)
-      FOUR_C_THROW(
-          "Invalid FSLS runtime history capacity {} in MAT_ViscoElastHyper. Expected a positive "
-          "history capacity.",
-          runtime_context.max_history_size);
+    FOUR_C_ASSERT_ALWAYS(runtime_context.max_history_size > 0,
+        "Invalid FSLS runtime history capacity {} in MAT_ViscoElastHyper. Expected a positive "
+        "history capacity.",
+        runtime_context.max_history_size);
 
     return runtime_context.max_history_size;
   }
@@ -105,11 +102,10 @@ namespace Mat::ViscoElast
   const FslsContribution::Metadata& FslsContribution::require_metadata(
       const char* context, const int gp, const int ele_gid) const
   {
-    if (!metadata_.has_value())
-      FOUR_C_THROW(
-          "Missing VISCO_FSLS metadata cache while {} in MAT_ViscoElastHyper (GP {}, ELE {}). Run "
-          "setup() before evaluation.",
-          context, gp, ele_gid);
+    FOUR_C_ASSERT_ALWAYS(metadata_.has_value(),
+        "Missing VISCO_FSLS metadata cache while {} in MAT_ViscoElastHyper (GP {}, ELE {}). Run "
+        "setup() before evaluation.",
+        context, gp, ele_gid);
 
     return metadata_.value();
   }
@@ -118,11 +114,10 @@ namespace Mat::ViscoElast
   const FslsContribution::RuntimeContext& FslsContribution::require_runtime_context(
       const char* context, const int gp, const int ele_gid) const
   {
-    if (!runtime_context_.has_value())
-      FOUR_C_THROW(
-          "Missing VISCO_FSLS runtime context while {} in MAT_ViscoElastHyper (GP {}, ELE {}). Run "
-          "setup() before update.",
-          context, gp, ele_gid);
+    FOUR_C_ASSERT_ALWAYS(runtime_context_.has_value(),
+        "Missing VISCO_FSLS runtime context while {} in MAT_ViscoElastHyper (GP {}, ELE {}). Run "
+        "setup() before update.",
+        context, gp, ele_gid);
 
     return runtime_context_.value();
   }
@@ -132,11 +127,10 @@ namespace Mat::ViscoElast
   {
     const auto& point = context.point;
 
-    if (context.visco_summands.size() != context.visco_summand_mat_ids.size())
-      FOUR_C_THROW(
-          "Invalid FSLS setup context in MAT_ViscoElastHyper (MAT {}): visco summand count {} does "
-          "not match MAT id count {}.",
-          point.visco_mat_id, context.visco_summands.size(), context.visco_summand_mat_ids.size());
+    FOUR_C_ASSERT_ALWAYS(context.visco_summands.size() == context.visco_summand_mat_ids.size(),
+        "Invalid FSLS setup context in MAT_ViscoElastHyper (MAT {}): visco summand count {} does "
+        "not match MAT id count {}.",
+        point.visco_mat_id, context.visco_summands.size(), context.visco_summand_mat_ids.size());
 
     Metadata metadata;
     int fsls_model_count = 0;
@@ -152,23 +146,20 @@ namespace Mat::ViscoElast
       fsls->read_material_parameters_visco(metadata.tau, metadata.beta, metadata.alpha, solve);
     }
 
-    if (fsls_model_count != 1)
-      FOUR_C_THROW(
-          "Invalid VISCO_FSLS setup in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}): expected "
-          "exactly one VISCO_FSLS summand but found {}.",
-          point.visco_mat_id, point.gp, point.ele_gid, fsls_model_count);
+    FOUR_C_ASSERT_ALWAYS(fsls_model_count == 1,
+        "Invalid VISCO_FSLS setup in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}): expected "
+        "exactly one VISCO_FSLS summand but found {}.",
+        point.visco_mat_id, point.gp, point.ele_gid, fsls_model_count);
 
-    if (metadata.tau <= 0.0)
-      FOUR_C_THROW(
-          "Invalid TAU={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP {}, "
-          "ELE {}). TAU has to be positive.",
-          metadata.tau, metadata.summand_mat_id, point.visco_mat_id, point.gp, point.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(metadata.tau > 0.0,
+        "Invalid TAU={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP {}, "
+        "ELE {}). TAU has to be positive.",
+        metadata.tau, metadata.summand_mat_id, point.visco_mat_id, point.gp, point.ele_gid);
 
-    if (metadata.alpha < 0.0 || metadata.alpha >= 1.0)
-      FOUR_C_THROW(
-          "Invalid ALPHA={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP "
-          "{}, ELE {}). Expected 0 <= ALPHA < 1.",
-          metadata.alpha, metadata.summand_mat_id, point.visco_mat_id, point.gp, point.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(metadata.alpha >= 0.0 && metadata.alpha < 1.0,
+        "Invalid ALPHA={} in VISCO_FSLS (MAT {}, referenced by MAT_ViscoElastHyper MAT {}, GP "
+        "{}, ELE {}). Expected 0 <= ALPHA < 1.",
+        metadata.alpha, metadata.summand_mat_id, point.visco_mat_id, point.gp, point.ele_gid);
 
     metadata_ = metadata;
   }
@@ -180,18 +171,16 @@ namespace Mat::ViscoElast
     const Teuchos::ParameterList& structural_dynamic_parameters =
         Global::Problem::instance()->structural_dynamic_params();
 
-    if (!structural_dynamic_parameters.isParameter("NUMSTEP"))
-      FOUR_C_THROW(
-          "Missing NUMSTEP in STRUCTURAL DYNAMIC parameters while deriving FSLS history capacity "
-          "for MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}).",
-          point.visco_mat_id, point.gp, point.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(structural_dynamic_parameters.isParameter("NUMSTEP"),
+        "Missing NUMSTEP in STRUCTURAL DYNAMIC parameters while deriving FSLS history capacity "
+        "for MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}).",
+        point.visco_mat_id, point.gp, point.ele_gid);
 
     const int numsteps = structural_dynamic_parameters.get<int>("NUMSTEP");
-    if (numsteps < 0)
-      FOUR_C_THROW(
-          "Invalid NUMSTEP={} while deriving FSLS history capacity for MAT_ViscoElastHyper (MAT "
-          "{}, GP {}, ELE {}). Expected NUMSTEP >= 0.",
-          numsteps, point.visco_mat_id, point.gp, point.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(numsteps >= 0,
+        "Invalid NUMSTEP={} while deriving FSLS history capacity for MAT_ViscoElastHyper (MAT "
+        "{}, GP {}, ELE {}). Expected NUMSTEP >= 0.",
+        numsteps, point.visco_mat_id, point.gp, point.ele_gid);
 
     runtime_context_ = RuntimeContext{.max_history_size = static_cast<unsigned int>(numsteps + 1)};
   }
@@ -201,45 +190,40 @@ namespace Mat::ViscoElast
       FslsStressVector& q_current_for_history, FslsStressVector& q_additive,
       FslsTangentMatrix& cmatq_additive, const FslsKernelInput& input)
   {
-    if (input.dt < 0.0)
-      FOUR_C_THROW(
-          "Invalid time step size dt={} in FSLS kernel evaluation (MAT {}, GP {}, ELE {}). "
-          "Expected dt >= 0.",
-          input.dt, input.visco_mat_id, input.gp, input.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(input.dt >= 0.0,
+        "Invalid time step size dt={} in FSLS kernel evaluation (MAT {}, GP {}, ELE {}). "
+        "Expected dt >= 0.",
+        input.dt, input.visco_mat_id, input.gp, input.ele_gid);
 
-    if (input.tau <= 0.0)
-      FOUR_C_THROW(
-          "Invalid TAU={} in FSLS kernel evaluation (MAT {}, GP {}, ELE {}). Expected TAU > 0.",
-          input.tau, input.visco_mat_id, input.gp, input.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(input.tau > 0.0,
+        "Invalid TAU={} in FSLS kernel evaluation (MAT {}, GP {}, ELE {}). Expected TAU > 0.",
+        input.tau, input.visco_mat_id, input.gp, input.ele_gid);
 
-    if (input.alpha < 0.0 || input.alpha >= 1.0)
-      FOUR_C_THROW(
-          "Invalid ALPHA={} in FSLS kernel evaluation (MAT {}, GP {}, ELE {}). Expected 0 <= "
-          "ALPHA < 1.",
-          input.alpha, input.visco_mat_id, input.gp, input.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(input.alpha >= 0.0 && input.alpha < 1.0,
+        "Invalid ALPHA={} in FSLS kernel evaluation (MAT {}, GP {}, ELE {}). Expected 0 <= "
+        "ALPHA < 1.",
+        input.alpha, input.visco_mat_id, input.gp, input.ele_gid);
 
-    if (input.previous_history == nullptr)
-      FOUR_C_THROW("Missing FSLS history state in kernel evaluation (MAT {}, GP {}, ELE {}).",
-          input.visco_mat_id, input.gp, input.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(input.previous_history != nullptr,
+        "Missing FSLS history state in kernel evaluation (MAT {}, GP {}, ELE {}).",
+        input.visco_mat_id, input.gp, input.ele_gid);
 
     const FslsHistory& previous_history = *input.previous_history;
-    if (previous_history.empty())
-      FOUR_C_THROW("Missing FSLS history state in kernel evaluation (MAT {}, GP {}, ELE {}).",
-          input.visco_mat_id, input.gp, input.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(!previous_history.empty(),
+        "Missing FSLS history state in kernel evaluation (MAT {}, GP {}, ELE {}).",
+        input.visco_mat_id, input.gp, input.ele_gid);
 
-    if (input.gp < 0 || input.gp >= static_cast<int>(previous_history.size()))
-      FOUR_C_THROW(
-          "Invalid Gauss point index GP={} for FSLS history in kernel evaluation (MAT {}, ELE "
-          "{}). History container size is {}.",
-          input.gp, input.visco_mat_id, input.ele_gid, previous_history.size());
+    FOUR_C_ASSERT_ALWAYS(input.gp >= 0 && input.gp < static_cast<int>(previous_history.size()),
+        "Invalid Gauss point index GP={} for FSLS history in kernel evaluation (MAT {}, ELE "
+        "{}). History container size is {}.",
+        input.gp, input.visco_mat_id, input.ele_gid, previous_history.size());
 
     const auto& fsls_history_at_gp = previous_history.at(input.gp);
     const int hs = fsls_history_at_gp.size();
-    if (hs <= 0)
-      FOUR_C_THROW(
-          "Invalid FSLS history size {} at GP {} in kernel evaluation (MAT {}, ELE {}). "
-          "Expected at least one entry.",
-          hs, input.gp, input.visco_mat_id, input.ele_gid);
+    FOUR_C_ASSERT_ALWAYS(hs > 0,
+        "Invalid FSLS history size {} at GP {} in kernel evaluation (MAT {}, ELE {}). "
+        "Expected at least one entry.",
+        hs, input.gp, input.visco_mat_id, input.ele_gid);
 
     // calculate artificial history stress Qq with weights b_j
     // Qq = sum[j=1 up to j=n][b_j*Q_(n+1-j)] (short: b*Qj)
@@ -260,12 +244,10 @@ namespace Mat::ViscoElast
     const double dtalpha = std::pow(input.dt, input.alpha);
     const double taualpha = std::pow(input.tau, input.alpha);
     const double denominator = dtalpha + taualpha;
-    if (denominator <= 0.0)
-      FOUR_C_THROW(
-          "Invalid FSLS update denominator dt^alpha + tau^alpha = {} in kernel evaluation (MAT "
-          "{}, GP {}, ELE {}): dt={}, tau={}, alpha={}. Expected a positive denominator.",
-          denominator, input.visco_mat_id, input.gp, input.ele_gid, input.dt, input.tau,
-          input.alpha);
+    FOUR_C_ASSERT_ALWAYS(denominator > 0.0,
+        "Invalid FSLS update denominator dt^alpha + tau^alpha = {} in kernel evaluation (MAT "
+        "{}, GP {}, ELE {}): dt={}, tau={}, alpha={}. Expected a positive denominator.",
+        denominator, input.visco_mat_id, input.gp, input.ele_gid, input.dt, input.tau, input.alpha);
 
     const double lambda_1 = dtalpha / denominator;
     const double lambda_2 = -1. * taualpha / denominator;
