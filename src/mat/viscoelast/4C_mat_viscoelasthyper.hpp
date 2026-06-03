@@ -58,6 +58,20 @@ namespace Mat
     {
       friend class Mat::ViscoElastHyper;
 
+     private:
+      struct SummandSplit
+      {
+        int numelast = 0;
+        std::vector<int> elast_matids;
+        int numvisco = 0;
+        std::vector<int> visco_matids;
+        bool uses_legacy_matids = true;
+      };
+
+      static SummandSplit parse_summand_split(const Core::Mat::PAR::Parameter::Data& matdata);
+      ViscoElastHyper(
+          const Core::Mat::PAR::Parameter::Data& matdata, const SummandSplit& summand_split);
+
      public:
       /// standard constructor
       ///

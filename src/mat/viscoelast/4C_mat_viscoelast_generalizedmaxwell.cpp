@@ -495,6 +495,11 @@ namespace Mat::ViscoElast
       const GeneralizedMaxwellKernelInput& input,
       const BranchResponseEvaluator& evaluate_branch_response)
   {
+    FOUR_C_ASSERT_ALWAYS(input.dt > 0.0,
+        "Invalid time step size dt={} in generalized Maxwell kernel evaluation (MAT {}, GP {}, "
+        "ELE {}). Expected dt > 0.",
+        input.dt, input.visco_mat_id, input.gp, input.ele_gid);
+
     FOUR_C_ASSERT_ALWAYS(input.previous_branch_elastic_stress != nullptr,
         "Missing previous generalized Maxwell elastic branch history in kernel evaluation (MAT "
         "{}, GP {}, ELE {}).",

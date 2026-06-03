@@ -84,13 +84,6 @@ namespace Mat
       const StressVector& modrcg;
     };
 
-    /// \brief Read-only per-GP view of previous generalized Maxwell branch state.
-    struct GeneralizedMaxwellPrevPointState
-    {
-      const PointHistory& branch_elastic_stress;
-      const PointHistory& branch_stress;
-    };
-
     /// \brief Activation flags for optional visco model histories.
     struct ActiveModels
     {
@@ -140,8 +133,6 @@ namespace Mat
     /// \brief Store current iso-rate state for one Gauss point.
     void set_iso_rate_current_point(int gp, const StressVector& scg, const StressVector& modrcg);
 
-    /// \brief Return read-only previous generalized Maxwell state for one Gauss point.
-    GeneralizedMaxwellPrevPointState generalized_maxwell_prev_point(int gp) const;
     /// \brief Return read-only previous generalized Maxwell elastic branch stresses for one GP.
     const PointHistory& generalized_maxwell_prev_branch_elastic_stress(int gp) const;
     /// \brief Return read-only previous generalized Maxwell viscous branch stresses for one GP.

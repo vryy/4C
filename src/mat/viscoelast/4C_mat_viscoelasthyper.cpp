@@ -49,146 +49,81 @@ namespace ViscoElast = Mat::ViscoElast;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::PAR::ViscoElastHyper::ViscoElastHyper(const Core::Mat::PAR::Parameter::Data& matdata)
+    : ViscoElastHyper(matdata, parse_summand_split(matdata))
+{
+}
+
+
+Mat::PAR::ViscoElastHyper::SummandSplit Mat::PAR::ViscoElastHyper::parse_summand_split(
+    const Core::Mat::PAR::Parameter::Data& matdata)
+{
+  const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
+  const std::vector<int>* elast_matids =
+      matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
+  const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
+  const std::vector<int>* visco_matids =
+      matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
+
+  const bool has_split_field = numelast != nullptr || elast_matids != nullptr ||
+                               numvisco != nullptr || visco_matids != nullptr;
+  const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
+                                  numvisco != nullptr && visco_matids != nullptr;
+
+  FOUR_C_ASSERT_ALWAYS(!has_split_field || has_complete_split,
+      "Split MAT_ViscoElastHyper input requires NUMELAST, ELAST_MATIDS, NUMVISCO and "
+      "VISCO_MATIDS together (MAT {}).",
+      matdata.id);
+
+  if (has_complete_split)
+  {
+    SummandSplit split;
+    split.numelast = *numelast;
+    split.elast_matids = *elast_matids;
+    split.numvisco = *numvisco;
+    split.visco_matids = *visco_matids;
+    split.uses_legacy_matids = false;
+    return split;
+  }
+
+  FOUR_C_ASSERT_ALWAYS(Global::Problem::instance()->materials() != nullptr,
+      "Cannot derive MAT_ViscoElastHyper legacy summand split for MAT {} because no global "
+      "material bundle is available.",
+      matdata.id);
+
+  FOUR_C_ASSERT_ALWAYS(Global::Problem::instance()->materials()->num() != 0,
+      "Cannot derive MAT_ViscoElastHyper legacy summand split for MAT {} because the global "
+      "material bundle is empty.",
+      matdata.id);
+
+  SummandSplit split;
+  split.uses_legacy_matids = true;
+
+  const std::vector<int>& legacy_matids = matdata.parameters.get<std::vector<int>>("MATIDS");
+  const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
+  for (const int summand_mat_id : legacy_matids)
+  {
+    auto* sumpar =
+        Global::Problem::instance(probinst)->materials()->parameter_by_id(summand_mat_id);
+    if (is_visco_material_type_for_split_input(sumpar->type()))
+      split.visco_matids.push_back(summand_mat_id);
+    else
+      split.elast_matids.push_back(summand_mat_id);
+  }
+
+  split.numelast = static_cast<int>(split.elast_matids.size());
+  split.numvisco = static_cast<int>(split.visco_matids.size());
+  return split;
+}
+
+
+Mat::PAR::ViscoElastHyper::ViscoElastHyper(
+    const Core::Mat::PAR::Parameter::Data& matdata, const SummandSplit& summand_split)
     : Mat::PAR::ElastHyper(matdata),
-      numelast_(
-          [&matdata, this]() -> int
-          {
-            const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
-            const std::vector<int>* elast_matids =
-                matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
-            const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
-            const std::vector<int>* visco_matids =
-                matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
-
-            const bool has_partial_split = numelast != nullptr || elast_matids != nullptr ||
-                                           numvisco != nullptr || visco_matids != nullptr;
-            const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
-                                            numvisco != nullptr && visco_matids != nullptr;
-            const bool explicit_split =
-                has_complete_split && !elast_matids->empty() && !visco_matids->empty();
-            FOUR_C_ASSERT_ALWAYS(!(has_partial_split && !has_complete_split),
-                "Split MAT_ViscoElastHyper input requires NUMELAST, ELAST_MATIDS, "
-                "NUMVISCO and VISCO_MATIDS together (MAT {}).",
-                id());
-            if (explicit_split)
-            {
-              return *numelast;
-            }
-
-            int derived_numelast = 0;
-            const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
-            for (const int summand_mat_id : matids_)
-            {
-              auto* sumpar =
-                  Global::Problem::instance(probinst)->materials()->parameter_by_id(summand_mat_id);
-              if (!is_visco_material_type_for_split_input(sumpar->type())) ++derived_numelast;
-            }
-            return derived_numelast;
-          }()),
-      elast_matids_(
-          [&matdata, this]() -> std::vector<int>
-          {
-            const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
-            const std::vector<int>* elast_matids =
-                matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
-            const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
-            const std::vector<int>* visco_matids =
-                matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
-
-            const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
-                                            numvisco != nullptr && visco_matids != nullptr;
-            const bool explicit_split =
-                has_complete_split && !elast_matids->empty() && !visco_matids->empty();
-            if (explicit_split) return *elast_matids;
-
-            std::vector<int> derived_elast;
-            const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
-            for (const int summand_mat_id : matids_)
-            {
-              auto* sumpar =
-                  Global::Problem::instance(probinst)->materials()->parameter_by_id(summand_mat_id);
-              if (!is_visco_material_type_for_split_input(sumpar->type()))
-                derived_elast.push_back(summand_mat_id);
-            }
-            return derived_elast;
-          }()),
-      numvisco_(
-          [&matdata, this]() -> int
-          {
-            const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
-            const std::vector<int>* elast_matids =
-                matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
-            const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
-            const std::vector<int>* visco_matids =
-                matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
-
-            const bool has_partial_split = numelast != nullptr || elast_matids != nullptr ||
-                                           numvisco != nullptr || visco_matids != nullptr;
-            const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
-                                            numvisco != nullptr && visco_matids != nullptr;
-            const bool explicit_split =
-                has_complete_split && !elast_matids->empty() && !visco_matids->empty();
-            FOUR_C_ASSERT_ALWAYS(!(has_partial_split && !has_complete_split),
-                "Split MAT_ViscoElastHyper input requires NUMELAST, ELAST_MATIDS, "
-                "NUMVISCO and VISCO_MATIDS together (MAT {}).",
-                id());
-            if (explicit_split)
-            {
-              return *numvisco;
-            }
-
-            int derived_numvisco = 0;
-            const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
-            for (const int summand_mat_id : matids_)
-            {
-              auto* sumpar =
-                  Global::Problem::instance(probinst)->materials()->parameter_by_id(summand_mat_id);
-              if (is_visco_material_type_for_split_input(sumpar->type())) ++derived_numvisco;
-            }
-            return derived_numvisco;
-          }()),
-      visco_matids_(
-          [&matdata, this]() -> std::vector<int>
-          {
-            const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
-            const std::vector<int>* elast_matids =
-                matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
-            const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
-            const std::vector<int>* visco_matids =
-                matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
-
-            const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
-                                            numvisco != nullptr && visco_matids != nullptr;
-            const bool explicit_split =
-                has_complete_split && !elast_matids->empty() && !visco_matids->empty();
-            if (explicit_split) return *visco_matids;
-
-            std::vector<int> derived_visco;
-            const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
-            for (const int summand_mat_id : matids_)
-            {
-              auto* sumpar =
-                  Global::Problem::instance(probinst)->materials()->parameter_by_id(summand_mat_id);
-              if (is_visco_material_type_for_split_input(sumpar->type()))
-                derived_visco.push_back(summand_mat_id);
-            }
-            return derived_visco;
-          }()),
-      uses_legacy_matids_(
-          [&matdata]() -> bool
-          {
-            const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
-            const std::vector<int>* elast_matids =
-                matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
-            const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
-            const std::vector<int>* visco_matids =
-                matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
-            const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
-                                            numvisco != nullptr && visco_matids != nullptr;
-            const bool explicit_split =
-                has_complete_split && !elast_matids->empty() && !visco_matids->empty();
-            return !explicit_split;
-          }())
+      numelast_(summand_split.numelast),
+      elast_matids_(summand_split.elast_matids),
+      numvisco_(summand_split.numvisco),
+      visco_matids_(summand_split.visco_matids),
+      uses_legacy_matids_(summand_split.uses_legacy_matids)
 {
   FOUR_C_ASSERT_ALWAYS(numelast_ == static_cast<int>(elast_matids_.size()),
       "Invalid MAT_ViscoElastHyper setup (MAT {}): NUMELAST={} but ELAST_MATIDS has size {}.", id(),
@@ -542,7 +477,13 @@ double Mat::ViscoElastHyper::read_visco_time_step_size(
       "{}).",
       params_ != nullptr ? params_->id() : -1, gp, eleGID);
 
-  return *context.time_step_size;
+  const double dt = *context.time_step_size;
+  FOUR_C_ASSERT_ALWAYS(dt > 0.0,
+      "Invalid time step size dt={} in MAT_ViscoElastHyper (MAT {}, GP {}, ELE {}) for active "
+      "viscoelastic response. Expected dt > 0.",
+      dt, params_ != nullptr ? params_->id() : -1, gp, eleGID);
+
+  return dt;
 }
 
 /*----------------------------------------------------------------------*/

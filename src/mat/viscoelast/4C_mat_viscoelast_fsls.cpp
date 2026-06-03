@@ -190,9 +190,9 @@ namespace Mat::ViscoElast
       FslsStressVector& q_current_for_history, FslsStressVector& q_additive,
       FslsTangentMatrix& cmatq_additive, const FslsKernelInput& input)
   {
-    FOUR_C_ASSERT_ALWAYS(input.dt >= 0.0,
+    FOUR_C_ASSERT_ALWAYS(input.dt > 0.0,
         "Invalid time step size dt={} in FSLS kernel evaluation (MAT {}, GP {}, ELE {}). "
-        "Expected dt >= 0.",
+        "Expected dt > 0.",
         input.dt, input.visco_mat_id, input.gp, input.ele_gid);
 
     FOUR_C_ASSERT_ALWAYS(input.tau > 0.0,
