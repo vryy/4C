@@ -11,153 +11,181 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_mat_viscoelast_contribution.hpp"
 #include "4C_mat_viscoelast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
 
+#include <optional>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Mat
+namespace Mat::ViscoElast
 {
-  namespace ViscoElast
+  class FslsContribution final : public Contribution
   {
-    namespace PAR
+   public:
+    [[nodiscard]] ViscoModelKind kind() const override { return ViscoModelKind::fsls; }
+    void setup(const ContributionSetupContext& context) override;
+    void evaluate(const FslsEvaluateContext& context);
+    void update(const ContributionUpdateContext& context) override;
+    [[nodiscard]] unsigned int history_capacity_for_update() const override;
+
+   private:
+    struct Metadata
     {
-      /*!
-       * @brief material parameters for viscous contribution according the FSLS-model
-       *
-       * <h3>Input line</h3>
-       * MAT 1 VISCO_FSLS TAU 0.1 ALPHA 0.5 BETA 1
-       */
-      class Fsls : public Core::Mat::PAR::Parameter
-      {
-       public:
-        /// standard constructor
-        Fsls(const Core::Mat::PAR::Parameter::Data& matdata);
+      double tau = 0.0;
+      double alpha = 0.0;
+      double beta = 0.0;
+      int summand_mat_id = -1;
+    };
 
-        /// @name material parameters
-        //@{
+    struct RuntimeContext
+    {
+      unsigned int max_history_size = 0;
+    };
 
-        /// material parameters
-        double tau_;
-        double alpha_;
-        double beta_;
+    [[nodiscard]] const Metadata& require_metadata(const char* context, int gp, int ele_gid) const;
+    [[nodiscard]] const RuntimeContext& require_runtime_context(
+        const char* context, int gp, int ele_gid) const;
 
-        //@}
+    void build_metadata(const ContributionSetupContext& context);
+    void build_runtime_context(const ContributionSetupContext& context);
 
-        /// Override this method and throw error, as the material should be created in within the
-        /// Factory method of the elastic summand
-        std::shared_ptr<Core::Mat::Material> create_material() override
-        {
-          FOUR_C_THROW(
-              "Cannot create a material from this method, as it should be created in "
-              "Mat::ViscoElast::Summand::Factory.");
-          return nullptr;
-        };
-      };  // class Fsls
-    }  // namespace PAR
+    std::optional<Metadata> metadata_;
+    std::optional<RuntimeContext> runtime_context_;
+  };
 
-
+  namespace PAR
+  {
     /*!
-     * @brief Material VISCO_FSLS
+     * @brief material parameters for viscous contribution according the FSLS-model
      *
-     * This material offers a viscous and hyperelastic part. The model consists
-     * of one spring in parallel to one sequential branch of a spring and a springpot.
-     *
-     * A springpot is between a spring and a dashpot. The parameter alpha regulates
-     * how much damping is introduced.
-     * Alpha=0, means the springpot is a spring
-     * Alpha=1, means the springpot is a dashpot; this is equal to a generalized Maxwell branch
-     *
-     * <h3>References</h3>
-     * <ul>
-     * <li> [1] Adolfson and Enelund (2003): Fractional Derivative Viscoelasticity at
-     *          Large Deformations
-     * </ul>
+     * <h3>Input line</h3>
+     * MAT 1 VISCO_FSLS TAU 0.1 ALPHA 0.5 BETA 1
      */
-    class Fsls : public Mat::ViscoElast::Summand
+    class Fsls : public Core::Mat::PAR::Parameter
     {
      public:
-      /// constructor with given material parameters
-      Fsls(Mat::ViscoElast::PAR::Fsls* params);
+      /// standard constructor
+      Fsls(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      /// @name Access material constants
+      /// @name material parameters
       //@{
 
-      /// material type
-      Core::Materials::MaterialType material_type() const override
-      {
-        return Core::Materials::mes_fsls;
-      }
+      /// material parameters
+      double tau_;
+      double alpha_;
+      double beta_;
 
       //@}
 
-      /// Read material parameters
-      void read_material_parameters_visco(double& tau,  ///< relaxation parameter tau
-          double& beta,                                 ///< emphasis of viscous to elastic part
-          double& alpha,                                ///< fractional order derivative (for FSLS)
-          std::string& solve  ///< unused for FSLS; kept for interface compatibility
-          ) override;
-
-      /// Indicator for formulation
-      void specify_formulation(
-          bool& isoprinc,     ///< global indicator for isotropic principal formulation
-          bool& isomod,       ///< global indicator for isotropic split formulation
-          bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
-          bool& anisomod,     ///< global indicator for anisotropic split formulation
-          bool& viscogeneral  ///< general indicator, if one viscoelastic formulation is used
-          ) override
+      /// Override this method and throw error, as the material should be created in within the
+      /// Factory method of the elastic summand
+      std::shared_ptr<Core::Mat::Material> create_material() override
       {
-        viscogeneral = true;
-        return;
+        FOUR_C_THROW(
+            "Cannot create a material from this method, as it should be created in "
+            "Mat::ViscoElast::Summand::Factory.");
+        return nullptr;
       };
+    };  // class Fsls
+  }  // namespace PAR
 
-      /// Indicator for the chosen viscoelastic formulations
-      void specify_visco_formulation(
-          bool& visco_iso_rate,  ///< global indicator for isotropic rate-dependent visco response
-          bool& visco_generalized_maxwell,  ///< global indicator for generalized Maxwell model
-          bool& visco_fsls                  ///< global indicator for FSLS model
-          ) override
-      {
-        visco_fsls = true;
-        return;
-      };
 
-     private:
-      /// my material parameters
-      Mat::ViscoElast::PAR::Fsls* params_;
+  /*!
+   * @brief Material VISCO_FSLS
+   *
+   * This material offers a viscous and hyperelastic part. The model consists
+   * of one spring in parallel to one sequential branch of a spring and a springpot.
+   *
+   * A springpot is between a spring and a dashpot. The parameter alpha regulates
+   * how much damping is introduced.
+   * Alpha=0, means the springpot is a spring
+   * Alpha=1, means the springpot is a dashpot; this is equal to a generalized Maxwell branch
+   *
+   * <h3>References</h3>
+   * <ul>
+   * <li> [1] Adolfson and Enelund (2003): Fractional Derivative Viscoelasticity at
+   *          Large Deformations
+   * </ul>
+   */
+  class Fsls : public Summand
+  {
+   public:
+    /// constructor with given material parameters
+    Fsls(PAR::Fsls* params);
+
+    /// @name Access material constants
+    //@{
+
+    /// material type
+    Core::Materials::MaterialType material_type() const override
+    {
+      return Core::Materials::mes_fsls;
+    }
+
+    //@}
+
+    /// Read material parameters
+    void read_material_parameters_visco(double& tau,  ///< relaxation parameter tau
+        double& beta,                                 ///< emphasis of viscous to elastic part
+        double& alpha,                                ///< fractional order derivative (for FSLS)
+        std::string& solve  ///< unused for FSLS; kept for interface compatibility
+        ) override;
+
+    /// Indicator for formulation
+    void specify_formulation(
+        bool& isoprinc,     ///< global indicator for isotropic principal formulation
+        bool& isomod,       ///< global indicator for isotropic split formulation
+        bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
+        bool& anisomod,     ///< global indicator for anisotropic split formulation
+        bool& viscogeneral  ///< general indicator, if one viscoelastic formulation is used
+        ) override
+    {
+      viscogeneral = true;
+      return;
     };
 
-  }  // namespace ViscoElast
-
-
-  namespace ViscoElast
-  {
-    namespace Kernels
+    /// Indicator for the chosen viscoelastic formulations
+    void specify_visco_formulation(
+        bool& visco_iso_rate,  ///< global indicator for isotropic rate-dependent visco response
+        bool& visco_generalized_maxwell,  ///< global indicator for generalized Maxwell model
+        bool& visco_fsls                  ///< global indicator for FSLS model
+        ) override
     {
-      using FslsStressVector = Core::LinAlg::Matrix<6, 1>;
-      using FslsTangentMatrix = Core::LinAlg::Matrix<6, 6>;
-      using FslsHistory = std::vector<std::vector<FslsStressVector>>;
+      visco_fsls = true;
+      return;
+    };
 
-      struct FslsKernelInput
-      {
-        int visco_mat_id = -1;
-        int gp = -1;
-        int ele_gid = -1;
-        double dt = 0.0;
-        double tau = 0.0;
-        double alpha = 0.0;
-        double beta = 0.0;
-        const FslsHistory* previous_history = nullptr;
-      };
+   private:
+    /// my material parameters
+    PAR::Fsls* params_;
+  };
 
-      void evaluate_fsls_kernel(const FslsStressVector& stress, const FslsTangentMatrix& cmat,
-          FslsStressVector& q_current_for_history, FslsStressVector& q_additive,
-          FslsTangentMatrix& cmatq_additive, const FslsKernelInput& input);
-    }  // namespace Kernels
-  }  // namespace ViscoElast
-}  // namespace Mat
+  namespace Kernels
+  {
+    using FslsStressVector = Core::LinAlg::Matrix<6, 1>;
+    using FslsTangentMatrix = Core::LinAlg::Matrix<6, 6>;
+    using FslsHistory = std::vector<std::vector<FslsStressVector>>;
+
+    struct FslsKernelInput
+    {
+      int visco_mat_id = -1;
+      int gp = -1;
+      int ele_gid = -1;
+      double dt = 0.0;
+      double tau = 0.0;
+      double alpha = 0.0;
+      double beta = 0.0;
+      const FslsHistory* previous_history = nullptr;
+    };
+
+    void evaluate_fsls_kernel(const FslsStressVector& stress, const FslsTangentMatrix& cmat,
+        FslsStressVector& q_current_for_history, FslsStressVector& q_additive,
+        FslsTangentMatrix& cmatq_additive, const FslsKernelInput& input);
+  }  // namespace Kernels
+}  // namespace Mat::ViscoElast
 
 FOUR_C_NAMESPACE_CLOSE
 

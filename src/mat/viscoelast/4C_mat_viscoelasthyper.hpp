@@ -16,10 +16,13 @@
 #include "4C_mat_elasthyper.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_mat_viscoelast_contribution.hpp"
 #include "4C_mat_viscoelast_state.hpp"
+#include "4C_mat_viscoelast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
 
 #include <array>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -211,33 +214,6 @@ namespace Mat
     void update() override;
 
    protected:
-    /// calculates the kinematic quantities and tensors used afterwards for viscous part
-    virtual void evaluate_kin_quant_vis(Core::LinAlg::Matrix<6, 1>& rcg,
-        Core::LinAlg::Matrix<6, 1>& scg, Core::LinAlg::Matrix<6, 1>& icg,
-        Core::LinAlg::Matrix<3, 1>& prinv, Core::LinAlg::Matrix<7, 1>& rateinv,
-        Core::LinAlg::Matrix<6, 1>& modrcg, double dt, Core::LinAlg::Matrix<6, 1>& scgrate,
-        Core::LinAlg::Matrix<6, 1>& modrcgrate, Core::LinAlg::Matrix<7, 1>& modrateinv, int gp);
-
-    /// calculates the factors associated to the viscous laws
-    virtual void evaluate_mu_xi(Core::LinAlg::Matrix<3, 1>& inv, Core::LinAlg::Matrix<3, 1>& modinv,
-        Core::LinAlg::Matrix<8, 1>& mu, Core::LinAlg::Matrix<8, 1>& modmu,
-        Core::LinAlg::Matrix<33, 1>& xi, Core::LinAlg::Matrix<33, 1>& modxi,
-        Core::LinAlg::Matrix<7, 1>& rateinv, Core::LinAlg::Matrix<7, 1>& modrateinv,
-        const Teuchos::ParameterList& params, double dt, int gp, int eleGID);
-
-    /// calculates the stress and elasticitiy tensor for the generalized Maxwell material
-    virtual void evaluate_visco_generalized_maxwell(Core::LinAlg::Matrix<6, 1>& Q,
-        Core::LinAlg::Matrix<6, 6>& cmatq, double dt, const Core::LinAlg::Matrix<6, 1>& glstrain,
-        int gp, int eleGID);
-
-    /// calculates the stress and elasticity tensor for the VISCO_FSLS model
-    /// depending on the viscoelastic material isochoric-principal, isochoric-modified
-    /// (volumetric and isochoric equal treaded) or anisotropic stresses and elasticity
-    /// tensors are added
-    virtual void evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress,
-        Core::LinAlg::Matrix<6, 6> cmat, Core::LinAlg::Matrix<6, 1>& Q,
-        Core::LinAlg::Matrix<6, 6>& cmatq, double dt, int gp, int eleGID);
-
     /// @name Flags to specify the viscous formulations
     //@{
     bool isovisco_;                   ///< global indicator for isotropic split viscous formulation
@@ -247,22 +223,6 @@ namespace Mat
                        //@}
 
    private:
-    struct FslsParameters
-    {
-      double tau = 0.0;
-      double alpha = 0.0;
-      double beta = 0.0;
-      int summand_mat_id = -1;
-    };
-
-    struct FslsMetadata
-    {
-      double tau = 0.0;
-      double alpha = 0.0;
-      double beta = 0.0;
-      int summand_mat_id = -1;
-    };
-
     struct EvaluateWorkspace
     {
       EvaluateWorkspace();
@@ -292,50 +252,7 @@ namespace Mat
       double dt = 0.0;
     };
 
-    struct GeneralizedMaxwellBranchMetadata
-    {
-      std::vector<std::shared_ptr<Mat::Elastic::Summand>> summands;
-      double tau = 0.0;
-      SummandProperties properties;
-    };
-
-    enum class GeneralizedMaxwellSolveKind
-    {
-      one_step_theta,
-      exponential_time_discretization
-    };
-
-    struct GeneralizedMaxwellMetadata
-    {
-      int summand_mat_id = -1;
-      GeneralizedMaxwellSolveKind solve_kind =
-          GeneralizedMaxwellSolveKind::exponential_time_discretization;
-      std::vector<GeneralizedMaxwellBranchMetadata> branches;
-    };
-
-    struct GeneralizedMaxwellRuntimeContext
-    {
-      double one_step_theta = 0.5;
-    };
-
-    struct FslsRuntimeContext
-    {
-      unsigned int max_history_size = 0;
-    };
-
-    struct ViscoRuntimeContext
-    {
-      std::optional<GeneralizedMaxwellRuntimeContext> generalized_maxwell;
-      std::optional<FslsRuntimeContext> fsls;
-    };
-
-    enum class ViscoModelKind
-    {
-      iso_rate,
-      generalized_maxwell,
-      fsls
-    };
-
+    using ViscoModelKind = ViscoElast::ViscoModelKind;
     using ActiveModelSequence = std::vector<ViscoModelKind>;
 
     [[nodiscard]] static constexpr std::array<ViscoModelKind, 3> visco_model_registry()
@@ -352,65 +269,40 @@ namespace Mat
     [[nodiscard]] bool is_model_flag_enabled(ViscoModelKind model_kind) const;
     [[nodiscard]] bool is_model_active(ViscoModelKind model_kind) const;
     void rebuild_active_model_sequence();
+    void rebuild_contributions();
+    void setup_contributions(int gp, int eleGID);
 
     [[nodiscard]] ViscoElastState::ActiveModels active_models_from_flags() const;
     [[nodiscard]] ViscoElastState::ActiveModels active_models_from_sequence() const;
     void ensure_model_activation_consistency(const char* context) const;
 
     [[nodiscard]] ViscoElastState::ActiveModels active_models() const;
-    [[nodiscard]] GeneralizedMaxwellSolveKind parse_generalized_maxwell_solve_kind(
-        const std::string& solve, int gp, int eleGID) const;
-    void clear_generalized_maxwell_metadata();
-    void build_generalized_maxwell_metadata_for_setup(int gp, int eleGID);
-    [[nodiscard]] const GeneralizedMaxwellMetadata& require_generalized_maxwell_metadata(
-        const char* context, int gp, int eleGID) const;
-    void clear_runtime_context();
-    void build_runtime_context_for_setup(int gp, int eleGID);
-    [[nodiscard]] const ViscoRuntimeContext& require_runtime_context(
-        const char* context, int gp, int eleGID) const;
-    void clear_fsls_metadata();
-    void build_fsls_metadata_for_setup(int gp, int eleGID);
-    [[nodiscard]] const FslsMetadata& require_fsls_metadata(
-        const char* context, int gp, int eleGID) const;
-    [[nodiscard]] std::size_t read_generalized_maxwell_branch_count_for_setup() const;
-    [[nodiscard]] FslsParameters read_fsls_parameters(int gp, int eleGID) const;
-    [[nodiscard]] unsigned int read_fsls_max_history_size_for_update() const;
+    [[nodiscard]] std::size_t history_entry_count_for_setup(ViscoModelKind model_kind) const;
+    [[nodiscard]] unsigned int history_capacity_for_update(ViscoModelKind model_kind) const;
     [[nodiscard]] double read_visco_time_step_size(
         const EvaluationContext<3>& context, int gp, int eleGID) const;
 
     void prepare_evaluate_kinematics(const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
         const EvaluationContext<3>& context, EvaluateWorkspace& workspace, int gp,
         int eleGID) const;
-    void prepare_iso_rate_visco_inputs_if_active(
-        const Teuchos::ParameterList& params, EvaluateWorkspace& workspace, int gp, int eleGID);
     void initialize_elastic_response(const EvaluateWorkspace& workspace,
         Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat) const;
-    void add_iso_rate_contribution(const EvaluateWorkspace& workspace,
-        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view);
-    void add_generalized_maxwell_contribution(const EvaluateWorkspace& workspace,
-        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, int gp,
-        int eleGID);
-    void add_fsls_contribution(const EvaluateWorkspace& workspace,
-        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, int gp,
-        int eleGID);
-    void add_visco_contributions_in_sequence(const EvaluateWorkspace& workspace,
-        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, int gp,
-        int eleGID);
+    void add_visco_contributions_in_sequence(const Teuchos::ParameterList& params,
+        EvaluateWorkspace& workspace, Core::LinAlg::Matrix<6, 1>& stress_view,
+        Core::LinAlg::Matrix<6, 6>& cmat_view, int gp, int eleGID);
     void add_post_elastic_composition_hooks(const Teuchos::ParameterList& params,
         const EvaluationContext<3>& context, const EvaluateWorkspace& workspace,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID);
 
     ActiveModelSequence active_model_sequence_;
+    std::vector<std::shared_ptr<ViscoElast::Contribution>> contributions_;
     std::vector<std::shared_ptr<Mat::Elastic::Summand>> elast_potsum_;
-    std::vector<std::shared_ptr<Mat::ViscoElast::Summand>> visco_potsum_;
+    std::vector<std::shared_ptr<ViscoElast::Summand>> visco_potsum_;
     SummandProperties elast_summand_properties_;
     SummandProperties effective_summand_properties_;
-    std::optional<GeneralizedMaxwellMetadata> generalized_maxwell_metadata_;
-    std::optional<ViscoRuntimeContext> runtime_context_;
-    std::optional<FslsMetadata> fsls_metadata_;
     ViscoElastState state_;  ///< unified viscoelastic history state
   };  // class ViscoElastHyper
 
