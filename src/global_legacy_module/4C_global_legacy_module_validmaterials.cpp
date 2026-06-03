@@ -37,6 +37,12 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   using namespace Core::IO::InputSpecBuilders;
   std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> known_materials;
 
+  const auto size_from_optional_count = [](const std::string& count_parameter_name)
+  {
+    return [count_parameter_name](const Core::IO::InputParameterContainer& container)
+    { return container.get<std::optional<int>>(count_parameter_name).value_or(0); };
+  };
+
   /*----------------------------------------------------------------------*/
   // Newtonian fluid
   {
@@ -1617,26 +1623,23 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<int>("NUMMAT", {.description = "number of materials/potentials in list"}),
             parameter<std::vector<int>>("MATIDS", {.description = "the list material/potential IDs",
                                                       .size = from_parameter<int>("NUMMAT")}),
-            parameter<int>(
-                "NUMELAST", {.description = "optional split-mode number of purely elastic summands",
-                                .default_value = 0}),
-            parameter<std::vector<int>>(
-                "ELAST_MATIDS", {.description = "optional split-mode purely elastic summand IDs",
-                                    .default_value = std::vector<int>{},
-                                    .size = from_parameter<int>("NUMELAST")}),
-            parameter<int>(
-                "NUMVISCO", {.description = "optional split-mode number of visco summands",
-                                .default_value = 0}),
-            parameter<std::vector<int>>(
-                "VISCO_MATIDS", {.description = "optional split-mode visco summand IDs",
-                                    .default_value = std::vector<int>{},
-                                    .size = from_parameter<int>("NUMVISCO")}),
+            parameter<std::optional<int>>(
+                "NUMELAST", {.description = "explicit number of purely elastic summands"}),
+            parameter<std::optional<std::vector<int>>>(
+                "ELAST_MATIDS", {.description = "explicit purely elastic summand IDs",
+                                    .size = size_from_optional_count("NUMELAST")}),
+            parameter<std::optional<int>>(
+                "NUMVISCO", {.description = "explicit number of visco summands"}),
+            parameter<std::optional<std::vector<int>>>(
+                "VISCO_MATIDS", {.description = "explicit visco summand IDs",
+                                    .size = size_from_optional_count("NUMVISCO")}),
             parameter<double>("DENS", {.description = "material mass density"}),
             parameter<int>("POLYCONVEX",
                 {.description = "1.0 if polyconvexity of system is checked", .default_value = 0}),
         },
-        {.description = "Viscohyperelastic material. Supports legacy NUMMAT/MATIDS and optional "
-                        "split mode NUMELAST/ELAST_MATIDS + NUMVISCO/VISCO_MATIDS."});
+        {.description = "Viscohyperelastic material. Uses NUMMAT/MATIDS as the complete summand "
+                        "list and supports explicit elastic/visco splits with NUMELAST/"
+                        "ELAST_MATIDS and NUMVISCO/VISCO_MATIDS."});
   }
 
   /*----------------------------------------------------------------------*/
@@ -2427,7 +2430,7 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
         {
             parameter<double>("N", {.description = "material parameter"}),
         },
-        {.description = "Isotropic viscous contribution of myocardial matrix"});
+        {.description = "Iso-rate viscous contribution of myocardial matrix"});
   }
 
   /*--------------------------------------------------------------------*/
@@ -2437,7 +2440,7 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
         {
             parameter<double>("N", {.description = "material parameter"}),
         },
-        {.description = "Isochoric rate dependent viscous material"});
+        {.description = "Isochoric iso-rate viscous summand"});
   }
 
   /*--------------------------------------------------------------------*/
@@ -2449,7 +2452,7 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<double>("ALPHA", {.description = "fractional order derivative"}),
             parameter<double>("BETA", {.description = "emphasis of viscous to elastic part"}),
         },
-        {.description = "Viscous contribution according to FSLS-Model"});
+        {.description = "Fractional standard linear solid visco summand"});
   }
 
   /*--------------------------------------------------------------------*/
@@ -2465,7 +2468,7 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                                 "ExponentialTimeDiscretization (convolution integral)",
                     .default_value = "OneStepTheta"}),
         },
-        {.description = "Generalized Maxwell model"});
+        {.description = "Top-level generalized Maxwell visco summand"});
   }
 
   /*--------------------------------------------------------------------*/
@@ -2477,7 +2480,7 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 "TAU", {.description = "dynamic viscosity divided by branch stiffness"}),
             parameter<int>("MATID", {.description = "material ID of branch elasticity rule"}),
         },
-        {.description = "Viscoelastic branch for generalized Maxwell model"});
+        {.description = "Branch definition for a generalized Maxwell visco summand"});
   }
 
   /*--------------------------------------------------------------------*/

@@ -29,6 +29,7 @@ namespace Mat::ViscoElast
 {
   class Summand;
 
+  /// Identifies the viscoelastic model families orchestrated by Mat::ViscoElastHyper.
   enum class ViscoModelKind
   {
     iso_rate,
@@ -36,6 +37,12 @@ namespace Mat::ViscoElast
     fsls
   };
 
+  /**
+   * \brief Location and material identifier shared by contribution operations.
+   *
+   * The point fields are diagnostic context. During material-wide setup/update calls, a value of
+   * -1 denotes that the operation is not tied to a concrete Gauss point or element.
+   */
   struct ContributionPointContext
   {
     int visco_mat_id = -1;
@@ -43,6 +50,14 @@ namespace Mat::ViscoElast
     int ele_gid = -1;
   };
 
+  /**
+   * \brief Data available while a model contribution builds setup and runtime metadata.
+   *
+   * Contributions inspect the already constructed visco summands, select their own summand type,
+   * validate model-specific assumptions, and cache metadata that is independent of the current
+   * deformation state. The owning Mat::ViscoElastHyper remains responsible for constructing and
+   * ordering the contribution objects.
+   */
   struct ContributionSetupContext
   {
     ContributionPointContext point;
@@ -51,12 +66,20 @@ namespace Mat::ViscoElast
     ViscoElastState::ActiveModels active_models;
   };
 
+  /// Data available during model-wide update hooks before history state is advanced.
   struct ContributionUpdateContext
   {
     ContributionPointContext point;
     ViscoElastState& state;
   };
 
+  /**
+   * \brief Common mutable evaluation state passed to each active contribution.
+   *
+   * The stress and tangent references are additive accumulators. Each contribution adds its
+   * viscous response to the elastic response prepared by Mat::ViscoElastHyper and stores the
+   * current internal variables in ViscoElastState.
+   */
   struct ContributionEvaluateBase
   {
     ContributionPointContext point;
@@ -66,6 +89,13 @@ namespace Mat::ViscoElast
     Core::LinAlg::Matrix<6, 6>& cmat;
   };
 
+  /**
+   * \brief Evaluation workspace for iso-rate style viscous summands.
+   *
+   * This context intentionally exposes the hyperelastic invariant work arrays used by the iso-rate
+   * coefficient hooks. The arrays are owned by Mat::ViscoElastHyper::EvaluateWorkspace and
+   * reused across the active contribution sequence for the current Gauss point.
+   */
   struct IsoRateEvaluateContext
   {
     ContributionEvaluateBase base;
@@ -91,17 +121,26 @@ namespace Mat::ViscoElast
     Core::LinAlg::Matrix<6, 6>& id4sharp;
   };
 
+  /// Evaluation data needed by the generalized Maxwell contribution.
   struct GeneralizedMaxwellEvaluateContext
   {
     ContributionEvaluateBase base;
     const Core::LinAlg::Matrix<6, 1>& glstrain_mat;
   };
 
+  /// Evaluation data needed by the FSLS contribution.
   struct FslsEvaluateContext
   {
     ContributionEvaluateBase base;
   };
 
+  /**
+   * \brief Base interface for one active viscoelastic model contribution.
+   *
+   * Contributions encapsulate model-specific setup metadata, runtime context, and history-size
+   * requirements. The owning material keeps the active ordering explicit and dispatches typed
+   * evaluation contexts so each model receives only the data it needs.
+   */
   class Contribution
   {
    public:

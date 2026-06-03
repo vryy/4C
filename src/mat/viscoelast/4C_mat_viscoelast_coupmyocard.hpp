@@ -22,10 +22,10 @@ namespace Mat
     namespace PAR
     {
       /*!
-       * @brief material parameters for viscous part of myocardial matrix
+       * @brief Parameters for the coupled myocardial matrix viscous summand.
        *
-       * <h3>Input line</h3>
-       * MAT 1 VISCO_CoupMyocard N 1
+       * The parameter object stores the viscosity-like coefficient used by CoupMyocard and is
+       * consumed through the visco summand factory.
        */
       class CoupMyocard : public Core::Mat::PAR::Parameter
       {
@@ -36,7 +36,7 @@ namespace Mat
         /// @name material parameters
         //@{
 
-        /// material parameters
+        /// Viscosity-like coefficient of the myocardial matrix response.
         double n_;
 
         //@}
@@ -54,7 +54,10 @@ namespace Mat
     }  // namespace PAR
 
     /*!
-     * @brief Isochoric coupled viscous material with pseudo-potential
+     * @brief Iso-rate style coupled viscous summand for myocardial matrix response.
+     *
+     * Within Mat::ViscoElastHyper, this summand activates IsoRateContribution and contributes
+     * principal-rate coefficients to the common iso-rate evaluation path.
      *
      * Strain energy function is given by
      * \f[

@@ -23,6 +23,8 @@
 #include "4C_mat_viscoelast_isoratedep.hpp"
 #include "4C_mat_viscoelast_summand.hpp"
 
+#include <optional>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace
@@ -57,17 +59,17 @@ Mat::PAR::ViscoElastHyper::ViscoElastHyper(const Core::Mat::PAR::Parameter::Data
 Mat::PAR::ViscoElastHyper::SummandSplit Mat::PAR::ViscoElastHyper::parse_summand_split(
     const Core::Mat::PAR::Parameter::Data& matdata)
 {
-  const int* numelast = matdata.parameters.get_if<int>("NUMELAST");
-  const std::vector<int>* elast_matids =
-      matdata.parameters.get_if<std::vector<int>>("ELAST_MATIDS");
-  const int* numvisco = matdata.parameters.get_if<int>("NUMVISCO");
-  const std::vector<int>* visco_matids =
-      matdata.parameters.get_if<std::vector<int>>("VISCO_MATIDS");
+  const auto& numelast = matdata.parameters.get<std::optional<int>>("NUMELAST");
+  const auto& elast_matids =
+      matdata.parameters.get<std::optional<std::vector<int>>>("ELAST_MATIDS");
+  const auto& numvisco = matdata.parameters.get<std::optional<int>>("NUMVISCO");
+  const auto& visco_matids =
+      matdata.parameters.get<std::optional<std::vector<int>>>("VISCO_MATIDS");
 
-  const bool has_split_field = numelast != nullptr || elast_matids != nullptr ||
-                               numvisco != nullptr || visco_matids != nullptr;
-  const bool has_complete_split = numelast != nullptr && elast_matids != nullptr &&
-                                  numvisco != nullptr && visco_matids != nullptr;
+  const bool has_split_field = numelast.has_value() || elast_matids.has_value() ||
+                               numvisco.has_value() || visco_matids.has_value();
+  const bool has_complete_split = numelast.has_value() && elast_matids.has_value() &&
+                                  numvisco.has_value() && visco_matids.has_value();
 
   FOUR_C_ASSERT_ALWAYS(!has_split_field || has_complete_split,
       "Split MAT_ViscoElastHyper input requires NUMELAST, ELAST_MATIDS, NUMVISCO and "
@@ -76,6 +78,13 @@ Mat::PAR::ViscoElastHyper::SummandSplit Mat::PAR::ViscoElastHyper::parse_summand
 
   if (has_complete_split)
   {
+    FOUR_C_ASSERT_ALWAYS(*numelast >= 0,
+        "Invalid MAT_ViscoElastHyper setup (MAT {}): NUMELAST={} must be non-negative.", matdata.id,
+        *numelast);
+    FOUR_C_ASSERT_ALWAYS(*numvisco >= 0,
+        "Invalid MAT_ViscoElastHyper setup (MAT {}): NUMVISCO={} must be non-negative.", matdata.id,
+        *numvisco);
+
     SummandSplit split;
     split.numelast = *numelast;
     split.elast_matids = *elast_matids;
@@ -86,21 +95,21 @@ Mat::PAR::ViscoElastHyper::SummandSplit Mat::PAR::ViscoElastHyper::parse_summand
   }
 
   FOUR_C_ASSERT_ALWAYS(Global::Problem::instance()->materials() != nullptr,
-      "Cannot derive MAT_ViscoElastHyper legacy summand split for MAT {} because no global "
+      "Cannot derive MAT_ViscoElastHyper automatic summand split for MAT {} because no global "
       "material bundle is available.",
       matdata.id);
 
   FOUR_C_ASSERT_ALWAYS(Global::Problem::instance()->materials()->num() != 0,
-      "Cannot derive MAT_ViscoElastHyper legacy summand split for MAT {} because the global "
+      "Cannot derive MAT_ViscoElastHyper automatic summand split for MAT {} because the global "
       "material bundle is empty.",
       matdata.id);
 
   SummandSplit split;
   split.uses_legacy_matids = true;
 
-  const std::vector<int>& legacy_matids = matdata.parameters.get<std::vector<int>>("MATIDS");
+  const std::vector<int>& matids = matdata.parameters.get<std::vector<int>>("MATIDS");
   const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
-  for (const int summand_mat_id : legacy_matids)
+  for (const int summand_mat_id : matids)
   {
     auto* sumpar =
         Global::Problem::instance(probinst)->materials()->parameter_by_id(summand_mat_id);
@@ -135,7 +144,7 @@ Mat::PAR::ViscoElastHyper::ViscoElastHyper(
 
   FOUR_C_ASSERT_ALWAYS(!uses_legacy_matids_ ||
                            static_cast<int>(elast_matids_.size() + visco_matids_.size()) == nummat_,
-      "Invalid MAT_ViscoElastHyper legacy partitioning (MAT {}): NUMMAT={} but partitioned "
+      "Invalid MAT_ViscoElastHyper automatic partitioning (MAT {}): NUMMAT={} but partitioned "
       "ELAST_MATIDS({}) + VISCO_MATIDS({}) do not match.",
       id(), nummat_, elast_matids_.size(), visco_matids_.size());
 

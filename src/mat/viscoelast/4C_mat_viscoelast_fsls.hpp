@@ -22,6 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Mat::ViscoElast
 {
+  /**
+   * \brief Contribution implementation for the fractional standard linear solid model.
+   *
+   * Setup reads the single active FSLS summand and caches material parameters plus the maximum
+   * artificial-stress history capacity. Evaluation computes the additive FSLS stress/tangent and
+   * writes the current artificial stress that will be appended to history during update.
+   */
   class FslsContribution final : public Contribution
   {
    public:
@@ -32,6 +39,7 @@ namespace Mat::ViscoElast
     [[nodiscard]] unsigned int history_capacity_for_update() const override;
 
    private:
+    /// Material parameters cached during setup.
     struct Metadata
     {
       double tau = 0.0;
@@ -40,6 +48,7 @@ namespace Mat::ViscoElast
       int summand_mat_id = -1;
     };
 
+    /// Runtime history settings derived from the structural dynamic parameters.
     struct RuntimeContext
     {
       unsigned int max_history_size = 0;
@@ -59,10 +68,10 @@ namespace Mat::ViscoElast
   namespace PAR
   {
     /*!
-     * @brief material parameters for viscous contribution according the FSLS-model
+     * @brief Parameters for the fractional standard linear solid visco contribution.
      *
-     * <h3>Input line</h3>
-     * MAT 1 VISCO_FSLS TAU 0.1 ALPHA 0.5 BETA 1
+     * The parameter object stores relaxation time, fractional order, and viscous weighting. It is
+     * consumed by FslsContribution during setup and does not create a standalone material object.
      */
     class Fsls : public Core::Mat::PAR::Parameter
     {
@@ -73,9 +82,11 @@ namespace Mat::ViscoElast
       /// @name material parameters
       //@{
 
-      /// material parameters
+      /// Positive relaxation time.
       double tau_;
+      /// Fractional derivative order in the interval [0, 1).
       double alpha_;
+      /// Weighting of the viscous contribution relative to the elastic stress.
       double beta_;
 
       //@}
@@ -94,10 +105,11 @@ namespace Mat::ViscoElast
 
 
   /*!
-   * @brief Material VISCO_FSLS
+   * @brief Parameter-backed summand for the fractional standard linear solid model.
    *
-   * This material offers a viscous and hyperelastic part. The model consists
-   * of one spring in parallel to one sequential branch of a spring and a springpot.
+   * The model consists of one spring in parallel to one sequential branch of a spring and a
+   * springpot. Within Mat::ViscoElastHyper, this summand activates FslsContribution and supplies
+   * the cached scalar parameters used by the FSLS kernel.
    *
    * A springpot is between a spring and a dashpot. The parameter alpha regulates
    * how much damping is introduced.
@@ -165,10 +177,14 @@ namespace Mat::ViscoElast
 
   namespace Kernels
   {
+    /// Stress-like vector used by the FSLS kernel and history containers.
     using FslsStressVector = Core::LinAlg::Matrix<6, 1>;
+    /// Tangent matrix used by the FSLS kernel.
     using FslsTangentMatrix = Core::LinAlg::Matrix<6, 6>;
+    /// Artificial-stress history indexed by Gauss point and stored time level.
     using FslsHistory = std::vector<std::vector<FslsStressVector>>;
 
+    /// Input data required by the pure FSLS kernel.
     struct FslsKernelInput
     {
       int visco_mat_id = -1;
@@ -181,6 +197,7 @@ namespace Mat::ViscoElast
       const FslsHistory* previous_history = nullptr;
     };
 
+    /// Evaluate FSLS artificial stress, additive stress contribution, and additive tangent.
     void evaluate_fsls_kernel(const FslsStressVector& stress, const FslsTangentMatrix& cmat,
         FslsStressVector& q_current_for_history, FslsStressVector& q_additive,
         FslsTangentMatrix& cmatq_additive, const FslsKernelInput& input);

@@ -22,24 +22,39 @@ FOUR_C_NAMESPACE_OPEN
 namespace Mat
 {
   /**
-   * \brief Per-Gauss-point viscoelastic history state for MAT_ViscoElastHyper.
+   * \brief Per-Gauss-point history state for all active Mat::ViscoElastHyper contributions.
    *
-   * This struct owns all time-dependent internal variables that must be stored,
-   * advanced between previous/current time levels, and serialized for MPI/restart.
+   * ViscoElastState owns the time-dependent internal variables that must survive nonlinear
+   * iterations, time-step advancement, communication, and restart. It is intentionally independent
+   * of the constitutive kernels: kernels receive read-only previous state and write current state
+   * through narrow accessors.
+   *
+   * Storage layout:
+   * - Iso-rate state stores previous/current right Cauchy-Green and modified right Cauchy-Green
+   *   tensors per Gauss point.
+   * - Generalized Maxwell state stores previous/current viscous and elastic branch stresses per
+   *   Gauss point and branch.
+   * - FSLS state stores the current artificial stress per Gauss point plus the converged artificial
+   *   stress history used by the fractional update.
    *
    * Lifecycle contract:
-   * - `initialize_from_setup(...)` or `deserialize_state(...)` activates optional
-   *   model sub-states and prepares containers.
-   * - Constitutive kernels write current-step values via `set_*_current_*` accessors.
-   * - `advance_time_step(...)` commits current values to previous history and resets
-   *   current-step storage for the next evaluation cycle.
-   * - Access to inactive model state is rejected with explicit diagnostics.
+   * - initialize_from_setup() or deserialize_state() activates the requested model sub-states and
+   *   sizes their containers.
+   * - Evaluation writes current-step values with the set_*_current_* accessors.
+   * - advance_time_step() commits current values to previous history and resets current storage for
+   *   the next time step.
+   * - serialize_state() and deserialize_state() preserve only active model histories.
+   * - Access to inactive or uninitialized model state is rejected with explicit diagnostics.
    */
   struct ViscoElastState
   {
+    /// Fixed-size stress-like vector used by all visco history containers.
     using StressVector = Core::LinAlg::Matrix<NUM_STRESS_3D, 1>;
+    /// One Gauss-point history vector, indexed by branch or stored time level depending on model.
     using PointHistory = std::vector<StressVector>;
+    /// Generalized Maxwell container indexed by Gauss point and branch.
     using BranchHistory = std::vector<PointHistory>;
+    /// FSLS container indexed by Gauss point and stored artificial-stress history entry.
     using FslsHistory = std::vector<PointHistory>;
 
     /// \brief Previous/current kinematic history for the iso-rate visco model.
@@ -84,7 +99,7 @@ namespace Mat
       const StressVector& modrcg;
     };
 
-    /// \brief Activation flags for optional visco model histories.
+    /// \brief Activation flags for the optional model sub-states owned by this aggregate.
     struct ActiveModels
     {
       bool iso_rate = false;
@@ -113,18 +128,24 @@ namespace Mat
     /// \brief Returns whether the state has been initialized.
     [[nodiscard]] bool initialized() const;
 
-    /// \brief Serialize active model histories to communication buffer.
+    /**
+     * \brief Serialize active model histories to a communication buffer.
+     *
+     * The active model descriptor is supplied by the owning material and must match the configured
+     * state when the state is initialized.
+     */
     void serialize_state(
         Core::Communication::PackBuffer& data, const ActiveModels& active_models) const;
-    /// \brief Deserialize active model histories from communication buffer.
+
+    /// Deserialize active model histories and configure this state accordingly.
     void deserialize_state(
         Core::Communication::UnpackBuffer& buffer, const ActiveModels& active_models);
 
-    /// \brief Initialize state containers from setup metadata.
+    /// Initialize state containers from setup metadata and active model selection.
     void initialize_from_setup(int gp_count, const ActiveModels& active_models,
         std::size_t generalized_maxwell_branch_count);
 
-    /// \brief Advance active histories from current to previous and reset current state.
+    /// Advance active histories from current to previous and reset current state containers.
     void advance_time_step(
         const ActiveModels& active_models, unsigned int fsls_max_history_size, int visco_mat_id);
 

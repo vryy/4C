@@ -27,6 +27,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Mat::ViscoElast
 {
+  /**
+   * \brief Contribution implementation for iso-rate style viscous summands.
+   *
+   * The contribution evaluates rate-dependent kinematics, lets active visco summands add their
+   * invariant coefficients, and adds the resulting isotropic viscous stress/tangent response to the
+   * material accumulators. It uses previous/current right Cauchy-Green history stored in
+   * ViscoElastState.
+   */
   class IsoRateContribution final : public Contribution
   {
    public:
@@ -44,11 +52,10 @@ namespace Mat::ViscoElast
   namespace PAR
   {
     /*!
-     * @brief material parameters for isochoric contribution of a frequency independent
-     * viscoelastic material
+     * @brief Parameters for an iso-rate dependent viscous summand.
      *
-     * <h3>Input line</h3>
-     * MAT 1 VISCO_IsoRateDep N 1
+     * The parameter object stores the viscosity-like coefficient used by IsoRateDep and is consumed
+     * through the visco summand factory.
      */
     class IsoRateDep : public Core::Mat::PAR::Parameter
     {
@@ -59,7 +66,7 @@ namespace Mat::ViscoElast
       /// @name material parameters
       //@{
 
-      /// material parameters
+      /// Viscosity-like coefficient of the iso-rate response.
       double n_;
 
       //@}
@@ -78,17 +85,16 @@ namespace Mat::ViscoElast
   }  // namespace PAR
 
   /*!
-   * @brief Isochoric general power material
+   * @brief Parameter-backed summand for an isochoric iso-rate viscous response.
    *
-   * This is the isochoric part of a viscohyperelastic, isotropic
-   * material depending on the modified invariants of the rate of the right
-   * Cauchy-Green tensor.
+   * This summand contributes modified invariant coefficients to IsoRateContribution. The response
+   * depends on the modified invariants of the rate of the right Cauchy-Green tensor.
    *
    * Strain energy function is given by
    * \f[
    *   \Psi = n \overline{J}_2 (\overline{I}_1 -3).
    * \f]
-   * (n = \eta)
+   * (n = \f$\eta\f$)
    */
   class IsoRateDep : public Summand
   {
@@ -155,19 +161,23 @@ namespace Mat::ViscoElast
     using Matrix81 = Core::LinAlg::Matrix<8, 1>;
     using Matrix331 = Core::LinAlg::Matrix<33, 1>;
 
+    /// Evaluate iso-rate viscous coefficient arrays from active summands.
     void evaluate_mu_xi_kernel(const std::vector<std::shared_ptr<Summand>>& summands,
         bool isoprinc_active, bool isomod_active, Matrix31& prinv, Matrix31& modinv, Matrix81& mu,
         Matrix81& modmu, Matrix331& xi, Matrix331& modxi, Matrix71& rateinv, Matrix71& modrateinv,
         const Teuchos::ParameterList& params, double dt, int gp, int ele_gid);
 
+    /// Evaluate current kinematic rates and modified-rate invariants for iso-rate models.
     void evaluate_kin_quant_vis_kernel(const Matrix61& rcg, const Matrix61& scg,
         const Matrix31& prinv, const Matrix61& scg_previous, const Matrix61& modrcg_previous,
         double dt, Matrix61& modrcg, Matrix61& scgrate, Matrix61& modrcgrate, Matrix71& modrateinv,
         int visco_mat_id, int gp);
 
+    /// Add principal iso-rate stress and tangent contributions.
     void evaluate_iso_visco_principal_kernel(Matrix61& stress, Matrix66& cmat, const Matrix81& mu,
         const Matrix331& xi, const Matrix66& id4sharp, const Matrix61& scgrate);
 
+    /// Add modified-invariant iso-rate stress and tangent contributions.
     void evaluate_iso_visco_modified_kernel(Matrix61& stressisomodisovisco,
         Matrix61& stressisomodvolvisco, Matrix66& cmatisomodisovisco, Matrix66& cmatisomodvolvisco,
         const Matrix31& prinv, const Matrix31& modinv, const Matrix81& modmu,

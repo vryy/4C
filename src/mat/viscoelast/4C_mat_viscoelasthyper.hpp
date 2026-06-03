@@ -48,53 +48,63 @@ namespace Mat
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
-    /// Collection of viscohyperelastic materials
-    ///
-    /// Storage map of hyperelastic summands.
-
-
+    /**
+     * \brief Parameter object for Mat::ViscoElastHyper.
+     *
+     * The material is assembled from two ordered summand sets: purely elastic summands and
+     * viscoelastic summands. The explicit split fields `NUMELAST`/`ELAST_MATIDS` and
+     * `NUMVISCO`/`VISCO_MATIDS` define these sets directly. If those fields are omitted, the
+     * material list from `NUMMAT`/`MATIDS` is partitioned by material type during parameter
+     * construction.
+     *
+     * The split is stored as immutable parameter data because the material object uses it to build
+     * separate elastic and visco summand instances, contribution objects, and history state.
+     */
     class ViscoElastHyper : public Mat::PAR::ElastHyper
-    //    class ViscoElastHyper : public Core::Mat::PAR::Parameter
     {
       friend class Mat::ViscoElastHyper;
 
      private:
+      /// Result of parsing the current material input into elastic and visco summand sets.
       struct SummandSplit
       {
+        /// Number of elastic summands declared by the input split.
         int numelast = 0;
+        /// Material IDs of elastic summands, evaluated before visco contributions.
         std::vector<int> elast_matids;
+        /// Number of visco summands declared by the input split.
         int numvisco = 0;
+        /// Material IDs of visco summands that activate model contributions.
         std::vector<int> visco_matids;
+        /// True if the split was derived from the complete `MATIDS` list by material type.
         bool uses_legacy_matids = true;
       };
 
+      /// Parse the input parameters into explicit elastic and visco summand sets.
       static SummandSplit parse_summand_split(const Core::Mat::PAR::Parameter::Data& matdata);
       ViscoElastHyper(
           const Core::Mat::PAR::Parameter::Data& matdata, const SummandSplit& summand_split);
 
      public:
-      /// standard constructor
-      ///
-      /// This constructor recursively calls the constructors of the
-      /// parameter sets of the hyperelastic summands.
+      /// Construct and validate the split between elastic and visco summands.
       ViscoElastHyper(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       std::shared_ptr<Core::Mat::Material> create_material() override;
 
-      /// number of elastic summands in split-mode input
+      /// Number of elastic summands used by this material.
       const int numelast_;
 
-      /// list of elastic summand material IDs in split-mode input
+      /// Material IDs of elastic summands used by this material.
       const std::vector<int> elast_matids_;
 
-      /// number of visco summands in split-mode input
+      /// Number of visco summands used by this material.
       const int numvisco_;
 
-      /// list of visco summand material IDs in split-mode input
+      /// Material IDs of visco summands used by this material.
       const std::vector<int> visco_matids_;
 
-      /// true if legacy NUMMAT/MATIDS input was used and auto-partitioned
+      /// True if the summand split was derived from the complete `MATIDS` list by material type.
       const bool uses_legacy_matids_;
 
       //@}
@@ -116,35 +126,28 @@ namespace Mat
     static ViscoElastHyperType instance_;
   };
 
-
-  /*----------------------------------------------------------------------*/
-  /// Collection of hyperelastic materials
-  ///
-  /// This collection offers to additively compose a stress response
-  /// based on summands defined separately.  This is possible, because
-  /// we deal with hyperelastic materials, which are composed
-  /// of (Helmholtz free energy density) potentials.  Effectively, we want
-  ///\f[
-  ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
-  ///\f]
-  /// in which the individual \f$\Psi_i\f$ is implemented as #Mat::Elastic::Summand.
-  ///
-  /// Quite often the right Cauchy-Green 2-tensor \f$\boldsymbol{C}\f$
-  /// is replaced by its various invariant forms as argument.
-  ///
-  /// The task of ElastHyper is the evaluation of the
-  /// potential energies and their derivatives to obtain the actual
-  /// stress response and the elasticity tensor. The storage is located
-  /// at the associated member #params_.
-  ///
-  /// <h3>References</h3>
-  /// <ul>
-  /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-  /// </ul>
-  ///
-
   class Material;
 
+  /*----------------------------------------------------------------------*/
+  /**
+   * \brief Finite-strain visco-hyperelastic material assembled from summand contributions.
+   *
+   * Mat::ViscoElastHyper evaluates a hyperelastic base response and augments it with one or more
+   * active viscoelastic model contributions. The material owns separate elastic and visco summand
+   * vectors, computes the elastic stress/tangent first, applies active visco contributions in a
+   * deterministic model sequence, and finally applies elastic post-processing hooks such as stretch
+   * and anisotropic terms.
+   *
+   * Lifecycle:
+   * - setup(): builds elastic/visco summands, detects active visco model families, creates
+   *   contribution objects, caches model metadata, and initializes per-Gauss-point history state.
+   * - evaluate(): prepares kinematic workspace, evaluates the elastic base response, adds active
+   *   visco contributions, and writes current internal variables to ViscoElastState.
+   * - update(): lets summands update, then advances previous/current visco history state for the
+   *   next time step.
+   * - pack()/unpack(): serialize summand state, active model flags, anisotropy data, and
+   *   ViscoElastState for communication and restart.
+   */
   class ViscoElastHyper : public Mat::ElastHyper
   {
    public:
@@ -184,8 +187,8 @@ namespace Mat
     /// parobject id defined at the top of this file and delivered by
     /// unique_par_object_id().
     ///
-    /// \param data (in) : vector storing all data to be unpacked into this
-    ///                    instance.
+    /// \param buffer (in) : buffer storing all data to be unpacked into this
+    ///                      instance.
     void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
@@ -209,10 +212,10 @@ namespace Mat
       return std::make_shared<ViscoElastHyper>(*this);
     }
 
-    /// Check if history variables are already initialized
+    /// Check whether the viscoelastic history state has been initialized.
     virtual bool initialized() const { return state_.initialized(); }
 
-    /// hyperelastic stress response plus elasticity tensor
+    /// Evaluate elastic plus active viscoelastic stress response and material tangent.
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
         const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
@@ -220,15 +223,15 @@ namespace Mat
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp,
         int eleGID) override;  ///< Constitutive matrix
 
-    /// setup material description
+    /// Build summands, contribution metadata, and viscoelastic history containers.
     void setup(int numgp, const Discret::Elements::Fibers& fibers,
         const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
-    /// update history variables
+    /// Advance active viscoelastic histories after a converged time step.
     void update() override;
 
    protected:
-    /// @name Flags to specify the viscous formulations
+    /// @name Active viscous formulation flags detected from the visco summand set.
     //@{
     bool isovisco_;                   ///< global indicator for isotropic split viscous formulation
     bool visco_generalized_maxwell_;  ///< global indicator for viscous contribution of branches
@@ -237,6 +240,14 @@ namespace Mat
                        //@}
 
    private:
+    /**
+     * \brief Per-evaluation scratch storage shared by elastic and visco contribution steps.
+     *
+     * The workspace keeps matrix/tensor temporaries out of the contribution interfaces and avoids
+     * repeated allocation while evaluating a Gauss point. It contains strain/tensor conversions,
+     * invariant arrays, coefficient arrays used by iso-rate summands, identity tensors, and the
+     * positive time-step size used by active visco models.
+     */
     struct EvaluateWorkspace
     {
       EvaluateWorkspace();
@@ -269,6 +280,7 @@ namespace Mat
     using ViscoModelKind = ViscoElast::ViscoModelKind;
     using ActiveModelSequence = std::vector<ViscoModelKind>;
 
+    /// Fixed order in which recognized visco model families are detected and evaluated.
     [[nodiscard]] static constexpr std::array<ViscoModelKind, 3> visco_model_registry()
     {
       return {ViscoModelKind::iso_rate, ViscoModelKind::generalized_maxwell, ViscoModelKind::fsls};
@@ -311,13 +323,20 @@ namespace Mat
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID);
 
+    /// Active model families in evaluation order, derived from the visco summands.
     ActiveModelSequence active_model_sequence_;
+    /// Model-specific setup/update/evaluation helpers for active visco model families.
     std::vector<std::shared_ptr<ViscoElast::Contribution>> contributions_;
+    /// Elastic summands that define the hyperelastic base response.
     std::vector<std::shared_ptr<Mat::Elastic::Summand>> elast_potsum_;
+    /// Visco summands that define active viscous model contributions.
     std::vector<std::shared_ptr<ViscoElast::Summand>> visco_potsum_;
+    /// Formulation flags contributed by elastic summands only.
     SummandProperties elast_summand_properties_;
+    /// Combined formulation flags used where elastic and visco capabilities interact.
     SummandProperties effective_summand_properties_;
-    ViscoElastState state_;  ///< unified viscoelastic history state
+    /// Per-Gauss-point current/previous history state for all active visco model families.
+    ViscoElastState state_;
   };  // class ViscoElastHyper
 
 }  // namespace Mat

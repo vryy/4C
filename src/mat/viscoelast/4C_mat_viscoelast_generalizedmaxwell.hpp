@@ -27,6 +27,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Mat::ViscoElast
 {
+  /**
+   * \brief Contribution implementation for the generalized Maxwell visco model.
+   *
+   * Setup resolves the top-level generalized Maxwell summand, validates its branch materials, and
+   * caches branch elastic summands, branch relaxation times, solve kind, and runtime integration
+   * data. Evaluation computes the elastic response of each branch and advances the branch stress
+   * history with the selected time integration rule.
+   */
   class GeneralizedMaxwellContribution final : public Contribution
   {
    public:
@@ -41,10 +49,14 @@ namespace Mat::ViscoElast
     [[nodiscard]] std::size_t history_entry_count_for_setup() const override;
 
    private:
+    /// Cached data for one viscoelastic branch.
     struct BranchMetadata
     {
+      /// Elastic summands that define this branch response.
       std::vector<std::shared_ptr<Elastic::Summand>> summands;
+      /// Positive branch relaxation time.
       double tau = 0.0;
+      /// Formulation flags of the branch elastic summands.
       SummandProperties properties;
     };
 
@@ -54,6 +66,7 @@ namespace Mat::ViscoElast
       exponential_time_discretization
     };
 
+    /// Setup metadata shared by all Gauss-point evaluations of this contribution.
     struct Metadata
     {
       int summand_mat_id = -1;
@@ -61,6 +74,7 @@ namespace Mat::ViscoElast
       std::vector<BranchMetadata> branches;
     };
 
+    /// Runtime parameters read from the structural dynamic settings.
     struct RuntimeContext
     {
       double one_step_theta = 0.5;
@@ -82,13 +96,12 @@ namespace Mat::ViscoElast
   namespace PAR
   {
     /*!
-     * @brief material parameters for viscous contribution to a viscoelastic branch of a
-     * generalized Maxwell model
+     * @brief Parameters for the top-level generalized Maxwell visco contribution.
      *
-     * <h3>Input line</h3>
-     *  MAT 1 VISCO_GeneralizedMaxwell NUMBRANCH 3 MATIDS 4 5 6 SOLVE
-     *  ExponentialTimeDiscretization
-     *  MAT 1 VISCO_GeneralizedMaxwell NUMBRANCH 3 MATIDS 4 5 6 SOLVE OneStepTheta
+     * The material IDs stored in this parameter object reference
+     * PAR::ViscoBranch entries. Each branch entry then references the elastic material that
+     * defines the branch stiffness. The contribution setup caches the resolved branch data before
+     * Gauss-point evaluation starts.
      */
     class GeneralizedMaxwell : public Core::Mat::PAR::Parameter
     {
@@ -99,9 +112,11 @@ namespace Mat::ViscoElast
       /// @name material parameters
       //@{
 
-      /// material parameters
+      /// Number of viscoelastic branches.
       int numbranch_;
+      /// Material IDs of PAR::ViscoBranch entries.
       const std::vector<int> matids_;
+      /// Time integration rule for branch evolution.
       std::string solve_;
       //@}
 
@@ -112,11 +127,11 @@ namespace Mat::ViscoElast
 
 
     /*!
-     * @brief material parameters for viscous contribution to a viscoelastic branch of a
-     * generalized Maxwell model
+     * @brief Parameters for one branch of a generalized Maxwell contribution.
      *
-     * <h3>Input line</h3>
-     * MAT 1 VISCO_GeneralizedMaxwellBranch TAU 1.5 MATID 2
+     * A branch stores its relaxation time and the material ID of the elastic summand used as branch
+     * stiffness. Branch materials are resolved through the generalized Maxwell contribution and are
+     * not active top-level contributions on their own.
      */
     class ViscoBranch : public Core::Mat::PAR::Parameter
     {
@@ -127,9 +142,9 @@ namespace Mat::ViscoElast
       /// @name material parameters
       //@{
 
-      /// material parameters
-
+      /// Positive branch relaxation time.
       double tau_;
+      /// Material ID of the elastic summand that defines branch stiffness.
       int matid_;
 
 
@@ -148,8 +163,13 @@ namespace Mat::ViscoElast
 
   }  // namespace PAR
 
-
-
+  /**
+   * \brief Parameter-backed summand for the top-level generalized Maxwell model.
+   *
+   * This adapter resolves the branch parameter objects and their elastic summands. The actual
+   * stress/tangent contribution is implemented in GeneralizedMaxwellContribution, which consumes
+   * the cached branch metadata during evaluation.
+   */
   class GeneralizedMaxwell : public Summand
   {
    public:
@@ -172,7 +192,7 @@ namespace Mat::ViscoElast
         std::string& solve  /// variant of the solution of the evolution integral
         ) override;
 
-    /// @name Access methods
+    /// @name Resolved branch data used by GeneralizedMaxwellContribution
     //@{
     const std::vector<std::vector<std::shared_ptr<Elastic::Summand>>>& get_branchespotsum() const
     {
@@ -212,14 +232,15 @@ namespace Mat::ViscoElast
     PAR::GeneralizedMaxwell* params_;
 
    protected:
-    /// summands of the GeneralizedMaxwell material or each branch
+    /// Elastic summands of each generalized Maxwell branch.
     std::vector<std::vector<std::shared_ptr<Elastic::Summand>>> branchespotsum_;
-    /// branch relaxation parameters
+    /// Relaxation time of each generalized Maxwell branch.
     std::vector<double> branchtau_;
-    /// summands in one particular branch
+    /// Temporary storage used while resolving one branch.
     std::vector<std::shared_ptr<Elastic::Summand>> internalpotsum_;
   };
 
+  /// Parameter-backed summand representing one generalized Maxwell branch definition.
   class ViscoBranch : public Summand
   {
    public:
@@ -265,6 +286,7 @@ namespace Mat::ViscoElast
 
   namespace Kernels
   {
+    /// Branch stress integration rule used by the pure generalized Maxwell kernel.
     enum class GeneralizedMaxwellSolveKind
     {
       one_step_theta,
@@ -275,6 +297,7 @@ namespace Mat::ViscoElast
     using TangentMatrix = Core::LinAlg::Matrix<6, 6>;
     using PointHistory = std::vector<StressVector>;
 
+    /// Input data that is independent of branch elastic response evaluation.
     struct GeneralizedMaxwellKernelInput
     {
       int visco_mat_id = -1;
@@ -288,9 +311,11 @@ namespace Mat::ViscoElast
       const PointHistory* previous_branch_stress = nullptr;
     };
 
+    /// Callback that computes the current elastic response of one branch.
     using BranchResponseEvaluator = std::function<void(
         int branch_index, StressVector& branch_elastic_stress, TangentMatrix& branch_cmat)>;
 
+    /// Evaluate generalized Maxwell branch stresses and additive tangent contribution.
     void evaluate_generalized_maxwell_kernel(StressVector& q_total, TangentMatrix& cmatq_total,
         PointHistory& current_branch_elastic_stress, PointHistory& current_branch_stress,
         const std::vector<double>& branch_taus, const GeneralizedMaxwellKernelInput& input,
