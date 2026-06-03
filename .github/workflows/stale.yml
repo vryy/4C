@@ -5,6 +5,7 @@ name: "Close stale PRs"
 on:
   schedule:
     - cron: '30 12 * * *'
+      timezone: "Europe/Berlin"
 
 env:
   PR_INACTIVITY_AFTER: 180 # days
