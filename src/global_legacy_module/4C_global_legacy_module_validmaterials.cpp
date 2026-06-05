@@ -2652,6 +2652,13 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                         .default_value = std::vector{0},
                         .size = from_parameter<int>("NUMFACINEL")}),
                 parameter<double>("DENS", {.description = "material mass density"}),
+                parameter<double>("REF_TEMPERATURE",
+                    {.description = "reference temperature for thermoelastic expansion.",
+                        .default_value = 0.0,
+                        .validator = Validators::positive_or_zero<double>()}),
+                parameter<double>("THERMAL_EXPANSION_COEFFICIENT",
+                    {.description = "coefficient of thermal expansion $\\alpha_T$",
+                        .default_value = 0.0}),
             },
             {.description = "multiplicative split of deformation gradient"});
   }
@@ -2831,6 +2838,11 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 "FIBER_READER_ID", {.description = "MAT ID of the used fiber direction reader for "
                                                    "transversely isotropic behavior",
                                        .validator = positive<int>()}),
+            parameter<double>("TAYLOR_QUINNEY_COEFFICIENT",
+                {.description =
+                        "Taylor-Quinney coefficient $\\xi_{TQ}$ modeling the internal dissipation",
+                    .default_value = 0.0,
+                    .validator = positive_or_zero<double>()}),
             parameter<std::optional<double>>(
                 "YIELD_COND_A", {.description = "transversely isotropic version of the Hill(1948) "
                                                 "yield condition: parameter A, following the "
