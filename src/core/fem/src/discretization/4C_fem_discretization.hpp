@@ -640,14 +640,14 @@ namespace Core::FE
         bool replaceinstatdofsets = false);
 
     /*!
-    \brief Get master to slave coupling in case of periodic boundary conditions
+    \brief Get target to source coupling in case of periodic boundary conditions
     */
     const std::map<int, std::vector<int>>* get_all_pbc_coupled_col_nodes() const;
 
     /*!
-    \brief Get slave to master connectivity in case of periodic boundary conditions
+    \brief Get source to target connectivity in case of periodic boundary conditions
     */
-    std::shared_ptr<const std::map<int, int>> get_pbc_slave_to_master_node_connectivity() const;
+    std::shared_ptr<const std::map<int, int>> get_pbc_source_to_target_node_connectivity() const;
 
     //@}
 

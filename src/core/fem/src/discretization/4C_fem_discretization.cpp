@@ -586,7 +586,7 @@ const std::map<int, std::vector<int>>* Core::FE::Discretization::get_all_pbc_cou
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::shared_ptr<const std::map<int, int>>
-Core::FE::Discretization::get_pbc_slave_to_master_node_connectivity() const
+Core::FE::Discretization::get_pbc_source_to_target_node_connectivity() const
 {
   // check for pbcs
   for (int nds = 0; nds < num_dof_sets(); nds++)
@@ -598,7 +598,7 @@ Core::FE::Discretization::get_pbc_slave_to_master_node_connectivity() const
     {
       // it is assumed that, if one pbc set is available, all other potential dofsets hold the same
       // layout
-      return pbcdofset->get_slave_to_master_node_connectivity();
+      return pbcdofset->get_source_to_target_node_connectivity();
     }
   }
 

@@ -79,7 +79,7 @@ int Core::FE::DiscretizationHDG::fill_complete(OptionsFillComplete options)
       f->second->build_nodal_pointers(nodes.data());
     }
 
-    // check master/slave relation of current face in terms of the local trafo map
+    // check target/source relation of current face in terms of the local trafo map
     FOUR_C_ASSERT(f->second->parent_target_element() != nullptr,
         "Unexpected topology between face and parent");
     const int* nodeIdsMaster = f->second->parent_target_element()->node_ids();
@@ -100,7 +100,7 @@ int Core::FE::DiscretizationHDG::fill_complete(OptionsFillComplete options)
     {
       Core::Elements::Element* faceMaster = f->second->parent_target_element();
       const int faceMasterNo = f->second->face_target_number();
-      // new master element might be nullptr on MPI computations
+      // new target element might be nullptr on MPI computations
       f->second->set_parent_target_element(f->second->parent_source_element(),
           f->second->parent_source_element() != nullptr ? f->second->face_source_number() : -1);
       f->second->set_parent_source_element(faceMaster, faceMasterNo);

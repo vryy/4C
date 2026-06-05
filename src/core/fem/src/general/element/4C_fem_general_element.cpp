@@ -299,7 +299,7 @@ void Core::Elements::Element::unpack(Core::Communication::UnpackBuffer& buffer)
     mat_[0] = nullptr;
   }
 
-  // node_, face_, parent_master_, parent_slave_ are NOT communicated
+  // node_, face_, parent_target_, parent_source_ are NOT communicated
   node_.resize(0);
   face_.clear();
 }
@@ -868,9 +868,9 @@ void Core::Elements::FaceElement::pack(Core::Communication::PackBuffer& data) co
   add_to_pack(data, type);
   // add base class Discret::Element
   Core::Elements::Element::pack(data);
-  // add lface_master_
+  // add lface_target_
   add_to_pack(data, lface_target_);
-  // Pack Parent Id, used to set parent_master_ after parallel communication!
+  // Pack Parent Id, used to set parent_target_ after parallel communication!
   add_to_pack(data, parent_id_);
 }
 
@@ -886,7 +886,7 @@ void Core::Elements::FaceElement::unpack(Core::Communication::UnpackBuffer& buff
   // extract base class Element
   Core::Elements::Element::unpack(buffer);
 
-  // lface_master_
+  // lface_target_
   extract_from_pack(buffer, lface_target_);
   // Parent Id
   extract_from_pack(buffer, parent_id_);
