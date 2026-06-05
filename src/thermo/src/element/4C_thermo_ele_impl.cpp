@@ -884,12 +884,6 @@ void Discret::Elements::TemperImpl<distype>::linear_disp_contribution(
   // ------------------------------------------------ structural material
   std::shared_ptr<Core::Mat::Material> structmat = get_str_material(ele);
 
-  if (structmat->material_type() == Core::Materials::m_thermostvenant)
-  {
-    std::shared_ptr<Mat::ThermoStVenantKirchhoff> thrstvk =
-        std::dynamic_pointer_cast<Mat::ThermoStVenantKirchhoff>(structmat);
-  }  // m_thermostvenant
-
   Core::LinAlg::Matrix<nen_, 1> Ndctemp_dTBvNT(Core::LinAlg::Initialization::zero);
 
   // --------------------------------------------------- time integration

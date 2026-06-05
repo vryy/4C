@@ -20,6 +20,7 @@
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fs3i_problem_access.hpp"
+#include "4C_fs3i_utils.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
 #include "4C_fsi_monolithicstructuresplit.hpp"
 #include "4C_fsi_utils.hpp"
@@ -51,6 +52,12 @@ FS3I::PartFS3I::PartFS3I(MPI_Comm comm) : FS3IBase(), comm_(comm)
 {
   // Keep constructor empty!
   return;
+}
+
+void FS3I::PartFS3I::validate_structure_scatra_clone_configuration(const Core::FE::Discretization&,
+    const Core::FE::Discretization&,
+    const std::map<std::pair<std::string, std::string>, std::map<int, int>>&) const
+{
 }
 
 /*----------------------------------------------------------------------*/
@@ -183,6 +190,9 @@ void FS3I::PartFS3I::init()
           "If you clone your structure-scatra mesh from the structure use STRUCTSCAL_FIELDCOUPLING "
           "'volume_matching'!");
 
+    validate_structure_scatra_clone_configuration(
+        *structdis, *structscatradis, problem->cloning_material_map());
+
     // fill structure-based scatra discretization by cloning structure discretization
     Core::FE::clone_discretization<SSI::ScatraStructureCloneStrategy>(
         *structdis, *structscatradis, problem->cloning_material_map());
@@ -246,6 +256,12 @@ void FS3I::PartFS3I::init()
       .init_elements = false,
       .do_boundary_conditions = false,
   });
+
+  if (volume_fieldcouplings_[1] == FS3I::coupling_match)
+  {
+    // Restore the structural material after the final discretization setup.
+    FS3I::Utils::set_material_pointers_matching_grid(*structdis, *structscatradis);
+  }
 
   // Note: in the scatra fields we have now the following dof-sets:
   // structure dofset 0: structure dofset
