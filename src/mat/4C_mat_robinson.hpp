@@ -12,10 +12,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
-#include "4C_linalg_serialdensevector.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_thermomechanical.hpp"
+#include "4C_mat_so3_material.hpp"
+#include "4C_mat_trait_thermo_solid.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -106,7 +105,7 @@ namespace Mat
 
   /*----------------------------------------------------------------------*/
   //! wrapper for visco-plastic Robinson's material
-  class Robinson : public ThermoMechanicalMaterial
+  class Robinson : public Trait::ThermoSolid
   {
    public:
     //! construct empty material object
@@ -383,36 +382,7 @@ namespace Mat
 
     //@}
 
-    //! @name thermo material interface
-
-    void evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
-        Core::LinAlg::Matrix<3, 1>& heatflux, const int eleGID) const override;
-
-    void evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
-        Core::LinAlg::Matrix<2, 1>& heatflux, const int eleGID) const override;
-
-    void evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
-        Core::LinAlg::Matrix<1, 1>& heatflux, const int eleGID) const override;
-
-    std::vector<double> conductivity(int eleGID = 0) const override;
-
-    void conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const override;
-
-    void conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const override;
-
-    void conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const override;
-
-    double capacity() const override;
-
-    double capacity_deriv_t() const override;
-
     void reinit(double temperature, unsigned gp) override;
-
-    void reset_current_state() override;
-
-    void commit_current_state() override;
-
-    //@}
 
    private:
     //! my material parameters
@@ -420,9 +390,6 @@ namespace Mat
 
     //! indicator if #Initialize routine has been called
     bool isinit_;
-
-    //! pointer to the internal thermal material
-    std::shared_ptr<Mat::Trait::Thermo> thermo_;
 
     //! current temperature (set by Reinit())
     double current_temperature_{};

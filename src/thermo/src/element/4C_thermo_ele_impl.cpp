@@ -27,12 +27,11 @@
 #include "4C_mat_so3_material.hpp"
 #include "4C_mat_thermoplastichyperelast.hpp"
 #include "4C_mat_thermoplasticlinelast.hpp"
-#include "4C_mat_thermostvenantkirchhoff.hpp"
+#include "4C_mat_trait_thermo.hpp"
 #include "4C_mat_trait_thermo_solid.hpp"
 #include "4C_thermo_ele_action.hpp"
 #include "4C_thermo_element.hpp"  // only for visualization of element data
 #include "4C_thermo_input.hpp"
-#include "4C_utils_enum.hpp"
 #include "4C_utils_function.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

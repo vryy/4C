@@ -9,8 +9,7 @@
 
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_mat_monolithic_solid_scalar_material.hpp"
-#include "4C_mat_trait_solid.hpp"
-#include "4C_mat_trait_thermo.hpp"
+#include "4C_mat_so3_material.hpp"
 
 #ifndef FOUR_C_MAT_TRAIT_THERMO_SOLID_HPP
 #define FOUR_C_MAT_TRAIT_THERMO_SOLID_HPP
@@ -21,7 +20,7 @@ namespace Mat
 {
   namespace Trait
   {
-    class ThermoSolid : public Thermo, public MonolithicSolidScalarMaterial
+    class ThermoSolid : public So3Material, public MonolithicSolidScalarMaterial
     {
      public:
       /*!
@@ -31,7 +30,7 @@ namespace Mat
        * @param gp
        *
        */
-      void reinit(double temperature, unsigned gp) override = 0;
+      virtual void reinit(double temperature, unsigned gp) = 0;
 
       /*!
        * Return stress-temperature modulus and thermal derivative for coupled thermomechanics

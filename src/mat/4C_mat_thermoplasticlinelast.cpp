@@ -65,7 +65,7 @@ Core::Communication::ParObject* Mat::ThermoPlasticLinElastType::create(
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 08/11 |
  *----------------------------------------------------------------------*/
-Mat::ThermoPlasticLinElast::ThermoPlasticLinElast() : params_(nullptr), thermo_(nullptr) {}
+Mat::ThermoPlasticLinElast::ThermoPlasticLinElast() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
@@ -73,7 +73,7 @@ Mat::ThermoPlasticLinElast::ThermoPlasticLinElast() : params_(nullptr), thermo_(
  | called in read_materials --> create_material                           |
  *----------------------------------------------------------------------*/
 Mat::ThermoPlasticLinElast::ThermoPlasticLinElast(Mat::PAR::ThermoPlasticLinElast* params)
-    : params_(params), thermo_(nullptr), plastic_step_(false)
+    : params_(params), plastic_step_(false)
 {
 }
 
@@ -1304,65 +1304,9 @@ bool Mat::ThermoPlasticLinElast::evaluate_output_data(
   return false;
 }
 
-/*----------------------------------------------------------------------*/
-
-void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp,
-    Core::LinAlg::Matrix<3, 3>& cmat, Core::LinAlg::Matrix<3, 1>& heatflux, const int eleGID) const
-{
-  thermo_->evaluate(gradtemp, cmat, heatflux, eleGID);
-}
-
-void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp,
-    Core::LinAlg::Matrix<2, 2>& cmat, Core::LinAlg::Matrix<2, 1>& heatflux, const int eleGID) const
-{
-  thermo_->evaluate(gradtemp, cmat, heatflux, eleGID);
-}
-
-void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp,
-    Core::LinAlg::Matrix<1, 1>& cmat, Core::LinAlg::Matrix<1, 1>& heatflux, const int eleGID) const
-{
-  thermo_->evaluate(gradtemp, cmat, heatflux, eleGID);
-}
-
-std::vector<double> Mat::ThermoPlasticLinElast::conductivity(int eleGID) const
-{
-  return thermo_->conductivity(eleGID);
-}
-
-void Mat::ThermoPlasticLinElast::conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const
-{
-  thermo_->conductivity_deriv_t(dCondDT);
-}
-
-void Mat::ThermoPlasticLinElast::conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const
-{
-  thermo_->conductivity_deriv_t(dCondDT);
-}
-
-void Mat::ThermoPlasticLinElast::conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const
-{
-  thermo_->conductivity_deriv_t(dCondDT);
-}
-
-double Mat::ThermoPlasticLinElast::capacity() const { return thermo_->capacity(); }
-
-double Mat::ThermoPlasticLinElast::capacity_deriv_t() const { return thermo_->capacity_deriv_t(); }
-
 void Mat::ThermoPlasticLinElast::reinit(double temperature, unsigned gp)
 {
   current_temperature_ = temperature;
-  if (thermo_ != nullptr) thermo_->reinit(temperature, gp);
 }
-void Mat::ThermoPlasticLinElast::reset_current_state()
-{
-  if (thermo_ != nullptr) thermo_->reset_current_state();
-}
-
-void Mat::ThermoPlasticLinElast::commit_current_state()
-{
-  if (thermo_ != nullptr) thermo_->commit_current_state();
-}
-
-/*----------------------------------------------------------------------*/
 
 FOUR_C_NAMESPACE_CLOSE

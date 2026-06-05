@@ -15,7 +15,8 @@
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_thermomechanical.hpp"
+#include "4C_mat_so3_material.hpp"
+#include "4C_mat_trait_thermo_solid.hpp"
 #include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -86,7 +87,7 @@ namespace Mat
 
   /*----------------------------------------------------------------------*/
   //! wrapper for finite strain elasto-plastic material
-  class ThermoPlasticHyperElast : public ThermoMechanicalMaterial
+  class ThermoPlasticHyperElast : public Trait::ThermoSolid
   {
    public:
     //! construct empty material object
@@ -327,43 +328,11 @@ namespace Mat
 
     //@}
 
-    //! @name thermo material interface
-
-    void evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
-        Core::LinAlg::Matrix<3, 1>& heatflux, const int eleGID) const override;
-
-    void evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
-        Core::LinAlg::Matrix<2, 1>& heatflux, const int eleGID) const override;
-
-    void evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
-        Core::LinAlg::Matrix<1, 1>& heatflux, const int eleGID) const override;
-
-    std::vector<double> conductivity(int eleGID = 0) const override;
-
-    void conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const override;
-
-    void conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const override;
-
-    void conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const override;
-
-    double capacity() const override;
-
-    double capacity_deriv_t() const override;
-
     void reinit(double temperature, unsigned gp) override;
-
-    void reset_current_state() override;
-
-    void commit_current_state() override;
-
-    //@}
 
    private:
     //! my material parameters
     Mat::PAR::ThermoPlasticHyperElast* params_;
-
-    //! pointer to the internal thermal material
-    std::shared_ptr<Mat::Trait::Thermo> thermo_;
 
     //! current temperature (set by Reinit())
     double current_temperature_{};
