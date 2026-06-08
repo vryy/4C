@@ -146,6 +146,7 @@
 #include "4C_mat_viscoelast_fsls.hpp"
 #include "4C_mat_viscoelast_generalizedmaxwell.hpp"
 #include "4C_mat_viscoelast_isoratedep.hpp"
+#include "4C_mat_viscoelast_quasilineargeneralizedmaxwell.hpp"
 #include "4C_mat_viscoelasthyper.hpp"
 #include "4C_mat_visconeohooke.hpp"
 #include "4C_mat_viscoplastic_no_yield_surface.hpp"
@@ -813,6 +814,11 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     case Core::Materials::mes_generalizedmaxwell:
     {
       return make_parameter_impl<Mat::ViscoElast::PAR::GeneralizedMaxwell>(id, type, input_data);
+    }
+    case Core::Materials::mes_quasilineargeneralizedmaxwell:
+    {
+      return make_parameter_impl<Mat::ViscoElast::PAR::QuasiLinearGeneralizedMaxwell>(
+          id, type, input_data);
     }
     case Core::Materials::mes_isoanisoexpo:
     {

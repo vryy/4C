@@ -190,7 +190,6 @@ namespace Mat::ViscoElast
 
     const Metadata& metadata =
         require_metadata("evaluating generalized Maxwell response", point.gp, point.ele_gid);
-    const int numbranch = static_cast<int>(metadata.branches.size());
 
     double one_step_theta = 0.5;
     if (metadata.solve_kind == SolveKind::one_step_theta)
@@ -199,6 +198,17 @@ namespace Mat::ViscoElast
           "evaluating generalized Maxwell response", point.gp, point.ele_gid);
       one_step_theta = runtime_context.one_step_theta;
     }
+
+    evaluate_branch_material_response(context, metadata, one_step_theta);
+  }
+
+
+  void GeneralizedMaxwellContribution::evaluate_branch_material_response(
+      const GeneralizedMaxwellEvaluateContext& context, const Metadata& metadata,
+      const double one_step_theta) const
+  {
+    const auto& point = context.base.point;
+    const int numbranch = static_cast<int>(metadata.branches.size());
 
     Core::LinAlg::Matrix<6, 1> gl_stress(Core::LinAlg::Initialization::zero);
     Core::LinAlg::Voigt::Strains::to_stress_like(context.glstrain_mat, gl_stress);
@@ -291,7 +301,6 @@ namespace Mat::ViscoElast
     context.base.stress.update(1.0, q, 1.0);
     context.base.cmat.update(1.0, cmatq, 1.0);
   }
-
 
   void GeneralizedMaxwellContribution::update(const ContributionUpdateContext& context)
   {
@@ -462,7 +471,6 @@ namespace Mat::ViscoElast
 
     metadata_ = std::move(metadata);
   }
-
 
   void GeneralizedMaxwellContribution::build_runtime_context(
       const ContributionSetupContext& context)

@@ -88,6 +88,8 @@ namespace Mat::ViscoElast
 
     void build_metadata(const ContributionSetupContext& context);
     void build_runtime_context(const ContributionSetupContext& context);
+    void evaluate_branch_material_response(const GeneralizedMaxwellEvaluateContext& context,
+        const Metadata& metadata, double one_step_theta) const;
 
     std::optional<Metadata> metadata_;
     std::optional<RuntimeContext> runtime_context_;
@@ -219,7 +221,8 @@ namespace Mat::ViscoElast
     void specify_visco_formulation(
         bool& visco_iso_rate,  ///< global indicator for isotropic rate-dependent visco response
         bool& visco_generalized_maxwell,  ///< global indicator for generalized Maxwell model
-        bool& visco_fsls                  ///< global indicator for FSLS model
+        bool& visco_quasi_linear_generalized_maxwell,  ///< global indicator for QLV Maxwell model
+        bool& visco_fsls                               ///< global indicator for FSLS model
         ) override
     {
       visco_generalized_maxwell = true;
@@ -320,6 +323,7 @@ namespace Mat::ViscoElast
         PointHistory& current_branch_elastic_stress, PointHistory& current_branch_stress,
         const std::vector<double>& branch_taus, const GeneralizedMaxwellKernelInput& input,
         const BranchResponseEvaluator& evaluate_branch_response);
+
   }  // namespace Kernels
 }  // namespace Mat::ViscoElast
 

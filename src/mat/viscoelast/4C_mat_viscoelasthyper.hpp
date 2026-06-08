@@ -236,6 +236,7 @@ namespace Mat
     bool isovisco_;                   ///< global indicator for isotropic split viscous formulation
     bool visco_generalized_maxwell_;  ///< global indicator for viscous contribution of branches
                                       ///< according to the generalized Maxwell model
+    bool visco_quasi_linear_generalized_maxwell_;  ///< global indicator for quasi-linear Maxwell
     bool visco_fsls_;  ///< global indicator for viscous contribution according the FSLS model
                        //@}
 
@@ -281,9 +282,10 @@ namespace Mat
     using ActiveModelSequence = std::vector<ViscoModelKind>;
 
     /// Fixed order in which recognized visco model families are detected and evaluated.
-    [[nodiscard]] static constexpr std::array<ViscoModelKind, 3> visco_model_registry()
+    [[nodiscard]] static constexpr std::array<ViscoModelKind, 4> visco_model_registry()
     {
-      return {ViscoModelKind::iso_rate, ViscoModelKind::generalized_maxwell, ViscoModelKind::fsls};
+      return {ViscoModelKind::iso_rate, ViscoModelKind::generalized_maxwell,
+          ViscoModelKind::quasi_linear_generalized_maxwell, ViscoModelKind::fsls};
     }
 
     [[nodiscard]] static bool is_visco_material_type(Core::Materials::MaterialType material_type);
