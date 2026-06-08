@@ -767,7 +767,7 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     }
     case Core::Materials::mes_coupmyocard:
     {
-      return make_parameter_impl<Mat::Elastic::PAR::CoupMyocard>(id, type, input_data);
+      return make_parameter_impl<Mat::ViscoElast::PAR::CoupMyocard>(id, type, input_data);
     }
     case Core::Materials::mes_coupneohooke:
     {
@@ -808,11 +808,11 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     }
     case Core::Materials::mes_fsls:
     {
-      return make_parameter_impl<Mat::Elastic::PAR::Fsls>(id, type, input_data);
+      return make_parameter_impl<Mat::ViscoElast::PAR::Fsls>(id, type, input_data);
     }
     case Core::Materials::mes_generalizedmaxwell:
     {
-      return make_parameter_impl<Mat::Elastic::PAR::GeneralizedMaxwell>(id, type, input_data);
+      return make_parameter_impl<Mat::ViscoElast::PAR::GeneralizedMaxwell>(id, type, input_data);
     }
     case Core::Materials::mes_isoanisoexpo:
     {
@@ -848,7 +848,7 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     }
     case Core::Materials::mes_isoratedep:
     {
-      return make_parameter_impl<Mat::Elastic::PAR::IsoRateDep>(id, type, input_data);
+      return make_parameter_impl<Mat::ViscoElast::PAR::IsoRateDep>(id, type, input_data);
     }
     case Core::Materials::mes_isotestmaterial:
     {
@@ -884,7 +884,7 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     }
     case Core::Materials::mes_viscobranch:
     {
-      return make_parameter_impl<Mat::Elastic::PAR::ViscoBranch>(id, type, input_data);
+      return make_parameter_impl<Mat::ViscoElast::PAR::ViscoBranch>(id, type, input_data);
     }
     case Core::Materials::mes_structuraltensorstratgy:
     {

@@ -16,10 +16,13 @@
 #include "4C_mat_elasthyper.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_mat_viscoelast_contribution.hpp"
 #include "4C_mat_viscoelast_state.hpp"
+#include "4C_mat_viscoelast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
 
 #include <array>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -34,31 +37,75 @@ namespace Mat
     class Summand;
   }
 
+  namespace ViscoElast
+  {
+    class Summand;
+  }
+
   // forward declaration
   class ViscoElastHyper;
 
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
-    /// Collection of viscohyperelastic materials
-    ///
-    /// Storage map of hyperelastic summands.
-
-
+    /**
+     * \brief Parameter object for Mat::ViscoElastHyper.
+     *
+     * The material is assembled from two ordered summand sets: purely elastic summands and
+     * viscoelastic summands. The explicit split fields `NUMELAST`/`ELAST_MATIDS` and
+     * `NUMVISCO`/`VISCO_MATIDS` define these sets directly. If those fields are omitted, the
+     * material list from `NUMMAT`/`MATIDS` is partitioned by material type during parameter
+     * construction.
+     *
+     * The split is stored as immutable parameter data because the material object uses it to build
+     * separate elastic and visco summand instances, contribution objects, and history state.
+     */
     class ViscoElastHyper : public Mat::PAR::ElastHyper
-    //    class ViscoElastHyper : public Core::Mat::PAR::Parameter
     {
       friend class Mat::ViscoElastHyper;
 
+     private:
+      /// Result of parsing the current material input into elastic and visco summand sets.
+      struct SummandSplit
+      {
+        /// Number of elastic summands declared by the input split.
+        int numelast = 0;
+        /// Material IDs of elastic summands, evaluated before visco contributions.
+        std::vector<int> elast_matids;
+        /// Number of visco summands declared by the input split.
+        int numvisco = 0;
+        /// Material IDs of visco summands that activate model contributions.
+        std::vector<int> visco_matids;
+        /// True if the split was derived from the complete `MATIDS` list by material type.
+        bool uses_legacy_matids = true;
+      };
+
+      /// Parse the input parameters into explicit elastic and visco summand sets.
+      static SummandSplit parse_summand_split(const Core::Mat::PAR::Parameter::Data& matdata);
+      ViscoElastHyper(
+          const Core::Mat::PAR::Parameter::Data& matdata, const SummandSplit& summand_split);
+
      public:
-      /// standard constructor
-      ///
-      /// This constructor recursively calls the constructors of the
-      /// parameter sets of the hyperelastic summands.
+      /// Construct and validate the split between elastic and visco summands.
       ViscoElastHyper(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
       std::shared_ptr<Core::Mat::Material> create_material() override;
+
+      /// Number of elastic summands used by this material.
+      const int numelast_;
+
+      /// Material IDs of elastic summands used by this material.
+      const std::vector<int> elast_matids_;
+
+      /// Number of visco summands used by this material.
+      const int numvisco_;
+
+      /// Material IDs of visco summands used by this material.
+      const std::vector<int> visco_matids_;
+
+      /// True if the summand split was derived from the complete `MATIDS` list by material type.
+      const bool uses_legacy_matids_;
 
       //@}
 
@@ -79,35 +126,28 @@ namespace Mat
     static ViscoElastHyperType instance_;
   };
 
-
-  /*----------------------------------------------------------------------*/
-  /// Collection of hyperelastic materials
-  ///
-  /// This collection offers to additively compose a stress response
-  /// based on summands defined separately.  This is possible, because
-  /// we deal with hyperelastic materials, which are composed
-  /// of (Helmholtz free energy density) potentials.  Effectively, we want
-  ///\f[
-  ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
-  ///\f]
-  /// in which the individual \f$\Psi_i\f$ is implemented as #Mat::Elastic::Summand.
-  ///
-  /// Quite often the right Cauchy-Green 2-tensor \f$\boldsymbol{C}\f$
-  /// is replaced by its various invariant forms as argument.
-  ///
-  /// The task of ElastHyper is the evaluation of the
-  /// potential energies and their derivatives to obtain the actual
-  /// stress response and the elasticity tensor. The storage is located
-  /// at the associated member #params_.
-  ///
-  /// <h3>References</h3>
-  /// <ul>
-  /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-  /// </ul>
-  ///
-
   class Material;
 
+  /*----------------------------------------------------------------------*/
+  /**
+   * \brief Finite-strain visco-hyperelastic material assembled from summand contributions.
+   *
+   * Mat::ViscoElastHyper evaluates a hyperelastic base response and augments it with one or more
+   * active viscoelastic model contributions. The material owns separate elastic and visco summand
+   * vectors, computes the elastic stress/tangent first, applies active visco contributions in a
+   * deterministic model sequence, and finally applies elastic post-processing hooks such as stretch
+   * and anisotropic terms.
+   *
+   * Lifecycle:
+   * - setup(): builds elastic/visco summands, detects active visco model families, creates
+   *   contribution objects, caches model metadata, and initializes per-Gauss-point history state.
+   * - evaluate(): prepares kinematic workspace, evaluates the elastic base response, adds active
+   *   visco contributions, and writes current internal variables to ViscoElastState.
+   * - update(): lets summands update, then advances previous/current visco history state for the
+   *   next time step.
+   * - pack()/unpack(): serialize summand state, active model flags, anisotropy data, and
+   *   ViscoElastState for communication and restart.
+   */
   class ViscoElastHyper : public Mat::ElastHyper
   {
    public:
@@ -147,8 +187,8 @@ namespace Mat
     /// parobject id defined at the top of this file and delivered by
     /// unique_par_object_id().
     ///
-    /// \param data (in) : vector storing all data to be unpacked into this
-    ///                    instance.
+    /// \param buffer (in) : buffer storing all data to be unpacked into this
+    ///                      instance.
     void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
@@ -162,8 +202,8 @@ namespace Mat
     /// check if element kinematics and material kinematics are compatible
     void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
-      if (!(kinem == Inpar::Solid::KinemType::nonlinearTotLag))
-        FOUR_C_THROW("element and material kinematics are not compatible");
+      FOUR_C_ASSERT_ALWAYS(kinem == Inpar::Solid::KinemType::nonlinearTotLag,
+          "element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
@@ -172,10 +212,10 @@ namespace Mat
       return std::make_shared<ViscoElastHyper>(*this);
     }
 
-    /// Check if history variables are already initialized
+    /// Check whether the viscoelastic history state has been initialized.
     virtual bool initialized() const { return state_.initialized(); }
 
-    /// hyperelastic stress response plus elasticity tensor
+    /// Evaluate elastic plus active viscoelastic stress response and material tangent.
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
         const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
@@ -183,42 +223,15 @@ namespace Mat
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp,
         int eleGID) override;  ///< Constitutive matrix
 
-    /// setup material description
+    /// Build summands, contribution metadata, and viscoelastic history containers.
     void setup(int numgp, const Discret::Elements::Fibers& fibers,
         const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
-    /// update history variables
+    /// Advance active viscoelastic histories after a converged time step.
     void update() override;
 
    protected:
-    /// calculates the kinematic quantities and tensors used afterwards for viscous part
-    virtual void evaluate_kin_quant_vis(Core::LinAlg::Matrix<6, 1>& rcg,
-        Core::LinAlg::Matrix<6, 1>& scg, Core::LinAlg::Matrix<6, 1>& icg,
-        Core::LinAlg::Matrix<3, 1>& prinv, Core::LinAlg::Matrix<7, 1>& rateinv,
-        Core::LinAlg::Matrix<6, 1>& modrcg, double dt, Core::LinAlg::Matrix<6, 1>& scgrate,
-        Core::LinAlg::Matrix<6, 1>& modrcgrate, Core::LinAlg::Matrix<7, 1>& modrateinv, int gp);
-
-    /// calculates the factors associated to the viscous laws
-    virtual void evaluate_mu_xi(Core::LinAlg::Matrix<3, 1>& inv, Core::LinAlg::Matrix<3, 1>& modinv,
-        Core::LinAlg::Matrix<8, 1>& mu, Core::LinAlg::Matrix<8, 1>& modmu,
-        Core::LinAlg::Matrix<33, 1>& xi, Core::LinAlg::Matrix<33, 1>& modxi,
-        Core::LinAlg::Matrix<7, 1>& rateinv, Core::LinAlg::Matrix<7, 1>& modrateinv,
-        const Teuchos::ParameterList& params, double dt, int gp, int eleGID);
-
-    /// calculates the stress and elasticitiy tensor for the generalized Maxwell material
-    virtual void evaluate_visco_generalized_maxwell(Core::LinAlg::Matrix<6, 1>& Q,
-        Core::LinAlg::Matrix<6, 6>& cmatq, double dt, const Core::LinAlg::Matrix<6, 1>& glstrain,
-        int gp, int eleGID);
-
-    /// calculates the stress and elasticity tensor for the VISCO_FSLS model
-    /// depending on the viscoelastic material isochoric-principal, isochoric-modified
-    /// (volumetric and isochoric equal treaded) or anisotropic stresses and elasticity
-    /// tensors are added
-    virtual void evaluate_visco_fsls(Core::LinAlg::Matrix<6, 1> stress,
-        Core::LinAlg::Matrix<6, 6> cmat, Core::LinAlg::Matrix<6, 1>& Q,
-        Core::LinAlg::Matrix<6, 6>& cmatq, double dt, int gp, int eleGID);
-
-    /// @name Flags to specify the viscous formulations
+    /// @name Active viscous formulation flags detected from the visco summand set.
     //@{
     bool isovisco_;                   ///< global indicator for isotropic split viscous formulation
     bool visco_generalized_maxwell_;  ///< global indicator for viscous contribution of branches
@@ -227,22 +240,14 @@ namespace Mat
                        //@}
 
    private:
-    struct FslsParameters
-    {
-      double tau = 0.0;
-      double alpha = 0.0;
-      double beta = 0.0;
-      int summand_mat_id = -1;
-    };
-
-    struct FslsMetadata
-    {
-      double tau = 0.0;
-      double alpha = 0.0;
-      double beta = 0.0;
-      int summand_mat_id = -1;
-    };
-
+    /**
+     * \brief Per-evaluation scratch storage shared by elastic and visco contribution steps.
+     *
+     * The workspace keeps matrix/tensor temporaries out of the contribution interfaces and avoids
+     * repeated allocation while evaluating a Gauss point. It contains strain/tensor conversions,
+     * invariant arrays, coefficient arrays used by iso-rate summands, identity tensors, and the
+     * positive time-step size used by active visco models.
+     */
     struct EvaluateWorkspace
     {
       EvaluateWorkspace();
@@ -272,116 +277,66 @@ namespace Mat
       double dt = 0.0;
     };
 
-    struct GeneralizedMaxwellBranchMetadata
-    {
-      std::vector<std::shared_ptr<Mat::Elastic::Summand>> summands;
-      double tau = 0.0;
-      SummandProperties properties;
-    };
-
-    enum class GeneralizedMaxwellSolveKind
-    {
-      one_step_theta,
-      exponential_time_discretization
-    };
-
-    struct GeneralizedMaxwellMetadata
-    {
-      int summand_mat_id = -1;
-      GeneralizedMaxwellSolveKind solve_kind =
-          GeneralizedMaxwellSolveKind::exponential_time_discretization;
-      std::vector<GeneralizedMaxwellBranchMetadata> branches;
-    };
-
-    struct GeneralizedMaxwellRuntimeContext
-    {
-      double one_step_theta = 0.5;
-    };
-
-    struct FslsRuntimeContext
-    {
-      unsigned int max_history_size = 0;
-    };
-
-    struct ViscoRuntimeContext
-    {
-      std::optional<GeneralizedMaxwellRuntimeContext> generalized_maxwell;
-      std::optional<FslsRuntimeContext> fsls;
-    };
-
-    enum class ViscoModelKind
-    {
-      iso_rate,
-      generalized_maxwell,
-      fsls
-    };
-
+    using ViscoModelKind = ViscoElast::ViscoModelKind;
     using ActiveModelSequence = std::vector<ViscoModelKind>;
 
+    /// Fixed order in which recognized visco model families are detected and evaluated.
     [[nodiscard]] static constexpr std::array<ViscoModelKind, 3> visco_model_registry()
     {
       return {ViscoModelKind::iso_rate, ViscoModelKind::generalized_maxwell, ViscoModelKind::fsls};
     }
 
+    [[nodiscard]] static bool is_visco_material_type(Core::Materials::MaterialType material_type);
+    [[nodiscard]] const Mat::PAR::ViscoElastHyper* visco_params() const;
+    [[nodiscard]] int visco_mat_id(unsigned index) const;
+    void rebuild_summand_sets();
+    void rebuild_effective_summand_properties();
+
     [[nodiscard]] bool is_model_flag_enabled(ViscoModelKind model_kind) const;
     [[nodiscard]] bool is_model_active(ViscoModelKind model_kind) const;
     void rebuild_active_model_sequence();
+    void rebuild_contributions();
+    void setup_contributions(int gp, int eleGID);
 
     [[nodiscard]] ViscoElastState::ActiveModels active_models_from_flags() const;
     [[nodiscard]] ViscoElastState::ActiveModels active_models_from_sequence() const;
     void ensure_model_activation_consistency(const char* context) const;
 
     [[nodiscard]] ViscoElastState::ActiveModels active_models() const;
-    [[nodiscard]] GeneralizedMaxwellSolveKind parse_generalized_maxwell_solve_kind(
-        const std::string& solve, int gp, int eleGID) const;
-    void clear_generalized_maxwell_metadata();
-    void build_generalized_maxwell_metadata_for_setup(int gp, int eleGID);
-    [[nodiscard]] const GeneralizedMaxwellMetadata& require_generalized_maxwell_metadata(
-        const char* context, int gp, int eleGID) const;
-    void clear_runtime_context();
-    void build_runtime_context_for_setup(int gp, int eleGID);
-    [[nodiscard]] const ViscoRuntimeContext& require_runtime_context(
-        const char* context, int gp, int eleGID) const;
-    void clear_fsls_metadata();
-    void build_fsls_metadata_for_setup(int gp, int eleGID);
-    [[nodiscard]] const FslsMetadata& require_fsls_metadata(
-        const char* context, int gp, int eleGID) const;
-    [[nodiscard]] std::size_t read_generalized_maxwell_branch_count_for_setup() const;
-    [[nodiscard]] FslsParameters read_fsls_parameters(int gp, int eleGID) const;
-    [[nodiscard]] unsigned int read_fsls_max_history_size_for_update() const;
+    [[nodiscard]] std::size_t history_entry_count_for_setup(ViscoModelKind model_kind) const;
+    [[nodiscard]] unsigned int history_capacity_for_update(ViscoModelKind model_kind) const;
     [[nodiscard]] double read_visco_time_step_size(
         const EvaluationContext<3>& context, int gp, int eleGID) const;
 
     void prepare_evaluate_kinematics(const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
         const EvaluationContext<3>& context, EvaluateWorkspace& workspace, int gp,
         int eleGID) const;
-    void prepare_iso_rate_visco_inputs_if_active(
-        const Teuchos::ParameterList& params, EvaluateWorkspace& workspace, int gp, int eleGID);
     void initialize_elastic_response(const EvaluateWorkspace& workspace,
         Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat) const;
-    void add_iso_rate_contribution(const EvaluateWorkspace& workspace,
-        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view);
-    void add_generalized_maxwell_contribution(const EvaluateWorkspace& workspace,
-        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, int gp,
-        int eleGID);
-    void add_fsls_contribution(const EvaluateWorkspace& workspace,
-        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, int gp,
-        int eleGID);
-    void add_visco_contributions_in_sequence(const EvaluateWorkspace& workspace,
-        Core::LinAlg::Matrix<6, 1>& stress_view, Core::LinAlg::Matrix<6, 6>& cmat_view, int gp,
-        int eleGID);
+    void add_visco_contributions_in_sequence(const Teuchos::ParameterList& params,
+        EvaluateWorkspace& workspace, Core::LinAlg::Matrix<6, 1>& stress_view,
+        Core::LinAlg::Matrix<6, 6>& cmat_view, int gp, int eleGID);
     void add_post_elastic_composition_hooks(const Teuchos::ParameterList& params,
         const EvaluationContext<3>& context, const EvaluateWorkspace& workspace,
         Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID);
 
+    /// Active model families in evaluation order, derived from the visco summands.
     ActiveModelSequence active_model_sequence_;
-    std::optional<GeneralizedMaxwellMetadata> generalized_maxwell_metadata_;
-    std::optional<ViscoRuntimeContext> runtime_context_;
-    std::optional<FslsMetadata> fsls_metadata_;
-    ViscoElastState state_;  ///< unified viscoelastic history state
+    /// Model-specific setup/update/evaluation helpers for active visco model families.
+    std::vector<std::shared_ptr<ViscoElast::Contribution>> contributions_;
+    /// Elastic summands that define the hyperelastic base response.
+    std::vector<std::shared_ptr<Mat::Elastic::Summand>> elast_potsum_;
+    /// Visco summands that define active viscous model contributions.
+    std::vector<std::shared_ptr<ViscoElast::Summand>> visco_potsum_;
+    /// Formulation flags contributed by elastic summands only.
+    SummandProperties elast_summand_properties_;
+    /// Combined formulation flags used where elastic and visco capabilities interact.
+    SummandProperties effective_summand_properties_;
+    /// Per-Gauss-point current/previous history state for all active visco model families.
+    ViscoElastState state_;
   };  // class ViscoElastHyper
 
 }  // namespace Mat

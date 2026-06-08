@@ -10,22 +10,22 @@
 
 #include "4C_config.hpp"
 
-#include "4C_mat_elast_summand.hpp"
+#include "4C_mat_viscoelast_summand.hpp"
 #include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
 {
-  namespace Elastic
+  namespace ViscoElast
   {
     namespace PAR
     {
       /*!
-       * @brief material parameters for viscous part of myocardial matrix
+       * @brief Parameters for the coupled myocardial matrix viscous summand.
        *
-       * <h3>Input line</h3>
-       * MAT 1 VISCO_CoupMyocard N 1
+       * The parameter object stores the viscosity-like coefficient used by CoupMyocard and is
+       * consumed through the visco summand factory.
        */
       class CoupMyocard : public Core::Mat::PAR::Parameter
       {
@@ -36,7 +36,7 @@ namespace Mat
         /// @name material parameters
         //@{
 
-        /// material parameters
+        /// Viscosity-like coefficient of the myocardial matrix response.
         double n_;
 
         //@}
@@ -47,14 +47,17 @@ namespace Mat
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "Mat::Elastic::Summand::Factory.");
+              "Mat::ViscoElast::Summand::Factory.");
           return nullptr;
         };
       };  // class CoupMyocard
     }  // namespace PAR
 
     /*!
-     * @brief Isochoric coupled viscous material with pseudo-potential
+     * @brief Iso-rate style coupled viscous summand for myocardial matrix response.
+     *
+     * Within Mat::ViscoElastHyper, this summand activates IsoRateContribution and contributes
+     * principal-rate coefficients to the common iso-rate evaluation path.
      *
      * Strain energy function is given by
      * \f[
@@ -77,11 +80,11 @@ namespace Mat
      *   I^\#_{ijkl} = \frac{1}{2}(\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
      * \f]
      */
-    class CoupMyocard : public Summand
+    class CoupMyocard : public Mat::ViscoElast::Summand
     {
      public:
       /// constructor with given material parameters
-      CoupMyocard(Mat::Elastic::PAR::CoupMyocard* params);
+      CoupMyocard(Mat::ViscoElast::PAR::CoupMyocard* params);
 
       /// @name Access material constants
       //@{
@@ -130,10 +133,10 @@ namespace Mat
 
      private:
       /// my material parameters
-      Mat::Elastic::PAR::CoupMyocard* params_;
+      Mat::ViscoElast::PAR::CoupMyocard* params_;
     };
 
-  }  // namespace Elastic
+  }  // namespace ViscoElast
 }  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
