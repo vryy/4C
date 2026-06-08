@@ -77,6 +77,9 @@ namespace BeamInteraction
     BeamToSolid::BeamToSolidLagrangeFormulation lagrange_formulation =
         BeamToSolid::BeamToSolidLagrangeFormulation::none;
 
+    //! Flag to check whether the relevant D matrix has diagonal-like structure.
+    bool check_diagonal_d_matrix = false;
+
     //! Penalty parameter for positional coupling.
     double penalty_parameter_translational = 0.0;
 

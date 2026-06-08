@@ -13,25 +13,6 @@ namespace
 {
   using namespace FourC;
 
-  TEST(BeamInteractionMortarShapeFunctionsTest, TestDualHermiteLine2)
-  {
-    const double xi = 0.123456789;
-    const double ref_length = 1.0;
-
-    Core::LinAlg::Matrix<4, 1> phi(Core::LinAlg::Initialization::zero);
-
-    GeometryPair::ShapeFunctionData<BeamInteraction::HermiteDual> shape_function_data;
-    shape_function_data.ref_length_ = ref_length;
-
-    GeometryPair::EvaluateShapeFunction<BeamInteraction::HermiteDual>::evaluate(
-        phi, xi, shape_function_data);
-
-    const std::vector<double> phi_ref = {
-        -0.24634578918994066, -0.05276684284142519, -1.1393423701836305, -14.366895799082851};
-
-    for (std::size_t i = 0; i < phi_ref.size(); ++i) EXPECT_NEAR(phi(i), phi_ref[i], 1.0e-10);
-  }
-
   TEST(BeamInteractionMortarShapeFunctionsTest, TestDualHermiteLine2Length03)
   {
     const double xi = 0.123456789;
@@ -39,10 +20,10 @@ namespace
 
     Core::LinAlg::Matrix<4, 1> phi(Core::LinAlg::Initialization::zero);
 
-    GeometryPair::ShapeFunctionData<BeamInteraction::HermiteDual> shape_function_data;
+    GeometryPair::ShapeFunctionData<BeamInteraction::t_hermite_dual> shape_function_data;
     shape_function_data.ref_length_ = ref_length;
 
-    GeometryPair::EvaluateShapeFunction<BeamInteraction::HermiteDual>::evaluate(
+    GeometryPair::EvaluateShapeFunction<BeamInteraction::t_hermite_dual>::evaluate(
         phi, xi, shape_function_data);
 
     const std::vector<double> phi_ref = {

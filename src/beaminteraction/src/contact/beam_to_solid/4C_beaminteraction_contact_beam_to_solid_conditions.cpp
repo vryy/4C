@@ -164,6 +164,10 @@ BeamInteraction::BeamToSolidCondition::create_indirect_assembly_manager(
       mortar_manager_params.n_lambda_node_translational = n_lambda_node_pos;
       mortar_manager_params.n_lambda_element_translational = n_lambda_element_pos;
 
+      mortar_manager_params.check_diagonal_d_matrix =
+          beam_to_solid_params_->get_mortar_shape_function_type() ==
+          BeamToSolid::BeamToSolidMortarShapefunctions::dual_hermite;
+
       if (beam_to_solid_params_->is_rotational_coupling())
       {
         // Get the mortar shape functions for rotational coupling
@@ -340,13 +344,6 @@ BeamInteraction::create_beam_to_solid_volume_pair_shape_no_nurbs(const Core::FE:
   }
 }
 
-template <template <typename...> class T>
-inline constexpr bool is_rotation_pair_v = false;
-
-template <>
-inline constexpr bool
-    is_rotation_pair_v<BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation> = true;
-
 /**
  *
  */
@@ -370,10 +367,10 @@ BeamInteraction::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellTyp
           GeometryPair::t_line4>(shape, other_mortar_shape_function...);
     case BeamToSolid::BeamToSolidMortarShapefunctions::dual_hermite:
     {
-      if constexpr (!is_rotation_pair_v<BtsClass>)
+      if constexpr (!BeamInteraction::is_rotation_pair_v<BtsClass>)
       {
         return create_beam_to_solid_volume_pair_mortar<BtsClass, BtsMortarTemplateArguments...,
-            BeamInteraction::HermiteDual>(shape, other_mortar_shape_function...);
+            BeamInteraction::t_hermite_dual>(shape, other_mortar_shape_function...);
       }
 
       FOUR_C_THROW(

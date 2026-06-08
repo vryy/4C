@@ -34,4 +34,5 @@ namespace
         -9.2684042199908543, 3.8579485013272361};
     for (std::size_t i = 0; i < ddN_ref.size(); ++i) EXPECT_NEAR(ddN(i), ddN_ref[i], 1e-10);
   }
+
 }  // namespace

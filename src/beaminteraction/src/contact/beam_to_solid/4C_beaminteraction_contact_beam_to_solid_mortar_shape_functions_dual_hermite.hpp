@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_beam3_base.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_shape_functions.hpp"
@@ -21,22 +22,41 @@ namespace BeamInteraction
   struct HermiteDual : public GeometryPair::ElementDiscretizationBase<Core::FE::CellType::line2, 2>
   {
   };
+  using t_hermite_dual = HermiteDual;
 }  // namespace BeamInteraction
 
 namespace GeometryPair
 {
   template <>
-  struct ShapeFunctionData<BeamInteraction::HermiteDual>
+  struct ShapeFunctionData<BeamInteraction::t_hermite_dual>
   {
     double ref_length_;
   };
 
   template <>
-  struct EvaluateShapeFunction<BeamInteraction::HermiteDual>
+  struct SetShapeFunctionData<BeamInteraction::t_hermite_dual>
+  {
+    static void set(ShapeFunctionData<BeamInteraction::t_hermite_dual>& shape_function_data,
+        const Core::Elements::Element* element)
+    {
+      const auto* beam_element = dynamic_cast<const Discret::Elements::Beam3Base*>(element);
+      if (beam_element == nullptr)
+        FOUR_C_THROW(
+            "The element pointer has to point to a valid beam element when evaluating the shape "
+            "function data of a dual Hermite mortar shape function, as we need to get "
+            "RefLength()!");
+
+      shape_function_data.ref_length_ = beam_element->ref_length();
+    }
+  };
+
+
+  template <>
+  struct EvaluateShapeFunction<BeamInteraction::t_hermite_dual>
   {
     template <typename V, typename T>
     static void evaluate(V& N, const T& xi,
-        const ShapeFunctionData<BeamInteraction::HermiteDual>& shape_function_data)
+        const ShapeFunctionData<BeamInteraction::t_hermite_dual>& shape_function_data)
     {
       const T xi2 = xi * xi;
       const T xi3 = xi2 * xi;
@@ -54,10 +74,10 @@ namespace GeometryPair
   };
 
   template <>
-  struct PrintElementData<BeamInteraction::HermiteDual>
+  struct PrintElementData<BeamInteraction::t_hermite_dual>
   {
     template <typename ScalarType>
-    static void print(const ElementData<BeamInteraction::HermiteDual, ScalarType>& element_data,
+    static void print(const ElementData<BeamInteraction::t_hermite_dual, ScalarType>& element_data,
         std::ostream& out)
     {
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
