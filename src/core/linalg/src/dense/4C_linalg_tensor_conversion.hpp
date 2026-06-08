@@ -15,6 +15,7 @@
 #include "4C_linalg_tensor.hpp"
 #include "4C_linalg_tensor_internals.hpp"
 
+#include <array>
 #include <ranges>
 #include <tuple>
 #include <type_traits>
@@ -224,6 +225,89 @@ namespace Core::LinAlg
       return Core::LinAlg::Matrix<size_left*(size_left + 1) / 2, size_right*(size_right + 1) / 2,
           ValueType>(tensor.data(), true);
     }
+  }
+
+  /*!
+   * @brief Creates a 6x9 Voigt matrix from a 4th order tensor that has the minor symmetry in its
+   * first index pair (C_ijkl = C_jikl).
+   *
+   * The first (symmetric) index pair is stored in stress-like 6-Voigt notation, the second
+   * (non-symmetric) index pair as a 9-vector.
+   */
+  template <typename T>
+  Core::LinAlg::Matrix<6, 9, T> make_6x9_voigt_matrix_from_tensor(
+      const Core::LinAlg::Tensor<T, 3, 3, 3, 3>& tensor)
+  {
+    constexpr std::array<std::array<std::size_t, 2>, 6> row_index = {
+        {{0, 0}, {1, 1}, {2, 2}, {0, 1}, {1, 2}, {0, 2}}};
+    constexpr std::array<std::array<std::size_t, 2>, 9> col_index = {
+        {{0, 0}, {1, 1}, {2, 2}, {0, 1}, {1, 2}, {0, 2}, {1, 0}, {2, 1}, {2, 0}}};
+
+    Core::LinAlg::Matrix<6, 9, T> matrix_voigt;
+    for (std::size_t r = 0; r < 6; ++r)
+    {
+      for (std::size_t c = 0; c < 9; ++c)
+      {
+        matrix_voigt(r, c) =
+            0.5 * (tensor(row_index[r][0], row_index[r][1], col_index[c][0], col_index[c][1]) +
+                      tensor(row_index[r][1], row_index[r][0], col_index[c][0], col_index[c][1]));
+      }
+    }
+    return matrix_voigt;
+  }
+
+  /*!
+   * @brief Creates a 9x6 Voigt matrix from a 4th order tensor that has the minor symmetry in its
+   * second index pair (C_ijkl = C_ijlk).
+   *
+   * The first (non-symmetric) index pair is stored as a 9-vector, the second (symmetric) index
+   * pair in stress-like 6-Voigt notation.
+   */
+  template <typename T>
+  Core::LinAlg::Matrix<9, 6, T> make_9x6_voigt_matrix_from_tensor(
+      const Core::LinAlg::Tensor<T, 3, 3, 3, 3>& tensor)
+  {
+    constexpr std::array<std::array<std::size_t, 2>, 9> row_index = {
+        {{0, 0}, {1, 1}, {2, 2}, {0, 1}, {1, 2}, {0, 2}, {1, 0}, {2, 1}, {2, 0}}};
+    constexpr std::array<std::array<std::size_t, 2>, 6> col_index = {
+        {{0, 0}, {1, 1}, {2, 2}, {0, 1}, {1, 2}, {0, 2}}};
+
+    Core::LinAlg::Matrix<9, 6, T> matrix_voigt;
+    for (std::size_t r = 0; r < 9; ++r)
+    {
+      for (std::size_t c = 0; c < 6; ++c)
+      {
+        matrix_voigt(r, c) =
+            0.5 * (tensor(row_index[r][0], row_index[r][1], col_index[c][0], col_index[c][1]) +
+                      tensor(row_index[r][0], row_index[r][1], col_index[c][1], col_index[c][0]));
+      }
+    }
+    return matrix_voigt;
+  }
+
+  /*!
+   * @brief Creates a 6x6 stress-like Voigt matrix from a (minor-)symmetric 4th order tensor.
+   *
+   * The minor symmetries (IJ) and (KL) are encoded in the symmetric tensor, so its components map
+   * directly to stress-like 6-Voigt notation. The result may still be a non-symmetric 6x6 matrix
+   * if the tensor lacks major symmetry (C_IJKL != C_KLIJ).
+   */
+  template <typename T>
+  Core::LinAlg::Matrix<6, 6, T> make_6x6_voigt_matrix_from_tensor(
+      const Core::LinAlg::SymmetricTensor<T, 3, 3, 3, 3>& tensor)
+  {
+    constexpr std::array<std::array<std::size_t, 2>, 6> vi = {
+        {{0, 0}, {1, 1}, {2, 2}, {0, 1}, {1, 2}, {0, 2}}};
+
+    Core::LinAlg::Matrix<6, 6, T> result;
+    for (std::size_t r = 0; r < 6; ++r)
+    {
+      for (std::size_t c = 0; c < 6; ++c)
+      {
+        result(r, c) = tensor(vi[r][0], vi[r][1], vi[c][0], vi[c][1]);
+      }
+    }
+    return result;
   }
 
   /*!
