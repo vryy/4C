@@ -59,6 +59,8 @@ namespace Mixture
       const std::optional<int> growth_scalar_id_;
       const std::optional<int> remodeling_scalar_id_;
       const std::optional<int> nonlocal_stimulus_scalar_id_;
+
+      const bool implicit_integration_;
     };
   }  // namespace PAR
 
@@ -118,6 +120,17 @@ namespace Mixture
     {
       return params_->nonlocal_stimulus_scalar_id_.has_value();
     }
+
+    [[nodiscard]] bool is_implicit_integration() const { return params_->implicit_integration_; }
+
+    [[nodiscard]] int nonlocal_stimulus_scalar_id() const
+    {
+      return params_->nonlocal_stimulus_scalar_id_.value();
+    }
+
+    [[nodiscard]] double evaluate_current_fiber_pk2_stress(int gp) const;
+    [[nodiscard]] double evaluate_d_growth_scalar_d_nonlocal_stimulus(int gp) const;
+    [[nodiscard]] double evaluate_d_cauchy_stress_d_lambda_f_sq(int gp) const;
 
     void set_current_growth_scalar(const Teuchos::ParameterList& params, int gp);
     void set_current_lambda_r(const Teuchos::ParameterList& params, int gp);

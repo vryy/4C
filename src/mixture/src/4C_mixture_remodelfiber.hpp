@@ -123,6 +123,16 @@ namespace Mixture
      * @param dt (in) : timestep
      */
     void integrate_local_evolution_equations_explicit_with_nonlocal_stimulus(double psi, double dt);
+    /*!
+     * @brief Integrate the local evolution equations implicitly, driven by a non-local stimulus
+     * \psi. The growth_scalar is solved analytically (ODE is linear in growth_scalar), while
+     * lambda_r is solved via a 1D local Newton. Stores d_growth_scalar_d_stimulus_ and
+     * d_lambda_r_d_lambda_f_sq_ for monolithic tangent assembly.
+     *
+     * @param psi (in) : non-local stimulus \psi (from Scatra DOF)
+     * @param dt (in) : timestep
+     */
+    void integrate_local_evolution_equations_implicit_with_nonlocal_stimulus(double psi, double dt);
     /// @}
     [[nodiscard]] double evaluate_current_homeostatic_fiber_cauchy_stress() const;
     [[nodiscard]] double evaluate_current_fiber_cauchy_stress() const;
@@ -143,6 +153,7 @@ namespace Mixture
     [[nodiscard]] double evaluate_d_current_growth_scalar_d_lambda_f_sq() const;
     [[nodiscard]] double evaluate_d_current_lambda_r_d_lambda_f_sq() const;
     [[nodiscard]] double evaluate_d_current_cauchy_stress_d_lambda_f_sq() const;
+    [[nodiscard]] double evaluate_d_growth_scalar_d_nonlocal_stimulus() const;
     /// @}
 
    private:

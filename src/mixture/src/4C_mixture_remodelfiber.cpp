@@ -338,16 +338,16 @@ void Mixture::Implementation::RemodelFiberImplementation<numstates,
   const Core::LinAlg::Matrix<2, 1, T> d_residuum_d_lambda_f_sq = std::invoke(
       [&]()
       {
-        Core::LinAlg::Matrix<2, 1, T> d_residuum_d_lambfa_f_sq;
+        Core::LinAlg::Matrix<2, 1, T> d_residuum_d_lambda_f_sq;
 
-        d_residuum_d_lambfa_f_sq(0, 0) =
+        d_residuum_d_lambda_f_sq(0, 0) =
             evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
                 dt);
-        d_residuum_d_lambfa_f_sq(1, 0) =
+        d_residuum_d_lambda_f_sq(1, 0) =
             evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambda_f_sq(
                 dt);
 
-        return d_residuum_d_lambfa_f_sq;
+        return d_residuum_d_lambda_f_sq;
       });
 
 
@@ -382,6 +382,71 @@ void Mixture::Implementation::RemodelFiberImplementation<numstates,
 
   d_growth_scalar_d_lambda_f_sq_ = 0.0;
   d_lambda_r_d_lambda_f_sq_ = 0.0;
+}
+
+template <int numstates, typename T>
+void Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::integrate_local_evolution_equations_implicit_with_nonlocal_stimulus(const T psi, const T dt)
+{
+  FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
+  const T lambda_f = states_.back().lambda_f;
+  const T lambda_ext = states_.back().lambda_ext;
+
+  // get linear ODE coefficient c
+  const T c = evaluate_growth_evolution_equation_dt_with_nonlocal_stimulus(
+      psi, lambda_f, states_[0].lambda_r, lambda_ext, T(1.0));
+
+  // growth_scalar^{n+1} = growth_scalar^n * (1 + dt*(1-theta)*c) / (1 - dt*theta*c)
+  constexpr double theta = ImplicitIntegration<numstates, T>::theta;
+  const T denominator = T(1.0) - dt * theta * c;
+  states_.back().growth_scalar =
+      states_[0].growth_scalar * (T(1.0) + dt * (1.0 - theta) * c) / denominator;
+
+  // d_growth_scalar^{n+1}/d_psi = growth_scalar^n * dt * d_c/d_psi / B^2
+  const T dsig = psi / sig_h_;
+  const T dc_dpsi = (growth_evolution_.evaluate_d_true_mass_production_rate_d_sig(dsig) +
+                        growth_evolution_.evaluate_d_true_mass_removal_rate_d_sig(dsig)) /
+                    sig_h_;
+  d_growth_scalar_d_stimulus_ =
+      states_[0].growth_scalar * dt * dc_dpsi / (denominator * denominator);
+
+
+  // --- lambda_r: 1D implicit Newton ---
+  const auto EvaluateLocalNewton = [&]()
+  {
+    const IntegrationState<numstates, T> remodel_state = get_integration_state_lambda_r();
+    const T res = ImplicitIntegration<numstates, T>::get_residuum(remodel_state, dt);
+    const T lambda_r_np = states_.back().lambda_r;
+    const T drdr =
+        ImplicitIntegration<numstates, T>::get_partial_derivative_xnp(remodel_state, dt) +
+        ImplicitIntegration<numstates, T>::get_partial_derivative_fnp(remodel_state, dt) *
+            evaluate_d_remodel_evolution_equation_dt_d_remodel(lambda_f, lambda_r_np, lambda_ext);
+    return std::make_pair(drdr, res);
+  };
+
+  auto [K_r, b_r] = EvaluateLocalNewton();
+  unsigned iteration = 0;
+  while (std::abs(Core::FADUtils::cast_to_double(b_r)) > 1e-10)
+  {
+    if (iteration >= 500)
+    {
+      FOUR_C_THROW(
+          "The local newton didn't converge within 500 iterations. Residuum is {:.3e} > {:.3e}",
+          std::abs(Core::FADUtils::cast_to_double(b_r)), 1e-10);
+    }
+    states_.back().lambda_r -= b_r / K_r;
+    std::tie(K_r, b_r) = EvaluateLocalNewton();
+    ++iteration;
+  }
+
+  // d_lambda_r^{n+1}/d_lambda_f^2
+  const T d_residuum_d_lambda_f_sq =
+      evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambda_f_sq(dt);
+  d_lambda_r_d_lambda_f_sq_ = -d_residuum_d_lambda_f_sq / K_r;
+
+  // growth_scalar depends on the stimulus psi, which has its own linearization w.r.t. lambda_f_sq
+  // in the OD-block
+  d_growth_scalar_d_lambda_f_sq_ = T(0.0);
 }
 
 template <int numstates, typename T>
@@ -814,6 +879,13 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates,
 
 template <int numstates, typename T>
 T Mixture::Implementation::RemodelFiberImplementation<numstates,
+    T>::evaluate_d_growth_scalar_d_nonlocal_stimulus() const
+{
+  return d_growth_scalar_d_stimulus_;
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_growth_reaction_coefficient() const
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
@@ -922,6 +994,14 @@ void Mixture::RemodelFiber<numstates>::
 }
 
 template <int numstates>
+void Mixture::RemodelFiber<numstates>::
+    integrate_local_evolution_equations_implicit_with_nonlocal_stimulus(
+        const double psi, const double dt)
+{
+  impl_->integrate_local_evolution_equations_implicit_with_nonlocal_stimulus(psi, dt);
+}
+
+template <int numstates>
 double Mixture::RemodelFiber<numstates>::evaluate_current_homeostatic_fiber_cauchy_stress() const
 {
   return impl_->evaluate_current_homeostatic_fiber_cauchy_stress();
@@ -1015,6 +1095,12 @@ template <int numstates>
 double Mixture::RemodelFiber<numstates>::evaluate_d_current_cauchy_stress_d_lambda_f_sq() const
 {
   return impl_->evaluate_d_current_cauchy_stress_d_lambda_f_sq();
+}
+
+template <int numstates>
+double Mixture::RemodelFiber<numstates>::evaluate_d_growth_scalar_d_nonlocal_stimulus() const
+{
+  return impl_->evaluate_d_growth_scalar_d_nonlocal_stimulus();
 }
 
 template class Mixture::RemodelFiber<2>;
