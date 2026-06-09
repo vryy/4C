@@ -582,7 +582,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             icoupmortar_[kinetics_slave_cond.first]->interface()->discret();
 
         // export global state vector to mortar interface
-        Core::LinAlg::Vector<double> iphinp(*idiscret.dof_col_map(), false);
+        Core::LinAlg::Vector<double> iphinp(*idiscret.dof_col_map(), true);
         Core::LinAlg::export_to(*scatratimint_->phiafnp(), iphinp);
         idiscret.set_state("iphinp", iphinp);
 
@@ -2106,11 +2106,11 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
       // initialize it with the full dof_row_map of the discretization to make it work for parallel
       // computations.
       islavephidtnp_ = std::make_shared<Core::LinAlg::Vector<double>>(
-          *(scatratimint_->discretization()->dof_row_map()), false);
+          *(scatratimint_->discretization()->dof_row_map()), true);
       imasterphidt_on_slave_side_np_ = std::make_shared<Core::LinAlg::Vector<double>>(
-          *(scatratimint_->discretization()->dof_row_map()), false);
+          *(scatratimint_->discretization()->dof_row_map()), true);
       imasterphi_on_slave_side_np_ = std::make_shared<Core::LinAlg::Vector<double>>(
-          *(scatratimint_->discretization()->dof_row_map()), false);
+          *(scatratimint_->discretization()->dof_row_map()), true);
 
       // initialize auxiliary system matrices and associated transformation operators
       islavematrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*(icoup_->source_dof_map()), 81);
