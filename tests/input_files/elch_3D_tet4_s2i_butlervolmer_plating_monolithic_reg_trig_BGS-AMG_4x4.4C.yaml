@@ -82,7 +82,7 @@ MATERIALS:
     MAT_newman:
       VALENCE: 1
       TRANSNR: -1
-      THERMFAC: 0
+      THERM_FAC: 1.0
       DIFF_COEF: 3.9e-05
       TRANS_PARA_NUM: 1
       TRANS_PARA: [0.399]

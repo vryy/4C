@@ -17,7 +17,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// TODO: math.H was included automatically
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -25,23 +24,40 @@ Mat::PAR::Newman::Newman(const Core::Mat::PAR::Parameter::Data& matdata)
     : ElchSingleMat(matdata),
       valence_(matdata.parameters.get<double>("VALENCE")),
       transnrcurve_(matdata.parameters.get<int>("TRANSNR")),
-      thermfaccurve_(matdata.parameters.get<int>("THERMFAC")),
+      thermodynamic_factor_(matdata.parameters.get<double>("THERM_FAC")),
+      thermodynamic_factor_concentration_scaling_funct_num_(
+          matdata.parameters.get<std::optional<int>>("THERM_FAC_CONC_SCALE_FUNCT")),
       transnrparanum_(matdata.parameters.get<int>("TRANS_PARA_NUM")),
-      transnrpara_(matdata.parameters.get<std::vector<double>>("TRANS_PARA")),
-      thermfacparanum_(matdata.parameters.get<int>("THERM_PARA_NUM")),
-      thermfacpara_(matdata.parameters.get<std::vector<double>>("THERM_PARA"))
+      transnrpara_(matdata.parameters.get<std::vector<double>>("TRANS_PARA"))
 {
   if (transnrparanum_ != (int)transnrpara_.size())
     FOUR_C_THROW("number of materials {} does not fit to size of material vector {}",
         transnrparanum_, transnrpara_.size());
-  if (thermfacparanum_ != (int)thermfacpara_.size())
-    FOUR_C_THROW("number of materials {} does not fit to size of material vector {}",
-        thermfacparanum_, thermfacpara_.size());
 
   // check if number of provided parameter is valid for a the chosen predefined function
   check_provided_params(transnrcurve_, transnrpara_);
-  check_provided_params(thermfaccurve_, thermfacpara_);
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Core::Utils::FunctionOfTime&
+Mat::PAR::Newman::thermodynamic_factor_concentration_scaling_funct()
+{
+  FOUR_C_ASSERT(has_thermodynamic_factor_concentration_scaling(),
+      "You try to access the function defining the optional concentration scaling of the "
+      "thermodynamic factor, but no function number has been set! Check your implementation that "
+      "the input file parameter 'THERM_FAC_CONC_SCALE_FUNCT' is properly set and that you "
+      "only call this function if this optional quantity is set.");
+
+  if (!thermodynamic_factor_concentration_scaling_funct_.has_value())
+  {
+    thermodynamic_factor_concentration_scaling_funct_.emplace(
+        Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfTime>(
+            thermodynamic_factor_concentration_scaling_funct_num_.value()));
+  }
+  return thermodynamic_factor_concentration_scaling_funct_->get();
+}
+
 
 
 std::shared_ptr<Core::Mat::Material> Mat::PAR::Newman::create_material()
@@ -145,41 +161,35 @@ double Mat::Newman::compute_first_deriv_trans(const double cint) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::Newman::compute_therm_fac(const double cint) const
+double Mat::Newman::compute_thermodynamic_factor(const double concentration) const
 {
-  double therm = 0.0;
+  // therm_fac
+  double therm_fac = params_->thermodynamic_factor_;
 
-  if (therm_fac_curve() < 0)
-    therm = eval_pre_defined_funct(therm_fac_curve(), cint, therm_fac_params());
-  else if (therm_fac_curve() == 0)
-    // thermodynamic factor has to be one if not defined
-    therm = 1.0;
-  else
-    therm = Global::Problem::instance()
-                ->function_by_id<Core::Utils::FunctionOfTime>(therm_fac_curve())
-                .evaluate(cint);
+  // therm_fac = therm_fac*therm_fac(c)
+  if (params_->has_thermodynamic_factor_concentration_scaling())
+  {
+    therm_fac *=
+        params_->thermodynamic_factor_concentration_scaling_funct().evaluate(concentration);
+  }
 
-  return therm;
+  return therm_fac;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::Newman::compute_first_deriv_therm_fac(const double cint) const
+double Mat::Newman::compute_concentration_derivative_of_thermodynamic_factor(
+    const double concentration) const
 {
-  double firstderiv = 0.0;
+  if (not params_->has_thermodynamic_factor_concentration_scaling())
+  {
+    return 0.0;
+  }
 
-  if (therm_fac_curve() < 0)
-    firstderiv = eval_first_deriv_pre_defined_funct(therm_fac_curve(), cint, therm_fac_params());
-  else if (therm_fac_curve() == 0)
-    // thermodynamic factor has to be one if not defined
-    // -> first derivative = 0.0
-    firstderiv = 0.0;
-  else
-    firstderiv = Global::Problem::instance()
-                     ->function_by_id<Core::Utils::FunctionOfTime>(therm_fac_curve())
-                     .evaluate_derivative(cint);
-
-  return firstderiv;
+  // Computation of therm_fac*therm_fac'(c)
+  return params_->thermodynamic_factor_ *
+         params_->thermodynamic_factor_concentration_scaling_funct().evaluate_derivative(
+             concentration);
 }
 
 FOUR_C_NAMESPACE_CLOSE

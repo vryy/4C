@@ -27,6 +27,16 @@ namespace Mat
       /// standard constructor
       explicit Newman(const Core::Mat::PAR::Parameter::Data& matdata);
 
+      //! gets the function defining the concentration scaling of the thermodynamic factor from the
+      //! global problem for the first call and returns it for all later calls
+      [[nodiscard]] const Core::Utils::FunctionOfTime&
+      thermodynamic_factor_concentration_scaling_funct();
+
+      [[nodiscard]] bool has_thermodynamic_factor_concentration_scaling() const
+      {
+        return thermodynamic_factor_concentration_scaling_funct_num_.has_value();
+      }
+
       /// @name material parameters
       //@{
       /// valence (= charge number)
@@ -36,9 +46,14 @@ namespace Mat
       /// (by curve number or implemented concentration dependence)
       const int transnrcurve_;
 
-      /// definition of thermodynamic factor
-      /// (by curve number or implemented concentration dependence)
-      const int thermfaccurve_;
+      //! thermodynamic factor
+      const double thermodynamic_factor_;
+
+      //! function number defining the optional concentration scaling of the thermodynamic factor
+      const std::optional<int> thermodynamic_factor_concentration_scaling_funct_num_;
+      //! function defining the optional concentration scaling of the thermodynamic factor
+      std::optional<std::reference_wrapper<const Core::Utils::FunctionOfTime>>
+          thermodynamic_factor_concentration_scaling_funct_{std::nullopt};
 
       // Important:
       // pointer to vectors containing parameter for predefined curves
@@ -48,11 +63,6 @@ namespace Mat
       const int transnrparanum_;
       /// parameter needed for implemented concentration dependence
       const std::vector<double> transnrpara_;
-
-      /// number of parameter needed for implemented concentration dependence
-      const int thermfacparanum_;
-      /// parameter needed for implemented concentration dependence
-      const std::vector<double> thermfacpara_;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -144,25 +154,20 @@ namespace Mat
     /// computation of the first derivative of the transference number based on the defined curve
     double compute_first_deriv_trans(const double cint) const;
 
-    /// computation of the thermodynamic factor based on the defined curve
-    double compute_therm_fac(const double cint) const;
-    /// computation of the first derivative of the transference number based on the defined curve
-    double compute_first_deriv_therm_fac(const double cint) const;
+    /// computation of the thermodynamic factor
+    [[nodiscard]] double compute_thermodynamic_factor(double concentration) const;
+    /// computation of the first derivative of the thermodynamic factor w.r.t. concentration
+    [[nodiscard]] double compute_concentration_derivative_of_thermodynamic_factor(
+        double concentration) const;
+
+    [[nodiscard]] Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
    private:
     /// return curve defining the transference number
     int trans_nr_curve() const { return params_->transnrcurve_; }
-    /// return curve defining the thermodynamic factor
-    int therm_fac_curve() const { return params_->thermfaccurve_; }
 
     /// parameter needed for implemented concentration dependence
     const std::vector<double>& trans_nr_params() const { return params_->transnrpara_; }
-
-    /// parameter needed for implemented concentration dependence
-    const std::vector<double>& therm_fac_params() const { return params_->thermfacpara_; }
-
-    /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// my material parameters
     Mat::PAR::Newman* params_;

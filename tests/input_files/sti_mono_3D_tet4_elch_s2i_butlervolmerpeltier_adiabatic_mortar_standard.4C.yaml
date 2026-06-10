@@ -82,7 +82,7 @@ MATERIALS:
     MAT_newman:
       VALENCE: 1
       TRANSNR: -1
-      THERMFAC: 0
+      THERM_FAC: 1.0
       COND: 1.0
       COND_CONC_SCALE_FUNCT: 5
       DIFF_COEF: 0.00026

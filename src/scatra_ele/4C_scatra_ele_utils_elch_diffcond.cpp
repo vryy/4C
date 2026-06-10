@@ -180,9 +180,10 @@ void Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::mat_newman(
   diffmanager->set_deriv_trans_num(matnewman->compute_first_deriv_trans(concentration), 0, 0);
 
   // thermodynamic factor of electrolyte solution
-  diffmanager->set_therm_fac(matnewman->compute_therm_fac(concentration));
+  diffmanager->set_therm_fac(matnewman->compute_thermodynamic_factor(concentration));
   // derivative of conductivity with respect to concentrations
-  diffmanager->set_deriv_therm_fac(matnewman->compute_first_deriv_therm_fac(concentration), 0);
+  diffmanager->set_deriv_therm_fac(
+      matnewman->compute_concentration_derivative_of_thermodynamic_factor(concentration), 0);
 
   // conductivity and first derivative can maximally depend on one concentration
   // since time curve is used as input routine

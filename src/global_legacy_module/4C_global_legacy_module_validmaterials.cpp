@@ -733,7 +733,14 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                                 "diffusion coefficient",
                     .validator = null_or(positive<int>())}),
             parameter<int>("TRANSNR", {.description = "curve number for transference number"}),
-            parameter<int>("THERMFAC", {.description = "curve number for thermodynamic factor"}),
+            parameter<double>("THERM_FAC",
+                {.description =
+                        "value of the thermodynamic factor without concentration dependence",
+                    .validator = positive<double>()}),
+            parameter<std::optional<int>>("THERM_FAC_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing the concentration scaling of "
+                                "the thermodynamic factor",
+                    .validator = null_or(positive<int>())}),
             parameter<double>("COND",
                 {.description =
                         "value of the conductivity without concentration or temperature dependence",
@@ -753,13 +760,6 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 "TRANS_PARA", {.description = "parameters for transference number",
                                   .default_value = std::vector<double>{},
                                   .size = from_parameter<int>("TRANS_PARA_NUM")}),
-            parameter<int>(
-                "THERM_PARA_NUM", {.description = "number of parameters for thermodynamic factor",
-                                      .default_value = 0}),
-            parameter<std::vector<double>>(
-                "THERM_PARA", {.description = "parameters for thermodynamic factor",
-                                  .default_value = std::vector<double>{},
-                                  .size = from_parameter<int>("THERM_PARA_NUM")}),
         },
         {.description = "material parameters for ion species in electrolyte solution"});
   }
@@ -784,7 +784,14 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                                 "diffusion coefficient",
                     .validator = null_or(positive<int>())}),
             parameter<int>("TRANSNR", {.description = "curve number for transference number"}),
-            parameter<int>("THERMFAC", {.description = "curve number for thermodynamic factor"}),
+            parameter<double>("THERM_FAC",
+                {.description =
+                        "value of the thermodynamic factor without concentration dependence",
+                    .validator = positive<double>()}),
+            parameter<std::optional<int>>("THERM_FAC_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing the concentration scaling of "
+                                "the thermodynamic factor",
+                    .validator = null_or(positive<int>())}),
             parameter<double>("COND",
                 {.description =
                         "value of the conductivity without concentration or temperature dependence",
@@ -813,13 +820,6 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 "TRANS_PARA", {.description = "parameters for transference number",
                                   .default_value = std::vector<double>{},
                                   .size = from_parameter<int>("TRANS_PARA_NUM")}),
-            parameter<int>(
-                "THERM_PARA_NUM", {.description = "number of parameters for thermodynamic factor",
-                                      .default_value = 0}),
-            parameter<std::vector<double>>(
-                "THERM_PARA", {.description = "parameters for thermodynamic factor",
-                                  .default_value = std::vector<double>{},
-                                  .size = from_parameter<int>("THERM_PARA_NUM")}),
         },
         {.description = "material parameters for ion species in electrolyte solution for "
                         "multi-scale approach"});
