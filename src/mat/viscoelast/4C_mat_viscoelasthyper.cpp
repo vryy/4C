@@ -21,6 +21,7 @@
 #include "4C_mat_viscoelast_fsls.hpp"
 #include "4C_mat_viscoelast_generalizedmaxwell.hpp"
 #include "4C_mat_viscoelast_isoratedep.hpp"
+#include "4C_mat_viscoelast_quasilineargeneralizedmaxwell.hpp"
 #include "4C_mat_viscoelast_summand.hpp"
 
 #include <optional>
@@ -36,6 +37,7 @@ namespace
       case Core::Materials::mes_isoratedep:
       case Core::Materials::mes_fsls:
       case Core::Materials::mes_generalizedmaxwell:
+      case Core::Materials::mes_quasilineargeneralizedmaxwell:
       case Core::Materials::mes_viscobranch:
       case Core::Materials::mes_coupmyocard:
         return true;
@@ -182,6 +184,7 @@ Mat::ViscoElastHyper::ViscoElastHyper() : Mat::ElastHyper()
 {
   isovisco_ = false;
   visco_generalized_maxwell_ = false;
+  visco_quasi_linear_generalized_maxwell_ = false;
   visco_fsls_ = false;
 
   state_.clear();
@@ -193,7 +196,11 @@ Mat::ViscoElastHyper::ViscoElastHyper() : Mat::ElastHyper()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::ViscoElastHyper::ViscoElastHyper(Mat::PAR::ViscoElastHyper* params)
-    : Mat::ElastHyper(), isovisco_(false), visco_generalized_maxwell_(false), visco_fsls_(false)
+    : Mat::ElastHyper(),
+      isovisco_(false),
+      visco_generalized_maxwell_(false),
+      visco_quasi_linear_generalized_maxwell_(false),
+      visco_fsls_(false)
 {
   params_ = params;
   rebuild_summand_sets();
@@ -307,6 +314,8 @@ bool Mat::ViscoElastHyper::is_model_flag_enabled(const ViscoModelKind model_kind
       return isovisco_;
     case ViscoModelKind::generalized_maxwell:
       return visco_generalized_maxwell_;
+    case ViscoModelKind::quasi_linear_generalized_maxwell:
+      return visco_quasi_linear_generalized_maxwell_;
     case ViscoModelKind::fsls:
       return visco_fsls_;
   }
@@ -350,6 +359,10 @@ void Mat::ViscoElastHyper::rebuild_contributions()
       case ViscoModelKind::generalized_maxwell:
         contributions_.push_back(std::make_shared<ViscoElast::GeneralizedMaxwellContribution>());
         break;
+      case ViscoModelKind::quasi_linear_generalized_maxwell:
+        contributions_.push_back(
+            std::make_shared<ViscoElast::QuasiLinearGeneralizedMaxwellContribution>());
+        break;
       case ViscoModelKind::fsls:
         contributions_.push_back(std::make_shared<ViscoElast::FslsContribution>());
         break;
@@ -372,14 +385,32 @@ void Mat::ViscoElastHyper::setup_contributions(const int gp, const int eleGID)
   const int visco_mat_id = params_ != nullptr ? params_->id() : -1;
   const ViscoElast::ContributionPointContext point{
       .visco_mat_id = visco_mat_id, .gp = gp, .ele_gid = eleGID};
+  const ViscoElast::ContributionSetupContext base_context{.point = point,
+      .visco_summands = visco_potsum_,
+      .visco_summand_mat_ids = visco_par->visco_matids_,
+      .active_models = active_models()};
 
   for (auto& contribution : contributions_)
   {
     if (contribution == nullptr) continue;
-    contribution->setup(ViscoElast::ContributionSetupContext{.point = point,
-        .visco_summands = visco_potsum_,
-        .visco_summand_mat_ids = visco_par->visco_matids_,
-        .active_models = active_models()});
+
+    if (contribution->kind() == ViscoModelKind::quasi_linear_generalized_maxwell)
+    {
+      auto* quasi_linear =
+          dynamic_cast<ViscoElast::QuasiLinearGeneralizedMaxwellContribution*>(contribution.get());
+      FOUR_C_ASSERT_ALWAYS(quasi_linear != nullptr,
+          "Visco contribution type mismatch while setting up MAT_ViscoElastHyper (MAT {}, GP {}, "
+          "ELE {}): expected quasi-linear generalized Maxwell contribution.",
+          visco_mat_id, gp, eleGID);
+
+      quasi_linear->setup(
+          ViscoElast::QuasiLinearGeneralizedMaxwellSetupContext{.base = base_context,
+              .elastic_summands = elast_potsum_,
+              .elastic_summand_properties = elast_summand_properties_});
+      continue;
+    }
+
+    contribution->setup(base_context);
   }
 }
 
@@ -388,6 +419,7 @@ Mat::ViscoElastState::ActiveModels Mat::ViscoElastHyper::active_models_from_flag
 {
   return Mat::ViscoElastState::ActiveModels{.iso_rate = isovisco_,
       .generalized_maxwell = visco_generalized_maxwell_,
+      .quasi_linear_generalized_maxwell = visco_quasi_linear_generalized_maxwell_,
       .fsls = visco_fsls_};
 }
 
@@ -404,6 +436,9 @@ Mat::ViscoElastState::ActiveModels Mat::ViscoElastHyper::active_models_from_sequ
         break;
       case ViscoModelKind::generalized_maxwell:
         models.generalized_maxwell = true;
+        break;
+      case ViscoModelKind::quasi_linear_generalized_maxwell:
+        models.quasi_linear_generalized_maxwell = true;
         break;
       case ViscoModelKind::fsls:
         models.fsls = true;
@@ -423,13 +458,18 @@ void Mat::ViscoElastHyper::ensure_model_activation_consistency(const char* conte
   FOUR_C_ASSERT_ALWAYS(
       models_from_flags.iso_rate == models_from_sequence.iso_rate &&
           models_from_flags.generalized_maxwell == models_from_sequence.generalized_maxwell &&
+          models_from_flags.quasi_linear_generalized_maxwell ==
+              models_from_sequence.quasi_linear_generalized_maxwell &&
           models_from_flags.fsls == models_from_sequence.fsls,
       "Inconsistent visco model activation while {} in MAT_ViscoElastHyper (MAT {}): "
-      "flags=(iso_rate={}, generalized_maxwell={}, fsls={}), "
-      "sequence=(iso_rate={}, generalized_maxwell={}, fsls={}).",
+      "flags=(iso_rate={}, generalized_maxwell={}, quasi_linear_generalized_maxwell={}, "
+      "fsls={}), sequence=(iso_rate={}, generalized_maxwell={}, "
+      "quasi_linear_generalized_maxwell={}, fsls={}).",
       context, params_ != nullptr ? params_->id() : -1, models_from_flags.iso_rate,
-      models_from_flags.generalized_maxwell, models_from_flags.fsls, models_from_sequence.iso_rate,
-      models_from_sequence.generalized_maxwell, models_from_sequence.fsls);
+      models_from_flags.generalized_maxwell, models_from_flags.quasi_linear_generalized_maxwell,
+      models_from_flags.fsls, models_from_sequence.iso_rate,
+      models_from_sequence.generalized_maxwell,
+      models_from_sequence.quasi_linear_generalized_maxwell, models_from_sequence.fsls);
 }
 
 
@@ -510,6 +550,7 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
   const Mat::ViscoElastState::ActiveModels models = active_models();
   add_to_pack(data, models.iso_rate);
   add_to_pack(data, models.generalized_maxwell);
+  add_to_pack(data, models.quasi_linear_generalized_maxwell);
   add_to_pack(data, models.fsls);
 
   anisotropy_.pack_anisotropy(data);
@@ -537,6 +578,7 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   effective_summand_properties_.clear();
   isovisco_ = false;
   visco_generalized_maxwell_ = false;
+  visco_quasi_linear_generalized_maxwell_ = false;
   visco_fsls_ = false;
   state_.clear();
   active_model_sequence_.clear();
@@ -567,6 +609,7 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   elast_summand_properties_.unpack(buffer);
   extract_from_pack(buffer, isovisco_);
   extract_from_pack(buffer, visco_generalized_maxwell_);
+  extract_from_pack(buffer, visco_quasi_linear_generalized_maxwell_);
   extract_from_pack(buffer, visco_fsls_);
   rebuild_active_model_sequence();
   rebuild_contributions();
@@ -612,6 +655,7 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
   // find out which formulations are used
   isovisco_ = false;
   visco_generalized_maxwell_ = false;
+  visco_quasi_linear_generalized_maxwell_ = false;
   visco_fsls_ = false;
 
   elast_summand_properties_.clear();
@@ -619,7 +663,8 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
   rebuild_effective_summand_properties();
 
   for (auto& p : visco_potsum_)
-    p->specify_visco_formulation(isovisco_, visco_generalized_maxwell_, visco_fsls_);
+    p->specify_visco_formulation(isovisco_, visco_generalized_maxwell_,
+        visco_quasi_linear_generalized_maxwell_, visco_fsls_);
 
   rebuild_active_model_sequence();
   rebuild_contributions();
@@ -630,8 +675,11 @@ void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fib
   const Mat::ViscoElastState::ActiveModels models = active_models();
   const std::size_t generalized_maxwell_numbranch =
       history_entry_count_for_setup(ViscoModelKind::generalized_maxwell);
+  const std::size_t quasi_linear_generalized_maxwell_numbranch =
+      history_entry_count_for_setup(ViscoModelKind::quasi_linear_generalized_maxwell);
 
-  state_.initialize_from_setup(numgp, models, generalized_maxwell_numbranch);
+  state_.initialize_from_setup(
+      numgp, models, generalized_maxwell_numbranch, quasi_linear_generalized_maxwell_numbranch);
 
   return;
 }
@@ -787,6 +835,17 @@ void Mat::ViscoElastHyper::add_visco_contributions_in_sequence(const Teuchos::Pa
             require_contribution.template operator()<ViscoElast::GeneralizedMaxwellContribution>(
                 ViscoModelKind::generalized_maxwell, "generalized Maxwell");
         contribution.evaluate(ViscoElast::GeneralizedMaxwellEvaluateContext{
+            .base = make_evaluate_base(), .glstrain_mat = workspace.glstrain_mat});
+        break;
+      }
+      case ViscoModelKind::quasi_linear_generalized_maxwell:
+      {
+        auto& contribution =
+            require_contribution
+                .template operator()<ViscoElast::QuasiLinearGeneralizedMaxwellContribution>(
+                    ViscoModelKind::quasi_linear_generalized_maxwell,
+                    "quasi-linear generalized Maxwell");
+        contribution.evaluate(ViscoElast::QuasiLinearGeneralizedMaxwellEvaluateContext{
             .base = make_evaluate_base(), .glstrain_mat = workspace.glstrain_mat});
         break;
       }

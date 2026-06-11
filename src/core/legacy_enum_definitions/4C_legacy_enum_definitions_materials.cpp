@@ -217,6 +217,8 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "VISCO_IsoRateDep";
     case mes_generalizedmaxwell:
       return "VISCO_GeneralizedMaxwell";
+    case mes_quasilineargeneralizedmaxwell:
+      return "VISCO_QuasiLinearGeneralizedMaxwell";
     case mes_fsls:
       return "VISCO_FSLS";
     case mes_viscobranch:

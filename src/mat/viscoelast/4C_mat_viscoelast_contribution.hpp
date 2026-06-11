@@ -34,6 +34,7 @@ namespace Mat::ViscoElast
   {
     iso_rate,
     generalized_maxwell,
+    quasi_linear_generalized_maxwell,
     fsls
   };
 
@@ -123,6 +124,13 @@ namespace Mat::ViscoElast
 
   /// Evaluation data needed by the generalized Maxwell contribution.
   struct GeneralizedMaxwellEvaluateContext
+  {
+    ContributionEvaluateBase base;
+    const Core::LinAlg::Matrix<6, 1>& glstrain_mat;
+  };
+
+  /// Evaluation data needed by the quasi-linear generalized Maxwell contribution.
+  struct QuasiLinearGeneralizedMaxwellEvaluateContext
   {
     ContributionEvaluateBase base;
     const Core::LinAlg::Matrix<6, 1>& glstrain_mat;

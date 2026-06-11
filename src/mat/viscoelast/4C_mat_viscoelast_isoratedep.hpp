@@ -140,7 +140,8 @@ namespace Mat::ViscoElast
     void specify_visco_formulation(
         bool& visco_iso_rate,  ///< global indicator for isotropic rate-dependent visco response
         bool& visco_generalized_maxwell,  ///< global indicator for generalized Maxwell model
-        bool& visco_fsls                  ///< global indicator for FSLS model
+        bool& visco_quasi_linear_generalized_maxwell,  ///< global indicator for QLV Maxwell model
+        bool& visco_fsls                               ///< global indicator for FSLS model
         ) override
     {
       visco_iso_rate = true;

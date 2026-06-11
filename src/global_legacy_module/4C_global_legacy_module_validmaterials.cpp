@@ -2472,6 +2472,33 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   }
 
   /*--------------------------------------------------------------------*/
+  // quasi-linear Fung-type generalized Maxwell model
+  {
+    using namespace Core::IO::InputSpecBuilders::Validators;
+
+    known_materials[Core::Materials::mes_quasilineargeneralizedmaxwell] =
+        group("VISCO_QuasiLinearGeneralizedMaxwell",
+            {
+                parameter<std::vector<double>>(
+                    "BETA", {.description = "dimensionless relative branch stress weights",
+                                .validator = all_elements(positive_or_zero<double>())}),
+                parameter<std::vector<double>>(
+                    "TAU", {.description = "positive branch relaxation times",
+                               .validator = all_elements(positive<double>())}),
+                deprecated_selection<std::string>("SOLVE",
+                    {"OneStepTheta", "ExponentialTimeDiscretization"},
+                    {.description = "Solution for evolution equation: OneStepTheta (default) or "
+                                    "ExponentialTimeDiscretization (first-order exponential time "
+                                    "discretization with backward-difference forcing)",
+                        .default_value = "OneStepTheta"}),
+                parameter<double>("VISCOSITY", {.description = "parallel dashpot viscosity",
+                                                   .default_value = 0.0,
+                                                   .validator = positive_or_zero<double>()}),
+            },
+            {.description = "Fung-type quasi-linear generalized Maxwell viscoelastic summand"});
+  }
+
+  /*--------------------------------------------------------------------*/
   // description of a viscoelastic branch of a generalized Maxwell model
   {
     known_materials[Core::Materials::mes_viscobranch] = group("VISCO_GeneralizedMaxwellBranch",

@@ -13,6 +13,7 @@
 #include "4C_mat_viscoelast_fsls.hpp"
 #include "4C_mat_viscoelast_generalizedmaxwell.hpp"
 #include "4C_mat_viscoelast_isoratedep.hpp"
+#include "4C_mat_viscoelast_quasilineargeneralizedmaxwell.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -64,8 +65,8 @@ void Mat::ViscoElast::Summand::read_material_parameters(
 
 void Mat::ViscoElast::Summand::read_material_parameters(double& tau, int& matid) {}
 
-void Mat::ViscoElast::Summand::specify_visco_formulation(
-    bool& visco_iso_rate, bool& visco_generalized_maxwell, bool& visco_fsls)
+void Mat::ViscoElast::Summand::specify_visco_formulation(bool& visco_iso_rate,
+    bool& visco_generalized_maxwell, bool& visco_quasi_linear_generalized_maxwell, bool& visco_fsls)
 {
 }
 
@@ -96,6 +97,11 @@ std::shared_ptr<Mat::ViscoElast::Summand> Mat::ViscoElast::Summand::factory(cons
     {
       auto* params = dynamic_cast<Mat::ViscoElast::PAR::GeneralizedMaxwell*>(curmat);
       return std::make_shared<Mat::ViscoElast::GeneralizedMaxwell>(params);
+    }
+    case Core::Materials::mes_quasilineargeneralizedmaxwell:
+    {
+      auto* params = dynamic_cast<Mat::ViscoElast::PAR::QuasiLinearGeneralizedMaxwell*>(curmat);
+      return std::make_shared<Mat::ViscoElast::QuasiLinearGeneralizedMaxwell>(params);
     }
     case Core::Materials::mes_isoratedep:
     {

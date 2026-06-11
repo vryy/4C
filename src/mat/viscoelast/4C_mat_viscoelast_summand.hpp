@@ -97,8 +97,8 @@ namespace Mat::ViscoElast
     virtual void read_material_parameters(double& tau, int& matid);
 
     /// Report which contribution family this summand activates.
-    virtual void specify_visco_formulation(
-        bool& visco_iso_rate, bool& visco_generalized_maxwell, bool& visco_fsls);
+    virtual void specify_visco_formulation(bool& visco_iso_rate, bool& visco_generalized_maxwell,
+        bool& visco_quasi_linear_generalized_maxwell, bool& visco_fsls);
   };
 }  // namespace Mat::ViscoElast
 
