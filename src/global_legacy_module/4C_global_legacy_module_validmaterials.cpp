@@ -566,7 +566,8 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                     one_of({
                         parameter<int>("ACTIVATION_FUNCTION_ID",
                             {.description = "function id for time- and space-dependency of muscle "
-                                            "activation"}),
+                                            "activation",
+                                .validator = positive<int>()}),
                         input_field<std::vector<std::pair<double, double>>>("ACTIVATION_VALUES",
                             {.description = "json input file containing a map of "
                                             "elementwise-defined discrete values "
