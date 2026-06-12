@@ -82,9 +82,9 @@ namespace Mat
   class NewmanType : public Core::Communication::ParObjectType
   {
    public:
-    std::string name() const override { return "NewmanType"; }
+    [[nodiscard]] std::string name() const override { return "NewmanType"; }
 
-    static NewmanType& instance() { return instance_; };
+    static NewmanType& instance() { return instance_; }
 
     Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
@@ -101,61 +101,27 @@ namespace Mat
     /// construct the material object given material parameters
     explicit Newman(Mat::PAR::Newman* params);
 
-    //! @name Packing and Unpacking
-
-    /*!
-      \brief Return unique ParObject id
-
-      every class implementing ParObject needs a unique id defined at the
-      top of parobject.H (this file) and should return it in this method.
-    */
-    int unique_par_object_id() const override
+    [[nodiscard]] int unique_par_object_id() const override
     {
       return NewmanType::instance().unique_par_object_id();
     }
 
-    /*!
-      \brief Pack this class so it can be communicated
-
-      Resizes the vector data and stores all information of a class in it.
-      The first information to be stored in data has to be the
-      unique parobject id delivered by unique_par_object_id() which will then
-      identify the exact class on the receiving processor.
-
-      \param data (in/out): char vector to store class information
-    */
     void pack(Core::Communication::PackBuffer& data) const override;
 
-    /*!
-      \brief Unpack data from a char vector into this class
-
-      The vector data contains all information to rebuild the
-      exact copy of an instance of a class on a different processor.
-      The first entry in data has to be an integer which is the unique
-      parobject id defined at the top of this file and delivered by
-      unique_par_object_id().
-
-      \param data (in) : vector storing all data to be unpacked into this
-      instance.
-    */
     void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
-    //@}
-
-    /// material type
-    Core::Materials::MaterialType material_type() const override
+    [[nodiscard]] Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_newman;
     }
 
-    /// return copy of this material object
-    std::shared_ptr<Core::Mat::Material> clone() const override
+    [[nodiscard]] std::shared_ptr<Core::Mat::Material> clone() const override
     {
       return std::make_shared<Newman>(*this);
     }
 
     /// valence (= charge number)
-    double valence() const { return params_->valence_; }
+    [[nodiscard]] double valence() const { return params_->valence_; }
 
     /// computation of the transference number
     [[nodiscard]] double compute_transference_number(double concentration) const;

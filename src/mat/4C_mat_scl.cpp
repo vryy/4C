@@ -88,7 +88,7 @@ Mat::Scl::Scl(Mat::PAR::Scl* params) : ElchSingleMat(params), params_(params) {}
 void Mat::Scl::pack(Core::Communication::PackBuffer& data) const
 {
   // pack type of this instance of ParObject
-  int type = unique_par_object_id();
+  const int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
@@ -120,8 +120,10 @@ void Mat::Scl::unpack(Core::Communication::UnpackBuffer& buffer)
         set_elch_single_mat_params(params_);
       }
       else
+      {
         FOUR_C_THROW("Type of parameter material {} does not fit to calling type {}", mat->type(),
             material_type());
+      }
     }
   }
 }

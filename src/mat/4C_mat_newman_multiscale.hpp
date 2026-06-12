@@ -26,7 +26,6 @@ namespace Mat
       //! constructor
       explicit NewmanMultiScale(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      //! create instance of Newman multi-scale material
       std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //! electronic conductivity
@@ -38,14 +37,14 @@ namespace Mat
 
      private:
       //! @name parameters for Newman multi-scale material
-      //@{
+      ///@{
       //! electronic conductivity
       const double electronic_cond_;
 
       //! function number to scale electronic conductivity with. The argument for the function is
       //! the concentration
       const int conc_dep_scale_func_num_;
-      //@}
+      ///@}
     };  // class Mat::PAR::NewmanMultiScale
   }  // namespace PAR
 

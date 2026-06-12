@@ -100,12 +100,6 @@ namespace Mat
       std::optional<std::reference_wrapper<const Core::Utils::FunctionOfTime>>
           conductivity_temperature_scaling_funct_{std::nullopt};
       ///@}
-
-     protected:
-      //! check whether the number of @p functparams is consistent with the function chosen by
-      //! @p functnr
-      void check_provided_params(int functnr, const std::vector<double>& functparams);
-
     };  // class Mat::PAR::ElchSingleMat
   }  // namespace PAR
 
@@ -156,28 +150,9 @@ namespace Mat
     [[nodiscard]] double compute_temperature_derivative_of_conductivity(
         double concentration, double temperature) const;
 
-    //! abbreviations for pre-defined functions
-    ///@{
-    static constexpr int CONSTANT_FUNCTION = -1;
-    ///@}
-
    protected:
     //! synchronize base-class parameter pointer after (de-)serialization in derived materials
     void set_elch_single_mat_params(Mat::PAR::ElchSingleMat* params) { params_ = params; }
-
-    //! evaluate value as predefined function of any scalar (e.g. concentration, temperature)
-    //!
-    //! \param functnr      negative function number to be evaluated
-    //! \param scalar       scalar value to insert into function
-    //! \param functparams  constants that define the functions
-    //! \return             function evaluated at value of scalar
-    [[nodiscard]] double eval_pre_defined_funct(
-        int functnr, double scalar, const std::vector<double>& functparams) const;
-
-    //! evaluate the first derivative of a predefined function of any scalar (e.g. concentration,
-    //! temperature)
-    [[nodiscard]] double eval_first_deriv_pre_defined_funct(
-        int functnr, double scalar, const std::vector<double>& functparams) const;
 
    private:
     //! my material parameters
