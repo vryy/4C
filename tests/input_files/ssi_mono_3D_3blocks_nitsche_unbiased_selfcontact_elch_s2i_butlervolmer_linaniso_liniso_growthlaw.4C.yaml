@@ -108,11 +108,9 @@ MATERIALS:
   - MAT: 7
     MAT_newman:
       VALENCE: 1
-      TRANSNR: -1
+      TRANSFERENCE_NR: 1.0
       THERM_FAC: 1.0
       DIFF_COEF: 1.0
-      TRANS_PARA_NUM: 1
-      TRANS_PARA: [1]
       COND: 0.23
   - MAT: 8
     MAT_MultiplicativeSplitDefgradElastHyper:

@@ -23,19 +23,33 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::Newman::Newman(const Core::Mat::PAR::Parameter::Data& matdata)
     : ElchSingleMat(matdata),
       valence_(matdata.parameters.get<double>("VALENCE")),
-      transnrcurve_(matdata.parameters.get<int>("TRANSNR")),
+      transference_number_(matdata.parameters.get<double>("TRANSFERENCE_NR")),
+      transference_number_concentration_scaling_funct_num_(
+          matdata.parameters.get<std::optional<int>>("TRANSFERENCE_NR_CONC_SCALE_FUNCT")),
       thermodynamic_factor_(matdata.parameters.get<double>("THERM_FAC")),
       thermodynamic_factor_concentration_scaling_funct_num_(
-          matdata.parameters.get<std::optional<int>>("THERM_FAC_CONC_SCALE_FUNCT")),
-      transnrparanum_(matdata.parameters.get<int>("TRANS_PARA_NUM")),
-      transnrpara_(matdata.parameters.get<std::vector<double>>("TRANS_PARA"))
+          matdata.parameters.get<std::optional<int>>("THERM_FAC_CONC_SCALE_FUNCT"))
 {
-  if (transnrparanum_ != (int)transnrpara_.size())
-    FOUR_C_THROW("number of materials {} does not fit to size of material vector {}",
-        transnrparanum_, transnrpara_.size());
+}
 
-  // check if number of provided parameter is valid for a the chosen predefined function
-  check_provided_params(transnrcurve_, transnrpara_);
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Core::Utils::FunctionOfTime&
+Mat::PAR::Newman::transference_number_concentration_scaling_funct()
+{
+  FOUR_C_ASSERT(has_transference_number_concentration_scaling(),
+      "You try to access the function defining the optional concentration scaling of the "
+      "transference number, but no function number has been set! Check your implementation that "
+      "the input file parameter 'TRANSFERENCE_NR_CONC_SCALE_FUNCT' is properly set and that you "
+      "only call this function if this optional quantity is set.");
+
+  if (!transference_number_concentration_scaling_funct_.has_value())
+  {
+    transference_number_concentration_scaling_funct_.emplace(
+        Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfTime>(
+            transference_number_concentration_scaling_funct_num_.value()));
+  }
+  return transference_number_concentration_scaling_funct_->get();
 }
 
 /*----------------------------------------------------------------------*
@@ -125,38 +139,35 @@ void Mat::Newman::unpack(Core::Communication::UnpackBuffer& buffer)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::Newman::compute_transference_number(const double cint) const
+double Mat::Newman::compute_transference_number(const double concentration) const
 {
-  double trans = 0.0;
+  // transference number
+  double transference_number = params_->transference_number_;
 
-  if (trans_nr_curve() < 0)
-    trans = eval_pre_defined_funct(trans_nr_curve(), cint, trans_nr_params());
-  else if (trans_nr_curve() == 0)
-    trans = eval_pre_defined_funct(-1, cint, trans_nr_params());
-  else
-    trans = Global::Problem::instance()
-                ->function_by_id<Core::Utils::FunctionOfTime>(trans_nr_curve())
-                .evaluate(cint);
+  // transference_number = transference_number*transference_number(c)
+  if (params_->has_transference_number_concentration_scaling())
+  {
+    transference_number *=
+        params_->transference_number_concentration_scaling_funct().evaluate(concentration);
+  }
 
-  return trans;
+  return transference_number;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::Newman::compute_first_deriv_trans(const double cint) const
+double Mat::Newman::compute_concentration_derivative_of_transference_number(
+    const double concentration) const
 {
-  double firstderiv = 0.0;
+  if (not params_->has_transference_number_concentration_scaling())
+  {
+    return 0.0;
+  }
 
-  if (trans_nr_curve() < 0)
-    firstderiv = eval_first_deriv_pre_defined_funct(trans_nr_curve(), cint, trans_nr_params());
-  else if (trans_nr_curve() == 0)
-    firstderiv = eval_first_deriv_pre_defined_funct(-1, cint, trans_nr_params());
-  else
-    firstderiv = Global::Problem::instance()
-                     ->function_by_id<Core::Utils::FunctionOfTime>(trans_nr_curve())
-                     .evaluate_derivative(cint);
-
-  return firstderiv;
+  // Computation of transference_number*transference_number'(c)
+  return params_->transference_number_ *
+         params_->transference_number_concentration_scaling_funct().evaluate_derivative(
+             concentration);
 }
 
 /*----------------------------------------------------------------------*/

@@ -27,6 +27,17 @@ namespace Mat
       /// standard constructor
       explicit Newman(const Core::Mat::PAR::Parameter::Data& matdata);
 
+
+      //! gets the function defining the concentration scaling of the transference number from the
+      //! global problem for the first call and returns it for all later calls
+      [[nodiscard]] const Core::Utils::FunctionOfTime&
+      transference_number_concentration_scaling_funct();
+
+      [[nodiscard]] bool has_transference_number_concentration_scaling() const
+      {
+        return transference_number_concentration_scaling_funct_num_.has_value();
+      }
+
       //! gets the function defining the concentration scaling of the thermodynamic factor from the
       //! global problem for the first call and returns it for all later calls
       [[nodiscard]] const Core::Utils::FunctionOfTime&
@@ -38,13 +49,19 @@ namespace Mat
       }
 
       /// @name material parameters
-      //@{
+      ///@{
       /// valence (= charge number)
       const double valence_;
 
-      /// definition of transference number
-      /// (by curve number or implemented concentration dependence)
-      const int transnrcurve_;
+      //! transference number
+      const double transference_number_;
+
+      //! function number defining the optional concentration scaling of the transference number
+      const std::optional<int> transference_number_concentration_scaling_funct_num_;
+      //! function defining the optional concentration scaling of the transference number
+      std::optional<std::reference_wrapper<const Core::Utils::FunctionOfTime>>
+          transference_number_concentration_scaling_funct_{std::nullopt};
+
 
       //! thermodynamic factor
       const double thermodynamic_factor_;
@@ -54,16 +71,7 @@ namespace Mat
       //! function defining the optional concentration scaling of the thermodynamic factor
       std::optional<std::reference_wrapper<const Core::Utils::FunctionOfTime>>
           thermodynamic_factor_concentration_scaling_funct_{std::nullopt};
-
-      // Important:
-      // pointer to vectors containing parameter for predefined curves
-      // -> faster than saving the actual vector
-
-      /// number of parameter needed for implemented concentration dependence
-      const int transnrparanum_;
-      /// parameter needed for implemented concentration dependence
-      const std::vector<double> transnrpara_;
-      //@}
+      ///@}
 
       /// create material instance of matching type with my parameters
       std::shared_ptr<Core::Mat::Material> create_material() override;
@@ -149,10 +157,11 @@ namespace Mat
     /// valence (= charge number)
     double valence() const { return params_->valence_; }
 
-    /// computation of the transference number based on the defined curve
-    double compute_transference_number(const double cint) const;
-    /// computation of the first derivative of the transference number based on the defined curve
-    double compute_first_deriv_trans(const double cint) const;
+    /// computation of the transference number
+    [[nodiscard]] double compute_transference_number(double concentration) const;
+    /// computation of the first derivative of the transference number w.r.t. concentration
+    [[nodiscard]] double compute_concentration_derivative_of_transference_number(
+        double concentration) const;
 
     /// computation of the thermodynamic factor
     [[nodiscard]] double compute_thermodynamic_factor(double concentration) const;
@@ -163,12 +172,6 @@ namespace Mat
     [[nodiscard]] Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
    private:
-    /// return curve defining the transference number
-    int trans_nr_curve() const { return params_->transnrcurve_; }
-
-    /// parameter needed for implemented concentration dependence
-    const std::vector<double>& trans_nr_params() const { return params_->transnrpara_; }
-
     /// my material parameters
     Mat::PAR::Newman* params_;
   };

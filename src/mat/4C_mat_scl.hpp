@@ -13,6 +13,10 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_elchsinglemat.hpp"
 
+namespace FourC::Core::Utils
+{
+  class FunctionOfScalar;
+}
 FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
@@ -26,20 +30,29 @@ namespace Mat
      public:
       explicit Scl(const Core::Mat::PAR::Parameter::Data& matdata);
 
+      //! gets the function defining the concentration scaling of the transference number from the
+      //! global problem for the first call and returns it for all later calls
+      [[nodiscard]] const Core::Utils::FunctionOfScalar&
+      transference_number_concentration_scaling_funct();
+
+      [[nodiscard]] bool has_transference_number_concentration_scaling() const
+      {
+        return transference_number_concentration_scaling_funct_num_.has_value();
+      }
+
       /// @name material parameters
-      //@{
+      ///@{
       /// valence (= charge number)
       const double valence_;
 
-      /// definition of transference number
-      /// (by function number or implemented concentration dependence)
-      const int transnrcurve_;
+      //! transference number
+      const double transference_number_;
 
-      /// number of parameter needed for implemented concentration dependence
-      const int transnrparanum_;
-
-      /// parameter needed for implemented concentration dependence
-      const std::vector<double> transnr_;
+      //! function number defining the optional concentration scaling of the transference number
+      const std::optional<int> transference_number_concentration_scaling_funct_num_;
+      //! function defining the optional concentration scaling of the transference number
+      std::optional<std::reference_wrapper<const Core::Utils::FunctionOfScalar>>
+          transference_number_concentration_scaling_funct_{std::nullopt};
 
       //! maximum concentration of species
       const double cmax_;
@@ -67,7 +80,7 @@ namespace Mat
 
       //! vacuum Permittivity
       const double epsilon_0_;
-      //@}
+      ///@}
 
       /// create material instance of matching type with my parameters
       std::shared_ptr<Core::Mat::Material> create_material() override;
@@ -119,11 +132,11 @@ namespace Mat
     /// valence (= charge number)
     [[nodiscard]] double valence() const { return params_->valence_; }
 
-    /// computation of the transference number based on the defined curve
-    [[nodiscard]] double compute_transference_number(double cint) const;
-
-    /// computation of the first derivative of the transference number based on the defined curve
-    [[nodiscard]] double compute_first_deriv_trans(double cint) const;
+    /// computation of the transference number
+    [[nodiscard]] double compute_transference_number(double concentration) const;
+    /// computation of the first derivative of the transference number w.r.t. concentration
+    [[nodiscard]] double compute_concentration_derivative_of_transference_number(
+        double concentration) const;
 
     [[nodiscard]] double compute_diffusion_coefficient(
         double concentration, double temperature) const override;
@@ -154,12 +167,6 @@ namespace Mat
     [[nodiscard]] Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
    private:
-    /// return curve defining the transference number
-    [[nodiscard]] int trans_nr_curve() const { return params_->transnrcurve_; }
-
-    /// parameter needed for implemented concentration dependence
-    [[nodiscard]] const std::vector<double>& trans_nr_params() const { return params_->transnr_; }
-
     /// my material parameters
     Mat::PAR::Scl* params_;
   };

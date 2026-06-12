@@ -177,7 +177,8 @@ void Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::mat_newman(
   // concentration depending transference number
   diffmanager->set_trans_num(matnewman->compute_transference_number(concentration), 0);
   // derivation of concentration depending transference number wrt all ionic species
-  diffmanager->set_deriv_trans_num(matnewman->compute_first_deriv_trans(concentration), 0, 0);
+  diffmanager->set_deriv_trans_num(
+      matnewman->compute_concentration_derivative_of_transference_number(concentration), 0, 0);
 
   // thermodynamic factor of electrolyte solution
   diffmanager->set_therm_fac(matnewman->compute_thermodynamic_factor(concentration));

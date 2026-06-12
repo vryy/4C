@@ -732,7 +732,13 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 {.description = "optional function number describing temperature scaling of the"
                                 "diffusion coefficient",
                     .validator = null_or(positive<int>())}),
-            parameter<int>("TRANSNR", {.description = "curve number for transference number"}),
+            parameter<double>("TRANSFERENCE_NR",
+                {.description = "value of the transference number without concentration dependence",
+                    .validator = positive<double>()}),
+            parameter<std::optional<int>>("TRANSFERENCE_NR_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing the concentration scaling of "
+                                "the transference number",
+                    .validator = null_or(positive<int>())}),
             parameter<double>("THERM_FAC",
                 {.description =
                         "value of the thermodynamic factor without concentration dependence",
@@ -753,13 +759,6 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 {.description = "optional function number describing the temperature scaling of "
                                 "the conductivity",
                     .validator = null_or(positive<int>())}),
-            parameter<int>(
-                "TRANS_PARA_NUM", {.description = "number of parameters for transference number",
-                                      .default_value = 0}),
-            parameter<std::vector<double>>(
-                "TRANS_PARA", {.description = "parameters for transference number",
-                                  .default_value = std::vector<double>{},
-                                  .size = from_parameter<int>("TRANS_PARA_NUM")}),
         },
         {.description = "material parameters for ion species in electrolyte solution"});
   }
@@ -783,7 +782,13 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 {.description = "optional function number describing temperature scaling of the"
                                 "diffusion coefficient",
                     .validator = null_or(positive<int>())}),
-            parameter<int>("TRANSNR", {.description = "curve number for transference number"}),
+            parameter<double>("TRANSFERENCE_NR",
+                {.description = "value of the transference number without concentration dependence",
+                    .validator = positive<double>()}),
+            parameter<std::optional<int>>("TRANSFERENCE_NR_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing the concentration scaling of "
+                                "the transference number",
+                    .validator = null_or(positive<int>())}),
             parameter<double>("THERM_FAC",
                 {.description =
                         "value of the thermodynamic factor without concentration dependence",
@@ -812,14 +817,6 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<std::string>("MICROFILE",
                 {.description = "input file for micro scale", .default_value = "filename.dat"}),
             parameter<int>("MICRODIS_NUM", {.description = "number of micro-scale discretization"}),
-            // optional parameters for implemented concentration-depending functions
-            parameter<int>(
-                "TRANS_PARA_NUM", {.description = "number of parameters for transference number",
-                                      .default_value = 0}),
-            parameter<std::vector<double>>(
-                "TRANS_PARA", {.description = "parameters for transference number",
-                                  .default_value = std::vector<double>{},
-                                  .size = from_parameter<int>("TRANS_PARA_NUM")}),
         },
         {.description = "material parameters for ion species in electrolyte solution for "
                         "multi-scale approach"});
@@ -842,7 +839,6 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 {.description = "optional function number describing temperature scaling of the"
                                 "diffusion coefficient",
                     .validator = null_or(positive<int>())}),
-            parameter<int>("TRANSNR", {.description = "curve number for transference number"}),
             parameter<double>("COND",
                 {.description =
                         "value of the conductivity without concentration or temperature dependence",
@@ -855,13 +851,13 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 {.description = "optional function number describing the temperature scaling of "
                                 "the conductivity",
                     .validator = null_or(positive<int>())}),
-            parameter<int>(
-                "TRANS_PARA_NUM", {.description = "number of parameters for transference number",
-                                      .default_value = 0}),
-            parameter<std::vector<double>>(
-                "TRANS_PARA", {.description = "parameters for transference number",
-                                  .default_value = std::vector<double>{},
-                                  .size = from_parameter<int>("TRANS_PARA_NUM")}),
+            parameter<double>("TRANSFERENCE_NR",
+                {.description = "value of the transference number without concentration dependence",
+                    .validator = positive<double>()}),
+            parameter<std::optional<int>>("TRANSFERENCE_NR_CONC_SCALE_FUNCT",
+                {.description = "optional function number describing the concentration scaling of "
+                                "the transference number",
+                    .validator = null_or(positive<int>())}),
             parameter<double>("MAX_CONC", {.description = "maximum cation concentration"}),
             parameter<int>("EXTRAPOL_DIFF",
                 {.description = "strategy for extrapolation of diffusion coefficient below 0 and "

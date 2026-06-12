@@ -72,7 +72,7 @@ MATERIALS:
   - MAT: 7
     MAT_newman_multiscale:
       VALENCE: 1
-      TRANSNR: -1
+      TRANSFERENCE_NR: 0.363
       THERM_FAC: 1.0
       COND: 1.0
       COND_CONC_SCALE_FUNCT: 4
@@ -82,22 +82,18 @@ MATERIALS:
       MICROFILE: "elch_1D_line2_multiscale_butlervolmer_anode.mat.4C.yaml"
       MICRODIS_NUM: 1
       DIFF_COEF: 0.00026
-      TRANS_PARA_NUM: 1
-      TRANS_PARA: [0.363]
   - MAT: 8
     MAT_newman:
       VALENCE: 1
-      TRANSNR: -1
+      TRANSFERENCE_NR: 0.363
       THERM_FAC: 1.0
       COND: 1.0
       COND_CONC_SCALE_FUNCT: 4
       DIFF_COEF: 0.00026
-      TRANS_PARA_NUM: 1
-      TRANS_PARA: [0.363]
   - MAT: 9
     MAT_newman_multiscale:
       VALENCE: 1
-      TRANSNR: -1
+      TRANSFERENCE_NR: 0.363
       THERM_FAC: 1.0
       COND: 1.0
       COND_CONC_SCALE_FUNCT: 4
@@ -107,8 +103,6 @@ MATERIALS:
       MICROFILE: "elch_1D_line2_multiscale_butlervolmer_cathode.mat.4C.yaml"
       MICRODIS_NUM: 2
       DIFF_COEF: 0.00026
-      TRANS_PARA_NUM: 1
-      TRANS_PARA: [0.363]
 FUNCT1:
   - COMPONENT: 0
     SYMBOLIC_FUNCTION_OF_SPACE_TIME: "1.2"

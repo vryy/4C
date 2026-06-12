@@ -56,7 +56,7 @@ MATERIALS:
   - MAT: 4
     MAT_newman_multiscale:
       VALENCE: 1
-      TRANSNR: -1
+      TRANSFERENCE_NR: 0.363
       THERM_FAC: 1.0
       COND: 1.0
       COND_CONC_SCALE_FUNCT: 4
@@ -66,8 +66,6 @@ MATERIALS:
       MICROFILE: "elch_1D_line2_multiscale_butlervolmer_anode.mat.4C.yaml"
       MICRODIS_NUM: 1
       DIFF_COEF: 0.00026
-      TRANS_PARA_NUM: 1
-      TRANS_PARA: [0.363]
 CLONING MATERIAL MAP:
   - SRC_FIELD: "structure"
     SRC_MAT: 1
