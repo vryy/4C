@@ -34,15 +34,15 @@ namespace
   Mat::PAR::MuscleCombo::ActivationParameterVariant get_activation_params(
       const Core::Mat::PAR::Parameter::Data& matdata)
   {
-    if (matdata.parameters.get_if<int>("ACTIVATION_FUNCTION_ID"))
+    if (matdata.parameters.group("ACTIVE").get_if<int>("ACTIVATION_FUNCTION_ID"))
     {
-      auto actFunctId = matdata.parameters.get<int>("ACTIVATION_FUNCTION_ID");
+      auto actFunctId = matdata.parameters.group("ACTIVE").get<int>("ACTIVATION_FUNCTION_ID");
       if (actFunctId <= 0) FOUR_C_THROW("Function id must be positive");
       return actFunctId;
     }
-    else if (matdata.parameters.get_if<ActivationFieldType>("ACTIVATION_VALUES"))
+    else if (matdata.parameters.group("ACTIVE").get_if<ActivationFieldType>("ACTIVATION_VALUES"))
     {
-      return matdata.parameters.get<ActivationFieldType>("ACTIVATION_VALUES");
+      return matdata.parameters.group("ACTIVE").get<ActivationFieldType>("ACTIVATION_VALUES");
     }
     else
       return std::monostate{};
@@ -101,14 +101,14 @@ namespace
 
 Mat::PAR::MuscleCombo::MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata),
-      alpha_(matdata.parameters.get<double>("ALPHA")),
-      beta_(matdata.parameters.get<double>("BETA")),
-      gamma_(matdata.parameters.get<double>("GAMMA")),
-      kappa_(matdata.parameters.get<double>("KAPPA")),
-      omega0_(matdata.parameters.get<double>("OMEGA0")),
-      Popt_(matdata.parameters.get<double>("POPT")),
-      lambdaMin_(matdata.parameters.get<double>("LAMBDAMIN")),
-      lambdaOpt_(matdata.parameters.get<double>("LAMBDAOPT")),
+      alpha_(matdata.parameters.group("PASSIVE").get<double>("ALPHA")),
+      beta_(matdata.parameters.group("PASSIVE").get<double>("BETA")),
+      gamma_(matdata.parameters.group("PASSIVE").get<double>("GAMMA")),
+      kappa_(matdata.parameters.group("PASSIVE").get<double>("KAPPA")),
+      omega0_(matdata.parameters.group("PASSIVE").get<double>("OMEGA0")),
+      Popt_(matdata.parameters.group("ACTIVE").get<double>("POPT")),
+      lambdaMin_(matdata.parameters.group("ACTIVE").get<double>("LAMBDAMIN")),
+      lambdaOpt_(matdata.parameters.group("ACTIVE").get<double>("LAMBDAOPT")),
       activationParams_(get_activation_params(matdata)),
       density_(matdata.parameters.get<double>("DENS")),
       fiber_orientation_(
@@ -335,7 +335,10 @@ void Mat::MuscleCombo::evaluate_active_nominal_stress(const Teuchos::ParameterLi
 
   // compute force-time-space dependency Poptft
   const double Poptft =
-      std::visit(ActivationEvalVisitor{Popt, t_tot, element_center_reference_coordinates, eleGID},
+      std::visit(ActivationEvalVisitor{.Popt_ = Popt,
+                     .t_tot_ = t_tot,
+                     .element_center_reference_coordinates_ = element_center_reference_coordinates,
+                     .eleGID_ = eleGID},
           activation_evaluator_);
 
   // compute the force-stretch dependency fxi, its integral in the boundaries lambdaMin to
