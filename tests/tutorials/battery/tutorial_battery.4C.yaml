@@ -4,6 +4,7 @@ PROBLEM TYPE:
 IO:
   STRUCT_STRESS: "Cauchy"
   STDOUTEVERY: 0
+  ELEMENT_MAT_ID: true
 
 IO/RUNTIME VTK OUTPUT:
   INTERVAL_STEPS: 1
@@ -15,8 +16,8 @@ IO/RUNTIME VTK OUTPUT/STRUCTURE:
 
 SSI CONTROL:
   NUMSTEP: 2
-  MAXTIME: 2e+07
-  TIMESTEP: 1000
+  MAXTIME: 2.0e7
+  TIMESTEP: 10.0e3
   COUPALGO: ssi_Monolithic
   SCATRATIMINTTYPE: "Elch"
 
@@ -61,7 +62,7 @@ SCALAR TRANSPORT DYNAMIC/S2I COUPLING:
   MESHTYING_CONDITIONS_INDEPENDENT_SETUP: true
 
 SOLVER 1:
-  SOLVER: "UMFPACK"
+  SOLVER: MUMPS
 
 MATERIALS:
   - MAT: 1
@@ -73,6 +74,7 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 6
+
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1
@@ -80,10 +82,12 @@ MATERIALS:
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [4]
       DENS: 4780
+
   - MAT: 3
     ELAST_CoupNeoHooke:
       YOUNG: 1.8485e+11
       NUE: 0.3
+
   - MAT: 4
     MAT_InelasticDefgradPolyIntercalFracIso:
       SCALAR1: 1
@@ -94,18 +98,21 @@ MATERIALS:
       X_min: 0.152
       X_max: 0.94
       MATID: 1
+
   - MAT: 5
     MAT_elchmat:
       NUMDOF: 2
       NUMSCAL: 1
       NUMPHASE: 1
       PHASEIDS: [6]
+
   - MAT: 6
     MAT_elchphase:
       EPSILON: 1
       TORTUOSITY: 1
       NUMMAT: 1
       MATIDS: [7]
+
   - MAT: 7
     MAT_newman:
       VALENCE: 1
@@ -113,6 +120,7 @@ MATERIALS:
       COND: 16.11
       TRANSFERENCE_NR: 1.0
       THERM_FAC: 1.0
+
   - MAT: 8
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1
@@ -120,12 +128,15 @@ MATERIALS:
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [10]
       DENS: 1850
+
   - MAT: 9
     ELAST_CoupNeoHooke:
       YOUNG: 2.601e+10
       NUE: 0.27
+
   - MAT: 10
     MAT_InelasticDefgradNoGrowth: {}
+
   - MAT: 11
     MAT_electrode:
       DIFF_COEF: 1.0
@@ -135,6 +146,7 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 7
+
   - MAT: 12
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1
@@ -142,16 +154,19 @@ MATERIALS:
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [14]
       DENS: 530
+
   - MAT: 13
     ELAST_CoupNeoHooke:
       YOUNG: 4.9e+09
       NUE: 0.42
+
   - MAT: 14
     MAT_InelasticDefgradLinScalarAniso:
       SCALAR1: 1
       SCALAR1_MolarGrowthFac: 1.2998e-05
       SCALAR1_RefConc: 1
       GrowthDirection: [1, 0, 0]
+
   - MAT: 15
     MAT_electrode:
       DIFF_COEF: 1.0
@@ -161,6 +176,7 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 7
+
   - MAT: 16
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1
@@ -168,10 +184,12 @@ MATERIALS:
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [10]
       DENS: 8920
+
   - MAT: 17
     ELAST_CoupNeoHooke:
       YOUNG: 1.15e+11
       NUE: 0.34
+
   - MAT: 19
     MAT_electrode:
       DIFF_COEF: 1.0
@@ -181,6 +199,7 @@ MATERIALS:
       OCP_MODEL:
         Function:
           OCP_FUNCT_NUM: 7
+
   - MAT: 20
     MAT_MultiplicativeSplitDefgradElastHyper:
       NUMMATEL: 1
@@ -188,6 +207,7 @@ MATERIALS:
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [10]
       DENS: 2700
+
   - MAT: 21
     ELAST_CoupNeoHooke:
       YOUNG: 6.9e+10
@@ -198,18 +218,22 @@ CLONING MATERIAL MAP:
     SRC_MAT: 2
     TAR_FIELD: "scatra"
     TAR_MAT: 1
+
   - SRC_FIELD: "structure"
     SRC_MAT: 8
     TAR_FIELD: "scatra"
     TAR_MAT: 5
+
   - SRC_FIELD: "structure"
     SRC_MAT: 12
     TAR_FIELD: "scatra"
     TAR_MAT: 11
+
   - SRC_FIELD: "structure"
     SRC_MAT: 16
     TAR_FIELD: "scatra"
     TAR_MAT: 15
+
   - SRC_FIELD: "structure"
     SRC_MAT: 20
     TAR_FIELD: "scatra"
@@ -253,198 +277,206 @@ FUNCT6:
 FUNCT7:
   - FASTPOLYNOMIAL:
       NUMCOEFF: 1
-      COEFF: [0]
+      COEFF: [0.0]
 
 RESULT DESCRIPTION:
   - SCATRA:
       DIS: "scatra"
       NODE: 32
       QUANTITY: "phi1"
-      VALUE: 1.26777850815654229e+01
-      TOLERANCE: 1.3e-07
+      VALUE: 1.17729179835590955e+02
+      TOLERANCE: 1.2e-06
   - SCATRA:
       DIS: "scatra"
       NODE: 32
       QUANTITY: "phi2"
-      VALUE: 5.63408408249148287e-06
+      VALUE: 5.63420877183655170e-06
       TOLERANCE: 5.6e-14
   - SCATRA:
       DIS: "scatra"
       NODE: 95
       QUANTITY: "phi1"
-      VALUE: 1.2e3
+      VALUE: 1.20023216963911113e+03
       TOLERANCE: 1.2e-05
   - SCATRA:
       DIS: "scatra"
       NODE: 95
       QUANTITY: "phi2"
-      VALUE: 1.93918473648069017e-04
-      TOLERANCE: 1.9e-12
+      VALUE: 2.02652764799278619e-04
+      TOLERANCE: 2.0e-12
   - SCATRA:
       DIS: "scatra"
       NODE: 232
       QUANTITY: "phi1"
-      VALUE: 4.18389051248949399e+04
-      TOLERANCE: 4.2e-4
+      VALUE: 4.31876698510277783e+04
+      TOLERANCE: 4.3e-4
   - SCATRA:
       DIS: "scatra"
       NODE: 232
       QUANTITY: "phi2"
-      VALUE: 3.60022131383473765e+00
+      VALUE: 3.60019943891482708e+00
       TOLERANCE: 3.6e-08
   - STRUCTURE:
       DIS: "structure"
       NODE: 32
       QUANTITY: "dispx"
-      VALUE: -6.66773032761887734e-08
-      TOLERANCE: 6.7e-15
+      VALUE: 8.44280151667777646e-08
+      TOLERANCE: 8.4e-16
   - STRUCTURE:
       DIS: "structure"
       NODE: 32
       QUANTITY: "dispy"
-      VALUE: -2.07081933892450716e-10
-      TOLERANCE: 1.0e-16
+      VALUE: -8.44280151749625117e-08
+      TOLERANCE: 8.4e-16
   - STRUCTURE:
       DIS: "structure"
       NODE: 32
       QUANTITY: "dispz"
-      VALUE: 2.07081926671139049e-10
-      TOLERANCE: 1.0e-16
+      VALUE: -9.67592544354235016e-08
+      TOLERANCE: 9.7e-16
   - STRUCTURE:
       DIS: "structure"
       NODE: 95
       QUANTITY: "dispx"
-      VALUE: -2.46786207653848376e-08
-      TOLERANCE: 2.5e-16
+      VALUE: 2.07719538778803939e-09
+      TOLERANCE: 1.0e-16
   - STRUCTURE:
       DIS: "structure"
       NODE: 95
       QUANTITY: "dispy"
-      VALUE: 5.06484398044960120e-09
+      VALUE: -8.12085065370041722e-09
       TOLERANCE: 1.0e-16
   - STRUCTURE:
       DIS: "structure"
       NODE: 95
       QUANTITY: "dispz"
-      VALUE: -5.06484397125480544e-09
-      TOLERANCE: 1.0e-16
+      VALUE: -1.76358836650572382e-08
+      TOLERANCE: 1.8e-16
   - STRUCTURE:
       DIS: "structure"
       NODE: 232
       QUANTITY: "dispx"
-      VALUE: -1.92532124495455729e-08
-      TOLERANCE: 2.0e-16
+      VALUE: 3.14013986975288425e-09
+      TOLERANCE: 1.0e-16
   - STRUCTURE:
       DIS: "structure"
       NODE: 232
       QUANTITY: "dispz"
-      VALUE: 3.77494081961681657e-08
-      TOLERANCE: 3.8e-16
+      VALUE: -7.04564778319423031e-08
+      TOLERANCE: 7.0e-16
 
 PROBLEM SIZE:
   DIM: 3
 
 DESIGN SURF TRANSPORT NEUMANN CONDITIONS:
-  - E: 12
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: surface_normal_z_cat_cc
     NUMDOF: 2
     ONOFF: [0, 1]
     VAL: [0, 5.839316572e-06]
-    FUNCT: [0, 0]
+    FUNCT: [null, null]
 
 DESIGN POINT DIRICH CONDITIONS:
-  - E: 23
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: vertices_an_side_cc
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 24
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: vertices_cat_side_cc
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
 
 DESIGN LINE DIRICH CONDITIONS:
-  - E: 16
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: curves_y_dir_an_cc
     NUMDOF: 3
     ONOFF: [1, 0, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 17
-    ENTITY_TYPE: node_set_id
-    NUMDOF: 3
-    ONOFF: [1, 1, 0]
-    VAL: [0, 0, 0]
-    FUNCT: [null, null, null]
-  - E: 18
-    ENTITY_TYPE: node_set_id
-    NUMDOF: 3
-    ONOFF: [1, 1, 0]
-    VAL: [0, 0, 0]
-    FUNCT: [null, null, null]
-  - E: 19
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: curves_x_dir_an_cc
     NUMDOF: 3
     ONOFF: [0, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
 
+  - NODE_SET_NAME: curves_(-1_1_0)_dir_an_cc
+    NUMDOF: 3
+    ONOFF: [1, 0, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [null, null, null]
+
+  - NODE_SET_NAME: curves_y_dir_cat_cc
+    NUMDOF: 3
+    ONOFF: [1, 0, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [null, null, null]
+
+  - NODE_SET_NAME: curves_x_dir_cat_cc
+    NUMDOF: 3
+    ONOFF: [0, 1, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [null, null, null]
+
+  - NODE_SET_NAME: curves_(-1_1_0)_dir_cat_cc
+    NUMDOF: 3
+    ONOFF: [1, 0, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [null, null, null]
+
+  - NODE_SET_NAME: curves_z_dir
+    NUMDOF: 3
+    ONOFF: [1, 1, 0]
+    VAL: [0, 0, 0]
+    FUNCT: [null, null, null]
+
 DESIGN SURF DIRICH CONDITIONS:
-  - E: 1
-    ENTITY_TYPE: node_set_id
-    NUMDOF: 3
-    ONOFF: [1, 0, 0]
-    VAL: [0, 0, 0]
-    FUNCT: [null, null, null]
-  - E: 12
-    ENTITY_TYPE: node_set_id
-    NUMDOF: 3
-    ONOFF: [1, 0, 0]
-    VAL: [0, 0, 0]
-    FUNCT: [null, null, null]
-  - E: 13
-    ENTITY_TYPE: node_set_id
-    NUMDOF: 3
-    ONOFF: [0, 1, 0]
-    VAL: [0, 0, 0]
-    FUNCT: [null, null, null]
-  - E: 14
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: surface_normal_z_an_cc
     NUMDOF: 3
     ONOFF: [0, 0, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 15
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: surface_normal_z_cat_cc
+    NUMDOF: 3
+    ONOFF: [0, 0, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [null, null, null]
+
+  - NODE_SET_NAME: surface_normal_y
+    NUMDOF: 3
+    ONOFF: [0, 1, 0]
+    VAL: [0, 0, 0]
+    FUNCT: [null, null, null]
+
+  - NODE_SET_NAME: surface_normal_x
+    NUMDOF: 3
+    ONOFF: [1, 0, 0]
+    VAL: [0, 0, 0]
+    FUNCT: [null, null, null]
+
+  - NODE_SET_NAME: surface_normal_(1_1_0)
     NUMDOF: 3
     ONOFF: [0, 1, 0]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
 
 DESIGN SURF TRANSPORT DIRICH CONDITIONS:
-  - E: 1
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: surface_normal_z_an_cc
     NUMDOF: 2
     ONOFF: [0, 1]
     VAL: [0, 0]
     FUNCT: [0, 0]
 
 DESIGN VOL TRANSPORT DIRICH CONDITIONS:
-  - E: 2
-    ENTITY_TYPE: element_block_id
-    NUMDOF: 2
-    ONOFF: [1, 0]
-    VAL: [1200, 0]
-    FUNCT: [0, 0]
   - E: 4
     ENTITY_TYPE: element_block_id
     NUMDOF: 2
     ONOFF: [1, 0]
     VAL: [1200, 0]
     FUNCT: [0, 0]
+
   - E: 5
     ENTITY_TYPE: element_block_id
     NUMDOF: 2
@@ -457,42 +489,49 @@ DESIGN VOL INITIAL FIELD CONDITIONS:
     ENTITY_TYPE: element_block_id
     FIELD: "ScaTra"
     FUNCT: 1
+
   - E: 2
     ENTITY_TYPE: element_block_id
     FIELD: "ScaTra"
     FUNCT: 2
+
   - E: 3
     ENTITY_TYPE: element_block_id
     FIELD: "ScaTra"
     FUNCT: 3
+
   - E: 4
     ENTITY_TYPE: element_block_id
     FIELD: "ScaTra"
     FUNCT: 4
+
   - E: 5
     ENTITY_TYPE: element_block_id
     FIELD: "ScaTra"
     FUNCT: 5
 
 DESIGN LINE LOCSYS CONDITIONS:
-  - E: 18
-    ENTITY_TYPE: node_set_id
-    ROTANGLE: [0.7853981634, 0, 0]
+  - NODE_SET_NAME: curves_(-1_1_0)_dir_cat_cc
+    ROTANGLE: [0, 0, -0.7853981634]
+    FUNCT: [0, 0, 0]
+    USEUPDATEDNODEPOS: 0
+    USECONSISTENTNODENORMAL: 0
+
+  - NODE_SET_NAME: curves_(-1_1_0)_dir_an_cc
+    ROTANGLE: [0, 0, -0.7853981634]
     FUNCT: [0, 0, 0]
     USEUPDATEDNODEPOS: 0
     USECONSISTENTNODENORMAL: 0
 
 DESIGN SURF LOCSYS CONDITIONS:
-  - E: 15
-    ENTITY_TYPE: node_set_id
-    ROTANGLE: [0.7853981634, 0, 0]
+  - NODE_SET_NAME: surface_normal_(1_1_0)
+    ROTANGLE: [0, 0, -0.7853981634]
     FUNCT: [0, 0, 0]
     USEUPDATEDNODEPOS: 0
     USECONSISTENTNODENORMAL: 0
 
 DESIGN S2I KINETICS SURF CONDITIONS:
-  - E: 2
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cc_side(s)_an-cc_interface
     ConditionID: 0
     INTERFACE_SIDE: "Slave"
     KINETIC_MODEL: "ConstantInterfaceResistance"
@@ -500,12 +539,12 @@ DESIGN S2I KINETICS SURF CONDITIONS:
     RESISTANCE: 1e-05
     E-: 1
     IS_PSEUDO_CONTACT: false
-  - E: 3
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: an_side(t)_an-cc_interface
     ConditionID: 0
     INTERFACE_SIDE: "Master"
-  - E: 4
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: an_side(s)_an-el_interface
     ConditionID: 1
     INTERFACE_SIDE: "Slave"
     KINETIC_MODEL: "Butler-VolmerReduced"
@@ -516,16 +555,16 @@ DESIGN S2I KINETICS SURF CONDITIONS:
     ALPHA_A: 0.5
     ALPHA_C: 0.5
     IS_PSEUDO_CONTACT: false
-  - E: 5
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: el_side(t)_an-el_interface
     ConditionID: 1
     INTERFACE_SIDE: "Master"
-  - E: 6
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: el_side(t)_cat-el_interface
     ConditionID: 2
     INTERFACE_SIDE: "Master"
-  - E: 7
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: cat_side(s)_cat-el_interface
     ConditionID: 2
     INTERFACE_SIDE: "Slave"
     KINETIC_MODEL: "Butler-Volmer"
@@ -536,12 +575,12 @@ DESIGN S2I KINETICS SURF CONDITIONS:
     ALPHA_A: 0.5
     ALPHA_C: 0.5
     IS_PSEUDO_CONTACT: false
-  - E: 8
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: cat_side(t)_cat-cc_interface
     ConditionID: 3
     INTERFACE_SIDE: "Master"
-  - E: 9
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: cc_side(s)_am_cat-cc_interface
     ConditionID: 3
     INTERFACE_SIDE: "Slave"
     KINETIC_MODEL: "ConstantInterfaceResistance"
@@ -549,12 +588,12 @@ DESIGN S2I KINETICS SURF CONDITIONS:
     RESISTANCE: 1e-05
     E-: 1
     IS_PSEUDO_CONTACT: false
-  - E: 10
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: el_side(t)_el_cat-cc_interface
     ConditionID: 4
     INTERFACE_SIDE: "Master"
-  - E: 11
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: cc_side(s)_el_cat-cc_interface
     ConditionID: 4
     INTERFACE_SIDE: "Slave"
     KINETIC_MODEL: "NoInterfaceFlux"
@@ -568,61 +607,59 @@ DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS:
     ONE_HOUR: 3.6e+06
 
 DESIGN CELL VOLTAGE SURF CONDITIONS:
-  - E: 1
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: surface_normal_z_an_cc
     ConditionID: 0
-  - E: 12
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: surface_normal_z_cat_cc
     ConditionID: 1
 
 DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS:
-  - E: 2
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cc_side(s)_an-cc_interface
     ConditionID: 0
     INTERFACE_SIDE: "Slave"
     S2I_KINETICS_ID: 0
-  - E: 3
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: an_side(t)_an-cc_interface
     ConditionID: 0
     INTERFACE_SIDE: "Master"
     S2I_KINETICS_ID: 0
-  - E: 4
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: an_side(s)_an-el_interface
     ConditionID: 1
     INTERFACE_SIDE: "Slave"
     S2I_KINETICS_ID: 1
-  - E: 5
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: el_side(t)_an-el_interface
     ConditionID: 1
     INTERFACE_SIDE: "Master"
     S2I_KINETICS_ID: 1
-  - E: 6
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: el_side(t)_cat-el_interface
     ConditionID: 2
     INTERFACE_SIDE: "Master"
     S2I_KINETICS_ID: 2
-  - E: 7
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: cat_side(s)_cat-el_interface
     ConditionID: 2
     INTERFACE_SIDE: "Slave"
     S2I_KINETICS_ID: 2
-  - E: 8
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: cat_side(t)_cat-cc_interface
     ConditionID: 3
     INTERFACE_SIDE: "Master"
     S2I_KINETICS_ID: 3
-  - E: 9
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: cc_side(s)_am_cat-cc_interface
     ConditionID: 3
     INTERFACE_SIDE: "Slave"
     S2I_KINETICS_ID: 3
-  - E: 10
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: el_side(t)_el_cat-cc_interface
     ConditionID: 4
     INTERFACE_SIDE: "Master"
     S2I_KINETICS_ID: 4
-  - E: 11
-    ENTITY_TYPE: node_set_id
+
+  - NODE_SET_NAME: cc_side(s)_el_cat-cc_interface
     ConditionID: 4
     INTERFACE_SIDE: "Slave"
     S2I_KINETICS_ID: 4
@@ -631,31 +668,31 @@ STRUCTURE GEOMETRY:
   FILE: "tutorial_battery.e"
   SHOW_INFO: "summary"
   ELEMENT_BLOCKS:
-    - ID: 1
+    - NAME: anode
       SOLIDSCATRA:
         TET4:
           MAT: 12
           KINEM: nonlinear
           TYPE: ElchElectrode
-    - ID: 2
+    - NAME: electrolyte
       SOLIDSCATRA:
         TET4:
           MAT: 8
           KINEM: nonlinear
           TYPE: ElchDiffCond
-    - ID: 3
+    - NAME: cathode
       SOLIDSCATRA:
         TET4:
           MAT: 2
           KINEM: nonlinear
           TYPE: ElchElectrode
-    - ID: 4
+    - NAME: anode_cc
       SOLIDSCATRA:
         TET4:
           MAT: 16
           KINEM: nonlinear
           TYPE: ElchElectrode
-    - ID: 5
+    - NAME: cathode_cc
       SOLIDSCATRA:
         TET4:
           MAT: 20
