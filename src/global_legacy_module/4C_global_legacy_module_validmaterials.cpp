@@ -4173,10 +4173,8 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   {
     known_materials[Core::Materials::mix_elasthyper] = group("MIX_Constituent_ElastHyper",
         {
-            parameter<int>("NUMMAT", {.description = "number of summands"}),
             parameter<std::vector<int>>(
-                "MATIDS", {.description = "list material IDs of the summands",
-                              .size = from_parameter<int>("NUMMAT")}),
+                "MATIDS", {.description = "list material IDs of the summands"}),
             parameter<int>(
                 "PRESTRESS_STRATEGY", {.description = "Material id of the prestress strategy "
                                                       "(optional, by default no prestretch)",
