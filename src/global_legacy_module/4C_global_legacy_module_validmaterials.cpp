@@ -535,34 +535,45 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
 
     known_materials[Core::Materials::m_muscle_combo] = group("MAT_Muscle_Combo",
         {
-            parameter<double>("ALPHA", {.description = "experimentally fitted material parameter",
-                                           .validator = positive<double>()}),
-            parameter<double>("BETA", {.description = "experimentally fitted material parameter",
-                                          .validator = positive<double>()}),
-            parameter<double>("GAMMA", {.description = "experimentally fitted material parameter",
-                                           .validator = positive<double>()}),
-            parameter<double>(
-                "KAPPA", {.description = "material parameter for coupled volumetric contribution"}),
-            parameter<double>(
-                "OMEGA0", {.description = "weighting factor for isotropic tissue constituents",
-                              .validator = in_range<double>(0.0, 1.0)}),
-            parameter<double>("POPT", {.description = "tetanised optimal (maximal) active stress",
-                                          .validator = positive_or_zero<double>()}),
-            parameter<double>("LAMBDAMIN",
-                {.description = "minimal active fiber stretch", .validator = positive<double>()}),
-            parameter<double>("LAMBDAOPT",
-                {.description =
-                        "optimal active fiber stretch related to active nominal stress maximum",
-                    .validator = positive<double>()}),
-            one_of({
-                parameter<int>("ACTIVATION_FUNCTION_ID",
-                    {.description =
-                            "function id for time- and space-dependency of muscle activation"}),
-                input_field<std::vector<std::pair<double, double>>>("ACTIVATION_VALUES",
-                    {.description = "json input file containing a map of "
-                                    "elementwise-defined discrete values "
-                                    "for time- and space-dependency of muscle activation"}),
-            }),
+            group("PASSIVE",
+                {
+                    parameter<double>(
+                        "ALPHA", {.description = "experimentally fitted material parameter",
+                                     .validator = positive<double>()}),
+                    parameter<double>(
+                        "BETA", {.description = "experimentally fitted material parameter",
+                                    .validator = positive<double>()}),
+                    parameter<double>(
+                        "GAMMA", {.description = "experimentally fitted material parameter",
+                                     .validator = positive<double>()}),
+                    parameter<double>("OMEGA0",
+                        {.description = "weighting factor for isotropic tissue constituents",
+                            .validator = in_range<double>(0.0, 1.0)}),
+                    parameter<double>("KAPPA",
+                        {.description = "material parameter for coupled volumetric contribution"}),
+                },
+                {.description = "Passive material parameters"}),
+            group("ACTIVE",
+                {parameter<double>(
+                     "POPT", {.description = "tetanised optimal (maximal) active stress",
+                                 .validator = positive_or_zero<double>()}),
+                    parameter<double>("LAMBDAMIN", {.description = "minimal active fiber stretch",
+                                                       .validator = positive<double>()}),
+                    parameter<double>(
+                        "LAMBDAOPT", {.description = "optimal active fiber stretch related to "
+                                                     "active nominal stress maximum",
+                                         .validator = positive<double>()}),
+                    one_of({
+                        parameter<int>("ACTIVATION_FUNCTION_ID",
+                            {.description = "function id for time- and space-dependency of muscle "
+                                            "activation",
+                                .validator = positive<int>()}),
+                        input_field<std::vector<std::pair<double, double>>>("ACTIVATION_VALUES",
+                            {.description = "json input file containing a map of "
+                                            "elementwise-defined discrete values "
+                                            "for time- and space-dependency of muscle activation"}),
+                    })},
+                {.description = "Active material parameters", .required = false}),
             parameter<double>(
                 "DENS", {.description = "density", .validator = positive_or_zero<double>()}),
             interpolated_input_field<Core::LinAlg::Tensor<double, 3>, Mat::FiberInterpolation>(
