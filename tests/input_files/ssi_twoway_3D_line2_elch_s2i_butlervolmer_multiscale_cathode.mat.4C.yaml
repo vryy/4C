@@ -33,14 +33,8 @@ SOLVER 1:
 MATERIALS:
   - MAT: 1
     MAT_electrode:
-      DIFF_COEF_CONC_DEP_FUNCT: -1
-      DIFF_COEF_TEMP_SCALE_FUNCT: 0
-      COND_CONC_DEP_FUNCT: -1
-      COND_TEMP_SCALE_FUNCT: 0
-      DIFF_PARA_NUM: 1
-      DIFF_PARA: [5]
-      COND_PARA_NUM: 1
-      COND_PARA: [100000]
+      DIFF_COEF: 5.0
+      COND: 100000.0
       C_MAX: 47933
       CHI_MAX: 1
       OCP_MODEL:

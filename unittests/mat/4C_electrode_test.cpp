@@ -346,18 +346,12 @@ namespace
     {
       // add dummy parameters to container
       container.add("CHI_MAX", 1.0);
-      container.add("COND_CONC_DEP_FUNCT", 0);
-      container.add("COND_PARA_NUM", 0);
-      container.add("COND_PARA", std::vector<double>(0, 0.0));
-      container.add("COND_TEMP_SCALE_FUNCT", 0);
-      container.add("COND_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-      container.add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
-      container.add("DIFF_COEF_CONC_DEP_FUNCT", 0);
-      container.add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
-      container.add("DIFF_PARA_NUM", 0);
-      container.add("DIFF_PARA", std::vector<double>(0, 0.0));
-      container.add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-      container.add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
+      container.add("COND", 1.0);
+      container.add("COND_CONC_SCALE_FUNCT", std::optional<int>(std::nullopt));
+      container.add("COND_TEMP_SCALE_FUNCT", std::optional<int>(std::nullopt));
+      container.add("DIFF_COEF", 1.0);
+      container.add("DIFF_COEF_CONC_SCALE_FUNCT", std::optional<int>(std::nullopt));
+      container.add("DIFF_COEF_TEMP_SCALE_FUNCT", std::optional<int>(std::nullopt));
     }
 
     void setup_global_problem() const

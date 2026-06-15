@@ -450,19 +450,12 @@ namespace
 
       Core::IO::InputParameterContainer electrode_data;
       // add dummy parameters to electrode material
-      electrode_data.add("DIFF_COEF_CONC_DEP_FUNCT", 0);
-      electrode_data.add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
-      electrode_data.add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-      electrode_data.add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
-      electrode_data.add("DIFF_PARA_NUM", 0);
-      electrode_data.add("DIFF_PARA", std::vector<double>(0, 0.0));
-      electrode_data.add("COND", 0);
-      electrode_data.add("COND_PARA_NUM", 0);
-      electrode_data.add("COND_PARA", std::vector<double>(0, 0.0));
-      electrode_data.add("COND_CONC_DEP_FUNCT", 0);
-      electrode_data.add("COND_TEMP_SCALE_FUNCT", 0);
-      electrode_data.add("COND_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-      electrode_data.add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
+      electrode_data.add("DIFF_COEF", 1.0);
+      electrode_data.add("DIFF_COEF_CONC_SCALE_FUNCT", std::optional<int>(std::nullopt));
+      electrode_data.add("DIFF_COEF_TEMP_SCALE_FUNCT", std::optional<int>(std::nullopt));
+      electrode_data.add("COND", 1.0);
+      electrode_data.add("COND_CONC_SCALE_FUNCT", std::optional<int>(std::nullopt));
+      electrode_data.add("COND_TEMP_SCALE_FUNCT", std::optional<int>(std::nullopt));
       // create and add the ocp model
       auto& ocp_model = electrode_data.group("OCP_MODEL");
       // choose the ocp model
