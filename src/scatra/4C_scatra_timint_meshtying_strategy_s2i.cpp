@@ -566,7 +566,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
       }
 
       // initialize auxiliary system matrix and vector for master side
-      if (couplingtype_ == S2I::coupling_mortar_standard or lmside_ == S2I::side_master or
+      if (couplingtype_ == S2I::coupling_mortar_standard or lmside_ == S2I::side_target or
           couplingtype_ == S2I::coupling_nts_standard)
       {
         imastermatrix_->zero();
@@ -599,12 +599,12 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
           params.set<S2I::EvaluationActions>("action", S2I::evaluate_condition);
 
           evaluate_mortar_cells(idiscret, params, islavematrix_, S2I::side_source, S2I::side_source,
-              islavematrix_, S2I::side_source, S2I::side_master, imastermatrix_, S2I::side_master,
-              S2I::side_source, imastermatrix_, S2I::side_master, S2I::side_master,
+              islavematrix_, S2I::side_source, S2I::side_target, imastermatrix_, S2I::side_target,
+              S2I::side_source, imastermatrix_, S2I::side_target, S2I::side_target,
               islaveresidual_ != nullptr
                   ? Core::Utils::shared_ptr_from_ref(islaveresidual_->as_multi_vector())
                   : nullptr,
-              S2I::side_source, imasterresidual_, S2I::side_master);
+              S2I::side_source, imasterresidual_, S2I::side_target);
         }
 
         else
@@ -616,12 +616,12 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
           evaluate_nts(*islavenodestomasterelements_[condition_id],
               *islavenodeslumpedareas_[condition_id], *islavenodesimpltypes_[condition_id],
               idiscret, params, islavematrix_, S2I::side_source, S2I::side_source, islavematrix_,
-              S2I::side_source, S2I::side_master, imastermatrix_, S2I::side_master,
-              S2I::side_source, imastermatrix_, S2I::side_master, S2I::side_master,
+              S2I::side_source, S2I::side_target, imastermatrix_, S2I::side_target,
+              S2I::side_source, imastermatrix_, S2I::side_target, S2I::side_target,
               islaveresidual_ != nullptr
                   ? Core::Utils::shared_ptr_from_ref(islaveresidual_->as_multi_vector())
                   : nullptr,
-              S2I::side_source, imasterresidual_, S2I::side_master);
+              S2I::side_source, imasterresidual_, S2I::side_target);
         }
       }
 
@@ -631,7 +631,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
         islavematrix_->complete(*interfacemaps_->full_map(), *interfacemaps_->map(1));
 
       // finalize auxiliary system matrix and residual vector for master side
-      if (couplingtype_ == S2I::coupling_mortar_standard or lmside_ == S2I::side_master or
+      if (couplingtype_ == S2I::coupling_mortar_standard or lmside_ == S2I::side_target or
           couplingtype_ == S2I::coupling_nts_standard)
       {
         imastermatrix_->complete(*interfacemaps_->full_map(), *interfacemaps_->map(2));
@@ -1946,7 +1946,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           break;
         }
 
-        case S2I::side_master:
+        case S2I::side_target:
         {
           if (!master_conditions_.contains(s2ikinetics_cond_id))
           {
@@ -2479,7 +2479,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
         islaveresidual_ = std::make_shared<Core::LinAlg::Vector<double>>(*interfacemaps_->map(1));
       }
 
-      if (couplingtype_ == S2I::coupling_mortar_standard or lmside_ == S2I::side_master or
+      if (couplingtype_ == S2I::coupling_mortar_standard or lmside_ == S2I::side_target or
           couplingtype_ == S2I::coupling_nts_standard)
       {
         // initialize auxiliary system matrix for master side
@@ -2532,12 +2532,12 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
 
             // evaluate mortar integration cells at current interface
             evaluate_mortar_cells(icoupmortar_[kinetics_slave_cond.first]->interface()->discret(),
-                params, D_, lmside_ == S2I::side_source ? S2I::side_source : S2I::side_master,
-                lmside_ == S2I::side_source ? S2I::side_source : S2I::side_master, M_,
-                lmside_ == S2I::side_source ? S2I::side_source : S2I::side_master,
-                lmside_ == S2I::side_source ? S2I::side_master : S2I::side_source, E_,
-                lmside_ == S2I::side_source ? S2I::side_source : S2I::side_master,
-                lmside_ == S2I::side_source ? S2I::side_source : S2I::side_master, nullptr,
+                params, D_, lmside_ == S2I::side_source ? S2I::side_source : S2I::side_target,
+                lmside_ == S2I::side_source ? S2I::side_source : S2I::side_target, M_,
+                lmside_ == S2I::side_source ? S2I::side_source : S2I::side_target,
+                lmside_ == S2I::side_source ? S2I::side_target : S2I::side_source, E_,
+                lmside_ == S2I::side_source ? S2I::side_source : S2I::side_target,
+                lmside_ == S2I::side_source ? S2I::side_source : S2I::side_target, nullptr,
                 S2I::side_undefined, S2I::side_undefined, nullptr, S2I::side_undefined, nullptr,
                 S2I::side_undefined);
           }
@@ -4811,7 +4811,7 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_matrix(
       break;
     }
 
-    case S2I::side_master:
+    case S2I::side_target:
     {
       std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(systemmatrix)
           ->fe_assemble(cellmatrix, la_master[nds_rows_].lm_,
@@ -4849,7 +4849,7 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
       break;
     }
 
-    case S2I::side_master:
+    case S2I::side_target:
     {
       if (assembler_pid_master == Core::Communication::my_mpi_rank(systemvector.get_comm()))
       {
@@ -4885,7 +4885,7 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
       break;
     }
 
-    case S2I::side_master:
+    case S2I::side_target:
     {
       if (assembler_pid_master == Core::Communication::my_mpi_rank(systemvector->get_comm()))
       {

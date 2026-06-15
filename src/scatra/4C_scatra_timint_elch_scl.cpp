@@ -606,7 +606,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
         case S2I::side_source:
           my_macro_slave_node_gids.emplace_back(coupling_node_gid);
           break;
-        case S2I::side_master:
+        case S2I::side_target:
           my_macro_master_node_gids.emplace_back(coupling_node_gid);
           break;
         default:

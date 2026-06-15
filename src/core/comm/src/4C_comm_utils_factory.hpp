@@ -171,7 +171,7 @@ namespace Core::Communication
       int nnode,                  ///< number of nodes
       const int* nodeids,         ///< node ids
       Core::Nodes::Node** nodes,  ///< nodes of surface
-      ParentEle* target_ele,      ///< pointer on the master parent element
+      ParentEle* target_ele,      ///< pointer on the target parent element
       ParentEle* source_ele,      ///< pointer on the source parent element
       const int lsurface_target,  ///< local surface index with respect to target parent element
       const int lsurface_source,  ///< local surface index with respect to source parent element

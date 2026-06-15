@@ -213,14 +213,15 @@ namespace Coupling::VolMortar
      \brief check if we need cut (3D)
 
      */
-    virtual bool check_cut(Core::Elements::Element& sele, Core::Elements::Element& mele);
+    virtual bool check_cut(
+        Core::Elements::Element& source_ele, Core::Elements::Element& target_ele);
 
     /*!
      \brief check if we can integrate element-wise (3D)
 
      */
     virtual bool check_ele_integration(
-        Core::Elements::Element& sele, Core::Elements::Element& mele);
+        Core::Elements::Element& source_ele, Core::Elements::Element& target_ele);
 
     /*!
      \brief check initial coupling constraint
@@ -333,15 +334,15 @@ namespace Coupling::VolMortar
      \brief perform 2D integration
 
      */
-    virtual void integrate_2d(Core::Elements::Element& sele, Core::Elements::Element& mele,
-        std::vector<std::shared_ptr<Mortar::IntCell>>& cells);
+    virtual void integrate_2d(Core::Elements::Element& source_ele,
+        Core::Elements::Element& target_ele, std::vector<std::shared_ptr<Mortar::IntCell>>& cells);
 
     /*!
      \brief perform 3D element-wise integration
 
      */
     virtual void integrate_3d(
-        Core::Elements::Element& sele, Core::Elements::Element& mele, int domain);
+        Core::Elements::Element& source_ele, Core::Elements::Element& target_ele, int domain);
 
     /*!
      \brief perform 3D element-wise integration for P12
@@ -374,15 +375,15 @@ namespace Coupling::VolMortar
      \brief perform 3D integration of created cells
 
      */
-    virtual void integrate_3d_cell(Core::Elements::Element& sele, Core::Elements::Element& mele,
-        std::vector<std::shared_ptr<Cell>>& cells);
+    virtual void integrate_3d_cell(Core::Elements::Element& source_ele,
+        Core::Elements::Element& target_ele, std::vector<std::shared_ptr<Cell>>& cells);
 
     /*!
      \brief perform 3D integration of created cells
 
      */
-    virtual void integrate_3d_cell_direct_divergence(
-        Core::Elements::Element& sele, Core::Elements::Element& mele, bool switched_conf = false);
+    virtual void integrate_3d_cell_direct_divergence(Core::Elements::Element& source_ele,
+        Core::Elements::Element& target_ele, bool switched_conf = false);
     /*!
      \brief perform mesh init procedure
 
@@ -399,8 +400,8 @@ namespace Coupling::VolMortar
      \brief perform cut and create integration cells (3D)
 
      */
-    virtual void perform_cut(
-        Core::Elements::Element* sele, Core::Elements::Element* mele, bool switched_conf = false);
+    virtual void perform_cut(Core::Elements::Element* source_ele,
+        Core::Elements::Element* target_ele, bool switched_conf = false);
 
     /*!
      \brief perform 2D polygon clipping
@@ -408,7 +409,7 @@ namespace Coupling::VolMortar
      */
     virtual bool polygon_clipping_convex_hull(std::vector<Mortar::Vertex>& poly1,
         std::vector<Mortar::Vertex>& poly2, std::vector<Mortar::Vertex>& respoly,
-        Core::Elements::Element& sele, Core::Elements::Element& mele, double& tol);
+        Core::Elements::Element& source_ele, Core::Elements::Element& target_ele, double& tol);
 
     /*!
      \brief Output for evaluation status -- progress

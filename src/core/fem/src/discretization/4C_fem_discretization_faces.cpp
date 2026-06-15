@@ -73,8 +73,6 @@ void Core::FE::DiscretizationFaces::create_internal_faces_extension(const bool v
     if (Core::Communication::my_mpi_rank(comm_) == 0)
       std::cout << "number of created faces:   " << summall << "\n" << std::endl;
   }
-
-  return;
 }
 
 
@@ -372,14 +370,6 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
 
         if (my_target_node_ids.size() > 0)
         {
-          //          std::cout << "current sets" << std::endl;
-          //          std::cout << "target nodes" << std::endl;
-          //          for (std::size_t rr=0; rr < my_target_node_ids.size(); rr++)
-          //            std::cout << my_target_node_ids[rr] << std::endl;
-          //          std::cout << "further target nodes" << std::endl;
-          //          for (std::size_t rr=0; rr < further_target_node_ids.size(); rr++)
-          //            std::cout << further_target_node_ids[rr] << std::endl;
-
           // check if all nodes of the face are targets of pbcs
           // -> this is a target face
           if ((my_target_node_ids.size() + further_target_node_ids.size()) == mynodeids.size())
@@ -681,26 +671,6 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
                   }
                 }
 
-                //                std::cout << "further_target_cond " <<further_target_cond<<
-                //                std::endl; std::cout << "source_cond_1 " <<source_cond_1<<
-                //                std::endl;
-
-                //                std::cout<< "target 1 \n" << target_pbc_id << std::endl;
-                //                std::set<int>::iterator myiter;
-                //                for
-                //                (myiter=target_to_pbc_set[remaining_source_pbc_ids[0]].begin();
-                //                myiter!=target_to_pbc_set[remaining_source_pbc_ids[0]].end();
-                //                myiter++)
-                //                {
-                //                  std::cout<< *myiter << std::endl;
-                //                }
-                //                std::cout<< "target 2 \n" << target_pbc_id << std::endl;
-                //                for
-                //                (myiter=target_to_pbc_set[remaining_source_pbc_ids[1]].begin();
-                //                myiter!=target_to_pbc_set[remaining_source_pbc_ids[1]].end();
-                //                myiter++)
-                //                  std::cout<< *myiter << std::endl;
-
                 // loop all source nodes of the current target and
                 // check which node fulfills above conditions
                 int act_source_id = -999;
@@ -782,7 +752,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
           // add source element to the patch
           if (add_source_ele_to_face)
           {
-            // get master element
+            // get target element
             Core::Elements::Element* target_ele = elecolptr_[0];
             for (fool = elecolptr_.begin(); fool != elecolptr_.end(); ++fool)
             {
@@ -842,32 +812,6 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
             }
             // set in face
             face_it->second.set_local_numbering_map(localtrafomap);
-
-            //            if (Core::Communication::my_mpi_rank(comm_)==1)
-            //            {
-            //            std::cout << "\n added pbc face "  << std::endl;
-            //
-            //            std::cout << "target nodes" << std::endl;
-            //            for (std::size_t rr=0; rr < my_target_node_ids.size(); rr++)
-            //              std::cout << my_target_node_ids[rr] << std::endl;
-            //
-            //            std::cout << "further target nodes" << std::endl;
-            //            for (std::size_t rr=0; rr < further_target_node_ids.size(); rr++)
-            //              std::cout << further_target_node_ids[rr] << std::endl;
-            //
-            //              std::cout << "source node ids "  << std::endl;
-            //            for (std::size_t kk=0; kk<my_source_node_ids.size(); kk++)
-            //               std::cout << my_source_node_ids[kk] << std::endl;
-            //
-            ////            std::cout << "local trafo map  " << std::endl;
-            ////            for (std::size_t kk=0; kk<localtrafomap.size(); kk++)
-            ////            {
-            ////              std::cout << "target node id " << nodes_face_target[kk]->Id() <<
-            /// std::endl; /              std::cout << "source node id " << source_nodes[kk]->Id()
-            /// << std::endl; /              std::cout << "source node position " <<
-            /// localtrafomap[kk]
-            /// << std::endl; /            }
-            //            }
           }
         }
       }
@@ -942,8 +886,6 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
   {
     std::cout << "... done!" << std::endl;
   }
-
-  return;
 }  // Core::FE::DiscretizationFaces::BuildInternalFaces
 
 
@@ -970,7 +912,6 @@ void Core::FE::DiscretizationFaces::build_face_row_map()
     }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of internal faces");
   facerowmap_ = std::make_shared<Core::LinAlg::Map>(-1, nummyeles, eleids.data(), 0, get_comm());
-  return;
 }
 
 
@@ -993,7 +934,6 @@ void Core::FE::DiscretizationFaces::build_face_col_map()
   }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
   facecolmap_ = std::make_shared<Core::LinAlg::Map>(-1, nummyeles, eleids.data(), 0, get_comm());
-  return;
 }
 
 
@@ -1114,8 +1054,6 @@ void Core::FE::DiscretizationFaces::print_faces(std::ostream& os) const
     }
     Core::Communication::barrier(get_comm());
   }
-
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE
