@@ -113,9 +113,6 @@ namespace Mat
       virtual void setup(int numgp, const Discret::Elements::Fibers& fibers,
           const std::optional<Discret::Elements::CoordinateSystem>& coord_system) {};
 
-      //! Dummy routine for setup of patient-specific materials
-      virtual void setup_aaa(const Teuchos::ParameterList& params, const int eleGID) {};
-
       /*!
        * @brief Post setup routine for summands. It will be called once after everything is set up.
        *

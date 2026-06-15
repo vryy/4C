@@ -311,9 +311,6 @@ namespace Mat
     /// update
     void update() override;
 
-    /// setup patient-specific AAA stuff
-    virtual void setup_aaa(const Teuchos::ParameterList& params, int eleGID);
-
     /// return if anisotropic not split formulation
     virtual bool anisotropic_principal() const { return summandProperties_.anisoprinc; }
 

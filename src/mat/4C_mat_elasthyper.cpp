@@ -226,17 +226,6 @@ double Mat::ElastHyper::get_young()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::setup_aaa(const Teuchos::ParameterList& params, const int eleGID)
-{
-  // loop map of associated potential summands
-  for (auto& p : potsum_)
-  {
-    p->setup_aaa(params, eleGID);
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void Mat::ElastHyper::setup(int numgp, const Discret::Elements::Fibers& fibers,
     const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
