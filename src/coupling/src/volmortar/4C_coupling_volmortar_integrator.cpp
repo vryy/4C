@@ -1192,7 +1192,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_source,
 
           for (int kdof = 0; kdof < ntarget_dof; ++kdof)
           {
-            int col = Adis.dof(source_dofset_B, target_node, kdof);
+            int col = Adis.dof(target_dofset_B, target_node, kdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j) * source_val_A(k) * jac * weight_out;
@@ -1658,7 +1658,7 @@ bool Coupling::VolMortar::VolMortarIntegrator<distype_source, distype_target>::c
       return false;
     }
   }
-  else if (distype_source == Core::FE::CellType::tri3 || distype_source == Core::FE::CellType::tri6)
+  else if (distype_target == Core::FE::CellType::tri3 || distype_target == Core::FE::CellType::tri6)
   {
     if (target_xi[0] < -tol || target_xi[1] < -tol || target_xi[0] > 1.0 + tol ||
         target_xi[1] > 1.0 + tol || target_xi[0] + target_xi[1] > 1.0 + 2 * tol)
