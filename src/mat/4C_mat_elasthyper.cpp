@@ -211,21 +211,6 @@ double Mat::ElastHyper::shear_mod(int ele_gid) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::ElastHyper::get_young()
-{
-  double young;
-  double shear;
-  double bulk;
-  young = shear = bulk = 0.;
-  for (auto& p : potsum_) p->add_youngs_mod(young, shear, bulk);
-
-  if (bulk != 0. || shear != 0.) young += 9. * bulk * shear / (3. * bulk + shear);
-
-  return young;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void Mat::ElastHyper::setup(int numgp, const Discret::Elements::Fibers& fibers,
     const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {

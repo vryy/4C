@@ -144,12 +144,6 @@ namespace Mat
           int ele_gid                                 ///< element GID
       ) const;
 
-      //! add young's modulus equivalent
-      virtual void add_youngs_mod(double& young, double& shear, double& bulk)
-      {
-        FOUR_C_THROW("Summand does not support calculation of youngs modulus");
-      };
-
       /*!
        * @brief retrieve coefficients of first and second derivative of summand with respect to
        *principal invariants

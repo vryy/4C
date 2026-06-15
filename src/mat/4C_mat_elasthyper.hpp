@@ -208,9 +208,6 @@ namespace Mat
     /// a shear modulus equivalent
     virtual double shear_mod(int ele_gid) const;
 
-    /// a young's modulus equivalent
-    virtual double get_young();
-
     /// evaluate strain energy function
     [[nodiscard]] double strain_energy(const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
         const EvaluationContext<3>& context, int gp,

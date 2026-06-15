@@ -108,12 +108,6 @@ namespace Mat
           int ele_gid                         ///< element GID
       ) const override;
 
-      /// add young's modulus equivalent
-      void add_youngs_mod(double& young, double& shear, double& bulk) override
-      {
-        young += youngs();
-      };
-
       //@}
 
       // add strain energy
