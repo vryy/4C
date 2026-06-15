@@ -142,7 +142,12 @@ namespace Mat
       virtual void add_shear_mod(bool& haveshearmod,  ///< non-zero shear modulus was added
           double& shearmod,                           ///< variable to add upon
           int ele_gid                                 ///< element GID
-      ) const;
+      ) const
+      {
+        FOUR_C_THROW(
+            "ElastHyper Summand does not implement the calculation of shear modulus. Needs to be "
+            "implemented in derived class.");
+      };
 
       /*!
        * @brief retrieve coefficients of first and second derivative of summand with respect to

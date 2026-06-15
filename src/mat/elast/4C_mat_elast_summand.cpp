@@ -266,16 +266,11 @@ std::shared_ptr<Mat::Elastic::Summand> Mat::Elastic::Summand::factory(int matnum
   return nullptr;
 }
 
-void Mat::Elastic::Summand::add_shear_mod(bool& haveshearmod, double& shearmod, int ele_gid) const
-{
-  FOUR_C_THROW("Mat::Elastic::Summand::AddShearMod: Add Shear Modulus not implemented - do so!");
-}
-
 int Mat::Elastic::Summand::unique_par_object_id() const { return -1; }
 
-void Mat::Elastic::Summand::pack(Core::Communication::PackBuffer& data) const { return; }
+void Mat::Elastic::Summand::pack(Core::Communication::PackBuffer& data) const {}
 
-void Mat::Elastic::Summand::unpack(Core::Communication::UnpackBuffer& buffer) { return; };
+void Mat::Elastic::Summand::unpack(Core::Communication::UnpackBuffer& buffer) {};
 
 // Function which reads in the given fiber value due to the CIR-AXI-RAD nomenclature
 void Mat::Elastic::Summand::read_rad_axi_cir(

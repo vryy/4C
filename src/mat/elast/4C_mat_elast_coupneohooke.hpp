@@ -106,7 +106,11 @@ namespace Mat
       void add_shear_mod(bool& haveshearmod,  ///< non-zero shear modulus was added
           double& shearmod,                   ///< variable to add upon
           int ele_gid                         ///< element GID
-      ) const override;
+      ) const override
+      {
+        haveshearmod = true;
+        shearmod += 2 * params_->c_;
+      };
 
       //@}
 
