@@ -116,16 +116,16 @@ namespace Core::Conditions
       \param condition_specs vector of the validated condition specifications in the input to be
       filled.
      */
-    void read(Core::IO::InputFile& input, std::vector<ConditionSpec>& condition_specs) const;
+    void read(const Core::IO::InputFile& input, std::vector<ConditionSpec>& condition_specs) const;
 
     /// name of my section in input file
-    std::string section_name() const { return sectionname_; }
+    [[nodiscard]] std::string section_name() const { return sectionname_; }
 
     /// my condition name
-    std::string name() const { return conditionname_; }
+    [[nodiscard]] std::string name() const { return conditionname_; }
 
     /// my GeometryType
-    Core::Conditions::GeometryType geometry_type() const { return gtype_; }
+    [[nodiscard]] Core::Conditions::GeometryType geometry_type() const { return gtype_; }
 
     /// Get the InputSpec for this ConditionDefinition
     [[nodiscard]] Core::IO::InputSpec spec() const;

@@ -191,6 +191,12 @@ Core::IO::MeshInput::RawMesh<3> Core::IO::Exodus::read_exodus_file(
       // prefer std::string to store element type
       std::string ele_type(mychar);
 
+      if (ele_type.size() == 32)
+      {
+        std::cout << "WARNING: Your element block name " << ele_type
+                  << " might be too long. Exodus only allows 32 characters for names.\n";
+      }
+
       // get ElementBlock name
       CHECK_EXODUS_CALL(ex_get_name(exo_handle, EX_ELEM_BLOCK, ebids[i], mychar));
 
@@ -241,6 +247,12 @@ Core::IO::MeshInput::RawMesh<3> Core::IO::Exodus::read_exodus_file(
       CHECK_EXODUS_CALL(ex_get_name(exo_handle, EX_NODE_SET, npropID[i], mychar));
       // prefer std::string to store name
       std::string nodesetname(mychar);
+
+      if (nodesetname.size() == 32)
+      {
+        std::cout << "WARNING: Your nodeset name " << nodesetname
+                  << " might be too long. Exodus only allows 32 characters for names.\n";
+      }
 
       // get nodes in node set
       std::vector<int> node_set_node_list(num_nodes_in_set);
