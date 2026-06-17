@@ -1294,6 +1294,26 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   }
 
   /*----------------------------------------------------------------------*/
+  // 3D solid material superposition
+  {
+    using namespace Core::IO::InputSpecBuilders::Validators;
+
+    known_materials[Core::Materials::m_superposition] = group("MAT_Solid_Superposition",
+        {
+            parameter<std::vector<int>>("MATIDS",
+                {
+                    .description = "List of material IDs to be superimposed",
+                    .validator = all_elements(positive<int>()),
+                }),
+            parameter<double>("DENS", {.description = "mass density of superposition material"}),
+        },
+        {.description =
+                "3D solid material superposition. Each constituent material defined by "
+                "MATIDS is evaluated independently, and its responses are accumulated, "
+                "such that the stress S = sum_i S_i and the material tangent C = sum_i C_i"});
+  }
+
+  /*----------------------------------------------------------------------*/
   // Thermo-hyperelasticity / finite strain von-Mises plasticity
   {
     known_materials[Core::Materials::m_thermoplhyperelast] = group(

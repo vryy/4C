@@ -105,6 +105,8 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "MAT_Struct_ThermoPlasticLinElast";
     case m_superelast:
       return "MAT_Struct_SuperElastSMA";
+    case m_superposition:
+      return "MAT_Solid_Superposition";
     case m_thermoplhyperelast:
       return "MAT_Struct_ThermoPlasticHyperElast";
     case m_plnlnlogneohooke:
