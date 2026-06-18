@@ -10,9 +10,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_mat_anisotropy_cylinder_coordinate_system_manager.hpp"
 #include "4C_mat_anisotropy_extension_base.hpp"
 
-
+#include <optional>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -66,7 +67,7 @@ namespace Mat
      * \brief This method will be called by Mat::Anisotropy if element and Gauss point fibers are
      * available
      */
-    void on_global_data_initialized() override;
+    void on_global_data_initialized(Anisotropy& anisotropy) override;
 
     /*!
      * \brief Returns the cylinder coordinate system for a specific Gausspoint.
@@ -87,17 +88,25 @@ namespace Mat
      * \brief This method will be called by Mat::Anisotropy to notify that element information is
      * available.
      */
-    void on_global_element_data_initialized() override;
+    void on_global_element_data_initialized(Anisotropy& anisotropy) override;
 
 
     /*!
      * \brief This method will be called by Mat::Anisotropy to notify that Gauss point information
      * is available.
      */
-    void on_global_gp_data_initialized() override;
+    void on_global_gp_data_initialized(Anisotropy& anisotropy) override;
 
     /// flag where the coordinate system is located
     CosyLocation cosy_location_;
+
+    /// element-level cylinder coordinate system manager supplied by the Anisotropy class during
+    /// setup
+    std::optional<Mat::CylinderCoordinateSystemManager> element_cosy_;
+
+    /// Gauss-point-level cylinder coordinate system managers supplied by the Anisotropy class
+    /// during setup
+    std::vector<Mat::CylinderCoordinateSystemManager> gp_cosy_;
   };
 }  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE

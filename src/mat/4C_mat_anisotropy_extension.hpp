@@ -58,9 +58,6 @@ namespace Mat
   template <unsigned int numfib>
   class FiberAnisotropyExtension : public BaseAnisotropyExtension, public FiberProvider
   {
-    // Anisotropy is a friend to create back reference
-    friend class Anisotropy;
-
    public:
     //! @name Tensors needed for the evaluation
     /// @{
@@ -193,7 +190,7 @@ namespace Mat
      * \return true if the fibers are initialized
      * \return false if the fibers are not initialized
      */
-    virtual bool do_element_fiber_initialization() { return false; }
+    virtual bool do_element_fiber_initialization(Anisotropy& anisotropy) { return false; }
 
     /*!
      * \brief Method that initialized Gauss point fibers.
@@ -203,7 +200,7 @@ namespace Mat
      * \return true if the fibers are initialized
      * \return false if the fibers are not initialized
      */
-    virtual bool do_gp_fiber_initialization() { return false; }
+    virtual bool do_gp_fiber_initialization(Anisotropy& anisotropy) { return false; }
 
     /*!
      * \brief Method that will be called of the fibers are initialized.
@@ -231,16 +228,20 @@ namespace Mat
      * \brief This method will be called by Mat::Anisotropy if element and Gauss point fibers are
      * available
      */
-    void on_global_data_initialized() override {}
+    void on_global_data_initialized(Anisotropy& anisotropy) override
+    {
+      numgp_ = anisotropy.get_number_of_gauss_points();
+    }
 
    private:
     /*!
      * \brief This method will be called by Mat::Anisotropy to notify that element information is
      * available.
      */
-    void on_global_element_data_initialized() override
+    void on_global_element_data_initialized(Anisotropy& anisotropy) override
     {
-      const bool initialized = do_element_fiber_initialization();
+      numgp_ = anisotropy.get_number_of_gauss_points();
+      const bool initialized = do_element_fiber_initialization(anisotropy);
       if (initialized) on_fibers_initialized();
     }
 
@@ -248,9 +249,10 @@ namespace Mat
      * \brief This method will be called by Mat::Anisotropy to notify that Gauss point information
      * is available.
      */
-    void on_global_gp_data_initialized() override
+    void on_global_gp_data_initialized(Anisotropy& anisotropy) override
     {
-      const bool initialized = do_gp_fiber_initialization();
+      numgp_ = anisotropy.get_number_of_gauss_points();
+      const bool initialized = do_gp_fiber_initialization(anisotropy);
       if (initialized) on_fibers_initialized();
     }
     /// \}
@@ -265,6 +267,9 @@ namespace Mat
      * given fibers.
      */
     void compute_structural_tensors_stress();
+
+    /// Number of Gauss points supplied by the Anisotropy class during setup
+    int numgp_ = 0;
 
     /// Indication of the fiber location
     FiberLocation fiber_location_ = FiberLocation::None;

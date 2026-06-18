@@ -69,12 +69,14 @@ Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::get_structural_tensor(int g
   return structural_tensors_[gp];
 }
 
-void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_data_initialized()
+void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_data_initialized(
+    Mat::Anisotropy& anisotropy)
 {
   // do nothing
 }
 
-void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data_initialized()
+void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data_initialized(
+    Mat::Anisotropy& anisotropy)
 {
   if (init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_EXTERNAL ||
       init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_FIBERS)
@@ -92,19 +94,18 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data
         DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_FIBERS);
   }
 
-  if (get_anisotropy()->get_element_fibers().empty())
+  if (anisotropy.get_element_fibers().empty())
   {
     FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
   }
 
   scalar_products_.resize(1);
   structural_tensors_.resize(1);
-  scalar_products_[0] = get_anisotropy()->get_element_fiber(fiber_ids_[0]) *
-                        get_anisotropy()->get_element_fiber(fiber_ids_[1]);
+  scalar_products_[0] =
+      anisotropy.get_element_fiber(fiber_ids_[0]) * anisotropy.get_element_fiber(fiber_ids_[1]);
 
-  Core::LinAlg::Tensor<double, 3, 3> fiber1fiber2T =
-      Core::LinAlg::dyadic(get_anisotropy()->get_element_fiber(fiber_ids_[0]),
-          get_anisotropy()->get_element_fiber(fiber_ids_[1]));
+  Core::LinAlg::Tensor<double, 3, 3> fiber1fiber2T = Core::LinAlg::dyadic(
+      anisotropy.get_element_fiber(fiber_ids_[0]), anisotropy.get_element_fiber(fiber_ids_[1]));
 
   structural_tensors_[0] =
       0.5 * Core::LinAlg::assume_symmetry(fiber1fiber2T + Core::LinAlg::transpose(fiber1fiber2T));
@@ -112,7 +113,8 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data
   is_initialized_ = true;
 }
 
-void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_initialized()
+void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_initialized(
+    Mat::Anisotropy& anisotropy)
 {
   if (init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_ELEMENT_EXTERNAL ||
       init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_ELEMENT_FIBERS)
@@ -130,22 +132,22 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_init
         DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_FIBERS);
   }
 
-  if (get_anisotropy()->get_number_of_gauss_point_fibers() == 0)
+  if (anisotropy.get_number_of_gauss_point_fibers() == 0)
   {
     FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
   }
 
-  scalar_products_.resize(get_anisotropy()->get_number_of_gauss_points());
-  structural_tensors_.resize(get_anisotropy()->get_number_of_gauss_points());
+  scalar_products_.resize(anisotropy.get_number_of_gauss_points());
+  structural_tensors_.resize(anisotropy.get_number_of_gauss_points());
 
-  for (auto gp = 0; gp < get_anisotropy()->get_number_of_gauss_points(); ++gp)
+  for (auto gp = 0; gp < anisotropy.get_number_of_gauss_points(); ++gp)
   {
-    scalar_products_[gp] = get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[0]) *
-                           get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[1]);
+    scalar_products_[gp] = anisotropy.get_gauss_point_fiber(gp, fiber_ids_[0]) *
+                           anisotropy.get_gauss_point_fiber(gp, fiber_ids_[1]);
 
     Core::LinAlg::Tensor<double, 3, 3> fiber1fiber2T =
-        Core::LinAlg::dyadic(get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[0]),
-            get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[1]));
+        Core::LinAlg::dyadic(anisotropy.get_gauss_point_fiber(gp, fiber_ids_[0]),
+            anisotropy.get_gauss_point_fiber(gp, fiber_ids_[1]));
 
     structural_tensors_[gp] =
         0.5 * Core::LinAlg::assume_symmetry(fiber1fiber2T + Core::LinAlg::transpose(fiber1fiber2T));

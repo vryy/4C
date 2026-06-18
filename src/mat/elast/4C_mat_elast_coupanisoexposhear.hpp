@@ -55,11 +55,11 @@ namespace Mat
        *
        * The coupling structural tensor and the scalar product will be computed here
        */
-      void on_global_data_initialized() override;
+      void on_global_data_initialized(Anisotropy& anisotropy) override;
 
      protected:
-      void on_global_element_data_initialized() override;
-      void on_global_gp_data_initialized() override;
+      void on_global_element_data_initialized(Anisotropy& anisotropy) override;
+      void on_global_gp_data_initialized(Anisotropy& anisotropy) override;
 
      private:
       /**

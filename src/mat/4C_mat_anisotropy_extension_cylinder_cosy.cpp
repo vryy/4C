@@ -24,23 +24,34 @@ void Mat::CylinderCoordinateSystemAnisotropyExtension::pack_anisotropy(
     Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, cosy_location_);
+  add_to_pack(data, element_cosy_);
+  add_to_pack(data, gp_cosy_);
 }
 
 void Mat::CylinderCoordinateSystemAnisotropyExtension::unpack_anisotropy(
     Core::Communication::UnpackBuffer& buffer)
 {
   extract_from_pack(buffer, cosy_location_);
+  extract_from_pack(buffer, element_cosy_);
+  extract_from_pack(buffer, gp_cosy_);
 }
 
-void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_data_initialized()
+void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_data_initialized(
+    Mat::Anisotropy& anisotropy)
 {
-  if (get_anisotropy()->has_gp_cylinder_coordinate_system())
+  if (anisotropy.has_gp_cylinder_coordinate_system())
   {
     cosy_location_ = CosyLocation::GPCosy;
+    gp_cosy_.clear();
+    for (int gp = 0; gp < anisotropy.get_number_of_gauss_points(); ++gp)
+    {
+      gp_cosy_.push_back(anisotropy.get_gp_cylinder_coordinate_system(gp));
+    }
   }
-  else if (get_anisotropy()->has_element_cylinder_coordinate_system())
+  else if (anisotropy.has_element_cylinder_coordinate_system())
   {
     cosy_location_ = CosyLocation::ElementCosy;
+    element_cosy_ = anisotropy.get_element_cylinder_coordinate_system();
   }
   else
   {
@@ -48,12 +59,14 @@ void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_data_initialize
   }
 }
 
-void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_element_data_initialized()
+void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_element_data_initialized(
+    Mat::Anisotropy& anisotropy)
 {
   // do nothing
 }
 
-void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_gp_data_initialized()
+void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_gp_data_initialized(
+    Mat::Anisotropy& anisotropy)
 {
   // do nothing
 }
@@ -68,10 +81,10 @@ Mat::CylinderCoordinateSystemAnisotropyExtension::get_cylinder_coordinate_system
 
   if (cosy_location_ == CosyLocation::ElementCosy)
   {
-    return get_anisotropy()->get_element_cylinder_coordinate_system();
+    return *element_cosy_;
   }
 
-  return get_anisotropy()->get_gp_cylinder_coordinate_system(gp);
+  return gp_cosy_.at(gp);
 }
 
 std::shared_ptr<Mat::CoordinateSystemProvider>

@@ -146,7 +146,8 @@ void Mat::DefaultAnisotropyExtension<numfib>::set_fiber_vecs(
 }
 
 template <unsigned int numfib>
-bool Mat::DefaultAnisotropyExtension<numfib>::do_element_fiber_initialization()
+bool Mat::DefaultAnisotropyExtension<numfib>::do_element_fiber_initialization(
+    Mat::Anisotropy& anisotropy)
 {
   switch (init_mode_)
   {
@@ -156,25 +157,24 @@ bool Mat::DefaultAnisotropyExtension<numfib>::do_element_fiber_initialization()
     case INIT_MODE_ELEMENT_FIBERS:
 
       // check, whether a coordinate system is given
-      if (this->get_anisotropy()->has_element_cylinder_coordinate_system())
+      if (anisotropy.has_element_cylinder_coordinate_system())
       {
         // initialize fiber vector with local coordinate system
         Core::LinAlg::Tensor<double, 3, 3> locsys{};
         const Core::LinAlg::Tensor<double, 3, 3> Id =
             Core::LinAlg::get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>);
-        this->get_anisotropy()
-            ->get_element_cylinder_coordinate_system()
-            .evaluate_local_coordinate_system(locsys);
+        anisotropy.get_element_cylinder_coordinate_system().evaluate_local_coordinate_system(
+            locsys);
 
         this->set_fiber_vecs(-1.0, locsys, Id);
       }
-      else if (this->get_anisotropy()->get_number_of_element_fibers() > 0)
+      else if (anisotropy.get_number_of_element_fibers() > 0)
       {
         // initialize fibers from global given fibers
         std::array<Core::LinAlg::Tensor<double, 3>, numfib> fibers;
         for (unsigned int i = 0; i < numfib; ++i)
         {
-          fibers[i] = this->get_anisotropy()->get_element_fibers().at(fiber_ids_.at(i));
+          fibers[i] = anisotropy.get_element_fibers().at(fiber_ids_.at(i));
         }
         this->set_fibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
       }
@@ -190,7 +190,8 @@ bool Mat::DefaultAnisotropyExtension<numfib>::do_element_fiber_initialization()
 }
 
 template <unsigned int numfib>
-bool Mat::DefaultAnisotropyExtension<numfib>::do_gp_fiber_initialization()
+bool Mat::DefaultAnisotropyExtension<numfib>::do_gp_fiber_initialization(
+    Mat::Anisotropy& anisotropy)
 {
   switch (init_mode_)
   {
@@ -200,17 +201,17 @@ bool Mat::DefaultAnisotropyExtension<numfib>::do_gp_fiber_initialization()
     case INIT_MODE_NODAL_FIBERS:
 
       // check, whether a coordinate system is given
-      if (this->get_anisotropy()->has_gp_cylinder_coordinate_system())
+      if (anisotropy.has_gp_cylinder_coordinate_system())
       {
         FOUR_C_THROW(
             "Gauss-point fibers defined via Gauss-point cylinder coordinate systems is not yet "
             "defined");
       }
-      else if (this->get_anisotropy()->get_number_of_gauss_point_fibers() > 0)
+      else if (anisotropy.get_number_of_gauss_point_fibers() > 0)
       {
         // initialize fibers from global given fibers
         int gp = 0;
-        for (const auto& fiberList : this->get_anisotropy()->get_gauss_point_fibers())
+        for (const auto& fiberList : anisotropy.get_gauss_point_fibers())
         {
           std::array<Core::LinAlg::Tensor<double, 3>, numfib> fibers;
 
