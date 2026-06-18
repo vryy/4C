@@ -81,8 +81,7 @@ Mat::ElastHyper::ElastHyper(Mat::PAR::ElastHyper* params)
   for (const int matid : params_->matids_)
   {
     auto sum = Mat::Elastic::Summand::factory(matid);
-    if (!sum) FOUR_C_THROW("Failed to allocate material summand for matid %d", matid);
-
+    if (!sum) FOUR_C_THROW("Failed to allocate material summand for matid {}", matid);
     sum->register_anisotropy_extensions(anisotropy_);
     potsum_.push_back(std::move(sum));
   }
@@ -160,7 +159,7 @@ void Mat::ElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
     {
       auto sum = Mat::Elastic::Summand::factory(matid);
 
-      if (!sum) FOUR_C_THROW("Failed to allocate Elastic::Summand for matid %d", matid);
+      if (!sum) FOUR_C_THROW("Failed to allocate Elastic::Summand for matid {}", matid);
 
       potsum_.push_back(std::move(sum));
     }

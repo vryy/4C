@@ -145,8 +145,8 @@ namespace Mat
       ) const
       {
         FOUR_C_THROW(
-            "ElastHyper Summand does not implement the calculation of shear modulus. Needs to be "
-            "implemented in derived class.");
+            "Mat::Elastic::Summand does not implement the calculation of shear modulus. Needs to "
+            "be implemented in derived class.");
       };
 
       /*!
