@@ -24,6 +24,8 @@
 
 #include <vector>
 
+#include <memory>
+
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -583,7 +585,7 @@ namespace Mat
 
    private:
     /// Holder for anisotropy
-    std::shared_ptr<Anisotropy> anisotropy_;
+    Anisotropy anisotropy_;
 
     /// Holds and classifies all inelastic factors
     std::shared_ptr<InelasticFactorsHandler> inelastic_;
