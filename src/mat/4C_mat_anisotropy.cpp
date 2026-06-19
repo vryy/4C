@@ -57,6 +57,10 @@ void Mat::Anisotropy::pack_anisotropy(Core::Communication::PackBuffer& data) con
 
 void Mat::Anisotropy::unpack_anisotropy(Core::Communication::UnpackBuffer& buffer)
 {
+  // Extensions are external references that are not packed. The summands that own them
+  // may be recreated during unpack, so clear the stale references before re-registration.
+  extensions_.clear();
+
   extract_from_pack(buffer, numgp_);
   extract_from_pack(buffer, element_fibers_initialized_);
   extract_from_pack(buffer, gp_fibers_initialized_);
