@@ -113,9 +113,6 @@ namespace Mat
       virtual void setup(int numgp, const Discret::Elements::Fibers& fibers,
           const std::optional<Discret::Elements::CoordinateSystem>& coord_system) {};
 
-      //! Dummy routine for setup of patient-specific materials
-      virtual void setup_aaa(const Teuchos::ParameterList& params, const int eleGID) {};
-
       /*!
        * @brief Post setup routine for summands. It will be called once after everything is set up.
        *
@@ -145,12 +142,11 @@ namespace Mat
       virtual void add_shear_mod(bool& haveshearmod,  ///< non-zero shear modulus was added
           double& shearmod,                           ///< variable to add upon
           int ele_gid                                 ///< element GID
-      ) const;
-
-      //! add young's modulus equivalent
-      virtual void add_youngs_mod(double& young, double& shear, double& bulk)
+      ) const
       {
-        FOUR_C_THROW("Summand does not support calculation of youngs modulus");
+        FOUR_C_THROW(
+            "Mat::Elastic::Summand does not implement the calculation of shear modulus. Needs to "
+            "be implemented in derived class.");
       };
 
       /*!
