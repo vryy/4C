@@ -181,8 +181,10 @@ int main(int argc, char* argv[])
     }
     catch (Core::Exception& err)
     {
-      char line[] = "=========================================================================\n";
-      std::cout << "\n\n" << line << err.what_with_stacktrace() << "\n" << line << "\n" << '\n';
+      constexpr std::string_view line =
+          "\n=========================================================================\n";
+
+      std::cerr << "\n" << line << err.what_with_stacktrace() << line << "\n\n" << std::flush;
 
       if (communicators.num_groups() > 1)
       {
