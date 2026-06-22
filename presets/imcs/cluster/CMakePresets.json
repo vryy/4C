@@ -11,7 +11,8 @@
         "FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS": "ON",
         "FOUR_C_WITH_ARBORX": "ON",
         "FOUR_C_WITH_FFTW": "ON",
-        "FOUR_C_WITH_GOOGLETEST": "OFF"
+        "FOUR_C_WITH_GOOGLETEST": "OFF",
+        "FOUR_C_WITH_VTK": "ON"
       }
     },
     {
