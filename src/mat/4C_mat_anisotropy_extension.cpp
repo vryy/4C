@@ -130,6 +130,7 @@ template <unsigned int numfib>
 void Mat::FiberAnisotropyExtension<numfib>::pack_anisotropy(
     Core::Communication::PackBuffer& data) const
 {
+  add_to_pack(data, numgp_);
   add_to_pack(data, fibers_);
   add_to_pack(data, fiber_structural_tensors_);
   add_to_pack(data, tensor_flags_);
@@ -140,6 +141,7 @@ template <unsigned int numfib>
 void Mat::FiberAnisotropyExtension<numfib>::unpack_anisotropy(
     Core::Communication::UnpackBuffer& buffer)
 {
+  extract_from_pack(buffer, numgp_);
   extract_from_pack(buffer, fibers_);
   extract_from_pack(buffer, fiber_structural_tensors_);
   extract_from_pack(buffer, tensor_flags_);
