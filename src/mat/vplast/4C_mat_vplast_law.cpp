@@ -19,15 +19,22 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-Mat::Viscoplastic::Law::Law(Core::Mat::PAR::Parameter* params) : params_(params) {}
+Mat::Viscoplastic::Law::Law(Core::Mat::PAR::Parameter* params,
+    const InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorRegistrationSettings
+        error_registration_settings)
+    : error_registration_settings_(error_registration_settings), params_(params)
+{
+}
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-Mat::Viscoplastic::Law::Law() : params_(nullptr) {}
+Mat::Viscoplastic::Law::Law() : error_registration_settings_(), params_(nullptr) {}
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-std::shared_ptr<Mat::Viscoplastic::Law> Mat::Viscoplastic::Law::factory(int matnum)
+std::shared_ptr<Mat::Viscoplastic::Law> Mat::Viscoplastic::Law::factory(int matnum,
+    const InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorRegistrationSettings
+        error_registration_settings)
 {
   // for the sake of safety
   if (Global::Problem::instance()->materials() == nullptr)
@@ -53,7 +60,8 @@ std::shared_ptr<Mat::Viscoplastic::Law> Mat::Viscoplastic::Law::factory(int matn
       auto* params = dynamic_cast<Mat::Viscoplastic::PAR::ReformulatedJohnsonCook*>(curmat);
 
       // return pointer to material
-      return std::make_shared<Mat::Viscoplastic::ReformulatedJohnsonCook>(params);
+      return std::make_shared<Mat::Viscoplastic::ReformulatedJohnsonCook>(
+          params, error_registration_settings);
     }
 
     default:

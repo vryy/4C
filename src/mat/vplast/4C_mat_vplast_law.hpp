@@ -61,8 +61,10 @@ namespace Mat
     class Law
     {
      public:
-      /// construct viscoplastic laws with specific material params
-      explicit Law(Core::Mat::PAR::Parameter* params);
+      /// construct viscoplastic laws with specific material params and error registration settings
+      explicit Law(Core::Mat::PAR::Parameter* params,
+          const InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorRegistrationSettings
+              error_registration_settings);
       /// construct empty viscoplastic law
       Law();
 
@@ -73,12 +75,20 @@ namespace Mat
        * @brief create object by input parameter ID
        *
        * @param[in] matnum  material ID
+       * @param[in] error_registration_settings  error registration settings for plastic strain
+       * increments and derivative increments
        * @return pointer to material that is defined by material ID
        */
-      static std::shared_ptr<Law> factory(int matnum);
+      static std::shared_ptr<Law> factory(int matnum,
+          const InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorRegistrationSettings
+              error_registration_settings);
 
       /// provide material type
-      virtual Core::Materials::MaterialType material_type() const = 0;
+      [[nodiscard]] virtual Core::Materials::MaterialType material_type() const = 0;
+
+      /// does the viscoplastic law use a yield surface formulation, or is it a no-yield-surface
+      /// law?
+      [[nodiscard]] virtual bool uses_yield_surface() const = 0;
 
       /*!
        * @brief Evaluate the ratio of the equivalent stress \f$ \overline{\sigma} \f$ to the yield
@@ -117,7 +127,7 @@ namespace Mat
        *
        * @note To use the viscoplasticity components in the time
        * integration of history variables within InelasticDefgradTransvIsotropElastViscoplast, we
-       * have to check for eventual overflow errors within them. Specifically, we focus on the term
+       * may check for eventual overflow errors within them. Specifically, we focus on the term
        * \f$ \Delta t \dot{\varepsilon}^{\text{p}} \f$, which shall be
        * evaluable in the specific time integration used. Moreover,
        * for some viscoplasticity laws, we have to make sure that the given plastic strain is \f$
@@ -128,15 +138,11 @@ namespace Mat
        * @param[in] equiv_stress Equivalent stress \f$ \overline{\sigma}  \f$
        * @param[in] equiv_plastic_strain Equivalent plastic strain \f$ \varepsilon^{\text{p}}\f$
        * @param[in] dt Time step size (used solely for overflow error checking, see @note)
-       * @param[in] max_plastic_strain_incr maximum, numerically evaluable plastic
-       * strain increment \f$ \Delta t \dot{\varepsilon}^{\text{p}}) \f$ (before throwing an
-       * overflow error)
-       * @param[out] err_status output variable: error of the terms considered in
-       * @note?
+       * @param[out] err_status Output variable: error due the term considered in @note?
        * @return Equivalent plastic strain rate \f$ \dot{\varepsilon}^{\text{p}} \f$
        */
       virtual double evaluate_plastic_strain_rate(const double equiv_stress,
-          const double equiv_plastic_strain, const double dt, const double max_plastic_strain_incr,
+          const double equiv_plastic_strain, const double dt,
           Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
           const bool update_hist_var = true) = 0;
 
@@ -145,28 +151,27 @@ namespace Mat
        * \dot{\varepsilon}^{\text{p}} \f$ for a given equivalent stress \f$ \overline{\sigma} \f$
        * and a given plastic strain \f$ \varepsilon^{\text{p}} \f$
        *
+       * @note In addition to checking overflow based on the plastic strain increment (see
+       * documentation of evaluate_plastic_strain_rate), we may also verify overflow based on the
+       * derivatives of the plastic strain rate, scaled by the considered timestep.
+       *
+       *
        * @param[in] equiv_stress Equivalent stress \f$ \overline{\sigma}  \f$
        * @param[in] equiv_plastic_strain Equivalent plastic strain \f$ \varepsilon^{\text{p}}\f$
        * @param[in] dt Time step size (used solely for overflow error checking, see @note of
        * evaluate_plastic_strain_rate)
-       * @param[in] max_plastic_strain_deriv_incr Maximum
-       * numerically evaluable increment of the
-       * plastic strain derivatives (before throwing an overflow error),
-       * i.e. \f$ \Delta t \frac{\partial \dot{\varepsilon}^{\text{p}}}{\partial s},~ s \in
-       * \{\varepsilon^{\text{p}}, \overline{\sigma}, T\} \f$
-       * @param[out] err_status output variable: error of the terms considered in @note?
+       * @param[out] err_status Output variable: error of the terms considered in @note?
        * @return Derivatives of the equivalent plastic strain rate w.r.t. the equivalent stress,
        *         plastic strain, and temperature.
        */
       virtual InelasticDefgradTransvIsotropElastViscoplastUtils::PlasticStrainRateDerivs
       evaluate_derivatives_of_plastic_strain_rate(const double equiv_stress,
           const double equiv_plastic_strain, const double dt,
-          const double max_plastic_strain_deriv_incr,
           Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
           const bool update_hist_var = true) = 0;
 
       /// Return material parameters
-      virtual Core::Mat::PAR::Parameter* parameter() const { return params_; }
+      [[nodiscard]] virtual Core::Mat::PAR::Parameter* parameter() const { return params_; }
 
       /*!
        * @brief Setup viscoplasticity law for the specific element
@@ -187,9 +192,12 @@ namespace Mat
       virtual void pre_evaluate(const Teuchos::ParameterList& params, int gp) { gp_ = gp; };
 
       /*!
-       * @brief Update history variables of the viscoplasticity law for next time step
+       * @brief Update history variables of the viscoplasticity law for next time step at a given
+       * Gauss point
+       *
+       * @param[in] gp Current Gauss point
        */
-      virtual void update() = 0;
+      virtual void update(const unsigned int gp) = 0;
 
       /*!
        * @brief Update the history variables for a specific GP after a converged substep
@@ -197,7 +205,7 @@ namespace Mat
        *
        * @param[in] gp      Gauss point
        */
-      virtual void update_gp_state(int gp) = 0;
+      virtual void update_gp_state_after_substep(const unsigned int gp) = 0;
 
       virtual void pack_viscoplastic_law(Core::Communication::PackBuffer& data) const = 0;
 
@@ -233,6 +241,11 @@ namespace Mat
      protected:
       /// Gauss point index
       int gp_;
+
+      /// error registration settings for the plastic strain increments and the derivative
+      /// increments
+      const Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorRegistrationSettings
+          error_registration_settings_;
 
 
      private:

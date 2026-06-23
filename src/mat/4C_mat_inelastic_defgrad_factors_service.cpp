@@ -278,6 +278,11 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
 void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::pre_evaluate(
     const unsigned int gp)
 {
+  FOUR_C_ASSERT_ALWAYS(gp < last_plastic_defgrad_inverse.size(),
+      "You try to pre-evaluate the time step quantities at GP {}, but the object has only {} Gauss "
+      "points",
+      gp, last_plastic_defgrad_inverse.size());
+
   // set consistent last substep values
   last_substep_plastic_defgrad_inverse[gp] = last_plastic_defgrad_inverse[gp];
   last_substep_plastic_strain[gp] = last_plastic_strain[gp];
@@ -285,17 +290,23 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::update()
+void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::update(
+    const unsigned int gp)
 {
+  FOUR_C_ASSERT_ALWAYS(gp < last_plastic_defgrad_inverse.size(),
+      "You try to update the time step quantities at GP {}, but the object has only {} Gauss "
+      "points",
+      gp, last_plastic_defgrad_inverse.size());
+
   // update history variables for the next time step
-  last_defgrad = current_defgrad;
-  last_rightCG = current_rightCG;
-  last_plastic_defgrad_inverse = current_plastic_defgrad_inverse;
-  last_substep_plastic_defgrad_inverse = current_plastic_defgrad_inverse;
-  last_plastic_strain = current_plastic_strain;
-  last_equiv_stress = current_equiv_stress;
-  last_substep_plastic_strain = current_plastic_strain;
-  last_temperature = current_temperature;
+  last_defgrad[gp] = current_defgrad[gp];
+  last_rightCG[gp] = current_rightCG[gp];
+  last_plastic_defgrad_inverse[gp] = current_plastic_defgrad_inverse[gp];
+  last_substep_plastic_defgrad_inverse[gp] = current_plastic_defgrad_inverse[gp];
+  last_plastic_strain[gp] = current_plastic_strain[gp];
+  last_substep_plastic_strain[gp] = current_plastic_strain[gp];
+  last_equiv_stress[gp] = current_equiv_stress[gp];
+  last_temperature[gp] = current_temperature[gp];
 }
 
 
@@ -406,8 +417,14 @@ Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager::Loca
   // know it at this point in time
   curr_num_iters_.resize(1, 0);
 
-  // set initial number of iterations to 0
+  // set initial number of iterations
   iter_ = 0;
+
+  // initialize solution vector and convergence quantities with dummy values; they will be set
+  // anyway to more meaningful values when starting the local Newton within the material model
+  sol_ = Core::LinAlg::Matrix<10, 1>(Core::LinAlg::Initialization::zero);
+  convergence_quantities_.residual_norm = 0.0;
+  convergence_quantities_.increment_norm = 0.0;
 }
 
 /*--------------------------------------------------------------------*
@@ -441,9 +458,123 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager:
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager::reset()
+void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager::
+    reset_curr_num_iters(const unsigned int gp)
 {
-  std::ranges::fill(curr_num_iters_, 0);
+  FOUR_C_ASSERT_ALWAYS(gp < curr_num_iters_.size(),
+      "You try to reset the current number of iterations within the Local Newton manager at Gauss "
+      "point {}, but the object only has {} Gauss points",
+      gp, curr_num_iters_.size());
+
+  curr_num_iters_[gp] = 0;
+}
+
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager::
+    save_init_estimate_and_reset_convergence_quantities(
+        const Core::LinAlg::Matrix<10, 1>& init_estimate)
+{
+  // --> set initial estimate
+  sol_ = init_estimate;
+
+  // --> set quantities used for convergence checks
+
+  // residual norm
+  convergence_quantities_.residual_norm = 0.0;
+  // if the convergence check requires verifying the residual norm, we must ensure that the value
+  // set here is larger than the tolerance, to perform the check at least once, in the next
+  // iteration
+  if (params_.conv_check == LocalNewtonConvCheck::residual ||
+      params_.conv_check == LocalNewtonConvCheck::residual_and_increment_ratio)
+  {
+    convergence_quantities_.residual_norm = 2.0 * params_.res_tol;
+  }
+
+  // increment norm: ratio of increment to current solution
+  convergence_quantities_.increment_norm = 0.0;
+  // if the convergence check requires verifying the increment norm, we must ensure that the value
+  // set here is larger than the tolerance, to perform the check at least once, in the next
+  // iteration
+  if (params_.conv_check == LocalNewtonConvCheck::increment_ratio ||
+      params_.conv_check == LocalNewtonConvCheck::residual_and_increment_ratio)
+  {
+    convergence_quantities_.increment_norm = 2.0 * params_.incr_tol;
+  }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager::
+    increment_solution_vector(const Core::LinAlg::Matrix<10, 1>& delta_sol)
+{
+  sol_.update(1.0, delta_sol, 1.0);
+
+  const double sol_norm = sol_.norm2();
+  const double delta_sol_norm = delta_sol.norm2();
+  FOUR_C_ASSERT_ALWAYS(sol_norm >= 1.0e-8,
+      "The solution vector in local iteration {} is nearly 0, with 2-norm: {}! Something went "
+      "wrong, since such mechanical states are not expected!",
+      iter_, sol_norm);
+  convergence_quantities_.increment_norm = delta_sol_norm / sol_norm;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+bool Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager::
+    is_local_newton_converged() const
+{
+  // check for convergence
+  switch (params_.conv_check)
+  {
+    case InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonConvCheck::residual:
+      return (convergence_quantities_.residual_norm <= params_.res_tol);
+      break;
+    case InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonConvCheck::increment_ratio:
+      return (convergence_quantities_.increment_norm <= params_.incr_tol);
+      break;
+    case InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonConvCheck::
+        residual_and_increment_ratio:
+      return (convergence_quantities_.residual_norm <= params_.res_tol &&
+              convergence_quantities_.increment_norm <= params_.incr_tol);
+      break;
+    default:
+      FOUR_C_THROW("You should not be here (convergence checking of the Local Newton Loop)");
+  }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+bool Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager::
+    is_local_newton_stuck() const
+{
+  // check for "stuck" Local Newton, i.e., the increment does not change much but there is not a
+  // converged state (check only feasible after the first iteration, since dx must be available)
+  if ((iter_ > 0) && (convergence_quantities_.increment_norm < 1.0e-15))
+  {
+    // only in the case that the residual is verified, we set an
+    // error status
+    switch (params_.conv_check)
+    {
+      case LocalNewtonConvCheck::residual:
+      case LocalNewtonConvCheck::residual_and_increment_ratio:
+      {
+        return (convergence_quantities_.residual_norm > params_.res_tol);
+      }
+      case LocalNewtonConvCheck::increment_ratio:
+      {
+        return false;
+      }
+      default:
+        FOUR_C_THROW(
+            "You should not be here with convergence check type {} (check: is Local Newton "
+            "stuck?)",
+            EnumTools::enum_name(params_.conv_check));
+    }
+  }
+
+  return false;
 }
 
 
@@ -462,6 +593,20 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager:
 {
   // extract last values
   extract_from_pack(buffer, curr_num_iters_);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalIntegrationDeformationTensors::
+    LocalIntegrationDeformationTensors(
+        const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<3, 3>& last_iFp)
+{
+  defgrad = F;
+  inv_defgrad.invert(defgrad);
+  right_cg.multiply_tn(1.0, defgrad, defgrad, 0.0);
+  elastic_predictor_inverse_plastic_defgrad = last_iFp;
+  elastic_predictor_elastic_defgrad.multiply(
+      1.0, defgrad, elastic_predictor_inverse_plastic_defgrad, 0.0);
 }
 
 
