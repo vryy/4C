@@ -190,7 +190,7 @@ namespace Mat
      * \return true if the fibers are initialized
      * \return false if the fibers are not initialized
      */
-    virtual bool do_element_fiber_initialization(Anisotropy& anisotropy) { return false; }
+    virtual bool do_element_fiber_initialization(Anisotropy& /*anisotropy*/) { return false; }
 
     /*!
      * \brief Method that initialized Gauss point fibers.
@@ -200,7 +200,7 @@ namespace Mat
      * \return true if the fibers are initialized
      * \return false if the fibers are not initialized
      */
-    virtual bool do_gp_fiber_initialization(Anisotropy& anisotropy) { return false; }
+    virtual bool do_gp_fiber_initialization(Anisotropy& /*anisotropy*/) { return false; }
 
     /*!
      * \brief Method that will be called of the fibers are initialized.

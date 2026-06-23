@@ -22,9 +22,8 @@
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <vector>
-
 #include <memory>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 

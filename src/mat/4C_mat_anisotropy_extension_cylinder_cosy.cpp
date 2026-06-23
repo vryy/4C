@@ -11,6 +11,7 @@
 #include "4C_comm_parobject.hpp"
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_anisotropy_coordinate_system_provider.hpp"
+#include "4C_utils_exceptions.hpp"
 #include "4C_utils_shared_ptr_from_ref.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -62,13 +63,13 @@ void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_data_initialize
 void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_element_data_initialized(
     Mat::Anisotropy& anisotropy)
 {
-  // do nothing
+  (void)anisotropy;
 }
 
 void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_gp_data_initialized(
     Mat::Anisotropy& anisotropy)
 {
-  // do nothing
+  (void)anisotropy;
 }
 
 const Mat::CylinderCoordinateSystemProvider&
@@ -81,6 +82,10 @@ Mat::CylinderCoordinateSystemAnisotropyExtension::get_cylinder_coordinate_system
 
   if (cosy_location_ == CosyLocation::ElementCosy)
   {
+    FOUR_C_ASSERT(element_cosy_.has_value(),
+        "Invalid state: CosyLocation=ElementCosy, but element_cosy_ is empty. "
+        "Check initialization in on_global_data_initialized().");
+
     return *element_cosy_;
   }
 

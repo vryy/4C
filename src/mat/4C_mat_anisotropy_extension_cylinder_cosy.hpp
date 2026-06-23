@@ -13,6 +13,7 @@
 #include "4C_mat_anisotropy_cylinder_coordinate_system_manager.hpp"
 #include "4C_mat_anisotropy_extension_base.hpp"
 
+#include <memory>
 #include <optional>
 
 FOUR_C_NAMESPACE_OPEN
@@ -79,9 +80,11 @@ namespace Mat
      * \return const CylinderCoordinateSystemProvider& Reference to the cylinder coordinate system
      * provider
      */
-    const CylinderCoordinateSystemProvider& get_cylinder_coordinate_system(int gp) const;
+    [[nodiscard]] const CylinderCoordinateSystemProvider& get_cylinder_coordinate_system(
+        int gp) const;
 
-    std::shared_ptr<Mat::CoordinateSystemProvider> get_coordinate_system_provider(int gp) const;
+    [[nodiscard]] std::shared_ptr<Mat::CoordinateSystemProvider> get_coordinate_system_provider(
+        int gp) const;
 
    private:
     /*!

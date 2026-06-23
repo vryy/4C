@@ -72,7 +72,7 @@ Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::get_structural_tensor(int g
 void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_data_initialized(
     Mat::Anisotropy& anisotropy)
 {
-  // do nothing
+  (void)anisotropy;
 }
 
 void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data_initialized(
@@ -134,7 +134,7 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_init
 
   if (anisotropy.get_number_of_gauss_point_fibers() == 0)
   {
-    FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
+    FOUR_C_THROW("No Gauss-point fibers are given with the FIBER1 FIBER2 notation");
   }
 
   scalar_products_.resize(anisotropy.get_number_of_gauss_points());
