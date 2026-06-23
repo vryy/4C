@@ -54,12 +54,6 @@ FS3I::PartFS3I::PartFS3I(MPI_Comm comm) : FS3IBase(), comm_(comm)
   return;
 }
 
-void FS3I::PartFS3I::validate_structure_scatra_clone_configuration(const Core::FE::Discretization&,
-    const Core::FE::Discretization&,
-    const std::map<std::pair<std::string, std::string>, std::map<int, int>>&) const
-{
-}
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::init()

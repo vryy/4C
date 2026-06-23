@@ -161,7 +161,9 @@ namespace FS3I
     virtual void validate_structure_scatra_clone_configuration(
         const Core::FE::Discretization& structdis, const Core::FE::Discretization& structscatradis,
         const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
-        const;
+        const
+    { /* do nothing in base class */
+    }
 
    private:
     //! volume coupling (using mortar) adapter
