@@ -834,6 +834,34 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                         "multi-scale approach"});
   }
 
+  /*----------------------------------------------------------------------*/
+  // Hyperelastic Ogden material with tension-compression asymmetry control
+  {
+    using namespace Core::IO::InputSpecBuilders::Validators;
+
+    known_materials[Core::Materials::m_ogden_tca] = group("MAT_Ogden_TCA",
+        {
+            parameter<double>("C",
+                {.description = "stiffness scaling parameter", .validator = positive<double>()}),
+            parameter<double>(
+                "M", {.description = "nonlinearity parameter", .validator = positive<double>()}),
+            parameter<double>(
+                "Q", {.description = "tension-compression asymmetry control parameter",
+                         .validator = in_range(0.0, 1.0)}),
+            parameter<double>("KAPPA",
+                {.description = "incompressibility parameter", .validator = positive<double>()}),
+            parameter<double>(
+                "DENS", {.description = "density", .validator = positive_or_zero<double>()}),
+        },
+        {.description =
+                "Hyperelastic Ogden material with tension-compression asymmetry control. The "
+                "second Piola--Kirchhoff stress is computed as S = sum_{i=1}^{3} [c/m * (q * "
+                "lambda_i^{m-2} - (1-q) * lambda_i^{-m-2}) N_i otimes N_i] + [kappa * J * (J-1) + "
+                "c/m * (1-2q)] C^{-1}] with J being the determinant of the deformation gradient, "
+                "lambda_i the principal stretches of the right Cauchy-Green deformation tensor C, "
+                "and N_i the corresponding principal directions."});
+  }
+
   {
     using namespace Core::IO::InputSpecBuilders::Validators;
     known_materials[Core::Materials::m_scl] = group("MAT_scl",
