@@ -269,7 +269,7 @@ namespace Mat
     void compute_structural_tensors_stress();
 
     /// Number of Gauss points supplied by the Anisotropy class during setup
-    int numgp_ = 0;
+    int numgp_ = -1;
 
     /// Indication of the fiber location
     FiberLocation fiber_location_ = FiberLocation::None;
