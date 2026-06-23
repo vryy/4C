@@ -133,8 +133,6 @@ void Mat::Mixture::unpack(Core::Communication::UnpackBuffer& buffer)
   constituents_->clear();
   setup_ = false;
 
-
-
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
@@ -160,7 +158,6 @@ void Mat::Mixture::unpack(Core::Communication::UnpackBuffer& buffer)
 
     // Extract setup flag
     extract_from_pack(buffer, setup_);
-
 
     // Extract is isPreEvaluated
     std::vector<int> isPreEvaluatedInt;

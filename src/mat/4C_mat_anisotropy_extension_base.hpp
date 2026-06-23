@@ -10,7 +10,6 @@
 
 #include "4C_config.hpp"
 
-#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -28,7 +27,8 @@ namespace Mat
 
   class BaseAnisotropyExtension
   {
-    // Anisotropy is a friend to create back reference
+    // Anisotropy calls the private notification methods on_global_element_data_initialized
+    // and on_global_gp_data_initialized.
     friend class Anisotropy;
 
    public:
@@ -57,48 +57,21 @@ namespace Mat
      * \brief This method will be called by Mat::Anisotropy if element and Gauss point fibers are
      * available
      */
-    virtual void on_global_data_initialized() = 0;
-
-   protected:
-    /*!
-     * \brief Returns the reference to the anisotropy
-     *
-     * \return std::shared_ptr<Anisotropy>& Reference to the anisotropy
-     */
-    std::shared_ptr<Anisotropy>& get_anisotropy() { return anisotropy_; }
-    /*!
-     * \brief Returns the reference to the anisotropy
-     *
-     * \return std::shared_ptr<Anisotropy>& Reference to the anisotropy
-     */
-    const std::shared_ptr<Anisotropy>& get_anisotropy() const { return anisotropy_; }
+    virtual void on_global_data_initialized(Anisotropy& anisotropy) = 0;
 
    private:
     /*!
      * \brief This method will be called by Mat::Anisotropy to notify that element information is
      * available.
      */
-    virtual void on_global_element_data_initialized() = 0;
+    virtual void on_global_element_data_initialized(Anisotropy& anisotropy) = 0;
 
 
     /*!
      * \brief This method will be called by Mat::Anisotropy to notify that Gauss point information
      * is available.
      */
-    virtual void on_global_gp_data_initialized() = 0;
-
-    /// \name Private methods called by the friend class Mat::Anisotropy
-    /// \{
-    /*!
-     * \brief Set the anisotropy. This method will only be used by Anisotropy itself to give the
-     * extension access to all anisotropy information.
-     *
-     * \param anisotropy
-     */
-    void set_anisotropy(Anisotropy& anisotropy);
-
-    /// Reference to Anisotropy
-    std::shared_ptr<Anisotropy> anisotropy_;
+    virtual void on_global_gp_data_initialized(Anisotropy& anisotropy) = 0;
   };
 }  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE

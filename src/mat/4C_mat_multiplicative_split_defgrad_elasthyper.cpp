@@ -88,7 +88,7 @@ Core::Communication::ParObject* Mat::MultiplicativeSplitDefgradElastHyperType::c
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper()
-    : anisotropy_(std::make_shared<Mat::Anisotropy>()),
+    : anisotropy_(),
       inelastic_(std::make_shared<Mat::InelasticFactorsHandler>()),
       params_(nullptr),
       potsumel_(0),
@@ -100,7 +100,7 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
  *--------------------------------------------------------------------*/
 Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     Mat::PAR::MultiplicativeSplitDefgradElastHyper* params)
-    : anisotropy_(std::make_shared<Mat::Anisotropy>()),
+    : anisotropy_(),
       inelastic_(std::make_shared<Mat::InelasticFactorsHandler>()),
       params_(params),
       potsumel_(0),
@@ -120,7 +120,7 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     {
       potsumel_.push_back(elastic_summand);
     }
-    elastic_summand->register_anisotropy_extensions(*anisotropy_);
+    elastic_summand->register_anisotropy_extensions(anisotropy_);
   }
 
   inelastic_->assign_to_source(params);
@@ -138,7 +138,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::pack(Core::Communication::PackBu
   if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
-  anisotropy_->pack_anisotropy(data);
+  anisotropy_.pack_anisotropy(data);
 
   Core::Communication::PotentiallyUnusedBufferScope summand_scope{data};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
@@ -183,7 +183,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(Core::Communication::Unpa
     }
   }
 
-  anisotropy_->unpack_anisotropy(buffer);
+  anisotropy_.unpack_anisotropy(buffer);
 
   Core::Communication::PotentiallyUnusedBufferScope summand_scope{buffer};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
@@ -211,7 +211,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(Core::Communication::Unpa
     for (const auto& elastic_summand : potsumel_)
     {
       elastic_summand->unpack_summand(buffer);
-      elastic_summand->register_anisotropy_extensions(*anisotropy_);
+      elastic_summand->register_anisotropy_extensions(anisotropy_);
     }
     for (const std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>& elastic_summand :
         potsumel_transviso_)
@@ -1015,8 +1015,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::setup(const int numgp,
     const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // Read anisotropy
-  anisotropy_->set_number_of_gauss_points(numgp);
-  anisotropy_->read_anisotropy_from_element(fibers, coord_system);
+  anisotropy_.set_number_of_gauss_points(numgp);
+  anisotropy_.read_anisotropy_from_element(fibers, coord_system);
 
   // elastic materials
   for (const auto& summand : potsumel_) summand->setup(numgp, fibers, coord_system);

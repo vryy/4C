@@ -57,6 +57,10 @@ void Mat::Anisotropy::pack_anisotropy(Core::Communication::PackBuffer& data) con
 
 void Mat::Anisotropy::unpack_anisotropy(Core::Communication::UnpackBuffer& buffer)
 {
+  // Extensions are external references that are not packed. The summands that own them
+  // may be recreated during unpack, so clear the stale references before re-registration.
+  extensions_.clear();
+
   extract_from_pack(buffer, numgp_);
   extract_from_pack(buffer, element_fibers_initialized_);
   extract_from_pack(buffer, gp_fibers_initialized_);
@@ -227,7 +231,6 @@ const Core::LinAlg::Tensor<double, 3>& Mat::Anisotropy::get_gauss_point_fiber(
 void Mat::Anisotropy::register_anisotropy_extension(BaseAnisotropyExtension& extension)
 {
   extensions_.emplace_back(Core::Utils::shared_ptr_from_ref(extension));
-  extension.set_anisotropy(*this);
 }
 
 void Mat::Anisotropy::on_element_fibers_initialized()
@@ -235,14 +238,14 @@ void Mat::Anisotropy::on_element_fibers_initialized()
   element_fibers_initialized_ = true;
   for (auto& extension : extensions_)
   {
-    extension->on_global_element_data_initialized();
+    extension->on_global_element_data_initialized(*this);
   }
 
   if (element_fibers_initialized_ and gp_fibers_initialized_)
   {
     for (auto& extension : extensions_)
     {
-      extension->on_global_data_initialized();
+      extension->on_global_data_initialized(*this);
     }
   }
 }
@@ -252,14 +255,14 @@ void Mat::Anisotropy::on_gp_fibers_initialized()
   gp_fibers_initialized_ = true;
   for (auto& extension : extensions_)
   {
-    extension->on_global_gp_data_initialized();
+    extension->on_global_gp_data_initialized(*this);
   }
 
   if (element_fibers_initialized_ and gp_fibers_initialized_)
   {
     for (auto& extension : extensions_)
     {
-      extension->on_global_data_initialized();
+      extension->on_global_data_initialized(*this);
     }
   }
 }

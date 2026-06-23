@@ -74,7 +74,7 @@ namespace Mat
      * \return true if the material is parametrized so that element fibers should be used
      * \return false otherwise
      */
-    bool do_element_fiber_initialization() override;
+    bool do_element_fiber_initialization(Anisotropy& anisotropy) override;
 
     /*!
      * \brief Initializes Gauss point fibers
@@ -82,7 +82,7 @@ namespace Mat
      * \return true if the materials is parametrized so that Gauss point fibers should be used
      * \return false otherwise
      */
-    bool do_gp_fiber_initialization() override;
+    bool do_gp_fiber_initialization(Anisotropy& anisotropy) override;
 
     /*!
      * \brief Set Fiber vectors by a new angle gamma in the current configuration
