@@ -19,13 +19,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-/* -----------------------------------------------------------------------------------------------*
- | Class ConditionDefinition                                                                      |
- * -----------------------------------------------------------------------------------------------*/
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Core::Conditions::ConditionDefinition::ConditionDefinition(std::string sectionname,
-    std::string conditionname, std::string description, Core::Conditions::ConditionType condtype,
-    bool buildgeometry, Core::Conditions::GeometryType gtype)
+    std::string conditionname, std::string description,
+    const Core::Conditions::ConditionType condtype, const bool buildgeometry,
+    const Core::Conditions::GeometryType gtype)
     : sectionname_(std::move(sectionname)),
       conditionname_(std::move(conditionname)),
       description_(std::move(description)),
@@ -67,7 +66,7 @@ void Core::Conditions::ConditionDefinition::add_component(const Core::IO::InputS
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::Conditions::ConditionDefinition::read(
-    Core::IO::InputFile& input, std::vector<ConditionSpec>& condition_specs) const
+    const Core::IO::InputFile& input, std::vector<ConditionSpec>& condition_specs) const
 {
   Core::IO::InputParameterContainer container;
   try

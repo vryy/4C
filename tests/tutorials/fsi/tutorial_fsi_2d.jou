@@ -199,15 +199,15 @@ block 1 name "flexible_bottom"
 
 $ curves
 nodeset 1 curve in structure_ycurves
-nodeset 1 name "structure clamping curves"
+nodeset 1 name "structure_clamping_curves"
 nodeset 2 curve in group structure_fsi_xcurves
-nodeset 2 name "structure fsi curve"
+nodeset 2 name "structure_fsi_curve"
 
 $ vertices
 nodeset 3 vertex in group structure_vertex
-nodeset 3 name "structure vertices"
+nodeset 3 name "structure_vertices"
 nodeset 4 vertex in group structure_vertex_fsi
-nodeset 4 name "structure fsi vertices"
+nodeset 4 name "structure_fsi_vertices"
 
 $======================= Fluid
 $ surfaces
@@ -216,25 +216,25 @@ block 2 name "fluid"
 
 $ curves
 nodeset 5 curve in group cavity_ycurves
-nodeset 5 name "cavity wall curves"
+nodeset 5 name "cavity_wall_curves"
 nodeset 6 curve in group inflow_vol_xcurves_top
-nodeset 6 name "inflow volume curve top"
+nodeset 6 name "inflow_volume_curve_top"
 nodeset 7 curve in group inflow_ycurves
-nodeset 7 name "inflow area curve"
+nodeset 7 name "inflow_area_curve"
 nodeset 8 curve in group fluid_ycurves
-nodeset 8 name "fluid curves in y-direction"
+nodeset 8 name "fluid_curves_in_y-direction"
 nodeset 9 curve in group cavity_fsi_xcurves
-nodeset 9 name "fluid fsi curve"
+nodeset 9 name "fluid_fsi_curve"
 
 $ vertices
 nodeset 10 vertex in group inflow_vertex_top
-nodeset 10 name "inflow vertices top"
+nodeset 10 name "inflow_vertices_top"
 nodeset 11 vertex in group cavity_vertex
-nodeset 11 name "cavity vertices"
+nodeset 11 name "cavity_vertices"
 nodeset 12 vertex in group fluid_vertex_fsi
-nodeset 12 name "fluid fsi vertices"
+nodeset 12 name "fluid_fsi_vertices"
 nodeset 13 vertex in group fluid_vertex
-nodeset 13 name "fluid vertices all"
+nodeset 13 name "fluid_vertices_all"
 
 $======================= export mesh
-export mesh "tutorial_fsi.e" block all dimension 2 overwrite
+export mesh "tutorial_fsi_2d.e" block all dimension 2 overwrite

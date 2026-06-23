@@ -142,85 +142,71 @@ FLUID GEOMETRY:
           NA: ALE
 
 DESIGN POINT DIRICH CONDITIONS:
-  - E: 3
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_vertices
     NUMDOF: 2
     ONOFF: [1, 1]
     VAL: [0, 0]
     FUNCT: [0, 0]
-  - E: 4
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_fsi_vertices
     NUMDOF: 2
     ONOFF: [1, 1]
     VAL: [0, 0]
     FUNCT: [0, 0]
-  - E: 10
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: inflow_vertices_top
     NUMDOF: 3
     ONOFF: [1, 1, 0]
     VAL: [1, 0, 0]
     FUNCT: [1, 0, 0]
-  - E: 11
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_vertices
     NUMDOF: 3
     ONOFF: [1, 1, 0]
     VAL: [0, 0, 0]
     FUNCT: [0, 0, 0]
-  - E: 12
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: fluid_fsi_vertices
     NUMDOF: 3
     ONOFF: [1, 1, 0]
     VAL: [0, 0, 0]
     FUNCT: [0, 0, 0]
 DESIGN LINE DIRICH CONDITIONS:
-  - E: 1
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_clamping_curves
     NUMDOF: 2
     ONOFF: [1, 1]
     VAL: [0, 0]
     FUNCT: [0, 0]
-  - E: 5
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_wall_curves
     NUMDOF: 3
     ONOFF: [1, 1, 0]
     VAL: [0, 0, 0]
     FUNCT: [0, 0, 0]
-  - E: 6
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: inflow_volume_curve_top
     NUMDOF: 3
     ONOFF: [1, 1, 0]
     VAL: [1, 0, 0]
     FUNCT: [1, 0, 0]
-  - E: 7
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: inflow_area_curve
     NUMDOF: 3
     ONOFF: [1, 1, 0]
     VAL: [1, 0, 0]
     FUNCT: [2, 0, 0]
 DESIGN POINT ALE DIRICH CONDITIONS:
-  - E: 13
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: fluid_vertices_all
     NUMDOF: 2
     ONOFF: [1, 1]
     VAL: [0, 0]
     FUNCT: [0, 0]
 DESIGN LINE ALE DIRICH CONDITIONS:
-  - E: 6
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: inflow_volume_curve_top
     NUMDOF: 2
     ONOFF: [1, 1]
     VAL: [0, 0]
     FUNCT: [0, 0]
-  - E: 8
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: fluid_curves_in_y-direction
     NUMDOF: 2
     ONOFF: [1, 1]
     VAL: [0, 0]
     FUNCT: [0, 0]
 DESIGN FSI COUPLING LINE CONDITIONS:
-  - E: 2
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_fsi_curve
     coupling_id: 1
-  - E: 9
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: fluid_fsi_curve
     coupling_id: 1

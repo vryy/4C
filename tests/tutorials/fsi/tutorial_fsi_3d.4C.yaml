@@ -105,369 +105,308 @@ FLUID GEOMETRY:
           NA: ALE
 
 DESIGN POINT DIRICH CONDITIONS:
-  - E: 32
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_vertex_front_left_bottom
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 33
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_vertex_back_left_bottom
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 34
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_vertex_back_right_bottom
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 35
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_vertex_front_right_bottom
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 36
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity-inflow_vertex_front_1
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 36
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity-inflow_vertex_front_1
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 38
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid_vertex_front_left
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [1, 0, 0, 0]
     FUNCT: [1, null, null, null]
-  - E: 39
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid_vertex_back_left
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [1, 0, 0, 0]
     FUNCT: [1, null, null, null]
 DESIGN LINE DIRICH CONDITIONS:
-  - E: 6
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_edge_front_left
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 7
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_edge_back_left
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 8
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_edge_back_right
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 9
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_edge_front_right
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 18
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_front_left
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 19
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_back_left
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 20
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_back_right
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 21
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_front_right
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 22
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_front_bottom
     NUMDOF: 4
     ONOFF: [0, 0, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 23
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_back_bottom
     NUMDOF: 4
     ONOFF: [0, 0, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 24
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_left_bottom
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 25
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_right_bottom
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 26
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity-inflow_edge
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 27
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: inflow_edge_front
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [1, 0, 0, 0]
     FUNCT: [2, null, null, null]
-  - E: 28
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: inflow_edge_back
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [1, 0, 0, 0]
     FUNCT: [2, null, null, null]
-  - E: 29
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid_edge_left
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [1, 0, 0, 0]
     FUNCT: [1, null, null, null]
-  - E: 30
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid_edge_front
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [1, 0, 0, 0]
     FUNCT: [1, null, null, null]
-  - E: 31
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid_edge_back
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [1, 0, 0, 0]
     FUNCT: [1, null, null, null]
 DESIGN SURF DIRICH CONDITIONS:
-  - E: 1
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_surface_left
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 2
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_surface_right
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 3
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_surface_front
     NUMDOF: 3
     ONOFF: [0, 0, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 4
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_surface_back
     NUMDOF: 3
     ONOFF: [0, 0, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 10
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_wall_left
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 11
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_wall_right
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 12
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: fluid_wall_front
     NUMDOF: 4
     ONOFF: [0, 0, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 13
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: fluid_wall_back
     NUMDOF: 4
     ONOFF: [0, 0, 1, 0]
     VAL: [0, 0, 0, 0]
     FUNCT: [null, null, null, null]
-  - E: 15
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [1, 0, 0, 0]
     FUNCT: [1, null, null, null]
-  - E: 16
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: inflow
     NUMDOF: 4
     ONOFF: [1, 1, 1, 0]
     VAL: [1, 0, 0, 0]
     FUNCT: [2, null, null, null]
 DESIGN POINT ALE DIRICH CONDITIONS:
-  - E: 36
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity-inflow_vertex_front_1
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 37
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity-inflow_vertex_front_2
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 38
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid_vertex_front_left
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 39
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid_vertex_back_left
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
 DESIGN LINE ALE DIRICH CONDITIONS:
-  - E: 18
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_front_left
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 19
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_back_left
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 20
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_back_right
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 21
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_front_right
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 24
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_left_bottom
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 25
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_edge_right_bottom
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 26
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity-inflow_edge
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 27
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: inflow_edge_front
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 28
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: inflow_edge_back
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 29
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid_edge_left
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 30
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid_edge_front
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 31
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid_edge_back
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
 DESIGN SURF ALE DIRICH CONDITIONS:
-  - E: 10
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_wall_left
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 11
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: cavity_wall_right
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 12
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: fluid_wall_front
     NUMDOF: 3
     ONOFF: [0, 0, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 13
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: fluid_wall_back
     NUMDOF: 3
     ONOFF: [0, 0, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 15
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: lid
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 16
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: inflow
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
-  - E: 17
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: outflow
     NUMDOF: 3
     ONOFF: [1, 1, 1]
     VAL: [0, 0, 0]
     FUNCT: [null, null, null]
 DESIGN FSI COUPLING SURF CONDITIONS:
-  - E: 5
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: structure_coupling_surface
     coupling_id: 1
-  - E: 14
-    ENTITY_TYPE: node_set_id
+  - NODE_SET_NAME: fluid_coupling_surface
     coupling_id: 1
