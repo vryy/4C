@@ -129,6 +129,7 @@
 #include "4C_mat_scatra_reaction.hpp"
 #include "4C_mat_scl.hpp"
 #include "4C_mat_shell_kl.hpp"
+#include "4C_mat_solid_superposition.hpp"
 #include "4C_mat_soret.hpp"
 #include "4C_mat_spring.hpp"
 #include "4C_mat_structporo.hpp"
@@ -1027,6 +1028,10 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     case Core::Materials::m_superelast:
     {
       return make_parameter_impl<Mat::PAR::SuperElasticSMA>(id, type, input_data);
+    }
+    case Core::Materials::m_superposition:
+    {
+      return make_parameter_impl<Mat::PAR::SolidSuperposition>(id, type, input_data);
     }
     case Core::Materials::m_linelast1D:
     {
