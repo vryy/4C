@@ -372,15 +372,16 @@ namespace Core::IO
      * collected solution data vectors by adding it to the cell_data_vector of the visualization
      * data */
 
-    // safety check
+    // safety checks
+    FOUR_C_ASSERT(
+        discretization_->element_row_map()->same_as(result_data_elementbased.get_map()) ||
+            discretization_->element_col_map()->same_as(result_data_elementbased.get_map()),
+        "element_vector' is neither in column nor in row map!");
+
     FOUR_C_ASSERT(static_cast<unsigned int>(result_data_elementbased.num_vectors()) ==
                       result_num_components_per_element,
         "Expected Core::LinAlg::MultiVector<double> with {} columns but got {}.",
         result_num_components_per_element, result_data_elementbased.num_vectors());
-
-    FOUR_C_ASSERT(discretization_->element_row_map()->same_as(result_data_elementbased.get_map()),
-        "Received map of element-based result data vector does not match the discretization's "
-        "element row map.");
 
     // count number of elements for each processor
     auto num_row_elements = static_cast<unsigned int>(discretization_->num_my_row_elements());

@@ -13,6 +13,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
+#include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -154,6 +155,9 @@ namespace Airway
     void output(
         bool CoupledTo3D = false, std::shared_ptr<Teuchos::ParameterList> CouplingParams = nullptr);
 
+    //! collect runtime output data
+    void collect_runtime_output_data(bool CoupledTo3D, int step);
+
     /*!
     \brief Adjust acini_volume with prestress
 
@@ -263,8 +267,9 @@ namespace Airway
     /// constant density extracted from element material for incompressible flow
     double density_;
 
-    //! @name restart variables
+    //! @name write restart
     int uprestart_;
+    //! @name write solution
     int upres_;
     //@}
 
@@ -432,6 +437,9 @@ namespace Airway
     int maxiter_;
     double non_lin_tol_;
     //@}
+
+   private:
+    std::unique_ptr<Core::IO::DiscretizationVisualizationWriterMesh> visualization_writer_{nullptr};
 
   };  // class RedAirwayImplicitTimeInt
 
