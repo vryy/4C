@@ -53,21 +53,21 @@ Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
-    probdim>::evaluate_s2_i_coupling_od(const Core::Elements::FaceElement* ele,
+    probdim>::evaluate_s2i_coupling_od(const Core::Elements::FaceElement* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix)
 {
   // safety checks
-  if (my::numscal_ != 1) FOUR_C_THROW("Invalid number of transported scalars!");
-  if (my::numdofpernode_ != 2) FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (myelch::elchparams_->equ_pot() != ElCh::equpot_divi)
-    FOUR_C_THROW("Invalid closing equation for electric potential!");
+  FOUR_C_ASSERT_ALWAYS(my::numscal_ == 1, "Invalid number of transported scalars!");
+  FOUR_C_ASSERT_ALWAYS(my::numdofpernode_ == 2, "Invalid number of degrees of freedom per node!");
+  FOUR_C_ASSERT_ALWAYS(myelch::elchparams_->equ_pot() == ElCh::equpot_divi,
+      "Invalid closing equation for electric potential!");
 
   // access material of parent element
   std::shared_ptr<const Mat::Electrode> matelectrode =
       std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == nullptr)
-    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
+  FOUR_C_ASSERT_ALWAYS(
+      matelectrode != nullptr, "Invalid electrode material for scatra-scatra interface coupling!");
 
   const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
   const auto differentiationtype =
@@ -124,25 +124,25 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
 
     // evaluate overall integration factor
     const double timefacfac = my::scatraparamstimint_->time_fac() * fac;
-    if (timefacfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
+    FOUR_C_ASSERT_ALWAYS(timefacfac > 0.0, "Integration factor is not positive negative!");
 
     const double timefacwgt = my::scatraparamstimint_->time_fac() * intpoints.ip().qwgt[gpid];
-    if (timefacwgt < 0.0) FOUR_C_THROW("Integration factor is negative!");
+    FOUR_C_ASSERT_ALWAYS(timefacwgt > 0.0, "Integration factor is not positive negative!");
 
-    evaluate_s2_i_coupling_od_at_integration_point<distype>(*matelectrode, my::ephinp_, etempnp_,
+    evaluate_s2i_coupling_od_at_integration_point<distype>(*matelectrode, my::ephinp_, etempnp_,
         emastertempnp, emasterphinp, pseudo_contact_fac, my::funct_, my::funct_, my::funct_,
         my::funct_, dsqrtdetg_dd, my::derxy_, my::scatraparamsboundary_, differentiationtype,
         timefacfac, timefacwgt, detF, my::numdofpernode_, eslavematrix, dummymatrix);
   }  // loop over integration points
 }  // Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
-   // probdim>::evaluate_s2_i_coupling_od
+   // probdim>::evaluate_s2i_coupling_od
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 template <Core::FE::CellType distype_master>
 void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
-    probdim>::evaluate_s2_i_coupling_od_at_integration_point(const Mat::Electrode& matelectrode,
+    probdim>::evaluate_s2i_coupling_od_at_integration_point(const Mat::Electrode& matelectrode,
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
     const Core::LinAlg::Matrix<nen_, 1>& eslavetempnp,
     const Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>& emastertempnp,
@@ -379,7 +379,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     }
   }  // select kinetic model
 }  // Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
-   // probdim>::evaluate_s2_i_coupling_od_at_integration_point
+   // probdim>::evaluate_s2i_coupling_od_at_integration_point
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -396,7 +396,7 @@ int Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
   {
     case ScaTra::BoundaryAction::calc_s2icoupling_od:
     {
-      evaluate_s2_i_coupling_od(ele, params, discretization, la, elemat1);
+      evaluate_s2i_coupling_od(ele, params, discretization, la, elemat1);
       break;
     }
 
@@ -435,7 +435,7 @@ double Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, p
   const double temperature = my::funct_.dot(etempnp_);
 
   // safety check
-  if (temperature <= 0.) FOUR_C_THROW("Temperature is non-positive!");
+  FOUR_C_ASSERT_ALWAYS(temperature > 0.0, "Temperature must be positive!");
 
   const double faraday = myelch::elchparams_->faraday();
   const double gasconstant = myelch::elchparams_->gas_constant();
@@ -470,7 +470,7 @@ template class Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
 // explicit instantiation of template methods
 template void
 Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<Core::FE::CellType::quad4>::
-    evaluate_s2_i_coupling_od_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
+    evaluate_s2i_coupling_od_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&, const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>>&,
@@ -484,7 +484,7 @@ Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<Core::FE::CellTyp
         Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&);
 template void
 Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<Core::FE::CellType::quad4>::
-    evaluate_s2_i_coupling_od_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
+    evaluate_s2i_coupling_od_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&, const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>>&,
@@ -498,7 +498,7 @@ Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<Core::FE::CellTyp
         Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&);
 template void
 Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<Core::FE::CellType::tri3>::
-    evaluate_s2_i_coupling_od_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
+    evaluate_s2i_coupling_od_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&, const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>>&,
@@ -512,7 +512,7 @@ Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<Core::FE::CellTyp
         Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&);
 template void
 Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<Core::FE::CellType::tri3>::
-    evaluate_s2_i_coupling_od_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
+    evaluate_s2i_coupling_od_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&, const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>>&,

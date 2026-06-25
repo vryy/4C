@@ -11,7 +11,6 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_condition.hpp"
-#include "4C_scatra_ele_boundary_calc_elch_electrode_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -85,7 +84,7 @@ namespace Discret::Elements
    * @param[out] dj_dpot_master  linearization of Butler-Volmer mass flux density w.r.t.
    *                             electric potential on master-side
    */
-  void calculate_s2_i_growth_elch_linearizations(double j0, double frt, double epdderiv, double eta,
+  void calculate_s2i_growth_elch_linearizations(double j0, double frt, double epdderiv, double eta,
       double resistance, double regfac, double emasterphiint, double eslavephiint, double cmax,
       const Discret::Elements::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
       double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave, double& dj_dpot_master);
@@ -107,7 +106,7 @@ namespace Discret::Elements
    * @param[in] scatraeleparamsboundary   scatra ele boundary parameter class
    * @return  linearization of Butler-Volmer mass flux density w.r.t. interface film thickness
    */
-  double calculate_s2_i_elch_growth_linearizations(double j0, double j, double frt,
+  double calculate_s2i_elch_growth_linearizations(double j0, double j, double frt,
       double resistivity, double resistance, double regfac, double regfacderiv, double expterm1,
       double expterm2,
       const Discret::Elements::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
@@ -120,7 +119,7 @@ namespace Discret::Elements
    * @param[in] scatraeleparamsboundary   scatra ele boundary parameter class
    * @return  return the regularization factor if regularization is applied
    */
-  double get_regularization_factor(const double thickness, const double eta,
+  double get_regularization_factor(double thickness, double eta,
       const Discret::Elements::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
 
@@ -134,7 +133,7 @@ namespace Discret::Elements
    * @return  return the derivative of the regularization factor w.r.t. thickness of deposited
    *          material if regularization is applied
    */
-  double get_regularization_factor_derivative(const double thickness, const double eta,
+  double get_regularization_factor_derivative(double thickness, double eta,
       const Discret::Elements::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
 }  // namespace Discret::Elements

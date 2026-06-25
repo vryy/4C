@@ -139,7 +139,7 @@ void ScaTra::MeshtyingStrategyS2I::condense_mat_and_rhs(
     {
       // extract global system matrix
       std::shared_ptr<Core::LinAlg::SparseMatrix> sparsematrix = scatratimint_->system_matrix();
-      if (sparsematrix == nullptr) FOUR_C_THROW("System matrix is not a sparse matrix!");
+      FOUR_C_ASSERT(sparsematrix != nullptr, "System matrix is not a sparse matrix!");
 
       if (lmside_ == S2I::side_source)
       {
@@ -396,12 +396,13 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             {
               // determine global ID of current matrix row
               const int slavedofgid = icoup_->source_dof_map()->gid(slavedoflid);
-              if (slavedofgid < 0) FOUR_C_THROW("Couldn't find local ID {} in map!", slavedoflid);
+              FOUR_C_ASSERT_ALWAYS(
+                  slavedofgid >= 0, "Couldn't find local ID {} in map!", slavedoflid);
 
               // determine global ID of associated master-side matrix column
               const int masterdofgid = icoup_->permuted_target_dof_map()->gid(slavedoflid);
-              if (masterdofgid < 0)
-                FOUR_C_THROW("Couldn't find local ID {} in permuted map!", slavedoflid);
+              FOUR_C_ASSERT_ALWAYS(
+                  masterdofgid >= 0, "Couldn't find local ID {} in map!", slavedoflid);
 
               // insert value -1. into intersection of slave-side row and master-side column in
               // system matrix this effectively forces the slave-side degree of freedom to assume
@@ -528,7 +529,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
         {
           // determine global ID of current vector entry
           const int slavedofgid = icoup_->source_dof_map()->gid(slavedoflid);
-          if (slavedofgid < 0) FOUR_C_THROW("Couldn't find local ID {} in map!", slavedoflid);
+          FOUR_C_ASSERT_ALWAYS(slavedofgid >= 0, "Couldn't find local ID {} in map!", slavedoflid);
 
           // copy current vector entry into temporary vector
           residualslave.replace_global_value(slavedofgid,
@@ -646,7 +647,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
           // extract global system matrix from time integrator
           const std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix =
               scatratimint_->system_matrix();
-          if (systemmatrix == nullptr) FOUR_C_THROW("System matrix is not a sparse matrix!");
+          FOUR_C_ASSERT(systemmatrix != nullptr, "System matrix is not a sparse matrix!");
 
           // assemble interface contributions into global system of equations
           switch (couplingtype_)
@@ -776,7 +777,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
           // extract global system matrix from time integrator
           std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> blocksystemmatrix =
               scatratimint_->block_system_matrix();
-          if (blocksystemmatrix == nullptr) FOUR_C_THROW("System matrix is not a block matrix!");
+          FOUR_C_ASSERT(blocksystemmatrix != nullptr, "System matrix is not a block matrix!");
 
           // assemble interface contributions into global system of equations
           switch (couplingtype_)
@@ -817,7 +818,6 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             default:
             {
               FOUR_C_THROW("Not yet implemented!");
-              break;
             }
           }
 
@@ -883,7 +883,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             // check matrix
             const std::shared_ptr<Core::LinAlg::SparseMatrix>& systemmatrix =
                 scatratimint_->system_matrix();
-            if (systemmatrix == nullptr) FOUR_C_THROW("System matrix is not a sparse matrix!");
+            FOUR_C_ASSERT(systemmatrix != nullptr, "System matrix is not a sparse matrix!");
 
             // We assume that the scatra-scatra interface layer growth is caused by master-side
             // fluxes to the interface, whereas there is no mass exchange between the interface
@@ -910,7 +910,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             // check matrix
             std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> blocksystemmatrix =
                 scatratimint_->block_system_matrix();
-            if (blocksystemmatrix == nullptr) FOUR_C_THROW("System matrix is not a block matrix!");
+            FOUR_C_ASSERT(blocksystemmatrix != nullptr, "System matrix is not a block matrix!");
 
             // We assume that the scatra-scatra interface layer growth is caused by master-side
             // fluxes to the interface, whereas there is no mass exchange between the interface
@@ -941,6 +941,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             blockkmm->complete();
 
             // assemble interface block matrices into global block system matrix
+            FOUR_C_ASSERT(blocksystemmatrix != nullptr, "System matrix is not a block matrix!");
             blocksystemmatrix->add(*blockkms, false, 1., 1.);
             blocksystemmatrix->add(*blockkmm, false, 1., 1.);
 
@@ -952,7 +953,6 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             FOUR_C_THROW(
                 "Type of global system matrix for scatra-scatra interface coupling involving "
                 "interface layer growth not recognized!");
-            break;
           }
         }
 
@@ -996,7 +996,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // check matrix
                 const std::shared_ptr<Core::LinAlg::SparseMatrix> scatragrowthblock =
                     std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(scatragrowthblock_);
-                if (scatragrowthblock == nullptr) FOUR_C_THROW("Matrix is not a sparse matrix!");
+                FOUR_C_ASSERT(scatragrowthblock != nullptr, "Matrix is not a sparse matrix!");
 
                 // initialize matrix block
                 scatragrowthblock->zero();
@@ -1087,7 +1087,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // check matrix
                 const std::shared_ptr<Core::LinAlg::SparseMatrix> growthscatrablock =
                     std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(growthscatrablock_);
-                if (growthscatrablock == nullptr) FOUR_C_THROW("Matrix is not a sparse matrix!");
+                FOUR_C_ASSERT(growthscatrablock != nullptr, "Matrix is not a sparse matrix!");
 
                 // initialize matrix block
                 growthscatrablock->zero();
@@ -1560,8 +1560,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cells(const Core::FE::Discret
   // extract scatra-scatra interface coupling condition from parameter list
   const Core::Conditions::Condition* const condition =
       params.get<const Core::Conditions::Condition*>("condition");
-  if (condition == nullptr)
-    FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
+  FOUR_C_ASSERT_ALWAYS(
+      condition != nullptr, "Cannot access scatra-scatra interface coupling condition!");
 
   // extract mortar integration cells associated with current condition
   const std::vector<std::pair<std::shared_ptr<Mortar::IntCell>, ScaTra::ImplType>>& cells =
@@ -1572,17 +1572,17 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cells(const Core::FE::Discret
   {
     // extract current mortar integration cell
     const std::shared_ptr<Mortar::IntCell>& cell = integration_cell;
-    if (cell == nullptr) FOUR_C_THROW("Invalid mortar integration cell!");
+    FOUR_C_ASSERT_ALWAYS(cell != nullptr, "Cannot access mortar integration cell!");
 
     // extract slave-side element associated with current cell
     auto* slaveelement = dynamic_cast<Mortar::Element*>(idiscret.g_element(cell->get_slave_id()));
-    if (!slaveelement)
-      FOUR_C_THROW("Couldn't extract slave element from mortar interface discretization!");
+    FOUR_C_ASSERT_ALWAYS(slaveelement != nullptr,
+        "Couldn't extract slave element from mortar interface discretization!");
 
     // extract master-side element associated with current cell
     auto* masterelement = dynamic_cast<Mortar::Element*>(idiscret.g_element(cell->get_master_id()));
-    if (!masterelement)
-      FOUR_C_THROW("Couldn't extract master element from mortar interface discretization!");
+    FOUR_C_ASSERT_ALWAYS(masterelement != nullptr,
+        "Couldn't extract master element from mortar interface discretization!");
 
     // safety check
     if (!slaveelement->is_source() or masterelement->is_source())
@@ -1644,17 +1644,18 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_nts(
     // extract slave-side node
     auto* const slavenode =
         dynamic_cast<Mortar::Node* const>(idiscret.g_node(noderowmap_slave.gid(inode)));
-    if (slavenode == nullptr) FOUR_C_THROW("Couldn't extract slave-side node from discretization!");
+    FOUR_C_ASSERT_ALWAYS(
+        slavenode != nullptr, "Couldn't extract slave node from mortar interface discretization!");
 
     // extract first slave-side element associated with current slave-side node
     auto* const slaveelement =
         dynamic_cast<Mortar::Element* const>(slavenode->adjacent_elements()[0].user_element());
-    if (!slaveelement) FOUR_C_THROW("Invalid slave-side mortar element!");
+    FOUR_C_ASSERT_ALWAYS(slaveelement != nullptr, "Invalid slave-side mortar element!");
 
     // extract master-side element associated with current slave-side node
     auto* const masterelement = dynamic_cast<Mortar::Element* const>(
         idiscret.g_element(islavenodestomasterelements.get_local_values()[inode]));
-    if (!masterelement) FOUR_C_THROW("Invalid master-side mortar element!");
+    FOUR_C_ASSERT_ALWAYS(masterelement != nullptr, "Invalid master-side mortar element!");
 
     // safety check
     if (!slaveelement->is_source() or masterelement->is_source())
@@ -1712,7 +1713,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_elements(const Core::LinAlg::
     // extract current mortar element
     auto* const element =
         dynamic_cast<Mortar::Element* const>(idiscret.g_element(ielecolmap.gid(ielement)));
-    if (!element) FOUR_C_THROW("Couldn't extract mortar element from mortar discretization!");
+    FOUR_C_ASSERT_ALWAYS(element != nullptr,
+        "Couldn't extract mortar element from mortar interface discretization!");
 
     // construct location array for current mortar element
     Core::Elements::LocationArray la(idiscret.num_dof_sets());
@@ -1894,8 +1896,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
       const int s2ikinetics_cond_interface_side =
           s2ikinetics_cond->parameters().get<S2I::InterfaceSides>("INTERFACE_SIDE");
 
-      if (s2ikinetics_cond_id < 0)
-        FOUR_C_THROW("Invalid condition ID {} for S2IKinetics Condition!", s2ikinetics_cond_id);
+      FOUR_C_ASSERT_ALWAYS(s2ikinetics_cond_id >= 0,
+          "Invalid condition ID {} for S2IKinetics Condition!", s2ikinetics_cond_id);
 
       // only continue if ID's match
       if (s2imeshtying_cond->parameters().get<int>("S2I_KINETICS_ID") != s2ikinetics_cond_id)
@@ -1965,7 +1967,6 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
         default:
         {
           FOUR_C_THROW("Invalid scatra-scatra interface kinetics condition!");
-          break;
         }
       }
     }
@@ -1989,8 +1990,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
             .add("ConditionID", -1);
       }
 
-      if (scatratimint_->num_scal() < 1)
-        FOUR_C_THROW("Number of transported scalars not correctly set!");
+      FOUR_C_ASSERT_ALWAYS(
+          scatratimint_->num_scal() >= 1, "Number of transported scalars not correctly set!");
 
       // construct new (empty coupling adapter)
       icoup_ = std::make_shared<Coupling::Adapter::Coupling>();
@@ -2025,8 +2026,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
                 *kinetics_condition->get_nodes(), islavenodegidvec);
 
             auto mastercondition = master_conditions_.find(kineticsID);
-            if (mastercondition == master_conditions_.end())
-              FOUR_C_THROW("Could not find master condition");
+            FOUR_C_ASSERT_ALWAYS(
+                mastercondition != master_conditions_.end(), "Could not find master condition");
 
             Core::Communication::add_owned_node_gid_from_list(*scatratimint_->discretization(),
                 *mastercondition->second->get_nodes(), imasternodegidvec);
@@ -2066,11 +2067,11 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
                 *kinetics_condition->get_nodes(), islavenodegidset);
 
             auto mastercondition = master_conditions_.find(kineticsID);
-            if (mastercondition == master_conditions_.end())
-              FOUR_C_THROW("Could not find master condition");
-            else
-              Core::Communication::add_owned_node_gid_from_list(*scatratimint_->discretization(),
-                  *mastercondition->second->get_nodes(), imasternodegidset);
+            FOUR_C_ASSERT_ALWAYS(
+                mastercondition != master_conditions_.end(), "Could not find master condition");
+
+            Core::Communication::add_owned_node_gid_from_list(*scatratimint_->discretization(),
+                *mastercondition->second->get_nodes(), imasternodegidset);
           }
         }
 
@@ -2330,8 +2331,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
             // extract slave-side node
             auto* const slavenode =
                 dynamic_cast<Mortar::Node*>(idiscret.g_node(noderowmap_slave.gid(inode)));
-            if (!slavenode)
-              FOUR_C_THROW("Couldn't extract slave-side mortar node from mortar discretization!");
+            FOUR_C_ASSERT_ALWAYS(slavenode != nullptr,
+                "Couldn't extract slave-side mortar node from mortar discretization!");
 
             // find associated master-side elements
             std::vector<Mortar::Element*> master_mortar_elements;
@@ -2857,12 +2858,9 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               // with current node
               const int doflid_growth = scatratimint_->discretization()->dof_row_map(2)->lid(
                   scatratimint_->discretization()->dof(2, node, 0));
-              if (doflid_growth < 0)
-              {
-                FOUR_C_THROW(
-                    "Couldn't extract local ID of scatra-scatra interface layer thickness "
-                    "variable!");
-              }
+
+              FOUR_C_ASSERT_ALWAYS(doflid_growth >= 0,
+                  "Couldn't extract local ID of scatra-scatra interface layer thickness variable!");
 
               // set initial value
               growthn_->get_values()[doflid_growth] = initthickness;
@@ -2882,7 +2880,6 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
         FOUR_C_THROW(
             "Unknown evaluation method for scatra-scatra interface coupling involving interface "
             "layer growth!");
-        break;
       }
     }
   }
@@ -3249,15 +3246,14 @@ void ScaTra::MeshtyingStrategyS2I::collect_output_data() const
         {
           // extract local ID of current node
           const int nodelid = scatratimint_->discretization()->node_row_map()->lid(nodegid);
-          if (nodelid < 0) FOUR_C_THROW("Couldn't extract local node ID!");
+          FOUR_C_ASSERT_ALWAYS(nodelid >= 0, "Couldn't extract local node ID!");
 
           // extract local ID of scatra-scatra interface layer thickness variable associated with
           // current node
           const int doflid_growth = scatratimint_->discretization()->dof_row_map(2)->lid(
               scatratimint_->discretization()->dof(2, node, 0));
-          if (doflid_growth < 0)
-            FOUR_C_THROW(
-                "Couldn't extract local ID of scatra-scatra interface layer thickness variable!");
+          FOUR_C_ASSERT_ALWAYS(doflid_growth >= 0,
+              "Couldn't extract local ID of scatra-scatra interface layer thickness variable!");
 
           // copy thickness variable into target state vector of discrete scatra-scatra interface
           // layer thicknesses
@@ -3350,22 +3346,19 @@ void ScaTra::MeshtyingStrategyS2I::explicit_predictor() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::extract_matrix_rows(
-    const Core::LinAlg::SparseMatrix& matrix,  //!< source matrix
-    Core::LinAlg::SparseMatrix& rows,          //!< destination matrix
-    const Core::LinAlg::Map& rowmap            //!< map of matrix rows to be extracted
-)
+void ScaTra::MeshtyingStrategyS2I::extract_matrix_rows(const Core::LinAlg::SparseMatrix& matrix,
+    Core::LinAlg::SparseMatrix& rows, const Core::LinAlg::Map& rowmap)
 {
   // safety check
-  if (rows.filled())
-    FOUR_C_THROW("Source matrix rows cannot be extracted into filled destination matrix!");
+  FOUR_C_ASSERT_ALWAYS(
+      !rows.filled(), "Source matrix rows cannot be extracted into filled destination matrix!");
 
   // loop over all source matrix rows to be extracted
   for (int doflid = 0; doflid < rowmap.num_my_elements(); ++doflid)
   {
     // determine global ID of current matrix row
     const int dofgid = rowmap.gid(doflid);
-    if (dofgid < 0) FOUR_C_THROW("Couldn't find local ID {} in map!", doflid);
+    FOUR_C_ASSERT_ALWAYS(dofgid >= 0, "Couldn't find local ID {} in map!", doflid);
 
     // extract current matrix row from source matrix
     const int length = matrix.num_global_entries(dofgid);
@@ -3423,12 +3416,9 @@ void ScaTra::MeshtyingStrategyS2I::add_time_integration_specific_vectors() const
 void ScaTra::MeshtyingStrategyS2I::compute_time_step_size(double& dt)
 {
   // not implemented for standard scalar transport
-  if (intlayergrowth_timestep_ > 0.)
-  {
-    FOUR_C_THROW(
-        "Adaptive time stepping for scatra-scatra interface layer growth not implemented for "
-        "standard scalar transport!");
-  }
+  FOUR_C_ASSERT_ALWAYS(intlayergrowth_timestep_ <= 0.,
+      "Adaptive time stepping for scatra-scatra interface layer growth not implemented for "
+      "standard scalar transport!");
 }
 
 /*----------------------------------------------------------------------*
@@ -3511,12 +3501,9 @@ void ScaTra::MeshtyingStrategyS2I::init_meshtying()
                                      ->scalar_transport_dynamic_params()
                                      .sublist("S2I COUPLING")
                                      .get<int>("INTLAYERGROWTH_LINEAR_SOLVER");
-      if (extendedsolver < 1)
-      {
-        FOUR_C_THROW(
-            "Invalid ID of linear solver for monolithic scatra-scatra interface coupling involving "
-            "interface layer growth!");
-      }
+      FOUR_C_ASSERT_ALWAYS(extendedsolver >= 1,
+          "Invalid ID of linear solver for monolithic scatra-scatra interface coupling involving "
+          "interface layer growth!");
       extendedsolver_ = std::make_shared<Core::LinAlg::Solver>(
           Global::Problem::instance()->solver_params(extendedsolver),
           scatratimint_->discretization()->get_comm(),
@@ -3678,7 +3665,7 @@ void ScaTra::MeshtyingStrategyS2I::solve(const std::shared_ptr<Core::LinAlg::Sol
           // check scalar transport system matrix
           std::shared_ptr<Core::LinAlg::SparseMatrix> sparsematrix =
               std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(systemmatrix);
-          if (sparsematrix == nullptr) FOUR_C_THROW("System matrix is not a sparse matrix!");
+          FOUR_C_ASSERT_ALWAYS(sparsematrix != nullptr, "System matrix is not a sparse matrix!");
 
           // assemble extended system matrix including rows and columns associated with Lagrange
           // multipliers
@@ -3755,7 +3742,8 @@ void ScaTra::MeshtyingStrategyS2I::solve(const std::shared_ptr<Core::LinAlg::Sol
               // check scalar transport system matrix
               const std::shared_ptr<const Core::LinAlg::SparseMatrix> sparsematrix =
                   std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(systemmatrix);
-              if (sparsematrix == nullptr) FOUR_C_THROW("System matrix is not a sparse matrix!");
+              FOUR_C_ASSERT_ALWAYS(
+                  sparsematrix != nullptr, "System matrix is not a sparse matrix!");
 
               // assemble extended system matrix including rows and columns associated with
               // scatra-scatra interface layer thickness variables
@@ -3776,8 +3764,8 @@ void ScaTra::MeshtyingStrategyS2I::solve(const std::shared_ptr<Core::LinAlg::Sol
               // check scalar transport system matrix
               const std::shared_ptr<const Core::LinAlg::BlockSparseMatrixBase> blocksparsematrix =
                   std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(systemmatrix);
-              if (blocksparsematrix == nullptr)
-                FOUR_C_THROW("System matrix is not a block sparse matrix!");
+              FOUR_C_ASSERT_ALWAYS(
+                  blocksparsematrix != nullptr, "System matrix is not a block sparse matrix!");
 
               // extract number of matrix row or column blocks associated with scalar transport
               // field
@@ -3972,7 +3960,7 @@ void ScaTra::MeshtyingStrategyS2I::fd_check(
     {
       // get global index of current matrix row
       const int rowgid = sysmat_original.row_map().gid(rowlid);
-      if (rowgid < 0) FOUR_C_THROW("Invalid global ID of matrix row!");
+      FOUR_C_ASSERT_ALWAYS(rowgid >= 0, "Invalid global ID of matrix row!");
 
       // get relevant entry in current row of original system matrix
       double entry(0.);
@@ -4181,8 +4169,8 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_nts(
     {
       // extract condition from parameter list
       const auto* const condition = params.get<const Core::Conditions::Condition*>("condition");
-      if (condition == nullptr)
-        FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
+      FOUR_C_ASSERT_ALWAYS(
+          condition != nullptr, "Cannot access scatra-scatra interface coupling condition!");
 
       // extract nodal state variables associated with slave and master elements
       extract_node_values(idiscret, la_slave, la_master);
@@ -4280,8 +4268,9 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::extract_node_values(
   // extract interface state vector from interface discretization
   const std::shared_ptr<const Core::LinAlg::Vector<double>> state =
       idiscret.get_state(nds, statename);
-  if (state == nullptr)
-    FOUR_C_THROW("Cannot extract state vector \"{}\" from interface discretization!", statename);
+
+  FOUR_C_ASSERT_ALWAYS(
+      state != nullptr, "Cannot extract state vector {} from interface discretization!", statename);
 
   // extract nodal state variables associated with slave element
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_slave_, 1>>(
@@ -4301,8 +4290,8 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::extract_node_values(
   // extract interface state vector from interface discretization
   const std::shared_ptr<const Core::LinAlg::Vector<double>> state =
       idiscret.get_state(nds, statename);
-  if (state == nullptr)
-    FOUR_C_THROW("Cannot extract state vector \"{}\" from interface discretization!", statename);
+  FOUR_C_ASSERT_ALWAYS(
+      state != nullptr, "Cannot extract state vector {} from interface discretization!", statename);
 
   // extract nodal state variables associated with slave and master elements
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_slave_, 1>>(
@@ -4452,8 +4441,8 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_at_slave_node
     const Mortar::Node& slavenode, Mortar::Element& slaveelement, Mortar::Element& masterelement)
 {
   // safety check
-  if (couplingtype_ != S2I::coupling_nts_standard)
-    FOUR_C_THROW("This function should only be called when evaluating node-to-segment coupling!");
+  FOUR_C_ASSERT_ALWAYS(couplingtype_ == S2I::coupling_nts_standard,
+      "This function should only be called when evaluating node-to-segment coupling!");
 
   // extract global ID of slave-side node
   const int& nodeid = slavenode.id();
@@ -4468,8 +4457,8 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_at_slave_node
       break;
     }
   }
-  if (index == -1)
-    FOUR_C_THROW("Couldn't find out index of slave-side node w.r.t. slave-side element!");
+  FOUR_C_ASSERT_ALWAYS(
+      index != -1, "Couldn't find out index of slave-side node w.r.t. slave-side element!");
 
   // set slave-side shape function array according to node position
   funct_slave_.clear();
@@ -4495,8 +4484,8 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_mortar_matrices(Mort
     Core::LinAlg::SerialDenseMatrix& E)
 {
   // safety check
-  if (numdofpernode_slave_ != numdofpernode_master_)
-    FOUR_C_THROW("Must have same number of degrees of freedom per node on slave and master sides!");
+  FOUR_C_ASSERT_ALWAYS(numdofpernode_slave_ == numdofpernode_master_,
+      "Must have same number of degrees of freedom per node on slave and master sides!");
 
   // determine quadrature rule
   const Core::FE::IntPointsAndWeights<2> intpoints(Core::FE::GaussRule2D::tri_7point);
@@ -4645,7 +4634,7 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_condition(
     if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     Discret::Elements::ScaTraEleBoundaryCalc<
-        distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(ephinp_slave_,
+        distype_s>::template evaluate_s2i_coupling_at_integration_point<distype_m>(ephinp_slave_,
         ephinp_master_, pseudo_contact_fac, funct_slave_, funct_master_, test_lm_slave_,
         test_lm_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac,
         k_ss, k_sm, k_ms, k_mm, r_s, r_m);
@@ -4686,7 +4675,7 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_condition_nts(
   if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
   Discret::Elements::ScaTraEleBoundaryCalc<
-      distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(ephinp_slave,
+      distype_s>::template evaluate_s2i_coupling_at_integration_point<distype_m>(ephinp_slave,
       ephinp_master, pseudo_contact_fac, funct_slave_, funct_master_, funct_slave_, funct_master_,
       numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac, k_ss, k_sm, k_ms,
       k_mm, r_s, r_m);
@@ -4841,8 +4830,8 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
   {
     case S2I::side_source:
     {
-      if (systemvector.num_vectors() != 1)
-        FOUR_C_THROW("Invalid number of vectors inside Core::LinAlg::MultiVector<double>!");
+      FOUR_C_ASSERT_ALWAYS(systemvector.num_vectors() == 1,
+          "Invalid number of vectors inside Core::LinAlg::MultiVector!");
       Core::LinAlg::assemble((systemvector).get_vector(nds_rows_), cellvector,
           la_slave[nds_rows_].lm_, la_slave[nds_rows_].lmowner_);
 

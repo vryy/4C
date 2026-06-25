@@ -38,7 +38,7 @@ double Discret::Elements::calculate_growth_exchange_mass_flux_density(const doub
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Elements::calculate_s2_i_growth_elch_linearizations(const double j0, const double frt,
+void Discret::Elements::calculate_s2i_growth_elch_linearizations(const double j0, const double frt,
     const double epdderiv, const double eta, const double resistance, const double regfac,
     const double emasterphiint, const double eslavephiint, const double cmax,
     const Discret::Elements::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
@@ -124,7 +124,7 @@ void Discret::Elements::calculate_s2_i_growth_elch_linearizations(const double j
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Discret::Elements::calculate_s2_i_elch_growth_linearizations(const double j0, const double j,
+double Discret::Elements::calculate_s2i_elch_growth_linearizations(const double j0, const double j,
     const double frt, const double resistivity, const double resistance, const double regfac,
     const double regfacderiv, const double expterm1, const double expterm2,
     const Discret::Elements::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
@@ -232,11 +232,10 @@ double Discret::Elements::calculate_growth_mass_flux_density(const double j0, co
                                   : i0 * regfac * (expterm1 - expterm2) - i;
 
       // convergence check
-      if (std::abs(residual) < scatraparameterstd->int_layer_growth_conv_tol())
-        break;
-      else if (iternum == scatraparameterstd->int_layer_growth_ite_max())
-        FOUR_C_THROW(
-            "Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
+      if (std::abs(residual) < scatraparameterstd->int_layer_growth_conv_tol()) break;
+
+      FOUR_C_ASSERT_ALWAYS(iternum < scatraparameterstd->int_layer_growth_ite_max(),
+          "Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
 
       // compute linearization of current Newton-Raphson residual w.r.t. Butler-Volmer current
       // density
@@ -279,8 +278,6 @@ double Discret::Elements::get_regularization_factor(const double thickness, cons
   {
     // get the S2I coupling growth regularization parameter
     const double regularizationparameter = scatraeleparamsboundary->regularization_parameter();
-    if (regularizationparameter < 0.0)
-      FOUR_C_THROW("Regularization parameter for lithium stripping must not be negative!");
 
     // evaluate dependent on the regularization type
     switch (regularizationtype)
@@ -312,9 +309,11 @@ double Discret::Elements::get_regularization_factor(const double thickness, cons
         if (thickness <= 0.0)
           regfac = 0.0;
         else if (thickness < thickness_regend)
+        {
           regfac =
               0.5 * std::cos(thickness / thickness_regend * std::numbers::pi - std::numbers::pi) +
               0.5;
+        }
 
         break;
       }

@@ -39,7 +39,7 @@ namespace Discret
      public:
       //! singleton access method
       static ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>* instance(
-          const int numdofpernode, const int numscal, const std::string& disname);
+          int numdofpernode, int numscal, const std::string& disname);
 
 
       /*!
@@ -76,7 +76,7 @@ namespace Discret
        * \tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <Core::FE::CellType distype_master>
-      static void evaluate_s2_i_coupling_od_at_integration_point(const Mat::Electrode& matelectrode,
+      static void evaluate_s2i_coupling_od_at_integration_point(const Mat::Electrode& matelectrode,
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
           const Core::LinAlg::Matrix<nen_, 1>& eslavetempnp,
           const Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>& emastertempnp,
@@ -96,37 +96,23 @@ namespace Discret
      private:
       //! private constructor for singletons
       ScaTraEleBoundaryCalcElchElectrodeSTIThermo(
-          const int numdofpernode, const int numscal, const std::string& disname);
+          int numdofpernode, int numscal, const std::string& disname);
 
-      //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
-      //! coupling condition
-      void evaluate_s2_i_coupling_od(
-          const Core::Elements::FaceElement* ele,        ///< current boundary element
-          Teuchos::ParameterList& params,                ///< parameter list
-          Core::FE::Discretization& discretization,      ///< discretization
-          Core::Elements::LocationArray& la,             ///< location array
-          Core::LinAlg::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
-          ) override;
+      void evaluate_s2i_coupling_od(const Core::Elements::FaceElement* ele,
+          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+          Core::Elements::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& eslavematrix) override;
 
-      //! evaluate action
-      int evaluate_action(Core::Elements::FaceElement* ele,  //!< boundary element
-          Teuchos::ParameterList& params,                    //!< parameter list
-          Core::FE::Discretization& discretization,          //!< discretization
-          ScaTra::BoundaryAction action,                     //!< action
-          Core::Elements::LocationArray& la,                 //!< location array
-          Core::LinAlg::SerialDenseMatrix& elemat1,          //!< element matrix 1
-          Core::LinAlg::SerialDenseMatrix& elemat2,          //!< element matrix 2
-          Core::LinAlg::SerialDenseVector& elevec1,          //!< element right-hand side vector 1
-          Core::LinAlg::SerialDenseVector& elevec2,          //!< element right-hand side vector 2
-          Core::LinAlg::SerialDenseVector& elevec3           //!< element right-hand side vector 3
-          ) override;
+      int evaluate_action(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
-      //! extract nodal state variables associated with boundary element
-      void extract_node_values(const Core::FE::Discretization& discretization,  //!< discretization
-          Core::Elements::LocationArray& la                                     //!< location array
-          ) override;
+      void extract_node_values(const Core::FE::Discretization& discretization,
+          Core::Elements::LocationArray& la) override;
 
-      //! evaluate factor F/RT
       [[nodiscard]] double get_frt() const override;
 
       //! nodal temperature variables associated with time t_{n+1} or t_{n+alpha_f}

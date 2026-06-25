@@ -33,26 +33,20 @@ namespace Discret
      public:
       //! singleton access method
       static ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>* instance(
-          const int numdofpernode, const int numscal, const std::string& disname);
+          int numdofpernode, int numscal, const std::string& disname);
 
 
      private:
       //! private constructor for singletons
       ScaTraEleBoundaryCalcElchElectrodeGrowth(
-          const int numdofpernode, const int numscal, const std::string& disname);
+          int numdofpernode, int numscal, const std::string& disname);
 
-      //! evaluate action
-      int evaluate_action(Core::Elements::FaceElement* ele,  //!< boundary element
-          Teuchos::ParameterList& params,                    //!< parameter list
-          Core::FE::Discretization& discretization,          //!< discretization
-          ScaTra::BoundaryAction action,                     //!< action
-          Core::Elements::LocationArray& la,                 //!< location array
-          Core::LinAlg::SerialDenseMatrix& elemat1,          //!< element matrix 1
-          Core::LinAlg::SerialDenseMatrix& elemat2,          //!< element matrix 2
-          Core::LinAlg::SerialDenseVector& elevec1,          //!< element right-hand side vector 1
-          Core::LinAlg::SerialDenseVector& elevec2,          //!< element right-hand side vector 2
-          Core::LinAlg::SerialDenseVector& elevec3           //!< element right-hand side vector 3
-          ) override;
+      int evaluate_action(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //! evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
       //! interface layer growth
@@ -63,18 +57,7 @@ namespace Discret
           Core::Elements::LocationArray& la          //!< location array
       );
 
-      /*!
-       * \brief evaluate scatra-scatra interface coupling condition
-       *
-       * @param[in] ele              current boundary element
-       * @param[in] params           parameter list
-       * @param[in] discretization   discretization
-       * @param[in] la               location array
-       * @param[out] eslavematrix    element matrix for slave side
-       * @param[out] emastermatrix   element matrix for master side
-       * @param[out] eslaveresidual  element residual for slave side
-       */
-      void evaluate_s2_i_coupling(const Core::Elements::FaceElement* ele,
+      void evaluate_s2i_coupling(const Core::Elements::FaceElement* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
@@ -82,7 +65,7 @@ namespace Discret
 
       //! evaluate global growth-growth matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
-      void evaluate_s2_i_coupling_growth_growth(
+      void evaluate_s2i_coupling_growth_growth(
           const Core::Elements::FaceElement* ele,          ///< current boundary element
           Teuchos::ParameterList& params,                  ///< parameter list
           Core::FE::Discretization& discretization,        ///< discretization
@@ -93,7 +76,7 @@ namespace Discret
 
       //! evaluate global growth-scatra matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
-      void evaluate_s2_i_coupling_growth_scatra(
+      void evaluate_s2i_coupling_growth_scatra(
           const Core::Elements::FaceElement* ele,         ///< current boundary element
           Teuchos::ParameterList& params,                 ///< parameter list
           Core::FE::Discretization& discretization,       ///< discretization
@@ -104,7 +87,7 @@ namespace Discret
 
       //! evaluate global scatra-growth matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
-      void evaluate_s2_i_coupling_scatra_growth(
+      void evaluate_s2i_coupling_scatra_growth(
           const Core::Elements::FaceElement* ele,        ///< current boundary element
           Teuchos::ParameterList& params,                ///< parameter list
           Core::FE::Discretization& discretization,      ///< discretization
@@ -112,10 +95,8 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
       );
 
-      //! extract nodal state variables associated with boundary element
-      void extract_node_values(const Core::FE::Discretization& discretization,  //!< discretization
-          Core::Elements::LocationArray& la                                     //!< location array
-          ) override;
+      void extract_node_values(const Core::FE::Discretization& discretization,
+          Core::Elements::LocationArray& la) override;
 
       /*!
        * @brief Fill the rhs vector and the linearization matrix
