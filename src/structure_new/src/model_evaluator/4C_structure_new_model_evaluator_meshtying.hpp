@@ -192,12 +192,13 @@ namespace Solid
 
       \note This is only necessary in case of a mortar method.
 
-      \warning This routine modifies the reference coordinates of slave nodes at the meshtying
+      \warning This routine modifies the reference coordinates of source nodes at the meshtying
       interface.
 
-      @param[in] Xslavemod Vector with modified nodal positions
+      @param[in] X_source_mod Vector with modified nodal positions
       */
-      void apply_mesh_initialization(std::shared_ptr<const Core::LinAlg::Vector<double>> Xslavemod);
+      void apply_mesh_initialization(
+          std::shared_ptr<const Core::LinAlg::Vector<double>> X_source_mod);
 
       //!@}
 

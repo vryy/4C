@@ -58,15 +58,15 @@ void Solid::ModelEvaluator::Contact::setup()
   // build the contact interfaces
   // ---------------------------------------------------------------------
   // FixMe Would be great, if we get rid of these poro parameters...
-  bool poroslave = false;
-  bool poromaster = false;
-  factory.build_interfaces(cparams, interfaces, poroslave, poromaster);
+  bool poro_source = false;
+  bool poro_target = false;
+  factory.build_interfaces(cparams, interfaces, poro_source, poro_target);
 
   // ---------------------------------------------------------------------
   // build the solver strategy object
   // ---------------------------------------------------------------------
   strategy_ptr_ = factory.build_strategy(
-      cparams, poroslave, poromaster, dof_offset(), interfaces, eval_contact_ptr_.get());
+      cparams, poro_source, poro_target, dof_offset(), interfaces, eval_contact_ptr_.get());
 
   // build the search tree
   factory.build_search_tree(interfaces);
