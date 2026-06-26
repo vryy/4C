@@ -472,12 +472,12 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
     if (mesh_relocation_parameter == Mortar::relocation_initial)
     {
       // (2) perform mesh initialization for rotational invariance (interface)
-      // and return the modified slave node positions in vector Xslavemod
-      std::shared_ptr<const Core::LinAlg::Vector<double>> Xslavemod =
+      // and return the modified source node positions in vector X_source_mod
+      std::shared_ptr<const Core::LinAlg::Vector<double>> X_source_mod =
           cmtbridge_->mt_manager()->get_strategy().mesh_initialization();
 
       // (3) apply result of mesh initialization to underlying problem discretization
-      apply_mesh_initialization(Xslavemod);
+      apply_mesh_initialization(X_source_mod);
     }
   }
 
@@ -805,29 +805,30 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Solid::TimInt::apply_mesh_initialization(
-    std::shared_ptr<const Core::LinAlg::Vector<double>> Xslavemod)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> X_source_mod)
 {
   // check modified positions vector
-  if (Xslavemod == nullptr) return;
+  if (X_source_mod == nullptr) return;
 
-  // create fully overlapping slave node map
-  std::shared_ptr<const Core::LinAlg::Map> slavemap =
+  // create fully overlapping source node map
+  std::shared_ptr<const Core::LinAlg::Map> source_map =
       cmtbridge_->mt_manager()->get_strategy().source_row_nodes_ptr();
-  std::shared_ptr<Core::LinAlg::Map> allreduceslavemap = Core::LinAlg::allreduce_e_map(*slavemap);
+  std::shared_ptr<Core::LinAlg::Map> allreducesource_map =
+      Core::LinAlg::allreduce_e_map(*source_map);
 
   // export modified node positions to column map of problem discretization
-  std::shared_ptr<Core::LinAlg::Vector<double>> Xslavemodcol =
+  std::shared_ptr<Core::LinAlg::Vector<double>> X_source_modcol =
       std::make_shared<Core::LinAlg::Vector<double>>(*discret_->dof_col_map(), false);
-  Core::LinAlg::export_to(*Xslavemod, *Xslavemodcol);
+  Core::LinAlg::export_to(*X_source_mod, *X_source_modcol);
 
-  const int numnode = allreduceslavemap->num_my_elements();
+  const int numnode = allreducesource_map->num_my_elements();
   const int numdim = Global::Problem::instance()->n_dim();
-  const Core::LinAlg::Vector<double>& gvector = *Xslavemodcol;
+  const Core::LinAlg::Vector<double>& gvector = *X_source_modcol;
 
-  // loop over all slave nodes (for all procs)
+  // loop over all source nodes (for all procs)
   for (int index = 0; index < numnode; ++index)
   {
-    int gid = allreduceslavemap->gid(index);
+    int gid = allreducesource_map->gid(index);
 
     // only do something for nodes in my column map
     int ilid = discret_->node_col_map()->lid(gid);
@@ -1196,14 +1197,14 @@ void Solid::TimInt::update_step_contact_vum()
       const Core::LinAlg::Map* dofmap = discret_->dof_row_map();
       std::shared_ptr<Core::LinAlg::Map> activenodemap =
           std::make_shared<Core::LinAlg::Map>(*cmtbridge_->get_strategy().active_row_nodes());
-      std::shared_ptr<const Core::LinAlg::Map> slavenodemap =
+      std::shared_ptr<const Core::LinAlg::Map> source_node_map =
           cmtbridge_->get_strategy().source_row_nodes_ptr();
-      std::shared_ptr<const Core::LinAlg::Map> notredistslavedofmap =
+      std::shared_ptr<const Core::LinAlg::Map> non_redist_source_dof_map =
           cmtbridge_->get_strategy().non_redist_source_row_dofs();
-      std::shared_ptr<const Core::LinAlg::Map> notredistmasterdofmap =
+      std::shared_ptr<const Core::LinAlg::Map> non_redist_target_dof_map =
           cmtbridge_->get_strategy().non_redist_target_row_dofs();
       std::shared_ptr<Core::LinAlg::Map> notactivenodemap =
-          Core::LinAlg::split_map(*slavenodemap, *activenodemap);
+          Core::LinAlg::split_map(*source_node_map, *activenodemap);
 
       // the lumped mass matrix and its inverse
       if (lumpmass_ == false)
@@ -1232,18 +1233,18 @@ void Solid::TimInt::update_step_contact_vum()
           cmtbridge_->get_strategy().m_matrix();
       std::shared_ptr<const Core::LinAlg::SparseMatrix> Dmat =
           cmtbridge_->get_strategy().d_matrix();
-      Core::LinAlg::Map slavedofmap(Dmat->range_map());
+      Core::LinAlg::Map source_dof_map(Dmat->range_map());
       Core::LinAlg::SparseMatrix Bc(*dofmap, 10);
       std::shared_ptr<const Core::LinAlg::SparseMatrix> M =
-          std::make_shared<Core::LinAlg::SparseMatrix>(slavedofmap, 10);
+          std::make_shared<Core::LinAlg::SparseMatrix>(source_dof_map, 10);
       std::shared_ptr<const Core::LinAlg::SparseMatrix> D =
-          std::make_shared<Core::LinAlg::SparseMatrix>(slavedofmap, 10);
+          std::make_shared<Core::LinAlg::SparseMatrix>(source_dof_map, 10);
       if (Teuchos::getIntegralValue<Mortar::ParallelRedist>(
               cmtbridge_->get_strategy().params().sublist("PARALLEL REDISTRIBUTION"),
               "PARALLEL_REDIST") != Mortar::ParallelRedist::redist_none)
       {
-        M = Core::LinAlg::matrix_col_transform(*Mmat, *notredistmasterdofmap);
-        D = Core::LinAlg::matrix_col_transform(*Dmat, *notredistslavedofmap);
+        M = Core::LinAlg::matrix_col_transform(*Mmat, *non_redist_target_dof_map);
+        D = Core::LinAlg::matrix_col_transform(*Dmat, *non_redist_source_dof_map);
       }
       else
       {
@@ -1252,7 +1253,7 @@ void Solid::TimInt::update_step_contact_vum()
       }
       Core::LinAlg::matrix_add(*M, true, -1.0, Bc, 1.0);
       Core::LinAlg::matrix_add(*D, true, 1.0, Bc, 1.0);
-      Bc.complete(slavedofmap, *dofmap);
+      Bc.complete(source_dof_map, *dofmap);
       Bc.apply_dirichlet(*(dbcmaps_->cond_map()), false);
 
       // matrix of the normal vectors
@@ -1263,7 +1264,7 @@ void Solid::TimInt::update_step_contact_vum()
       std::shared_ptr<const Core::LinAlg::Vector<double>> LM =
           cmtbridge_->get_strategy().lagrange_multiplier();
       std::shared_ptr<Core::LinAlg::Vector<double>> Z =
-          std::make_shared<Core::LinAlg::Vector<double>>(*slavenodemap, true);
+          std::make_shared<Core::LinAlg::Vector<double>>(*source_node_map, true);
       std::shared_ptr<Core::LinAlg::Vector<double>> z =
           std::make_shared<Core::LinAlg::Vector<double>>(*activenodemap, true);
       N->multiply(false, *LM, *Z);
@@ -1296,7 +1297,7 @@ void Solid::TimInt::update_step_contact_vum()
       std::shared_ptr<Core::LinAlg::Vector<double>> btemp1 =
           std::make_shared<Core::LinAlg::Vector<double>>(*dofmap, true);
       std::shared_ptr<Core::LinAlg::Vector<double>> btemp2 =
-          std::make_shared<Core::LinAlg::Vector<double>>(*slavenodemap, true);
+          std::make_shared<Core::LinAlg::Vector<double>>(*source_node_map, true);
       std::shared_ptr<Core::LinAlg::Vector<double>> b =
           std::make_shared<Core::LinAlg::Vector<double>>(*activenodemap, true);
       btemp1->update(R1, *Dd, 0.0);
@@ -1307,7 +1308,7 @@ void Solid::TimInt::update_step_contact_vum()
 
       // operator c
       std::shared_ptr<Core::LinAlg::Vector<double>> ctemp =
-          std::make_shared<Core::LinAlg::Vector<double>>(*slavenodemap, true);
+          std::make_shared<Core::LinAlg::Vector<double>>(*source_node_map, true);
       std::shared_ptr<Core::LinAlg::Vector<double>> c =
           std::make_shared<Core::LinAlg::Vector<double>>(*activenodemap, true);
       BN->multiply(true, *Dd, *ctemp);
@@ -1589,7 +1590,7 @@ void Solid::TimInt::update_step_contact_vum()
 
       // (4) VelocityUpdate
       std::shared_ptr<Core::LinAlg::Vector<double>> ptemp1 =
-          std::make_shared<Core::LinAlg::Vector<double>>(*slavenodemap, true);
+          std::make_shared<Core::LinAlg::Vector<double>>(*source_node_map, true);
       std::shared_ptr<Core::LinAlg::Vector<double>> ptemp2 =
           std::make_shared<Core::LinAlg::Vector<double>>(*dofmap, true);
       std::shared_ptr<Core::LinAlg::Vector<double>> VU =
