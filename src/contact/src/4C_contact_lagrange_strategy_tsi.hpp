@@ -165,7 +165,10 @@ namespace CONTACT
         std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
         std::shared_ptr<CONTACT::ParamsInterface> cparams_ptr) override;
 
-    void set_coupling(std::shared_ptr<Coupling::Adapter::Coupling> coupST) { coupST_ = coupST; };
+    void set_coupling(std::shared_ptr<Coupling::Adapter::Coupling> coupST)
+    {
+      structure_thermo_coupling_ = coupST;
+    };
 
     //@}
 
@@ -215,7 +218,7 @@ namespace CONTACT
         rt_a_;  // Part of structural residual that corresponds to active source rows
 
     // pointer to TSI coupling object
-    std::shared_ptr<Coupling::Adapter::Coupling> coupST_;
+    std::shared_ptr<Coupling::Adapter::Coupling> structure_thermo_coupling_;
   };  // class LagrangeStrategyTsi
 
   namespace Utils

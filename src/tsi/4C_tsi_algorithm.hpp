@@ -143,7 +143,7 @@ namespace TSI
     void prepare_contact_strategy();
 
     //! Access to the dof coupling for matching grid TSI
-    Coupling::Adapter::Coupling& structure_thermo_coupling() { return *coupST_; }
+    Coupling::Adapter::Coupling& structure_thermo_coupling() { return *structure_thermo_coupling_; }
     //@}
 
     //! @name Access methods
@@ -183,7 +183,8 @@ namespace TSI
     //! volume coupling (using mortar) adapter
     std::shared_ptr<Coupling::Adapter::MortarVolCoupl> volcoupl_;
 
-    std::shared_ptr<Coupling::Adapter::Coupling> coupST_;  // S: master, T: slave
+    std::shared_ptr<Coupling::Adapter::Coupling>
+        structure_thermo_coupling_;  //! structure (target), thermo (source)
     //@}
 
 

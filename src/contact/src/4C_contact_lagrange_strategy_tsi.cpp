@@ -955,7 +955,7 @@ void CONTACT::LagrangeStrategyTsi::update(std::shared_ptr<const Core::LinAlg::Ve
 
   if (ftcnp_ == nullptr)
     ftcnp_ = std::make_shared<Core::LinAlg::Vector<double>>(
-        *coupST_->target_to_source_map(*gstdofrowmap_));
+        *structure_thermo_coupling_->target_to_source_map(*gstdofrowmap_));
   ftcnp_->put_scalar(0.0);
 
   std::shared_ptr<Core::LinAlg::Vector<double>> tmp =
@@ -970,26 +970,30 @@ void CONTACT::LagrangeStrategyTsi::update(std::shared_ptr<const Core::LinAlg::Ve
 
   CONTACT::AbstractStrategy::update(dis);
 
-  Core::LinAlg::SparseMatrix dThermo(*coupST_->target_to_source_map(*gsdofrowmap_), 100, true,
-      false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix dThermo(
+      *structure_thermo_coupling_->target_to_source_map(*gsdofrowmap_), 100, true, false,
+      Core::LinAlg::SparseMatrix::FE_MATRIX);
   Coupling::Adapter::MatrixRowColTransform()(*dmatrix_, 1.,
-      Coupling::Adapter::CouplingTargetConverter(*coupST_),
-      Coupling::Adapter::CouplingTargetConverter(*coupST_), dThermo, false, false);
+      Coupling::Adapter::CouplingTargetConverter(*structure_thermo_coupling_),
+      Coupling::Adapter::CouplingTargetConverter(*structure_thermo_coupling_), dThermo, false,
+      false);
   dThermo.complete();
-  tmp =
-      std::make_shared<Core::LinAlg::Vector<double>>(*coupST_->target_to_source_map(*gsdofrowmap_));
+  tmp = std::make_shared<Core::LinAlg::Vector<double>>(
+      *structure_thermo_coupling_->target_to_source_map(*gsdofrowmap_));
   dThermo.multiply(false, *z_thermo_, *tmp);
   CONTACT::Utils::add_vector(*tmp, *ftcnp_);
 
-  Core::LinAlg::SparseMatrix mThermo(*coupST_->target_to_source_map(*gsdofrowmap_), 100, true,
-      false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix mThermo(
+      *structure_thermo_coupling_->target_to_source_map(*gsdofrowmap_), 100, true, false,
+      Core::LinAlg::SparseMatrix::FE_MATRIX);
   Coupling::Adapter::MatrixRowColTransform()(*mmatrix_, 1.,
-      Coupling::Adapter::CouplingTargetConverter(*coupST_),
-      Coupling::Adapter::CouplingTargetConverter(*coupST_), mThermo, false, false);
-  mThermo.complete(
-      *coupST_->target_to_source_map(*gtdofrowmap_), *coupST_->target_to_source_map(*gsdofrowmap_));
-  tmp =
-      std::make_shared<Core::LinAlg::Vector<double>>(*coupST_->target_to_source_map(*gtdofrowmap_));
+      Coupling::Adapter::CouplingTargetConverter(*structure_thermo_coupling_),
+      Coupling::Adapter::CouplingTargetConverter(*structure_thermo_coupling_), mThermo, false,
+      false);
+  mThermo.complete(*structure_thermo_coupling_->target_to_source_map(*gtdofrowmap_),
+      *structure_thermo_coupling_->target_to_source_map(*gsdofrowmap_));
+  tmp = std::make_shared<Core::LinAlg::Vector<double>>(
+      *structure_thermo_coupling_->target_to_source_map(*gtdofrowmap_));
   mThermo.multiply(true, *z_thermo_, *tmp);
   tmp->scale(-1.);
   CONTACT::Utils::add_vector(*tmp, *ftcnp_);
@@ -1004,10 +1008,12 @@ void CONTACT::LagrangeStrategyTsi::update(std::shared_ptr<const Core::LinAlg::Ve
   Core::LinAlg::export_to(*z_, z_act);
   tmp = std::make_shared<Core::LinAlg::Vector<double>>(*gtdofrowmap_);
   m_LinDissContactLM.multiply(false, z_act, *tmp);
-  Core::LinAlg::Vector<double> tmp2(*coupST_->target_dof_map());
+  Core::LinAlg::Vector<double> tmp2(*structure_thermo_coupling_->target_dof_map());
   Core::LinAlg::export_to(*tmp, tmp2);
-  std::shared_ptr<Core::LinAlg::Vector<double>> tmp3 = coupST_->target_to_source(tmp2);
-  Core::LinAlg::Vector<double> tmp4(*coupST_->target_to_source_map(*gtdofrowmap_));
+  std::shared_ptr<Core::LinAlg::Vector<double>> tmp3 =
+      structure_thermo_coupling_->target_to_source(tmp2);
+  Core::LinAlg::Vector<double> tmp4(
+      *structure_thermo_coupling_->target_to_source_map(*gtdofrowmap_));
   Core::LinAlg::export_to(*tmp3, tmp4);
   CONTACT::Utils::add_vector(tmp4, *ftcnp_);
 
@@ -1053,9 +1059,9 @@ void CONTACT::LagrangeStrategyTsi::do_write_restart(
   }
   if (ftcn_ != nullptr)
   {
-    Core::LinAlg::Vector<double> tmp(*coupST_->source_dof_map());
+    Core::LinAlg::Vector<double> tmp(*structure_thermo_coupling_->source_dof_map());
     Core::LinAlg::export_to(*ftcn_, tmp);
-    restart_vectors["last_thermo_force"] = coupST_->source_to_target(tmp);
+    restart_vectors["last_thermo_force"] = structure_thermo_coupling_->source_to_target(tmp);
   }
 }
 
@@ -1072,11 +1078,11 @@ void CONTACT::LagrangeStrategyTsi::do_read_restart(Core::IO::DiscretizationReade
   if (!restartwithcontact) reader.read_vector(fscn_, "last_contact_force");
 
   std::shared_ptr<Core::LinAlg::Vector<double>> tmp =
-      std::make_shared<Core::LinAlg::Vector<double>>(*coupST_->target_dof_map());
+      std::make_shared<Core::LinAlg::Vector<double>>(*structure_thermo_coupling_->target_dof_map());
   if (!restartwithcontact) reader.read_vector(tmp, "last_thermo_force");
-  ftcn_ = coupST_->target_to_source(*tmp);
+  ftcn_ = structure_thermo_coupling_->target_to_source(*tmp);
   tmp = std::make_shared<Core::LinAlg::Vector<double>>(
-      *coupST_->target_to_source_map(*gstdofrowmap_));
+      *structure_thermo_coupling_->target_to_source_map(*gstdofrowmap_));
   Core::LinAlg::export_to(*ftcn_, *tmp);
   ftcn_ = tmp;
 }
