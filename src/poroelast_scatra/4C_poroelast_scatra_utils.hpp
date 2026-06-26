@@ -114,11 +114,6 @@ namespace PoroElastScaTra
         const std::shared_ptr<const Core::LinAlg::Vector<double>> vect  //!< the vector of interest
     );
 
-    //! Set the slave and master elements of the face element
-    void set_slave_and_master(const Core::FE::Discretization& voldiscret,
-        const Core::FE::Discretization* voldiscret2, const Core::LinAlg::Map* elecolmap,
-        Core::Elements::FaceElement* faceele);
-
     //! strategy for material assignment for non matching meshes with poro
 
     //! Helper class for assigning materials for volumetric coupling of non conforming meshes (poro)
