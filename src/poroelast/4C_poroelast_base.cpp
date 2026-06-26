@@ -479,7 +479,7 @@ void PoroElast::PoroBase::setup_coupling()
       // we use the fact, that we have matching grids and matching gids
       // The node matching search tree is used to find matching structure and fluid nodes.
       // Note, that the structure discretization must be the bigger one (because it is the
-      // masterdis).
+      // target discretization).
       coupling_fluid_structure_->setup_coupling(
           *structdis, *fluiddis, *fluidnoderowmap, *fluidnoderowmap, ndof, false);
     }

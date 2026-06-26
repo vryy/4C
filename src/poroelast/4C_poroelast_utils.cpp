@@ -261,11 +261,11 @@ void PoroElast::Utils::reconnect_parent_pointers(Core::FE::Discretization& idisc
     auto* faceele = dynamic_cast<Core::Elements::FaceElement*>(ele);
 
     if (!faceele) FOUR_C_THROW("Cast to FaceElement failed!");
-    set_slave_and_master(voldiscret, voldiscret2, elecolmap, faceele);
+    set_source_and_target(voldiscret, voldiscret2, elecolmap, faceele);
   }
 }
 
-void PoroElast::Utils::set_slave_and_master(const Core::FE::Discretization& voldiscret,
+void PoroElast::Utils::set_source_and_target(const Core::FE::Discretization& voldiscret,
     const Core::FE::Discretization* voldiscret2, const Core::LinAlg::Map* elecolmap,
     Core::Elements::FaceElement* faceele)
 {

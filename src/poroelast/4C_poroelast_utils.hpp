@@ -99,8 +99,8 @@ namespace PoroElast
         const Core::LinAlg::Vector<double>& vect                    //!< the vector of interest
     );
 
-    //! Set the slave and master elements of the face element
-    void set_slave_and_master(const Core::FE::Discretization& voldiscret,
+    //! Set the source and target elements of the face element
+    void set_source_and_target(const Core::FE::Discretization& voldiscret,
         const Core::FE::Discretization* voldiscret2, const Core::LinAlg::Map* elecolmap,
         Core::Elements::FaceElement* faceele);
 
