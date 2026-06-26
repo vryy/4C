@@ -242,7 +242,7 @@ Constraints::MPConstraint3::create_discretization_from_condition(
       break;
       case mpcnormalcomp3d:
       {
-        // take master node
+        // take anchor node
         const int defn = (*conditer)->parameters().get<int>("masterNode");
         defnv.push_back(defn);
       }

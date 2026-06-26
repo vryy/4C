@@ -336,7 +336,7 @@ namespace Constraints
     std::shared_ptr<MPConstraint3> mpconplane3d_;   ///< 3d multipoint constraint prescribing the
                                                     ///< motion of a node relatively to a plane
     std::shared_ptr<MPConstraint3> mpcnormcomp3d_;  ///< 3d multipoint constraint prescribing the
-                                                    ///< motion of a node to a plane masternode
+                                                    ///< motion of a node to a plane anchor node
     std::shared_ptr<MPConstraint2>
         mpconline2d_;  ///< 2d multipoint constraint prescribing the motion
                        ///< of a node relatively to a straight line
