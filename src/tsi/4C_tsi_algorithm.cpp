@@ -226,10 +226,14 @@ void TSI::Algorithm::apply_thermo_coupling_state(
   }
 
   // set new temperatures to contact
+  if (contact_strategy_lagrange_ != nullptr)
   {
-    if (contact_strategy_lagrange_ != nullptr)
-      contact_strategy_lagrange_->set_state(Mortar::state_temperature,
-          *structure_thermo_coupling_->source_to_target(*thermo_field()->tempnp()));
+    FOUR_C_ASSERT_ALWAYS(structure_thermo_coupling_ != nullptr,
+        "Invalid configuration: structure_thermo_coupling_ is required for contact with thermal "
+        "coupling, but is only initialized for matching grids. Either disable TSI contact or use "
+        "matching grids.");
+    contact_strategy_lagrange_->set_state(Mortar::state_temperature,
+        *structure_thermo_coupling_->source_to_target(*thermo_field()->tempnp()));
   }
 }  // apply_thermo_coupling_state()
 
@@ -334,6 +338,10 @@ void TSI::Algorithm::prepare_contact_strategy()
 
     if (contact_strategy_lagrange_ != nullptr)
     {
+      FOUR_C_ASSERT_ALWAYS(structure_thermo_coupling_ != nullptr,
+          "Invalid configuration: structure_thermo_coupling_ is required for contact with thermal "
+          "coupling, but is only initialized for matching grids. Either disable TSI contact or use "
+          "matching grids.");
       contact_strategy_lagrange_->set_alphaf_thermo(problem_->thermal_dynamic_params());
       contact_strategy_lagrange_->set_coupling(structure_thermo_coupling_);
     }
