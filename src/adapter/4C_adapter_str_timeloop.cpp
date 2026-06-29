@@ -8,7 +8,7 @@
 #include "4C_adapter_str_timeloop.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -27,12 +27,12 @@ Adapter::StructureTimeLoop::StructureTimeLoop(
 int Adapter::StructureTimeLoop::integrate()
 {
   // error checking variables
-  Inpar::Solid::ConvergenceStatus convergencestatus = Inpar::Solid::conv_success;
+  Solid::ConvergenceStatus convergencestatus = Solid::conv_success;
 
   // target time #timen_ and step #stepn_ already set
   // time loop
-  while (not_finished() and (convergencestatus == Inpar::Solid::conv_success or
-                                convergencestatus == Inpar::Solid::conv_fail_repeat))
+  while (not_finished() and
+         (convergencestatus == Solid::conv_success or convergencestatus == Solid::conv_fail_repeat))
   {
     // call the predictor
     pre_predict();
@@ -44,7 +44,7 @@ int Adapter::StructureTimeLoop::integrate()
     convergencestatus = solve();
 
     // if everything is fine
-    if (convergencestatus == Inpar::Solid::conv_success)
+    if (convergencestatus == Solid::conv_success)
     {
       // calculate stresses, strains and energies
       // note: this has to be done before the update since otherwise a potential
@@ -68,8 +68,8 @@ int Adapter::StructureTimeLoop::integrate()
       print_step();
     }
     // todo: remove this as soon as old structure time integration is gone
-    else if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
-                 problem_.structural_dynamic_params(), "INT_STRATEGY") == Inpar::Solid::int_old)
+    else if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(
+                 problem_.structural_dynamic_params(), "INT_STRATEGY") == Solid::int_old)
     {
       convergencestatus =
           perform_error_action(convergencestatus);  // something went wrong update error code

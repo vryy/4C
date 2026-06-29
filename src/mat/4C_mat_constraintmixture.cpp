@@ -13,9 +13,8 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"  // for debug plotting with gmsh
 #include "4C_fem_general_utils_integration.hpp"         // for debug plotting with gmsh
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"  // for pstime
-#include "4C_io_control.hpp"       // for debug plotting with gmsh
-#include "4C_io_gmsh.hpp"          // for debug plotting with gmsh
+#include "4C_io_control.hpp"  // for debug plotting with gmsh
+#include "4C_io_gmsh.hpp"     // for debug plotting with gmsh
 #include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_tensor.hpp"
@@ -25,6 +24,7 @@
 #include "4C_mat_constraintmixture_history.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
+#include "4C_structure_new_input.hpp"  // for pstime
 #include "4C_utils_enum.hpp"
 #include "4C_utils_function_of_time.hpp"
 
@@ -466,14 +466,14 @@ void Mat::ConstraintMixture::reset_all(const int numgp)
   minindex_ = 0;
 
   {
-    const Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
+    const Solid::PreStress pstype = Teuchos::getIntegralValue<Solid::PreStress>(
         Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
     const double pstime =
         Global::Problem::instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
 
     const double currentTime = params_->starttime_ + dt;
     // prestress time
-    if (pstype == Inpar::Solid::PreStress::mulf && currentTime <= pstime + 1.0e-15)
+    if (pstype == Solid::PreStress::mulf && currentTime <= pstime + 1.0e-15)
     {
       FOUR_C_THROW("MULF is only working for PRESTRESSTIME smaller than STARTTIME!");
     }

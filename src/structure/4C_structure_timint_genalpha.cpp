@@ -74,7 +74,7 @@ void Solid::TimIntGenAlpha::verify_coeff()
   // are exclusively(!) carried out at the end-point t_{n+1} of each time interval, but
   // never explicitly at some generalized midpoint, such as t_{n+1-\alpha_f}. Thus, any
   // cumbersome extrapolation of history variables, etc. becomes obsolete.
-  if (midavg_ != Inpar::Solid::midavg_trlike)
+  if (midavg_ != Solid::midavg_trlike)
     FOUR_C_THROW("mid-averaging of internal forces only implemented TR-like");
   else
     std::cout << "   midavg = " << midavg_ << '\n';
@@ -89,7 +89,7 @@ Solid::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
     std::shared_ptr<Core::LinAlg::Solver> contactsolver,
     std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      midavg_(Teuchos::getIntegralValue<Inpar::Solid::MidAverageEnum>(
+      midavg_(Teuchos::getIntegralValue<Solid::MidAverageEnum>(
           sdynparams.sublist("GENALPHA"), "GENAVG")),
       beta_(sdynparams.sublist("GENALPHA").get<double>("BETA")),
       gamma_(sdynparams.sublist("GENALPHA").get<double>("GAMMA")),
@@ -151,7 +151,7 @@ void Solid::TimIntGenAlpha::setup()
   // call setup() in base class
   Solid::TimIntImpl::setup();
 
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     // determine mass, damping and initial accelerations
     determine_mass_damp_consist_accel();
@@ -216,7 +216,7 @@ void Solid::TimIntGenAlpha::setup()
     params.set("MyPID", myrank_);
   }
 
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     // set initial internal force vector
     apply_force_stiff_internal(
@@ -234,8 +234,7 @@ void Solid::TimIntGenAlpha::setup()
 
     nonlinear_mass_sanity_check(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0), &sdynparams_);
 
-    if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_rotations and
-        !solely_beam3_elements(*discret_))
+    if (have_nonlinear_mass() == Solid::MassLin::ml_rotations and !solely_beam3_elements(*discret_))
     {
       FOUR_C_THROW(
           "Multiplicative Gen-Alpha time integration scheme only implemented for beam elements so "
@@ -326,7 +325,7 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
   stiff_->zero();
 
   // in the case of material damping initialise damping matrix to zero
-  if (damping_ == Inpar::Solid::damp_material) damp_->zero();
+  if (damping_ == Solid::damp_material) damp_->zero();
 
   // build predicted mid-state by last converged state and predicted target state
   evaluate_mid_state();
@@ -348,14 +347,14 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
   // ************************** (2) INTERNAL FORCES ***************************
   fintn_->put_scalar(0.0);
   // build new internal forces and stiffness
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     apply_force_stiff_internal(
         timen_, (*dt_)[0], disn_, disi_, *veln_, fintn_, stiff_, params, damp_);
   }
   else
   {
-    if (pred_ != Inpar::Solid::pred_constdis)
+    if (pred_ != Solid::pred_constdis)
     {
       FOUR_C_THROW(
           "Only the predictor predict_const_dis_consist_vel_acc() allowed for dynamic beam3r "
@@ -407,7 +406,7 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
   // ************************** (3) INERTIA FORCES ***************************
 
   // build new inertia forces and stiffness
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     // build new inertia forces and stiffness
     finertm_->put_scalar(0.0);
@@ -424,7 +423,7 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
   // ************************** (4) DAMPING FORCES ****************************
 
   // viscous forces due to Rayleigh damping
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     damp_->multiply(false, *velm_, *fviscm_);
   }
@@ -432,7 +431,7 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
   // ******************** Finally, put everything together ********************
 
   // build residual and tangent matrix for standard case
-  if (have_nonlinear_mass() != Inpar::Solid::MassLin::ml_rotations)
+  if (have_nonlinear_mass() != Solid::MassLin::ml_rotations)
   {
     // build residual
     //    Res = M . A_{n+1-alpha_m}
@@ -442,7 +441,7 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
     fres_->update(-1.0, *fextm_, 0.0);
     fres_->update(1.0, *fintm_, 1.0);
     fres_->update(1.0, *finertm_, 1.0);
-    if (damping_ == Inpar::Solid::damp_rayleigh)
+    if (damping_ == Solid::damp_rayleigh)
     {
       fres_->update(1.0, *fviscm_, 1.0);
     }
@@ -453,9 +452,9 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
     //                + (1 - alpha_f) K_{T}
 
     stiff_->add(*mass_, false, (1. - alpham_) / (beta_ * (*dt_)[0] * (*dt_)[0]), 1. - alphaf_);
-    if (damping_ != Inpar::Solid::damp_none)
+    if (damping_ != Solid::damp_none)
     {
-      if (damping_ == Inpar::Solid::damp_material) damp_->complete();
+      if (damping_ == Solid::damp_material) damp_->complete();
       stiff_->add(*damp_, false, (1. - alphaf_) * gamma_ / (beta_ * (*dt_)[0]), 1.0);
     }
   }
@@ -479,7 +478,7 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
     fresn_str_->update(alphaf_, *fint_str_, 1. - alphaf_);
     fresn_str_->update(-1.0, *fextm_, 1.0);
     fresn_str_->update(1.0, *finertm_, 1.0);
-    if (damping_ == Inpar::Solid::damp_rayleigh) fresn_str_->update(1.0, *fviscm_, 1.0);
+    if (damping_ == Solid::damp_rayleigh) fresn_str_->update(1.0, *fviscm_, 1.0);
     Core::LinAlg::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->cond_map()));
   }
 
@@ -496,7 +495,7 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual_relax(Teuchos::Paramet
   evaluate_force_stiff_residual(params);
 
   // overwrite the residual forces #fres_ with interface load
-  if (have_nonlinear_mass() != Inpar::Solid::MassLin::ml_rotations)
+  if (have_nonlinear_mass() != Solid::MassLin::ml_rotations)
   {
     // standard case
     fres_->update(-1 + alphaf_, *fifc_, 0.0);
@@ -534,7 +533,7 @@ void Solid::TimIntGenAlpha::evaluate_force_residual()
   fintn_->put_scalar(0.0);
 
   // build new internal forces and stiffness
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     apply_force_internal(timen_, (*dt_)[0], disn_, disi_, *veln_, fintn_);
   }
@@ -550,7 +549,7 @@ void Solid::TimIntGenAlpha::evaluate_force_residual()
   // ************************** (3) INERTIAL FORCES ***************************
 
   // build new inertia forces and stiffness
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     // build new inertia forces and stiffness
     finertm_->put_scalar(0.0);
@@ -565,7 +564,7 @@ void Solid::TimIntGenAlpha::evaluate_force_residual()
   // ************************** (4) DAMPING FORCES ****************************
 
   // viscous forces due to Rayleigh damping
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     damp_->multiply(false, *velm_, *fviscm_);
   }
@@ -573,7 +572,7 @@ void Solid::TimIntGenAlpha::evaluate_force_residual()
   // ******************** Finally, put everything together ********************
 
   // build residual and tangent matrix for standard case
-  if (have_nonlinear_mass() != Inpar::Solid::MassLin::ml_rotations)
+  if (have_nonlinear_mass() != Solid::MassLin::ml_rotations)
   {
     // build residual
     //    Res = M . A_{n+1-alpha_m}
@@ -583,7 +582,7 @@ void Solid::TimIntGenAlpha::evaluate_force_residual()
     fres_->update(-1.0, *fextm_, 0.0);
     fres_->update(1.0, *fintm_, 1.0);
     fres_->update(1.0, *finertm_, 1.0);
-    if (damping_ == Inpar::Solid::damp_rayleigh)
+    if (damping_ == Solid::damp_rayleigh)
     {
       fres_->update(1.0, *fviscm_, 1.0);
     }
@@ -603,7 +602,7 @@ void Solid::TimIntGenAlpha::evaluate_force_residual()
     fresn_str_->update(alphaf_, *fint_str_, 1. - alphaf_);
     fresn_str_->update(-1.0, *fextm_, 1.0);
     fresn_str_->update(1.0, *finertm_, 1.0);
-    if (damping_ == Inpar::Solid::damp_rayleigh) fresn_str_->update(1.0, *fviscm_, 1.0);
+    if (damping_ == Solid::damp_rayleigh) fresn_str_->update(1.0, *fviscm_, 1.0);
 
     Core::LinAlg::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->cond_map()));
   }
@@ -651,7 +650,7 @@ double Solid::TimIntGenAlpha::calc_ref_norm_force()
 
   // norm of viscous forces
   double fviscnorm = 0.0;
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     fviscnorm = Solid::calculate_vector_norm(iternorm_, *fviscm_);
   }
@@ -764,7 +763,7 @@ void Solid::TimIntGenAlpha::update_step_element()
   discret_->clear_state();
   discret_->set_state("displacement", *(*dis_)(0));
 
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
   }

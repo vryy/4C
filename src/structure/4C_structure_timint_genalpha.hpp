@@ -119,10 +119,7 @@ namespace Solid
     //@{
 
     //! Return name
-    Inpar::Solid::DynamicType method_name() const override
-    {
-      return Inpar::Solid::DynamicType::GenAlpha;
-    }
+    Solid::DynamicType method_name() const override { return Solid::DynamicType::GenAlpha; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
@@ -309,7 +306,7 @@ namespace Solid
     //! @name set-up
     //@{
     //! mid-average type more at MidAverageEnum
-    Inpar::Solid::MidAverageEnum midavg_;
+    Solid::MidAverageEnum midavg_;
     //@}
 
     //! @name Key coefficients

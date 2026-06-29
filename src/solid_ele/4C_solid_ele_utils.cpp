@@ -9,7 +9,6 @@
 
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
@@ -18,6 +17,7 @@
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_solid_ele_calc_lib.hpp"
 #include "4C_solid_ele_properties.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <algorithm>
 
@@ -49,7 +49,7 @@ Solid::Utils::ReadElement::read_solid_element_properties(
       "PRESTRESS_TECH", Discret::Elements::PrestressTechnology::none);
 
   // kinematic type
-  solid_properties.kintype = container.get<Inpar::Solid::KinemType>("KINEM");
+  solid_properties.kintype = container.get<Solid::KinemType>("KINEM");
 
   if constexpr (dim == 2)
   {

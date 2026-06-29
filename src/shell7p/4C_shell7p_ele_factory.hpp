@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_general_element.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <set>
 
@@ -30,13 +30,13 @@ namespace Discret::Elements
     Shell7pFactory() = default;
 
     static std::unique_ptr<Shell7pEleCalcInterface> provide_shell7p_calculation_interface(
-        const Core::Elements::Element& ele, const std::set<Inpar::Solid::EleTech>& eletech);
+        const Core::Elements::Element& ele, const std::set<FourC::Solid::EleTech>& eletech);
 
    private:
     //! define shell calculation instances dependent on element technology
     template <Core::FE::CellType distype>
     static std::unique_ptr<Shell7pEleCalcInterface> define_calculation_interface_type(
-        const std::set<Inpar::Solid::EleTech>& eletech);
+        const std::set<FourC::Solid::EleTech>& eletech);
   };  // class Shell7pFactory
 }  // namespace Discret::Elements
 

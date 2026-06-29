@@ -129,7 +129,7 @@ namespace Adapter
       return structure_->get_constraint_manager();
     };
 
-    Inpar::Solid::StcScale get_stc_algo() override { return structure_->get_stc_algo(); };
+    Solid::StcScale get_stc_algo() override { return structure_->get_stc_algo(); };
 
     std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() override
     {

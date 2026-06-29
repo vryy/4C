@@ -54,7 +54,7 @@ void Solid::TimeInt::Implicit::setup()
   // ---------------------------------------------------------------------------
   // build predictor
   // ---------------------------------------------------------------------------
-  const Inpar::Solid::PredEnum predtype = data_sdyn().get_predictor_type();
+  const Solid::PredEnum predtype = data_sdyn().get_predictor_type();
   predictor_ptr_ = Solid::Predict::build_predictor(predtype);
   predictor_ptr_->init(predtype, implint_ptr_, dbc_ptr(), data_global_state_ptr(), data_io_ptr(),
       data_sdyn().get_nox_params_ptr());
@@ -63,8 +63,8 @@ void Solid::TimeInt::Implicit::setup()
   // ---------------------------------------------------------------------------
   // build non-linear solver
   // ---------------------------------------------------------------------------
-  const Inpar::Solid::NonlinSolTech nlnSolverType = data_sdyn().get_nln_solver_type();
-  if (nlnSolverType == Inpar::Solid::soltech_singlestep)
+  const Solid::NonlinSolTech nlnSolverType = data_sdyn().get_nln_solver_type();
+  if (nlnSolverType == Solid::soltech_singlestep)
     std::cout << "WARNING!!! You are trying to solve implicitly using the \"singlestep\" nonlinear "
                  "solver. This is not encouraged, since it only works for linear statics analysis. "
                  "Please use NLNSOL as \"fullnewton\" for reliable result."
@@ -135,14 +135,14 @@ int Solid::TimeInt::Implicit::integrate_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::solve()
+Solid::ConvergenceStatus Solid::TimeInt::Implicit::solve()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
   nln_solver().reset();
   // solve the non-linear problem
-  Inpar::Solid::ConvergenceStatus convstatus = nln_solver().solve();
+  Solid::ConvergenceStatus convstatus = nln_solver().solve();
   // return convergence status
   return perform_error_action(convstatus);
 }
@@ -223,19 +223,19 @@ const ::NOX::Abstract::Group& Solid::TimeInt::Implicit::get_solution_group() con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
-    Inpar::Solid::ConvergenceStatus nonlinsoldiv)
+Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
+    Solid::ConvergenceStatus nonlinsoldiv)
 {
   check_init_setup();
 
-  if (nonlinsoldiv == Inpar::Solid::conv_success)
+  if (nonlinsoldiv == Solid::conv_success)
   {
     // Only relevant, if the input parameter DIVERCONT is used and set to divcontype_ == adapt_step:
     // In this case, the time step size is halved as consequence of a non-converging nonlinear
     // solver. After a prescribed number of converged time steps, the time step is doubled again.
     // The following methods checks, if the time step size can be increased again.
     check_for_time_step_increase(nonlinsoldiv);
-    return Inpar::Solid::conv_success;
+    return Solid::conv_success;
   }
   // get ID of actual processor in parallel
   const int& myrank = data_global_state().get_my_rank();
@@ -243,17 +243,17 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
   // what to do when nonlinear solver does not converge
   switch (get_divergence_action())
   {
-    case Inpar::Solid::divcont_stop:
+    case Solid::divcont_stop:
     {
       // write restart output of last converged step before stopping
       output(true);
 
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");
-      return Inpar::Solid::conv_nonlin_fail;
+      return Solid::conv_nonlin_fail;
       break;
     }
-    case Inpar::Solid::divcont_continue:
+    case Solid::divcont_continue:
     {
       if (myrank == 0)
       {
@@ -262,10 +262,10 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
                " did not converge in the current time step.\n"
             << Core::IO::endl;
       }
-      return Inpar::Solid::conv_success;
+      return Solid::conv_success;
       break;
     }
-    case Inpar::Solid::divcont_repeat_step:
+    case Solid::divcont_repeat_step:
     {
       if (myrank == 0)
         Core::IO::cout << "Nonlinear solver failed to converge repeat time step" << Core::IO::endl;
@@ -273,10 +273,10 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
       // reset step (e.g. quantities on element level or model specific stuff)
       reset_step();
 
-      return Inpar::Solid::conv_fail_repeat;
+      return Solid::conv_fail_repeat;
       break;
     }
-    case Inpar::Solid::divcont_halve_step:
+    case Solid::divcont_halve_step:
     {
       if (myrank == 0)
       {
@@ -302,10 +302,10 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
 
       integrator().update_constant_state_contributions();
 
-      return Inpar::Solid::conv_fail_repeat;
+      return Solid::conv_fail_repeat;
       break;
     }
-    case Inpar::Solid::divcont_adapt_step:
+    case Solid::divcont_adapt_step:
     {
       if (myrank == 0)
       {
@@ -339,11 +339,11 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
 
       integrator().update_constant_state_contributions();
 
-      return Inpar::Solid::conv_fail_repeat;
+      return Solid::conv_fail_repeat;
       break;
     }
-    case Inpar::Solid::divcont_rand_adapt_step:
-    case Inpar::Solid::divcont_rand_adapt_step_ele_err:
+    case Solid::divcont_rand_adapt_step:
+    case Solid::divcont_rand_adapt_step_ele_err:
     {
       // generate random number between 0.51 and 1.99 (as mean value of random
       // numbers generated on all processors), alternating values larger
@@ -383,30 +383,30 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
 
       integrator().update_constant_state_contributions();
 
-      return Inpar::Solid::conv_fail_repeat;
+      return Solid::conv_fail_repeat;
       break;
     }
-    case Inpar::Solid::divcont_adapt_penaltycontact:
+    case Solid::divcont_adapt_penaltycontact:
     {
       // adapt penalty and search parameter
       FOUR_C_THROW("Not yet implemented for new structure time integration");
       break;
     }
-    case Inpar::Solid::divcont_repeat_simulation:
+    case Solid::divcont_repeat_simulation:
     {
-      if (nonlinsoldiv == Inpar::Solid::conv_nonlin_fail and myrank == 0)
+      if (nonlinsoldiv == Solid::conv_nonlin_fail and myrank == 0)
       {
         Core::IO::cout << "Nonlinear solver failed to converge and DIVERCONT = "
                           "repeat_simulation, hence leaving structural time integration "
                        << Core::IO::endl;
       }
-      else if (nonlinsoldiv == Inpar::Solid::conv_lin_fail and myrank == 0)
+      else if (nonlinsoldiv == Solid::conv_lin_fail and myrank == 0)
       {
         Core::IO::cout << "Linear solver failed to converge and DIVERCONT = "
                           "repeat_simulation, hence leaving structural time integration "
                        << Core::IO::endl;
       }
-      else if (nonlinsoldiv == Inpar::Solid::conv_ele_fail and myrank == 0)
+      else if (nonlinsoldiv == Solid::conv_ele_fail and myrank == 0)
       {
         Core::IO::cout
             << "Element failure in form of a negative Jacobian determinant and DIVERCONT = "
@@ -418,25 +418,25 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
     }
     default:
       FOUR_C_THROW("Unknown DIVER_CONT case");
-      return Inpar::Solid::conv_nonlin_fail;
+      return Solid::conv_nonlin_fail;
       break;
   }
-  return Inpar::Solid::conv_success;  // make compiler happy
+  return Solid::conv_success;  // make compiler happy
 }  // PerformErrorAction()
 
 /*-----------------------------------------------------------------------------*
  * check, if according to divercont flag                             meier 01/15
  * time step size can be increased
  *-----------------------------------------------------------------------------*/
-void Solid::TimeInt::Implicit::check_for_time_step_increase(Inpar::Solid::ConvergenceStatus& status)
+void Solid::TimeInt::Implicit::check_for_time_step_increase(Solid::ConvergenceStatus& status)
 {
   check_init_setup();
 
   const int maxnumfinestep = 4;
 
-  if (get_divergence_action() != Inpar::Solid::divcont_adapt_step)
+  if (get_divergence_action() != Solid::divcont_adapt_step)
     return;
-  else if (status == Inpar::Solid::conv_success and get_div_con_refine_level() != 0)
+  else if (status == Solid::conv_success and get_div_con_refine_level() != 0)
   {
     set_div_con_num_fine_step(get_div_con_num_fine_step() + 1);
 
@@ -524,7 +524,7 @@ void Solid::TimeInt::Implicit::print_jacobian_in_matlab_format(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::DynamicType Solid::TimeInt::Implicit::method_name() const
+Solid::DynamicType Solid::TimeInt::Implicit::method_name() const
 {
   return implint_ptr_->method_name();
 }

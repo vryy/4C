@@ -8,7 +8,7 @@
 #include "4C_adapter_str_factory.hpp"
 
 #include "4C_adapter_str_structure_new.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -30,12 +30,11 @@ Adapter::StructureFactory::build_structure_algorithm(
 {
   std::shared_ptr<Adapter::StructureBaseAlgorithmNew> adapterbase = nullptr;
 
-  const auto intstrat =
-      Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+  const auto intstrat = Teuchos::getIntegralValue<Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
   switch (intstrat)
   {
-    case Inpar::Solid::int_standard:
+    case Solid::int_standard:
       adapterbase = std::make_shared<Adapter::StructureBaseAlgorithmNew>(problem);
       break;
     default:

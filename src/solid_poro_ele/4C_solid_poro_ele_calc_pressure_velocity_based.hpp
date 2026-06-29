@@ -45,7 +45,7 @@ namespace Discret
 
       void evaluate_nonlinear_force_stiffness(const Core::Elements::Element& ele,
           Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
-          AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
+          AnisotropyProperties anisotropy_properties, const FourC::Solid::KinemType& kinematictype,
           const Core::FE::Discretization& discretization,
           const SolidPoroPrimaryVariables<porosity_formulation>& primary_variables,
           Teuchos::ParameterList& params,
@@ -54,7 +54,7 @@ namespace Discret
 
       void evaluate_nonlinear_force_stiffness_od(const Core::Elements::Element& ele,
           Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
-          AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
+          AnisotropyProperties anisotropy_properties, const FourC::Solid::KinemType& kinematictype,
           const Core::FE::Discretization& discretization,
           const SolidPoroPrimaryVariables<porosity_formulation>& primary_variables,
           Teuchos::ParameterList& params,

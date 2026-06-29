@@ -737,13 +737,13 @@ int Solid::Utils::Shell::ReadElement::read_and_set_num_ans(const Core::FE::CellT
 
 void Solid::Utils::Shell::Output::pack_thickness_data(
     const std::vector<Core::LinAlg::Matrix<3, 1>>& thickness_director,
-    Inpar::Solid::OptQuantityType output_type, Core::Communication::PackBuffer& data)
+    Solid::OptQuantityType output_type, Core::Communication::PackBuffer& data)
 {
   const int numgpt = static_cast<int>(thickness_director.size());
 
   switch (output_type)
   {
-    case Inpar::Solid::optquantity_shell7pthicknessdirector:
+    case Solid::optquantity_shell7pthicknessdirector:
     {
       // Output thickness director vectors (3 components per gauss point)
       Core::LinAlg::SerialDenseMatrix director_matrix(numgpt, 3);
@@ -757,7 +757,7 @@ void Solid::Utils::Shell::Output::pack_thickness_data(
       add_to_pack(data, director_matrix);
       break;
     }
-    case Inpar::Solid::optquantity_shell7pthickness:
+    case Solid::optquantity_shell7pthickness:
     {
       // Output scalar thickness as twice the norm of director (1 component per gauss point)
       Core::LinAlg::SerialDenseMatrix thickness(numgpt, 1);

@@ -11,8 +11,8 @@
 #include "4C_config.hpp"
 
 #include "4C_cardiovascular0d_input.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -345,7 +345,7 @@ namespace Utils
     int linsolveerror_;                  ///< indicates error / problem in linear solver
     Teuchos::ParameterList strparams_;   ///< structure input parameters
     Teuchos::ParameterList cv0dparams_;  ///< 0D cardiovascular input parameters
-    Inpar::Solid::IntegrationStrategy
+    Solid::IntegrationStrategy
         intstrat_;  ///< structural time-integration strategy (old vs. standard)
 
   };  // class

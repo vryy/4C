@@ -11,7 +11,6 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_gridgenerator.hpp"
 #include "4C_io_input_parameter_container.templates.hpp"
 #include "4C_io_pstream.hpp"
@@ -19,6 +18,7 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_solid_ele_calc_lib_integration.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 
@@ -72,7 +72,7 @@ namespace
     inputData_.elementtype_ = "SOLID";
     inputData_.cell_type = Core::FE::CellType::hex8;
     inputData_.element_arguments.add("MAT", 1);
-    inputData_.element_arguments.add("KINEM", Inpar::Solid::KinemType::nonlinearTotLag);
+    inputData_.element_arguments.add("KINEM", Solid::KinemType::nonlinearTotLag);
     inputData_.element_arguments.add("INTEGRATION",
         Discret::Elements::make_default_solid_integration_rules<Core::FE::CellType::hex8>());
 
@@ -96,7 +96,7 @@ namespace
     inputData_.elementtype_ = "SOLID";
     inputData_.cell_type = Core::FE::CellType::hex8;
     inputData_.element_arguments.add("MAT", 1);
-    inputData_.element_arguments.add("KINEM", Inpar::Solid::KinemType::nonlinearTotLag);
+    inputData_.element_arguments.add("KINEM", Solid::KinemType::nonlinearTotLag);
     inputData_.element_arguments.add("INTEGRATION",
         Discret::Elements::make_default_solid_integration_rules<Core::FE::CellType::hex8>());
     inputData_.rotation_angle_ = std::array<double, 3>{30.0, 10.0, 7.0};
@@ -121,7 +121,7 @@ namespace
     inputData_.elementtype_ = "SOLID";
     inputData_.cell_type = Core::FE::CellType::hex27;
     inputData_.element_arguments.add("MAT", 1);
-    inputData_.element_arguments.add("KINEM", Inpar::Solid::KinemType::nonlinearTotLag);
+    inputData_.element_arguments.add("KINEM", Solid::KinemType::nonlinearTotLag);
     inputData_.element_arguments.add("INTEGRATION",
         Discret::Elements::make_default_solid_integration_rules<Core::FE::CellType::hex27>());
 
@@ -145,7 +145,7 @@ namespace
     inputData_.elementtype_ = "SOLID";
     inputData_.cell_type = Core::FE::CellType::wedge6;
     inputData_.element_arguments.add("MAT", 1);
-    inputData_.element_arguments.add("KINEM", Inpar::Solid::KinemType::nonlinearTotLag);
+    inputData_.element_arguments.add("KINEM", Solid::KinemType::nonlinearTotLag);
     inputData_.element_arguments.add("INTEGRATION",
         Discret::Elements::make_default_solid_integration_rules<Core::FE::CellType::wedge6>());
     inputData_.autopartition_ = true;

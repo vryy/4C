@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_mapextractor.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -24,8 +24,8 @@ namespace Core::FE
 namespace Solid
 {
   /// Determine norm of force residual
-  double calculate_vector_norm(const Inpar::Solid::VectorNorm norm,  ///< type of norm to use
-      const Core::LinAlg::Vector<double>& vect,                      ///< the vector of interest
+  double calculate_vector_norm(const Solid::VectorNorm norm,  ///< type of norm to use
+      const Core::LinAlg::Vector<double>& vect,               ///< the vector of interest
       const int numneglect =
           0  ///< number of DOFs that have to be neglected for possible length scaling
   );

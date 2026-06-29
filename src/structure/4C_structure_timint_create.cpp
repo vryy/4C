@@ -65,9 +65,9 @@ std::shared_ptr<Solid::TimIntImpl> Solid::tim_int_impl_create(
   // TODO: add contact solver...
 
   // check if we have a problem that needs to be prestressed
-  if (Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
+  if (Teuchos::getIntegralValue<Solid::PreStress>(
           Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS") !=
-      Inpar::Solid::PreStress::none)
+      Solid::PreStress::none)
   {
     sti = std::make_shared<Solid::TimIntPrestress>(
         timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
@@ -75,10 +75,10 @@ std::shared_ptr<Solid::TimIntImpl> Solid::tim_int_impl_create(
   }
 
   // create specific time integrator
-  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE"))
+  switch (Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE"))
   {
     // Static analysis
-    case Inpar::Solid::DynamicType::Statics:
+    case Solid::DynamicType::Statics:
     {
       sti = std::make_shared<Solid::TimIntStatics>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
@@ -86,7 +86,7 @@ std::shared_ptr<Solid::TimIntImpl> Solid::tim_int_impl_create(
     }
 
     // Generalised-alpha time integration
-    case Inpar::Solid::DynamicType::GenAlpha:
+    case Solid::DynamicType::GenAlpha:
     {
       sti = std::make_shared<Solid::TimIntGenAlpha>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
@@ -94,7 +94,7 @@ std::shared_ptr<Solid::TimIntImpl> Solid::tim_int_impl_create(
     }
 
     // One-step-theta (OST) time integration
-    case Inpar::Solid::DynamicType::OneStepTheta:
+    case Solid::DynamicType::OneStepTheta:
     {
       sti = std::make_shared<Solid::TimIntOneStepTheta>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
@@ -136,24 +136,24 @@ std::shared_ptr<Solid::TimIntExpl> Solid::tim_int_expl_create(
   }
 
   // create specific time integrator
-  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE"))
+  switch (Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE"))
   {
     // forward Euler time integration
-    case Inpar::Solid::DynamicType::ExplEuler:
+    case Solid::DynamicType::ExplEuler:
     {
       sti = std::make_shared<Solid::TimIntExplEuler>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
       break;
     }
     // central differences time integration
-    case Inpar::Solid::DynamicType::CentrDiff:
+    case Solid::DynamicType::CentrDiff:
     {
       sti = std::make_shared<Solid::TimIntCentrDiff>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
       break;
     }
     // Adams-Bashforth 2nd order (AB2) time integration
-    case Inpar::Solid::DynamicType::AdamsBashforth2:
+    case Solid::DynamicType::AdamsBashforth2:
     {
       sti = std::make_shared<Solid::TimIntAB2>(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);

@@ -8,11 +8,11 @@
 #include "4C_mortar_strategy_base.hpp"
 
 #include "4C_fem_discretization.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_input.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_enum.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -34,7 +34,7 @@ Mortar::StrategyDataContainer::StrategyDataContainer()
       parredist_(false),
       maxdof_(0),
       systype_(CONTACT::SystemType::none),
-      dyntype_(Inpar::Solid::DynamicType::Statics),
+      dyntype_(Solid::DynamicType::Statics),
       dynparam_n_(0.0)
 {
 }
@@ -71,19 +71,19 @@ Mortar::StrategyBase::StrategyBase(const std::shared_ptr<Mortar::StrategyDataCon
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::StrategyBase::set_time_integration_info(
-    const double time_fac, const Inpar::Solid::DynamicType dyntype)
+    const double time_fac, const Solid::DynamicType dyntype)
 {
   // Get weight for contribution from last time step
 
   data().set_dyn_type(dyntype);
   switch (dyntype)
   {
-    case Inpar::Solid::DynamicType::Statics:
+    case Solid::DynamicType::Statics:
       data().set_dyn_parameter_n(0.0);
       break;
-    case Inpar::Solid::DynamicType::GenAlpha:
-    case Inpar::Solid::DynamicType::GenAlphaLieGroup:
-    case Inpar::Solid::DynamicType::OneStepTheta:
+    case Solid::DynamicType::GenAlpha:
+    case Solid::DynamicType::GenAlphaLieGroup:
+    case Solid::DynamicType::OneStepTheta:
       data().set_dyn_parameter_n(time_fac);
       break;
     default:

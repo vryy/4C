@@ -81,8 +81,7 @@ void Solid::IMPLICIT::OneStepTheta::post_setup()
 {
   check_init_setup();
 
-  if (sdyn().get_mass_lin_type() != Inpar::Solid::MassLin::ml_rotations and
-      !sdyn().neglect_inertia())
+  if (sdyn().get_mass_lin_type() != Solid::MassLin::ml_rotations and !sdyn().neglect_inertia())
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
@@ -246,7 +245,7 @@ bool Solid::IMPLICIT::OneStepTheta::apply_force_stiff(const Core::LinAlg::Vector
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::OneStepTheta::assemble_force(Core::LinAlg::Vector<double>& f,
-    const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+    const std::vector<Solid::ModelType>* without_these_models) const
 {
   return model_eval().assemble_force(theta_, f, without_these_models);
 }
@@ -258,7 +257,7 @@ void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
 {
   // the following is only done for rayleigh damping as for material damping viscous forces are
   // already added at element level and else would be added twice
-  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
+  if (tim_int().get_data_sdyn().get_damping_type() == Solid::damp_rayleigh)
   {
     // viscous damping forces at t_{n}
     Core::LinAlg::assemble_my_vector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
@@ -282,7 +281,7 @@ void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
   // add inertial contributions and scale the structural stiffness block
   stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0 / (theta_ * dt * dt), 1.0);
   // add damping contributions
-  if (tim_int().get_data_sdyn().get_damping_type() != Inpar::Solid::damp_none)
+  if (tim_int().get_data_sdyn().get_damping_type() != Solid::damp_none)
     stiff_ptr->add(*global_state().get_damp_matrix(), false, 1.0 / dt, 1.0);
 }
 

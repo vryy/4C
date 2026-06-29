@@ -15,7 +15,6 @@
 #include "4C_contact_paramsinterface.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_fevector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -23,6 +22,7 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_utils.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -1067,8 +1067,8 @@ std::shared_ptr<const Core::LinAlg::Vector<double>> CONTACT::PenaltyStrategy::la
     const bool& redist) const
 {
   auto& dyn_params = Global::Problem::instance()->structural_dynamic_params();
-  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
-      Inpar::Solid::IntegrationStrategy::int_old)
+  if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
+      Solid::IntegrationStrategy::int_old)
     return CONTACT::AbstractStrategy::lagrange_multiplier_n(redist);
   else
     return nullptr;
@@ -1080,8 +1080,8 @@ std::shared_ptr<const Core::LinAlg::Vector<double>>
 CONTACT::PenaltyStrategy::lagrange_multiplier_np(const bool& redist) const
 {
   auto& dyn_params = Global::Problem::instance()->structural_dynamic_params();
-  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
-      Inpar::Solid::IntegrationStrategy::int_old)
+  if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
+      Solid::IntegrationStrategy::int_old)
     return CONTACT::AbstractStrategy::lagrange_multiplier_np(redist);
   else
     return nullptr;
@@ -1093,8 +1093,8 @@ std::shared_ptr<const Core::LinAlg::Vector<double>>
 CONTACT::PenaltyStrategy::lagrange_multiplier_old() const
 {
   auto& dyn_params = Global::Problem::instance()->structural_dynamic_params();
-  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
-      Inpar::Solid::IntegrationStrategy::int_old)
+  if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
+      Solid::IntegrationStrategy::int_old)
     return CONTACT::AbstractStrategy::lagrange_multiplier_old();
   else
     return nullptr;
@@ -1106,8 +1106,8 @@ std::shared_ptr<const Core::LinAlg::Map> CONTACT::PenaltyStrategy::lm_dof_row_ma
     const bool& redist) const
 {
   auto& dyn_params = Global::Problem::instance()->structural_dynamic_params();
-  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
-      Inpar::Solid::IntegrationStrategy::int_old)
+  if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
+      Solid::IntegrationStrategy::int_old)
     return CONTACT::AbstractStrategy::lm_dof_row_map_ptr(redist);
   else
     return nullptr;

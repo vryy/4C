@@ -248,13 +248,12 @@ void FS3I::PartFPS3I::init()
       Teuchos::getIntegralValue<ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
   auto fluidtimealgo =
       Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
-  auto structtimealgo =
-      Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structdyn, "DYNAMICTYPE");
+  auto structtimealgo = Teuchos::getIntegralValue<Solid::DynamicType>(structdyn, "DYNAMICTYPE");
 
   if (fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
   {
     if (scatratimealgo != ScaTra::timeint_one_step_theta or
-        structtimealgo != Inpar::Solid::DynamicType::OneStepTheta)
+        structtimealgo != Solid::DynamicType::OneStepTheta)
       FOUR_C_THROW(
           "Partitioned FS3I computations should feature consistent time-integration schemes for "
           "the subproblems; in this case, a one-step-theta scheme is intended to be used for the "
@@ -270,7 +269,7 @@ void FS3I::PartFPS3I::init()
   else if (fluidtimealgo == Inpar::FLUID::timeint_afgenalpha)
   {
     if (scatratimealgo != ScaTra::timeint_gen_alpha or
-        structtimealgo != Inpar::Solid::DynamicType::GenAlpha)
+        structtimealgo != Solid::DynamicType::GenAlpha)
       FOUR_C_THROW(
           "Partitioned FS3I computations should feature consistent time-integration schemes for "
           "the subproblems; in this case, a (alpha_f-based) generalized-alpha scheme is intended "

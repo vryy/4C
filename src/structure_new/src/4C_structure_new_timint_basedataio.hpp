@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_solver_nonlin_nox_abstract_prepostoperator.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <fstream>
 
@@ -187,7 +187,7 @@ namespace Solid
       }
 
       /// Shall we compute and write the condition number?
-      Inpar::Solid::ConditionNumber condition_number_type() const
+      Solid::ConditionNumber condition_number_type() const
       {
         check_init_setup();
         return conditionnumbertype_;
@@ -250,21 +250,21 @@ namespace Solid
       }
 
       /// get stress output type
-      const Inpar::Solid::StressType& get_stress_output_type() const
+      const Solid::StressType& get_stress_output_type() const
       {
         check_init_setup();
         return writestress_;
       }
 
       /// get strain output type
-      const Inpar::Solid::StrainType& get_strain_output_type() const
+      const Solid::StrainType& get_strain_output_type() const
       {
         check_init_setup();
         return writestrain_;
       }
 
       /// get plastic strain output type
-      const Inpar::Solid::StrainType& get_plastic_strain_output_type() const
+      const Solid::StrainType& get_plastic_strain_output_type() const
       {
         check_init_setup();
         return writeplstrain_;
@@ -351,15 +351,15 @@ namespace Solid
       int writeenergyevery_;
 
       /// stress output type
-      Inpar::Solid::StressType writestress_;
+      Solid::StressType writestress_;
 
       /// strain output type
-      Inpar::Solid::StrainType writestrain_;
+      Solid::StrainType writestrain_;
 
       /// plastic strain output type
-      Inpar::Solid::StrainType writeplstrain_;
+      Solid::StrainType writeplstrain_;
 
-      Inpar::Solid::ConditionNumber conditionnumbertype_;
+      Solid::ConditionNumber conditionnumbertype_;
 
       ///@}
     };  // class BaseDataIO

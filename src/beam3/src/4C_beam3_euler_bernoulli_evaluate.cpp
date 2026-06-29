@@ -13,9 +13,9 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_largerotations.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -127,8 +127,8 @@ int Discret::Elements::Beam3eb::evaluate(Teuchos::ParameterList& params,
       std::vector<double> myvel(lm.size(), 0.0);
       const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
 
-      if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE") !=
-          Inpar::Solid::DynamicType::Statics)
+      if (Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE") !=
+          Solid::DynamicType::Statics)
       {
         vel = discretization.get_state("velocity");
         if (vel == nullptr) FOUR_C_THROW("Cannot get state vectors 'velocity'");
@@ -252,8 +252,8 @@ int Discret::Elements::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
   // get element velocities only if it's not a static problem, otherwise a dynamics problem
   // (UNCOMMENT IF NEEDED)
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-  if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE") !=
-      Inpar::Solid::DynamicType::Statics)
+  if (Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE") !=
+      Solid::DynamicType::Statics)
   {
     std::shared_ptr<const Core::LinAlg::Vector<double>> vel = discretization.get_state("velocity");
     if (vel == nullptr) FOUR_C_THROW("Cannot get state vectors 'velocity'");

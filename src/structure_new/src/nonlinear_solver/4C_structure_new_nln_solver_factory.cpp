@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::build_nln_solver(
-    const Inpar::Solid::NonlinSolTech& nlnSolType,
+    const Solid::NonlinSolTech& nlnSolType,
     const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate,
     const std::shared_ptr<Solid::TimeInt::BaseDataSDyn>& sdyn,
     const std::shared_ptr<Solid::TimeInt::NoxInterface>& noxinterface,
@@ -28,7 +28,7 @@ std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::build_nln_solve
 
   switch (nlnSolType)
   {
-    case Inpar::Solid::soltech_newtonfull:
+    case Solid::soltech_newtonfull:
     {
       // ---------------------------------------------------------------------------
       // Set-up the full Newton method
@@ -50,10 +50,9 @@ std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::build_nln_solve
                                             .get<std::string>("Forcing Term Method");
       pnewton.set("Forcing Term Method", forcing_term_method);
 
-      if (sdyn->get_lin_solvers()[Inpar::Solid::model_structure]->params().isSublist(
-              "Belos Parameters"))
+      if (sdyn->get_lin_solvers()[Solid::model_structure]->params().isSublist("Belos Parameters"))
       {
-        const double tolerance = sdyn->get_lin_solvers()[Inpar::Solid::model_structure]
+        const double tolerance = sdyn->get_lin_solvers()[Solid::model_structure]
                                      ->params()
                                      .sublist("Belos Parameters")
                                      .get<double>("Convergence Tolerance");
@@ -66,7 +65,7 @@ std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::build_nln_solve
     }
     break;
 
-    case Inpar::Solid::soltech_ptc:
+    case Solid::soltech_ptc:
     {
       // ---------------------------------------------------------------------------
       // Set-up the pseudo transient method
@@ -99,7 +98,7 @@ std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::build_nln_solve
     }
     break;
 
-    case Inpar::Solid::soltech_singlestep:
+    case Solid::soltech_singlestep:
     {
       nox_params.set("Nonlinear Solver", "Single Step");
 

@@ -12,9 +12,9 @@
 
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_membrane_eletypes.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_thermo_ele_impl_utils.hpp"
 
 #include <memory>
@@ -453,8 +453,8 @@ namespace Discret
           Core::LinAlg::Matrix<numgpt_post_, 6>* elestress,     // stresses at GP
           Core::LinAlg::Matrix<numgpt_post_, 6>* elestrain,     // strains at GP
           Teuchos::ParameterList& params,                       // algorithmic parameters e.g. time
-          const Inpar::Solid::StressType iostress,              // stress output option
-          const Inpar::Solid::StrainType iostrain);             // strain output option
+          const Solid::StressType iostress,                     // stress output option
+          const Solid::StrainType iostrain);                    // strain output option
 
       //! get reference and current configuration
       void mem_configuration(const std::vector<double>& disp,

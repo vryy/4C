@@ -54,19 +54,16 @@ Solid::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
     std::shared_ptr<Core::LinAlg::Solver> contactsolver,
     std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      pred_(Teuchos::getIntegralValue<Inpar::Solid::PredEnum>(sdynparams, "PREDICT")),
-      itertype_(Teuchos::getIntegralValue<Inpar::Solid::NonlinSolTech>(sdynparams, "NLNSOL")),
-      normtypedisi_(Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_DISP")),
-      normtypefres_(Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_RESF")),
-      normtypepres_(Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_PRES")),
-      normtypepfres_(Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_INCO")),
-      combdispre_(
-          Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES")),
-      combfrespfres_(
-          Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO")),
-      combdisifres_(
-          Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP")),
-      iternorm_(Teuchos::getIntegralValue<Inpar::Solid::VectorNorm>(sdynparams, "ITERNORM")),
+      pred_(Teuchos::getIntegralValue<Solid::PredEnum>(sdynparams, "PREDICT")),
+      itertype_(Teuchos::getIntegralValue<Solid::NonlinSolTech>(sdynparams, "NLNSOL")),
+      normtypedisi_(Teuchos::getIntegralValue<Solid::ConvNorm>(sdynparams, "NORM_DISP")),
+      normtypefres_(Teuchos::getIntegralValue<Solid::ConvNorm>(sdynparams, "NORM_RESF")),
+      normtypepres_(Teuchos::getIntegralValue<Solid::ConvNorm>(sdynparams, "NORM_PRES")),
+      normtypepfres_(Teuchos::getIntegralValue<Solid::ConvNorm>(sdynparams, "NORM_INCO")),
+      combdispre_(Teuchos::getIntegralValue<Solid::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES")),
+      combfrespfres_(Teuchos::getIntegralValue<Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO")),
+      combdisifres_(Teuchos::getIntegralValue<Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP")),
+      iternorm_(Teuchos::getIntegralValue<Solid::VectorNorm>(sdynparams, "ITERNORM")),
       itermax_(sdynparams.get<int>("MAXITER")),
       itermin_(sdynparams.get<int>("MINITER")),
       toldisi_(sdynparams.get<double>("TOLDISP")),
@@ -103,8 +100,8 @@ Solid::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
       ptcdt_(sdynparams.get<double>("PTCDT")),
       dti_(1.0 / ptcdt_)
 {
-  FOUR_C_ASSERT_ALWAYS(Teuchos::getIntegralValue<Inpar::Solid::StcScale>(
-                           sdynparams, "STC_SCALING") == Inpar::Solid::StcScale::stc_inactive,
+  FOUR_C_ASSERT_ALWAYS(Teuchos::getIntegralValue<Solid::StcScale>(sdynparams, "STC_SCALING") ==
+                           Solid::StcScale::stc_inactive,
       "STC is not supported in the old time integration framework");
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -176,12 +173,12 @@ void Solid::TimIntImpl::setup()
   // then Uzawa-type solver is used
   if (conman_->have_constraint_lagr())
   {
-    if ((itertype_ != Inpar::Solid::soltech_newtonuzawalin) and
-        (itertype_ != Inpar::Solid::soltech_newtonuzawanonlin))
+    if ((itertype_ != Solid::soltech_newtonuzawalin) and
+        (itertype_ != Solid::soltech_newtonuzawanonlin))
       FOUR_C_THROW("Chosen solution technique {} does not work constrained.", itertype_);
   }
-  else if ((itertype_ == Inpar::Solid::soltech_newtonuzawalin) or
-           (itertype_ == Inpar::Solid::soltech_newtonuzawanonlin))
+  else if ((itertype_ == Solid::soltech_newtonuzawalin) or
+           (itertype_ == Solid::soltech_newtonuzawanonlin))
   {
     FOUR_C_THROW(
         "Chosen solution technique {} does only work with Lagrange constraints.", itertype_);
@@ -192,28 +189,28 @@ void Solid::TimIntImpl::setup()
   tolcontconstr_ = tolfres_;
   tollagr_ = toldisi_;
   // default values, avoid uninitialized variables
-  combfrescontconstr_ = Inpar::Solid::bop_and;
-  combdisilagr_ = Inpar::Solid::bop_and;
-  normtypecontconstr_ = Inpar::Solid::convnorm_abs;
-  normtypeplagrincr_ = Inpar::Solid::convnorm_abs;
+  combfrescontconstr_ = Solid::bop_and;
+  combdisilagr_ = Solid::bop_and;
+  normtypecontconstr_ = Solid::convnorm_abs;
+  normtypeplagrincr_ = Solid::convnorm_abs;
 
   if (have_contact_meshtying())
   {
     // extract information from parameter lists
     tolcontconstr_ = cmtbridge_->get_strategy().params().get<double>("TOLCONTCONSTR");
     tollagr_ = cmtbridge_->get_strategy().params().get<double>("TOLLAGR");
-    combfrescontconstr_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
+    combfrescontconstr_ = Teuchos::getIntegralValue<Solid::BinaryOp>(
         cmtbridge_->get_strategy().params(), "NORMCOMBI_RESFCONTCONSTR");
-    combdisilagr_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
+    combdisilagr_ = Teuchos::getIntegralValue<Solid::BinaryOp>(
         cmtbridge_->get_strategy().params(), "NORMCOMBI_DISPLAGR");
   }
 
 
   // setup binary operators for convergence check of semi-smooth plasticity problems
-  combfresplconstr_ = Inpar::Solid::bop_and;
-  combdisiLp_ = Inpar::Solid::bop_and;
-  combfresEasres_ = Inpar::Solid::bop_and;
-  combdisiEasIncr_ = Inpar::Solid::bop_and;
+  combfresplconstr_ = Solid::bop_and;
+  combdisiLp_ = Solid::bop_and;
+  combfresEasres_ = Solid::bop_and;
+  combdisiEasIncr_ = Solid::bop_and;
 
   // -------------------------------------------------------------------
   // setup Krylov projection if necessary
@@ -253,7 +250,7 @@ void Solid::TimIntImpl::setup()
     FOUR_C_THROW("Received more than one KrylovSpaceCondition for solid field");
 
   // prepare line search
-  if (itertype_ == Inpar::Solid::soltech_newtonls) prepare_line_search();
+  if (itertype_ == Solid::soltech_newtonls) prepare_line_search();
 
   // create empty residual force vector
   fres_ = std::make_shared<Core::LinAlg::Vector<double>>(*dof_row_map_view(), false);
@@ -322,32 +319,31 @@ void Solid::TimIntImpl::predict()
   // set iteration step to 0 (predictor)
   iter_ = 0;
   // choose predictor
-  if ((pred_ == Inpar::Solid::pred_constdis) or (pred_ == Inpar::Solid::pred_constdispres))
+  if ((pred_ == Solid::pred_constdis) or (pred_ == Solid::pred_constdispres))
   {
     predict_const_dis_consist_vel_acc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
-  else if (pred_ == Inpar::Solid::pred_constvel)
+  else if (pred_ == Solid::pred_constvel)
   {
     predict_const_vel_consist_acc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
-  else if (pred_ == Inpar::Solid::pred_constacc)
+  else if (pred_ == Solid::pred_constacc)
   {
     predict_const_acc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
-  else if ((pred_ == Inpar::Solid::pred_constdisvelacc) or
-           (pred_ == Inpar::Solid::pred_constdisvelaccpres))
+  else if ((pred_ == Solid::pred_constdisvelacc) or (pred_ == Solid::pred_constdisvelaccpres))
   {
     predict_const_dis_vel_acc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
-  else if (pred_ == Inpar::Solid::pred_tangdis)
+  else if (pred_ == Solid::pred_tangdis)
   {
     predict_tang_dis_consist_vel_acc();
     // normdisi_ has been set
@@ -360,8 +356,7 @@ void Solid::TimIntImpl::predict()
   // zerofy pressure DOFs and time-derivatives
   if (pressure_ != nullptr)
   {
-    if ((pred_ != Inpar::Solid::pred_constdispres) and
-        (pred_ != Inpar::Solid::pred_constdisvelaccpres))
+    if ((pred_ != Solid::pred_constdispres) and (pred_ != Solid::pred_constdisvelaccpres))
     {
       pressure_->insert_cond_vector(*pressure_->extract_cond_vector(*zeros_), *disn_);
     }
@@ -386,7 +381,7 @@ void Solid::TimIntImpl::predict()
   // compute residual forces fres_ and stiffness stiff_
   // If we use a tangential predictor, the contact status could have been changed in contrast
   // to a constant predictor. Thus the contact status has to be reevaluated! (hiermeier 22.01.2014)
-  if (pred_ == Inpar::Solid::pred_tangdis) params.set<bool>("predict", false);
+  if (pred_ == Solid::pred_tangdis) params.set<bool>("predict", false);
 
   // compute residual forces fres_ and stiffness stiff_
   evaluate_force_stiff_residual(params);
@@ -804,7 +799,7 @@ void Solid::TimIntImpl::apply_force_stiff_external(const double time,  //!< eval
   discret_->clear_state();
   discret_->set_state(0, "displacement", *dis);
 
-  if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", vel);
+  if (damping_ == Solid::damp_material) discret_->set_state(0, "velocity", vel);
   // get load vector
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   bool loadlin = (sdyn.get<bool>("LOADLIN"));
@@ -847,7 +842,7 @@ void Solid::TimIntImpl::apply_force_stiff_internal(const double time, const doub
   discret_->clear_state();
   discret_->set_state(0, "residual displacement", *disi);
   discret_->set_state(0, "displacement", *dis);
-  if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", vel);
+  if (damping_ == Solid::damp_material) discret_->set_state(0, "velocity", vel);
   // fintn_->PutScalar(0.0);  // initialise internal force vector
 
   /* Additionally we hand in "fint_str_"
@@ -890,7 +885,7 @@ void Solid::TimIntImpl::apply_force_stiff_internal_and_inertial(const double tim
   params.set("timintfac_dis", timintfac_dis);
   params.set("timintfac_vel", timintfac_vel);
 
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_rotations)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_rotations)
   {
     params.set("rot_beta", beta);
     params.set("rot_gamma", gamma);
@@ -1052,13 +1047,13 @@ bool Solid::TimIntImpl::converged()
   // residual displacement
   switch (normtypedisi_)
   {
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       convdis = normdisi_ < toldisi_;
       break;
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       convdis = normdisi_ < std::max(normchardis_ * toldisi_, 1e-15);
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       convdis = ((normdisi_ < toldisi_) or (normdisi_ < std::max(normchardis_ * toldisi_, 1e-15)));
       break;
     default:
@@ -1069,13 +1064,13 @@ bool Solid::TimIntImpl::converged()
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       convfres = normfres_ < tolfres_;
       break;
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       convfres = normfres_ < std::max(tolfres_ * normcharforce_, 1e-15);
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       convfres =
           ((normfres_ < tolfres_) or (normfres_ < std::max(tolfres_ * normcharforce_, 1e-15)));
       break;
@@ -1115,12 +1110,12 @@ bool Solid::TimIntImpl::converged()
 
       switch (normtypeplagrincr_)
       {
-        case Inpar::Solid::convnorm_abs:
+        case Solid::convnorm_abs:
           convDispLagrIncr = normlagr_ < tollagr_;
           convDispWIncr = normw_ < 1e-12;    // WEAR
           convDispWMIncr = normwm_ < 1e-12;  // WEAR
           break;
-        /*case Inpar::Solid::convnorm_rel:
+        /*case Solid::convnorm_rel:
           convDispLagrIncr = normlagr_ < tollagr_;
           break;*/
         default:
@@ -1129,9 +1124,9 @@ bool Solid::TimIntImpl::converged()
       }
 
       // switch between "and" and "or"
-      if (combdisilagr_ == Inpar::Solid::bop_and)
+      if (combdisilagr_ == Solid::bop_and)
         convdis = convdis and convDispLagrIncr and convDispWIncr and convDispWMIncr;
-      else if (combdisilagr_ == Inpar::Solid::bop_or)
+      else if (combdisilagr_ == Solid::bop_or)
         convdis = convdis or convDispLagrIncr;
       else
         FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -1140,10 +1135,10 @@ bool Solid::TimIntImpl::converged()
 
       switch (normtypecontconstr_)
       {
-        case Inpar::Solid::convnorm_abs:
+        case Solid::convnorm_abs:
           convResfContConstr = normcontconstr_ < tolcontconstr_;
           break;
-        /*case Inpar::Solid::convnorm_rel:
+        /*case Solid::convnorm_rel:
           //convDispLagrIncr = normcontconstr_ < std::max(tolfres_*normcharforce_,1e-15);
           convResfContConstr = normcontconstr_ < tolcontconstr_;
           break;*/
@@ -1153,9 +1148,9 @@ bool Solid::TimIntImpl::converged()
       }
 
       // switch between "and" and "or"
-      if (combfrescontconstr_ == Inpar::Solid::bop_and)
+      if (combfrescontconstr_ == Solid::bop_and)
         convfres = convfres and convResfContConstr;
-      else if (combfrescontconstr_ == Inpar::Solid::bop_or)
+      else if (combfrescontconstr_ == Solid::bop_or)
         convfres = convfres or convResfContConstr;
       else
         FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -1172,7 +1167,7 @@ bool Solid::TimIntImpl::converged()
     // pressure
     switch (normtypepres_)
     {
-      case Inpar::Solid::convnorm_abs:
+      case Solid::convnorm_abs:
         convpre = normpres_ < tolpres_;
         break;
       default:
@@ -1185,7 +1180,7 @@ bool Solid::TimIntImpl::converged()
     // incompressible residual
     switch (normtypepfres_)
     {
-      case Inpar::Solid::convnorm_abs:
+      case Solid::convnorm_abs:
         convfpre = normpfres_ < tolpfres_;
         break;
       default:
@@ -1195,16 +1190,16 @@ bool Solid::TimIntImpl::converged()
 
 
     // combine fields
-    if (combdispre_ == Inpar::Solid::bop_and)
+    if (combdispre_ == Solid::bop_and)
       convdis = convdis and convpre;
-    else if (combdispre_ == Inpar::Solid::bop_or)
+    else if (combdispre_ == Solid::bop_or)
       convdis = convdis or convpre;
     else
       FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
-    if (combfrespfres_ == Inpar::Solid::bop_and)
+    if (combfrespfres_ == Solid::bop_and)
       convfres = convfres and convfpre;
-    else if (combfrespfres_ == Inpar::Solid::bop_or)
+    else if (combfrespfres_ == Solid::bop_or)
       convfres = convfres or convfpre;
     else
       FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -1212,9 +1207,9 @@ bool Solid::TimIntImpl::converged()
 
   // combine displacement-like and force-like residuals
   bool conv = false;
-  if (combdisifres_ == Inpar::Solid::bop_and)
+  if (combdisifres_ == Solid::bop_and)
     conv = convdis and convfres;
-  else if (combdisifres_ == Inpar::Solid::bop_or)
+  else if (combdisifres_ == Solid::bop_or)
     conv = convdis or convfres;
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -1226,7 +1221,7 @@ bool Solid::TimIntImpl::converged()
 
 /*----------------------------------------------------------------------*/
 /* solve equilibrium */
-Inpar::Solid::ConvergenceStatus Solid::TimIntImpl::solve()
+Solid::ConvergenceStatus Solid::TimIntImpl::solve()
 {
   // safety check
   check_is_init();
@@ -1249,19 +1244,19 @@ Inpar::Solid::ConvergenceStatus Solid::TimIntImpl::solve()
     // choose solution technique in accordance with user's will
     switch (itertype_)
     {
-      case Inpar::Solid::soltech_newtonfull:
+      case Solid::soltech_newtonfull:
         nonlin_error = newton_full();
         break;
-      case Inpar::Solid::soltech_newtonls:
+      case Solid::soltech_newtonls:
         nonlin_error = newton_ls();
         break;
-      case Inpar::Solid::soltech_newtonuzawanonlin:
+      case Solid::soltech_newtonuzawanonlin:
         nonlin_error = uzawa_non_linear_newton_full();
         break;
-      case Inpar::Solid::soltech_newtonuzawalin:
+      case Solid::soltech_newtonuzawalin:
         nonlin_error = uzawa_linear_newton_full();
         break;
-      case Inpar::Solid::soltech_ptc:
+      case Solid::soltech_ptc:
         nonlin_error = ptc();
         break;
       // catch problems
@@ -1276,8 +1271,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimIntImpl::solve()
   int lnonlin_error = nonlin_error;
   nonlin_error = Core::Communication::max_all(lnonlin_error, discretization()->get_comm());
 
-  Inpar::Solid::ConvergenceStatus status =
-      static_cast<Inpar::Solid::ConvergenceStatus>(nonlin_error);
+  Solid::ConvergenceStatus status = static_cast<Solid::ConvergenceStatus>(nonlin_error);
 
   // Only relevant, if the input parameter DIVERCONT is used and set to divcontype_ == adapt_step:
   // In this case, the time step size is halved as consequence of a non-converging nonlinear solver.
@@ -1380,7 +1374,7 @@ int Solid::TimIntImpl::newton_full()
 
     // set flag for element error in form of a negative Jacobian determinant
     // in parameter list in case of potential continuation
-    if (divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err)
+    if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
     {
       params.set<bool>("tolerate_errors", true);
       params.set<bool>("eval_error", false);
@@ -1392,7 +1386,7 @@ int Solid::TimIntImpl::newton_full()
 
     // check for element error in form of a negative Jacobian determinant
     // in case of potential continuation
-    if (divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err)
+    if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
       element_error = element_error_check(params.get<bool>("eval_error"));
 
     // blank residual at (locally oriented) Dirichlet DOFs
@@ -1564,25 +1558,25 @@ int Solid::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
   }
   // now some error checks: do we have an element problem
   // only check if we continue in this case; other wise, we ignore the error
-  if (eleerror and divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err)
+  if (eleerror and divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
   {
     return eleerror;
   }
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  else if (linerror and (divcontype_ == Inpar::Solid::divcont_halve_step or
-                            divcontype_ == Inpar::Solid::divcont_adapt_step or
-                            divcontype_ == Inpar::Solid::divcont_rand_adapt_step or
-                            divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err or
-                            divcontype_ == Inpar::Solid::divcont_repeat_step or
-                            divcontype_ == Inpar::Solid::divcont_repeat_simulation or
-                            divcontype_ == Inpar::Solid::divcont_adapt_penaltycontact))
+  else if (linerror and
+           (divcontype_ == Solid::divcont_halve_step or divcontype_ == Solid::divcont_adapt_step or
+               divcontype_ == Solid::divcont_rand_adapt_step or
+               divcontype_ == Solid::divcont_rand_adapt_step_ele_err or
+               divcontype_ == Solid::divcont_repeat_step or
+               divcontype_ == Solid::divcont_repeat_simulation or
+               divcontype_ == Solid::divcont_adapt_penaltycontact))
   {
     return linerror;
   }
   else
   {
-    if ((iter_ >= itermax_) and (divcontype_ == Inpar::Solid::divcont_stop))
+    if ((iter_ >= itermax_) and (divcontype_ == Solid::divcont_stop))
     {
       // write restart output of last converged step before stopping
       output(true);
@@ -1590,21 +1584,20 @@ int Solid::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
       FOUR_C_THROW("Newton unconverged in {} iterations", iter_);
       return 1;
     }
-    else if ((iter_ >= itermax_) and (divcontype_ == Inpar::Solid::divcont_continue))
+    else if ((iter_ >= itermax_) and (divcontype_ == Solid::divcont_continue))
     {
       if (myrank_ == 0)
         Core::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
                        << Core::IO::endl;
       return 0;
     }
-    else if ((iter_ >= itermax_) and
-             (divcontype_ == Inpar::Solid::divcont_halve_step or
-                 divcontype_ == Inpar::Solid::divcont_adapt_step or
-                 divcontype_ == Inpar::Solid::divcont_rand_adapt_step or
-                 divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err or
-                 divcontype_ == Inpar::Solid::divcont_repeat_step or
-                 divcontype_ == Inpar::Solid::divcont_repeat_simulation or
-                 divcontype_ == Inpar::Solid::divcont_adapt_penaltycontact))
+    else if ((iter_ >= itermax_) and (divcontype_ == Solid::divcont_halve_step or
+                                         divcontype_ == Solid::divcont_adapt_step or
+                                         divcontype_ == Solid::divcont_rand_adapt_step or
+                                         divcontype_ == Solid::divcont_rand_adapt_step_ele_err or
+                                         divcontype_ == Solid::divcont_repeat_step or
+                                         divcontype_ == Solid::divcont_repeat_simulation or
+                                         divcontype_ == Solid::divcont_adapt_penaltycontact))
     {
       if (myrank_ == 0)
         Core::IO::cout << "Newton unconverged in " << iter_ << " iterations " << Core::IO::endl;
@@ -1620,13 +1613,13 @@ int Solid::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
 int Solid::TimIntImpl::lin_solve_error_check(int linerror)
 {
   // we only care about problems in the linear solver if we have a fancy divcont action
-  if (linerror and (divcontype_ == Inpar::Solid::divcont_halve_step or
-                       divcontype_ == Inpar::Solid::divcont_adapt_step or
-                       divcontype_ == Inpar::Solid::divcont_rand_adapt_step or
-                       divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err or
-                       divcontype_ == Inpar::Solid::divcont_repeat_step or
-                       divcontype_ == Inpar::Solid::divcont_repeat_simulation or
-                       divcontype_ == Inpar::Solid::divcont_adapt_penaltycontact))
+  if (linerror and
+      (divcontype_ == Solid::divcont_halve_step or divcontype_ == Solid::divcont_adapt_step or
+          divcontype_ == Solid::divcont_rand_adapt_step or
+          divcontype_ == Solid::divcont_rand_adapt_step_ele_err or
+          divcontype_ == Solid::divcont_repeat_step or
+          divcontype_ == Solid::divcont_repeat_simulation or
+          divcontype_ == Solid::divcont_adapt_penaltycontact))
   {
     if (myrank_ == 0) Core::IO::cout << "Linear solver is having trouble " << Core::IO::endl;
     return 2;
@@ -1643,7 +1636,7 @@ int Solid::TimIntImpl::element_error_check(bool evalerr)
 {
   // merely care about element problems if there is a fancy divcont action
   // and element errors are considered
-  if (evalerr and (divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err))
+  if (evalerr and (divcontype_ == Solid::divcont_rand_adapt_step_ele_err))
   {
     if (myrank_ == 0)
       Core::IO::cout << "Element error in form of a negative Jacobian determinant "
@@ -1717,10 +1710,10 @@ int Solid::TimIntImpl::newton_ls()
       merit_fct[0] = merit_fct[1];
 
     // Check if pred_constdis is used. If yes, the first step is not controlled.
-    if (pred_ == Inpar::Solid::pred_constdis or pred_ == Inpar::Solid::pred_constdisvelacc)
+    if (pred_ == Solid::pred_constdis or pred_ == Solid::pred_constdisvelacc)
       fscontrol = 1;
-    else if ((pred_ == Inpar::Solid::pred_tangdis || pred_ == Inpar::Solid::pred_constacc ||
-                 pred_ == Inpar::Solid::pred_constvel) ||
+    else if ((pred_ == Solid::pred_tangdis || pred_ == Solid::pred_constacc ||
+                 pred_ == Solid::pred_constvel) ||
              (iter_ > 1))
       fscontrol = 0;
     else
@@ -2318,7 +2311,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
 
       // set flag for element error in form of a negative Jacobian determinant
       // in parameter list in case of potential continuation
-      if (divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err)
+      if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
       {
         params.set<bool>("tolerate_errors", true);
         params.set<bool>("eval_error", false);
@@ -2330,7 +2323,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
 
       // check for element error in form of a negative Jacobian determinant
       // in case of potential continuation
-      if (divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err)
+      if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
         element_error = element_error_check(params.get<bool>("eval_error"));
 
       // compute residual and stiffness of constraint equations
@@ -2419,7 +2412,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int el
 
   // now some error checks: do we have an element problem
   // only check if we continue in this case; other wise, we ignore the error
-  if (eleerror and (divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err))
+  if (eleerror and (divcontype_ == Solid::divcont_rand_adapt_step_ele_err))
   {
     return eleerror;
   }
@@ -2427,19 +2420,19 @@ int Solid::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int el
   // now some error checks
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  if (linerror and (divcontype_ == Inpar::Solid::divcont_halve_step or
-                       divcontype_ == Inpar::Solid::divcont_adapt_step or
-                       divcontype_ == Inpar::Solid::divcont_rand_adapt_step or
-                       divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err or
-                       divcontype_ == Inpar::Solid::divcont_repeat_step or
-                       divcontype_ == Inpar::Solid::divcont_repeat_simulation or
-                       divcontype_ == Inpar::Solid::divcont_adapt_penaltycontact))
+  if (linerror and
+      (divcontype_ == Solid::divcont_halve_step or divcontype_ == Solid::divcont_adapt_step or
+          divcontype_ == Solid::divcont_rand_adapt_step or
+          divcontype_ == Solid::divcont_rand_adapt_step_ele_err or
+          divcontype_ == Solid::divcont_repeat_step or
+          divcontype_ == Solid::divcont_repeat_simulation or
+          divcontype_ == Solid::divcont_adapt_penaltycontact))
   {
     return linerror;
   }
   else
   {
-    if ((iter_ >= itermax_) and (divcontype_ == Inpar::Solid::divcont_stop))
+    if ((iter_ >= itermax_) and (divcontype_ == Solid::divcont_stop))
     {
       // write restart output of last converged step before stopping
       output(true);
@@ -2447,7 +2440,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int el
       FOUR_C_THROW("Newton unconverged in {} iterations", iter_);
       return 1;
     }
-    else if ((iter_ >= itermax_) and (divcontype_ == Inpar::Solid::divcont_continue))
+    else if ((iter_ >= itermax_) and (divcontype_ == Solid::divcont_continue))
     {
       if (myrank_ == 0)
         Core::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
@@ -2455,14 +2448,13 @@ int Solid::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int el
       if (conman_->have_monitor()) conman_->compute_monitor_values(disn_);
       return 0;
     }
-    else if ((iter_ >= itermax_) and
-             (divcontype_ == Inpar::Solid::divcont_halve_step or
-                 divcontype_ == Inpar::Solid::divcont_adapt_step or
-                 divcontype_ == Inpar::Solid::divcont_rand_adapt_step or
-                 divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err or
-                 divcontype_ == Inpar::Solid::divcont_repeat_step or
-                 divcontype_ == Inpar::Solid::divcont_repeat_simulation or
-                 divcontype_ == Inpar::Solid::divcont_adapt_penaltycontact))
+    else if ((iter_ >= itermax_) and (divcontype_ == Solid::divcont_halve_step or
+                                         divcontype_ == Solid::divcont_adapt_step or
+                                         divcontype_ == Solid::divcont_rand_adapt_step or
+                                         divcontype_ == Solid::divcont_rand_adapt_step_ele_err or
+                                         divcontype_ == Solid::divcont_repeat_step or
+                                         divcontype_ == Solid::divcont_repeat_simulation or
+                                         divcontype_ == Solid::divcont_adapt_penaltycontact))
     {
       if (myrank_ == 0)
         Core::IO::cout << "Newton unconverged in " << iter_ << " iterations " << Core::IO::endl;
@@ -2488,8 +2480,7 @@ int Solid::TimIntImpl::cmt_nonlinear_solve()
   const bool semismooth = cmtbridge_->get_strategy().params().get<bool>("SEMI_SMOOTH_NEWTON");
 
   // iteration type
-  if (itertype_ != Inpar::Solid::soltech_newtonfull)
-    FOUR_C_THROW("Unknown type of equilibrium iteration");
+  if (itertype_ != Solid::soltech_newtonfull) FOUR_C_THROW("Unknown type of equilibrium iteration");
 
   //********************************************************************
   // Solving Strategy using Lagrangian Multipliers
@@ -2911,7 +2902,7 @@ int Solid::TimIntImpl::ptc()
 
     // set flag for element error in form of a negative Jacobian determinant
     // in parameter list in case of potential continuation
-    if (divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err)
+    if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
     {
       params.set<bool>("tolerate_errors", true);
       params.set<bool>("eval_error", false);
@@ -2923,7 +2914,7 @@ int Solid::TimIntImpl::ptc()
 
     // check for element error in form of a negative Jacobian determinant
     // in case of potential continuation
-    if (divcontype_ == Inpar::Solid::divcont_rand_adapt_step_ele_err)
+    if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
       element_error = element_error_check(params.get<bool>("eval_error"));
 
     // blank residual at (locally oriented) Dirichlet DOFs
@@ -3091,20 +3082,20 @@ void Solid::TimIntImpl::print_predictor()
   if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
   {
     Core::IO::cout << "Structural predictor for field '" << discret_->name() << "' "
-                   << Inpar::Solid::pred_enum_string(pred_) << " yields ";
+                   << Solid::pred_enum_string(pred_) << " yields ";
 
     // relative check of force residual
-    if (normtypefres_ == Inpar::Solid::convnorm_rel)
+    if (normtypefres_ == Solid::convnorm_rel)
     {
       Core::IO::cout << "scaled res-norm " << normfres_ / normcharforce_ << Core::IO::endl;
     }
     // absolute check of force residual
-    else if (normtypefres_ == Inpar::Solid::convnorm_abs)
+    else if (normtypefres_ == Solid::convnorm_abs)
     {
       Core::IO::cout << "absolute res-norm " << normfres_ << Core::IO::endl;
     }
     // mixed absolute-relative check of force residual
-    else if (normtypefres_ == Inpar::Solid::convnorm_mix)
+    else if (normtypefres_ == Solid::convnorm_mix)
     {
       Core::IO::cout << "mixed res-norm " << std::min(normfres_, normfres_ / normcharforce_)
                      << Core::IO::endl;
@@ -3147,13 +3138,13 @@ void Solid::TimIntImpl::print_newton_iter_header(FILE* ofile)
   // displacement
   switch (normtypefres_)
   {
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       oss << std::setw(16) << "rel-res-norm";
       break;
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       oss << std::setw(16) << "abs-res-norm";
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       oss << std::setw(16) << "mix-res-norm";
       break;
     default:
@@ -3165,7 +3156,7 @@ void Solid::TimIntImpl::print_newton_iter_header(FILE* ofile)
   {
     switch (normtypepfres_)
     {
-      case Inpar::Solid::convnorm_abs:
+      case Solid::convnorm_abs:
         oss << std::setw(16) << "abs-inco-norm";
         break;
       default:
@@ -3176,13 +3167,13 @@ void Solid::TimIntImpl::print_newton_iter_header(FILE* ofile)
 
   switch (normtypedisi_)
   {
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       oss << std::setw(16) << "rel-dis-norm";
       break;
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       oss << std::setw(16) << "abs-dis-norm";
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       oss << std::setw(16) << "mix-dis-norm";
       break;
     default:
@@ -3194,7 +3185,7 @@ void Solid::TimIntImpl::print_newton_iter_header(FILE* ofile)
   {
     switch (normtypepfres_)
     {
-      case Inpar::Solid::convnorm_abs:
+      case Solid::convnorm_abs:
         oss << std::setw(16) << "abs-pre-norm";
         break;
       default:
@@ -3222,10 +3213,10 @@ void Solid::TimIntImpl::print_newton_iter_header(FILE* ofile)
     {
       switch (normtypecontconstr_)
       {
-        case Inpar::Solid::convnorm_rel:
+        case Solid::convnorm_rel:
           oss << std::setw(20) << "rel-contconstr-norm";
           break;
-        case Inpar::Solid::convnorm_abs:
+        case Solid::convnorm_abs:
           oss << std::setw(20) << "abs-contconstr-norm";
           break;
         default:
@@ -3235,10 +3226,10 @@ void Solid::TimIntImpl::print_newton_iter_header(FILE* ofile)
 
       switch (normtypeplagrincr_)
       {
-        case Inpar::Solid::convnorm_rel:
+        case Solid::convnorm_rel:
           oss << std::setw(20) << "rel-lagrincr-norm";
           break;
-        case Inpar::Solid::convnorm_abs:
+        case Solid::convnorm_abs:
         {
           oss << std::setw(20) << "abs-lagrincr-norm";
           if (wtype == Wear::wear_primvar)
@@ -3266,7 +3257,7 @@ void Solid::TimIntImpl::print_newton_iter_header(FILE* ofile)
     oss << std::setw(16) << "abs-constr-norm";
   }
 
-  if (itertype_ == Inpar::Solid::soltech_ptc)
+  if (itertype_ == Solid::soltech_ptc)
   {
     oss << std::setw(16) << "        PTC-dti";
   }
@@ -3315,13 +3306,13 @@ void Solid::TimIntImpl::print_newton_iter_text(FILE* ofile)
   // displacement
   switch (normtypefres_)
   {
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normfres_ / normcharforce_;
       break;
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normfres_;
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       oss << std::setw(16) << std::setprecision(5) << std::scientific
           << std::min(normfres_, normfres_ / normcharforce_);
       break;
@@ -3334,7 +3325,7 @@ void Solid::TimIntImpl::print_newton_iter_text(FILE* ofile)
   {
     switch (normtypepfres_)
     {
-      case Inpar::Solid::convnorm_abs:
+      case Solid::convnorm_abs:
         oss << std::setw(16) << std::setprecision(5) << std::scientific << normpfres_;
         break;
       default:
@@ -3345,13 +3336,13 @@ void Solid::TimIntImpl::print_newton_iter_text(FILE* ofile)
 
   switch (normtypedisi_)
   {
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_ / normchardis_;
       break;
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_;
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       oss << std::setw(16) << std::setprecision(5) << std::scientific
           << std::min(normdisi_, normdisi_ / normchardis_);
       break;
@@ -3364,7 +3355,7 @@ void Solid::TimIntImpl::print_newton_iter_text(FILE* ofile)
   {
     switch (normtypepfres_)
     {
-      case Inpar::Solid::convnorm_abs:
+      case Solid::convnorm_abs:
         oss << std::setw(16) << std::scientific << normpres_;
         break;
       default:
@@ -3417,7 +3408,7 @@ void Solid::TimIntImpl::print_newton_iter_text(FILE* ofile)
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normcon_;
   }
 
-  if (itertype_ == Inpar::Solid::soltech_ptc)
+  if (itertype_ == Solid::soltech_ptc)
   {
     oss << std::setw(16) << std::setprecision(5) << std::scientific << dti_;
   }
@@ -3649,7 +3640,7 @@ void Solid::TimIntImpl::use_block_matrix(
   mass_ =
       std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           *domainmaps, *rangemaps, 81, false, true);
-  if (damping_ != Inpar::Solid::damp_none)
+  if (damping_ != Solid::damp_none)
     damp_ =
         std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
             *domainmaps, *rangemaps, 81, false, true);
@@ -3672,7 +3663,7 @@ void Solid::TimIntImpl::use_block_matrix(
     p.set("delta time", (*dt_)[0]);
 
     std::shared_ptr<Core::LinAlg::Vector<double>> finert = nullptr;
-    if (have_nonlinear_mass() != Inpar::Solid::MassLin::ml_none)
+    if (have_nonlinear_mass() != Solid::MassLin::ml_none)
     {
       finert = std::make_shared<Core::LinAlg::Vector<double>>(
           *dof_row_map_view(), true);  // inertial force
@@ -3689,7 +3680,7 @@ void Solid::TimIntImpl::use_block_matrix(
     discret_->set_state("displacement", *(*dis_)(0));
     discret_->set_state(0, "velocity", *(*vel_)(0));
     discret_->set_state(0, "acceleration", *(*acc_)(0));
-    if (damping_ == Inpar::Solid::damp_material) discret_->set_state("velocity", *(*vel_)(0));
+    if (damping_ == Solid::damp_material) discret_->set_state("velocity", *(*vel_)(0));
 
     discret_->evaluate(p, stiff_, mass_, fint, finert, nullptr);
     discret_->clear_state();
@@ -3702,7 +3693,7 @@ void Solid::TimIntImpl::use_block_matrix(
   stiff_->complete();
 
   // build Rayleigh damping matrix if desired
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     damp_->add(*stiff_, false, dampk_, 0.0);
     damp_->add(*mass_, false, dampm_, 1.0);
@@ -3737,7 +3728,7 @@ int Solid::TimIntImpl::cmt_windk_constr_nonlinear_solve()
   const bool semismooth = cmtbridge_->get_strategy().params().get<bool>("SEMI_SMOOTH_NEWTON");
 
   // iteration type
-  if (itertype_ != Inpar::Solid::soltech_newtonuzawalin)
+  if (itertype_ != Solid::soltech_newtonuzawalin)
     FOUR_C_THROW(
         "Unknown type of equilibrium iteration! Choose newtonlinuzawa instead of fullnewton!");
 
@@ -3867,13 +3858,13 @@ int Solid::TimIntImpl::cmt_windk_constr_nonlinear_solve()
  * check, if according to divercont flag                             meier 01/15
  * time step size can be increased
  *-----------------------------------------------------------------------------*/
-void Solid::TimIntImpl::check_for_time_step_increase(Inpar::Solid::ConvergenceStatus& status)
+void Solid::TimIntImpl::check_for_time_step_increase(Solid::ConvergenceStatus& status)
 {
   const int maxnumfinestep = 4;
 
-  if (divcontype_ != Inpar::Solid::divcont_adapt_step)
+  if (divcontype_ != Solid::divcont_adapt_step)
     return;
-  else if (status == Inpar::Solid::conv_success and divconrefinementlevel_ != 0)
+  else if (status == Solid::conv_success and divconrefinementlevel_ != 0)
   {
     divconnumfinestep_++;
 

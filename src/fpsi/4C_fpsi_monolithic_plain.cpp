@@ -701,7 +701,7 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
   rhs = poro_field()->structure_field()->interface()->insert_fsi_cond_vector(*rhs);
   rhs = poro_field()->extractor()->insert_vector(*rhs, 0);  // s->p
 
-  if (poro_field()->structure_field()->get_stc_algo() == Inpar::Solid::stc_currsym)  //??ChrAg
+  if (poro_field()->structure_field()->get_stc_algo() == Solid::stc_currsym)  //??ChrAg
   {
     std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat =
         poro_field()->structure_field()->get_stc_mat();

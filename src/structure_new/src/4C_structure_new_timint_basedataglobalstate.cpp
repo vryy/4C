@@ -195,9 +195,9 @@ void Solid::TimeInt::BaseDataGlobalState::setup()
   // sparse operators
   // --------------------------------------
   mass_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
-  if (datasdyn_->get_damping_type() != Inpar::Solid::damp_none)
+  if (datasdyn_->get_damping_type() != Solid::damp_none)
   {
-    if (datasdyn_->get_mass_lin_type() == Inpar::Solid::MassLin::ml_none)
+    if (datasdyn_->get_mass_lin_type() == Solid::MassLin::ml_none)
     {
       damp_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
     }
@@ -210,8 +210,8 @@ void Solid::TimeInt::BaseDataGlobalState::setup()
     }
   }
 
-  if (datasdyn_->get_dynamic_type() == Inpar::Solid::DynamicType::Statics and
-      datasdyn_->get_mass_lin_type() != Inpar::Solid::MassLin::ml_none)
+  if (datasdyn_->get_dynamic_type() == Solid::DynamicType::Statics and
+      datasdyn_->get_mass_lin_type() != Solid::MassLin::ml_none)
     FOUR_C_THROW(
         "Do not set parameter MASSLIN in static simulations as this leads to undesired"
         " evaluation of mass matrix on element level!");
@@ -254,7 +254,7 @@ std::shared_ptr<NOX::Nln::Vector> Solid::TimeInt::BaseDataGlobalState::create_gl
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
-    const Solid::ModelEvaluator::Generic& me, const Inpar::Solid::ModelType& mt)
+    const Solid::ModelEvaluator::Generic& me, const Solid::ModelType& mt)
 {
   check_init();
   Global::Problem* problem = Global::Problem::instance();
@@ -264,7 +264,7 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
 
   switch (mt)
   {
-    case Inpar::Solid::model_structure:
+    case Solid::model_structure:
     {
       // always called first, so we can use it to reset things
       gproblem_map_ptr_ = nullptr;
@@ -272,7 +272,7 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
       max_block_num_ = 1;
       break;
     }
-    case Inpar::Solid::model_contact:
+    case Solid::model_contact:
     {
       auto systype = Teuchos::getIntegralValue<CONTACT::SystemType>(
           problem->contact_dynamic_params(), "SYSTEM");
@@ -301,7 +301,7 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
       }
       break;
     }
-    case Inpar::Solid::model_meshtying:
+    case Solid::model_meshtying:
     {
       const Solid::ModelEvaluator::Meshtying& mt_me =
           dynamic_cast<const Solid::ModelEvaluator::Meshtying&>(me);
@@ -334,14 +334,14 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
         FOUR_C_THROW("I don't know what to do");
       break;
     }
-    case Inpar::Solid::model_cardiovascular0d:
+    case Solid::model_cardiovascular0d:
     {
       // --- 2x2 block system
       model_block_id_[mt] = max_block_num_;
       ++max_block_num_;
       break;
     }
-    case Inpar::Solid::model_lag_pen_constraint:
+    case Solid::model_lag_pen_constraint:
     {
       // ----------------------------------------------------------------------
       // check type of constraint conditions (Lagrange multiplier vs. penalty)
@@ -377,22 +377,22 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
       }
       break;
     }
-    case Inpar::Solid::model_springdashpot:
-    case Inpar::Solid::model_beam_interaction_old:
-    case Inpar::Solid::model_browniandyn:
+    case Solid::model_springdashpot:
+    case Solid::model_beam_interaction_old:
+    case Solid::model_browniandyn:
     {
       // structural block
       model_block_id_[mt] = 0;
       break;
     }
-    case Inpar::Solid::model_basic_coupling:
-    case Inpar::Solid::model_monolithic_coupling:
-    case Inpar::Solid::model_partitioned_coupling:
+    case Solid::model_basic_coupling:
+    case Solid::model_monolithic_coupling:
+    case Solid::model_partitioned_coupling:
     {
       // do nothing
       break;
     }
-    case Inpar::Solid::model_beaminteraction:
+    case Solid::model_beaminteraction:
     {
       const Solid::ModelEvaluator::BeamInteractionModelEvaluator& beaminteraction_evaluator =
           dynamic_cast<const Solid::ModelEvaluator::BeamInteractionModelEvaluator&>(me);
@@ -403,12 +403,12 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
       }
       break;
     }
-    case Inpar::Solid::model_multiscale:
+    case Solid::model_multiscale:
     {
       // do nothing
       break;
     }
-    case Inpar::Solid::model_constraints:
+    case Solid::model_constraints:
     {
       const auto& constraint_evaluator = dynamic_cast<const Solid::ModelEvaluator::Constraint&>(me);
       if (constraint_evaluator.have_lagrange_dofs())
@@ -444,10 +444,10 @@ void Solid::TimeInt::BaseDataGlobalState::setup_multi_map_extractor()
    * map */
   std::vector<std::shared_ptr<const Core::LinAlg::Map>> maps_vec(max_block_number(), nullptr);
   // Make sure, that the block ids and the vector entry ids coincide!
-  std::map<Inpar::Solid::ModelType, int>::const_iterator ci;
+  std::map<Solid::ModelType, int>::const_iterator ci;
   for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
   {
-    Inpar::Solid::ModelType mt = ci->first;
+    Solid::ModelType mt = ci->first;
     int bid = ci->second;
     maps_vec[bid] = model_maps_.at(mt);
   }
@@ -461,15 +461,15 @@ void Solid::TimeInt::BaseDataGlobalState::setup_element_technology_map_extractor
   check_init();
 
   // loop all active element technologies
-  const std::set<Inpar::Solid::EleTech>& ele_techs = datasdyn_->get_element_technologies();
-  for (const Inpar::Solid::EleTech et : ele_techs)
+  const std::set<Solid::EleTech>& ele_techs = datasdyn_->get_element_technologies();
+  for (const Solid::EleTech et : ele_techs)
   {
     // mapextractor for element technology
     Core::LinAlg::MultiMapExtractor mapext;
 
     switch (et)
     {
-      case (Inpar::Solid::EleTech::rotvec):
+      case (Solid::EleTech::rotvec):
       {
         setup_rot_vec_map_extractor(mapext);
         break;
@@ -484,7 +484,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup_element_technology_map_extractor
 
     // insert into map
     const auto check = mapextractors_.insert(
-        std::pair<Inpar::Solid::EleTech, Core::LinAlg::MultiMapExtractor>(et, mapext));
+        std::pair<Solid::EleTech, Core::LinAlg::MultiMapExtractor>(et, mapext));
 
     if (not check.second) FOUR_C_THROW("Insert failed!");
   }
@@ -494,7 +494,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup_element_technology_map_extractor
  *----------------------------------------------------------------------------*/
 const Core::LinAlg::MultiMapExtractor&
 Solid::TimeInt::BaseDataGlobalState::get_element_technology_map_extractor(
-    const Inpar::Solid::EleTech etech) const
+    const Solid::EleTech etech) const
 {
   if (mapextractors_.find(etech) == mapextractors_.end())
     FOUR_C_THROW("Could not find element technology \"{}\" in map extractors.", etech);
@@ -579,8 +579,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
   multimapext.setup(*dof_row_map_view(), maps);
 }
 
-Core::LinAlg::Map Solid::TimeInt::BaseDataGlobalState::block_map(
-    const Inpar::Solid::ModelType& mt) const
+Core::LinAlg::Map Solid::TimeInt::BaseDataGlobalState::block_map(const Solid::ModelType& mt) const
 {
   if (model_maps_.find(mt) == model_maps_.end())
     FOUR_C_THROW(
@@ -617,7 +616,7 @@ std::shared_ptr<NOX::Nln::Vector> Solid::TimeInt::BaseDataGlobalState::create_gl
     {
       FOUR_C_ASSERT(modeleval, "We need access to the Solid::ModelEvaluatorManager object!");
 
-      std::map<Inpar::Solid::ModelType, int>::const_iterator ci;
+      std::map<Solid::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
       {
         // get the partial solution vector of the last time step
@@ -634,7 +633,7 @@ std::shared_ptr<NOX::Nln::Vector> Solid::TimeInt::BaseDataGlobalState::create_gl
     {
       FOUR_C_ASSERT(modeleval, "We need access to the Solid::ModelEvaluatorManager object!");
 
-      std::map<Inpar::Solid::ModelType, int>::const_iterator ci;
+      std::map<Solid::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
       {
         // get the partial solution vector of the current state
@@ -750,7 +749,7 @@ const Core::LinAlg::Map* Solid::TimeInt::BaseDataGlobalState::dof_row_map_view()
 const Core::LinAlg::Map* Solid::TimeInt::BaseDataGlobalState::additive_dof_row_map_view() const
 {
   check_init();
-  return get_element_technology_map_extractor(Inpar::Solid::EleTech::rotvec).map(0).get();
+  return get_element_technology_map_extractor(Solid::EleTech::rotvec).map(0).get();
 }
 
 /*----------------------------------------------------------------------------*
@@ -758,7 +757,7 @@ const Core::LinAlg::Map* Solid::TimeInt::BaseDataGlobalState::additive_dof_row_m
 const Core::LinAlg::Map* Solid::TimeInt::BaseDataGlobalState::rot_vec_dof_row_map_view() const
 {
   check_init();
-  return get_element_technology_map_extractor(Inpar::Solid::EleTech::rotvec).map(1).get();
+  return get_element_technology_map_extractor(Solid::EleTech::rotvec).map(1).get();
 }
 
 /*----------------------------------------------------------------------------*
@@ -767,14 +766,14 @@ std::shared_ptr<Core::LinAlg::Vector<double>>
 Solid::TimeInt::BaseDataGlobalState::extract_displ_entries(
     const Core::LinAlg::Vector<double>& source) const
 {
-  return extract_model_entries(Inpar::Solid::model_structure, source);
+  return extract_model_entries(Solid::model_structure, source);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::Vector<double>>
 Solid::TimeInt::BaseDataGlobalState::extract_model_entries(
-    const Inpar::Solid::ModelType& mt, const Core::LinAlg::Vector<double>& source) const
+    const Solid::ModelType& mt, const Core::LinAlg::Vector<double>& source) const
 {
   std::shared_ptr<Core::LinAlg::Vector<double>> model_ptr = nullptr;
   // extract from the full state vector
@@ -805,7 +804,7 @@ Solid::TimeInt::BaseDataGlobalState::extract_rot_vec_entries(
     const Core::LinAlg::Vector<double>& source) const
 {
   std::shared_ptr<Core::LinAlg::Vector<double>> addit_ptr =
-      get_element_technology_map_extractor(Inpar::Solid::EleTech::rotvec).extract_vector(source, 1);
+      get_element_technology_map_extractor(Solid::EleTech::rotvec).extract_vector(source, 1);
 
   return addit_ptr;
 }
@@ -813,8 +812,8 @@ Solid::TimeInt::BaseDataGlobalState::extract_rot_vec_entries(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::BaseDataGlobalState::assign_model_block(Core::LinAlg::SparseOperator& jac,
-    const Core::LinAlg::SparseMatrix& matrix, const Inpar::Solid::ModelType mt,
-    const MatBlockType bt, const Core::LinAlg::DataAccess access) const
+    const Core::LinAlg::SparseMatrix& matrix, const Solid::ModelType mt, const MatBlockType bt,
+    const Core::LinAlg::DataAccess access) const
 {
   Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>* blockmat_ptr =
       dynamic_cast<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>*>(
@@ -880,8 +879,8 @@ void Solid::TimeInt::BaseDataGlobalState::assign_model_block(Core::LinAlg::Spars
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::SparseMatrix>
-Solid::TimeInt::BaseDataGlobalState::extract_model_block(Core::LinAlg::SparseOperator& jac,
-    const Inpar::Solid::ModelType& mt, const MatBlockType& bt) const
+Solid::TimeInt::BaseDataGlobalState::extract_model_block(
+    Core::LinAlg::SparseOperator& jac, const Solid::ModelType& mt, const MatBlockType& bt) const
 {
   std::shared_ptr<Core::LinAlg::SparseMatrix> block = nullptr;
   Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>* blockmat_ptr =
@@ -949,14 +948,14 @@ std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>>
 Solid::TimeInt::BaseDataGlobalState::extract_displ_row_of_blocks(
     Core::LinAlg::SparseOperator& jac) const
 {
-  return extract_row_of_blocks(jac, Inpar::Solid::model_structure);
+  return extract_row_of_blocks(jac, Solid::model_structure);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>>
 Solid::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
-    Core::LinAlg::SparseOperator& jac, const Inpar::Solid::ModelType& mt) const
+    Core::LinAlg::SparseOperator& jac, const Solid::ModelType& mt) const
 {
   std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>> rowofblocks = nullptr;
 
@@ -1003,7 +1002,7 @@ Solid::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
 std::shared_ptr<Core::LinAlg::SparseMatrix>
 Solid::TimeInt::BaseDataGlobalState::extract_displ_block(Core::LinAlg::SparseOperator& jac) const
 {
-  return extract_model_block(jac, Inpar::Solid::model_structure, MatBlockType::displ_displ);
+  return extract_model_block(jac, Solid::model_structure, MatBlockType::displ_displ);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1039,14 +1038,14 @@ int Solid::TimeInt::BaseDataGlobalState::get_last_lin_iteration_number(const uns
     switch (linsolver.first)
     {
       // has only one field solver per default
-      case Inpar::Solid::model_structure:
-      case Inpar::Solid::model_springdashpot:
-      case Inpar::Solid::model_browniandyn:
-      case Inpar::Solid::model_beaminteraction:
-      case Inpar::Solid::model_basic_coupling:
-      case Inpar::Solid::model_monolithic_coupling:
-      case Inpar::Solid::model_partitioned_coupling:
-      case Inpar::Solid::model_beam_interaction_old:
+      case Solid::model_structure:
+      case Solid::model_springdashpot:
+      case Solid::model_browniandyn:
+      case Solid::model_beaminteraction:
+      case Solid::model_basic_coupling:
+      case Solid::model_monolithic_coupling:
+      case Solid::model_partitioned_coupling:
+      case Solid::model_beam_interaction_old:
       {
         iter = linsolvers[linsolver.first]->get_num_iters();
         break;
@@ -1054,7 +1053,7 @@ int Solid::TimeInt::BaseDataGlobalState::get_last_lin_iteration_number(const uns
       default:
         FOUR_C_THROW(
             "The given model type '{}' is not supported for linear iteration output right now.",
-            Inpar::Solid::model_structure);
+            Solid::model_structure);
     }
   }
 

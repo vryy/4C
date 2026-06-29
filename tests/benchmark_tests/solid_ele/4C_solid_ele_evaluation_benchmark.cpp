@@ -16,7 +16,6 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_io_input_parameter_container.templates.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -24,6 +23,7 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_solid_ele_calc_lib_integration.hpp"
 #include "4C_solid_ele_properties.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 #include <benchmark/benchmark.h>
@@ -76,8 +76,7 @@ namespace
 
   template <Core::FE::CellType celltype>
   std::shared_ptr<Core::Elements::Element> make_solid_element(
-      const Discret::Elements::ElementTechnology& element_technology,
-      Inpar::Solid::KinemType kinem_type)
+      const Discret::Elements::ElementTechnology& element_technology, Solid::KinemType kinem_type)
   {
     constexpr auto ele_type = "SOLID";
     std::array<int, Core::FE::num_nodes(celltype)> node_ids{};
@@ -103,7 +102,7 @@ namespace
 
   template <Core::FE::CellType celltype>
   std::unique_ptr<Core::FE::Discretization> make_discretization(
-      Discret::Elements::ElementTechnology ele_tech, Inpar::Solid::KinemType kinem_type)
+      Discret::Elements::ElementTechnology ele_tech, Solid::KinemType kinem_type)
   {
     auto dis = std::make_unique<Core::FE::Discretization>("solid",
         Global::Problem::instance()->get_communicators().global_comm(), Core::FE::dim<celltype>);
@@ -169,11 +168,11 @@ namespace
 
 using CellType = Core::FE::CellType;
 using ElementTechnology = Discret::Elements::ElementTechnology;
-using KinemType = Inpar::Solid::KinemType;
+using KinemType = Solid::KinemType;
 
 template <Core::FE::CellType celltype,
     Discret::Elements::ElementTechnology ele_tech = Discret::Elements::ElementTechnology::none,
-    Inpar::Solid::KinemType kinem_type = Inpar::Solid::KinemType::nonlinearTotLag>
+    Solid::KinemType kinem_type = Solid::KinemType::nonlinearTotLag>
 static void evaluate_force_stiff(benchmark::State& state)
 {
   Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;

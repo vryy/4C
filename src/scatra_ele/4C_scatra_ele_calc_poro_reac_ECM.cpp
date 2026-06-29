@@ -173,7 +173,7 @@ double Discret::Elements::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
   static Core::LinAlg::SymmetricTensor<double, 3, 3> glstrain;
   glstrain = {};
-  // if (kinemtype_ == Inpar::Solid::KinemType::nonlinearTotLag)
+  // if (kinemtype_ == Solid::KinemType::nonlinearTotLag)
   {
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<nsd_, nsd_> cauchygreen;

@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_solver_nonlin_nox_enum_lists.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <NOX_Abstract_Vector.H>
 
@@ -55,7 +55,7 @@ namespace Solid
   {
     //! Convert the structural vector types to a corresponding nox norm type
     enum ::NOX::Abstract::Vector::NormType convert2_nox_norm_type(
-        const Inpar::Solid::VectorNorm& normtype);
+        const Solid::VectorNorm& normtype);
 
     /*! Convert the structural model type enums to nox nln solution
      *  type enums
@@ -66,9 +66,8 @@ namespace Solid
      */
     void convert_model_type2_sol_type(std::vector<NOX::Nln::SolutionType>& soltypes,
         std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& slinsolvers,
-        const std::set<Inpar::Solid::ModelType>& modeltypes,
-        const std::map<Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>&
-            mlinsolvers);
+        const std::set<Solid::ModelType>& modeltypes,
+        const std::map<Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>& mlinsolvers);
 
     /*! \brief Convert the structural model type enumerator to a nox nln solution
      *  type enumerator
@@ -76,14 +75,13 @@ namespace Solid
      *  \param modeltype (in) : Model type enumerator which has to be converted
      *  \param do_check  (in) : Check if a corresponding solution type exists */
     NOX::Nln::SolutionType convert_model_type2_sol_type(
-        const Inpar::Solid::ModelType& modeltype, const bool& do_check);
+        const Solid::ModelType& modeltype, const bool& do_check);
 
     /*! \brief Convert the structural model type enumerator to a nox nln solution
      *  type enumerator and check if the conversion was successful
      *
      *  \param modeltype (in) : Model type enumerator which has to be converted. */
-    inline NOX::Nln::SolutionType convert_model_type2_sol_type(
-        const Inpar::Solid::ModelType& modeltype)
+    inline NOX::Nln::SolutionType convert_model_type2_sol_type(const Solid::ModelType& modeltype)
     {
       return convert_model_type2_sol_type(modeltype, true);
     }
@@ -93,15 +91,14 @@ namespace Solid
      *
      *  \param soltype (in)   : Solution type enumerator which has to be converted.
      *  \param do_check  (in) : Check if a corresponding model type exists. */
-    Inpar::Solid::ModelType convert_sol_type2_model_type(
+    Solid::ModelType convert_sol_type2_model_type(
         const NOX::Nln::SolutionType& soltype, const bool& do_check);
 
     /*! \brief Convert the structural model type enumerator to a nox nln solution
      *  type enumerator and check if the conversion was successful
      *
      *  \param soltype (in) : Solution type enumerator which has to be converted. */
-    inline Inpar::Solid::ModelType convert_sol_type2_model_type(
-        const NOX::Nln::SolutionType& soltype)
+    inline Solid::ModelType convert_sol_type2_model_type(const NOX::Nln::SolutionType& soltype)
     {
       return convert_sol_type2_model_type(soltype, true);
     }
@@ -111,14 +108,14 @@ namespace Solid
      *
      *  \param qtype (in)    : Quantity type enumerator which has to be converted.
      *  \param do_check (in) : Check if a corresponding model type exists. */
-    Inpar::Solid::ModelType convert_quantity_type2_model_type(
+    Solid::ModelType convert_quantity_type2_model_type(
         const NOX::Nln::StatusTest::QuantityType& qtype, const bool& do_check);
 
     /*! \brief Convert the nox nln statustest quantity type enumerator to a structural model
      *  type enumerator and check if the conversion was successful
      *
      *  \param qtype (in) : Quantity type enumerator which has to be converted. */
-    inline Inpar::Solid::ModelType convert_quantity_type2_model_type(
+    inline Solid::ModelType convert_quantity_type2_model_type(
         const NOX::Nln::StatusTest::QuantityType& qtype)
     {
       return convert_quantity_type2_model_type(qtype, true);
@@ -128,8 +125,7 @@ namespace Solid
      *  type enumerator
      *
      *  \param qtype (in)    : Quantity type enumerator which has to be converted. */
-    Inpar::Solid::EleTech convert_quantity_type2_ele_tech(
-        const NOX::Nln::StatusTest::QuantityType& qtype);
+    Solid::EleTech convert_quantity_type2_ele_tech(const NOX::Nln::StatusTest::QuantityType& qtype);
 
     //! Returns the optimization type of the underlying structural problem
     NOX::Nln::OptimizationProblemType optimization_type(
@@ -137,7 +133,7 @@ namespace Solid
 
     /// convert structure condition number type to a nox condition number type
     NOX::Nln::LinSystem::ConditionNumber convert2_nox_condition_number_type(
-        const Inpar::Solid::ConditionNumber stype);
+        const Solid::ConditionNumber stype);
 
     //! Set the constraint interfaces
     void create_constraint_interfaces(

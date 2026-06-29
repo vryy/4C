@@ -28,7 +28,7 @@ namespace
    * @tparam prestress_technology : Prestress technology (none or mulf)
    * @tparam Enable : A dummy parameter for enabling a subset of switches.
    */
-  template <Core::FE::CellType celltype, Inpar::Solid::KinemType kinem,
+  template <Core::FE::CellType celltype, Solid::KinemType kinem,
       Discret::Elements::ElementTechnology ele_tech,
       Discret::Elements::PrestressTechnology prestress_technology>
   struct SolidScatraCalculationFormulation
@@ -40,7 +40,7 @@ namespace
    * celltypes
    */
   template <Core::FE::CellType celltype>
-  struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+  struct SolidScatraCalculationFormulation<celltype, Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::none, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::Internal::DisplacementBasedSolidScatraIntegrator<celltype>;
@@ -51,7 +51,7 @@ namespace
    * celltypes
    */
   template <Core::FE::CellType celltype>
-  struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::linear,
+  struct SolidScatraCalculationFormulation<celltype, Solid::KinemType::linear,
       Discret::Elements::ElementTechnology::none, Discret::Elements::PrestressTechnology::none>
   {
     using type =
@@ -64,7 +64,7 @@ namespace
    */
   template <Core::FE::CellType celltype>
     requires(celltype == Core::FE::CellType::hex8)
-  struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+  struct SolidScatraCalculationFormulation<celltype, Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::fbar, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::Internal::FBarSolidScatraIntegrator<celltype>;
@@ -75,11 +75,11 @@ namespace
    */
   template <Core::FE::CellType celltype>
     requires(celltype == Core::FE::CellType::hex8)
-  struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+  struct SolidScatraCalculationFormulation<celltype, Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::eas_full, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::Internal::EASSolidScatraIntegrator<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>;
+        Discret::Elements::EasType::eastype_h8_21, Solid::KinemType::nonlinearTotLag>;
   };
 
   /*!
@@ -87,11 +87,11 @@ namespace
    */
   template <Core::FE::CellType celltype>
     requires(celltype == Core::FE::CellType::hex8)
-  struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+  struct SolidScatraCalculationFormulation<celltype, Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::eas_mild, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::Internal::EASSolidScatraIntegrator<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>;
+        Discret::Elements::EasType::eastype_h8_9, Solid::KinemType::nonlinearTotLag>;
   };
 }  // namespace
 
@@ -120,7 +120,7 @@ Discret::Elements::create_solid_scatra_calculation_interface(Core::FE::CellType 
                           [&](auto prestress_tech_t) -> ReturnType
                           {
                             constexpr Core::FE::CellType celltype_c = celltype_t();
-                            constexpr Inpar::Solid::KinemType kinemtype_c = kinemtype_t();
+                            constexpr FourC::Solid::KinemType kinemtype_c = kinemtype_t();
                             constexpr ElementTechnology eletech_c = eletech_t();
                             constexpr PrestressTechnology prestress_tech_c = prestress_tech_t();
                             if constexpr (is_valid_type<

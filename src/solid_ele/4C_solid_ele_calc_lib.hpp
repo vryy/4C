@@ -23,7 +23,6 @@
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
@@ -35,6 +34,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_ele_calc_lib_integration.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_function.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -614,11 +614,11 @@ namespace Discret::Elements
   SpatialMaterialMapping<celltype> evaluate_spatial_material_mapping(
       const JacobianMapping<celltype>& jacobian_mapping,
       const ElementNodes<celltype>& nodal_coordinates, const double scale_defgrd = 1.0,
-      const Inpar::Solid::KinemType kinematictype = Inpar::Solid::KinemType::nonlinearTotLag)
+      const FourC::Solid::KinemType kinematictype = FourC::Solid::KinemType::nonlinearTotLag)
   {
     SpatialMaterialMapping<celltype> spatial_material_mapping;
 
-    if (kinematictype == Inpar::Solid::KinemType::nonlinearTotLag)
+    if (kinematictype == FourC::Solid::KinemType::nonlinearTotLag)
     {
       spatial_material_mapping.deformation_gradient_ =
           evaluate_deformation_gradient(jacobian_mapping, nodal_coordinates, scale_defgrd);

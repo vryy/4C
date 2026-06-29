@@ -21,10 +21,10 @@ namespace
 {
   bool prestress_is_active(const Global::Problem& problem, const double currentTime)
   {
-    Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
+    Solid::PreStress pstype = Teuchos::getIntegralValue<Solid::PreStress>(
         problem.structural_dynamic_params(), "PRESTRESS");
     const double pstime = problem.structural_dynamic_params().get<double>("PRESTRESSTIME");
-    return pstype != Inpar::Solid::PreStress::none && currentTime <= pstime + 1.0e-15;
+    return pstype != Solid::PreStress::none && currentTime <= pstime + 1.0e-15;
   }
 }  // namespace
 

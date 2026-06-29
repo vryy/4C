@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -94,7 +94,7 @@ namespace Discret
       }
 
       /// which optional solid output to write default: none
-      [[nodiscard]] Inpar::Solid::OptQuantityType output_optional_quantity() const
+      [[nodiscard]] Solid::OptQuantityType output_optional_quantity() const
       {
         return output_optional_quantity_;
       }
@@ -114,7 +114,7 @@ namespace Discret
       }
 
       /// Return output type of Gauss point data
-      [[nodiscard]] Inpar::Solid::GaussPointDataOutputType gauss_point_data_output() const
+      [[nodiscard]] Solid::GaussPointDataOutputType gauss_point_data_output() const
       {
         check_init_setup();
         return gauss_point_data_output_type_;
@@ -166,7 +166,7 @@ namespace Discret
       bool output_element_ghosting_;
 
       /// whether to write an optional quantity
-      Inpar::Solid::OptQuantityType output_optional_quantity_ = Inpar::Solid::optquantity_none;
+      Solid::OptQuantityType output_optional_quantity_ = Solid::optquantity_none;
 
       /// whether to write the node GIDs
       bool output_node_gid_;
@@ -175,7 +175,7 @@ namespace Discret
       bool output_stress_strain_;
 
       /// Output type of Gauss point data
-      Inpar::Solid::GaussPointDataOutputType gauss_point_data_output_type_;
+      Solid::GaussPointDataOutputType gauss_point_data_output_type_;
       //@}
     };
 

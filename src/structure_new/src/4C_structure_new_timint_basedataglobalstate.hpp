@@ -10,13 +10,13 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_solver_nonlin_nox_abstract_prepostoperator.hpp"
 #include "4C_solver_nonlin_nox_enum_lists.hpp"
 #include "4C_structure_new_enum_lists.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_timestepping_mstep.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
@@ -125,7 +125,7 @@ namespace Solid
        * @return Max GID in the entire problem
        */
       int setup_block_information(
-          const Solid::ModelEvaluator::Generic& me, const Inpar::Solid::ModelType& mt);
+          const Solid::ModelEvaluator::Generic& me, const Solid::ModelType& mt);
 
       /// setup the multi map extractor for saddle point problems
       void setup_multi_map_extractor();
@@ -140,7 +140,7 @@ namespace Solid
        * @return MultiMapExtractor for the required type of element technology
        */
       const Core::LinAlg::MultiMapExtractor& get_element_technology_map_extractor(
-          const Inpar::Solid::EleTech etech) const;
+          const Solid::EleTech etech) const;
 
       /** setup the map extractor for translational <-> rotation pseudo-vector DoFs
        *                              (additive)    <->  (non-additive)      */
@@ -160,7 +160,7 @@ namespace Solid
        * \param mt (in)     : model type of the desired block.
        * \param source (in) : full vector to extract from. */
       std::shared_ptr<Core::LinAlg::Vector<double>> extract_model_entries(
-          const Inpar::Solid::ModelType& mt, const Core::LinAlg::Vector<double>& source) const;
+          const Solid::ModelType& mt, const Core::LinAlg::Vector<double>& source) const;
 
       /* \brief Extract the part of a vector which belongs to non-additive rotation
        * (pseudo-)vector dofs.
@@ -179,14 +179,14 @@ namespace Solid
        * \param mt (in)  : Model type of the desired block.
        * \param bt (in)  : Desired matrix block type.  */
       std::shared_ptr<Core::LinAlg::SparseMatrix> extract_model_block(
-          Core::LinAlg::SparseOperator& jac, const Inpar::Solid::ModelType& mt,
+          Core::LinAlg::SparseOperator& jac, const Solid::ModelType& mt,
           const MatBlockType& bt) const;
 
       std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>> extract_displ_row_of_blocks(
           Core::LinAlg::SparseOperator& jac) const;
 
       std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>> extract_row_of_blocks(
-          Core::LinAlg::SparseOperator& jac, const Inpar::Solid::ModelType& mt) const;
+          Core::LinAlg::SparseOperator& jac, const Solid::ModelType& mt) const;
 
       /** \brief Assign a Core::LinAlg::SparseMatrix to one of the blocks of the corresponding
        * model
@@ -199,7 +199,7 @@ namespace Solid
        *         | LmD    LmLm |
        *          ===       ===     */
       void assign_model_block(Core::LinAlg::SparseOperator& jac,
-          const Core::LinAlg::SparseMatrix& matrix, Inpar::Solid::ModelType mt, MatBlockType bt,
+          const Core::LinAlg::SparseMatrix& matrix, Solid::ModelType mt, MatBlockType bt,
           Core::LinAlg::DataAccess access = Core::LinAlg::DataAccess::Share) const;
 
       /// Get the displacement block of the global jacobian matrix in the global
@@ -561,8 +561,7 @@ namespace Solid
       /** \brief Returns Core::LinAlg::Map pointer of the given model
        *
        *  If the given model is not found, nullptr is returned. */
-      std::shared_ptr<const Core::LinAlg::Map> block_map_ptr(
-          const Inpar::Solid::ModelType& mt) const
+      std::shared_ptr<const Core::LinAlg::Map> block_map_ptr(const Solid::ModelType& mt) const
       {
         if (model_maps_.find(mt) != model_maps_.end()) return model_maps_.at(mt);
 
@@ -570,12 +569,12 @@ namespace Solid
       };
 
       /// Returns Core::LinAlg::Map of the given model
-      Core::LinAlg::Map block_map(const Inpar::Solid::ModelType& mt) const;
+      Core::LinAlg::Map block_map(const Solid::ModelType& mt) const;
 
       /** \brief Returns the Block id of the given model type.
        *
        *  If the block is not found, -1 is returned. */
-      int block_id(const Inpar::Solid::ModelType& mt) const
+      int block_id(const Solid::ModelType& mt) const
       {
         if (model_block_id_.find(mt) != model_block_id_.end()) return model_block_id_.at(mt);
 
@@ -1035,10 +1034,10 @@ namespace Solid
       /// @{
 
       /// Core::LinAlg::Map s of the different models
-      std::map<Inpar::Solid::ModelType, std::shared_ptr<const Core::LinAlg::Map>> model_maps_;
+      std::map<Solid::ModelType, std::shared_ptr<const Core::LinAlg::Map>> model_maps_;
 
       /// block information for the different models
-      std::map<Inpar::Solid::ModelType, int> model_block_id_;
+      std::map<Solid::ModelType, int> model_block_id_;
 
       int max_block_num_;
 
@@ -1049,7 +1048,7 @@ namespace Solid
       Core::LinAlg::MultiMapExtractor blockextractor_;
 
       // all active element technology map extractors
-      std::map<Inpar::Solid::EleTech, Core::LinAlg::MultiMapExtractor> mapextractors_;
+      std::map<Solid::EleTech, Core::LinAlg::MultiMapExtractor> mapextractors_;
 
       /// map extractor for split of translational <-> rotational pseudo-vector DoFs
       Core::LinAlg::MultiMapExtractor rotvecextractor_;

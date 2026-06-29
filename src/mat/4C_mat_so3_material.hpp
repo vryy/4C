@@ -10,12 +10,12 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
 #include "4C_material_base.hpp"
 #include "4C_solid_ele_fibers.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -158,7 +158,7 @@ namespace Mat
     /*!
      * @brief Check if element kinematics and material kinematics are compatible
      */
-    virtual void valid_kinematics(Inpar::Solid::KinemType kinem) = 0;
+    virtual void valid_kinematics(Solid::KinemType kinem) = 0;
 
     /*!
      * @brief Set up for materials with GP data (e.g., history variables)

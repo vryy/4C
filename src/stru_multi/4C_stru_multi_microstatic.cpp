@@ -77,13 +77,12 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   compute_null_space_if_necessary(*discret_, solver_->params());
 
-  auto pred = Teuchos::getIntegralValue<Inpar::Solid::PredEnum>(sdyn_micro, "PREDICT");
+  auto pred = Teuchos::getIntegralValue<Solid::PredEnum>(sdyn_micro, "PREDICT");
   pred_ = pred;
-  combdisifres_ =
-      Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
-  normtypedisi_ = Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_DISP");
-  normtypefres_ = Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_RESF");
-  auto iternorm = Teuchos::getIntegralValue<Inpar::Solid::VectorNorm>(sdyn_micro, "ITERNORM");
+  combdisifres_ = Teuchos::getIntegralValue<Solid::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
+  normtypedisi_ = Teuchos::getIntegralValue<Solid::ConvNorm>(sdyn_micro, "NORM_DISP");
+  normtypefres_ = Teuchos::getIntegralValue<Solid::ConvNorm>(sdyn_micro, "NORM_RESF");
+  auto iternorm = Teuchos::getIntegralValue<Solid::VectorNorm>(sdyn_micro, "ITERNORM");
   iternorm_ = iternorm;
 
   dt_ = sdyn_macro.get<double>("TIMESTEP");
@@ -122,11 +121,10 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   output_element_owner_ = visualization_output_paramslist.get<bool>("ELEMENT_OWNER");
   output_element_material_id_ = visualization_output_paramslist.get<bool>("ELEMENT_MAT_ID");
   output_stress_strain_ = visualization_output_paramslist.get<bool>("STRESS_STRAIN");
-  gauss_point_data_output_type_ = Teuchos::getIntegralValue<Inpar::Solid::GaussPointDataOutputType>(
+  gauss_point_data_output_type_ = Teuchos::getIntegralValue<Solid::GaussPointDataOutputType>(
       visualization_output_paramslist, "GAUSS_POINT_DATA_OUTPUT_TYPE");
 
-  FOUR_C_ASSERT_ALWAYS(
-      gauss_point_data_output_type_ == Inpar::Solid::GaussPointDataOutputType::none,
+  FOUR_C_ASSERT_ALWAYS(gauss_point_data_output_type_ == Solid::GaussPointDataOutputType::none,
       "Gauss point output not yet implemented on micro scale.");
 
   if (output_stress_strain_)
@@ -134,23 +132,19 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     // If stress / strain data should be output, check that the relevant parameters in the --IO
     // section are set.
     const Teuchos::ParameterList& io_parameter_list = Global::Problem::instance()->io_params();
-    iostress_ =
-        Teuchos::getIntegralValue<Inpar::Solid::StressType>(io_parameter_list, "STRUCT_STRESS");
-    iostrain_ =
-        Teuchos::getIntegralValue<Inpar::Solid::StrainType>(io_parameter_list, "STRUCT_STRAIN");
-    ioplstrain_ =
-        Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
+    iostress_ = Teuchos::getIntegralValue<Solid::StressType>(io_parameter_list, "STRUCT_STRESS");
+    iostrain_ = Teuchos::getIntegralValue<Solid::StrainType>(io_parameter_list, "STRUCT_STRAIN");
+    ioplstrain_ = Teuchos::getIntegralValue<Solid::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
 
-    FOUR_C_ASSERT_ALWAYS(
-        iostress_ != Inpar::Solid::stress_none or iostrain_ != Inpar::Solid::strain_none,
+    FOUR_C_ASSERT_ALWAYS(iostress_ != Solid::stress_none or iostrain_ != Solid::strain_none,
         "If stress / strain runtime output is required, one or two of the flags STRUCT_STRAIN / "
         "STRUCT_STRESS in the --IO section has to be activated.");
   }
   else
   {
-    iostress_ = Inpar::Solid::StressType::stress_none;
-    iostrain_ = Inpar::Solid::StrainType::strain_none;
-    ioplstrain_ = Inpar::Solid::StrainType::strain_none;
+    iostress_ = Solid::StressType::stress_none;
+    iostrain_ = Solid::StrainType::strain_none;
+    ioplstrain_ = Solid::StrainType::strain_none;
   }
 
   isadapttol_ = (sdyn_micro.get<bool>("ADAPTCONV"));
@@ -293,9 +287,9 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
 void MultiScale::MicroStatic::predictor(const Core::LinAlg::Matrix<3, 3>* defgrd)
 {
-  if (pred_ == Inpar::Solid::pred_constdis)
+  if (pred_ == Solid::pred_constdis)
     predict_const_dis(defgrd);
-  else if (pred_ == Inpar::Solid::pred_tangdis)
+  else if (pred_ == Solid::pred_tangdis)
     predict_tang_dis(defgrd);
   else
     FOUR_C_THROW("requested predictor not implemented on the micro-scale");
@@ -523,7 +517,7 @@ void MultiScale::MicroStatic::full_newton()
   // if TangDis-Predictor is employed, the number of iterations needs
   // to be increased by one, since it involves already one solution of
   // the non-linear system!
-  if (pred_ == Inpar::Solid::pred_tangdis) numiter_++;
+  if (pred_ == Solid::pred_tangdis) numiter_++;
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces (needed for relative convergence
@@ -622,7 +616,7 @@ void MultiScale::MicroStatic::full_newton()
 void MultiScale::MicroStatic::runtime_pre_output_step_state()
 {
   if (results_every_ and !(stepn_ % results_every_) and
-      (iostress_ != Inpar::Solid::stress_none or iostrain_ != Inpar::Solid::strain_none))
+      (iostress_ != Solid::stress_none or iostrain_ != Solid::strain_none))
   {
     // initialize data container for element evaluation
     auto stress_data = std::make_shared<std::vector<char>>();
@@ -639,9 +633,9 @@ void MultiScale::MicroStatic::runtime_pre_output_step_state()
     p.set("stress", stress_data);
     p.set("strain", strain_data);
     p.set("plstrain", plastic_strain_data);
-    p.set<Inpar::Solid::StressType>("iostress", iostress_);
-    p.set<Inpar::Solid::StrainType>("iostrain", iostrain_);
-    p.set<Inpar::Solid::StrainType>("ioplstrain", ioplstrain_);
+    p.set<Solid::StressType>("iostress", iostress_);
+    p.set<Solid::StrainType>("iostrain", iostrain_);
+    p.set<Solid::StrainType>("ioplstrain", ioplstrain_);
     // set vector values needed by elements
     discret_->clear_state();
     discret_->set_state("residual displacement", *zeros_);
@@ -700,7 +694,7 @@ void MultiScale::MicroStatic::runtime_pre_output_step_state()
           });
     };
 
-    if (iostress_ != Inpar::Solid::stress_none)
+    if (iostress_ != Solid::stress_none)
     {
       std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> gp_stress_data =
           EvaluateGaussPointData(*stress_data);
@@ -720,7 +714,7 @@ void MultiScale::MicroStatic::runtime_pre_output_step_state()
 
       PostprocessGaussPointDataToElementCenter(gp_stress_data, *stress_data_element_postprocessed_);
     }
-    if (iostrain_ != Inpar::Solid::strain_none)
+    if (iostrain_ != Solid::strain_none)
     {
       std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> gp_strain_data =
           EvaluateGaussPointData(*strain_data);
@@ -792,17 +786,17 @@ void MultiScale::MicroStatic::runtime_output_step_state_microscale(
     if (output_element_material_id_) micro_visualization_writer->append_element_material_id();
 
     // append stress if desired
-    if (output_stress_strain_ and iostress_ != Inpar::Solid::stress_none)
+    if (output_stress_strain_ and iostress_ != Solid::stress_none)
     {
       std::string name_nodal = "";
       std::string name_element = "";
 
-      if (iostress_ == Inpar::Solid::stress_2pk)
+      if (iostress_ == Solid::stress_2pk)
       {
         name_nodal = "nodal_2PK_stresses_xyz";
         name_element = "element_2PK_stresses_xyz";
       }
-      else if (iostress_ == Inpar::Solid::stress_cauchy)
+      else if (iostress_ == Solid::stress_cauchy)
       {
         name_nodal = "nodal_cauchy_stresses_xyz";
         name_element = "element_cauchy_stresses_xyz";
@@ -820,22 +814,22 @@ void MultiScale::MicroStatic::runtime_output_step_state_microscale(
     }
 
     // append strain if desired.
-    if (output_stress_strain_ and iostrain_ != Inpar::Solid::strain_none)
+    if (output_stress_strain_ and iostrain_ != Solid::strain_none)
     {
       std::string name_nodal = "";
       std::string name_element = "";
 
-      if (iostrain_ == Inpar::Solid::strain_gl)
+      if (iostrain_ == Solid::strain_gl)
       {
         name_nodal = "nodal_GL_strains_xyz";
         name_element = "element_GL_strains_xyz";
       }
-      else if (iostrain_ == Inpar::Solid::strain_ea)
+      else if (iostrain_ == Solid::strain_ea)
       {
         name_nodal = "nodal_EA_strains_xyz";
         name_element = "element_EA_strains_xyz";
       }
-      else if (iostrain_ == Inpar::Solid::strain_log)
+      else if (iostrain_ == Solid::strain_log)
       {
         name_nodal = "nodal_LOG_strains_xyz";
         name_element = "element_LOG_strains_xyz";

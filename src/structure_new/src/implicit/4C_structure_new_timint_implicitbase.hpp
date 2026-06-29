@@ -40,7 +40,7 @@ namespace Solid
       ImplicitBase();
 
       /// Get type of thickness scaling for thin shell structures (derived)
-      Inpar::Solid::StcScale get_stc_algo() override;
+      Solid::StcScale get_stc_algo() override;
 
       /// Get stc matrix (derived)
       std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() override;

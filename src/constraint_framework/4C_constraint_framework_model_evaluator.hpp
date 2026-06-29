@@ -52,7 +52,7 @@ namespace Solid
 
       //! @name Derived public Solid::ModelEvaluator::Generic methods
       //! @{
-      Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_constraints; }
+      Solid::ModelType type() const override { return Solid::model_constraints; }
 
       /// check if the given model type is active.
       bool have_sub_model_type(Constraints::SubModelType const& submodeltype) const;
@@ -95,7 +95,7 @@ namespace Solid
 
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override {}
 
-      void predict(const Inpar::Solid::PredEnum& pred_type) override;
+      void predict(const Solid::PredEnum& pred_type) override;
 
       void update_step_state(const double& timefac_n) override;
 

@@ -118,7 +118,7 @@ bool Solid::ModelEvaluatorManager::initialize_inertia_and_damping(
 
   // get structural model evaluator
   Solid::ModelEvaluator::Structure& str_model =
-      dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
+      dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Solid::model_structure));
 
   str_model.reset(x);
 
@@ -129,7 +129,7 @@ bool Solid::ModelEvaluatorManager::initialize_inertia_and_damping(
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluatorManager::assemble_force(const double timefac_np,
     Core::LinAlg::Vector<double>& f,
-    const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+    const std::vector<Solid::ModelType>* without_these_models) const
 {
   if (not without_these_models) return assemble_force(timefac_np, f);
 
@@ -156,7 +156,7 @@ void Solid::ModelEvaluatorManager::assemble_force(
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluatorManager::assemble_jacobian(const double timefac_np,
     Core::LinAlg::SparseOperator& jac,
-    const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+    const std::vector<Solid::ModelType>* without_these_models) const
 {
   if (not without_these_models) return assemble_jacobian(timefac_np, jac);
 
@@ -375,7 +375,7 @@ bool Solid::ModelEvaluatorManager::apply_stiff(const Core::LinAlg::Vector<double
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::ModelEvaluatorManager::apply_stiff(const Inpar::Solid::ModelType& mt,
+bool Solid::ModelEvaluatorManager::apply_stiff(const Solid::ModelType& mt,
     const Core::LinAlg::Vector<double>& x, Core::LinAlg::SparseOperator& jac,
     const double& timefac_np) const
 {
@@ -440,9 +440,8 @@ bool Solid::ModelEvaluatorManager::apply_force_stiff(const Core::LinAlg::Vector<
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluatorManager::apply_cheap_soc_rhs(const NOX::Nln::CorrectionType type,
-    const std::vector<Inpar::Solid::ModelType>& constraint_models,
-    const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f,
-    const double& timefac_np) const
+    const std::vector<Solid::ModelType>& constraint_models, const Core::LinAlg::Vector<double>& x,
+    Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
   check_init_setup();
 
@@ -519,7 +518,7 @@ void Solid::ModelEvaluatorManager::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluatorManager::predict(const Inpar::Solid::PredEnum& pred_type) const
+void Solid::ModelEvaluatorManager::predict(const Solid::PredEnum& pred_type) const
 {
   check_init_setup();
   for (const auto& me_iter : *me_vec_ptr_) me_iter->predict(pred_type);
@@ -651,8 +650,7 @@ const std::shared_ptr<const Solid::TimeInt::Base>& Solid::ModelEvaluatorManager:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::ModelEvaluator::Generic& Solid::ModelEvaluatorManager::evaluator(
-    const Inpar::Solid::ModelType& mt)
+Solid::ModelEvaluator::Generic& Solid::ModelEvaluatorManager::evaluator(const Solid::ModelType& mt)
 {
   check_init_setup();
   // sanity check, if there is a model evaluator for the given model type
@@ -666,7 +664,7 @@ Solid::ModelEvaluator::Generic& Solid::ModelEvaluatorManager::evaluator(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const Solid::ModelEvaluator::Generic& Solid::ModelEvaluatorManager::evaluator(
-    const Inpar::Solid::ModelType& mt) const
+    const Solid::ModelType& mt) const
 {
   check_init_setup();
   // sanity check, if there is a model evaluator for the given model type
@@ -805,7 +803,7 @@ Solid::ModelEvaluatorManager::transform_to_vector(
   // --------------------------------------------------------------------------
   // There must be a structural model evaluator at the first position
   // --------------------------------------------------------------------------
-  if (model_map.begin()->first != Inpar::Solid::model_structure)
+  if (model_map.begin()->first != Solid::model_structure)
     FOUR_C_THROW(
         "The first model evaluator in the model_map must be a "
         "structural model evaluator!");
@@ -823,7 +821,7 @@ Solid::ModelEvaluatorManager::transform_to_vector(
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluatorManager::split_model_vector(
     Solid::ModelEvaluatorManager::Vector& partial_me_vec,
-    const std::vector<Inpar::Solid::ModelType>& without_these_models) const
+    const std::vector<Solid::ModelType>& without_these_models) const
 {
   partial_me_vec.reserve(me_vec_ptr_->size());
   for (Vector::const_iterator cit = me_vec_ptr_->begin(); cit != me_vec_ptr_->end(); ++cit)
@@ -847,7 +845,7 @@ void Solid::ModelEvaluatorManager::split_model_vector(
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluatorManager::extract_model_vector(
     Solid::ModelEvaluatorManager::Vector& partial_me_vec,
-    const std::vector<Inpar::Solid::ModelType>& only_these_models) const
+    const std::vector<Solid::ModelType>& only_these_models) const
 {
   partial_me_vec.reserve(only_these_models.size());
   for (const auto mtype : only_these_models)

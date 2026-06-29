@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"  // necessary due to enums
+#include "4C_structure_new_input.hpp"  // necessary due to enums
 
 #include <map>
 #include <memory>
@@ -77,7 +77,7 @@ namespace Solid
   class ModelEvaluatorManager
   {
    public:
-    using Map = std::map<Inpar::Solid::ModelType, std::shared_ptr<Solid::ModelEvaluator::Generic>>;
+    using Map = std::map<Solid::ModelType, std::shared_ptr<Solid::ModelEvaluator::Generic>>;
     using Vector = std::vector<std::shared_ptr<Solid::ModelEvaluator::Generic>>;
 
     //! constructor
@@ -149,7 +149,7 @@ namespace Solid
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool apply_stiff(const Inpar::Solid::ModelType& mt, const Core::LinAlg::Vector<double>& x,
+    bool apply_stiff(const Solid::ModelType& mt, const Core::LinAlg::Vector<double>& x,
         Core::LinAlg::SparseOperator& jac, const double& timefac_np) const;
 
     /*! \brief Apply force and stiffness
@@ -177,7 +177,7 @@ namespace Solid
      * @return Boolean flag to indicate success (true) or failure (false)
      */
     bool apply_cheap_soc_rhs(const NOX::Nln::CorrectionType type,
-        const std::vector<Inpar::Solid::ModelType>& constraint_models,
+        const std::vector<Solid::ModelType>& constraint_models,
         const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f,
         const double& timefac_np) const;
 
@@ -199,7 +199,7 @@ namespace Solid
      *
      * @param[in] pred_type Type of predictor to be applied
      */
-    void predict(const Inpar::Solid::PredEnum& pred_type) const;
+    void predict(const Solid::PredEnum& pred_type) const;
 
     /** \brief Assembly of all force contributions
      *
@@ -212,7 +212,7 @@ namespace Solid
      *
      *  */
     bool assemble_force(const double timefac_np, Core::LinAlg::Vector<double>& f,
-        const std::vector<Inpar::Solid::ModelType>* without_these_models) const;
+        const std::vector<Solid::ModelType>* without_these_models) const;
 
 
     /** \brief Assembly of all jacobian contributions
@@ -227,7 +227,7 @@ namespace Solid
      *
      *  */
     bool assemble_jacobian(const double timefac_np, Core::LinAlg::SparseOperator& jac,
-        const std::vector<Inpar::Solid::ModelType>* without_these_models) const;
+        const std::vector<Solid::ModelType>* without_these_models) const;
 
     /** \brief Assembly of all force contributions
      *
@@ -346,8 +346,8 @@ namespace Solid
      *
      * \param[in] mt Type of model evaluator to be accessed
      */
-    Solid::ModelEvaluator::Generic& evaluator(const Inpar::Solid::ModelType& mt);
-    const Solid::ModelEvaluator::Generic& evaluator(const Inpar::Solid::ModelType& mt) const;
+    Solid::ModelEvaluator::Generic& evaluator(const Solid::ModelType& mt);
+    const Solid::ModelEvaluator::Generic& evaluator(const Solid::ModelType& mt) const;
 
     //!@}
 
@@ -503,13 +503,13 @@ namespace Solid
 
     /** \brief split the internally stored model vector and get the set without
      *  the specified models */
-    void split_model_vector(Vector& partial_me_vec,
-        const std::vector<Inpar::Solid::ModelType>& without_these_models) const;
+    void split_model_vector(
+        Vector& partial_me_vec, const std::vector<Solid::ModelType>& without_these_models) const;
 
     /** \brief Extract from the internally stored model vector all models
      *  with the desired types */
     void extract_model_vector(Solid::ModelEvaluatorManager::Vector& partial_me_vec,
-        const std::vector<Inpar::Solid::ModelType>& only_these_models) const;
+        const std::vector<Solid::ModelType>& only_these_models) const;
 
    private:
     //! Flag to indicate whether init() has been called

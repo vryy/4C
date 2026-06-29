@@ -66,7 +66,7 @@ void TSI::Utils::ThermoStructureCloneStrategy::set_element_data(
 
   // initialise kinematic type to geo_linear.
   // kintype is passed to the cloned thermo element
-  Inpar::Solid::KinemType kintype = Inpar::Solid::KinemType::linear;
+  Solid::KinemType kintype = Solid::KinemType::linear;
   // if oldele is a so3_base element or a so3_Plast element
   if (const auto* const solid_ele = dynamic_cast<Discret::Elements::SolidScatra<3>*>(oldele))
   {
@@ -294,7 +294,7 @@ void TSI::Utils::TSIMaterialStrategy::assign_material1_to2(
 
   // initialise kinematic type to geo_linear.
   // kintype is passed to the corresponding thermo element
-  Inpar::Solid::KinemType kintype = Inpar::Solid::KinemType::linear;
+  Solid::KinemType kintype = Solid::KinemType::linear;
 
   // default strategy: take material of element with closest center in reference coordinates
   Core::Elements::Element* ele1 = nullptr;

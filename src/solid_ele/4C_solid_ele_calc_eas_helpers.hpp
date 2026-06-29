@@ -614,7 +614,7 @@ namespace Discret::Elements
   };
 
   template <Core::FE::CellType celltype, Discret::Elements::EasType eastype,
-      Inpar::Solid::KinemType kinematic_type>
+      FourC::Solid::KinemType kinematic_type>
   EASKinematics<celltype, eastype> evaluate_eas_kinematics(
       const Discret::Elements::ElementNodes<celltype> nodal_coordinates,
       const Discret::Elements::CentroidTransformation<celltype>& centeroid_transformation,
@@ -624,7 +624,7 @@ namespace Discret::Elements
   {
     EASKinematics<celltype, eastype> eas_kinematics{};
 
-    if constexpr (kinematic_type == Inpar::Solid::KinemType::nonlinearTotLag)
+    if constexpr (kinematic_type == FourC::Solid::KinemType::nonlinearTotLag)
     {
       const Discret::Elements::SpatialMaterialMapping<celltype>
           displacement_based_spatial_material_mapping =
@@ -645,7 +645,7 @@ namespace Discret::Elements
               displacement_based_spatial_material_mapping.deformation_gradient_,
               eas_kinematics.enhanced_gl);
     }
-    else if constexpr (kinematic_type == Inpar::Solid::KinemType::linear)
+    else if constexpr (kinematic_type == FourC::Solid::KinemType::linear)
     {
       eas_kinematics.b_op = Discret::Elements::evaluate_linear_strain_gradient(jacobian_mapping);
 

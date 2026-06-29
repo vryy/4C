@@ -338,7 +338,7 @@ namespace Solid
 
     \return Enum to indicate convergence status or failure
     */
-    Inpar::Solid::ConvergenceStatus solve() final;
+    Solid::ConvergenceStatus solve() final;
 
     //! Do full Newton-Raphson iteration
     //!
@@ -531,7 +531,7 @@ namespace Solid
     //@{
 
     //! Return time integrator name
-    Inpar::Solid::DynamicType method_name() const override = 0;
+    Solid::DynamicType method_name() const override = 0;
 
     //! These time integrators are all implicit (mark their name)
     bool method_implicit() override { return true; }
@@ -571,7 +571,7 @@ namespace Solid
     }
 
     //! Get type of thickness scaling for thin shell structures
-    Inpar::Solid::StcScale get_stc_algo() override { return Inpar::Solid::StcScale::stc_inactive; }
+    Solid::StcScale get_stc_algo() override { return Solid::StcScale::stc_inactive; }
 
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
@@ -596,7 +596,7 @@ namespace Solid
     std::shared_ptr<Core::LinAlg::Vector<double>> solve_relaxation_linear() override;
 
     //! check, if according to divercont flag time step size can be increased
-    void check_for_time_step_increase(Inpar::Solid::ConvergenceStatus& status);
+    void check_for_time_step_increase(Solid::ConvergenceStatus& status);
 
 
     /*! \brief Prepare system for solving with Newton's method
@@ -748,49 +748,46 @@ namespace Solid
 
     //! @name General purpose algorithm parameters
     //@{
-    Inpar::Solid::PredEnum pred_;  //!< predictor
+    Solid::PredEnum pred_;  //!< predictor
     //@}
 
     //! @name Iterative solution technique
     //@{
-    enum Inpar::Solid::NonlinSolTech
+    enum Solid::NonlinSolTech
         itertype_;  //!< kind of iteration technique or non-linear solution technique
 
-    Inpar::Solid::ConvNorm normtypedisi_;        //!< convergence check for residual displacements
-    Inpar::Solid::ConvNorm normtypefres_;        //!< convergence check for residual forces
-    Inpar::Solid::ConvNorm normtypepres_;        //!< convergence check for residual pressure
-    Inpar::Solid::ConvNorm normtypepfres_;       //!< convergence check for residual pressure forces
-    Inpar::Solid::ConvNorm normtypecontconstr_;  //!< convergence check for contact constraints
-                                                 //!< (saddlepoint formulation only)
-    Inpar::Solid::ConvNorm normtypeplagrincr_;   //!< convergence check for Lagrange multiplier
-                                                 //!< increment (saddlepoint formulation only)
-    enum Inpar::Solid::BinaryOp
-        combfresplconstr_;  //!< binary operator to combine field norms (forces and plastic
-                            //!< constraints, semi-smooth plasticity only)
-    enum Inpar::Solid::BinaryOp
+    Solid::ConvNorm normtypedisi_;           //!< convergence check for residual displacements
+    Solid::ConvNorm normtypefres_;           //!< convergence check for residual forces
+    Solid::ConvNorm normtypepres_;           //!< convergence check for residual pressure
+    Solid::ConvNorm normtypepfres_;          //!< convergence check for residual pressure forces
+    Solid::ConvNorm normtypecontconstr_;     //!< convergence check for contact constraints
+                                             //!< (saddlepoint formulation only)
+    Solid::ConvNorm normtypeplagrincr_;      //!< convergence check for Lagrange multiplier
+                                             //!< increment (saddlepoint formulation only)
+    enum Solid::BinaryOp combfresplconstr_;  //!< binary operator to combine field norms (forces and
+                                             //!< plastic constraints, semi-smooth plasticity only)
+    enum Solid::BinaryOp
         combdisiLp_;  //!< binary operator to combine field norms (displacement increments and Lp
                       //!< increments, semi-smooth plasticity only)
-    enum Inpar::Solid::BinaryOp
-        combfresEasres_;  //!< binary operator to combine field norms (forces
-                          //!< and EAS residuals, semi-smooth plasticity only)
-    enum Inpar::Solid::BinaryOp
+    enum Solid::BinaryOp combfresEasres_;  //!< binary operator to combine field norms (forces
+                                           //!< and EAS residuals, semi-smooth plasticity only)
+    enum Solid::BinaryOp
         combdisiEasIncr_;  //!< binary operator to combine field norms (displacement increments and
                            //!< EAS increments, semi-smooth plasticity only)
 
-    Inpar::Solid::BinaryOp combdispre_;     //!< binary operator to combine field norms
-    Inpar::Solid::BinaryOp combfrespfres_;  //!< binary operator to combine field norms
-    enum Inpar::Solid::BinaryOp
-        combdisifres_;  //!< binary operator to combine displacement and forces
-    enum Inpar::Solid::BinaryOp
+    Solid::BinaryOp combdispre_;         //!< binary operator to combine field norms
+    Solid::BinaryOp combfrespfres_;      //!< binary operator to combine field norms
+    enum Solid::BinaryOp combdisifres_;  //!< binary operator to combine displacement and forces
+    enum Solid::BinaryOp
         combfrescontconstr_;  //!< binary operator to combine field norms (forces and contact
                               //!< constraints, contact/meshtying in saddlepoint formulation only)
-    enum Inpar::Solid::BinaryOp
+    enum Solid::BinaryOp
         combdisilagr_;  //!< binary operator to combine field norms (displacement increments and LM
                         //!< increments, contact/meshtying in saddlepoint formulation only)
 
-    Inpar::Solid::VectorNorm iternorm_;  //!< vector norm to check with
-    int itermax_;                        //!< maximally permitted iterations
-    int itermin_;                        //!< minimally requested iterations
+    Solid::VectorNorm iternorm_;  //!< vector norm to check with
+    int itermax_;                 //!< maximally permitted iterations
+    int itermin_;                 //!< minimally requested iterations
 
     double toldisi_;        //!< tolerance residual displacements
     double tolfres_;        //!< tolerance force residual

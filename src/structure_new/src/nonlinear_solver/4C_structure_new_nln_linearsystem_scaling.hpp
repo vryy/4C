@@ -10,9 +10,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_solver_nonlin_nox_scaling.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -63,7 +63,7 @@ namespace Solid
         std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_scaled_;
 
         //! scale thickness of shells
-        const Inpar::Solid::StcScale stcscale_;
+        const Solid::StcScale stcscale_;
 
         //! number of layers for multilayered case
         const int stclayer_;

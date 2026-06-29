@@ -12,11 +12,11 @@
 
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_elementtype.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_shell7p_ele_calc_interface.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <memory>
 
@@ -201,7 +201,7 @@ namespace Discret
           const Core::IO::InputParameterContainer& container,
           const Core::IO::MeshInput::ElementDataFromCellData& element_data) override;
 
-      [[nodiscard]] const std::set<Inpar::Solid::EleTech>& get_ele_tech() const { return eletech_; }
+      [[nodiscard]] const std::set<Solid::EleTech>& get_ele_tech() const { return eletech_; }
 
       [[nodiscard]] std::shared_ptr<Mat::So3Material> solid_material(int nummat = 0) const;
 
@@ -245,7 +245,7 @@ namespace Discret
       std::shared_ptr<Solid::Elements::ParamsInterface> interface_ptr_ = nullptr;
 
       //! element technology
-      std::set<Inpar::Solid::EleTech> eletech_ = {};
+      std::set<Solid::EleTech> eletech_ = {};
 
       //! shell thickness in reference frame
       double thickness_ = 0.0;

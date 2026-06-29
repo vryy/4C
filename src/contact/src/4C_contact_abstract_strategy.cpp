@@ -17,7 +17,6 @@
 #include "4C_contact_utils_parallel.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_sparsematrix.hpp"
@@ -29,6 +28,7 @@
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_utils.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
@@ -2033,8 +2033,8 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   if (!restartwithcontact)
     if (not(Global::Problem::instance()
                     ->structural_dynamic_params()
-                    .get<Inpar::Solid::IntegrationStrategy>("INT_STRATEGY") ==
-                Inpar::Solid::IntegrationStrategy::int_standard &&
+                    .get<Solid::IntegrationStrategy>("INT_STRATEGY") ==
+                Solid::IntegrationStrategy::int_standard &&
             is_penalty()))
     {
       reader.read_vector(z_, "lagrmultold");

@@ -12,7 +12,6 @@
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_extract_values.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
@@ -22,6 +21,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_solid_ele_calc_lib.hpp"
 #include "4C_solver_nonlin_nox_linearproblem.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -72,15 +72,14 @@ namespace
 
   template <Core::FE::CellType celltype>
   Core::LinAlg::SerialDenseMatrix evaluate_stc_matrix(const Core::Elements::Element& ele,
-      const std::vector<double> displacements, const Inpar::Solid::StcScale stc_scaling,
-      int stc_layer,
+      const std::vector<double> displacements, const Solid::StcScale stc_scaling, int stc_layer,
       const std::multimap<int, const Core::Conditions::Condition*>& stc_layer_conditions)
   {
     const Core::Nodes::Node* const* nodes = ele.nodes();
 
     const double aspect_ratio = compute_aspect_ratio<celltype>(ele, displacements);
     const double stc_factor =
-        stc_scaling == Inpar::Solid::stc_currsym ? aspect_ratio : aspect_ratio * aspect_ratio;
+        stc_scaling == Solid::stc_currsym ? aspect_ratio : aspect_ratio * aspect_ratio;
 
     const double factor1 = (stc_factor + 1.0) / (2.0 * stc_factor);
     const double factor2 = (stc_factor - 1.0) / (2.0 * stc_factor);
@@ -226,8 +225,8 @@ namespace
   }
 
   void evaluate_and_assemble_stc_matrix(Core::FE::Discretization& discret,
-      Core::LinAlg::Vector<double> global_displacements, Inpar::Solid::StcScale stc_scale,
-      int stc_layer, Core::LinAlg::SparseMatrix& global_matrix)
+      Core::LinAlg::Vector<double> global_displacements, Solid::StcScale stc_scale, int stc_layer,
+      Core::LinAlg::SparseMatrix& global_matrix)
   {
     std::vector<const Core::Conditions::Condition*> stc_conditions;
     discret.get_condition("STC Layer", stc_conditions);
@@ -302,7 +301,7 @@ void Solid::Nln::LinSystem::StcScaling::scale_linear_system(NOX::Nln::LinearProb
       Core::LinAlg::matrix_multiply(*stiff_linalg, false, *stcmat_, false, true, false, true);
 
   // left multiplication of stiffness matrix and rhs
-  if (stcscale_ == Inpar::Solid::stc_currsym)
+  if (stcscale_ == Solid::stc_currsym)
   {
     stiff_scaled_ =
         Core::LinAlg::matrix_multiply(*stcmat_, true, *stiff_scaled_, false, true, false, true);

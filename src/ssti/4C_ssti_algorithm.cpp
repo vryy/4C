@@ -73,8 +73,8 @@ void SSTI::SSTIAlgorithm::init(MPI_Comm comm, const Teuchos::ParameterList& ssti
   std::shared_ptr<Core::FE::Discretization> thermodis = problem->get_dis("thermo");
 
   // safety check
-  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(structparams, "INT_STRATEGY") ==
-      Inpar::Solid::IntegrationStrategy::int_old)
+  if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(structparams, "INT_STRATEGY") ==
+      Solid::IntegrationStrategy::int_old)
     FOUR_C_THROW("Old structural time integration is not supported");
 
   struct_adapterbase_ptr_ = Adapter::build_structure_algorithm(*problem, structparams);
@@ -126,11 +126,11 @@ void SSTI::SSTIAlgorithm::init(MPI_Comm comm, const Teuchos::ParameterList& ssti
     if (!scatraparams.get<bool>("ADAPTIVE_TIMESTEPPING"))
       FOUR_C_THROW(
           "Must provide adaptive time stepping in one of the subproblems. (Currently just ScaTra)");
-    if (Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(
-            structparams.sublist("TIMEADAPTIVITY"), "KIND") != Inpar::Solid::timada_kind_none)
+    if (Teuchos::getIntegralValue<Solid::TimAdaKind>(
+            structparams.sublist("TIMEADAPTIVITY"), "KIND") != Solid::timada_kind_none)
       FOUR_C_THROW("Adaptive time stepping in SSI currently just from ScaTra");
-    if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYPE") ==
-        Inpar::Solid::DynamicType::AdamsBashforth2)
+    if (Teuchos::getIntegralValue<Solid::DynamicType>(structparams, "DYNAMICTYPE") ==
+        Solid::DynamicType::AdamsBashforth2)
       FOUR_C_THROW("Currently, only one step methods are allowed for adaptive time stepping");
   }
 

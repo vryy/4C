@@ -526,10 +526,10 @@ void FSI::Monolithic::prepare_timeloop()
   // allow monolithic in the post-phase
   const auto& my_problem = problem();
   const auto& structural_dyn = my_problem.structural_dynamic_params();
-  const Inpar::Solid::PreStress pstype =
-      Teuchos::getIntegralValue<Inpar::Solid::PreStress>(structural_dyn, "PRESTRESS");
+  const Solid::PreStress pstype =
+      Teuchos::getIntegralValue<Solid::PreStress>(structural_dyn, "PRESTRESS");
   const double pstime = structural_dyn.get<double>("PRESTRESSTIME");
-  if (pstype != Inpar::Solid::PreStress::none && time() + dt() <= pstime + 1.0e-15)
+  if (pstype != Solid::PreStress::none && time() + dt() <= pstime + 1.0e-15)
     FOUR_C_THROW("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
 
   return;

@@ -9,7 +9,6 @@
 
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_scatra_input.hpp"
@@ -20,6 +19,7 @@
 #include "4C_solid_ele_surface.hpp"
 #include "4C_solid_scatra_ele_factory.hpp"
 #include "4C_solid_scatra_ele_lib.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -33,12 +33,11 @@ namespace
   {
     return all_of({
         parameter<int>("MAT"),
-        deprecated_selection<Inpar::Solid::KinemType>("KINEM",
+        deprecated_selection<Solid::KinemType>("KINEM",
             {
-                {kinem_type_string(Inpar::Solid::KinemType::linear),
-                    Inpar::Solid::KinemType::linear},
-                {kinem_type_string(Inpar::Solid::KinemType::nonlinearTotLag),
-                    Inpar::Solid::KinemType::nonlinearTotLag},
+                {kinem_type_string(Solid::KinemType::linear), Solid::KinemType::linear},
+                {kinem_type_string(Solid::KinemType::nonlinearTotLag),
+                    Solid::KinemType::nonlinearTotLag},
             },
             {.description = "Whether to use linear kinematics (small displacements) or nonlinear "
                             "kinematics (large displacements)"}),
@@ -66,12 +65,11 @@ namespace
   {
     return all_of({
         parameter<int>("MAT"),
-        deprecated_selection<Inpar::Solid::KinemType>("KINEM",
+        deprecated_selection<Solid::KinemType>("KINEM",
             {
-                {kinem_type_string(Inpar::Solid::KinemType::linear),
-                    Inpar::Solid::KinemType::linear},
-                {kinem_type_string(Inpar::Solid::KinemType::nonlinearTotLag),
-                    Inpar::Solid::KinemType::nonlinearTotLag},
+                {kinem_type_string(Solid::KinemType::linear), Solid::KinemType::linear},
+                {kinem_type_string(Solid::KinemType::nonlinearTotLag),
+                    Solid::KinemType::nonlinearTotLag},
             },
             {.description = "Whether to use linear kinematics (small displacements) or nonlinear "
                             "kinematics (large displacements)"}),

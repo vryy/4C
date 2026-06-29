@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -20,13 +20,13 @@ namespace Discret::Elements
 {
   struct StressIO
   {
-    Inpar::Solid::StressType type;
+    FourC::Solid::StressType type;
     std::vector<char>& mutable_data;
   };
 
   struct StrainIO
   {
-    Inpar::Solid::StrainType type;
+    FourC::Solid::StrainType type;
     std::vector<char>& mutable_data;
   };
 

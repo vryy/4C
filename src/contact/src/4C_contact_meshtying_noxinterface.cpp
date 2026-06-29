@@ -51,7 +51,7 @@ double CONTACT::MtNoxInterface::get_constraint_rhs_norms(const Core::LinAlg::Vec
   if (checkQuantity != NOX::Nln::StatusTest::quantity_meshtying) return -1.0;
 
   std::shared_ptr<Core::LinAlg::Vector<double>> constrRhs =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, F);
+      gstate_ptr_->extract_model_entries(Solid::model_meshtying, F);
 
   // no constraint contributions present
   if (!constrRhs) return 0.0;
@@ -72,9 +72,9 @@ double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_rms(
 
   // export the constraint solution
   std::shared_ptr<Core::LinAlg::Vector<double>> lagincr_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xOld);
+      gstate_ptr_->extract_model_entries(Solid::model_meshtying, xOld);
   std::shared_ptr<const Core::LinAlg::Vector<double>> lagnew_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xNew);
+      gstate_ptr_->extract_model_entries(Solid::model_meshtying, xNew);
 
   lagincr_ptr->update(1.0, *lagnew_ptr, -1.0);
 
@@ -95,9 +95,9 @@ double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_norms(
 
   // export the constraint solution
   std::shared_ptr<Core::LinAlg::Vector<double>> lagincr_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xOld);
+      gstate_ptr_->extract_model_entries(Solid::model_meshtying, xOld);
   std::shared_ptr<const Core::LinAlg::Vector<double>> lagnew_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xNew);
+      gstate_ptr_->extract_model_entries(Solid::model_meshtying, xNew);
 
   lagincr_ptr->update(1.0, *lagnew_ptr, -1.0);
 
@@ -114,7 +114,7 @@ double CONTACT::MtNoxInterface::get_previous_lagrange_multiplier_norms(
 
   // export the constraint solution
   std::shared_ptr<Core::LinAlg::Vector<double>> lagold_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xOld);
+      gstate_ptr_->extract_model_entries(Solid::model_meshtying, xOld);
 
   return NOX::Nln::Aux::calc_vector_norm(*lagold_ptr, type, isScaled);
 }

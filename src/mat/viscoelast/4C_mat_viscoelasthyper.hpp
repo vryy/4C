@@ -200,9 +200,9 @@ namespace Mat
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void valid_kinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Solid::KinemType kinem) override
     {
-      FOUR_C_ASSERT_ALWAYS(kinem == Inpar::Solid::KinemType::nonlinearTotLag,
+      FOUR_C_ASSERT_ALWAYS(kinem == Solid::KinemType::nonlinearTotLag,
           "element and material kinematics are not compatible");
     }
 

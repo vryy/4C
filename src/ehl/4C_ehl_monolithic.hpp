@@ -16,8 +16,8 @@
 
 #include "4C_ehl_base.hpp"
 #include "4C_ehl_input.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_lubrication_input.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <Teuchos_Time.hpp>
 
@@ -266,7 +266,7 @@ namespace EHL
     //@}
 
     //! enum for STR time integartion
-    Inpar::Solid::DynamicType strmethodname_;
+    Solid::DynamicType strmethodname_;
 
    private:
     const Teuchos::ParameterList& ehldyn_;      //!< EHL dynamic parameter list
@@ -292,11 +292,11 @@ namespace EHL
 
     //! @name iterative solution technique
 
-    EHL::ConvNorm normtypeinc_;              //!< convergence check for increments
-    EHL::ConvNorm normtyperhs_;              //!< convergence check for residual forces
-    Inpar::Solid::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
-    Inpar::Solid::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
-    Lubrication::ConvNorm normtypeprei_;     //!< convergence check for residual pressures
+    EHL::ConvNorm normtypeinc_;           //!< convergence check for increments
+    EHL::ConvNorm normtyperhs_;           //!< convergence check for residual forces
+    Solid::ConvNorm normtypedisi_;        //!< convergence check for residual displacements
+    Solid::ConvNorm normtypestrrhs_;      //!< convergence check for residual forces
+    Lubrication::ConvNorm normtypeprei_;  //!< convergence check for residual pressures
     enum Lubrication::ConvNorm
         normtypelubricationrhs_;  //!< convergence check for residual lubrication forces
 

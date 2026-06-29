@@ -1161,24 +1161,24 @@ namespace Discret::Elements::Shell
    */
   inline void assemble_strain_type_to_matrix_row(
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl_strain,
-      const Core::LinAlg::Tensor<double, 3, 3>& defgrd, Inpar::Solid::StrainType strain_type,
+      const Core::LinAlg::Tensor<double, 3, 3>& defgrd, FourC::Solid::StrainType strain_type,
       Core::LinAlg::SerialDenseMatrix& data, int row, const double thickness_weight)
   {
     switch (strain_type)
     {
-      case Inpar::Solid::strain_gl:
+      case FourC::Solid::strain_gl:
       {
         assemble_symmetric_tensor_to_matrix_row(gl_strain, data, row, thickness_weight);
         return;
       }
-      case Inpar::Solid::strain_ea:
+      case FourC::Solid::strain_ea:
       {
         const Core::LinAlg::SymmetricTensor<double, Internal::num_dim, Internal::num_dim> ea =
             green_lagrange_to_euler_almansi(gl_strain, defgrd);
         assemble_symmetric_tensor_to_matrix_row(ea, data, row, thickness_weight);
         return;
       }
-      case Inpar::Solid::strain_none:
+      case FourC::Solid::strain_none:
         return;
       default:
         FOUR_C_THROW("strain type not supported");
@@ -1195,24 +1195,24 @@ namespace Discret::Elements::Shell
    * @param thickness_weight (in) : Weighting factor to consider thickness integration
    */
   inline void assemble_stress_type_to_matrix_row(const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
-      const Stress stress, Inpar::Solid::StressType stress_type,
+      const Stress stress, FourC::Solid::StressType stress_type,
       Core::LinAlg::SerialDenseMatrix& data, int row, const double thickness_weight)
   {
     switch (stress_type)
     {
-      case Inpar::Solid::stress_2pk:
+      case FourC::Solid::stress_2pk:
       {
         assemble_symmetric_tensor_to_matrix_row(stress.pk2_, data, row, thickness_weight);
         return;
       }
-      case Inpar::Solid::stress_cauchy:
+      case FourC::Solid::stress_cauchy:
       {
         Core::LinAlg::SymmetricTensor<double, Internal::num_dim, Internal::num_dim> cauchy =
             pk2_to_cauchy(stress.pk2_, defgrd);
         assemble_symmetric_tensor_to_matrix_row(cauchy, data, row, thickness_weight);
         return;
       }
-      case Inpar::Solid::stress_none:
+      case FourC::Solid::stress_none:
         return;
       default:
         FOUR_C_THROW("stress type not supported");

@@ -51,24 +51,24 @@ namespace Solid
   {
    public:
     //! Map Solid::TimInt::NameEnum to Solid::TimAda::NameEnum
-    Inpar::Solid::TimAdaKind map_name_tim_int_to_tim_ada(
-        const Inpar::Solid::DynamicType term  //!< input enum term
+    Solid::TimAdaKind map_name_tim_int_to_tim_ada(
+        const Solid::DynamicType term  //!< input enum term
     ) const
     {
       switch (term)
       {
-        case Inpar::Solid::DynamicType::AdamsBashforth2:
-          return Inpar::Solid::timada_kind_ab2;
+        case Solid::DynamicType::AdamsBashforth2:
+          return Solid::timada_kind_ab2;
           break;
-        case Inpar::Solid::DynamicType::ExplEuler:
-          return Inpar::Solid::timada_kind_expleuler;
+        case Solid::DynamicType::ExplEuler:
+          return Solid::timada_kind_expleuler;
           break;
-        case Inpar::Solid::DynamicType::CentrDiff:
-          return Inpar::Solid::timada_kind_centraldiff;
+        case Solid::DynamicType::CentrDiff:
+          return Solid::timada_kind_centraldiff;
           break;
         default:
           FOUR_C_THROW("Cannot handle requested time integrator");
-          return Inpar::Solid::timada_kind_none;
+          return Solid::timada_kind_none;
           break;
       }
     }
@@ -182,7 +182,7 @@ namespace Solid
     //@{
 
     //! Provide the name
-    Inpar::Solid::TimAdaKind method_name() const override
+    Solid::TimAdaKind method_name() const override
     {
       return map_name_tim_int_to_tim_ada(sti_->method_name());
     }

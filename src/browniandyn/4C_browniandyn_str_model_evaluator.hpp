@@ -46,7 +46,7 @@ namespace Solid
       //! derived
 
       //! derived
-      Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_browniandyn; }
+      Solid::ModelType type() const override { return Solid::model_browniandyn; }
 
       //! derived
       bool evaluate_force() override;
@@ -78,7 +78,7 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
+      void predict(const Solid::PredEnum& pred_type) override { return; };
 
       //! derived
       void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,

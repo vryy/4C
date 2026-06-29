@@ -16,32 +16,32 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
-double Solid::calculate_vector_norm(const Inpar::Solid::VectorNorm norm,
-    const Core::LinAlg::Vector<double>& vect, const int numneglect)
+double Solid::calculate_vector_norm(
+    const Solid::VectorNorm norm, const Core::LinAlg::Vector<double>& vect, const int numneglect)
 {
   // L1 norm
-  if (norm == Inpar::Solid::norm_l1)
+  if (norm == Solid::norm_l1)
   {
     double vectnorm;
     vect.norm_1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
-  else if (norm == Inpar::Solid::norm_l2)
+  else if (norm == Solid::norm_l2)
   {
     double vectnorm;
     vect.norm_2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
-  else if (norm == Inpar::Solid::norm_rms)
+  else if (norm == Solid::norm_rms)
   {
     double vectnorm;
     vect.norm_2(&vectnorm);
     return vectnorm / sqrt((double)(vect.global_length() - numneglect));
   }
   // infinity/maximum norm
-  else if (norm == Inpar::Solid::norm_inf)
+  else if (norm == Solid::norm_inf)
   {
     double vectnorm;
     vect.norm_inf(&vectnorm);

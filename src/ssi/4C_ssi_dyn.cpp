@@ -43,8 +43,8 @@ void ssi_drt()
     // time integrator
     auto& sdyn = const_cast<Teuchos::ParameterList&>(problem->structural_dynamic_params());
 
-    FOUR_C_ASSERT_ALWAYS(sdyn.get<Inpar::Solid::IntegrationStrategy>("INT_STRATEGY") ==
-                             Inpar::Solid::IntegrationStrategy::int_standard,
+    FOUR_C_ASSERT_ALWAYS(sdyn.get<Solid::IntegrationStrategy>("INT_STRATEGY") ==
+                             Solid::IntegrationStrategy::int_standard,
         "Only the new solid time integration is supported for SSI problems. Set `INT_STRATEGY` to "
         "`Standard`!");
 

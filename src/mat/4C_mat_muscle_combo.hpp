@@ -170,10 +170,9 @@ namespace Mat
       return Core::Materials::m_muscle_combo;
     };
 
-    void valid_kinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Solid::KinemType kinem) override
     {
-      if (kinem != Inpar::Solid::KinemType::linear &&
-          kinem != Inpar::Solid::KinemType::nonlinearTotLag)
+      if (kinem != Solid::KinemType::linear && kinem != Solid::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 

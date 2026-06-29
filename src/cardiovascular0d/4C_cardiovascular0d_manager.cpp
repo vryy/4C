@@ -110,8 +110,7 @@ Utils::Cardiovascular0DManager::Cardiovascular0DManager(
       linsolveerror_(0),
       strparams_(strparams),
       cv0dparams_(cv0dparams),
-      intstrat_(
-          Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(strparams, "INT_STRATEGY"))
+      intstrat_(Teuchos::getIntegralValue<Solid::IntegrationStrategy>(strparams, "INT_STRATEGY"))
 {
   // Check what kind of Cardiovascular0D boundary conditions there are
   havecardiovascular0d_ = (cardvasc0d_4elementwindkessel_->have_cardiovascular0_d() or

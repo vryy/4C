@@ -66,7 +66,7 @@ namespace Mat
 
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
-    void valid_kinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Solid::KinemType kinem) override
     {
       child_material_->valid_kinematics(kinem);
     }

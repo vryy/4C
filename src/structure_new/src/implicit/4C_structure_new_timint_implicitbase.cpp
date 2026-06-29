@@ -71,7 +71,7 @@ void Solid::TimeInt::ImplicitBase::use_block_matrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::StcScale Solid::TimeInt::ImplicitBase::get_stc_algo()
+Solid::StcScale Solid::TimeInt::ImplicitBase::get_stc_algo()
 {
   return data_sdyn().get_stc_algo_type();
 }

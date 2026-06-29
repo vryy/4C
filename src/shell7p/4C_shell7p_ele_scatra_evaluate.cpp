@@ -52,7 +52,7 @@ namespace
     }
   }
 
-  inline Inpar::Solid::StressType get_io_stress_type(
+  inline Solid::StressType get_io_stress_type(
       const Discret::Elements::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
@@ -61,11 +61,11 @@ namespace
     }
     else
     {
-      return Teuchos::getIntegralValue<Inpar::Solid::StressType>(params, "iostress");
+      return Teuchos::getIntegralValue<Solid::StressType>(params, "iostress");
     }
   }
 
-  inline Inpar::Solid::StrainType get_io_strain_type(
+  inline Solid::StrainType get_io_strain_type(
       const Discret::Elements::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
@@ -74,7 +74,7 @@ namespace
     }
     else
     {
-      return Teuchos::getIntegralValue<Inpar::Solid::StrainType>(params, "iostrain");
+      return Teuchos::getIntegralValue<Solid::StrainType>(params, "iostrain");
     }
   }
 }  // namespace

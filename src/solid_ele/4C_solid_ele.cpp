@@ -12,7 +12,6 @@
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_spec.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_mat_so3_material.hpp"
@@ -25,6 +24,7 @@
 #include "4C_solid_ele_surface.hpp"
 #include "4C_solid_ele_utils.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -36,11 +36,11 @@ namespace
 
   Core::IO::InputSpec get_kinem_type_input_spec()
   {
-    return deprecated_selection<Inpar::Solid::KinemType>("KINEM",
+    return deprecated_selection<Solid::KinemType>("KINEM",
         {
-            {kinem_type_string(Inpar::Solid::KinemType::linear), Inpar::Solid::KinemType::linear},
-            {kinem_type_string(Inpar::Solid::KinemType::nonlinearTotLag),
-                Inpar::Solid::KinemType::nonlinearTotLag},
+            {kinem_type_string(Solid::KinemType::linear), Solid::KinemType::linear},
+            {kinem_type_string(Solid::KinemType::nonlinearTotLag),
+                Solid::KinemType::nonlinearTotLag},
         },
         {.description = "Whether to use linear kinematics (small displacements) or nonlinear "
                         "kinematics (large displacements)"});

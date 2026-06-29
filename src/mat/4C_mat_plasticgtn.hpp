@@ -11,10 +11,10 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -123,9 +123,9 @@ namespace Mat
       return Core::Materials::m_plgtn;
     }
 
-    void valid_kinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Solid::KinemType kinem) override
     {
-      if (kinem != Inpar::Solid::KinemType::linear)
+      if (kinem != Solid::KinemType::linear)
         FOUR_C_THROW(
             "The plastic GTN material model is only working with linear kinematics. A nonlinear "
             "kinematics version is planned.");

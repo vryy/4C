@@ -46,13 +46,13 @@ void Solid::TimeInt::Explicit::setup()
   // ---------------------------------------------------------------------------
   // build non-linear solver
   // ---------------------------------------------------------------------------
-  Inpar::Solid::NonlinSolTech nlnSolverType = data_sdyn().get_nln_solver_type();
-  if (nlnSolverType != Inpar::Solid::soltech_singlestep)
+  Solid::NonlinSolTech nlnSolverType = data_sdyn().get_nln_solver_type();
+  if (nlnSolverType != Solid::soltech_singlestep)
   {
     std::cout << "WARNING!!!Nonlinear solver for explicit dynamics is given (in the input file) as "
               << nlnSolverType << ". This is not compatible. singlestep solver will be selected."
               << std::endl;
-    nlnSolverType = Inpar::Solid::soltech_singlestep;
+    nlnSolverType = Solid::soltech_singlestep;
   }
   nlnsolver_ptr_ = Solid::Nln::SOLVER::build_nln_solver(nlnSolverType, data_global_state_ptr(),
       data_s_dyn_ptr(), noxinterface_ptr, explint_ptr_, Core::Utils::shared_ptr_from_ref(*this));
@@ -143,11 +143,11 @@ void Solid::TimeInt::Explicit::reset_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::ConvergenceStatus Solid::TimeInt::Explicit::solve()
+Solid::ConvergenceStatus Solid::TimeInt::Explicit::solve()
 {
   check_init_setup();
   integrate_step();
-  return Inpar::Solid::conv_success;
+  return Solid::conv_success;
 }
 
 /*----------------------------------------------------------------------------*
@@ -204,11 +204,11 @@ void Solid::TimeInt::Explicit::print_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::StcScale Solid::TimeInt::Explicit::get_stc_algo()
+Solid::StcScale Solid::TimeInt::Explicit::get_stc_algo()
 {
   check_init_setup();
   FOUR_C_THROW("get_stc_algo() has not been tested for explicit time integration.");
-  return Inpar::Solid::stc_inactive;
+  return Solid::stc_inactive;
 };
 
 
@@ -310,7 +310,7 @@ void Solid::TimeInt::Explicit::use_block_matrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::DynamicType Solid::TimeInt::Explicit::method_name() const
+Solid::DynamicType Solid::TimeInt::Explicit::method_name() const
 {
   return explint_ptr_->method_name();
 }

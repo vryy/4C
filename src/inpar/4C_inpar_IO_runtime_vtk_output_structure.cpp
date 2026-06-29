@@ -7,8 +7,8 @@
 
 #include "4C_inpar_IO_runtime_vtk_output_structure.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_spec_builders.hpp"
+#include "4C_structure_new_input.hpp"
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -74,21 +74,20 @@ namespace Inpar
                         .default_value = false}),
 
                 // mode to write gauss point data
-                parameter<Inpar::Solid::GaussPointDataOutputType>("GAUSS_POINT_DATA_OUTPUT_TYPE",
+                parameter<Solid::GaussPointDataOutputType>("GAUSS_POINT_DATA_OUTPUT_TYPE",
                     {.description = "Where to write gauss point data. (none, projected to nodes, "
                                     "projected to element center, raw at gauss points)",
-                        .default_value = Inpar::Solid::GaussPointDataOutputType::none}),
+                        .default_value = Solid::GaussPointDataOutputType::none}),
 
-                deprecated_selection<Inpar::Solid::OptQuantityType>("OPTIONAL_QUANTITY",
+                deprecated_selection<Solid::OptQuantityType>("OPTIONAL_QUANTITY",
                     {
-                        {"No", Inpar::Solid::optquantity_none},
-                        {"membranethickness", Inpar::Solid::optquantity_membranethickness},
-                        {"shell7pthickness", Inpar::Solid::optquantity_shell7pthickness},
-                        {"shell7pthicknessdirector",
-                            Inpar::Solid::optquantity_shell7pthicknessdirector},
+                        {"No", Solid::optquantity_none},
+                        {"membranethickness", Solid::optquantity_membranethickness},
+                        {"shell7pthickness", Solid::optquantity_shell7pthickness},
+                        {"shell7pthicknessdirector", Solid::optquantity_shell7pthicknessdirector},
                     },
                     {.description = "Output of an optional quantity",
-                        .default_value = Inpar::Solid::optquantity_none}),
+                        .default_value = Solid::optquantity_none}),
 
                 // whether to output the structure contact related quantities
                 parameter<bool>(

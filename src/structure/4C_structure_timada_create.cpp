@@ -31,31 +31,31 @@ std::shared_ptr<Solid::TimAda> Solid::tim_ada_create(
   std::shared_ptr<Solid::TimAda> sta = nullptr;
 
   // auxiliary time integrator
-  switch (Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(tap, "KIND"))
+  switch (Teuchos::getIntegralValue<Solid::TimAdaKind>(tap, "KIND"))
   {
-    case Inpar::Solid::timada_kind_none:
+    case Solid::timada_kind_none:
       // No adaptivity in time
       sta = nullptr;
       break;
 
-    case Inpar::Solid::timada_kind_zienxie:
+    case Solid::timada_kind_zienxie:
       // Zienkiewicz-Xie error indicator for generalised-alpha
       sta = std::make_shared<Solid::TimAdaZienXie>(timeparams, tap, tis);
       break;
 
-    case Inpar::Solid::timada_kind_ab2:
+    case Solid::timada_kind_ab2:
       // Adams-Bashforth 2nd order
       sta = std::make_shared<Solid::TimAdaJoint<Solid::TimIntAB2>>(
           ioflags, timeparams, sdyn, xparams, tap, tis);
       break;
 
-    case Inpar::Solid::timada_kind_expleuler:
+    case Solid::timada_kind_expleuler:
       // Adams-Bashforth 2nd order
       sta = std::make_shared<Solid::TimAdaJoint<Solid::TimIntExplEuler>>(
           ioflags, timeparams, sdyn, xparams, tap, tis);
       break;
 
-    case Inpar::Solid::timada_kind_centraldiff:
+    case Solid::timada_kind_centraldiff:
       // Adams-Bashforth 2nd order
       sta = std::make_shared<Solid::TimAdaJoint<Solid::TimIntCentrDiff>>(
           ioflags, timeparams, sdyn, xparams, tap, tis);

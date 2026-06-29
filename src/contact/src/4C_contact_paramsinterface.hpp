@@ -23,13 +23,10 @@ namespace NOX
     enum class CorrectionType : int;
   }  // namespace Nln
 }  // namespace NOX
-namespace Inpar
+namespace Solid
 {
-  namespace Solid
-  {
-    enum PredEnum : int;
-  }  // namespace Solid
-}  // namespace Inpar
+  enum PredEnum : int;
+}  // namespace Solid
 
 namespace CONTACT
 {
@@ -57,8 +54,8 @@ namespace CONTACT
 
     //! \brief get the currently active predictor type
     /** \note If the execution of the predictor is finished, this
-     *  function will return Inpar::Solid::pred_vague. */
-    virtual Inpar::Solid::PredEnum get_predictor_type() const = 0;
+     *  function will return Solid::pred_vague. */
+    virtual Solid::PredEnum get_predictor_type() const = 0;
 
     //! get the current step length
     virtual double get_step_length() const = 0;

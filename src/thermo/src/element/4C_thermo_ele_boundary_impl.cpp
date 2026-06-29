@@ -222,11 +222,11 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
 
 
     // get kinematic type from parent element
-    Inpar::Solid::KinemType kintype = parentele->kintype_;
+    Solid::KinemType kintype = parentele->kintype_;
 
     // ------------------------------------------------------ default
     // ------------ purely thermal / geometrically linear TSI problem
-    if (kintype == Inpar::Solid::KinemType::linear)  // geo_linear
+    if (kintype == Solid::KinemType::linear)  // geo_linear
     {
       // and now check if there is a convection heat transfer boundary condition
       calculate_convection_fint_cond(ele,  // current boundary element
@@ -244,7 +244,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
     // -------------------------- geometrically nonlinear TSI problem
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if ((kintype == Inpar::Solid::KinemType::nonlinearTotLag) and (la.size() > 1))  // geo_nonlinear
+    if ((kintype == Solid::KinemType::nonlinearTotLag) and (la.size() > 1))  // geo_nonlinear
     {
       // set views, here we assemble on the boundary dofs only!
       Core::LinAlg::Matrix<nen_, (nsd_ + 1) * nen_> etangcoupl(
@@ -269,7 +269,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
             coeff, surtemp, *tempstate);
 
       }  // disp!=0
-    }  // (la.Size() > 1) and (kintype == Inpar::Solid::KinemType::nonlinearTotLag)
+    }  // (la.Size() > 1) and (kintype == Solid::KinemType::nonlinearTotLag)
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
@@ -319,7 +319,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
     // -------------------------- geometrically nonlinear TSI problem
 
     // get kinematic type from parent element
-    Inpar::Solid::KinemType kintype = parentele->kintype_;
+    Solid::KinemType kintype = parentele->kintype_;
 
     // initialise the vectors
     // evaluate() is called the first time in Thermo::BaseAlgorithm: at this stage
@@ -330,7 +330,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
     // -------------------------- geometrically nonlinear TSI problem
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if ((kintype == Inpar::Solid::KinemType::nonlinearTotLag) and (la.size() > 1))  // geo_nonlinear
+    if ((kintype == Solid::KinemType::nonlinearTotLag) and (la.size() > 1))  // geo_nonlinear
     {
       // and now get the current displacements/velocities
       if (discretization.has_state(1, "displacement"))
@@ -486,7 +486,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
         }  // end of switch(timint)
 
       }  // disp!=0
-    }  // if ( (kintype == Inpar::Solid::KinemType::nonlinearTotLag) and (la.Size()>1) )
+    }  // if ( (kintype == Solid::KinemType::nonlinearTotLag) and (la.Size()>1) )
   }  // calc_thermo_fextconvection_coupltang
 
   else

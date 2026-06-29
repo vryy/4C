@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 Solid::Predict::Generic::Generic()
     : isinit_(false),
       issetup_(false),
-      type_(Inpar::Solid::pred_vague),
+      type_(Solid::pred_vague),
       implint_ptr_(nullptr),
       dbc_ptr_(nullptr),
       noxparams_ptr_(nullptr)
@@ -31,7 +31,7 @@ Solid::Predict::Generic::Generic()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Predict::Generic::init(const Inpar::Solid::PredEnum& type,
+void Solid::Predict::Generic::init(const Solid::PredEnum& type,
     const std::shared_ptr<Solid::IMPLICIT::Generic>& implint_ptr,
     const std::shared_ptr<Solid::Dbc>& dbc_ptr,
     const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
@@ -108,7 +108,7 @@ void Solid::Predict::Generic::post_predict(::NOX::Abstract::Group& grp)
 std::string Solid::Predict::Generic::name() const
 {
   check_init();
-  return Inpar::Solid::pred_enum_string(type_);
+  return Solid::pred_enum_string(type_);
 }
 
 /*----------------------------------------------------------------------------*

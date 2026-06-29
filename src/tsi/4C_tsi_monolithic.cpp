@@ -55,8 +55,7 @@ TSI::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& sdynpar
           TSI::Utils::tsi_monolithic_dynamic_params_from_problem().get<double>("ADAPTCONV_BETTER")),
       printiter_(true),  // ADD INPUT PARAMETER
       zeros_(nullptr),
-      strmethodname_(
-          Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYPE")),
+      strmethodname_(Teuchos::getIntegralValue<Solid::DynamicType>(sdynparams, "DYNAMICTYPE")),
       tsidyn_(TSI::Utils::tsi_dynamic_params_from_problem()),
       tsidynmono_(TSI::Utils::tsi_monolithic_dynamic_params_from_problem()),
       blockrowdofmap_(nullptr),
@@ -532,8 +531,7 @@ void TSI::Monolithic::newton_full()
   // test whether max iterations was hit
   if (iter_ >= itermax_ and not converged())
   {
-    if (Teuchos::getIntegralValue<Inpar::Solid::DivContAct>(sdyn_, "DIVERCONT") ==
-        Inpar::Solid::divcont_continue)
+    if (Teuchos::getIntegralValue<Solid::DivContAct>(sdyn_, "DIVERCONT") == Solid::divcont_continue)
       ;  // do nothing
     else
       FOUR_C_THROW("Newton unconverged in {} iterations", iter_);
@@ -825,7 +823,7 @@ void TSI::Monolithic::evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> ste
   Teuchos::Time timerthermo("", true);
 
   // apply current displacements and velocities to the thermo field
-  if (strmethodname_ == Inpar::Solid::DynamicType::Statics)
+  if (strmethodname_ == Solid::DynamicType::Statics)
   {
     // calculate velocity V_n+1^k = (D_n+1^k-D_n)/Dt()
     vel_ = calc_velocity(*structure_field()->dispnp());
@@ -1013,8 +1011,8 @@ void TSI::Monolithic::setup_rhs()
   // get the structural rhs
   std::shared_ptr<Core::LinAlg::Vector<double>> str_rhs =
       std::make_shared<Core::LinAlg::Vector<double>>(*structure_field()->rhs());
-  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
-          problem_->structural_dynamic_params(), "INT_STRATEGY") == Inpar::Solid::int_standard)
+  if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(
+          problem_->structural_dynamic_params(), "INT_STRATEGY") == Solid::int_standard)
     str_rhs->scale(-1.);
 
   // insert vectors to tsi rhs
@@ -1170,13 +1168,13 @@ bool TSI::Monolithic::converged()
   // structural residual forces
   switch (normtypestrrhs_)
   {
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       convstrrhs = normstrrhs_ < tolstrrhs_;
       break;
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       convstrrhs = normstrrhs_ < std::max(normstrrhsiter0_ * tolstrrhs_, 1e-15);
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       convstrrhs = ((normstrrhs_ < tolstrrhs_) or
                     (normstrrhs_ < std::max(normstrrhsiter0_ * tolstrrhs_, 1e-15)));
       break;
@@ -1188,13 +1186,13 @@ bool TSI::Monolithic::converged()
   // residual displacements
   switch (normtypedisi_)
   {
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       convdisp = normdisi_ < toldisi_;
       break;
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       convdisp = normdisi_ < std::max(normdisiiter0_ * toldisi_, 1e-15);
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       convdisp =
           ((normdisi_ < toldisi_) or (normdisi_ < std::max(normdisiiter0_ * toldisi_, 1e-15)));
       break;
@@ -1342,13 +1340,13 @@ void TSI::Monolithic::print_newton_iter_header(FILE* ofile)
   // ---------------------------------------------------------- structure
   switch (normtypestrrhs_)
   {
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       oss << std::setw(18) << "rel-str-res-norm";
       break;
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       oss << std::setw(18) << "abs-str-res-norm";
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       oss << std::setw(18) << "mix-str-res-norm";
       break;
     default:
@@ -1358,13 +1356,13 @@ void TSI::Monolithic::print_newton_iter_header(FILE* ofile)
 
   switch (normtypedisi_)
   {
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       oss << std::setw(16) << "rel-dis-norm";
       break;
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       oss << std::setw(16) << "abs-dis-norm";
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       oss << std::setw(16) << "mix-dis-norm";
       break;
     default:
@@ -1502,14 +1500,14 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
   // displacement
   switch (normtypestrrhs_)
   {
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       oss << std::setw(18) << std::setprecision(5) << std::scientific << normstrrhs_;
       break;
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       oss << std::setw(18) << std::setprecision(5) << std::scientific
           << normstrrhs_ / normstrrhsiter0_;
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       oss << std::setw(18) << std::setprecision(5) << std::scientific
           << std::min(normstrrhs_, normstrrhs_ / normstrrhsiter0_);
       break;
@@ -1520,13 +1518,13 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
 
   switch (normtypedisi_)
   {
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_;
       break;
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_ / normdisiiter0_;
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       oss << std::setw(16) << std::setprecision(5) << std::scientific
           << std::min(normdisi_, normdisi_ / normdisiiter0_);
       break;
@@ -1666,19 +1664,19 @@ void TSI::Monolithic::apply_str_coupl_matrix(
   // major switch to different time integrators
   switch (strmethodname_)
   {
-    case Inpar::Solid::DynamicType::Statics:
+    case Solid::DynamicType::Statics:
     {
       // continue
       break;
     }
-    case Inpar::Solid::DynamicType::OneStepTheta:
+    case Solid::DynamicType::OneStepTheta:
     {
       double theta = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
       // K_Teffdyn(T_n+1^i) = theta * k_st
       k_st->scale(theta);
       break;
     }
-    case Inpar::Solid::DynamicType::GenAlpha:
+    case Solid::DynamicType::GenAlpha:
     {
       double alphaf = sdyn_.sublist("GENALPHA").get<double>("ALPHA_F");
       // K_Teffdyn(T_n+1) = (1-alphaf_) . kst
@@ -1714,7 +1712,7 @@ void TSI::Monolithic::apply_thermo_coupl_matrix(
   const Teuchos::ParameterList& tdyn = problem_->thermal_dynamic_params();
   tparams.set<Thermo::DynamicType>(
       "time integrator", Teuchos::getIntegralValue<Thermo::DynamicType>(tdyn, "DYNAMICTYPE"));
-  tparams.set<Inpar::Solid::DynamicType>("structural time integrator", strmethodname_);
+  tparams.set<Solid::DynamicType>("structural time integrator", strmethodname_);
   switch (Teuchos::getIntegralValue<Thermo::DynamicType>(tdyn, "DYNAMICTYPE"))
   {
     // static analysis
@@ -1747,19 +1745,19 @@ void TSI::Monolithic::apply_thermo_coupl_matrix(
 
   switch (strmethodname_)
   {
-    case Inpar::Solid::DynamicType::Statics:
+    case Solid::DynamicType::Statics:
     {
       // continue
       break;
     }
-    case Inpar::Solid::DynamicType::OneStepTheta:
+    case Solid::DynamicType::OneStepTheta:
     {
       // put the structural theta value to the thermal parameter list
       double str_theta = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
       tparams.set("str_theta", str_theta);
       break;
     }
-    case Inpar::Solid::DynamicType::GenAlpha:
+    case Solid::DynamicType::GenAlpha:
     {
       // put the structural theta value to the thermal parameter list
       double str_beta = sdyn_.sublist("GENALPHA").get<double>("BETA");
@@ -1819,7 +1817,7 @@ void TSI::Monolithic::apply_thermo_coupl_matrix_conv_bc(
     const Teuchos::ParameterList& tdyn = problem_->thermal_dynamic_params();
     tparams.set<Thermo::DynamicType>(
         "time integrator", Teuchos::getIntegralValue<Thermo::DynamicType>(tdyn, "DYNAMICTYPE"));
-    tparams.set<Inpar::Solid::DynamicType>("structural time integrator", strmethodname_);
+    tparams.set<Solid::DynamicType>("structural time integrator", strmethodname_);
     switch (Teuchos::getIntegralValue<Thermo::DynamicType>(tdyn, "DYNAMICTYPE"))
     {
       // static analysis
@@ -2067,10 +2065,9 @@ void TSI::Monolithic::set_default_parameters()
   normtypeinc_ = Teuchos::getIntegralValue<TSI::ConvNorm>(tsidyn_, "NORM_INC");
   normtyperhs_ = Teuchos::getIntegralValue<TSI::ConvNorm>(tsidynmono_, "NORM_RESF");
   // what kind of norm do we wanna test for the single fields
-  normtypedisi_ = Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdyn_, "NORM_DISP");
-  normtypestrrhs_ = Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdyn_, "NORM_RESF");
-  Inpar::Solid::VectorNorm striternorm =
-      Teuchos::getIntegralValue<Inpar::Solid::VectorNorm>(sdyn_, "ITERNORM");
+  normtypedisi_ = Teuchos::getIntegralValue<Solid::ConvNorm>(sdyn_, "NORM_DISP");
+  normtypestrrhs_ = Teuchos::getIntegralValue<Solid::ConvNorm>(sdyn_, "NORM_RESF");
+  Solid::VectorNorm striternorm = Teuchos::getIntegralValue<Solid::VectorNorm>(sdyn_, "ITERNORM");
   normtypetempi_ = Teuchos::getIntegralValue<Thermo::ConvNorm>(tdyn, "NORM_TEMP");
   normtypethrrhs_ = Teuchos::getIntegralValue<Thermo::ConvNorm>(tdyn, "NORM_RESF");
   Thermo::VectorNorm thriternorm = Teuchos::getIntegralValue<Thermo::VectorNorm>(tdyn, "ITERNORM");
@@ -2127,19 +2124,19 @@ void TSI::Monolithic::set_default_parameters()
   // what norm is used for structure
   switch (striternorm)
   {
-    case Inpar::Solid::norm_l1:
+    case Solid::norm_l1:
       iternormstr_ = TSI::VectorNorm::L1;
       break;
-    case Inpar::Solid::norm_l2:
+    case Solid::norm_l2:
       iternormstr_ = TSI::VectorNorm::L2;
       break;
-    case Inpar::Solid::norm_rms:
+    case Solid::norm_rms:
       iternormstr_ = TSI::VectorNorm::Rms;
       break;
-    case Inpar::Solid::norm_inf:
+    case Solid::norm_inf:
       iternormstr_ = TSI::VectorNorm::Inf;
       break;
-    case Inpar::Solid::norm_vague:
+    case Solid::norm_vague:
     default:
       FOUR_C_THROW("STR norm is not determined");
       break;
@@ -2249,8 +2246,8 @@ void TSI::Monolithic::fix_time_integration_params()
     }
   }
 
-  if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(problem_->structural_dynamic_params(),
-          "DYNAMICTYPE") == Inpar::Solid::DynamicType::GenAlpha)
+  if (Teuchos::getIntegralValue<Solid::DynamicType>(
+          problem_->structural_dynamic_params(), "DYNAMICTYPE") == Solid::DynamicType::GenAlpha)
   {
     Teuchos::ParameterList& ga = const_cast<Teuchos::ParameterList&>(
         problem_->structural_dynamic_params().sublist("GENALPHA"));

@@ -212,13 +212,13 @@ bool MultiScale::MicroStatic::converged()
   // residual displacement
   switch (normtypedisi_)
   {
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       convdis = normdisi_ < toldisi_;
       break;
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       convdis = normdisi_ / normchardis_ < toldisi_;
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       convdis = ((normdisi_ < toldisi_) or (normdisi_ / normchardis_ < toldisi_));
       break;
     default:
@@ -229,13 +229,13 @@ bool MultiScale::MicroStatic::converged()
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::Solid::convnorm_abs:
+    case Solid::convnorm_abs:
       convfres = normfres_ < tolfres_;
       break;
-    case Inpar::Solid::convnorm_rel:
+    case Solid::convnorm_rel:
       convfres = normfres_ / normcharforce_ < tolfres_;
       break;
-    case Inpar::Solid::convnorm_mix:
+    case Solid::convnorm_mix:
       convfres = ((normfres_ < tolfres_) or (normfres_ / normcharforce_ < tolfres_));
       break;
     default:
@@ -245,9 +245,9 @@ bool MultiScale::MicroStatic::converged()
 
   // combine displacement-like and force-like residuals
   bool conv = false;
-  if (combdisifres_ == Inpar::Solid::bop_and)
+  if (combdisifres_ == Solid::bop_and)
     conv = convdis and convfres;
-  else if (combdisifres_ == Inpar::Solid::bop_or)
+  else if (combdisifres_ == Solid::bop_or)
     conv = convdis or convfres;
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -291,9 +291,9 @@ void MultiScale::MicroStatic::calc_ref_norms()
  *----------------------------------------------------------------------*/
 void MultiScale::MicroStatic::print_newton(bool print_unconv, Teuchos::Time timer)
 {
-  bool relres = (normtypefres_ == Inpar::Solid::convnorm_rel);
+  bool relres = (normtypefres_ == Solid::convnorm_rel);
 
-  bool relres_reldis = ((normtypedisi_ == Inpar::Solid::convnorm_rel) && relres);
+  bool relres_reldis = ((normtypedisi_ == Solid::convnorm_rel) && relres);
 
   if (relres)
   {
@@ -367,7 +367,7 @@ void MultiScale::MicroStatic::print_newton(bool print_unconv, Teuchos::Time time
  *----------------------------------------------------------------------*/
 void MultiScale::MicroStatic::print_predictor()
 {
-  if (normtypefres_ == Inpar::Solid::convnorm_rel)
+  if (normtypefres_ == Solid::convnorm_rel)
   {
     normfres_ /= normcharforce_;
     std::cout << "      MICROSCALE Predictor scaled res-norm " << normfres_ << std::endl;

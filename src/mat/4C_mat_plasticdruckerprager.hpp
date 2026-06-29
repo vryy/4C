@@ -11,11 +11,11 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_tensor_conversion.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_local_newton.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -95,9 +95,9 @@ namespace Mat
     {
       return Core::Materials::m_pldruckprag;
     }
-    void valid_kinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Solid::KinemType kinem) override
     {
-      if (kinem != Inpar::Solid::KinemType::linear)
+      if (kinem != Solid::KinemType::linear)
         FOUR_C_THROW(
             "The plastic Drucker Prager material model is only compatible with linear kinematics.");
     }

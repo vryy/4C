@@ -65,12 +65,10 @@ namespace Solid
 
       //! [derived]
       bool assemble_force(Core::LinAlg::Vector<double>& f,
-          const std::vector<Inpar::Solid::ModelType>* without_these_models =
-              nullptr) const override;
+          const std::vector<Solid::ModelType>* without_these_models = nullptr) const override;
 
       bool assemble_jac(Core::LinAlg::SparseOperator& jac,
-          const std::vector<Inpar::Solid::ModelType>* without_these_models =
-              nullptr) const override;
+          const std::vector<Solid::ModelType>* without_these_models = nullptr) const override;
 
       //! [derived]
       void write_restart(
@@ -153,10 +151,7 @@ namespace Solid
       //@{
 
       //! Return name
-      Inpar::Solid::DynamicType method_name() const override
-      {
-        return Inpar::Solid::DynamicType::GenAlpha;
-      }
+      Solid::DynamicType method_name() const override { return Solid::DynamicType::GenAlpha; }
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a m-multistep method returns m

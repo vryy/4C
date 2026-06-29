@@ -39,13 +39,13 @@ namespace Discret
     class Shell7p;
     struct ShellStressIO
     {
-      Inpar::Solid::StressType type;
+      Solid::StressType type;
       std::vector<char>& mutable_data;
     };
 
     struct ShellStrainIO
     {
-      Inpar::Solid::StrainType type;
+      Solid::StrainType type;
       std::vector<char>& mutable_data;
     };
 

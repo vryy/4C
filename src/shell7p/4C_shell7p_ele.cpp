@@ -325,7 +325,7 @@ bool Discret::Elements::Shell7p::read_element(const std::string& eletype,
   Solid::Elements::ShellLockingTypes locking_types = {};
   if (container.get_if<std::vector<std::string>>("EAS") != nullptr)
   {
-    eletech_.insert(Inpar::Solid::EleTech::eas);
+    eletech_.insert(Solid::EleTech::eas);
     Solid::Utils::Shell::ReadElement::read_and_set_locking_types(
         distype_, container, locking_types);
   }

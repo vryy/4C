@@ -10,8 +10,8 @@
 #include "4C_contact_input.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_legacy_module_problem_type.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_mortar_input.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -30,9 +30,9 @@ bool CONTACT::Utils::use_safe_redistribute_and_ghosting(const Teuchos::Parameter
   {
     const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
     const auto intstrat =
-        Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+        Teuchos::getIntegralValue<Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
-    if (intstrat == Inpar::Solid::int_old)
+    if (intstrat == Solid::int_old)
     {
       /* Enable new safe ghosting only for interface discretization type "mortar"
        *

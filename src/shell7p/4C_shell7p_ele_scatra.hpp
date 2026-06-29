@@ -154,7 +154,7 @@ namespace Discret::Elements
     void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
     //! @}
 
-    [[nodiscard]] const std::set<Inpar::Solid::EleTech>& get_ele_tech() const { return eletech_; }
+    [[nodiscard]] const std::set<FourC::Solid::EleTech>& get_ele_tech() const { return eletech_; }
 
     [[nodiscard]] std::shared_ptr<Mat::So3Material> solid_material(int nummat = 0) const;
 
@@ -198,7 +198,7 @@ namespace Discret::Elements
     std::shared_ptr<Solid::Elements::ParamsInterface> interface_ptr_ = nullptr;
 
     //! element technology
-    std::set<Inpar::Solid::EleTech> eletech_ = {};
+    std::set<FourC::Solid::EleTech> eletech_ = {};
 
     //! shell thickness in reference frame
     double thickness_ = 0.0;

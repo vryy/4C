@@ -39,10 +39,7 @@ namespace Solid
       SpringDashpot();
 
       void setup() override;
-      [[nodiscard]] Inpar::Solid::ModelType type() const override
-      {
-        return Inpar::Solid::model_springdashpot;
-      }
+      [[nodiscard]] Solid::ModelType type() const override { return Solid::model_springdashpot; }
       void reset(const Core::LinAlg::Vector<double>& x) override;
 
       bool evaluate_force() override;
@@ -66,7 +63,7 @@ namespace Solid
 
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
-      void predict(const Inpar::Solid::PredEnum& pred_type) override {}
+      void predict(const Solid::PredEnum& pred_type) override {}
 
       void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
           Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override

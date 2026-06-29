@@ -984,15 +984,15 @@ template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
 // explicit instantiations for hex8 with EAS
 template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>>;
+        Discret::Elements::EasType::eastype_h8_9, Solid::KinemType::nonlinearTotLag>>;
 template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>>;
+        Discret::Elements::EasType::eastype_h8_21, Solid::KinemType::nonlinearTotLag>>;
 
 // explicit instantiations for quad4 with EAS
 template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad4,
     Discret::Elements::EASFormulation<Core::FE::CellType::quad4,
-        Discret::Elements::EasType::eastype_q4_4, Inpar::Solid::KinemType::nonlinearTotLag>>;
+        Discret::Elements::EasType::eastype_q4_4, Solid::KinemType::nonlinearTotLag>>;
 
 
 FOUR_C_NAMESPACE_CLOSE

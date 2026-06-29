@@ -14,7 +14,6 @@
 #include "4C_contact_meshtying_noxinterface.hpp"
 #include "4C_contact_noxinterface.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -22,6 +21,7 @@
 #include "4C_solver_nonlin_nox_constraint_interface_preconditioner.hpp"
 #include "4C_solver_nonlin_nox_constraint_interface_required.hpp"
 #include "4C_structure_new_impl_genalpha.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_integrator.hpp"
 #include "4C_structure_new_model_evaluator_contact.hpp"
 #include "4C_structure_new_model_evaluator_lagpenconstraint.hpp"
@@ -36,15 +36,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::Nln::LinSystem::ConditionNumber Solid::Nln::convert2_nox_condition_number_type(
-    const Inpar::Solid::ConditionNumber stype)
+    const Solid::ConditionNumber stype)
 {
   switch (stype)
   {
-    case Inpar::Solid::ConditionNumber::max_min_ev_ratio:
+    case Solid::ConditionNumber::max_min_ev_ratio:
       return NOX::Nln::LinSystem::ConditionNumber::max_min_ev_ratio;
-    case Inpar::Solid::ConditionNumber::one_norm:
+    case Solid::ConditionNumber::one_norm:
       return NOX::Nln::LinSystem::ConditionNumber::one_norm;
-    case Inpar::Solid::ConditionNumber::inf_norm:
+    case Solid::ConditionNumber::inf_norm:
       return NOX::Nln::LinSystem::ConditionNumber::inf_norm;
     default:
       FOUR_C_THROW("No known conversion.");
@@ -54,23 +54,23 @@ NOX::Nln::LinSystem::ConditionNumber Solid::Nln::convert2_nox_condition_number_t
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 enum ::NOX::Abstract::Vector::NormType Solid::Nln::convert2_nox_norm_type(
-    const Inpar::Solid::VectorNorm& normtype)
+    const Solid::VectorNorm& normtype)
 {
   enum ::NOX::Abstract::Vector::NormType nox_normtype = ::NOX::Abstract::Vector::TwoNorm;
 
   switch (normtype)
   {
-    case Inpar::Solid::norm_l2:
+    case Solid::norm_l2:
       nox_normtype = ::NOX::Abstract::Vector::TwoNorm;
       break;
-    case Inpar::Solid::norm_l1:
+    case Solid::norm_l1:
       nox_normtype = ::NOX::Abstract::Vector::OneNorm;
       break;
-    case Inpar::Solid::norm_inf:
+    case Solid::norm_inf:
       nox_normtype = ::NOX::Abstract::Vector::MaxNorm;
       break;
-    case Inpar::Solid::norm_rms:
-    case Inpar::Solid::norm_vague:
+    case Solid::norm_rms:
+    case Solid::norm_vague:
     default:
       FOUR_C_THROW("Unknown conversion for the given vector norm type: \" {} \"!", normtype);
       break;
@@ -83,8 +83,8 @@ enum ::NOX::Abstract::Vector::NormType Solid::Nln::convert2_nox_norm_type(
  *----------------------------------------------------------------------------*/
 void Solid::Nln::convert_model_type2_sol_type(std::vector<NOX::Nln::SolutionType>& soltypes,
     std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& slinsolvers,
-    const std::set<Inpar::Solid::ModelType>& modeltypes,
-    const std::map<Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>& mlinsolvers)
+    const std::set<Solid::ModelType>& modeltypes,
+    const std::map<Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>& mlinsolvers)
 {
   // initialize the vector and/or force the length to zero
   if (soltypes.size() > 0)
@@ -97,7 +97,7 @@ void Solid::Nln::convert_model_type2_sol_type(std::vector<NOX::Nln::SolutionType
   soltypes.reserve(modeltypes.size());
 
   // The strings of the different enums have to fit!
-  std::set<Inpar::Solid::ModelType>::const_iterator mt_iter;
+  std::set<Solid::ModelType>::const_iterator mt_iter;
   for (mt_iter = modeltypes.begin(); mt_iter != modeltypes.end(); ++mt_iter)
   {
     const NOX::Nln::SolutionType soltype = convert_model_type2_sol_type(*mt_iter);
@@ -112,33 +112,33 @@ void Solid::Nln::convert_model_type2_sol_type(std::vector<NOX::Nln::SolutionType
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::Nln::SolutionType Solid::Nln::convert_model_type2_sol_type(
-    const Inpar::Solid::ModelType& modeltype, const bool& do_check)
+    const Solid::ModelType& modeltype, const bool& do_check)
 {
   NOX::Nln::SolutionType soltype = NOX::Nln::sol_unknown;
   switch (modeltype)
   {
-    case Inpar::Solid::model_structure:
-    case Inpar::Solid::model_springdashpot:
-    case Inpar::Solid::model_basic_coupling:
-    case Inpar::Solid::model_monolithic_coupling:
-    case Inpar::Solid::model_partitioned_coupling:
-    case Inpar::Solid::model_beam_interaction_old:
-    case Inpar::Solid::model_browniandyn:
-    case Inpar::Solid::model_beaminteraction:
-    case Inpar::Solid::model_constraints:
-    case Inpar::Solid::model_multiscale:
+    case Solid::model_structure:
+    case Solid::model_springdashpot:
+    case Solid::model_basic_coupling:
+    case Solid::model_monolithic_coupling:
+    case Solid::model_partitioned_coupling:
+    case Solid::model_beam_interaction_old:
+    case Solid::model_browniandyn:
+    case Solid::model_beaminteraction:
+    case Solid::model_constraints:
+    case Solid::model_multiscale:
       soltype = NOX::Nln::sol_structure;
       break;
-    case Inpar::Solid::model_contact:
+    case Solid::model_contact:
       soltype = NOX::Nln::sol_contact;
       break;
-    case Inpar::Solid::model_meshtying:
+    case Solid::model_meshtying:
       soltype = NOX::Nln::sol_meshtying;
       break;
-    case Inpar::Solid::model_cardiovascular0d:
+    case Solid::model_cardiovascular0d:
       soltype = NOX::Nln::sol_cardiovascular0d;
       break;
-    case Inpar::Solid::model_lag_pen_constraint:
+    case Solid::model_lag_pen_constraint:
       soltype = NOX::Nln::sol_lag_pen_constraint;
       break;
     default:
@@ -156,29 +156,29 @@ NOX::Nln::SolutionType Solid::Nln::convert_model_type2_sol_type(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::ModelType Solid::Nln::convert_sol_type2_model_type(
+Solid::ModelType Solid::Nln::convert_sol_type2_model_type(
     const NOX::Nln::SolutionType& soltype, const bool& do_check)
 {
-  Inpar::Solid::ModelType modeltype = Inpar::Solid::model_vague;
+  Solid::ModelType modeltype = Solid::model_vague;
   switch (soltype)
   {
     case NOX::Nln::sol_structure:
-      modeltype = Inpar::Solid::model_structure;
+      modeltype = Solid::model_structure;
       break;
     case NOX::Nln::sol_contact:
-      modeltype = Inpar::Solid::model_contact;
+      modeltype = Solid::model_contact;
       break;
     case NOX::Nln::sol_meshtying:
-      modeltype = Inpar::Solid::model_meshtying;
+      modeltype = Solid::model_meshtying;
       break;
     case NOX::Nln::sol_cardiovascular0d:
-      modeltype = Inpar::Solid::model_cardiovascular0d;
+      modeltype = Solid::model_cardiovascular0d;
       break;
     case NOX::Nln::sol_lag_pen_constraint:
-      modeltype = Inpar::Solid::model_lag_pen_constraint;
+      modeltype = Solid::model_lag_pen_constraint;
       break;
     case NOX::Nln::sol_beaminteraction_lm:
-      modeltype = Inpar::Solid::model_beaminteraction;
+      modeltype = Solid::model_beaminteraction;
       break;
     default:
       // check if the corresponding enum could be found.
@@ -195,7 +195,7 @@ Inpar::Solid::ModelType Solid::Nln::convert_sol_type2_model_type(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::ModelType Solid::Nln::convert_quantity_type2_model_type(
+Solid::ModelType Solid::Nln::convert_quantity_type2_model_type(
     const NOX::Nln::StatusTest::QuantityType& qtype, const bool& do_check)
 {
   const NOX::Nln::SolutionType st = NOX::Nln::Aux::convert_quantity_type_to_solution_type(qtype);
@@ -204,14 +204,14 @@ Inpar::Solid::ModelType Solid::Nln::convert_quantity_type2_model_type(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::EleTech Solid::Nln::convert_quantity_type2_ele_tech(
+Solid::EleTech Solid::Nln::convert_quantity_type2_ele_tech(
     const NOX::Nln::StatusTest::QuantityType& qtype)
 {
-  Inpar::Solid::EleTech eletech;
+  Solid::EleTech eletech;
   switch (qtype)
   {
     case NOX::Nln::StatusTest::quantity_eas:
-      eletech = Inpar::Solid::EleTech::eas;
+      eletech = Solid::EleTech::eas;
       break;
     default:
       FOUR_C_THROW("Cannot convert QuantityType {} to EleTech.",
@@ -280,7 +280,7 @@ void Solid::Nln::create_constraint_interfaces(NOX::Nln::CONSTRAINT::ReqInterface
     {
       case NOX::Nln::sol_contact:
       {
-        Solid::ModelEvaluator::Generic& model = integrator.evaluator(Inpar::Solid::model_contact);
+        Solid::ModelEvaluator::Generic& model = integrator.evaluator(Solid::model_contact);
         Solid::ModelEvaluator::Contact& contact_model =
             dynamic_cast<Solid::ModelEvaluator::Contact&>(model);
         iconstr[NOX::Nln::sol_contact] =
@@ -289,7 +289,7 @@ void Solid::Nln::create_constraint_interfaces(NOX::Nln::CONSTRAINT::ReqInterface
       }
       case NOX::Nln::sol_meshtying:
       {
-        Solid::ModelEvaluator::Generic& model = integrator.evaluator(Inpar::Solid::model_meshtying);
+        Solid::ModelEvaluator::Generic& model = integrator.evaluator(Solid::model_meshtying);
         Solid::ModelEvaluator::Meshtying& mt_model =
             dynamic_cast<Solid::ModelEvaluator::Meshtying&>(model);
         iconstr[NOX::Nln::sol_meshtying] =
@@ -299,7 +299,7 @@ void Solid::Nln::create_constraint_interfaces(NOX::Nln::CONSTRAINT::ReqInterface
       case NOX::Nln::sol_lag_pen_constraint:
       {
         Solid::ModelEvaluator::Generic& model =
-            integrator.evaluator(Inpar::Solid::model_lag_pen_constraint);
+            integrator.evaluator(Solid::model_lag_pen_constraint);
         Solid::ModelEvaluator::LagPenConstraint& lagpenconstraint_model =
             dynamic_cast<Solid::ModelEvaluator::LagPenConstraint&>(model);
         iconstr[NOX::Nln::sol_lag_pen_constraint] =
@@ -327,7 +327,7 @@ void Solid::Nln::create_constraint_preconditioner(
     {
       case NOX::Nln::sol_contact:
       {
-        Solid::ModelEvaluator::Generic& model = integrator.evaluator(Inpar::Solid::model_contact);
+        Solid::ModelEvaluator::Generic& model = integrator.evaluator(Solid::model_contact);
         Solid::ModelEvaluator::Contact& contact_model =
             dynamic_cast<Solid::ModelEvaluator::Contact&>(model);
         /* Actually we use the underlying Mortar::StrategyBase as Preconditioner
@@ -338,7 +338,7 @@ void Solid::Nln::create_constraint_preconditioner(
       }
       case NOX::Nln::sol_meshtying:
       {
-        Solid::ModelEvaluator::Generic& model = integrator.evaluator(Inpar::Solid::model_meshtying);
+        Solid::ModelEvaluator::Generic& model = integrator.evaluator(Solid::model_meshtying);
         Solid::ModelEvaluator::Meshtying& mt_model =
             dynamic_cast<Solid::ModelEvaluator::Meshtying&>(model);
         iconstr_prec[NOX::Nln::sol_meshtying] = Teuchos::rcpFromRef(*mt_model.strategy_ptr());
@@ -347,7 +347,7 @@ void Solid::Nln::create_constraint_preconditioner(
       case NOX::Nln::sol_lag_pen_constraint:
       {
         Solid::ModelEvaluator::Generic& model =
-            integrator.evaluator(Inpar::Solid::model_lag_pen_constraint);
+            integrator.evaluator(Solid::model_lag_pen_constraint);
         Solid::ModelEvaluator::LagPenConstraint& lagpenconstraint_model =
             dynamic_cast<Solid::ModelEvaluator::LagPenConstraint&>(model);
         iconstr_prec[NOX::Nln::sol_lag_pen_constraint] =
@@ -367,7 +367,7 @@ void Solid::Nln::create_constraint_preconditioner(
 void Solid::Nln::create_scaling(std::shared_ptr<NOX::Nln::Scaling>& iscale,
     const Solid::TimeInt::BaseDataSDyn& DataSDyn, Solid::TimeInt::BaseDataGlobalState& GState)
 {
-  if (DataSDyn.get_stc_algo_type() != Inpar::Solid::stc_inactive)
+  if (DataSDyn.get_stc_algo_type() != Solid::stc_inactive)
     iscale = std::make_shared<Solid::Nln::LinSystem::StcScaling>(DataSDyn, GState);
 }
 

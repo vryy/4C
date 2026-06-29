@@ -120,9 +120,9 @@ bool Constraints::SubmodelEvaluator::NullspaceConstraintManager::evaluate_force_
   auto jacobian = global_state_ptr->get_jacobian();
 
   global_state_ptr->assign_model_block(
-      *jacobian, *Q_dL_, Inpar::Solid::model_constraints, Solid::MatBlockType::displ_lm);
+      *jacobian, *Q_dL_, Solid::model_constraints, Solid::MatBlockType::displ_lm);
   global_state_ptr->assign_model_block(
-      *jacobian, *Q_Ld_, Inpar::Solid::model_constraints, Solid::MatBlockType::lm_displ);
+      *jacobian, *Q_Ld_, Solid::model_constraints, Solid::MatBlockType::lm_displ);
 
   return true;
 }

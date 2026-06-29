@@ -412,7 +412,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_residual(Core::LinAlg::Vector<do
       structure_field()->interface()->insert_fsi_cond_vector(*scv);
   modsv->update(1.0, sv, (1.0 - stiparam) / (1.0 - ftiparam) * fluidscale);
 
-  if (structure_field()->get_stc_algo() == Inpar::Solid::stc_currsym)
+  if (structure_field()->get_stc_algo() == Solid::stc_currsym)
   {
     std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat = structure_field()->get_stc_mat();
     stcmat->multiply(true, *modsv, *modsv);
@@ -530,7 +530,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<d
   fgg.multiply(false, *fveln, *auxvec);
   mortarp->multiply(true, *auxvec, *rhs);
 
-  if (structure_field()->get_stc_algo() == Inpar::Solid::stc_currsym)
+  if (structure_field()->get_stc_algo() == Solid::stc_currsym)
   {
     std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat = structure_field()->get_stc_mat();
     stcmat->multiply(true, *rhs, *rhs);
@@ -700,7 +700,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<d
       Core::LinAlg::apply_dirichlet_to_system(
           *rhs, *zeros, *(structure_field()->get_dbc_map_extractor()->cond_map()));
 
-      if (structure_field()->get_stc_algo() == Inpar::Solid::stc_currsym)
+      if (structure_field()->get_stc_algo() == Solid::stc_currsym)
       {
         std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat = structure_field()->get_stc_mat();
         stcmat->multiply(true, *rhs, *rhs);
@@ -749,9 +749,9 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   const std::shared_ptr<Core::LinAlg::SparseMatrix> mortarp = coupsfm_->get_mortar_matrix_p();
 
   // get info about STC feature
-  Inpar::Solid::StcScale stcalgo = structure_field()->get_stc_algo();
+  Solid::StcScale stcalgo = structure_field()->get_stc_algo();
   std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat = nullptr;
-  if (stcalgo != Inpar::Solid::stc_inactive) stcmat = structure_field()->get_stc_mat();
+  if (stcalgo != Solid::stc_inactive) stcmat = structure_field()->get_stc_mat();
 
   const Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
@@ -824,7 +824,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   Core::LinAlg::matrix_add(*fgi, false, scale, *lfgi, 0.0);
   lfgi->complete(fgi->domain_map(), s->range_map());
 
-  if (stcalgo == Inpar::Solid::stc_currsym)
+  if (stcalgo == Solid::stc_currsym)
     lfgi = Core::LinAlg::matrix_multiply(*stcmat, true, *lfgi, false, true, true, true);
 
   mat.matrix(0, 1).un_complete();
@@ -839,7 +839,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   Core::LinAlg::matrix_add(*fig, false, timescale, *lfig, 0.0);
   lfig->complete(s->domain_map(), fig->range_map());
 
-  if (stcalgo != Inpar::Solid::stc_inactive)
+  if (stcalgo != Solid::stc_inactive)
   {
     lfig = Core::LinAlg::matrix_multiply(*lfig, false, *stcmat, false, false, false, true);
   }
@@ -868,7 +868,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   Core::LinAlg::matrix_add(*llaig, false, 1.0, *laig, 0.0);
   laig->complete(s->domain_map(), llaig->range_map());
 
-  if (stcalgo != Inpar::Solid::stc_inactive)
+  if (stcalgo != Solid::stc_inactive)
   {
     laig = Core::LinAlg::matrix_multiply(*laig, false, *stcmat, false, false, false, true);
   }
@@ -909,7 +909,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
     Core::LinAlg::matrix_add(*fmig, false, 1.0, *lfmig, 0.0);
     lfmig->complete(s->domain_map(), fmig->range_map());
 
-    if (stcalgo != Inpar::Solid::stc_inactive)
+    if (stcalgo != Solid::stc_inactive)
     {
       lfmig = Core::LinAlg::matrix_multiply(*lfmig, false, *stcmat, false, false, false, true);
     }
@@ -935,17 +935,17 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
     Core::LinAlg::matrix_add(*llfmgi, false, scale, *lfmgi, 0.0);
     lfmgi->complete(aii.domain_map(), s->range_map());
 
-    if (stcalgo == Inpar::Solid::stc_currsym)
+    if (stcalgo == Solid::stc_currsym)
       lfmgi = Core::LinAlg::matrix_multiply(*stcmat, true, *lfmgi, false, true, true, false);
     lfmgi->scale((1. - stiparam) / (1. - ftiparam));
     mat.assign(0, 2, Core::LinAlg::DataAccess::Share, *lfmgi);
   }
 
-  if (stcalgo != Inpar::Solid::stc_inactive)
+  if (stcalgo != Solid::stc_inactive)
   {
     s = Core::LinAlg::matrix_multiply(*s, false, *stcmat, false, true, true, true);
 
-    if (stcalgo == Inpar::Solid::stc_currsym)
+    if (stcalgo == Solid::stc_currsym)
       s = Core::LinAlg::matrix_multiply(*stcmat, true, *s, false, true, true, false);
   }
 
@@ -1054,8 +1054,8 @@ void FSI::MortarMonolithicFluidSplit::unscale_solution(Core::LinAlg::BlockSparse
     ay->multiply(1.0, *acolsum_, *ay, 0.0);
 
     // get info about STC feature and unscale solution if necessary
-    Inpar::Solid::StcScale stcalgo = structure_field()->get_stc_algo();
-    if (stcalgo != Inpar::Solid::stc_inactive)
+    Solid::StcScale stcalgo = structure_field()->get_stc_algo();
+    if (stcalgo != Solid::stc_inactive)
     {
       structure_field()->get_stc_mat()->multiply(false, *sy, *sy);
     }
@@ -1070,7 +1070,7 @@ void FSI::MortarMonolithicFluidSplit::unscale_solution(Core::LinAlg::BlockSparse
     ax->reciprocal_multiply(1.0, *arowsum_, *ax, 0.0);
 
     // get info about STC feature
-    if (stcalgo != Inpar::Solid::stc_inactive)
+    if (stcalgo != Solid::stc_inactive)
     {
       structure_field()->get_stc_mat()->multiply(false, *sx, *sx);
     }
@@ -1133,7 +1133,7 @@ void FSI::MortarMonolithicFluidSplit::unscale_solution(Core::LinAlg::BlockSparse
 
   utils()->out().flags(flags);
 
-  if (structure_field()->get_stc_algo() != Inpar::Solid::stc_inactive)
+  if (structure_field()->get_stc_algo() != Solid::stc_inactive)
     structure_field()->system_matrix()->reset();
 }
 
@@ -1579,7 +1579,7 @@ void FSI::MortarMonolithicFluidSplit::prepare_time_step()
 
   prepare_time_step_preconditioner();
 
-  if (structure_field()->get_stc_algo() != Inpar::Solid::stc_inactive)
+  if (structure_field()->get_stc_algo() != Solid::stc_inactive)
     structure_field()->system_matrix()->reset();
 
   prepare_time_step_fields();

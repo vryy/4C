@@ -8,9 +8,9 @@
 #include "4C_adapter_str_fsi_timint_adaptive.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_structure_aux.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_timada.hpp"
 #include "4C_structure_timint.hpp"
 
@@ -31,7 +31,7 @@ Adapter::StructureFSITimIntAda::StructureFSITimIntAda(
   const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
 
   // type of error norm
-  errnorm_ = Teuchos::getIntegralValue<Inpar::Solid::VectorNorm>(sada, "LOCERRNORM");
+  errnorm_ = Teuchos::getIntegralValue<Solid::VectorNorm>(sada, "LOCERRNORM");
 
   //----------------------------------------------------------------------------
   // Handling of Dirichlet BCs in error estimation
@@ -84,9 +84,9 @@ void Adapter::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
   errother = Solid::calculate_vector_norm(errnorm_, errorother, numdbcinnerdofs_);
 
   // calculate L-inf-norms of different subsets of local discretization error vector
-  errinf = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, *error);
-  errinfcond = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, errorcond);
-  errinfother = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, errorother);
+  errinf = Solid::calculate_vector_norm(Solid::norm_inf, *error);
+  errinfcond = Solid::calculate_vector_norm(Solid::norm_inf, errorcond);
+  errinfother = Solid::calculate_vector_norm(Solid::norm_inf, errorother);
 }
 
 /*----------------------------------------------------------------------------*/

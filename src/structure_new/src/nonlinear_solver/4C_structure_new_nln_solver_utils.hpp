@@ -10,9 +10,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_solver_nonlin_nox_enum_lists.hpp"
 #include "4C_solver_nonlin_nox_statustest_factory.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <set>
 
@@ -47,10 +47,10 @@ namespace Solid
           const Solid::TimeInt::BaseDataSDyn& datasdyn);
 
       void convert_model_type_to_quantity_type(
-          const Inpar::Solid::ModelType& mt, std::vector<NOX::Nln::StatusTest::QuantityType>& qt);
+          const Solid::ModelType& mt, std::vector<NOX::Nln::StatusTest::QuantityType>& qt);
 
       void convert_ele_tech_to_quantity_type(
-          const Inpar::Solid::EleTech& et, std::vector<NOX::Nln::StatusTest::QuantityType>& qt);
+          const Solid::EleTech& et, std::vector<NOX::Nln::StatusTest::QuantityType>& qt);
 
       /*! \brief Create a status test parameter list
        *
@@ -128,20 +128,20 @@ namespace Solid
 
       //! Set the NormUpdate status test parameters
       void set_norm_update_params(Teuchos::ParameterList& qlist,
-          const NOX::Nln::StatusTest::QuantityType& qtype, const Inpar::Solid::ConvNorm& toltype,
-          const double& tol, const Inpar::Solid::VectorNorm& normtype);
+          const NOX::Nln::StatusTest::QuantityType& qtype, const Solid::ConvNorm& toltype,
+          const double& tol, const Solid::VectorNorm& normtype);
       void set_norm_update_params(Teuchos::ParameterList& qlist,
           const NOX::Nln::StatusTest::QuantityType& qtype, const double& alpha, const double& beta,
-          const Inpar::Solid::ConvNorm& toltype, const double& tol,
-          const Inpar::Solid::VectorNorm& normtype, const bool& isscaled);
+          const Solid::ConvNorm& toltype, const double& tol, const Solid::VectorNorm& normtype,
+          const bool& isscaled);
 
       //! Set the NormF status test parameters
       void set_norm_f_params(Teuchos::ParameterList& qlist,
-          const NOX::Nln::StatusTest::QuantityType& qtype, const Inpar::Solid::ConvNorm& toltype,
-          const double& tol, const Inpar::Solid::VectorNorm& normtype);
+          const NOX::Nln::StatusTest::QuantityType& qtype, const Solid::ConvNorm& toltype,
+          const double& tol, const Solid::VectorNorm& normtype);
       void set_norm_f_params(Teuchos::ParameterList& qlist,
-          const NOX::Nln::StatusTest::QuantityType& qtype, const Inpar::Solid::ConvNorm& toltype,
-          const double& tol, const Inpar::Solid::VectorNorm& normtype, const bool& isscaled);
+          const NOX::Nln::StatusTest::QuantityType& qtype, const Solid::ConvNorm& toltype,
+          const double& tol, const Solid::VectorNorm& normtype, const bool& isscaled);
 
       //! Set the ActiveSet status test parameters
       void set_active_set_params(

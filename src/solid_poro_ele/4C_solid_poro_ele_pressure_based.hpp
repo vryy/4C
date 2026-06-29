@@ -12,13 +12,13 @@
 
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_elementtype.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_scatra_input.hpp"
 #include "4C_solid_ele_factory.hpp"
 #include "4C_solid_poro_ele_factory.hpp"
 #include "4C_solid_poro_ele_properties.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_function.hpp"
 
 #include <memory>
@@ -183,7 +183,7 @@ namespace Discret::Elements
              solid_ele_property_.element_technology == ElementTechnology::eas_mild;
     }
 
-    Inpar::Solid::KinemType get_ele_kinematic_type() { return solid_ele_property_.kintype; }
+    FourC::Solid::KinemType get_ele_kinematic_type() { return solid_ele_property_.kintype; }
 
     ScaTra::ImplType get_impl_type() { return poro_ele_property_.impltype; }
 

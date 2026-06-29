@@ -10,11 +10,11 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"  // enumerators
 #include "4C_io_runtime_csv_writer.hpp"
 #include "4C_io_visualization_parameters.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"  // interface to the element evaluation
 #include "4C_structure_new_error_evaluator.hpp"
+#include "4C_structure_new_input.hpp"                    // enumerators
 #include "4C_structure_new_model_evaluator_generic.hpp"  // base class
 
 #include <memory>
@@ -50,7 +50,7 @@ namespace Solid
       //! @{
 
       //! derived
-      Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_structure; }
+      Solid::ModelType type() const override { return Solid::model_structure; }
 
       //! derived
       void reset(const Core::LinAlg::Vector<double>& x) override;
@@ -109,7 +109,7 @@ namespace Solid
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
-      void predict(const Inpar::Solid::PredEnum& pred_type) override;
+      void predict(const Solid::PredEnum& pred_type) override;
 
       //! derived
       void update_step_state(const double& timefac_n) override;
@@ -529,7 +529,7 @@ namespace Solid
       std::unique_ptr<Core::IO::RuntimeCsvWriter> runtime_csvwriter_rank_eval_times_;
 
       //! mass linearization type
-      Inpar::Solid::MassLin masslin_type_;
+      Solid::MassLin masslin_type_;
 
       //! @name class only variables
       //! @{

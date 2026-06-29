@@ -274,7 +274,7 @@ void Solid::ModelEvaluator::Constraint::read_restart(Core::IO::DiscretizationRea
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Constraint::predict(const Inpar::Solid::PredEnum& pred_type) {}
+void Solid::ModelEvaluator::Constraint::predict(const Solid::PredEnum& pred_type) {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

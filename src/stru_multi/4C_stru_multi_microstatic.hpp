@@ -14,11 +14,11 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <Teuchos_Time.hpp>
 
@@ -259,7 +259,7 @@ namespace MultiScale
     double time_;
     double timen_;
 
-    Inpar::Solid::PredEnum pred_;  //!< predictor
+    Solid::PredEnum pred_;  //!< predictor
 
     bool isadapttol_;
     double adaptolbetter_;
@@ -286,24 +286,24 @@ namespace MultiScale
     bool output_stress_strain_;
 
     /// Output type of Gauss point data
-    Inpar::Solid::GaussPointDataOutputType gauss_point_data_output_type_;
+    Solid::GaussPointDataOutputType gauss_point_data_output_type_;
     //@}
     int results_every_;
-    Inpar::Solid::StressType iostress_;
-    Inpar::Solid::StrainType iostrain_;
-    Inpar::Solid::StrainType ioplstrain_;
+    Solid::StressType iostress_;
+    Solid::StrainType iostrain_;
+    Solid::StrainType ioplstrain_;
     int restart_;
     int restart_every_;
     int printscreen_;
 
-    Inpar::Solid::VectorNorm iternorm_;
+    Solid::VectorNorm iternorm_;
     double tolfres_;
     double toldisi_;
 
-    Inpar::Solid::BinaryOp combdisifres_;  //!< binary operator to
-                                           // combine displacement and forces
-    Inpar::Solid::ConvNorm normtypedisi_;  //!< convergence check for residual displacements
-    Inpar::Solid::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    Solid::BinaryOp combdisifres_;  //!< binary operator to
+                                    // combine displacement and forces
+    Solid::ConvNorm normtypedisi_;  //!< convergence check for residual displacements
+    Solid::ConvNorm normtypefres_;  //!< convergence check for residual forces
     double normcharforce_;
     double normfres_;
     double normchardis_;

@@ -48,7 +48,7 @@ void Solid::ModelEvaluator::BrownianDyn::setup()
 
   // safety check, brownian dynamics simulation only for one step theta and
   // theta = 1.0 (see Cyron 2012)
-  if (tim_int().get_data_sdyn_ptr()->get_dynamic_type() != Inpar::Solid::DynamicType::OneStepTheta)
+  if (tim_int().get_data_sdyn_ptr()->get_dynamic_type() != Solid::DynamicType::OneStepTheta)
     FOUR_C_THROW("Brownian dynamics simulation only consistent for one step theta schema.");
 
   discret_ptr_ = discret_ptr();

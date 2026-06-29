@@ -10,7 +10,6 @@
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
@@ -25,6 +24,7 @@
 #include "4C_solid_ele_utils.hpp"
 #include "4C_solid_poro_ele_factory.hpp"
 #include "4C_solid_poro_ele_utils.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <memory>
 
@@ -42,12 +42,12 @@ namespace Discret::Elements::SolidPoroPressureBasedInternal
     {
       return all_of({
           parameter<int>("MAT"),
-          deprecated_selection<Inpar::Solid::KinemType>("KINEM",
+          deprecated_selection<FourC::Solid::KinemType>("KINEM",
               {
-                  {kinem_type_string(Inpar::Solid::KinemType::linear),
-                      Inpar::Solid::KinemType::linear},
-                  {kinem_type_string(Inpar::Solid::KinemType::nonlinearTotLag),
-                      Inpar::Solid::KinemType::nonlinearTotLag},
+                  {kinem_type_string(FourC::Solid::KinemType::linear),
+                      FourC::Solid::KinemType::linear},
+                  {kinem_type_string(FourC::Solid::KinemType::nonlinearTotLag),
+                      FourC::Solid::KinemType::nonlinearTotLag},
               },
               {.description = "Whether to use linear kinematics (small displacements) or nonlinear "
                               "kinematics (large displacements)"}),
@@ -65,12 +65,12 @@ namespace Discret::Elements::SolidPoroPressureBasedInternal
     {
       return all_of({
           parameter<int>("MAT"),
-          deprecated_selection<Inpar::Solid::KinemType>("KINEM",
+          deprecated_selection<FourC::Solid::KinemType>("KINEM",
               {
-                  {kinem_type_string(Inpar::Solid::KinemType::linear),
-                      Inpar::Solid::KinemType::linear},
-                  {kinem_type_string(Inpar::Solid::KinemType::nonlinearTotLag),
-                      Inpar::Solid::KinemType::nonlinearTotLag},
+                  {kinem_type_string(FourC::Solid::KinemType::linear),
+                      FourC::Solid::KinemType::linear},
+                  {kinem_type_string(FourC::Solid::KinemType::nonlinearTotLag),
+                      FourC::Solid::KinemType::nonlinearTotLag},
               },
               {.description = "Whether to use linear kinematics (small displacements) or nonlinear "
                               "kinematics (large displacements)"}),
