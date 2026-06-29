@@ -59,7 +59,7 @@ Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluate_s2_i_coupling(
+void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::evaluate_s2i_coupling(
     const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& eslavematrix, Core::LinAlg::SerialDenseMatrix& emastermatrix,
@@ -117,7 +117,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::eva
     const double timefacrhsfac = my::scatraparamstimint_->time_fac_rhs() * fac;
     if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
-    evaluate_s2_i_coupling_at_integration_point<distype>(*matelectrode, my::ephinp_[0], emastertemp,
+    evaluate_s2i_coupling_at_integration_point<distype>(*matelectrode, my::ephinp_[0], emastertemp,
         eelchnp_, emasterscatra, pseudo_contact_fac, my::funct_, my::funct_,
         my::scatraparamsboundary_, timefacfac, timefacrhsfac, detF, eslavematrix, emastermatrix,
         eslaveresidual);
@@ -129,7 +129,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::eva
 template <Core::FE::CellType distype, int probdim>
 template <Core::FE::CellType distype_master>
 void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype,
-    probdim>::evaluate_s2_i_coupling_at_integration_point(const Mat::Electrode& matelectrode,
+    probdim>::evaluate_s2i_coupling_at_integration_point(const Mat::Electrode& matelectrode,
     const Core::LinAlg::Matrix<nen_, 1>& eslavetempnp,
     const Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>& emastertempnp,
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
@@ -310,7 +310,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype,
-    probdim>::evaluate_s2_i_coupling_od(const Core::Elements::FaceElement* ele,
+    probdim>::evaluate_s2i_coupling_od(const Core::Elements::FaceElement* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
     Core::LinAlg::SerialDenseMatrix& emastermatrix)
@@ -382,7 +382,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype,
       my::evaluate_spatial_derivative_of_area_integration_factor(intpoints, gpid, dsqrtdetg_dd);
     }
 
-    evaluate_s2_i_coupling_od_at_integration_point<distype>(*matelectrode, my::ephinp_[0],
+    evaluate_s2i_coupling_od_at_integration_point<distype>(*matelectrode, my::ephinp_[0],
         emastertemp, eelchnp_, emasterscatra, pseudo_contact_fac, my::funct_, my::funct_,
         my::scatraparamsboundary_, timefacfac, timefacwgt, detF, differentiationtype, dsqrtdetg_dd,
         my::derxy_, eslavematrix, emastermatrix);
@@ -394,7 +394,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype,
 template <Core::FE::CellType distype, int probdim>
 template <Core::FE::CellType distype_master>
 void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype,
-    probdim>::evaluate_s2_i_coupling_od_at_integration_point(const Mat::Electrode& matelectrode,
+    probdim>::evaluate_s2i_coupling_od_at_integration_point(const Mat::Electrode& matelectrode,
     const Core::LinAlg::Matrix<nen_, 1>& eslavetempnp,
     const Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>& emastertempnp,
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
@@ -445,7 +445,6 @@ void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype,
           // access input parameters associated with current condition
           const double faraday =
               Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
-          Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
           const double gasconstant =
               Discret::Elements::ScaTraEleParameterElch::instance("scatra")->gas_constant();
 
@@ -721,13 +720,13 @@ int Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::eval
   {
     case ScaTra::BoundaryAction::calc_s2icoupling:
     {
-      evaluate_s2_i_coupling(ele, params, discretization, la, elemat1, elemat2, elevec1);
+      evaluate_s2i_coupling(ele, params, discretization, la, elemat1, elemat2, elevec1);
       break;
     }
 
     case ScaTra::BoundaryAction::calc_s2icoupling_od:
     {
-      evaluate_s2_i_coupling_od(ele, params, discretization, la, elemat1, elemat2);
+      evaluate_s2i_coupling_od(ele, params, discretization, la, elemat1, elemat2);
       break;
     }
 
@@ -770,7 +769,7 @@ template class Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::Ce
 
 // explicit instantiation of template methods
 template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::CellType::quad4>::
-    evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
+    evaluate_s2i_coupling_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
         const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
@@ -781,7 +780,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::Cel
         const double, Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseVector&);
 template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::CellType::quad4>::
-    evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
+    evaluate_s2i_coupling_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
         const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
@@ -792,7 +791,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::Cel
         const double, Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseVector&);
 template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::CellType::tri3>::
-    evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
+    evaluate_s2i_coupling_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
         const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
@@ -803,7 +802,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::Cel
         const double, Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseVector&);
 template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::CellType::tri3>::
-    evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
+    evaluate_s2i_coupling_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
         const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
@@ -814,7 +813,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::Cel
         const double, Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseVector&);
 template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::CellType::quad4>::
-    evaluate_s2_i_coupling_od_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
+    evaluate_s2i_coupling_od_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
         const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
@@ -826,7 +825,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::Cel
         const Core::LinAlg::Matrix<nsd_, nen_>&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseMatrix&);
 template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::CellType::quad4>::
-    evaluate_s2_i_coupling_od_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
+    evaluate_s2i_coupling_od_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
         const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
@@ -838,7 +837,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::Cel
         const Core::LinAlg::Matrix<nsd_, nen_>&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseMatrix&);
 template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::CellType::tri3>::
-    evaluate_s2_i_coupling_od_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
+    evaluate_s2i_coupling_od_at_integration_point<Core::FE::CellType::quad4>(const Mat::Electrode&,
         const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
@@ -850,7 +849,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::Cel
         const Core::LinAlg::Matrix<nsd_, nen_>&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseMatrix&);
 template void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<Core::FE::CellType::tri3>::
-    evaluate_s2_i_coupling_od_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
+    evaluate_s2i_coupling_od_at_integration_point<Core::FE::CellType::tri3>(const Mat::Electrode&,
         const Core::LinAlg::Matrix<nen_, 1>&,
         const Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,

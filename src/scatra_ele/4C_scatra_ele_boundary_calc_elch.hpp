@@ -34,29 +34,15 @@ namespace Discret
       using my::nsd_;
       using my::nsd_ele_;
 
-     public:
-      //! singleton access method
-      // not needed, since class is purely virtual
-
-
-
-     protected:
       //! protected constructor for singletons
-      ScaTraEleBoundaryCalcElch(
-          const int numdofpernode, const int numscal, const std::string& disname);
+      ScaTraEleBoundaryCalcElch(int numdofpernode, int numscal, const std::string& disname);
 
-      //! evaluate action
-      int evaluate_action(Core::Elements::FaceElement* ele,  //!< boundary element
-          Teuchos::ParameterList& params,                    //!< parameter list
-          Core::FE::Discretization& discretization,          //!< discretization
-          ScaTra::BoundaryAction action,                     //!< action
-          Core::Elements::LocationArray& la,                 //!< location array
-          Core::LinAlg::SerialDenseMatrix& elemat1,          //!< element matrix 1
-          Core::LinAlg::SerialDenseMatrix& elemat2,          //!< element matrix 2
-          Core::LinAlg::SerialDenseVector& elevec1,          //!< element right-hand side vector 1
-          Core::LinAlg::SerialDenseVector& elevec2,          //!< element right-hand side vector 2
-          Core::LinAlg::SerialDenseVector& elevec3           //!< element right-hand side vector 3
-          ) override;
+      int evaluate_action(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //! evaluate an electrode kinetics boundary condition
       virtual void evaluate_elch_boundary_kinetics(
@@ -69,21 +55,20 @@ namespace Discret
           double timefac,                                           ///< time factor
           std::shared_ptr<const Core::Mat::Material> material,      ///< material
           const Core::Conditions::Condition& cond,  ///< electrode kinetics boundary condition
-          const int nume,                           ///< number of transferred electrons
-          const std::vector<int> stoich,            ///< stoichiometry of the reaction
-          const int kinetics,                       ///< desired electrode kinetics model
-          const double pot0,                        ///< electrode potential on metal side
-          const double frt,                         ///< factor F/RT
-          const double
-              scalar  ///< scaling factor for element matrix and right-hand side contributions
+          int nume,                                 ///< number of transferred electrons
+          const std::vector<int>& stoich,           ///< stoichiometry of the reaction
+          int kinetics,                             ///< desired electrode kinetics model
+          double pot0,                              ///< electrode potential on metal side
+          double frt,                               ///< factor F/RT
+          double scalar  ///< scaling factor for element matrix and right-hand side contributions
       );
 
       //! process an electrode kinetics boundary condition
-      void calc_elch_boundary_kinetics(Core::Elements::FaceElement* ele,  ///< current element
-          Teuchos::ParameterList& params,                                 ///< parameter list
-          Core::FE::Discretization& discretization,                       ///< discretization
-          Core::Elements::LocationArray& la,                              ///< location array
-          Core::LinAlg::SerialDenseMatrix& elemat1,                       ///< element matrix
+      void calc_elch_boundary_kinetics(const Core::Elements::FaceElement* ele,  ///< current element
+          Teuchos::ParameterList& params,                                       ///< parameter list
+          Core::FE::Discretization& discretization,                             ///< discretization
+          Core::Elements::LocationArray& la,                                    ///< location array
+          Core::LinAlg::SerialDenseMatrix& elemat1,                             ///< element matrix
           Core::LinAlg::SerialDenseVector& elevec1,  ///< element right-hand side vector
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
@@ -97,14 +82,14 @@ namespace Discret
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
-              ephidtnp,                   ///< nodal time derivative vector
-          const int kinetics,             ///< desired electrode kinetics model
-          const std::vector<int> stoich,  ///< stoichiometry of the reaction
-          const int nume,                 ///< number of transferred electrons
-          const double pot0,              ///< electrode potential on metal side
-          const double frt,               ///< factor F/RT
-          const double timefac,           ///< time factor
-          const double scalar             ///< scaling factor for current related quantities
+              ephidtnp,                    ///< nodal time derivative vector
+          const int kinetics,              ///< desired electrode kinetics model
+          const std::vector<int>& stoich,  ///< stoichiometry of the reaction
+          const int nume,                  ///< number of transferred electrons
+          const double pot0,               ///< electrode potential on metal side
+          const double frt,                ///< factor F/RT
+          const double timefac,            ///< time factor
+          const double scalar              ///< scaling factor for current related quantities
       );
 
       //! evaluate linearization of nernst equation
@@ -124,7 +109,7 @@ namespace Discret
       );
 
       //! extract valence of species k from element material
-      virtual double get_valence(
+      [[nodiscard]] virtual double get_valence(
           const std::shared_ptr<const Core::Mat::Material>& material,  //! element material
           const int k                                                  //! species number
       ) const = 0;

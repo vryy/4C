@@ -44,7 +44,7 @@ namespace Discret
      public:
       //! singleton access method
       static ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>* instance(
-          const int numdofpernode, const int numscal, const std::string& disname);
+          int numdofpernode, int numscal, const std::string& disname);
 
       /*!
        * \brief evaluate scatra-scatra interface coupling condition at integration point
@@ -74,7 +74,7 @@ namespace Discret
        * \tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <Core::FE::CellType distype_master>
-      static void evaluate_s2_i_coupling_at_integration_point(const Mat::Electrode& matelectrode,
+      static void evaluate_s2i_coupling_at_integration_point(const Mat::Electrode& matelectrode,
           const Core::LinAlg::Matrix<nen_, 1>& eslavetempnp,
           const Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>& emastertempnp,
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
@@ -112,7 +112,7 @@ namespace Discret
        * @param[out] k_sm         linearizations of slave-side residuals w.r.t. master-side dofs
        */
       template <Core::FE::CellType distype_master>
-      static void evaluate_s2_i_coupling_od_at_integration_point(const Mat::Electrode& matelectrode,
+      static void evaluate_s2i_coupling_od_at_integration_point(const Mat::Electrode& matelectrode,
           const Core::LinAlg::Matrix<nen_, 1>& eslavetempnp,
           const Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>& emastertempnp,
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
@@ -129,12 +129,11 @@ namespace Discret
 
      private:
       //! private constructor for singletons
-      ScaTraEleBoundaryCalcSTIElectrode(
-          const int numdofpernode, const int numscal, const std::string& disname);
+      ScaTraEleBoundaryCalcSTIElectrode(int numdofpernode, int numscal, const std::string& disname);
 
       //! evaluate main-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
-      void evaluate_s2_i_coupling(
+      void evaluate_s2i_coupling(
           const Core::Elements::FaceElement* ele,          ///< current boundary element
           Teuchos::ParameterList& params,                  ///< parameter list
           Core::FE::Discretization& discretization,        ///< discretization
@@ -146,7 +145,7 @@ namespace Discret
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
-      void evaluate_s2_i_coupling_od(
+      void evaluate_s2i_coupling_od(
           const Core::Elements::FaceElement* ele,         ///< current boundary element
           Teuchos::ParameterList& params,                 ///< parameter list
           Core::FE::Discretization& discretization,       ///< discretization

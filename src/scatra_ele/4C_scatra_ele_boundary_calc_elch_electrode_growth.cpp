@@ -60,8 +60,8 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   // access material of parent element
   std::shared_ptr<const Mat::Electrode> matelectrode =
       std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == nullptr)
-    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
+  FOUR_C_ASSERT_ALWAYS(
+      matelectrode != nullptr, "Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   extract_node_values(discretization, la);
@@ -69,19 +69,16 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(Core::LinAlg::Initialization::zero));
   my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
-  if (my::scatraparamsboundary_->condition_type() != Core::Conditions::S2IKineticsGrowth)
-    FOUR_C_THROW("Received illegal condition type!");
-
+  FOUR_C_ASSERT_ALWAYS(
+      my::scatraparamsboundary_->condition_type() == Core::Conditions::S2IKineticsGrowth,
+      "Received illegal condition type!");
   // access input parameters associated with condition
   const double faraday = myelch::elchparams_->faraday();
   const double resistivity = my::scatraparamsboundary_->resistivity();
   const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
-  if (kineticmodel != S2I::growth_kinetics_butlervolmer)
-  {
-    FOUR_C_THROW(
-        "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
-        "layer growth!");
-  }
+  FOUR_C_ASSERT_ALWAYS(kineticmodel == S2I::growth_kinetics_butlervolmer,
+      "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
+      "layer growth!");
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -114,7 +111,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
         const double alphaa = my::scatraparamsboundary_->alphadata();
         const double kr = my::scatraparamsboundary_->charge_transfer_constant();
         const double emasterphiint = my::funct_.dot(emasterphinp[0]);
-        const double epd = 0.0;  // equilibrium potential is 0 for the plating reaction
+        constexpr double epd = 0.0;  // equilibrium potential is 0 for the plating reaction
 
         // compute exchange mass flux density
         const double j0 = kr * std::pow(emasterphiint, alphaa);
@@ -149,22 +146,22 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
-    probdim>::evaluate_s2_i_coupling(const Core::Elements::FaceElement* ele,
+    probdim>::evaluate_s2i_coupling(const Core::Elements::FaceElement* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
     Core::LinAlg::SerialDenseMatrix& emastermatrix, Core::LinAlg::SerialDenseVector& eslaveresidual)
 {
   // safety checks
-  if (my::numscal_ != 1) FOUR_C_THROW("Invalid number of transported scalars!");
-  if (my::numdofpernode_ != 2) FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (myelch::elchparams_->equ_pot() != ElCh::equpot_divi)
-    FOUR_C_THROW("Invalid closing equation for electric potential!");
+  FOUR_C_ASSERT_ALWAYS(my::numscal_ == 1, "Invalid number of transported scalars!");
+  FOUR_C_ASSERT_ALWAYS(my::numdofpernode_ == 2, "Invalid number of degrees of freedom per node!");
+  FOUR_C_ASSERT_ALWAYS(myelch::elchparams_->equ_pot() == ElCh::equpot_divi,
+      "Invalid closing equation for electric potential!");
 
   // access material of parent element
   std::shared_ptr<const Mat::Electrode> matelectrode =
       std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == nullptr)
-    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
+  FOUR_C_ASSERT_ALWAYS(
+      matelectrode != nullptr, "Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   extract_node_values(discretization, la);
@@ -270,7 +267,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       {
         // equilibrium electric potential difference and its derivative w.r.t. concentration at
         // electrode surface
-        const double epd = 0.0;
+        constexpr double epd = 0.0;
         const double epdderiv = matelectrode->compute_d_open_circuit_potential_d_concentration(
             eslavephiint, faraday, frt, detF);
 
@@ -295,7 +292,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
               get_regularization_factor(eslavegrowthint, eta, my::scatraparamsboundary_);
 
           double dj_dc_slave(0.0), dj_dc_master(0.0), dj_dpot_slave(0.0), dj_dpot_master(0.0);
-          calculate_s2_i_growth_elch_linearizations(j0, frt, epdderiv, eta, eslaveresistanceint,
+          calculate_s2i_growth_elch_linearizations(j0, frt, epdderiv, eta, eslaveresistanceint,
               regfac, emasterphiint, eslavephiint, cmax, my::scatraparamsboundary_, dj_dc_slave,
               dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
@@ -367,19 +364,19 @@ int Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim
   {
     case ScaTra::BoundaryAction::calc_s2icoupling_growthgrowth:
     {
-      evaluate_s2_i_coupling_growth_growth(ele, params, discretization, la, elemat1, elevec1);
+      evaluate_s2i_coupling_growth_growth(ele, params, discretization, la, elemat1, elevec1);
       break;
     }
 
     case ScaTra::BoundaryAction::calc_s2icoupling_growthscatra:
     {
-      evaluate_s2_i_coupling_growth_scatra(ele, params, discretization, la, elemat1, elemat2);
+      evaluate_s2i_coupling_growth_scatra(ele, params, discretization, la, elemat1, elemat2);
       break;
     }
 
     case ScaTra::BoundaryAction::calc_s2icoupling_scatragrowth:
     {
-      evaluate_s2_i_coupling_scatra_growth(ele, params, discretization, la, elemat1);
+      evaluate_s2i_coupling_scatra_growth(ele, params, discretization, la, elemat1);
       break;
     }
 
@@ -404,15 +401,15 @@ int Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
-    probdim>::evaluate_s2_i_coupling_scatra_growth(const Core::Elements::FaceElement* ele,
+    probdim>::evaluate_s2i_coupling_scatra_growth(const Core::Elements::FaceElement* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix)
 {
   // access material of parent element
   std::shared_ptr<const Mat::Electrode> matelectrode =
       std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == nullptr)
-    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
+  FOUR_C_ASSERT_ALWAYS(
+      matelectrode != nullptr, "Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   extract_node_values(discretization, la);
@@ -423,9 +420,9 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   // extract condition type
   const Core::Conditions::ConditionType& s2iconditiontype =
       my::scatraparamsboundary_->condition_type();
-  if (s2iconditiontype != Core::Conditions::S2IKinetics and
-      s2iconditiontype != Core::Conditions::S2IKineticsGrowth)
-    FOUR_C_THROW("Received illegal condition type!");
+  FOUR_C_ASSERT_ALWAYS(s2iconditiontype == Core::Conditions::S2IKinetics or
+                           s2iconditiontype == Core::Conditions::S2IKineticsGrowth,
+      "Received illegal condition type!");
 
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
@@ -496,15 +493,15 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
           // factor and derivative of regularization factor
           const double eta = eslavepotint - emasterpotint - epd - j * faraday * eslaveresistanceint;
           // no regfac required in this case
-          const double regfac_dummy = 1.0;
+          constexpr double regfac_dummy = 1.0;
 
           // exponential Butler-Volmer terms
           const double expterm1 = std::exp(alphaa * frt * eta);
           const double expterm2 = std::exp(-alphac * frt * eta);
 
-          const double dj_dgrowth = calculate_s2_i_elch_growth_linearizations(j0, j, frt,
-              eslaveresistanceint, resistivity, regfac_dummy, regfac_dummy, expterm1, expterm2,
-              my::scatraparamsboundary_);
+          const double dj_dgrowth =
+              calculate_s2i_elch_growth_linearizations(j0, j, frt, eslaveresistanceint, resistivity,
+                  regfac_dummy, regfac_dummy, expterm1, expterm2, my::scatraparamsboundary_);
 
           // compute linearizations
           for (int irow = 0; irow < nen_; ++irow)
@@ -527,7 +524,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       case Core::Conditions::S2IKineticsGrowth:
       {
         // equilibrium electric potential difference at electrode surface
-        const double epd = 0.0;
+        constexpr double epd = 0.0;
 
         // compute exchange mass flux density
         const double j0 = calculate_growth_exchange_mass_flux_density(
@@ -556,8 +553,8 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
           const double expterm2 = std::exp(-alphac * frt * eta);
 
           const double dj_dgrowth =
-              calculate_s2_i_elch_growth_linearizations(j0, j, frt, eslaveresistanceint,
-                  resistivity, regfac, regfacderiv, expterm1, expterm2, my::scatraparamsboundary_);
+              calculate_s2i_elch_growth_linearizations(j0, j, frt, eslaveresistanceint, resistivity,
+                  regfac, regfacderiv, expterm1, expterm2, my::scatraparamsboundary_);
 
           // compute linearizations
           for (int irow = 0; irow < nen_; ++irow)
@@ -587,7 +584,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
-    probdim>::evaluate_s2_i_coupling_growth_scatra(const Core::Elements::FaceElement* ele,
+    probdim>::evaluate_s2i_coupling_growth_scatra(const Core::Elements::FaceElement* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
     Core::LinAlg::SerialDenseMatrix& emastermatrix)
@@ -595,8 +592,8 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   // access material of parent element
   std::shared_ptr<const Mat::Electrode> matelectrode =
       std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == nullptr)
-    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
+  FOUR_C_ASSERT_ALWAYS(
+      matelectrode != nullptr, "Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   extract_node_values(discretization, la);
@@ -604,21 +601,17 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(Core::LinAlg::Initialization::zero));
   my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
-  if (my::scatraparamsboundary_->condition_type() != Core::Conditions::S2IKineticsGrowth)
-    FOUR_C_THROW("Received illegal condition type!");
-
+  FOUR_C_ASSERT_ALWAYS(
+      my::scatraparamsboundary_->condition_type() == Core::Conditions::S2IKineticsGrowth,
+      "Received illegal condition type!");
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
-  if (kineticmodel != S2I::growth_kinetics_butlervolmer)
-  {
-    FOUR_C_THROW(
-        "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
-        "layer growth!");
-  }
+  FOUR_C_ASSERT_ALWAYS(kineticmodel == S2I::growth_kinetics_butlervolmer,
+      "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
+      "layer growth!");
   const double faraday = myelch::elchparams_->faraday();
   const double alphaa = my::scatraparamsboundary_->alphadata();
   const double kr = my::scatraparamsboundary_->charge_transfer_constant();
-  if (kr < 0.0) FOUR_C_THROW("Charge transfer constant k_r is negative!");
   const double resistivity = my::scatraparamsboundary_->resistivity();
   const double factor =
       my::scatraparamsboundary_->molar_mass() / (my::scatraparamsboundary_->density());
@@ -670,7 +663,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
           get_regularization_factor(eslavegrowthint, eta, my::scatraparamsboundary_);
 
       double dummy(0.0), dj_dc_master(0.0), dj_dpot_slave(0.0), dj_dpot_master(0.0);
-      calculate_s2_i_growth_elch_linearizations(j0, frt, dummy, eta, eslaveresistanceint, regfac,
+      calculate_s2i_growth_elch_linearizations(j0, frt, dummy, eta, eslaveresistanceint, regfac,
           emasterphiint, dummy, dummy, my::scatraparamsboundary_, dummy, dj_dc_master,
           dj_dpot_slave, dj_dpot_master);
 
@@ -700,7 +693,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
-    probdim>::evaluate_s2_i_coupling_growth_growth(const Core::Elements::FaceElement* ele,
+    probdim>::evaluate_s2i_coupling_growth_growth(const Core::Elements::FaceElement* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
     Core::LinAlg::SerialDenseVector& eslaveresidual)
@@ -708,8 +701,8 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   // access material of parent element
   std::shared_ptr<const Mat::Electrode> matelectrode =
       std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
-  if (matelectrode == nullptr)
-    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
+  FOUR_C_ASSERT_ALWAYS(
+      matelectrode != nullptr, "Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   extract_node_values(discretization, la);
@@ -720,17 +713,15 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   my::extract_node_values(
       eslavegrowthhist, discretization, la, "growthhist", my::scatraparams_->nds_growth());
 
-  if (my::scatraparamsboundary_->condition_type() != Core::Conditions::S2IKineticsGrowth)
-    FOUR_C_THROW("Received illegal condition type!");
+  FOUR_C_ASSERT_ALWAYS(
+      my::scatraparamsboundary_->condition_type() == Core::Conditions::S2IKineticsGrowth,
+      "Received illegal condition type!");
 
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
-  if (kineticmodel != S2I::growth_kinetics_butlervolmer)
-  {
-    FOUR_C_THROW(
-        "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
-        "layer growth!");
-  }
+  FOUR_C_ASSERT_ALWAYS(kineticmodel == S2I::growth_kinetics_butlervolmer,
+      "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
+      "layer growth!");
   const double faraday = myelch::elchparams_->faraday();
   const double alphaa = my::scatraparamsboundary_->alphadata();
   const double alphac = my::scatraparamsboundary_->alpha_c();
@@ -801,7 +792,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       const double expterm2 = std::exp(-alphac * frt * eta);
 
       const double dj_dgrowth =
-          calculate_s2_i_elch_growth_linearizations(j0, j, frt, eslaveresistanceint, resistivity,
+          calculate_s2i_elch_growth_linearizations(j0, j, frt, eslaveresistanceint, resistivity,
               regfac, regfacderiv, expterm1, expterm2, my::scatraparamsboundary_);
 
       // compute linearizations and residual contributions associated with equation for

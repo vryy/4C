@@ -19,13 +19,11 @@ namespace Mat
 {
   class Electrode;
 }
-namespace Discret
+
+namespace Discret::Elements
 {
-  namespace Elements
-  {
-    class ScaTraEleBoundaryCalcElchElectrodeUtils;
-  }
-}  // namespace Discret
+  class ScaTraEleBoundaryCalcElchElectrodeUtils;
+}
 
 namespace Discret
 {
@@ -48,7 +46,6 @@ namespace Discret
       //! singleton access method
       static ScaTraEleBoundaryCalcElchElectrode<distype, probdim>* instance(
           int numdofpernode, int numscal, const std::string& disname);
-
 
       /*!
        * \brief evaluate scatra-scatra interface coupling condition at integration point
@@ -86,7 +83,7 @@ namespace Discret
        * \tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <Core::FE::CellType distype_master>
-      static void evaluate_s2_i_coupling_at_integration_point(
+      static void evaluate_s2i_coupling_at_integration_point(
           const std::shared_ptr<const Mat::Electrode>& matelectrode,
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>>&
@@ -134,7 +131,7 @@ namespace Discret
        * @tparam distype_master This method is templated on the master-side discretization type.
        */
       template <Core::FE::CellType distype_master>
-      static void evaluate_s2_i_coupling_capacitance_at_integration_point(
+      static void evaluate_s2i_coupling_capacitance_at_integration_point(
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephidtnp,
           const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>>&
               emasterphidtnp,
@@ -154,7 +151,7 @@ namespace Discret
        * \brief calculate out-parameters such as residual vectors and linearizations of residuals
        *
        * \remark This is a static method as it is called from
-       * static method evaluate_s2_i_coupling_at_integration_point.
+       * static method evaluate_s2i_coupling_at_integration_point.
        *
        * @param[in] funct_slave      slave-side shape function values
        * @param[in] funct_master     master-side shape function values
@@ -188,7 +185,7 @@ namespace Discret
        * @tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <Core::FE::CellType distype_master>
-      static void calculate_rh_sand_global_system(const Core::LinAlg::Matrix<nen_, 1>& funct_slave,
+      static void calculate_rhs_and_global_system(const Core::LinAlg::Matrix<nen_, 1>& funct_slave,
           const Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>& funct_master,
           const Core::LinAlg::Matrix<nen_, 1>& test_slave,
           const Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>& test_master,
@@ -226,7 +223,7 @@ namespace Discret
        * @tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <Core::FE::CellType distype_master>
-      static void calculate_rh_sand_global_system_capacitive_flux(
+      static void calculate_rhs_and_global_system_capacitive_flux(
           const Core::LinAlg::Matrix<nen_, 1>& funct_slave,
           const Core::LinAlg::Matrix<nen_, 1>& test_slave,
           const Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>& test_master,
@@ -240,37 +237,37 @@ namespace Discret
       ScaTraEleBoundaryCalcElchElectrode(
           int numdofpernode, int numscal, const std::string& disname);
 
-      void evaluate_s2_i_coupling(const Core::Elements::FaceElement* ele,
+      void evaluate_s2i_coupling(const Core::Elements::FaceElement* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
           Core::LinAlg::SerialDenseVector& eslaveresidual) override;
 
-      void evaluate_s2_i_coupling_capacitance(const Core::FE::Discretization& discretization,
+      void evaluate_s2i_coupling_capacitance(const Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
           Core::LinAlg::SerialDenseVector& eslaveresidual,
           Core::LinAlg::SerialDenseVector& emasterresidual) override;
 
-      void evaluate_s2_i_coupling_od(const Core::Elements::FaceElement* ele,
+      void evaluate_s2i_coupling_od(const Core::Elements::FaceElement* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& eslavematrix) override;
 
-      void evaluate_s2_i_coupling_capacitance_od(Teuchos::ParameterList& params,
+      void evaluate_s2i_coupling_capacitance_od(Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix) override;
 
-      double get_valence(
+      [[nodiscard]] double get_valence(
           const std::shared_ptr<const Core::Mat::Material>& material, int k) const override;
 
-      void calc_s2_i_coupling_flux(const Core::Elements::FaceElement* ele,
+      void calc_s2i_coupling_flux(const Core::Elements::FaceElement* ele,
           const Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& scalars) override;
 
       //! evaluate factor F/RT
-      virtual double get_frt() const;
+      [[nodiscard]] virtual double get_frt() const;
     };  // class ScaTraEleBoundaryCalcElchElectrode
   }  // namespace Elements
 }  // namespace Discret

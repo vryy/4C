@@ -30,33 +30,33 @@ namespace Discret
 
       //! return flag for coupling of lithium-ion flux density and electric current density at
       //! Dirichlet and Neumann boundaries
-      bool boundary_flux_coupling() const { return boundaryfluxcoupling_; };
+      [[nodiscard]] bool boundary_flux_coupling() const { return boundaryfluxcoupling_; }
 
       //! set parameters
       void set_parameters(Teuchos::ParameterList& parameters  //!< parameter list
           ) override;
 
       //! return type of closing equation for electric potential
-      ElCh::EquPot equ_pot() const { return equpot_; };
+      [[nodiscard]] ElCh::EquPot equ_pot() const { return equpot_; }
 
       //! return Faraday constant
-      double faraday() const { return faraday_; };
+      [[nodiscard]] double faraday() const { return faraday_; }
 
       //! return the (universal) gas constant
-      double gas_constant() const { return gas_constant_; };
+      [[nodiscard]] double gas_constant() const { return gas_constant_; }
 
       //! return dielectric constant
-      double epsilon() const { return epsilon_; };
+      [[nodiscard]] double epsilon() const { return epsilon_; }
 
       //! return constant F/RT
-      double frt() const { return frt_; };
+      [[nodiscard]] double frt() const { return frt_; }
 
       //! return the homogeneous temperature in the scatra field (can be time dependent)
-      double temperature() const { return temperature_; }
+      [[nodiscard]] double temperature() const { return temperature_; }
 
      private:
       //! private constructor for singletons
-      ScaTraEleParameterElch(const std::string& disname  //!< name of discretization
+      explicit ScaTraEleParameterElch(const std::string& disname  //!< name of discretization
       );
 
       //! flag for coupling of lithium-ion flux density and electric current density at Dirichlet

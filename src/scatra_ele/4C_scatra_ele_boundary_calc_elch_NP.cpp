@@ -18,7 +18,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>*
@@ -37,7 +36,6 @@ Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>::instance(
 }
 
 /*----------------------------------------------------------------------*
- | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>::ScaTraEleBoundaryCalcElchNP(
@@ -45,26 +43,17 @@ Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>::ScaTraEleBound
     :  // constructor of base class
       myelch::ScaTraEleBoundaryCalcElch(numdofpernode, numscal, disname)
 {
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | evaluate action                                           fang 08/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 int Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_action(
-    Core::Elements::FaceElement* ele,          //!< boundary element
-    Teuchos::ParameterList& params,            //!< parameter list
-    Core::FE::Discretization& discretization,  //!< discretization
-    ScaTra::BoundaryAction action,             //!< action
-    Core::Elements::LocationArray& la,         //!< location array
-    Core::LinAlg::SerialDenseMatrix& elemat1,  //!< element matrix 1
-    Core::LinAlg::SerialDenseMatrix& elemat2,  //!< element matrix 2
-    Core::LinAlg::SerialDenseVector& elevec1,  //!< element right-hand side vector 1
-    Core::LinAlg::SerialDenseVector& elevec2,  //!< element right-hand side vector 2
-    Core::LinAlg::SerialDenseVector& elevec3   //!< element right-hand side vector 3
-)
+    Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+    Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   // determine and evaluate action
   switch (action)
@@ -88,9 +77,7 @@ int Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_a
   return 0;
 }  // Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_action
 
-
 /*----------------------------------------------------------------------*
- | evaluate Neumann boundary condition                       fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 int Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_neumann(
@@ -130,36 +117,23 @@ int Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_n
     default:
     {
       FOUR_C_THROW("Closing equation for electric potential not recognized!");
-      break;
     }
   }  // switch(myelch::elchparams_->EquPot())
 
   return 0;
 }
 
-
 /*----------------------------------------------------------------------*
- | evaluate an electrode kinetics boundary condition         fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype,
-    probdim>::evaluate_elch_boundary_kinetics(const Core::Elements::Element*
-                                                  ele,  ///< current element
-    Core::LinAlg::SerialDenseMatrix& emat,              ///< element matrix
-    Core::LinAlg::SerialDenseVector& erhs,              ///< element right-hand side vector
-    const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
-        ephinp,  ///< nodal values of concentration and electric potential
-    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
-    double timefac,                                           ///< time factor
-    std::shared_ptr<const Core::Mat::Material> material,      ///< material
-    const Core::Conditions::Condition& cond,  ///< electrode kinetics boundary condition
-    const int nume,                           ///< number of transferred electrons
-    const std::vector<int> stoich,            ///< stoichiometry of the reaction
-    const int kinetics,                       ///< desired electrode kinetics model
-    const double pot0,                        ///< electrode potential on metal side
-    const double frt,                         ///< factor F/RT
-    const double scalar  ///< scaling factor for element matrix and right-hand side contributions
-)
+    probdim>::evaluate_elch_boundary_kinetics(const Core::Elements::Element* ele,
+    Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs,
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist, double timefac,
+    std::shared_ptr<const Core::Mat::Material> material, const Core::Conditions::Condition& cond,
+    const int nume, const std::vector<int>& stoich, const int kinetics, const double pot0,
+    const double frt, const double scalar)
 {
   // call base class routine
   myelch::evaluate_elch_boundary_kinetics(ele, emat, erhs, ephinp, ehist, timefac, material, cond,
@@ -225,29 +199,23 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype,
     case ElCh::equpot_poisson:
     {
       FOUR_C_THROW("Poisson equation combined with electrode boundary conditions not implemented!");
-      break;
     }
 
     default:
     {
       FOUR_C_THROW("Unknown closing equation for electric potential!");
-      break;
     }
   }  // switch(myelch::elchparams_->EquPot())
 
-  return;
 }  // Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype,
    // probdim>::evaluate_elch_boundary_kinetics
 
 
-/*-------------------------------------------------------------------------------------*
- | extract valence of species k from element material                       fang 02/15 |
- *-------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 double Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>::get_valence(
-    const std::shared_ptr<const Core::Mat::Material>& material,  // element material
-    const int k                                                  // species number
-) const
+    const std::shared_ptr<const Core::Mat::Material>& material, const int k) const
 {
   double valence(0.);
 
@@ -262,14 +230,18 @@ double Discret::Elements::ScaTraEleBoundaryCalcElchNP<distype, probdim>::get_val
     if (species->material_type() == Core::Materials::m_ion)
     {
       valence = std::static_pointer_cast<const Mat::Ion>(species)->valence();
-      if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
+      FOUR_C_ASSERT_ALWAYS(std::abs(valence) > 1.0e-16, "Received zero valence!");
     }
     else
+    {
       FOUR_C_THROW("Material species is not an ion!");
+    }
   }
 
   else
+  {
     FOUR_C_THROW("Unknown material!");
+  }
 
   return valence;
 }

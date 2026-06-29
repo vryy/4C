@@ -10,8 +10,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_elch_input.hpp"
-#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_boundary_interface.hpp"
@@ -195,7 +193,7 @@ namespace Discret
        * \tparam distype_master This method is templated on the master-side discretization type.
        */
       template <Core::FE::CellType distype_master>
-      static void evaluate_s2_i_coupling_at_integration_point(
+      static void evaluate_s2i_coupling_at_integration_point(
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>>&
               emasterphinp,
@@ -227,7 +225,7 @@ namespace Discret
        * element at the current gauss point coordinates
        *
        * @param[in] faceele     pointer to current face element
-       * @param[in] faceele_xsi coordinates of current gauss point in parameter space of the face
+       * @param[in] faceele_xi  coordinates of current gauss point in parameter space of the face
        *                        element
        * @return determinant of the deformation gradient of the parent element
        */
@@ -300,7 +298,7 @@ namespace Discret
           Core::LinAlg::Matrix<nsd_, nen_>& dsqrtdetg_dd);
 
       //! evaluate scatra-scatra interface coupling condition
-      virtual void evaluate_s2_i_coupling(
+      virtual void evaluate_s2i_coupling(
           const Core::Elements::FaceElement* ele,          ///< current boundary element
           Teuchos::ParameterList& params,                  ///< parameter list
           Core::FE::Discretization& discretization,        ///< discretization
@@ -331,19 +329,18 @@ namespace Discret
        * @param[out] eslaveresidual  element residual due to capacitive flux at slave side
        * @param[out] emasterresidual element residual due to capacitive flux at master side
        */
-      virtual void evaluate_s2_i_coupling_capacitance(
-          const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
-          Core::LinAlg::SerialDenseMatrix& eslavematrix,
+      virtual void evaluate_s2i_coupling_capacitance(const Core::FE::Discretization& discretization,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
           Core::LinAlg::SerialDenseVector& eslaveresidual,
           Core::LinAlg::SerialDenseVector& emasterresidual)
       {
         FOUR_C_THROW("not yet implemented!");
-      };
+      }
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
-      virtual void evaluate_s2_i_coupling_od(
+      virtual void evaluate_s2i_coupling_od(
           const Core::Elements::FaceElement* ele,        ///< current boundary element
           Teuchos::ParameterList& params,                ///< parameter list
           Core::FE::Discretization& discretization,      ///< discretization
@@ -351,13 +348,13 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
       );
 
-      virtual void evaluate_s2_i_coupling_capacitance_od(Teuchos::ParameterList& params,
+      virtual void evaluate_s2i_coupling_capacitance_od(Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix)
       {
         FOUR_C_THROW("not yet implemented");
-      };
+      }
 
       //! extract nodal state variables associated with boundary element
       virtual void extract_node_values(
@@ -449,7 +446,7 @@ namespace Discret
       )
       {
         return 1.0;
-      };
+      }
 
       //! compute integral of convective mass/heat flux over boundary surface
       virtual std::vector<double> calc_convective_flux(const Core::Elements::FaceElement* ele,
@@ -497,11 +494,12 @@ namespace Discret
       /*!
       \brief Evaluate weak Dirichlet boundary conditions
 
+      \param ele (in)           : transport face element
       \param params (in)        : ParameterList for communication between control routine
       \param discretization (in): A reference to the underlying discretization
       \param material (in)      : material of this element
-      \param elemat1 (out)      : matrix to be filled by element.
-      \param elevec1 (out)      : vector to be filled by element.
+      \param elemat (out)      : matrix to be filled by element.
+      \param elevec (out)      : vector to be filled by element.
 
       */
       template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
@@ -532,7 +530,7 @@ namespace Discret
           const double scalar);
 
       //! evaluate integral of all positive fluxes on s2i condition
-      virtual void calc_s2_i_coupling_flux(const Core::Elements::FaceElement* ele,
+      virtual void calc_s2i_coupling_flux(const Core::Elements::FaceElement* ele,
           const Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& scalars)
       {

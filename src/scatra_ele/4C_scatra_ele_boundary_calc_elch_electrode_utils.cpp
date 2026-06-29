@@ -99,7 +99,7 @@ void Discret::Elements::calculate_butler_volmer_elch_linearizations(const int ki
       const double dF_di_inverse =
           1.0 / (1.0 + j0 * faraday * resistance * frt * (alphaa * expterm1 + alphac * expterm2));
       const double dF_dc_slave = j0 * frt * epdderiv * (alphaa * expterm1 + alphac * expterm2);
-      const double dF_dc_master = 0.0;
+      constexpr double dF_dc_master = 0.0;
       const double dF_dpot_slave = -j0 * frt * (alphaa * expterm1 + alphac * expterm2);
       const double dF_dpot_master = -dF_dpot_slave;
 
@@ -235,8 +235,10 @@ double Discret::Elements::calculate_modified_butler_volmer_mass_flux_density(con
         break;
       }
       else if (iternum == itemax)
+      {
         FOUR_C_THROW(
             "Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
+      }
 
       // compute linearization of current Newton-Raphson residual w.r.t. Butler-Volmer current
       // density

@@ -29,57 +29,35 @@ namespace Discret
      public:
       //! singleton access method
       static ScaTraEleBoundaryCalcElchNP<distype, probdim>* instance(
-          const int numdofpernode, const int numscal, const std::string& disname);
+          int numdofpernode, int numscal, const std::string& disname);
 
 
      private:
       //! private constructor for singletons
-      ScaTraEleBoundaryCalcElchNP(
-          const int numdofpernode, const int numscal, const std::string& disname);
+      ScaTraEleBoundaryCalcElchNP(int numdofpernode, int numscal, const std::string& disname);
 
-      //! evaluate action
-      int evaluate_action(Core::Elements::FaceElement* ele,  //!< boundary element
-          Teuchos::ParameterList& params,                    //!< parameter list
-          Core::FE::Discretization& discretization,          //!< discretization
-          ScaTra::BoundaryAction action,                     //!< action
-          Core::Elements::LocationArray& la,                 //!< location array
-          Core::LinAlg::SerialDenseMatrix& elemat1,          //!< element matrix 1
-          Core::LinAlg::SerialDenseMatrix& elemat2,          //!< element matrix 2
-          Core::LinAlg::SerialDenseVector& elevec1,          //!< element right-hand side vector 1
-          Core::LinAlg::SerialDenseVector& elevec2,          //!< element right-hand side vector 2
-          Core::LinAlg::SerialDenseVector& elevec3           //!< element right-hand side vector 3
-          ) override;
+      int evaluate_action(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
-      //! evaluate Neumann boundary condition
       int evaluate_neumann(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const Core::Conditions::Condition& condition,
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
           const double scalar) override;
 
-      //! evaluate an electrode kinetics boundary condition
-      void evaluate_elch_boundary_kinetics(const Core::Elements::Element* ele,  ///< current element
-          Core::LinAlg::SerialDenseMatrix& emat,                                ///< element matrix
-          Core::LinAlg::SerialDenseVector& erhs,  ///< element right-hand side vector
-          const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
-              ephinp,  ///< nodal values of concentration and electric potential
-          const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
-          double timefac,                                           ///< time factor
-          std::shared_ptr<const Core::Mat::Material> material,      ///< material
-          const Core::Conditions::Condition& cond,  ///< electrode kinetics boundary condition
-          const int nume,                           ///< number of transferred electrons
-          const std::vector<int> stoich,            ///< stoichiometry of the reaction
-          const int kinetics,                       ///< desired electrode kinetics model
-          const double pot0,                        ///< electrode potential on metal side
-          const double frt,                         ///< factor F/RT
-          const double
-              scalar  ///< scaling factor for element matrix and right-hand side contributions
-          ) override;
+      void evaluate_elch_boundary_kinetics(const Core::Elements::Element* ele,
+          Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs,
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist, double timefac,
+          std::shared_ptr<const Core::Mat::Material> material,
+          const Core::Conditions::Condition& cond, int nume, const std::vector<int>& stoich,
+          int kinetics, double pot0, double frt, double scalar) override;
 
-      //! extract valence of species k from element material
-      double get_valence(
-          const std::shared_ptr<const Core::Mat::Material>& material,  //! element material
-          const int k                                                  //! species number
-      ) const override;
+      [[nodiscard]] double get_valence(
+          const std::shared_ptr<const Core::Mat::Material>& material, const int k) const override;
     };  // class ScaTraEleBoundaryCalcElchNP
   }  // namespace Elements
 }  // namespace Discret

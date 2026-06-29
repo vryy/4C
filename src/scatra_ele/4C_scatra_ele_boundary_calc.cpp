@@ -20,7 +20,6 @@
 #include "4C_scatra_ele_parameter_boundary.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
-#include "4C_utils_enum.hpp"
 #include "4C_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -72,7 +71,7 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::setup_calc(
   {
     // for isogeometric elements --- get knotvectors for parent
     // element and boundary element, get weights
-    bool zero_size = Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary(ele,
+    const bool zero_size = Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary(ele,
         ele->face_parent_number(), ele->parent_element()->id(), discretization, mypknots_, myknots_,
         weights_, normalfac_);
 
@@ -158,7 +157,6 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::extract_displac
     }
     default:
       FOUR_C_THROW("Not implemented for discretization type: {}!", ele->parent_element()->shape());
-      break;
   }
 }
 
@@ -270,9 +268,8 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
 
     case ScaTra::BoundaryAction::calc_Neumann:
     {
-      const Core::Conditions::Condition* condition =
-          params.get<const Core::Conditions::Condition*>("condition");
-      if (condition == nullptr) FOUR_C_THROW("Cannot access Neumann boundary condition!");
+      const auto* condition = params.get<const Core::Conditions::Condition*>("condition");
+      FOUR_C_ASSERT_ALWAYS(condition != nullptr, "Cannot access Neumann boundary condition!");
 
       evaluate_neumann(ele, params, discretization, *condition, la, elevec1, 1.);
 
@@ -294,7 +291,7 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
 
       // get values of scalar
       std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      FOUR_C_ASSERT(phinp != nullptr, "Cannot get state vector 'phinp'");
 
       // extract local values from global vector
       std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -302,9 +299,9 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
       // get condition
-      const Core::Conditions::Condition* cond =
-          params.get<const Core::Conditions::Condition*>("condition");
-      if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'TransportThermoConvections'!");
+      const auto* cond = params.get<const Core::Conditions::Condition*>("condition");
+      FOUR_C_ASSERT_ALWAYS(
+          cond != nullptr, "Cannot access condition 'TransportThermoConvections'!");
 
       // get heat transfer coefficient and surrounding temperature
       const auto heatranscoeff = cond->parameters().get<double>("coeff");
@@ -321,7 +318,7 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
       Core::Elements::Element* parentele = ele->parent_element();
       std::shared_ptr<Core::Mat::Material> mat = parentele->material();
 
-      if (numscal_ > 1) FOUR_C_THROW("not yet implemented for more than one scalar\n");
+      FOUR_C_ASSERT_ALWAYS(numscal_ == 1, "not yet implemented for more than one scalar");
 
       switch (distype)
       {
@@ -349,7 +346,9 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
                 ele, params, discretization, mat, elemat1, elevec1);
           }
           else
+          {
             FOUR_C_THROW("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
+          }
 
           break;
         }
@@ -357,7 +356,6 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
         default:
         {
           FOUR_C_THROW("not implemented yet\n");
-          break;
         }
       }
 
@@ -386,7 +384,7 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
 
       // get actual values of transported scalars
       std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-      if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
+      FOUR_C_ASSERT(phinp != nullptr, "Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
       std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -399,7 +397,7 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
       // get convective (velocity - mesh displacement) velocity at nodes
       std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
           discretization.get_state(ndsvel, "convective velocity field");
-      if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
+      FOUR_C_ASSERT(convel != nullptr, "Cannot get state vector 'convective velocity field'");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -427,27 +425,27 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
 
     case ScaTra::BoundaryAction::calc_s2icoupling:
     {
-      evaluate_s2_i_coupling(ele, params, discretization, la, elemat1, elemat2, elevec1);
+      evaluate_s2i_coupling(ele, params, discretization, la, elemat1, elemat2, elevec1);
 
       break;
     }
 
     case ScaTra::BoundaryAction::calc_s2icoupling_capacitance:
     {
-      evaluate_s2_i_coupling_capacitance(discretization, la, elemat1, elemat2, elevec1, elevec2);
+      evaluate_s2i_coupling_capacitance(discretization, la, elemat1, elemat2, elevec1, elevec2);
 
       break;
     }
 
     case ScaTra::BoundaryAction::calc_s2icoupling_od:
     {
-      evaluate_s2_i_coupling_od(ele, params, discretization, la, elemat1);
+      evaluate_s2i_coupling_od(ele, params, discretization, la, elemat1);
       break;
     }
 
     case ScaTra::BoundaryAction::calc_s2icoupling_capacitance_od:
     {
-      evaluate_s2_i_coupling_capacitance_od(params, discretization, la, elemat1, elemat2);
+      evaluate_s2i_coupling_capacitance_od(params, discretization, la, elemat1, elemat2);
       break;
     }
 
@@ -468,13 +466,12 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
     }
     case ScaTra::BoundaryAction::calc_s2icoupling_flux:
     {
-      calc_s2_i_coupling_flux(ele, params, discretization, la, elevec1);
+      calc_s2i_coupling_flux(ele, params, discretization, la, elevec1);
       break;
     }
     default:
     {
       FOUR_C_THROW("Not acting on this boundary action. Forgot implementation?");
-      break;
     }
   }
 
@@ -504,17 +501,14 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
   const auto val = condition.parameters().get<std::vector<double>>("VAL");
   const auto func = condition.parameters().get<std::vector<std::optional<int>>>("FUNCT");
 
-  if (numdofpernode_ != numdof)
-  {
-    FOUR_C_THROW(
-        "The NUMDOF you have entered in your TRANSPORT NEUMANN CONDITION does not equal the number "
-        "of scalars.");
-  }
+  FOUR_C_ASSERT_ALWAYS(numdofpernode_ == numdof,
+      "The NUMDOF you have entered in your TRANSPORT NEUMANN CONDITION does not equal the number "
+      "of scalars.");
 
   // integration loop
   for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
-    double fac = eval_shape_func_and_int_fac(intpoints, iquad);
+    const double fac = eval_shape_func_and_int_fac(intpoints, iquad);
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -559,7 +553,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::calc_normal_vec
   // access the global vector
   const auto normals =
       params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("normal vectors", nullptr);
-  if (normals == nullptr) FOUR_C_THROW("Could not access vector 'normal vectors'");
+  FOUR_C_ASSERT(normals != nullptr, "Could not access vector 'normal vectors'");
 
   // determine constant outer normal to this element
   if constexpr (nsd_ == 3 and nsd_ele_ == 1)
@@ -626,7 +620,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
 
   // get values of scalar
   std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  FOUR_C_ASSERT(phinp != nullptr, "Could not access state vector 'phinp'");
 
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -639,7 +633,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
   // get convective (velocity - mesh displacement) velocity at nodes
   std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
       discretization.get_state(ndsvel, "convective velocity field");
-  if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
+  FOUR_C_ASSERT(convel != nullptr, "Could not access state vector 'convective velocity field'");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -680,7 +674,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
       if (normvel < -0.0001)
       {
         // set density to 1.0
-        double dens = get_density(material, ephinp, k);
+        const double dens = get_density(material, ephinp, k);
 
         // integration factor for left-hand side
         const double lhsfac = dens * normvel * scatraparamstimint_->time_fac() * fac;
@@ -767,7 +761,6 @@ double Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::get_density(
     default:
     {
       FOUR_C_THROW("Invalid material type!");
-      break;
     }
   }
 
@@ -911,8 +904,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::
         Core::LinAlg::Matrix<nsd_, nen_>& dsqrtdetg_dd)
 {
   // safety check
-  if (nsd_ele_ != 2)
-    FOUR_C_THROW("Computation of shape derivatives only implemented for 2D interfaces!");
+  FOUR_C_ASSERT(
+      nsd_ele_ == 2, "Computation of shape derivatives only implemented for 2D interfaces!");
 
   evaluate_shape_func_and_derivative_at_int_point(intpoints, iquad);
 
@@ -1004,7 +997,7 @@ Core::LinAlg::Matrix<3, 1>
 Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     const Core::LinAlg::Matrix<3, nen_>& xyze)
 {
-  if (Core::FE::is_nurbs<distype>) FOUR_C_THROW("Element normal not implemented for NURBS");
+  FOUR_C_ASSERT(!Core::FE::is_nurbs<distype>, "Element normal not implemented for NURBS");
 
   Core::LinAlg::Matrix<3, 1> normal(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<3, 1> dist1(Core::LinAlg::Initialization::zero);
@@ -1018,7 +1011,7 @@ Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
   normal.cross_product(dist1, dist2);
 
   const double length = normal.norm2();
-  if (length < 1.0e-16) FOUR_C_THROW("Zero length for element normal");
+  FOUR_C_ASSERT_ALWAYS(length >= 1.0e-16, "Zero length for element normal");
 
   normal.scale(1.0 / length);
 
@@ -1032,7 +1025,7 @@ Core::LinAlg::Matrix<2, 1>
 Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     const Core::LinAlg::Matrix<2, nen_>& xyze)
 {
-  if (Core::FE::is_nurbs<distype>) FOUR_C_THROW("Element normal not implemented for NURBS");
+  FOUR_C_ASSERT(!Core::FE::is_nurbs<distype>, "Element normal not implemented for NURBS");
 
   Core::LinAlg::Matrix<2, 1> normal(Core::LinAlg::Initialization::zero);
 
@@ -1040,7 +1033,7 @@ Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
   normal(1) = (-1.0) * (xyze(0, 1) - xyze(0, 0));
 
   const double length = normal.norm2();
-  if (length < 1.0e-16) FOUR_C_THROW("Zero length for element normal");
+  FOUR_C_ASSERT_ALWAYS(length >= 1.0e-16, "Zero length for element normal");
 
   normal.scale(1.0 / length);
 
@@ -1054,7 +1047,7 @@ Core::LinAlg::Matrix<3, 1>
 Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     const Core::LinAlg::Matrix<3, nen_>& xyze, const Core::LinAlg::Matrix<3, 3>& nodes_parent_ele)
 {
-  if (Core::FE::is_nurbs<distype>) FOUR_C_THROW("Element normal not implemented for NURBS");
+  FOUR_C_ASSERT(!Core::FE::is_nurbs<distype>, "Element normal not implemented for NURBS");
 
   Core::LinAlg::Matrix<3, 1> normal(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<3, 1> normal_parent_ele(Core::LinAlg::Initialization::zero);
@@ -1102,7 +1095,7 @@ Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
   if (inward_vector.dot(normal) >= 0.0) normal.scale(-1.0);
 
   const double length = normal.norm2();
-  if (length < 1.0e-16) FOUR_C_THROW("Zero length for element normal");
+  FOUR_C_ASSERT_ALWAYS(length >= 1.0e-16, "Zero length for element normal");
 
   normal.scale(1.0 / length);
 
@@ -1112,7 +1105,7 @@ Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_coupling(
+void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2i_coupling(
     const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& eslavematrix, Core::LinAlg::SerialDenseMatrix& emastermatrix,
@@ -1157,7 +1150,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
     const double pseudo_contact_fac =
         calculate_pseudo_contact_factor(is_pseudo_contact, eslavestress_vector, normal, funct_);
 
-    evaluate_s2_i_coupling_at_integration_point<distype>(ephinp_, emasterphinp, pseudo_contact_fac,
+    evaluate_s2i_coupling_at_integration_point<distype>(ephinp_, emasterphinp, pseudo_contact_fac,
         funct_, funct_, funct_, funct_, numscal_, scatraparamsboundary_, timefacfac, timefacrhsfac,
         eslavematrix, emastermatrix, dummymatrix, dummymatrix, eslaveresidual, dummyvector);
   }  // end of loop over integration points
@@ -1168,7 +1161,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
 template <Core::FE::CellType distype, int probdim>
 template <Core::FE::CellType distype_master>
 void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::
-    evaluate_s2_i_coupling_at_integration_point(
+    evaluate_s2i_coupling_at_integration_point(
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(distype_master), 1>>&
             emasterphinp,
@@ -1205,11 +1198,10 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::
       // constant permeability model
       case S2I::kinetics_constperm:
       {
-        if (permeabilities == nullptr)
-          FOUR_C_THROW(
-              "Cannot access vector of permeabilities for scatra-scatra interface coupling!");
-        if (permeabilities->size() != (unsigned)numscal)
-          FOUR_C_THROW("Number of permeabilities does not match number of scalars!");
+        FOUR_C_ASSERT(permeabilities != nullptr,
+            "Cannot access vector of permeabilities for scatra-scatra interface coupling!");
+        FOUR_C_ASSERT_ALWAYS(permeabilities->size() == static_cast<std::size_t>(numscal),
+            "Number of permeabilities does not match number of scalars!");
 
         // core residual
         const double N_timefacrhsfac = pseudo_contact_fac * timefacrhsfac * (*permeabilities)[k] *
@@ -1268,7 +1260,6 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::
       default:
       {
         FOUR_C_THROW("Kinetic model for scatra-scatra interface coupling not yet implemented!");
-        break;
       }
     }
   }  // end of loop over scalars
@@ -1328,7 +1319,6 @@ Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_of_p
       {
         FOUR_C_THROW(
             "Not implemented for discretization type: {}!", faceele->parent_element()->shape());
-        break;
       }
     }
   }
@@ -1382,7 +1372,7 @@ Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_of_p
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_coupling_od(
+void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2i_coupling_od(
     const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& eslavematrix)
@@ -1404,11 +1394,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
         scatraparams_->nds_two_tensor_quantity());
 
   // get current scatra-scatra interface coupling condition
-  const Core::Conditions::Condition* s2icondition =
-      params.get<const Core::Conditions::Condition*>("condition");
-  if (s2icondition == nullptr)
-    FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
-
+  const auto* s2icondition = params.get<const Core::Conditions::Condition*>("condition");
+  FOUR_C_ASSERT_ALWAYS(
+      s2icondition != nullptr, "Cannot access scatra-scatra interface coupling condition!");
   // get primary variable to derive the linearization
   const auto differentiationtype =
       Teuchos::getIntegralValue<ScaTra::DifferentiationType>(params, "differentiationtype");
@@ -1433,7 +1421,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
 
     // evaluate overall integration factor
     const double timefacwgt = scatraparamstimint_->time_fac() * intpoints.ip().qwgt[gpid];
-    if (timefacwgt < 0.) FOUR_C_THROW("Integration factor is negative!");
+    FOUR_C_ASSERT_ALWAYS(timefacwgt > 0.0, "Time factor and integration weight must be positive!");
 
     // loop over scalars
     for (int k = 0; k < numscal_; ++k)
@@ -1457,11 +1445,10 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
             {
               // access real vector of constant permeabilities associated with current condition
               const std::vector<double>* permeabilities = scatraparamsboundary_->permeabilities();
-              if (permeabilities == nullptr)
-                FOUR_C_THROW(
-                    "Cannot access vector of permeabilities for scatra-scatra interface coupling!");
-              if (permeabilities->size() != static_cast<unsigned>(numscal_))
-                FOUR_C_THROW("Number of permeabilities does not match number of scalars!");
+              FOUR_C_ASSERT(permeabilities != nullptr,
+                  "Cannot access vector of permeabilities for scatra-scatra interface coupling!");
+              FOUR_C_ASSERT_ALWAYS(permeabilities->size() == static_cast<std::size_t>(numscal_),
+                  "Number of permeabilities must match number of scalars!");
 
               // core linearization
               const double dN_dsqrtdetg_timefacwgt = pseudo_contact_fac * timefacwgt *
@@ -1490,7 +1477,6 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
             default:
             {
               FOUR_C_THROW("Unknown primary quantity to calculate derivative");
-              break;
             }
           }
 
@@ -1500,12 +1486,11 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
         default:
         {
           FOUR_C_THROW("Kinetic model for scatra-scatra interface coupling not yet implemented!");
-          break;
         }
       }  // selection of kinetic model
     }  // loop over scalars
   }  // loop over integration points
-}  // Discret::Elements::ScaTraEleBoundaryCalc<distype>::evaluate_s2_i_coupling_od
+}  // Discret::Elements::ScaTraEleBoundaryCalc<distype>::evaluate_s2i_coupling_od
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1546,8 +1531,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::extract_node_va
   // extract global state vector from discretization
   const std::shared_ptr<const Core::LinAlg::Vector<double>> state =
       discretization.get_state(nds, statename);
-  if (state == nullptr)
-    FOUR_C_THROW("Cannot extract state vector \"{}\" from discretization!", statename);
+  FOUR_C_ASSERT(state != nullptr, "Cannot extract state vector {} from discretization!", statename);
 
   // extract nodal state variables associated with boundary element
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*state, estate, la[nds].lm_);
@@ -1630,21 +1614,17 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
   //////////////////////////////////////////////////////////////////////
 
   // get current condition
-  const Core::Conditions::Condition* cond =
-      params.get<const Core::Conditions::Condition*>("condition");
-  if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'TransportRobin'");
+  const auto* cond = params.get<const Core::Conditions::Condition*>("condition");
+  FOUR_C_ASSERT(cond != nullptr, "Cannot access condition 'TransportRobin'");
 
   // get on/off flags
   const auto onoff = cond->parameters().get<std::vector<int>>("ONOFF");
 
   // safety check
-  if ((int)(onoff.size()) != numscal_)
-  {
-    FOUR_C_THROW(
-        "Mismatch in size for Robin boundary conditions, onoff has length {}, but you have {} "
-        "scalars",
-        onoff.size(), numscal_);
-  }
+  FOUR_C_ASSERT_ALWAYS(onoff.size() == static_cast<std::size_t>(numscal_),
+      "Mismatch in size for Robin boundary conditions, onoff has length {}, but you have {} "
+      "scalars",
+      onoff.size(), numscal_);
 
   // extract prefactor and reference value from condition
   const auto prefac = cond->parameters().get<double>("PREFACTOR");
@@ -1659,7 +1639,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
   // ------------get values of scalar transport------------------
   // extract global state vector from discretization
   std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == nullptr) FOUR_C_THROW("Cannot read state vector \"phinp\" from discretization!");
+  FOUR_C_ASSERT(phinp != nullptr, "Cannot extract state vector 'phinp' from discretization!");
 
   // extract local nodal state variables from global state vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -1753,7 +1733,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
 
   // ------------get values of scalar transport------------------
   std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  FOUR_C_ASSERT(phinp != nullptr, "Cannot extract state vector 'phinp' from discretization!");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
       numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(Core::LinAlg::Initialization::zero));
@@ -1763,7 +1743,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
   // membrane)------------------
   std::shared_ptr<const Core::LinAlg::Vector<double>> phibar =
       discretization.get_state("MembraneConcentration");
-  if (phibar == nullptr) FOUR_C_THROW("Cannot get state vector 'MembraneConcentration'");
+  FOUR_C_ASSERT(phibar != nullptr,
+      "Cannot extract state vector 'MembraneConcentration' from discretization!");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephibar(
       numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(Core::LinAlg::Initialization::zero));
@@ -1772,10 +1753,11 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
   // ------------get values of wall shear stress-----------------------
   // get number of dofset associated with pressure related dofs
   const int ndswss = scatraparams_->nds_wss();
-  if (ndswss == -1) FOUR_C_THROW("Cannot get number of dofset of wss vector");
+  FOUR_C_ASSERT(ndswss != -1, "Cannot get number of dofset of wss vector");
   std::shared_ptr<const Core::LinAlg::Vector<double>> wss =
       discretization.get_state(ndswss, "WallShearStress");
-  if (wss == nullptr) FOUR_C_THROW("Cannot get state vector 'WallShearStress'");
+  FOUR_C_ASSERT(
+      wss != nullptr, "Cannot extract state vector 'WallShearStress' from discretization!");
 
   // determine number of velocity (and pressure) related dofs per node
   const int numwssdofpernode = la[ndswss].lm_.size() / nen_;
@@ -1795,9 +1777,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
   //                  get current condition
   //////////////////////////////////////////////////////////////////////
 
-  const Core::Conditions::Condition* cond =
-      params.get<const Core::Conditions::Condition*>("condition");
-  if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'SurfacePermeability'");
+  const auto* cond = params.get<const Core::Conditions::Condition*>("condition");
+  FOUR_C_ASSERT(
+      cond != nullptr, "Cannot extract condition 'SurfacePermeability' from parameter list!");
 
   const auto onoff = cond->parameters().get<std::vector<int>>("ONOFF");
 
@@ -1890,7 +1872,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
 
   // ------------get values of scalar transport------------------
   std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  FOUR_C_ASSERT(phinp != nullptr, "Cannot extract state vector 'phinp' from discretization!");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
       numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(Core::LinAlg::Initialization::zero));
@@ -1901,7 +1883,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
   // membrane)------------------
   std::shared_ptr<const Core::LinAlg::Vector<double>> phibar =
       discretization.get_state("MembraneConcentration");
-  if (phibar == nullptr) FOUR_C_THROW("Cannot get state vector 'MembraneConcentration'");
+  FOUR_C_ASSERT(phibar != nullptr,
+      "Cannot extract state vector 'MembraneConcentration' from discretization!");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephibar(
       numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(Core::LinAlg::Initialization::zero));
@@ -1911,10 +1894,10 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
   //--------get values of pressure at the interface ----------------------
   // get number of dofset associated with pressure related dofs
   const int ndspres = scatraparams_->nds_pres();
-  if (ndspres == -1) FOUR_C_THROW("Cannot get number of dofset of pressure vector");
-  std::shared_ptr<const Core::LinAlg::Vector<double>> pressure =
+  FOUR_C_ASSERT(ndspres != -1, "Cannot get number of dofset of pressure vector");
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> pressure =
       discretization.get_state(ndspres, "Pressure");
-  if (pressure == nullptr) FOUR_C_THROW("Cannot get state vector 'Pressure'");
+  FOUR_C_ASSERT(pressure != nullptr, "Cannot extract state vector 'Pressure' from discretization!");
 
   // determine number of velocity (and pressure) related dofs per node
   const int numveldofpernode = la[ndspres].lm_.size() / nen_;
@@ -1933,10 +1916,11 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
   // ------------get values of wall shear stress-----------------------
   // get number of dofset associated with pressure related dofs
   const int ndswss = scatraparams_->nds_wss();
-  if (ndswss == -1) FOUR_C_THROW("Cannot get number of dofset of wss vector");
-  std::shared_ptr<const Core::LinAlg::Vector<double>> wss =
+  FOUR_C_ASSERT(ndswss != -1, "Cannot get number of dofset of wss vector");
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> wss =
       discretization.get_state(ndswss, "WallShearStress");
-  if (wss == nullptr) FOUR_C_THROW("Cannot get state vector 'WallShearStress'");
+  FOUR_C_ASSERT(
+      wss != nullptr, "Cannot extract state vector 'WallShearStress' from discretization!");
 
   // determine number of velocity (and pressure) related dofs per node
   const int numwssdofpernode = la[ndswss].lm_.size() / nen_;
@@ -1950,10 +1934,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
 
   // ------------get current condition----------------------------------
-  const Core::Conditions::Condition* cond =
-      params.get<const Core::Conditions::Condition*>("condition");
-  if (cond == nullptr)
-    FOUR_C_THROW("Cannot access condition 'DESIGN SCATRA COUPLING SURF CONDITIONS'");
+  const auto* cond = params.get<const Core::Conditions::Condition*>("condition");
+  FOUR_C_ASSERT(
+      cond != nullptr, "Cannot access condition 'DESIGN SCATRA COUPLING SURF CONDITIONS'");
 
   const auto onoff = cond->parameters().get<std::vector<int>>("ONOFF");
 
@@ -2118,8 +2101,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   //------------------------------------------------------------------------
   // Dirichlet boundary condition
   //------------------------------------------------------------------------
-  const Core::Conditions::Condition* dbc =
-      params.get<const Core::Conditions::Condition*>("condition");
+  const auto* dbc = params.get<const Core::Conditions::Condition*>("condition");
 
   // check of total time
   const double time = scatraparamstimint_->time();
@@ -2162,7 +2144,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   // get convective (velocity - mesh displacement) velocity at nodes
   std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
       discretization.get_state(ndsvel, "convective velocity field");
-  if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
+  FOUR_C_ASSERT(
+      convel != nullptr, "Cannot extract state vector 'convective velocity' from discretization!");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = pla[ndsvel].lm_.size() / pnen;
@@ -2184,7 +2167,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
 
   // get scalar values at parent element nodes
   std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  FOUR_C_ASSERT(phinp != nullptr, "Cannot extract state vector 'phinp' from discretization!");
 
   // extract local values from global vectors for parent element
   std::vector<Core::LinAlg::Matrix<pnen, 1>> ephinp(numscal_);
@@ -2361,9 +2344,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
       // Jacobian matrix and determinant of parent element (including check)
       pxjm.multiply_nt(pderiv, pxyze);
       const double det = pxji.invert(pxjm);
-      if (det < 1E-16)
-        FOUR_C_THROW(
-            "GLOBAL ELEMENT NO.{}\nZERO OR NEGATIVE JACOBIAN DETERMINANT: {}", pele->id(), det);
+      FOUR_C_ASSERT_ALWAYS(det >= 1.0e-16,
+          "Jacobian determinant is non-positive: {} for element with global id: {}", det,
+          pele->id());
 
       // compute integration factor
       const double fac = pintpoints.ip().qwgt[iquad] * det;
@@ -2508,9 +2491,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
     // Jacobian matrix and determinant of parent element (including check)
     pxjm.multiply_nt(pderiv, pxyze);
     const double det = pxji.invert(pxjm);
-    if (det < 1E-16)
-      FOUR_C_THROW(
-          "GLOBAL ELEMENT NO.{}\nZERO OR NEGATIVE JACOBIAN DETERMINANT: {}", pele->id(), det);
+    FOUR_C_ASSERT_ALWAYS(det >= 1.0e-16,
+        "Jacobian determinant is non-positive: {} for element with global id: {}", det, pele->id());
 
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector
@@ -2826,14 +2808,10 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
 template <Core::FE::CellType distype, int probdim>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::Elements::ScaTraEleBoundaryCalc<distype,
-    probdim>::reinit_characteristic_galerkin_boundary(Core::Elements::FaceElement*
-                                                          ele,  //!< transport element
-    Teuchos::ParameterList& params,                             //!< parameter list
-    Core::FE::Discretization& discretization,                   //!< discretization
-    const Core::Mat::Material& material,                        //!< material
-    Core::LinAlg::SerialDenseMatrix& elemat,                    //!< ele sysmat
-    Core::LinAlg::SerialDenseVector& elevec                     //!< ele rhs
-)
+    probdim>::reinit_characteristic_galerkin_boundary(Core::Elements::FaceElement* ele,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    const Core::Mat::Material& material, Core::LinAlg::SerialDenseMatrix& elemat,
+    Core::LinAlg::SerialDenseVector& elevec)
 {
   //------------------------------------------------------------------------
   // preliminary definitions for (boundary) and parent element and
@@ -2863,9 +2841,9 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype,
 
   // get scalar values at parent element nodes
   std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  FOUR_C_ASSERT(phinp != nullptr, "Cannot get state vector 'phinp'");
   std::shared_ptr<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
-  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phin'");
+  FOUR_C_ASSERT(phin != nullptr, "Cannot get state vector 'phin'");
 
   // extract local values from global vectors for parent element
   std::vector<Core::LinAlg::Matrix<pnen, 1>> ephinp(numscal_);
@@ -3020,9 +2998,8 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype,
     // Jacobian matrix and determinant of parent element (including check)
     pxjm.multiply_nt(pderiv, pxyze);
     const double det = pxji.invert(pxjm);
-    if (det < 1E-16)
-      FOUR_C_THROW(
-          "GLOBAL ELEMENT NO.{}\nZERO OR NEGATIVE JACOBIAN DETERMINANT: {}", pele->id(), det);
+    FOUR_C_ASSERT_ALWAYS(det >= 1.0e-16,
+        "Jacobian determinant is non-positive: {} for element with global id: {}", det, pele->id());
 
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector
@@ -3141,7 +3118,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_nodal_
  *----------------------------------------------------------------------*/
 // explicit instantiation of template methods
 template void Discret::Elements::ScaTraEleBoundaryCalc<Core::FE::CellType::tri3>::
-    evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::tri3>(
+    evaluate_s2i_coupling_at_integration_point<Core::FE::CellType::tri3>(
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>>&,
         const double, const Core::LinAlg::Matrix<nen_, 1>&,
@@ -3153,7 +3130,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalc<Core::FE::CellType::tri3>
         Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseVector&, Core::LinAlg::SerialDenseVector&);
 template void Discret::Elements::ScaTraEleBoundaryCalc<Core::FE::CellType::tri3>::
-    evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::quad4>(
+    evaluate_s2i_coupling_at_integration_point<Core::FE::CellType::quad4>(
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>>&,
         const double, const Core::LinAlg::Matrix<nen_, 1>&,
@@ -3165,7 +3142,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalc<Core::FE::CellType::tri3>
         Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseVector&, Core::LinAlg::SerialDenseVector&);
 template void Discret::Elements::ScaTraEleBoundaryCalc<Core::FE::CellType::quad4>::
-    evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::tri3>(
+    evaluate_s2i_coupling_at_integration_point<Core::FE::CellType::tri3>(
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>>&,
         const double, const Core::LinAlg::Matrix<nen_, 1>&,
@@ -3177,7 +3154,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalc<Core::FE::CellType::quad4
         Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseVector&, Core::LinAlg::SerialDenseVector&);
 template void Discret::Elements::ScaTraEleBoundaryCalc<Core::FE::CellType::quad4>::
-    evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::quad4>(
+    evaluate_s2i_coupling_at_integration_point<Core::FE::CellType::quad4>(
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>>&,
         const double, const Core::LinAlg::Matrix<nen_, 1>&,
