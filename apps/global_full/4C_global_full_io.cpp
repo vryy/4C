@@ -201,6 +201,17 @@ void validate_argument_cross_compatibility(const CommandlineArguments& arguments
             arguments.n_groups);
       }
     }
+
+    for (const auto& [input, output] : arguments.io_pairs)
+    {
+      if (std::filesystem::path(output).filename().empty())
+      {
+        FOUR_C_THROW(
+            "The output argument '{}' does not contain a filename prefix. "
+            "Please specify a file prefix, e.g. 'out/my_sim' instead of 'out/'.",
+            output);
+      }
+    }
   }
 
   if (arguments.nptype != NPT::separate_input_files &&
