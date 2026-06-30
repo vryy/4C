@@ -37,7 +37,6 @@
 #include "4C_inpar_IO_runtime_output_fluid.hpp"
 #include "4C_inpar_IO_runtime_vtk_output_structure.hpp"
 #include "4C_inpar_IO_runtime_vtp_output_structure.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_gridgenerator.hpp"
 #include "4C_io_input_field.hpp"
 #include "4C_io_input_file_utils.hpp"
@@ -66,6 +65,7 @@
 #include "4C_ssi_input.hpp"
 #include "4C_ssti_input.hpp"
 #include "4C_sti_input.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_monitor_dbc_input.hpp"
 #include "4C_thermo_input.hpp"
 #include "4C_tsi_input.hpp"
@@ -303,7 +303,7 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
 
   push_specs(specs, CommonParameters::valid_parameters());
 
-  push_specs(specs, Inpar::Solid::valid_parameters());
+  push_specs(specs, Solid::valid_parameters());
   push_specs(specs, Inpar::IO::valid_parameters());
   push_specs(specs, Solid::IOMonitorStructureDBC::valid_parameters());
   push_specs(specs, Inpar::IORuntimeOutput::valid_parameters());

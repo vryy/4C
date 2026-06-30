@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_model_evaluator_manager.hpp"  // typedef
 
 #include <memory>
@@ -38,7 +38,7 @@ namespace Solid
 
 
       std::shared_ptr<Solid::ModelEvaluatorManager::Map> build_model_evaluators(
-          const std::set<Inpar::Solid::ModelType>& modeltypes,
+          const std::set<Solid::ModelType>& modeltypes,
           const std::shared_ptr<Solid::ModelEvaluator::Generic>& coupling_model_ptr) const;
 
      private:
@@ -52,7 +52,7 @@ namespace Solid
 
     //! non-member function, which relates to the Solid::ModelEvaluator::Factory
     std::shared_ptr<Solid::ModelEvaluatorManager::Map> build_model_evaluators(
-        const std::set<Inpar::Solid::ModelType>& modeltypes,
+        const std::set<Solid::ModelType>& modeltypes,
         const std::shared_ptr<Solid::ModelEvaluator::Generic>& coupling_model_ptr);
 
   }  // namespace ModelEvaluator

@@ -12,13 +12,13 @@
 
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_elementtype.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_solid_ele_calc_eas.hpp"
 #include "4C_solid_ele_calc_lib_integration.hpp"
 #include "4C_solid_ele_calc_lib_nitsche.hpp"
 #include "4C_solid_ele_factory.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <memory>

@@ -11,7 +11,7 @@
 #include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_thermo_adapter.hpp"
 #include "4C_tsi_input.hpp"
 #include "4C_tsi_utils.hpp"
@@ -62,8 +62,8 @@ TSI::Partitioned::Partitioned(MPI_Comm comm)
   // if structure field is quasi-static --> calc_velocity
   const Teuchos::ParameterList& sdyn = problem_->structural_dynamic_params();
   // major switch to different time integrators
-  quasistatic_ = (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE") ==
-                  Inpar::Solid::DynamicType::Statics);
+  quasistatic_ = (Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE") ==
+                  Solid::DynamicType::Statics);
 
   // initialise internal variables with values
   tempincnp_ = std::make_shared<Core::LinAlg::Vector<double>>(*(thermo_field()->tempnp()));

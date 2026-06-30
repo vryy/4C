@@ -30,7 +30,7 @@ namespace Solid
 
       void setup() override;
 
-      Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_multiscale; }
+      Solid::ModelType type() const override { return Solid::model_multiscale; }
 
       void reset(const Core::LinAlg::Vector<double>& x) override {};
 
@@ -71,7 +71,7 @@ namespace Solid
 
       void post_setup() override;
 
-      void predict(const Inpar::Solid::PredEnum& pred_type) override {};
+      void predict(const Solid::PredEnum& pred_type) override {};
 
       void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
           Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override {};

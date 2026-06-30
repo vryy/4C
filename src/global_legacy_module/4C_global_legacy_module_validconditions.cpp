@@ -22,7 +22,6 @@
 #include "4C_fs3i_biofilm_fsi_input.hpp"
 #include "4C_fsi_input.hpp"
 #include "4C_inpar_fluid.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_levelset_input.hpp"
 #include "4C_mortar_input.hpp"
@@ -35,6 +34,7 @@
 #include "4C_ssi_input.hpp"
 #include "4C_ssti_input.hpp"
 #include "4C_sti_input.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_thermo_input.hpp"
 #include "4C_xfem_input.hpp"
 
@@ -840,7 +840,7 @@ std::vector<Core::Conditions::ConditionDefinition> Global::valid_conditions()
   ArteryNetwork::set_valid_conditions(condlist);
   Airway::set_valid_conditions(condlist);
   Cardiovascular0DInput::set_valid_conditions(condlist);
-  Inpar::Solid::set_valid_conditions(condlist);
+  Solid::set_valid_conditions(condlist);
   Thermo::set_valid_conditions(condlist);
   SSI::set_valid_conditions(condlist);
   SSTI::set_valid_conditions(condlist);

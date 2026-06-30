@@ -18,8 +18,8 @@
 #include "4C_fem_nurbs_discretization_control_point.hpp"
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_sparsematrix.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -327,8 +327,8 @@ void Adapter::CouplingPoroMortar::create_strategy(
   // problem and not a value of 0.5 a proper distinction is necessary if poro meshtying is expanded
   // to other time integration strategies
 
-  if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(stru, "DYNAMICTYPE") ==
-      Inpar::Solid::DynamicType::Statics)
+  if (Teuchos::getIntegralValue<Solid::DynamicType>(stru, "DYNAMICTYPE") ==
+      Solid::DynamicType::Statics)
   {
     theta = 1.0;
   }

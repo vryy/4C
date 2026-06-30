@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_solid_ele_calc_lib.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <string>
@@ -55,7 +55,7 @@ namespace Discret::Elements
   struct SolidElementProperties<3>
   {
     //! kinematic type
-    Inpar::Solid::KinemType kintype{Inpar::Solid::KinemType::vague};
+    FourC::Solid::KinemType kintype{FourC::Solid::KinemType::vague};
 
     //! element technology (none, F-Bar, EAS full, EAS mild)
     ElementTechnology element_technology{ElementTechnology::none};
@@ -68,7 +68,7 @@ namespace Discret::Elements
   struct SolidElementProperties<2>
   {
     //! kinematic type
-    Inpar::Solid::KinemType kintype{Inpar::Solid::KinemType::vague};
+    FourC::Solid::KinemType kintype{FourC::Solid::KinemType::vague};
 
     //! element technology (none, F-Bar, EAS full, EAS mild)
     ElementTechnology element_technology{ElementTechnology::none};

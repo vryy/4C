@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_RCPDecl.hpp>
@@ -69,7 +69,7 @@ namespace Solid
         virtual void reset() = 0;
 
         //! Solve the non-linear problem
-        virtual Inpar::Solid::ConvergenceStatus solve() = 0;
+        virtual Solid::ConvergenceStatus solve() = 0;
 
         /*! returns the nox group for external and internal use
          *

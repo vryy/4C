@@ -144,7 +144,7 @@ double Solid::TimeInt::NoxInterface::get_primary_rhs_norms(const Core::LinAlg::V
   double rhsnorm = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
+  const Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
 
   switch (checkquantity)
   {
@@ -193,7 +193,7 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(
   double rms = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
+  const Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
 
   switch (checkquantity)
   {
@@ -238,7 +238,7 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_norms(
   double updatenorm = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
+  const Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
 
   switch (checkquantity)
   {
@@ -290,7 +290,7 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(
   double xoldnorm = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
+  const Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
 
   switch (checkquantity)
   {
@@ -330,8 +330,8 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::NoxInterface::find_constraint_models(const ::NOX::Abstract::Group* grp,
-    std::vector<Inpar::Solid::ModelType>& constraint_models) const
+void Solid::TimeInt::NoxInterface::find_constraint_models(
+    const ::NOX::Abstract::Group* grp, std::vector<Solid::ModelType>& constraint_models) const
 {
   const NOX::Nln::CONSTRAINT::Group* constr_grp =
       dynamic_cast<const NOX::Nln::CONSTRAINT::Group*>(grp);
@@ -346,7 +346,7 @@ void Solid::TimeInt::NoxInterface::find_constraint_models(const ::NOX::Abstract:
   for (auto cit = imap.begin(); cit != imap.end(); ++cit)
   {
     const NOX::Nln::SolutionType soltype = cit->first;
-    const Inpar::Solid::ModelType mtype = Solid::Nln::convert_sol_type2_model_type(soltype);
+    const Solid::ModelType mtype = Solid::Nln::convert_sol_type2_model_type(soltype);
 
     constraint_models.push_back(mtype);
   }

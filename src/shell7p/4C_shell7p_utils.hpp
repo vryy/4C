@@ -13,10 +13,10 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <memory>
 
@@ -174,7 +174,7 @@ namespace Solid::Utils::Shell
      * @param data (out) : Packed data buffer to be filled
      */
     void pack_thickness_data(const std::vector<Core::LinAlg::Matrix<3, 1>>& thickness_director,
-        Inpar::Solid::OptQuantityType output_type, Core::Communication::PackBuffer& data);
+        FourC::Solid::OptQuantityType output_type, Core::Communication::PackBuffer& data);
 
   }  // namespace Output
 

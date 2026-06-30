@@ -204,7 +204,7 @@ namespace Adapter
     }
 
     /// get type of thickness scaling for thin shell structures
-    Inpar::Solid::StcScale get_stc_algo() override { return structure_->get_stc_algo(); }
+    Solid::StcScale get_stc_algo() override { return structure_->get_stc_algo(); }
 
     /// access to scaling matrix for STC
     std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() override
@@ -285,8 +285,7 @@ namespace Adapter
     int integrate() override { return structure_->integrate(); }
 
     //! do something in case nonlinear solution does not converge for some reason
-    Inpar::Solid::ConvergenceStatus perform_error_action(
-        Inpar::Solid::ConvergenceStatus nonlinsoldiv) override
+    Solid::ConvergenceStatus perform_error_action(Solid::ConvergenceStatus nonlinsoldiv) override
     {
       return structure_->perform_error_action(nonlinsoldiv);
     }
@@ -417,7 +416,7 @@ namespace Adapter
     //@{
 
     /// nonlinear solve
-    Inpar::Solid::ConvergenceStatus solve() override { return structure_->solve(); }
+    Solid::ConvergenceStatus solve() override { return structure_->solve(); }
 
     //! linear structure solve with just an interface load
     std::shared_ptr<Core::LinAlg::Vector<double>> solve_relaxation_linear() override
@@ -499,13 +498,10 @@ namespace Adapter
     //@}
 
     /// do we have this model
-    bool have_model(Inpar::Solid::ModelType model) override
-    {
-      return structure_->have_model(model);
-    }
+    bool have_model(Solid::ModelType model) override { return structure_->have_model(model); }
 
     /// return model evaluator
-    Solid::ModelEvaluator::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override
+    Solid::ModelEvaluator::Generic& model_evaluator(Solid::ModelType mtype) override
     {
       return structure_->model_evaluator(mtype);
     }

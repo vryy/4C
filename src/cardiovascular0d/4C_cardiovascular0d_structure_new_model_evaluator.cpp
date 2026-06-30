@@ -9,7 +9,6 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_linalg.hpp"
 #include "4C_linalg_block_pod_projector.hpp"
@@ -22,6 +21,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_integrator.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
@@ -147,7 +147,7 @@ void Solid::ModelEvaluator::Cardiovascular0D::setup()
 
     // Add pod projector to the solver parameters
     Core::LinAlg::Solver& solver =
-        *eval_data().sdyn().get_lin_solvers().at(Inpar::Solid::model_cardiovascular0d);
+        *eval_data().sdyn().get_lin_solvers().at(Solid::model_cardiovascular0d);
     solver.params().set<std::shared_ptr<Core::LinAlg::LinearSystemProjector>>(
         "Projector", std::make_shared<Core::LinAlg::BlockPODProjector>(block_projections));
   }
@@ -317,7 +317,7 @@ void Solid::ModelEvaluator::Cardiovascular0D::run_post_compute_x(
   check_init_setup();
 
   std::shared_ptr<Core::LinAlg::Vector<double>> cv0d_incr =
-      global_state().extract_model_entries(Inpar::Solid::model_cardiovascular0d, dir);
+      global_state().extract_model_entries(Solid::model_cardiovascular0d, dir);
 
   cardvasc0dman_->update_cv0_d_dof(*cv0d_incr);
 

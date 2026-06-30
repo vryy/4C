@@ -86,16 +86,16 @@ void Adapter::StructureBaseAlgorithmNew::setup()
   if (not is_init()) FOUR_C_THROW("You have to call init() first!");
 
   // major switch to different time integrators
-  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(*sdyn_, "DYNAMICTYPE"))
+  switch (Teuchos::getIntegralValue<Solid::DynamicType>(*sdyn_, "DYNAMICTYPE"))
   {
-    case Inpar::Solid::DynamicType::Statics:
-    case Inpar::Solid::DynamicType::GenAlpha:
-    case Inpar::Solid::DynamicType::GenAlphaLieGroup:
-    case Inpar::Solid::DynamicType::OneStepTheta:
-    case Inpar::Solid::DynamicType::ExplEuler:
-    case Inpar::Solid::DynamicType::CentrDiff:
-    case Inpar::Solid::DynamicType::AdamsBashforth2:
-    case Inpar::Solid::DynamicType::AdamsBashforth4:
+    case Solid::DynamicType::Statics:
+    case Solid::DynamicType::GenAlpha:
+    case Solid::DynamicType::GenAlphaLieGroup:
+    case Solid::DynamicType::OneStepTheta:
+    case Solid::DynamicType::ExplEuler:
+    case Solid::DynamicType::CentrDiff:
+    case Solid::DynamicType::AdamsBashforth2:
+    case Solid::DynamicType::AdamsBashforth4:
       setup_tim_int();  // <-- here is the show
       break;
     default:
@@ -210,17 +210,17 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // the different conditions
   // ---------------------------------------------------------------------------
   // define and initial with default value
-  std::shared_ptr<std::set<Inpar::Solid::ModelType>> modeltypes =
-      std::make_shared<std::set<enum Inpar::Solid::ModelType>>();
-  modeltypes->insert(Inpar::Solid::model_structure);
+  std::shared_ptr<std::set<Solid::ModelType>> modeltypes =
+      std::make_shared<std::set<enum Solid::ModelType>>();
+  modeltypes->insert(Solid::model_structure);
   set_model_types(*modeltypes);
 
   // ---------------------------------------------------------------------------
   // Setup a element technology set by checking
   // the elements of the discretization
   // ---------------------------------------------------------------------------
-  std::shared_ptr<std::set<Inpar::Solid::EleTech>> eletechs =
-      std::make_shared<std::set<enum Inpar::Solid::EleTech>>();
+  std::shared_ptr<std::set<Solid::EleTech>> eletechs =
+      std::make_shared<std::set<enum Solid::EleTech>>();
   detect_element_technologies(*eletechs);
 
   // ---------------------------------------------------------------------------
@@ -237,8 +237,8 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // Setup and create model specific linear solvers
   // ---------------------------------------------------------------------------
-  std::shared_ptr<std::map<Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>>
-      linsolvers = Solid::SOLVER::build_lin_solvers(*modeltypes, *sdyn_, *actdis_);
+  std::shared_ptr<std::map<Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>> linsolvers =
+      Solid::SOLVER::build_lin_solvers(*modeltypes, *sdyn_, *actdis_);
 
   // ---------------------------------------------------------------------------
   // Checks in case of multi-scale simulations
@@ -251,11 +251,11 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
     {
       if (mat->type() == Core::Materials::m_struct_multiscale)
       {
-        if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(*sdyn_, "DYNAMICTYPE") !=
-            Inpar::Solid::DynamicType::GenAlpha)
+        if (Teuchos::getIntegralValue<Solid::DynamicType>(*sdyn_, "DYNAMICTYPE") !=
+            Solid::DynamicType::GenAlpha)
           FOUR_C_THROW("In multi-scale simulations, you have to use DYNAMICTYPE=GenAlpha");
-        else if (Teuchos::getIntegralValue<Inpar::Solid::MidAverageEnum>(
-                     sdyn_->sublist("GENALPHA"), "GENAVG") != Inpar::Solid::midavg_trlike)
+        else if (Teuchos::getIntegralValue<Solid::MidAverageEnum>(
+                     sdyn_->sublist("GENALPHA"), "GENAVG") != Solid::midavg_trlike)
           FOUR_C_THROW(
               "In multi-scale simulations, you have to use DYNAMICTYPE=GenAlpha with "
               "GENAVG=TrLike");
@@ -298,7 +298,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // in case of non-additive rotation (pseudo-)vector DOFs:
   // ---------------------------------------------------------------------------
-  if (eletechs->find(Inpar::Solid::EleTech::rotvec) != eletechs->end())
+  if (eletechs->find(Solid::EleTech::rotvec) != eletechs->end())
   {
     // -------------------------------------------------------------------------
     // set the RotVecUpdater as new precomputeX operator for the nox nln group
@@ -331,7 +331,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithmNew::set_model_types(
-    std::set<Inpar::Solid::ModelType>& modeltypes) const
+    std::set<Solid::ModelType>& modeltypes) const
 {
   if (not is_init()) FOUR_C_THROW("You have to call init() first!");
   auto* problem = &problem_;
@@ -355,15 +355,15 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
       const Teuchos::ParameterList& contact = problem->contact_dynamic_params();
       if (Teuchos::getIntegralValue<CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           CONTACT::SolvingStrategy::nitsche)
-        modeltypes.insert(Inpar::Solid::model_contact);
+        modeltypes.insert(Solid::model_contact);
     }
     else
-      modeltypes.insert(Inpar::Solid::model_contact);
+      modeltypes.insert(Solid::model_contact);
   }
   // --- meshtying conditions
   std::vector<const Core::Conditions::Condition*> mtcond;
   actdis_->get_condition("Mortar", mtcond);
-  if (mtcond.size()) modeltypes.insert(Inpar::Solid::model_meshtying);
+  if (mtcond.size()) modeltypes.insert(Solid::model_meshtying);
 
   // check for 0D cardiovascular conditions
   // ---------------------------------------------------------------------------
@@ -382,7 +382,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   if (cardiovasc0dcond_4elementwindkessel.size() or cardiovasc0dcond_arterialproxdist.size() or
       cardiovasc0dcond_syspulcirculation.size() or
       cardiovascrespir0dcond_syspulperiphcirculation.size())
-    modeltypes.insert(Inpar::Solid::model_cardiovascular0d);
+    modeltypes.insert(Solid::model_cardiovascular0d);
 
   // ---------------------------------------------------------------------------
   // check for constraint conditions
@@ -412,14 +412,14 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   actdis_->get_condition("AreaConstraint_3D_Pen", pencond_areaconstr3d);
   if (pencond_volconstr3d.size() or pencond_areaconstr3d.size()) have_pen_constraint = true;
   if (have_lag_constraint or have_pen_constraint)
-    modeltypes.insert(Inpar::Solid::model_lag_pen_constraint);
+    modeltypes.insert(Solid::model_lag_pen_constraint);
 
   // ---------------------------------------------------------------------------
   // check for spring dashpot conditions
   // ---------------------------------------------------------------------------
   std::vector<const Core::Conditions::Condition*> sdp_cond;
   actdis_->get_condition("RobinSpringDashpot", sdp_cond);
-  if (sdp_cond.size()) modeltypes.insert(Inpar::Solid::model_springdashpot);
+  if (sdp_cond.size()) modeltypes.insert(Solid::model_springdashpot);
   // ---------------------------------------------------------------------------
   // check for coupled problems
   // ---------------------------------------------------------------------------
@@ -450,7 +450,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
         if (!coupling_model_ptr)
           FOUR_C_THROW("The partitioned coupling model pointer is not allowed to be nullptr!");
         // set the model type
-        modeltypes.insert(Inpar::Solid::model_partitioned_coupling);
+        modeltypes.insert(Solid::model_partitioned_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
         sdyn_->set<std::shared_ptr<Solid::ModelEvaluator::Generic>>(
             "Partitioned Coupling Model", coupling_model_ptr);
@@ -465,7 +465,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
         if (!coupling_model_ptr)
           FOUR_C_THROW("The monolithic coupling model pointer is not allowed to be nullptr!");
         // set the model type
-        modeltypes.insert(Inpar::Solid::model_monolithic_coupling);
+        modeltypes.insert(Solid::model_monolithic_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
         sdyn_->set<std::shared_ptr<Solid::ModelEvaluator::Generic>>(
             "Monolithic Coupling Model", coupling_model_ptr);
@@ -479,7 +479,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
         if (!coupling_model_ptr)
           FOUR_C_THROW("The basic coupling model pointer is not allowed to be nullptr!");
         // set the model type
-        modeltypes.insert(Inpar::Solid::model_basic_coupling);
+        modeltypes.insert(Solid::model_basic_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
         sdyn_->set<std::shared_ptr<Solid::ModelEvaluator::Generic>>(
             "Basic Coupling Model", coupling_model_ptr);
@@ -511,7 +511,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   // check for brownian dynamics
   // ---------------------------------------------------------------------------
   if (problem->brownian_dynamics_params().get<bool>("BROWNDYNPROB"))
-    modeltypes.insert(Inpar::Solid::model_browniandyn);
+    modeltypes.insert(Solid::model_browniandyn);
 
   // ---------------------------------------------------------------------------
   // check for beam interaction
@@ -542,7 +542,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
       beampotconditions.size() > 0 or beampenaltycouplingconditions_direct.size() > 0 or
       beampenaltycouplingconditions_indirect.size() > 0)
   {
-    modeltypes.insert(Inpar::Solid::model_beaminteraction);
+    modeltypes.insert(Solid::model_beaminteraction);
   }
 
   // ---------------------------------------------------------------------------
@@ -560,7 +560,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0 || embeddedMeshConditions.size() > 0 ||
       nullspaceCondition.size() > 0)
-    modeltypes.insert(Inpar::Solid::model_constraints);
+    modeltypes.insert(Solid::model_constraints);
 
   // ---------------------------------------------------------------------------
   // Check for multi-scale simulation
@@ -569,13 +569,13 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   const auto it = std::find_if(materials->map().begin(), materials->map().end(),
       [](const auto& pair) { return pair.second->type() == Core::Materials::m_struct_multiscale; });
 
-  if (it != materials->map().end()) modeltypes.insert(Inpar::Solid::model_multiscale);
+  if (it != materials->map().end()) modeltypes.insert(Solid::model_multiscale);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
-    std::set<Inpar::Solid::EleTech>& eletechs) const
+    std::set<Solid::EleTech>& eletechs) const
 {
   int iseas_local = 0;
   int iseas_global = 0;
@@ -593,7 +593,7 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
 
     Discret::Elements::Shell7p* shell7p = dynamic_cast<Discret::Elements::Shell7p*>(actele);
     if (shell7p)
-      if (shell7p->get_ele_tech().find(Inpar::Solid::EleTech::eas) != shell7p->get_ele_tech().end())
+      if (shell7p->get_ele_tech().find(Solid::EleTech::eas) != shell7p->get_ele_tech().end())
         iseas_local = 1;
 
     const auto* solid3 = dynamic_cast<Discret::Elements::Solid<3>*>(actele);
@@ -615,15 +615,15 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
 
   // eas - sum over all processors
   iseas_global = Core::Communication::sum_all(iseas_local, actdis_->get_comm());
-  if (iseas_global > 0) eletechs.insert(Inpar::Solid::EleTech::eas);
+  if (iseas_global > 0) eletechs.insert(Solid::EleTech::eas);
 
   // fbar - sum over all processors
   isfbar_global = Core::Communication::sum_all(isfbar_local, actdis_->get_comm());
-  if (isfbar_global > 0) eletechs.insert(Inpar::Solid::EleTech::fbar);
+  if (isfbar_global > 0) eletechs.insert(Solid::EleTech::fbar);
 
   // rotation vector DOFs - sum over all processors
   isrotvec_global = Core::Communication::sum_all(isrotvec_local, actdis_->get_comm());
-  if (isrotvec_global > 0) eletechs.insert(Inpar::Solid::EleTech::rotvec);
+  if (isrotvec_global > 0) eletechs.insert(Solid::EleTech::rotvec);
 }
 
 
@@ -661,8 +661,7 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the input
   // file
-  if (Teuchos::getIntegralValue<Inpar::Solid::DampKind>(*sdyn_, "DAMPING") ==
-      Inpar::Solid::damp_rayleigh)
+  if (Teuchos::getIntegralValue<Solid::DampKind>(*sdyn_, "DAMPING") == Solid::damp_rayleigh)
   {
     if (sdyn_->get<double>("K_DAMP") < 0.0)
     {
@@ -712,8 +711,7 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
       if (fsiada.get<bool>("TIMEADAPTON"))
       {
         // overrule time step size adaptivity control parameters
-        if (time_adaptivity_params.get<Inpar::Solid::TimAdaKind>("KIND") !=
-            Inpar::Solid::timada_kind_none)
+        if (time_adaptivity_params.get<Solid::TimAdaKind>("KIND") != Solid::timada_kind_none)
         {
           time_adaptivity_params.set<int>("ADAPTSTEPMAX", fsiada.get<int>("ADAPTSTEPMAX"));
           time_adaptivity_params.set<double>("STEPSIZEMAX", fsiada.get<double>("DTMAX"));
@@ -812,9 +810,8 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
     case Core::ProblemType::fsi_xfem:
     {
       // Are there any constraint conditions active?
-      const std::set<Inpar::Solid::ModelType>& modeltypes =
-          ti_strategy->get_data_sdyn().get_model_types();
-      if (modeltypes.find(Inpar::Solid::model_lag_pen_constraint) != modeltypes.end())
+      const std::set<Solid::ModelType>& modeltypes = ti_strategy->get_data_sdyn().get_model_types();
+      if (modeltypes.find(Solid::model_lag_pen_constraint) != modeltypes.end())
       {
         if (Core::Communication::my_mpi_rank((actdis_->get_comm())) == 0)
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
@@ -861,9 +858,8 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
       const auto coupling =
           Teuchos::getIntegralValue<PoroElast::SolutionSchemeOverFields>(porodyn, "COUPALGO");
       // Are there any constraint conditions active?
-      const std::set<Inpar::Solid::ModelType>& modeltypes =
-          ti_strategy->get_data_sdyn().get_model_types();
-      if (modeltypes.find(Inpar::Solid::model_lag_pen_constraint) != modeltypes.end())
+      const std::set<Solid::ModelType>& modeltypes = ti_strategy->get_data_sdyn().get_model_types();
+      if (modeltypes.find(Solid::model_lag_pen_constraint) != modeltypes.end())
       {
         if (coupling == PoroElast::SolutionSchemeOverFields::Monolithic_structuresplit or
             coupling == PoroElast::SolutionSchemeOverFields::Monolithic_fluidsplit or

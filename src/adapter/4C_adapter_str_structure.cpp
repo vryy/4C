@@ -19,7 +19,6 @@
 #include "4C_fem_discretization_nullspace.hpp"
 #include "4C_fsi_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
@@ -31,6 +30,7 @@
 #include "4C_linear_solver_method_parameters.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_poroelast_input.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_timada_create.hpp"
 #include "4C_structure_timint_create.hpp"
 #include "4C_structure_timint_impl.hpp"
@@ -56,14 +56,14 @@ void Adapter::StructureBaseAlgorithm::create_structure(const Teuchos::ParameterL
     const Teuchos::ParameterList& sdyn, std::shared_ptr<Core::FE::Discretization> actdis)
 {
   // major switch to different time integrators
-  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE"))
+  switch (Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE"))
   {
-    case Inpar::Solid::DynamicType::Statics:
-    case Inpar::Solid::DynamicType::GenAlpha:
-    case Inpar::Solid::DynamicType::OneStepTheta:
-    case Inpar::Solid::DynamicType::ExplEuler:
-    case Inpar::Solid::DynamicType::CentrDiff:
-    case Inpar::Solid::DynamicType::AdamsBashforth2:
+    case Solid::DynamicType::Statics:
+    case Solid::DynamicType::GenAlpha:
+    case Solid::DynamicType::OneStepTheta:
+    case Solid::DynamicType::ExplEuler:
+    case Solid::DynamicType::CentrDiff:
+    case Solid::DynamicType::AdamsBashforth2:
       create_tim_int(prbdyn, sdyn, actdis);  // <-- here is the show
       break;
     default:
@@ -120,8 +120,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the input
   // file
-  if (Teuchos::getIntegralValue<Inpar::Solid::DampKind>(sdyn, "DAMPING") ==
-      Inpar::Solid::damp_rayleigh)
+  if (Teuchos::getIntegralValue<Solid::DampKind>(sdyn, "DAMPING") == Solid::damp_rayleigh)
   {
     if (sdyn.get<double>("K_DAMP") < 0.0)
     {
@@ -151,11 +150,11 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     {
       if (par->type() == Core::Materials::m_struct_multiscale)
       {
-        if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE") !=
-            Inpar::Solid::DynamicType::GenAlpha)
+        if (Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE") !=
+            Solid::DynamicType::GenAlpha)
           FOUR_C_THROW("In multi-scale simulations, you have to use DYNAMICTYPE=GenAlpha");
-        else if (Teuchos::getIntegralValue<Inpar::Solid::MidAverageEnum>(
-                     sdyn.sublist("GENALPHA"), "GENAVG") != Inpar::Solid::midavg_trlike)
+        else if (Teuchos::getIntegralValue<Solid::MidAverageEnum>(
+                     sdyn.sublist("GENALPHA"), "GENAVG") != Solid::midavg_trlike)
           FOUR_C_THROW(
               "In multi-scale simulations, you have to use DYNAMICTYPE=GenAlpha with "
               "GENAVG=TrLike");
@@ -212,7 +211,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     if (fsiada.get<bool>("TIMEADAPTON"))
     {
       // overrule time step size adaptivity control parameters
-      if (tap.get<Inpar::Solid::TimAdaKind>("KIND") != Inpar::Solid::timada_kind_none)
+      if (tap.get<Solid::TimAdaKind>("KIND") != Solid::timada_kind_none)
       {
         tap.set<int>("ADAPTSTEPMAX", fsiada.get<int>("ADAPTSTEPMAX"));
         tap.set<double>("STEPSIZEMAX", fsiada.get<double>("DTMAX"));

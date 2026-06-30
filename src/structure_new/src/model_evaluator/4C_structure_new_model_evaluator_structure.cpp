@@ -45,7 +45,7 @@ FOUR_C_NAMESPACE_OPEN
 Solid::ModelEvaluator::Structure::Structure()
     : dt_ele_ptr_(nullptr),
       runtime_csvwriter_rank_eval_times_(nullptr),
-      masslin_type_(Inpar::Solid::MassLin::ml_none),
+      masslin_type_(Solid::MassLin::ml_none),
       stiff_ptr_(nullptr),
       stiff_ptc_ptr_(nullptr),
       dis_incr_ptr_(nullptr),
@@ -369,7 +369,7 @@ bool Solid::ModelEvaluator::Structure::apply_force_external()
   // set vector values needed by elements
   discret().clear_state();
   discret().set_state(0, "displacement", *global_state().get_dis_n());
-  if (eval_data().get_damping_type() == Inpar::Solid::damp_material)
+  if (eval_data().get_damping_type() == Solid::damp_material)
     discret().set_state(0, "velocity", *global_state().get_vel_n());
   discret().set_state(0, "displacement new", *global_state().get_dis_np());
   evaluate_neumann(*global_state().get_fext_np(), nullptr);
@@ -389,7 +389,7 @@ bool Solid::ModelEvaluator::Structure::apply_force_stiff_external()
   discret().clear_state();
   discret().set_state(0, "displacement", *global_state().get_dis_n());
 
-  if (eval_data().get_damping_type() == Inpar::Solid::damp_material)
+  if (eval_data().get_damping_type() == Solid::damp_material)
     discret().set_state(0, "velocity", *global_state().get_vel_n());
 
   // get load vector
@@ -439,7 +439,7 @@ bool Solid::ModelEvaluator::Structure::apply_force_stiff_internal()
   // set action types and evaluate matrices/vectors
   static_contributions(eval_mat.data(), eval_vec.data());
   material_damping_contributions(eval_mat.data());
-  if (masslin_type_ != Inpar::Solid::MassLin::ml_none)
+  if (masslin_type_ != Solid::MassLin::ml_none)
     inertial_contributions(eval_mat.data(), eval_vec.data());
 
   // evaluate
@@ -484,7 +484,7 @@ void Solid::ModelEvaluator::Structure::static_contributions(
 void Solid::ModelEvaluator::Structure::material_damping_contributions(
     std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat)
 {
-  if (eval_data().get_damping_type() != Inpar::Solid::damp_material) return;
+  if (eval_data().get_damping_type() != Solid::damp_material) return;
 
   // action for elements
   // (reset the action type to be independent of the calling order)
@@ -533,8 +533,7 @@ void Solid::ModelEvaluator::Structure::inertial_contributions(
 {
   check_init_setup();
 
-  if (masslin_type_ == Inpar::Solid::MassLin::ml_none or
-      tim_int().get_data_sdyn_ptr()->neglect_inertia())
+  if (masslin_type_ == Solid::MassLin::ml_none or tim_int().get_data_sdyn_ptr()->neglect_inertia())
     return;
 
   // overwrite element action
@@ -553,7 +552,7 @@ void Solid::ModelEvaluator::Structure::inertial_and_viscous_forces()
 {
   check_init_setup();
 
-  if (masslin_type_ == Inpar::Solid::MassLin::ml_none and
+  if (masslin_type_ == Solid::MassLin::ml_none and
       !tim_int().get_data_sdyn_ptr()->neglect_inertia())
   {
     // calculate the inertial force at t_{n+1}
@@ -561,7 +560,7 @@ void Solid::ModelEvaluator::Structure::inertial_and_viscous_forces()
   }
 
   // calculate the viscous/damping force at t_{n+1}
-  if (eval_data().get_damping_type() != Inpar::Solid::damp_none)
+  if (eval_data().get_damping_type() != Solid::damp_none)
   {
     if (not damp().filled()) damp().complete();
     damp().multiply(false, *global_state().get_vel_np(), fvisco_np());
@@ -581,7 +580,7 @@ void Solid::ModelEvaluator::Structure::fill_complete()
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::rayleigh_damping_matrix()
 {
-  if (eval_data().get_damping_type() != Inpar::Solid::damp_rayleigh) return;
+  if (eval_data().get_damping_type() != Solid::damp_rayleigh) return;
 
   const double dampk = tim_int().get_data_sdyn().get_damping_stiffness_factor();
   const double dampm = tim_int().get_data_sdyn().get_damping_mass_factor();
@@ -597,14 +596,14 @@ std::shared_ptr<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Structure::
 {
   switch (masslin_type_)
   {
-    case Inpar::Solid::MassLin::ml_rotations:
+    case Solid::MassLin::ml_rotations:
     {
       finertial_np().put_scalar(0.0);
       // set inertial force
       return global_state().get_finertial_np();
       break;
     }
-    case Inpar::Solid::MassLin::ml_none:
+    case Solid::MassLin::ml_none:
       // do nothing
       break;
     default:
@@ -633,7 +632,7 @@ void Solid::ModelEvaluator::Structure::init_output_runtime_structure()
   if (global_in_output()
           .get_runtime_output_params()
           ->get_structure_params()
-          ->gauss_point_data_output() != Inpar::Solid::GaussPointDataOutputType::none)
+          ->gauss_point_data_output() != Solid::GaussPointDataOutputType::none)
   {
     init_output_runtime_structure_gauss_point_data();
   }
@@ -760,17 +759,17 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
 
   // append stress if desired
   if (structure_output_params.output_stress_strain() and
-      global_in_output().get_stress_output_type() != Inpar::Solid::stress_none)
+      global_in_output().get_stress_output_type() != Solid::stress_none)
   {
     std::string name_nodal = "";
     std::string name_element = "";
 
-    if (global_in_output().get_stress_output_type() == Inpar::Solid::stress_2pk)
+    if (global_in_output().get_stress_output_type() == Solid::stress_2pk)
     {
       name_nodal = "nodal_2PK_stresses_xyz";
       name_element = "element_2PK_stresses_xyz";
     }
-    else if (global_in_output().get_stress_output_type() == Inpar::Solid::stress_cauchy)
+    else if (global_in_output().get_stress_output_type() == Solid::stress_cauchy)
     {
       name_nodal = "nodal_cauchy_stresses_xyz";
       name_element = "element_cauchy_stresses_xyz";
@@ -790,22 +789,22 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
 
   // append strain if desired.
   if (structure_output_params.output_stress_strain() and
-      global_in_output().get_strain_output_type() != Inpar::Solid::strain_none)
+      global_in_output().get_strain_output_type() != Solid::strain_none)
   {
     std::string name_nodal = "";
     std::string name_element = "";
 
-    if (global_in_output().get_strain_output_type() == Inpar::Solid::strain_gl)
+    if (global_in_output().get_strain_output_type() == Solid::strain_gl)
     {
       name_nodal = "nodal_GL_strains_xyz";
       name_element = "element_GL_strains_xyz";
     }
-    else if (global_in_output().get_strain_output_type() == Inpar::Solid::strain_ea)
+    else if (global_in_output().get_strain_output_type() == Solid::strain_ea)
     {
       name_nodal = "nodal_EA_strains_xyz";
       name_element = "element_EA_strains_xyz";
     }
-    else if (global_in_output().get_strain_output_type() == Inpar::Solid::strain_log)
+    else if (global_in_output().get_strain_output_type() == Solid::strain_log)
     {
       name_nodal = "nodal_LOG_strains_xyz";
       name_element = "element_LOG_strains_xyz";
@@ -824,8 +823,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
   }
 
   // Add gauss point data if desired
-  if (structure_output_params.gauss_point_data_output() !=
-      Inpar::Solid::GaussPointDataOutputType::none)
+  if (structure_output_params.gauss_point_data_output() != Solid::GaussPointDataOutputType::none)
   {
     const GaussPointDataOutputManager& elementDataManager =
         *eval_data().get_gauss_point_data_output_manager_ptr();
@@ -836,7 +834,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
 
       switch (elementDataManager.get_output_type())
       {
-        case Inpar::Solid::GaussPointDataOutputType::element_center:
+        case Solid::GaussPointDataOutputType::element_center:
         {
           std::vector<std::optional<std::string>> context(size, name);
           std::shared_ptr<Core::LinAlg::MultiVector<double>> data =
@@ -845,7 +843,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
               *data, Core::IO::OutputEntity::element, context);
           break;
         }
-        case Inpar::Solid::GaussPointDataOutputType::gauss_points:
+        case Solid::GaussPointDataOutputType::gauss_points:
         {
           const std::vector<std::shared_ptr<Core::LinAlg::MultiVector<double>>>& data_list =
               elementDataManager.get_gauss_point_data().at(name);
@@ -858,7 +856,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
           }
           break;
         }
-        case Inpar::Solid::GaussPointDataOutputType::nodes:
+        case Solid::GaussPointDataOutputType::nodes:
         {
           std::vector<std::optional<std::string>> context(size, name);
           std::shared_ptr<Core::LinAlg::MultiVector<double>> data =
@@ -867,7 +865,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
               *data, Core::IO::OutputEntity::node, context);
           break;
         }
-        case Inpar::Solid::GaussPointDataOutputType::none:
+        case Solid::GaussPointDataOutputType::none:
           FOUR_C_THROW("Gauss point data output type is none");
         default:
           FOUR_C_THROW("Gauss point data output type is not implemented yet");
@@ -877,8 +875,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
 
 
   // add output for optional quantity
-  if (structure_output_params.output_optional_quantity() ==
-      Inpar::Solid::optquantity_membranethickness)
+  if (structure_output_params.output_optional_quantity() == Solid::optquantity_membranethickness)
   {
     // Write nodal membrane thickness
     std::vector<std::optional<std::string>> context(1, "membrane_thickness");
@@ -887,7 +884,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
         context);
   }
   else if (structure_output_params.output_optional_quantity() ==
-           Inpar::Solid::optquantity_shell7pthickness)
+           Solid::optquantity_shell7pthickness)
   {
     // Write nodal shell7p thickness
     std::vector<std::optional<std::string>> context(1, "shell7p_thickness");
@@ -896,12 +893,11 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
         context);
   }
   else if (structure_output_params.output_optional_quantity() ==
-           Inpar::Solid::optquantity_shell7pthicknessdirector)
+           Solid::optquantity_shell7pthicknessdirector)
   {
     // Write nodal shell7p thickness director vector
     std::vector<std::optional<std::string>> context(
-        Inpar::Solid::get_opt_quantity_num_components(
-            Inpar::Solid::optquantity_shell7pthicknessdirector),
+        Solid::get_opt_quantity_num_components(Solid::optquantity_shell7pthicknessdirector),
         "shell7p_thickness_director");
     vtu_writer_ptr_->append_result_data_vector_with_context(
         eval_data().get_opt_quantity_data_node_postprocessed(), Core::IO::OutputEntity::node,
@@ -940,19 +936,19 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_opti
           ->get_structure_params()
           ->output_optional_quantity())
   {
-    case Inpar::Solid::optquantity_none:
+    case Solid::optquantity_none:
     {
       // do nothing and return
       return;
     }
-    case Inpar::Solid::optquantity_membranethickness:
+    case Solid::optquantity_membranethickness:
     {
       // evaluate thickness of membrane finite elements
       eval_data().set_action_type(Core::Elements::struct_calc_thickness);
       break;
     }
-    case Inpar::Solid::optquantity_shell7pthickness:
-    case Inpar::Solid::optquantity_shell7pthicknessdirector:
+    case Solid::optquantity_shell7pthickness:
+    case Solid::optquantity_shell7pthicknessdirector:
     {
       // evaluate thickness of shell7p finite elements
       eval_data().set_action_type(Core::Elements::struct_calc_thickness);
@@ -1013,7 +1009,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_opti
   ex.do_export(gp_thickness_data);
 
   // Determine number of components based on output type
-  const int num_components = Inpar::Solid::get_opt_quantity_num_components(global_in_output()
+  const int num_components = Solid::get_opt_quantity_num_components(global_in_output()
           .get_runtime_output_params()
           ->get_structure_params()
           ->output_optional_quantity());
@@ -1097,7 +1093,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
         });
   };
 
-  if (global_in_output().get_stress_output_type() != Inpar::Solid::stress_none)
+  if (global_in_output().get_stress_output_type() != Solid::stress_none)
   {
     std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> gp_stress_data =
         evaluate_gauss_point_data(*eval_data().get_stress_data());
@@ -1119,7 +1115,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
     postprocess_gauss_point_data_to_element_center(
         gp_stress_data, *eval_data().get_stress_data_element_postprocessed());
   }
-  if (global_in_output().get_strain_output_type() != Inpar::Solid::strain_none)
+  if (global_in_output().get_strain_output_type() != Solid::strain_none)
   {
     std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> gp_strain_data =
         evaluate_gauss_point_data(*eval_data().get_strain_data());
@@ -1146,8 +1142,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_gauss_point_data
 {
   const Discret::Elements::StructureRuntimeOutputParams& structure_output_params =
       *global_in_output().get_runtime_output_params()->get_structure_params();
-  if (structure_output_params.gauss_point_data_output() !=
-      Inpar::Solid::GaussPointDataOutputType::none)
+  if (structure_output_params.gauss_point_data_output() != Solid::GaussPointDataOutputType::none)
   {
     check_init_setup();
 
@@ -1441,7 +1436,7 @@ void Solid::ModelEvaluator::Structure::read_restart(Core::IO::DiscretizationRead
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Structure::predict(const Inpar::Solid::PredEnum& pred_type)
+void Solid::ModelEvaluator::Structure::predict(const Solid::PredEnum& pred_type)
 {
   // set the element action
   eval_data().set_action_type(Core::Elements::struct_calc_predict);
@@ -1505,8 +1500,8 @@ void Solid::ModelEvaluator::Structure::run_post_iterate(const ::NOX::Solver::Gen
   if (vtu_writer_ptr_ != nullptr and
       global_in_output().get_runtime_output_params()->output_every_iteration())
   {
-    if (not(global_in_output().get_stress_output_type() == Inpar::Solid::stress_none and
-            global_in_output().get_strain_output_type() == Inpar::Solid::strain_none))
+    if (not(global_in_output().get_stress_output_type() == Solid::stress_none and
+            global_in_output().get_strain_output_type() == Solid::strain_none))
     {
       output_runtime_structure_postprocess_stress_strain();
     }
@@ -1600,12 +1595,12 @@ void Solid::ModelEvaluator::Structure::update_step_element()
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time(global_state().get_delta_time()[0]);
 
-  const Inpar::Solid::PreStress prestress_type = tim_int().get_data_sdyn().get_pre_stress_type();
+  const Solid::PreStress prestress_type = tim_int().get_data_sdyn().get_pre_stress_type();
   const double prestress_time = tim_int().get_data_sdyn().get_pre_stress_time();
-  bool isDuringPrestressing = prestress_type != Inpar::Solid::PreStress::none &&
+  bool isDuringPrestressing = prestress_type != Solid::PreStress::none &&
                               global_state().get_time_n() <= prestress_time + 1.0e-15;
 
-  if (isDuringPrestressing && prestress_type == Inpar::Solid::PreStress::mulf)
+  if (isDuringPrestressing && prestress_type == Solid::PreStress::mulf)
   {
     if (Core::Communication::my_mpi_rank(discret().get_comm()) == 0)
       Core::IO::cout << "====== Entering PRESTRESSING update" << Core::IO::endl;
@@ -1645,9 +1640,9 @@ void Solid::ModelEvaluator::Structure::determine_stress_strain()
 {
   check_init_setup();
 
-  if (global_in_output().get_stress_output_type() == Inpar::Solid::stress_none and
-      global_in_output().get_strain_output_type() == Inpar::Solid::strain_none and
-      global_in_output().get_plastic_strain_output_type() == Inpar::Solid::strain_none)
+  if (global_in_output().get_stress_output_type() == Solid::stress_none and
+      global_in_output().get_strain_output_type() == Solid::strain_none and
+      global_in_output().get_plastic_strain_output_type() == Solid::strain_none)
     return;
 
   // set all parameters in the evaluation data container
@@ -1728,7 +1723,7 @@ void Solid::ModelEvaluator::Structure::determine_energy(const Core::LinAlg::Vect
   determine_strain_energy(disnp, global);
 
   // global calculation of kinetic energy
-  if (masslin_type_ == Inpar::Solid::MassLin::ml_none and velnp != nullptr)
+  if (masslin_type_ == Solid::MassLin::ml_none and velnp != nullptr)
   {
     if (not mass().filled()) mass().complete();
 
@@ -1758,8 +1753,8 @@ void Solid::ModelEvaluator::Structure::runtime_pre_output_step_state()
 
   if (vtu_writer_ptr_ != nullptr)
   {
-    if (not(global_in_output().get_stress_output_type() == Inpar::Solid::stress_none and
-            global_in_output().get_strain_output_type() == Inpar::Solid::strain_none))
+    if (not(global_in_output().get_stress_output_type() == Solid::stress_none and
+            global_in_output().get_strain_output_type() == Solid::strain_none))
     {
       output_runtime_structure_postprocess_stress_strain();
     }
@@ -2113,12 +2108,11 @@ void Solid::ModelEvaluator::Structure::params_interface2_parameter_list(
   params.set<std::shared_ptr<std::vector<char>>>("strain", interface_ptr->strain_data_ptr());
   params.set<std::shared_ptr<std::vector<char>>>(
       "plstrain", interface_ptr->plastic_strain_data_ptr());
-  params.set<Inpar::Solid::StressType>("iostress", interface_ptr->get_stress_output_type());
-  params.set<Inpar::Solid::StrainType>("iostrain", interface_ptr->get_strain_output_type());
-  params.set<Inpar::Solid::StrainType>(
-      "ioplstrain", interface_ptr->get_plastic_strain_output_type());
+  params.set<Solid::StressType>("iostress", interface_ptr->get_stress_output_type());
+  params.set<Solid::StrainType>("iostrain", interface_ptr->get_strain_output_type());
+  params.set<Solid::StrainType>("ioplstrain", interface_ptr->get_plastic_strain_output_type());
 
-  params.set<Inpar::Solid::DampKind>("damping", interface_ptr->get_damping_type());
+  params.set<Solid::DampKind>("damping", interface_ptr->get_damping_type());
 }
 
 /*----------------------------------------------------------------------------*

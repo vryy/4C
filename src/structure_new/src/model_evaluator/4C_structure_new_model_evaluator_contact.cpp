@@ -137,7 +137,7 @@ void Solid::ModelEvaluator::Contact::check_pseudo2d() const
 void Solid::ModelEvaluator::Contact::set_time_integration_info(
     CONTACT::AbstractStrategy& strategy) const
 {
-  const Inpar::Solid::DynamicType dyntype = tim_int().get_data_sdyn().get_dynamic_type();
+  const Solid::DynamicType dyntype = tim_int().get_data_sdyn().get_dynamic_type();
   const double time_fac = integrator().get_int_param();
 
   strategy.set_time_integration_info(time_fac, dyntype);
@@ -839,7 +839,7 @@ void Solid::ModelEvaluator::Contact::run_post_apply_jacobian_inverse(
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Contact::assemble_force_of_models(
-    const std::vector<Inpar::Solid::ModelType>* without_these_models, const bool apply_dbc) const
+    const std::vector<Solid::ModelType>* without_these_models, const bool apply_dbc) const
 {
   std::shared_ptr<NOX::Nln::Vector> force_nox = global_state().create_global_vector();
   integrator().assemble_force(force_nox->get_linalg_vector(), without_these_models);
@@ -859,8 +859,8 @@ Solid::ModelEvaluator::Contact::assemble_force_of_models(
 std::shared_ptr<Core::LinAlg::SparseOperator>
 Solid::ModelEvaluator::Contact::get_aux_displ_jacobian() const
 {
-  std::vector<Inpar::Solid::ModelType> g;
-  g.push_back(Inpar::Solid::ModelType::model_contact);
+  std::vector<Solid::ModelType> g;
+  g.push_back(Solid::ModelType::model_contact);
 
   std::shared_ptr<Core::LinAlg::SparseOperator> jacaux = global_state().create_aux_jacobian();
   bool ok = integrator().assemble_jac(*jacaux, &g);

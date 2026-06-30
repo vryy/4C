@@ -256,9 +256,9 @@ namespace Mat
 
     void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
-    void valid_kinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Solid::KinemType kinem) override
     {
-      if (kinem != Inpar::Solid::KinemType::nonlinearTotLag)
+      if (kinem != Solid::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 

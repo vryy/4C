@@ -14,8 +14,8 @@
 
 #include "4C_adapter_str_structure.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_timestepping_mstep.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -258,8 +258,7 @@ namespace Solid
     }
 
     //! do something in case nonlinear solution does not converge for some reason
-    Inpar::Solid::ConvergenceStatus perform_error_action(
-        Inpar::Solid::ConvergenceStatus nonlinsoldiv) override;
+    Solid::ConvergenceStatus perform_error_action(Solid::ConvergenceStatus nonlinsoldiv) override;
 
     //! Do time integration of single step
     virtual int integrate_step() = 0;
@@ -270,7 +269,7 @@ namespace Solid
      *  Do the nonlinear solve, i.e. (multiple) corrector,
      *  for the time step. All boundary conditions have been set.
      */
-    Inpar::Solid::ConvergenceStatus solve() override = 0;
+    Solid::ConvergenceStatus solve() override = 0;
 
     //! Linear structure solve with just an interface load
     std::shared_ptr<Core::LinAlg::Vector<double>> solve_relaxation_linear() override = 0;
@@ -507,7 +506,7 @@ namespace Solid
     //@{
 
     //! Return bool indicating if we have nonlinear inertia forces
-    Inpar::Solid::MassLin have_nonlinear_mass() const;
+    Solid::MassLin have_nonlinear_mass() const;
 
     //! check whether the initial conditions are fulfilled */
     virtual void nonlinear_mass_sanity_check(
@@ -529,7 +528,7 @@ namespace Solid
     //@{
 
     //! Provide Name
-    virtual Inpar::Solid::DynamicType method_name() const = 0;
+    virtual Solid::DynamicType method_name() const = 0;
 
     //! Provide title
     std::string method_title() const;
@@ -886,13 +885,13 @@ namespace Solid
     }
 
     /// do we have this model
-    bool have_model(Inpar::Solid::ModelType model) override
+    bool have_model(Solid::ModelType model) override
     {
       FOUR_C_THROW("new structural time integration only");
       return false;
     }
 
-    Solid::ModelEvaluator::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override
+    Solid::ModelEvaluator::Generic& model_evaluator(Solid::ModelType mtype) override
     {
       FOUR_C_THROW("new time integration only");
     }
@@ -980,11 +979,11 @@ namespace Solid
                                                            //!< map of global DOFs on Dirichlet
                                                            //!< boundary conditions
 
-    Inpar::Solid::DivContAct divcontype_;  //!< what to do when nonlinear solution fails
-    int divconrefinementlevel_;  //!< number of refinement level in case of divercontype_ ==
-                                 //!< adapt_step
-    int divconnumfinestep_;      //!< number of converged time steps on current refinement level
-                                 //!< in case of divercontype_ == adapt_step
+    Solid::DivContAct divcontype_;  //!< what to do when nonlinear solution fails
+    int divconrefinementlevel_;     //!< number of refinement level in case of divercontype_ ==
+                                    //!< adapt_step
+    int divconnumfinestep_;         //!< number of converged time steps on current refinement level
+                                    //!< in case of divercontype_ == adapt_step
 
     //! structural dynamic parameter list
     Teuchos::ParameterList sdynparams_;
@@ -1003,9 +1002,9 @@ namespace Solid
     bool writeele_;                              //!< write elements on/off
     bool writestate_;                            //!< write state on/off
     int writeresultsevery_;                      //!< write state/stress/strain every given step
-    Inpar::Solid::StressType writestress_;       //!< stress output type
-    Inpar::Solid::StrainType writestrain_;       //!< strain output type
-    Inpar::Solid::StrainType writeplstrain_;     //!< plastic strain output type
+    Solid::StressType writestress_;              //!< stress output type
+    Solid::StrainType writestrain_;              //!< strain output type
+    Solid::StrainType writeplstrain_;            //!< plastic strain output type
     int writeenergyevery_;                       //!< write system energy every given step
     bool writesurfactant_;                       //!< write surfactant output
     bool writerotation_;                         //!< write strutural rotation tensor output
@@ -1024,9 +1023,9 @@ namespace Solid
     //!
     //! Rayleigh damping means \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
     //@{
-    Inpar::Solid::DampKind damping_;  //!< damping type
-    double dampk_;                    //!< damping factor for stiffness \f$c_\text{K}\f$
-    double dampm_;                    //!< damping factor for mass \f$c_\text{M}\f$
+    Solid::DampKind damping_;  //!< damping type
+    double dampk_;             //!< damping factor for stiffness \f$c_\text{K}\f$
+    double dampm_;             //!< damping factor for mass \f$c_\text{M}\f$
     //@}
 
     //! @name Managed stuff

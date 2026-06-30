@@ -149,7 +149,7 @@ int Solid::TimIntCentrDiff::integrate_step()
   // *********** time measurement ***********
 
   // viscous forces due Rayleigh damping
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     damp_->multiply(false, *veln_, *fviscn_);
   }
@@ -179,7 +179,7 @@ int Solid::TimIntCentrDiff::integrate_step()
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
   frimpn_->update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     frimpn_->update(-1.0, *fviscn_, 1.0);
   }

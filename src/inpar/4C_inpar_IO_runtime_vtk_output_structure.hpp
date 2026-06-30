@@ -14,6 +14,7 @@
 #include "4C_config.hpp"
 
 #include "4C_io_input_spec.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <memory>
 
@@ -26,6 +27,13 @@ namespace Inpar
   {
     namespace Solid
     {
+      using GaussPointDataOutputType = FourC::Solid::GaussPointDataOutputType;
+      using OptQuantityType = FourC::Solid::OptQuantityType;
+      using FourC::Solid::optquantity_membranethickness;
+      using FourC::Solid::optquantity_none;
+      using FourC::Solid::optquantity_shell7pthickness;
+      using FourC::Solid::optquantity_shell7pthicknessdirector;
+
       /// valid parameters related to writing of VTK output at runtime
       Core::IO::InputSpec valid_parameters();
 

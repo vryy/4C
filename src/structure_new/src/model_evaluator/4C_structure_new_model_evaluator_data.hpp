@@ -136,7 +136,7 @@ namespace Solid
       }
 
       //! get the current damping type [derived]
-      [[nodiscard]] Inpar::Solid::DampKind get_damping_type() const override;
+      [[nodiscard]] Solid::DampKind get_damping_type() const override;
 
       //! get the tolerate errors indicator [derived]
       [[nodiscard]] inline bool is_tolerate_errors() const override
@@ -160,7 +160,7 @@ namespace Solid
       }
 
       //! get the predictor type of the structural time integration
-      [[nodiscard]] Inpar::Solid::PredEnum get_predictor_type() const override
+      [[nodiscard]] Solid::PredEnum get_predictor_type() const override
       {
         check_init_setup();
         return predict_type_;
@@ -184,16 +184,16 @@ namespace Solid
       std::shared_ptr<std::vector<char>> opt_quantity_data_ptr() override;
 
       //! get the current stress type [derived]
-      [[nodiscard]] Inpar::Solid::StressType get_stress_output_type() const override;
+      [[nodiscard]] Solid::StressType get_stress_output_type() const override;
 
       //! get the current strain type [derived]
-      [[nodiscard]] Inpar::Solid::StrainType get_strain_output_type() const override;
+      [[nodiscard]] Solid::StrainType get_strain_output_type() const override;
 
       //! get the current plastic strain type [derived]
-      [[nodiscard]] Inpar::Solid::StrainType get_plastic_strain_output_type() const override;
+      [[nodiscard]] Solid::StrainType get_plastic_strain_output_type() const override;
 
       //! get the current optional quantity output type [derived]
-      [[nodiscard]] Inpar::Solid::OptQuantityType get_opt_quantity_output_type() const override;
+      [[nodiscard]] Solid::OptQuantityType get_opt_quantity_output_type() const override;
 
       //< get the manager of Gauss point data output
       std::shared_ptr<GaussPointDataOutputManager>& gauss_point_data_output_manager_ptr() override;
@@ -476,7 +476,7 @@ namespace Solid
       }
 
       //! set the predictor type of the structural time integration
-      inline void set_predictor_type(const Inpar::Solid::PredEnum predictor_type)
+      inline void set_predictor_type(const Solid::PredEnum predictor_type)
       {
         predict_type_ = predictor_type;
       }
@@ -819,7 +819,7 @@ namespace Solid
       Core::Elements::ActionType ele_action_;
 
       //! Current predictor type
-      Inpar::Solid::PredEnum predict_type_;
+      Solid::PredEnum predict_type_;
 
       //! element evaluation error flag
       Solid::Elements::EvalErrorFlag ele_eval_error_flag_;
@@ -1107,7 +1107,7 @@ namespace Solid
        * @return Type of predictor
        *
        * */
-      [[nodiscard]] Inpar::Solid::PredEnum get_predictor_type() const override
+      [[nodiscard]] Solid::PredEnum get_predictor_type() const override
       {
         check_init();
         return str_data_ptr_->get_predictor_type();

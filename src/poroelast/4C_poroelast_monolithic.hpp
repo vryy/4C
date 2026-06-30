@@ -10,10 +10,10 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_poroelast_base.hpp"
 #include "4C_poroelast_input.hpp"
 #include "4C_poroelast_utils.hpp"
+#include "4C_structure_new_input.hpp"
 
 namespace Teuchos
 {
@@ -301,7 +301,7 @@ namespace PoroElast
 
     //!@}
 
-    Inpar::Solid::DynamicType strmethodname_;  //!< enum for STR time integration
+    Solid::DynamicType strmethodname_;  //!< enum for STR time integration
 
     //! @name Global matrixes
 

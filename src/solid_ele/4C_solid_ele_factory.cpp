@@ -9,7 +9,6 @@
 
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_solid_ele_calc_displacement_based.hpp"
 #include "4C_solid_ele_calc_eas.hpp"
 #include "4C_solid_ele_calc_eas_helpers.hpp"
@@ -18,6 +17,7 @@
 #include "4C_solid_ele_calc_mulf_fbar.hpp"
 #include "4C_solid_ele_calc_shell_ans.hpp"
 #include "4C_solid_ele_properties.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -37,7 +37,7 @@ namespace
    * @tparam prestress_technology : Prestress technology (none or mulf)
    * @tparam Enable : A dummy parameter for enabling a subset of switches.
    */
-  template <Core::FE::CellType celltype, Inpar::Solid::KinemType kinem,
+  template <Core::FE::CellType celltype, Solid::KinemType kinem,
       Discret::Elements::ElementTechnology ele_tech,
       Discret::Elements::PrestressTechnology prestress_technology>
   struct SolidCalculationFormulation
@@ -49,7 +49,7 @@ namespace
    * celltypes
    */
   template <Core::FE::CellType celltype>
-  struct SolidCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+  struct SolidCalculationFormulation<celltype, Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::none, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::DisplacementBasedSolidIntegrator<celltype>;
@@ -60,7 +60,7 @@ namespace
    * small displacements)
    */
   template <Core::FE::CellType celltype>
-  struct SolidCalculationFormulation<celltype, Inpar::Solid::KinemType::linear,
+  struct SolidCalculationFormulation<celltype, Solid::KinemType::linear,
       Discret::Elements::ElementTechnology::none, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::DisplacementBasedLinearKinematicsSolidIntegrator<celltype>;
@@ -70,70 +70,66 @@ namespace
    * @brief Nonlinear total lagrangian formulation with mild EAS for hex8
    */
   template <>
-  struct SolidCalculationFormulation<Core::FE::CellType::hex8,
-      Inpar::Solid::KinemType::nonlinearTotLag, Discret::Elements::ElementTechnology::eas_mild,
-      Discret::Elements::PrestressTechnology::none>
+  struct SolidCalculationFormulation<Core::FE::CellType::hex8, Solid::KinemType::nonlinearTotLag,
+      Discret::Elements::ElementTechnology::eas_mild, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>;
+        Discret::Elements::EasType::eastype_h8_9, Solid::KinemType::nonlinearTotLag>;
   };
 
   /*!
    * @brief Small displacements formulation with mild EAS for hex8
    */
   template <>
-  struct SolidCalculationFormulation<Core::FE::CellType::hex8, Inpar::Solid::KinemType::linear,
+  struct SolidCalculationFormulation<Core::FE::CellType::hex8, Solid::KinemType::linear,
       Discret::Elements::ElementTechnology::eas_mild, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::linear>;
+        Discret::Elements::EasType::eastype_h8_9, Solid::KinemType::linear>;
   };
 
   /*!
    * @brief Nonlinear total lagrangian formulation with full EAS for hex8
    */
   template <>
-  struct SolidCalculationFormulation<Core::FE::CellType::hex8,
-      Inpar::Solid::KinemType::nonlinearTotLag, Discret::Elements::ElementTechnology::eas_full,
-      Discret::Elements::PrestressTechnology::none>
+  struct SolidCalculationFormulation<Core::FE::CellType::hex8, Solid::KinemType::nonlinearTotLag,
+      Discret::Elements::ElementTechnology::eas_full, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>;
+        Discret::Elements::EasType::eastype_h8_21, Solid::KinemType::nonlinearTotLag>;
   };
 
   /*!
    * @brief Nonlinear total lagrangian formulation with EAS for quad4
    */
   template <>
-  struct SolidCalculationFormulation<Core::FE::CellType::quad4,
-      Inpar::Solid::KinemType::nonlinearTotLag, Discret::Elements::ElementTechnology::eas_full,
-      Discret::Elements::PrestressTechnology::none>
+  struct SolidCalculationFormulation<Core::FE::CellType::quad4, Solid::KinemType::nonlinearTotLag,
+      Discret::Elements::ElementTechnology::eas_full, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::quad4,
-        Discret::Elements::EasType::eastype_q4_4, Inpar::Solid::KinemType::nonlinearTotLag>;
+        Discret::Elements::EasType::eastype_q4_4, Solid::KinemType::nonlinearTotLag>;
   };
 
   /*!
    * @brief Small displacements formulation with full EAS for hex8
    */
   template <>
-  struct SolidCalculationFormulation<Core::FE::CellType::hex8, Inpar::Solid::KinemType::linear,
+  struct SolidCalculationFormulation<Core::FE::CellType::hex8, Solid::KinemType::linear,
       Discret::Elements::ElementTechnology::eas_full, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::linear>;
+        Discret::Elements::EasType::eastype_h8_21, Solid::KinemType::linear>;
   };
 
   /*!
    * @brief Nonlinear total lagrangian formulation with shell EAS for hex8
    */
   template <>
-  struct SolidCalculationFormulation<Core::FE::CellType::hex8,
-      Inpar::Solid::KinemType::nonlinearTotLag, Discret::Elements::ElementTechnology::shell_eas,
-      Discret::Elements::PrestressTechnology::none>
+  struct SolidCalculationFormulation<Core::FE::CellType::hex8, Solid::KinemType::nonlinearTotLag,
+      Discret::Elements::ElementTechnology::shell_eas, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::EASSolidIntegrator<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_sh8_7, Inpar::Solid::KinemType::nonlinearTotLag>;
+        Discret::Elements::EasType::eastype_sh8_7, Solid::KinemType::nonlinearTotLag>;
   };
 
   /*!
@@ -141,7 +137,7 @@ namespace
    */
   template <Core::FE::CellType celltype>
     requires(celltype == Core::FE::CellType::hex8 || celltype == Core::FE::CellType::pyramid5)
-  struct SolidCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+  struct SolidCalculationFormulation<celltype, Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::fbar, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::FBarSolidIntegrator<celltype>;
@@ -152,7 +148,7 @@ namespace
    */
   template <Core::FE::CellType celltype>
     requires(celltype == Core::FE::CellType::hex8 || celltype == Core::FE::CellType::wedge6)
-  struct SolidCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+  struct SolidCalculationFormulation<celltype, Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::shell_ans, Discret::Elements::PrestressTechnology::none>
   {
     using type = Discret::Elements::ANSSolidShellIntegrator<celltype>;
@@ -163,7 +159,7 @@ namespace
    */
   template <Core::FE::CellType celltype>
     requires(celltype == Core::FE::CellType::hex8)
-  struct SolidCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+  struct SolidCalculationFormulation<celltype, Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::shell_eas_ans,
       Discret::Elements::PrestressTechnology::none>
   {
@@ -176,7 +172,7 @@ namespace
    */
   template <Core::FE::CellType celltype>
     requires(celltype == Core::FE::CellType::wedge6)
-  struct SolidCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+  struct SolidCalculationFormulation<celltype, Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::shell_eas_ans,
       Discret::Elements::PrestressTechnology::none>
   {
@@ -189,7 +185,7 @@ namespace
    */
   template <Core::FE::CellType celltype>
     requires(celltype == Core::FE::CellType::hex8 || celltype == Core::FE::CellType::pyramid5)
-  struct SolidCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+  struct SolidCalculationFormulation<celltype, Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::fbar, Discret::Elements::PrestressTechnology::mulf>
   {
     using type = Discret::Elements::MulfFBarSolidIntegrator<celltype>;
@@ -200,7 +196,7 @@ namespace
    */
   template <Core::FE::CellType celltype>
     requires(Core::FE::dim<celltype> == 3)
-  struct SolidCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
+  struct SolidCalculationFormulation<celltype, Solid::KinemType::nonlinearTotLag,
       Discret::Elements::ElementTechnology::none, Discret::Elements::PrestressTechnology::mulf>
   {
     using type =
@@ -214,8 +210,7 @@ namespace
     // Determine the return type
     using ReturnType = std::decay_t<decltype(funct(
         std::declval<std::integral_constant<Core::FE::CellType, Core::FE::CellType::hex8>>(),
-        std::declval<std::integral_constant<Inpar::Solid::KinemType,
-            Inpar::Solid::KinemType::nonlinearTotLag>>(),
+        std::declval<std::integral_constant<Solid::KinemType, Solid::KinemType::nonlinearTotLag>>(),
         std::declval<std::integral_constant<Discret::Elements::ElementTechnology,
             Discret::Elements::ElementTechnology::none>>(),
         std::declval<std::integral_constant<Discret::Elements::PrestressTechnology,
@@ -264,7 +259,7 @@ Discret::Elements::SolidCalcVariant<dim> Discret::Elements::create_solid_calcula
           auto prestress_tech_t) -> std::optional<SolidCalcVariant<dim>>
       {
         constexpr Core::FE::CellType celltype_c = celltype_t();
-        constexpr Inpar::Solid::KinemType kinemtype_c = kinemtype_t();
+        constexpr FourC::Solid::KinemType kinemtype_c = kinemtype_t();
         constexpr ElementTechnology eletech_c = eletech_t();
         constexpr PrestressTechnology prestress_tech_c = prestress_tech_t();
         if constexpr (is_valid_type<SolidCalculationFormulation<celltype_c, kinemtype_c, eletech_c,
@@ -289,7 +284,7 @@ Discret::Elements::SolidCalcVariant<dim> Discret::Elements::create_solid_calcula
             " element technology {} and prestress type {} does not "
             "exist ",
             Core::FE::celltype_string<celltype_t()>,
-            Inpar::Solid::kinem_type_string(element_properties.kintype).c_str(),
+            FourC::Solid::kinem_type_string(element_properties.kintype).c_str(),
             element_technology_string(element_properties.element_technology).c_str(),
             element_properties.prestress_technology);
       });

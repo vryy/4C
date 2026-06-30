@@ -49,8 +49,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::post_setup()
 {
   check_init_setup();
 
-  if (sdyn().get_mass_lin_type() != Inpar::Solid::MassLin::ml_rotations and
-      !sdyn().neglect_inertia())
+  if (sdyn().get_mass_lin_type() != Solid::MassLin::ml_rotations and !sdyn().neglect_inertia())
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
@@ -212,7 +211,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
 {
   // the following is only done for rayleigh damping as for material damping viscous forces are
   // already added at element level and else would be added twice
-  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
+  if (tim_int().get_data_sdyn().get_damping_type() == Solid::damp_rayleigh)
   {
     // viscous damping forces at t_{n+1}
     Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -233,7 +232,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
   stiff_ptr->add(*global_state().get_mass_matrix(), false,
       (1.0 - alpham_) / (beta_ * dt * dt * (1.0 - alphaf_)), 1.0);
   // add damping contributions
-  if (tim_int().get_data_sdyn().get_damping_type() != Inpar::Solid::damp_none)
+  if (tim_int().get_data_sdyn().get_damping_type() != Solid::damp_none)
     stiff_ptr->add(*global_state().get_damp_matrix(), false, gamma_ / (beta_ * dt), 1.0);
 }
 
@@ -302,7 +301,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::reset_eval_params()
 
   /* in case we have non-additive rotation (pseudo-)vector DOFs, we need to pass
    * the GenAlpha parameters to the beam elements via beam parameter interface */
-  if (tim_int().get_data_sdyn().get_mass_lin_type() == Inpar::Solid::MassLin::ml_rotations)
+  if (tim_int().get_data_sdyn().get_mass_lin_type() == Solid::MassLin::ml_rotations)
   {
     eval_data().get_beam_data().set_beta(beta_);
     eval_data().get_beam_data().set_gamma(gamma_);

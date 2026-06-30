@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 std::unique_ptr<Discret::Elements::Shell7pEleCalcInterface>
 Discret::Elements::Shell7pFactory::provide_shell7p_calculation_interface(
-    const Core::Elements::Element& ele, const std::set<Inpar::Solid::EleTech>& eletech)
+    const Core::Elements::Element& ele, const std::set<Solid::EleTech>& eletech)
 {
   switch (ele.shape())
   {
@@ -49,7 +49,7 @@ Discret::Elements::Shell7pFactory::provide_shell7p_calculation_interface(
 template <Core::FE::CellType distype>
 std::unique_ptr<Discret::Elements::Shell7pEleCalcInterface>
 Discret::Elements::Shell7pFactory::define_calculation_interface_type(
-    const std::set<Inpar::Solid::EleTech>& eletech)
+    const std::set<Solid::EleTech>& eletech)
 {
   // here we go into the different cases for element technology
   switch (eletech.size())
@@ -61,7 +61,7 @@ Discret::Elements::Shell7pFactory::define_calculation_interface_type(
     case 1:
       switch (*eletech.begin())
       {
-        case Inpar::Solid::EleTech::eas:
+        case Solid::EleTech::eas:
         {
           if constexpr ((distype != Core::FE::CellType::quad4) &&
                         (distype != Core::FE::CellType::quad9))

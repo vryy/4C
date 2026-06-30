@@ -75,7 +75,7 @@ Discret::Elements::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
       mixres_(Core::LinAlg::Initialization::zero),
       struct_mat_(nullptr),
       const_permeability_(true),
-      kintype_(Inpar::Solid::KinemType::vague)
+      kintype_(Solid::KinemType::vague)
 {
   anisotropic_permeability_directions_.resize(nsd_, std::vector<double>(nsd_, 0.0));
   anisotropic_permeability_nodal_coeffs_.resize(nsd_, std::vector<double>(nen_, 0.0));
@@ -727,7 +727,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::sysmat_od(Teuchos::ParameterL
 
   // add displacement when fluid nodes move in the ALE case
   // if (isale)
-  // if(kintype_!=Inpar::Solid::KinemType::linear)
+  // if(kintype_!=Solid::KinemType::linear)
   {
     Base::xyze_ += edispnp;
     xyzeold_ += edispn;
@@ -4683,7 +4683,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_f_derivative(
 {
   F_X.clear();
 
-  if (Base::is_higher_order_ele_ and kintype_ != Inpar::Solid::KinemType::linear)
+  if (Base::is_higher_order_ele_ and kintype_ != Solid::KinemType::linear)
   {
     for (int i = 0; i < nsd_; i++)
     {
@@ -5224,7 +5224,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_lin_spatial_reaction_
           val_reatensorlinODgridvel += (*dphi_dus)(gid)*porosity_inv * reac_grid_vel_idim;
         }
 
-        if (kintype_ != Inpar::Solid::KinemType::linear)
+        if (kintype_ != Solid::KinemType::linear)
         {
           const double derxy_idim_inode = Base::derxy_(idim, inode);
           for (int ldim = 0; ldim < nsd_; ++ldim)
@@ -6210,12 +6210,12 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_def_gradient(
     Core::LinAlg::Matrix<nsd_, nsd_>& defgrd, const Core::LinAlg::Matrix<nsd_, nen_>& N_XYZ,
     const Core::LinAlg::Matrix<nsd_, nen_>& xcurr)
 {
-  if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
+  if (kintype_ == Solid::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.multiply_nt(xcurr, N_XYZ);  //  (6.17)
   }
-  else if (kintype_ == Inpar::Solid::KinemType::linear)  // linear kinematics
+  else if (kintype_ == Solid::KinemType::linear)  // linear kinematics
   {
     defgrd.clear();
     for (int i = 0; i < nsd_; i++) defgrd(i, i) = 1.0;
@@ -6467,7 +6467,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_mixture_strong_residu
   {
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Core::LinAlg::SymmetricTensor<double, 3, 3> glstrain{};
-    if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
+    if (kintype_ == Solid::KinemType::nonlinearTotLag)
     {
       // Right Cauchy-Green tensor = F^T * F
       Core::LinAlg::Matrix<nsd_, nsd_> cauchygreen;
@@ -6545,7 +6545,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_mixture_strong_residu
     static Core::LinAlg::Matrix<6, nsd_> E_X(Core::LinAlg::Initialization::zero);
     E_X.clear();
 
-    if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
+    if (kintype_ == Solid::KinemType::nonlinearTotLag)
     {
       if (nsd_ == 3)
       {
@@ -6802,12 +6802,12 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_jacobian_determinant_
   // compute J
   J = defgrd.determinant();
 
-  if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
+  if (kintype_ == Solid::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
     // for nonlinear kinematics the Jacobian of the deformation gradient is the volume change
     volchange = J;
   }
-  else if (kintype_ == Inpar::Solid::KinemType::linear)  // linear kinematics
+  else if (kintype_ == Solid::KinemType::linear)  // linear kinematics
   {
     // for linear kinematics the volume change is the trace of the linearized strains
 

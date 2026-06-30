@@ -10,8 +10,8 @@
 #include "4C_adapter_str_timeloop.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_control.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_solver_factory.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
@@ -66,15 +66,15 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliary()
   dataio->setup();
 
   ///// setup datasdyn
-  std::shared_ptr<std::set<Inpar::Solid::ModelType>> modeltypes =
-      std::make_shared<std::set<enum Inpar::Solid::ModelType>>();
-  modeltypes->insert(Inpar::Solid::model_structure);
+  std::shared_ptr<std::set<Solid::ModelType>> modeltypes =
+      std::make_shared<std::set<enum Solid::ModelType>>();
+  modeltypes->insert(Solid::model_structure);
   //
-  std::shared_ptr<std::set<Inpar::Solid::EleTech>> eletechs =
-      std::make_shared<std::set<enum Inpar::Solid::EleTech>>();
+  std::shared_ptr<std::set<Solid::EleTech>> eletechs =
+      std::make_shared<std::set<enum Solid::EleTech>>();
   //
-  std::shared_ptr<std::map<Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>>
-      linsolvers = Solid::SOLVER::build_lin_solvers(*modeltypes, adyn, *stm_->discretization());
+  std::shared_ptr<std::map<Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>> linsolvers =
+      Solid::SOLVER::build_lin_solvers(*modeltypes, adyn, *stm_->discretization());
   //
   std::shared_ptr<Solid::TimeInt::BaseDataSDyn> datasdyn = Solid::TimeInt::build_data_sdyn(adyn);
   datasdyn->init(stm_->discretization(), adyn, *xparams, modeltypes, eletechs, linsolvers);

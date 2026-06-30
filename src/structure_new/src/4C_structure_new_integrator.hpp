@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"               // enumerators
 #include "4C_solver_nonlin_nox_enum_lists.hpp"  // enumerators
+#include "4C_structure_new_input.hpp"           // enumerators
 
 #include <NOX_Abstract_Vector.H>  // enumerators
 
@@ -100,8 +100,7 @@ namespace Solid
     virtual void set_state(const Core::LinAlg::Vector<double>& x) = 0;
 
     //! Set initial displacement field
-    virtual void set_initial_displacement(
-        const Inpar::Solid::InitialDisp init, const int startfuncno);
+    virtual void set_initial_displacement(const Solid::InitialDisp init, const int startfuncno);
 
     /*! \brief Reset state variables of all models
      *  (incl. the structural dynamic state variables)
@@ -150,7 +149,7 @@ namespace Solid
      * action of one (or several) second order constraint (SOC) model(s)
      */
     virtual bool apply_correction_system(const NOX::Nln::CorrectionType type,
-        const std::vector<Inpar::Solid::ModelType>& constraint_models,
+        const std::vector<Solid::ModelType>& constraint_models,
         const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f,
         Core::LinAlg::SparseOperator& jac) = 0;
 
@@ -176,11 +175,11 @@ namespace Solid
 
     //! Assemble the right hand side
     virtual bool assemble_force(Core::LinAlg::Vector<double>& f,
-        const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr) const = 0;
+        const std::vector<Solid::ModelType>* without_these_models = nullptr) const = 0;
 
     //! Assemble Jacobian
     virtual bool assemble_jac(Core::LinAlg::SparseOperator& jac,
-        const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr) const
+        const std::vector<Solid::ModelType>* without_these_models = nullptr) const
     {
       return false;
     };
@@ -318,10 +317,10 @@ namespace Solid
     std::shared_ptr<const Solid::ModelEvaluatorManager> model_eval_ptr() const;
 
     //! Return the model evaluator object for the given model type
-    Solid::ModelEvaluator::Generic& evaluator(const Inpar::Solid::ModelType& mt);
+    Solid::ModelEvaluator::Generic& evaluator(const Solid::ModelType& mt);
 
     //! Return the model evaluator object for the given model type
-    const Solid::ModelEvaluator::Generic& evaluator(const Inpar::Solid::ModelType& mt) const;
+    const Solid::ModelEvaluator::Generic& evaluator(const Solid::ModelType& mt) const;
 
     //! Return the model evaluator data object (read-only)
     const Solid::ModelEvaluator::Data& eval_data() const;
@@ -442,7 +441,7 @@ namespace Solid
       const Integrator& integrator_;
 
       /// mid-time energy averaging type
-      Inpar::Solid::MidAverageEnum avg_type_;
+      Solid::MidAverageEnum avg_type_;
 
       /// setup flag
       bool issetup_ = false;

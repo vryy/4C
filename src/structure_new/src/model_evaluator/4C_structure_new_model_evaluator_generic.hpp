@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <memory>
 
@@ -130,7 +130,7 @@ namespace Solid
        *
        * @return Enum encoding the type of model evaluator
        */
-      virtual Inpar::Solid::ModelType type() const = 0;
+      virtual Solid::ModelType type() const = 0;
 
       /*! \brief Reset model specific variables (without jacobian)
        *
@@ -264,7 +264,7 @@ namespace Solid
 
       /*! \brief predict the values for DoFs that are defined in
        *         the respective model evaluators, e.g. condensed variables.*/
-      virtual void predict(const Inpar::Solid::PredEnum& pred_type) = 0;
+      virtual void predict(const Solid::PredEnum& pred_type) = 0;
 
       /*! \brief Recover condensed solution variables, meant to be called by run_post_compute_x
        */

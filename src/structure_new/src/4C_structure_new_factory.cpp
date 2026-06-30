@@ -50,11 +50,11 @@ std::shared_ptr<Solid::Integrator> Solid::Factory::build_implicit_integrator(
 {
   std::shared_ptr<Solid::IMPLICIT::Generic> impl_int_ptr = nullptr;
 
-  const Inpar::Solid::DynamicType dyntype = datasdyn.get_dynamic_type();
-  const Inpar::Solid::PreStress prestresstype = datasdyn.get_pre_stress_type();
+  const Solid::DynamicType dyntype = datasdyn.get_dynamic_type();
+  const Solid::PreStress prestresstype = datasdyn.get_pre_stress_type();
 
   // check if we have a problem that needs to be prestressed
-  const bool is_prestress = prestresstype != Inpar::Solid::PreStress::none;
+  const bool is_prestress = prestresstype != Solid::PreStress::none;
   if (is_prestress)
   {
     impl_int_ptr = std::make_shared<Solid::IMPLICIT::PreStress>();
@@ -64,28 +64,28 @@ std::shared_ptr<Solid::Integrator> Solid::Factory::build_implicit_integrator(
   switch (dyntype)
   {
     // Static analysis
-    case Inpar::Solid::DynamicType::Statics:
+    case Solid::DynamicType::Statics:
     {
       impl_int_ptr = std::make_shared<Solid::IMPLICIT::Statics>();
       break;
     }
 
     // Generalised-alpha time integration
-    case Inpar::Solid::DynamicType::GenAlpha:
+    case Solid::DynamicType::GenAlpha:
     {
       impl_int_ptr = std::make_shared<Solid::IMPLICIT::GenAlpha>();
       break;
     }
 
     // Generalised-alpha time integration for Lie groups (e.g. SO3 group of rotation matrices)
-    case Inpar::Solid::DynamicType::GenAlphaLieGroup:
+    case Solid::DynamicType::GenAlphaLieGroup:
     {
       impl_int_ptr = std::make_shared<Solid::IMPLICIT::GenAlphaLieGroup>();
       break;
     }
 
     // One-step-theta (OST) time integration
-    case Inpar::Solid::DynamicType::OneStepTheta:
+    case Solid::DynamicType::OneStepTheta:
     {
       impl_int_ptr = std::make_shared<Solid::IMPLICIT::OneStepTheta>();
       break;
@@ -112,28 +112,28 @@ std::shared_ptr<Solid::Integrator> Solid::Factory::build_explicit_integrator(
   switch (datasdyn.get_dynamic_type())
   {
     // Forward Euler Scheme
-    case Inpar::Solid::DynamicType::ExplEuler:
+    case Solid::DynamicType::ExplEuler:
     {
       expl_int_ptr = std::make_shared<Solid::EXPLICIT::ForwardEuler>();
       break;
     }
 
     // Central Difference Scheme
-    case Inpar::Solid::DynamicType::CentrDiff:
+    case Solid::DynamicType::CentrDiff:
     {
       expl_int_ptr = std::make_shared<Solid::EXPLICIT::CentrDiff>();
       break;
     }
 
     // Adams-Bashforth-2 Scheme
-    case Inpar::Solid::DynamicType::AdamsBashforth2:
+    case Solid::DynamicType::AdamsBashforth2:
     {
       expl_int_ptr = std::make_shared<Solid::EXPLICIT::AdamsBashforth2>();
       break;
     }
 
     // Adams-Bashforth-4 Scheme
-    case Inpar::Solid::DynamicType::AdamsBashforth4:
+    case Solid::DynamicType::AdamsBashforth4:
     {
       expl_int_ptr = std::make_shared<Solid::EXPLICIT::AdamsBashforthX<4>>();
       break;

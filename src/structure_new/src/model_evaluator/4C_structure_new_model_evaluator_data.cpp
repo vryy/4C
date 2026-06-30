@@ -164,7 +164,7 @@ Solid::ModelEvaluator::Data::Data()
       issetup_(false),
       isntmaps_filled_(false),
       ele_action_(Core::Elements::none),
-      predict_type_(Inpar::Solid::pred_vague),
+      predict_type_(Solid::pred_vague),
       ele_eval_error_flag_(Solid::Elements::ele_error_none),
       is_tolerate_errors_(false),
       total_time_(-1.0),
@@ -212,21 +212,21 @@ void Solid::ModelEvaluator::Data::setup()
 {
   check_init();
 
-  const std::set<Inpar::Solid::ModelType>& mt = sdyn_ptr_->get_model_types();
-  std::set<Inpar::Solid::ModelType>::const_iterator it;
+  const std::set<Solid::ModelType>& mt = sdyn_ptr_->get_model_types();
+  std::set<Solid::ModelType>::const_iterator it;
   // setup model type specific data containers
   for (it = mt.begin(); it != mt.end(); ++it)
   {
     switch (*it)
     {
-      case Inpar::Solid::model_contact:
+      case Solid::model_contact:
       {
         contact_data_ptr_ = std::make_shared<ContactData>();
         contact_data_ptr_->init(Core::Utils::shared_ptr_from_ref(*this));
         contact_data_ptr_->setup();
         break;
       }
-      case Inpar::Solid::model_browniandyn:
+      case Solid::model_browniandyn:
       {
         browniandyn_data_ptr_ = std::make_shared<BrownianDynData>();
         browniandyn_data_ptr_->init(Core::Utils::shared_ptr_from_ref(*this));
@@ -243,7 +243,7 @@ void Solid::ModelEvaluator::Data::setup()
 
   /* so far, we need the special parameter data container for beams only if
    * the applied beam elements have non-additive rotation vector DOFs */
-  if (sdyn_ptr_->have_ele_tech(Inpar::Solid::EleTech::rotvec))
+  if (sdyn_ptr_->have_ele_tech(Solid::EleTech::rotvec))
   {
     beam_data_ptr_ = std::make_shared<BeamData>();
     beam_data_ptr_->init();
@@ -503,7 +503,7 @@ bool Solid::ModelEvaluator::Data::is_predictor_state() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::DampKind Solid::ModelEvaluator::Data::get_damping_type() const
+Solid::DampKind Solid::ModelEvaluator::Data::get_damping_type() const
 {
   check_init_setup();
   return sdyn_ptr_->get_damping_type();
@@ -575,7 +575,7 @@ const std::vector<char>& Solid::ModelEvaluator::Data::opt_quantity_data() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::StressType Solid::ModelEvaluator::Data::get_stress_output_type() const
+Solid::StressType Solid::ModelEvaluator::Data::get_stress_output_type() const
 {
   check_init_setup();
   return io_ptr_->get_stress_output_type();
@@ -583,7 +583,7 @@ Inpar::Solid::StressType Solid::ModelEvaluator::Data::get_stress_output_type() c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::StrainType Solid::ModelEvaluator::Data::get_strain_output_type() const
+Solid::StrainType Solid::ModelEvaluator::Data::get_strain_output_type() const
 {
   check_init_setup();
   return io_ptr_->get_strain_output_type();
@@ -591,7 +591,7 @@ Inpar::Solid::StrainType Solid::ModelEvaluator::Data::get_strain_output_type() c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::StrainType Solid::ModelEvaluator::Data::get_plastic_strain_output_type() const
+Solid::StrainType Solid::ModelEvaluator::Data::get_plastic_strain_output_type() const
 {
   check_init_setup();
   return io_ptr_->get_plastic_strain_output_type();
@@ -599,7 +599,7 @@ Inpar::Solid::StrainType Solid::ModelEvaluator::Data::get_plastic_strain_output_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::OptQuantityType Solid::ModelEvaluator::Data::get_opt_quantity_output_type() const
+Solid::OptQuantityType Solid::ModelEvaluator::Data::get_opt_quantity_output_type() const
 {
   check_init_setup();
 

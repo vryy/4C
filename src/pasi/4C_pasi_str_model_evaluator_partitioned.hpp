@@ -52,10 +52,7 @@ namespace Solid
       //! @{
 
       //! [derived]
-      Inpar::Solid::ModelType type() const override
-      {
-        return Inpar::Solid::model_partitioned_coupling;
-      }
+      Solid::ModelType type() const override { return Solid::model_partitioned_coupling; }
 
       //! reset class variables (without jacobian) [derived]
       void reset(const Core::LinAlg::Vector<double>& x) override { return; };
@@ -129,7 +126,7 @@ namespace Solid
       void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override {}
 
       //! [derived]
-      void predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
+      void predict(const Solid::PredEnum& pred_type) override { return; };
 
       //! [derived]
       void reset_step_state() override { return; };

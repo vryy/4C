@@ -87,7 +87,7 @@ void Solid::TimIntOneStepTheta::setup()
   // call setup() in base class
   Solid::TimIntImpl::setup();
 
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     // determine mass, damping and initial accelerations
     determine_mass_damp_consist_accel();
@@ -135,7 +135,7 @@ void Solid::TimIntOneStepTheta::setup()
   // create parameter list
   Teuchos::ParameterList params;
 
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     // set initial internal force vector
     apply_force_stiff_internal(
@@ -254,7 +254,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::Parameter
 
   // initialise stiffness matrix to zero
   stiff_->zero();
-  if (damping_ == Inpar::Solid::damp_material) damp_->zero();
+  if (damping_ == Solid::damp_material) damp_->zero();
 
   // theta-interpolate state vectors
   evaluate_mid_state();
@@ -274,7 +274,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::Parameter
   fintn_->put_scalar(0.0);
 
   // build new internal forces and stiffness
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     // ordinary internal force and stiffness
     apply_force_stiff_internal(
@@ -328,7 +328,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::Parameter
   // ************************** (3) INERTIAL FORCES ***************************
 
   // build new internal forces and stiffness
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     // inertial forces #finertt_
     mass_->multiply(false, *acct_, *finertt_);
@@ -341,7 +341,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::Parameter
   // ************************** (4) DAMPING FORCES ****************************
 
   // viscous forces due Rayleigh damping
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     damp_->multiply(false, *velt_, *fvisct_);
   }
@@ -354,7 +354,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::Parameter
   //                     - F_{ext;n+theta}
   fres_->update(-theta_, *fextn_, -(1.0 - theta_), *fext_, 0.0);
   fres_->update(theta_, *fintn_, (1.0 - theta_), *fint_, 1.0);
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     fres_->update(1.0, *fvisct_, 1.0);
   }
@@ -367,9 +367,9 @@ void Solid::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::Parameter
   //                + 1/dt C
   //                + theta K_{T}
   stiff_->add(*mass_, false, 1.0 / (theta_ * (*dt_)[0] * (*dt_)[0]), theta_);
-  if (damping_ != Inpar::Solid::damp_none)
+  if (damping_ != Solid::damp_none)
   {
-    if (damping_ == Inpar::Solid::damp_material) damp_->complete();
+    if (damping_ == Solid::damp_material) damp_->complete();
     stiff_->add(*damp_, false, 1.0 / (*dt_)[0], 1.0);
   }
 
@@ -421,7 +421,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_residual()
   fintn_->put_scalar(0.0);
 
   // build new internal forces and stiffness
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     // ordinary internal force and stiffness
     apply_force_internal(timen_, (*dt_)[0], disn_, disi_, *veln_, fintn_);
@@ -434,7 +434,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_residual()
   // ************************** (3) INERTIAL FORCES ***************************
 
   // build new internal forces and stiffness
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     // inertial forces #finertt_
     mass_->multiply(false, *acct_, *finertt_);
@@ -447,7 +447,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_residual()
   // ************************** (4) DAMPING FORCES ****************************
 
   // viscous forces due Rayleigh damping
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     damp_->multiply(false, *velt_, *fvisct_);
   }
@@ -460,7 +460,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_residual()
   //                     - F_{ext;n+theta}
   fres_->update(-theta_, *fextn_, -(1.0 - theta_), *fext_, 0.0);
   fres_->update(theta_, *fintn_, (1.0 - theta_), *fint_, 1.0);
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     fres_->update(1.0, *fvisct_, 1.0);
   }
@@ -524,7 +524,7 @@ double Solid::TimIntOneStepTheta::calc_ref_norm_force()
 
   // norm of viscous forces
   double fviscnorm = 0.0;
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     fviscnorm = Solid::calculate_vector_norm(iternorm_, *fvisct_);
   }
@@ -631,7 +631,7 @@ void Solid::TimIntOneStepTheta::update_step_element()
   discret_->clear_state();
   discret_->set_state("displacement", *(*dis_)(0));
 
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_none)
   {
     discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
   }

@@ -131,10 +131,7 @@ namespace Solid
     //@{
 
     //! Return time integrator name
-    Inpar::Solid::DynamicType method_name() const override
-    {
-      return Inpar::Solid::DynamicType::CentrDiff;
-    }
+    Solid::DynamicType method_name() const override { return Solid::DynamicType::CentrDiff; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m

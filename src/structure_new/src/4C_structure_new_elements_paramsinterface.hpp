@@ -12,10 +12,10 @@
 
 #include "4C_browniandyn_input.hpp"                     // enums
 #include "4C_fem_general_elements_paramsinterface.hpp"  // base class
-#include "4C_inpar_structure.hpp"                       // enums
 #include "4C_linalg_multi_vector.hpp"
 #include "4C_solver_nonlin_nox_enum_lists.hpp"  // enums
 #include "4C_structure_new_enum_lists.hpp"
+#include "4C_structure_new_input.hpp"  // enums
 
 #include <unordered_map>
 
@@ -94,10 +94,10 @@ namespace Solid
     {
      public:
       //! return the damping type
-      virtual Inpar::Solid::DampKind get_damping_type() const = 0;
+      virtual Solid::DampKind get_damping_type() const = 0;
 
       //! return the predictor type
-      virtual Inpar::Solid::PredEnum get_predictor_type() const = 0;
+      virtual Solid::PredEnum get_predictor_type() const = 0;
 
       /// Shall errors during the element evaluation be tolerated?
       virtual bool is_tolerate_errors() const = 0;
@@ -158,16 +158,16 @@ namespace Solid
       virtual std::shared_ptr<std::vector<char>> opt_quantity_data_ptr() = 0;
 
       //! get the current stress type
-      virtual Inpar::Solid::StressType get_stress_output_type() const = 0;
+      virtual Solid::StressType get_stress_output_type() const = 0;
 
       //! get the current strain type
-      virtual Inpar::Solid::StrainType get_strain_output_type() const = 0;
+      virtual Solid::StrainType get_strain_output_type() const = 0;
 
       //! get the current plastic strain type
-      virtual Inpar::Solid::StrainType get_plastic_strain_output_type() const = 0;
+      virtual Solid::StrainType get_plastic_strain_output_type() const = 0;
 
       //! get the current optional quantity output type
-      virtual Inpar::Solid::OptQuantityType get_opt_quantity_output_type() const = 0;
+      virtual Solid::OptQuantityType get_opt_quantity_output_type() const = 0;
 
       virtual std::shared_ptr<ModelEvaluator::GaussPointDataOutputManager>&
       gauss_point_data_output_manager_ptr() = 0;

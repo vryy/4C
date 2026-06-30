@@ -11,7 +11,6 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_general_element.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_spec.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
@@ -19,6 +18,7 @@
 #include "4C_linalg_tensor_generators.hpp"
 #include "4C_solid_ele_calc_lib.hpp"
 #include "4C_solid_ele_properties.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <cmath>
 #include <ranges>

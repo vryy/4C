@@ -8,7 +8,7 @@
 #include "4C_structure_new_discretization_runtime_output_params.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -29,7 +29,7 @@ Discret::Elements::StructureRuntimeOutputParams::StructureRuntimeOutputParams()
       output_element_ghosting_(false),
       output_node_gid_(false),
       output_stress_strain_(false),
-      gauss_point_data_output_type_(Inpar::Solid::GaussPointDataOutputType::none)
+      gauss_point_data_output_type_(Solid::GaussPointDataOutputType::none)
 {
   // empty constructor
 }
@@ -52,10 +52,10 @@ void Discret::Elements::StructureRuntimeOutputParams::init(
   output_element_material_id_ = IO_vtk_structure_structure_paramslist.get<bool>("ELEMENT_MAT_ID");
   output_element_ghosting_ = IO_vtk_structure_structure_paramslist.get<bool>("ELEMENT_GHOSTING");
   output_optional_quantity_ =
-      IO_vtk_structure_structure_paramslist.get<Inpar::Solid::OptQuantityType>("OPTIONAL_QUANTITY");
+      IO_vtk_structure_structure_paramslist.get<Solid::OptQuantityType>("OPTIONAL_QUANTITY");
   output_node_gid_ = IO_vtk_structure_structure_paramslist.get<bool>("NODE_GID");
   output_stress_strain_ = IO_vtk_structure_structure_paramslist.get<bool>("STRESS_STRAIN");
-  gauss_point_data_output_type_ = Teuchos::getIntegralValue<Inpar::Solid::GaussPointDataOutputType>(
+  gauss_point_data_output_type_ = Teuchos::getIntegralValue<Solid::GaussPointDataOutputType>(
       IO_vtk_structure_structure_paramslist, "GAUSS_POINT_DATA_OUTPUT_TYPE");
 
   if (output_stress_strain_)
@@ -64,10 +64,10 @@ void Discret::Elements::StructureRuntimeOutputParams::init(
     // section are set.
     const Teuchos::ParameterList& io_parameter_list = Global::Problem::instance()->io_params();
     auto io_stress =
-        Teuchos::getIntegralValue<Inpar::Solid::StressType>(io_parameter_list, "STRUCT_STRESS");
+        Teuchos::getIntegralValue<Solid::StressType>(io_parameter_list, "STRUCT_STRESS");
     auto io_strain =
-        Teuchos::getIntegralValue<Inpar::Solid::StrainType>(io_parameter_list, "STRUCT_STRAIN");
-    if (io_stress == Inpar::Solid::stress_none and io_strain == Inpar::Solid::strain_none)
+        Teuchos::getIntegralValue<Solid::StrainType>(io_parameter_list, "STRUCT_STRAIN");
+    if (io_stress == Solid::stress_none and io_strain == Solid::strain_none)
     {
       FOUR_C_THROW(
           "If stress / strain runtime output is required, one or two of the flags STRUCT_STRAIN / "

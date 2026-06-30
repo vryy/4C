@@ -155,7 +155,7 @@ namespace Solid
     //@{
 
     //! Return time integrator name
-    Inpar::Solid::DynamicType method_name() const override = 0;
+    Solid::DynamicType method_name() const override = 0;
 
     //! These time integrators are all explicit (mark their name)
     bool method_implicit() override { return false; }
@@ -325,7 +325,7 @@ namespace Solid
     };
 
     //! Get type of thickness scaling for thin shell structures
-    Inpar::Solid::StcScale get_stc_algo() override
+    Solid::StcScale get_stc_algo() override
     {
       FOUR_C_THROW("STC is not supported in the old time integration framework!");
     };
@@ -341,10 +341,10 @@ namespace Solid
     /// Do the nonlinear solve, i.e. (multiple) corrector,
     /// for the time step. All boundary conditions have
     /// been set.
-    Inpar::Solid::ConvergenceStatus solve() final
+    Solid::ConvergenceStatus solve() final
     {
       integrate_step();
-      return Inpar::Solid::conv_success;
+      return Solid::conv_success;
     }
 
     //! prepare partition step

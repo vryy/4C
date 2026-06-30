@@ -55,9 +55,9 @@ template <Core::FE::CellType celltype>
 void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::
     add_solidpressure_contribution_to_nonlinear_force_stiffness(const Core::Elements::Element& ele,
         Mat::StructPoro& porostructmat, Mat::FluidPoroMultiPhase& porofluidmat,
-        const Inpar::Solid::KinemType& kinematictype,
-        const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
-        Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
+        const Solid::KinemType& kinematictype, const Core::FE::Discretization& discretization,
+        Core::Elements::LocationArray& la, Teuchos::ParameterList& params,
+        Core::LinAlg::SerialDenseVector* force_vector,
         Core::LinAlg::SerialDenseMatrix* stiffness_matrix)
 {
   // Create views to SerialDenseMatrices
@@ -229,7 +229,7 @@ template <Core::FE::CellType celltype>
 void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::
     add_bodyforce_contribution_to_nonlinear_force_stiffness(const Core::Elements::Element& ele,
         Mat::StructPoro& porostructmat, Mat::FluidPoroMultiPhase& porofluidmat,
-        const Inpar::Solid::KinemType& kinematictype,
+        const Solid::KinemType& kinematictype,
         const Core::Utils::FunctionOfSpaceTime* bodyforce_contribution_function, const double time,
         const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
         Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
@@ -468,7 +468,7 @@ template <Core::FE::CellType celltype>
 void Discret::Elements::SolidPoroPressureBasedEleCalc<
     celltype>::evaluate_nonlinear_force_stiffness_od(const Core::Elements::Element& ele,
     Mat::StructPoro& porostructmat, Mat::FluidPoroMultiPhase& porofluidmat,
-    const Inpar::Solid::KinemType& kinematictype, const Core::FE::Discretization& discretization,
+    const Solid::KinemType& kinematictype, const Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
 {

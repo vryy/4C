@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -34,7 +34,7 @@ namespace Solid
     /*! Non-member function, which relates to the Solid::Nln::SOLVER::Factory class
      *  Please call this method from outside! */
     std::shared_ptr<Solid::Nln::SOLVER::Generic> build_nln_solver(
-        const Inpar::Solid::NonlinSolTech& nlnSolType,
+        const Solid::NonlinSolTech& nlnSolType,
         const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate,
         const std::shared_ptr<Solid::TimeInt::BaseDataSDyn>& sdyn,
         const std::shared_ptr<Solid::TimeInt::NoxInterface>& noxinterface,

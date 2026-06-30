@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <memory>
@@ -86,8 +86,7 @@ namespace Constraints
       return;
     }
 
-    void set_stc_prop(
-        Inpar::Solid::StcScale stcalgo, std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat)
+    void set_stc_prop(Solid::StcScale stcalgo, std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat)
     {
       stcalgo_ = stcalgo;
       stcmat_ = stcmat;
@@ -157,8 +156,8 @@ namespace Constraints
     bool adaptolbetter_;  ///< adaptive tolerance for solver useful?
     std::shared_ptr<Core::LinAlg::Solver> solver_;  ///< solver for linear standard linear system
     int counter_;                                   ///< counts how often #Solve is called
-    Inpar::Solid::ConSolveAlgo algochoice_;
-    Inpar::Solid::StcScale stcalgo_;
+    Solid::ConSolveAlgo algochoice_;
+    Solid::StcScale stcalgo_;
     std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat_;
 
   };  // class

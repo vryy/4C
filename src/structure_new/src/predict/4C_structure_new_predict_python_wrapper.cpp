@@ -596,8 +596,8 @@ void Solid::Predict::PythonWrapper::setup()
   const auto sdyn_params = Global::Problem::instance()->structural_dynamic_params();
   // perform a sanity check and warn the user if they try to use this class
   // outside of a static context
-  const auto type = sdyn_params.get<Inpar::Solid::DynamicType>("DYNAMICTYPE");
-  if (type != Inpar::Solid::DynamicType::Statics)
+  const auto type = sdyn_params.get<Solid::DynamicType>("DYNAMICTYPE");
+  if (type != Solid::DynamicType::Statics)
     FOUR_C_THROW("PythonWrapper is currently only supported for DYNAMICTYPE = Statics.");
 
   // initialize the python predictor

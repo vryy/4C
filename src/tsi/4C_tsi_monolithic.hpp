@@ -14,7 +14,7 @@
  *----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_thermo_input.hpp"
 #include "4C_tsi_algorithm.hpp"
 #include "4C_tsi_input.hpp"
@@ -264,7 +264,7 @@ namespace TSI
     //@}
 
     //! enum for STR time integartion
-    Inpar::Solid::DynamicType strmethodname_;
+    Solid::DynamicType strmethodname_;
 
    private:
     //! if just rho_inf is specified for genAlpha, the other parameters in the global parameter
@@ -302,12 +302,12 @@ namespace TSI
     TSI::NlnSolTech soltech_;  //!< kind of iteration technique or
                                //!< nonlinear solution technique
 
-    TSI::ConvNorm normtypeinc_;              //!< convergence check for increments
-    TSI::ConvNorm normtyperhs_;              //!< convergence check for residual forces
-    Inpar::Solid::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
-    Inpar::Solid::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
-    Thermo::ConvNorm normtypetempi_;         //!< convergence check for residual temperatures
-    Thermo::ConvNorm normtypethrrhs_;        //!< convergence check for residual thermal forces
+    TSI::ConvNorm normtypeinc_;        //!< convergence check for increments
+    TSI::ConvNorm normtyperhs_;        //!< convergence check for residual forces
+    Solid::ConvNorm normtypedisi_;     //!< convergence check for residual displacements
+    Solid::ConvNorm normtypestrrhs_;   //!< convergence check for residual forces
+    Thermo::ConvNorm normtypetempi_;   //!< convergence check for residual temperatures
+    Thermo::ConvNorm normtypethrrhs_;  //!< convergence check for residual thermal forces
 
     TSI::BinaryOp combincrhs_;  //!< binary operator to combine increments and forces
 

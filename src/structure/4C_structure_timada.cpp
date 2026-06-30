@@ -9,7 +9,6 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
@@ -18,6 +17,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_aux.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_timint.hpp"
 #include "4C_utils_enum.hpp"
 
@@ -28,20 +28,20 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::string map_kind_enum_to_string(Inpar::Solid::TimAdaKind term)
+  std::string map_kind_enum_to_string(Solid::TimAdaKind term)
   {
     switch (term)
     {
-      case Inpar::Solid::timada_kind_zienxie:
+      case Solid::timada_kind_zienxie:
         return "ZienkiewiczXie";
         break;
-      case Inpar::Solid::timada_kind_ab2:
+      case Solid::timada_kind_ab2:
         return "AdamsBashforth2";
         break;
-      case Inpar::Solid::timada_kind_expleuler:
+      case Solid::timada_kind_expleuler:
         return "ExplicitEuler";
         break;
-      case Inpar::Solid::timada_kind_centraldiff:
+      case Solid::timada_kind_centraldiff:
         return "CentralDifference";
         break;
       default:
@@ -77,7 +77,7 @@ Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input 
       sizeratiomin_(tap.get<double>("SIZERATIOMIN")),
       sizeratioscale_(tap.get<double>("SIZERATIOSCALE")),
       errctrl_(ctrl_dis),  // PROVIDE INPUT PARAMETER
-      errnorm_(Teuchos::getIntegralValue<Inpar::Solid::VectorNorm>(tap, "LOCERRNORM")),
+      errnorm_(Teuchos::getIntegralValue<Solid::VectorNorm>(tap, "LOCERRNORM")),
       errtol_(tap.get<double>("LOCERRTOL")),
       errorder_(1),  // CHANGE THIS CONSTANT
       adaptstepmax_(tap.get<int>("ADAPTSTEPMAX")),

@@ -51,10 +51,10 @@ Solid::TimeInt::BaseDataIO::BaseDataIO()
       writerestartevery_(-1),
       writeresultsevery_(-1),
       writeenergyevery_(-1),
-      writestress_(Inpar::Solid::stress_none),
-      writestrain_(Inpar::Solid::strain_none),
-      writeplstrain_(Inpar::Solid::strain_none),
-      conditionnumbertype_(Inpar::Solid::ConditionNumber::none)
+      writestress_(Solid::stress_none),
+      writestrain_(Solid::strain_none),
+      writeplstrain_(Solid::strain_none),
+      conditionnumbertype_(Solid::ConditionNumber::none)
 {
   // empty constructor
 }
@@ -82,13 +82,13 @@ void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     writetimestepoffset_ = sdynparams.get<int>("OUTPUT_STEP_OFFSET");
     writestate_ = ioparams.get<bool>("STRUCT_DISP");
     writejac2matlab_ = ioparams.get<bool>("STRUCT_JACOBIAN_MATLAB");
-    conditionnumbertype_ = ioparams.get<Inpar::Solid::ConditionNumber>("STRUCT_CONDITION_NUMBER");
+    conditionnumbertype_ = ioparams.get<Solid::ConditionNumber>("STRUCT_CONDITION_NUMBER");
     firstoutputofrun_ = true;
     writeresultsevery_ = sdynparams.get<int>("RESULTSEVERY");
-    writestress_ = Teuchos::getIntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_STRESS");
-    writestrain_ = Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_STRAIN");
+    writestress_ = Teuchos::getIntegralValue<Solid::StressType>(ioparams, "STRUCT_STRESS");
+    writestrain_ = Teuchos::getIntegralValue<Solid::StrainType>(ioparams, "STRUCT_STRAIN");
     writeplstrain_ =
-        Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
+        Teuchos::getIntegralValue<Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
     writeenergyevery_ = sdynparams.get<int>("RESEVERYERGY");
     writesurfactant_ = ioparams.get<bool>("STRUCT_SURFACTANT");
     output_per_rank_eval_time_ = ioparams.get<bool>("PER_RANK_EVAL_TIME");

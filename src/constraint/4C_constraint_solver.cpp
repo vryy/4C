@@ -47,7 +47,7 @@ void Constraints::ConstraintSolver::setup(Core::FE::Discretization& discr,
 {
   solver_ = Core::Utils::shared_ptr_from_ref(solver);
 
-  algochoice_ = Teuchos::getIntegralValue<Inpar::Solid::ConSolveAlgo>(params, "UZAWAALGO");
+  algochoice_ = Teuchos::getIntegralValue<Solid::ConSolveAlgo>(params, "UZAWAALGO");
 
   // different setup for #adapttol_
   isadapttol_ = true;
@@ -77,13 +77,13 @@ void Constraints::ConstraintSolver::solve(Core::LinAlg::SparseMatrix& stiff,
 {
   switch (algochoice_)
   {
-    case Inpar::Solid::consolve_uzawa:
+    case Solid::consolve_uzawa:
       solve_uzawa(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
-    case Inpar::Solid::consolve_direct:
+    case Solid::consolve_direct:
       solve_direct(stiff, constr, constrT, *dispinc, lagrinc, rhsstand, rhsconstr);
       break;
-    case Inpar::Solid::consolve_simple:
+    case Solid::consolve_simple:
       solve_simple(stiff, constr, constrT, *dispinc, lagrinc, rhsstand, rhsconstr);
       break;
     default:

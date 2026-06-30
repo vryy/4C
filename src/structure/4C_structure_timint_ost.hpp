@@ -203,10 +203,7 @@ namespace Solid
     //@{
 
     //! Return name
-    Inpar::Solid::DynamicType method_name() const override
-    {
-      return Inpar::Solid::DynamicType::OneStepTheta;
-    }
+    Solid::DynamicType method_name() const override { return Solid::DynamicType::OneStepTheta; }
 
     //! Provide number of steps, a single-step method returns 1
     int method_steps() const override { return 1; }

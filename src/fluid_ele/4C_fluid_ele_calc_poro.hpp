@@ -12,7 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fluid_ele_calc.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -1072,7 +1072,7 @@ namespace Discret
       bool const_permeability_;
 
       //! kinematic type
-      Inpar::Solid::KinemType kintype_;
+      Solid::KinemType kintype_;
 
       //! directions for anisotropic permeability
       std::vector<std::vector<double>> anisotropic_permeability_directions_;

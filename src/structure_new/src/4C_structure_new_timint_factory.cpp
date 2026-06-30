@@ -8,7 +8,7 @@
 #include "4C_structure_new_timint_factory.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 #include "4C_structure_new_timint_explicit.hpp"
 #include "4C_structure_new_timint_implicit.hpp"
@@ -32,12 +32,11 @@ std::shared_ptr<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_strategy(
 {
   std::shared_ptr<Solid::TimeInt::Base> ti_strategy = nullptr;
 
-  const auto intstrat =
-      Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+  const auto intstrat = Teuchos::getIntegralValue<Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
   switch (intstrat)
   {
-    case Inpar::Solid::int_standard:
+    case Solid::int_standard:
     {
       // Check first if a implicit integration strategy is desired
       ti_strategy = build_implicit_strategy(sdyn);
@@ -62,15 +61,14 @@ std::shared_ptr<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_implicit_st
   std::shared_ptr<Solid::TimeInt::Base> ti_strategy = nullptr;
 
   // get the dynamic type
-  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE");
+  const auto dyntype = Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE");
 
-  const bool is_prestress = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
+  const bool is_prestress = Teuchos::getIntegralValue<Solid::PreStress>(
                                 Global::Problem::instance()->structural_dynamic_params(),
-                                "PRESTRESS") != Inpar::Solid::PreStress::none;
-  if (is_prestress or dyntype == Inpar::Solid::DynamicType::Statics or  // dynamic type
-      dyntype == Inpar::Solid::DynamicType::GenAlpha or
-      dyntype == Inpar::Solid::DynamicType::GenAlphaLieGroup or
-      dyntype == Inpar::Solid::DynamicType::OneStepTheta)
+                                "PRESTRESS") != Solid::PreStress::none;
+  if (is_prestress or dyntype == Solid::DynamicType::Statics or  // dynamic type
+      dyntype == Solid::DynamicType::GenAlpha or dyntype == Solid::DynamicType::GenAlphaLieGroup or
+      dyntype == Solid::DynamicType::OneStepTheta)
     ti_strategy = std::make_shared<Solid::TimeInt::Implicit>();
 
   return ti_strategy;
@@ -91,12 +89,11 @@ std::shared_ptr<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_explicit_st
       probtype == Core::ProblemType::thermo_fsi)
     FOUR_C_THROW("No explicit time integration with fsi");
 
-  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE");
+  const auto dyntype = Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE");
 
-  if (dyntype == Inpar::Solid::DynamicType::ExplEuler or
-      dyntype == Inpar::Solid::DynamicType::CentrDiff or
-      dyntype == Inpar::Solid::DynamicType::AdamsBashforth2 or
-      dyntype == Inpar::Solid::DynamicType::AdamsBashforth4)
+  if (dyntype == Solid::DynamicType::ExplEuler or dyntype == Solid::DynamicType::CentrDiff or
+      dyntype == Solid::DynamicType::AdamsBashforth2 or
+      dyntype == Solid::DynamicType::AdamsBashforth4)
     ti_strategy = std::make_shared<Solid::TimeInt::Explicit>();
 
   return ti_strategy;
@@ -109,18 +106,18 @@ std::shared_ptr<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::Factory::build_dat
 {
   std::shared_ptr<Solid::TimeInt::BaseDataSDyn> sdyndata_ptr = nullptr;
 
-  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE");
+  const auto dyntype = Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE");
 
   switch (dyntype)
   {
-    case Inpar::Solid::DynamicType::GenAlpha:
-    case Inpar::Solid::DynamicType::GenAlphaLieGroup:
+    case Solid::DynamicType::GenAlpha:
+    case Solid::DynamicType::GenAlphaLieGroup:
       sdyndata_ptr = std::make_shared<Solid::TimeInt::GenAlphaDataSDyn>();
       break;
-    case Inpar::Solid::DynamicType::OneStepTheta:
+    case Solid::DynamicType::OneStepTheta:
       sdyndata_ptr = std::make_shared<Solid::TimeInt::OneStepThetaDataSDyn>();
       break;
-    case Inpar::Solid::DynamicType::ExplEuler:
+    case Solid::DynamicType::ExplEuler:
       sdyndata_ptr = std::make_shared<Solid::TimeInt::ExplEulerDataSDyn>();
       break;
     default:

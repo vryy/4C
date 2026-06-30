@@ -29,7 +29,7 @@ void Solid::Predict::ConstDisVelAccPress::setup()
   check_init();
 
   // fallback predictor
-  tangdis_ptr_ = Solid::Predict::build_predictor(Inpar::Solid::pred_tangdis);
+  tangdis_ptr_ = Solid::Predict::build_predictor(Solid::pred_tangdis);
   tangdis_ptr_->init(
       get_type(), impl_int_ptr(), dbc_ptr(), global_state_ptr(), io_data_ptr(), nox_params_ptr());
   tangdis_ptr_->setup();
@@ -50,24 +50,24 @@ void Solid::Predict::ConstDisVelAccPress::compute(::NOX::Abstract::Group& grp)
   bool ok = true;
   switch (get_type())
   {
-    case Inpar::Solid::pred_constdis:
-    case Inpar::Solid::pred_constdispres:
+    case Solid::pred_constdis:
+    case Solid::pred_constdispres:
     {
       impl_int().predict_const_dis_consist_vel_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
-    case Inpar::Solid::pred_constvel:
+    case Solid::pred_constvel:
     {
       ok = impl_int().predict_const_vel_consist_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
-    case Inpar::Solid::pred_constacc:
+    case Solid::pred_constacc:
     {
       ok = impl_int().predict_const_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
-    case Inpar::Solid::pred_constdisvelacc:
-    case Inpar::Solid::pred_constdisvelaccpres:
+    case Solid::pred_constdisvelacc:
+    case Solid::pred_constdisvelaccpres:
     {
       disnp_ptr->update(1.0, *global_state().get_dis_n(), 0.0);
       velnp_ptr->update(1.0, *global_state().get_vel_n(), 0.0);

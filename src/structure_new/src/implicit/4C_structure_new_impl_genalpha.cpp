@@ -8,13 +8,13 @@
 #include "4C_structure_new_impl_genalpha.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_structure_new_dbc.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_model_evaluator_structure.hpp"
@@ -93,8 +93,8 @@ void Solid::IMPLICIT::GenAlpha::setup()
      * at the end-point t_{n+1} of each time interval, but never explicitly at
      * some generalized midpoint, such as t_{n+1-\alpha_f}. Thus, any cumbersome
      * extrapolation of history variables, etc. becomes obsolete. */
-    const Inpar::Solid::MidAverageEnum& midavg = genalpha_sdyn.get_mid_average_type();
-    if (midavg != Inpar::Solid::midavg_trlike)
+    const Solid::MidAverageEnum& midavg = genalpha_sdyn.get_mid_average_type();
+    if (midavg != Solid::midavg_trlike)
       FOUR_C_THROW("mid-averaging of internal forces only implemented TR-like");
     else
       std::cout << "   midavg = " << midavg << std::endl;
@@ -135,7 +135,7 @@ void Solid::IMPLICIT::GenAlpha::post_setup()
   // check for applicability of classical GenAlpha scheme
   // ---------------------------------------------------------------------------
   // set the constant parameters for the element evaluation
-  if (tim_int().get_data_sdyn().get_mass_lin_type() == Inpar::Solid::MassLin::ml_rotations)
+  if (tim_int().get_data_sdyn().get_mass_lin_type() == Solid::MassLin::ml_rotations)
   {
     FOUR_C_THROW(
         "MASSLIN=ml_rotations is not supported by classical GenAlpha! "
@@ -289,7 +289,7 @@ bool Solid::IMPLICIT::GenAlpha::apply_force_stiff(const Core::LinAlg::Vector<dou
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::GenAlpha::assemble_force(Core::LinAlg::Vector<double>& f,
-    const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+    const std::vector<Solid::ModelType>* without_these_models) const
 {
   check_init_setup();
 
@@ -300,7 +300,7 @@ bool Solid::IMPLICIT::GenAlpha::assemble_force(Core::LinAlg::Vector<double>& f,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::GenAlpha::assemble_jac(Core::LinAlg::SparseOperator& jac,
-    const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+    const std::vector<Solid::ModelType>* without_these_models) const
 {
   check_init_setup();
 
@@ -315,7 +315,7 @@ void Solid::IMPLICIT::GenAlpha::add_visco_mass_contributions(Core::LinAlg::Vecto
 {
   // the following is only done for rayleigh damping as for material damping viscous forces are
   // already added at element level and else would be added twice
-  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
+  if (tim_int().get_data_sdyn().get_damping_type() == Solid::damp_rayleigh)
   {
     // viscous damping forces at t_{n+1-alpha_f}
     Core::LinAlg::assemble_my_vector(1.0, f, alphaf_, *fviscon_ptr_);
@@ -338,7 +338,7 @@ void Solid::IMPLICIT::GenAlpha::add_visco_mass_contributions(
   stiff_ptr->add(
       *global_state().get_mass_matrix(), false, (1.0 - alpham_) / (beta_ * dt * dt), 1.0);
   // add damping contributions
-  if (tim_int().get_data_sdyn().get_damping_type() != Inpar::Solid::damp_none)
+  if (tim_int().get_data_sdyn().get_damping_type() != Solid::damp_none)
     stiff_ptr->add(
         *global_state().get_damp_matrix(), false, (1.0 - alphaf_) * gamma_ / (beta_ * dt), 1.0);
 }

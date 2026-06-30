@@ -10,9 +10,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_poroelast_base.hpp"
 #include "4C_poroelast_input.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

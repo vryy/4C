@@ -66,10 +66,7 @@ namespace Solid
     //@{
 
     //! Provide the name
-    Inpar::Solid::TimAdaKind method_name() const override
-    {
-      return Inpar::Solid::timada_kind_zienxie;
-    }
+    Solid::TimAdaKind method_name() const override { return Solid::timada_kind_zienxie; }
 
     //! Provide local order of accuracy
     int method_order_of_accuracy_dis() const override { return 3; }

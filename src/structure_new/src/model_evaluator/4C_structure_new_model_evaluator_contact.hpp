@@ -44,10 +44,7 @@ namespace Solid
       //!@{
 
       //! [derived]
-      [[nodiscard]] Inpar::Solid::ModelType type() const override
-      {
-        return Inpar::Solid::model_contact;
-      }
+      [[nodiscard]] Solid::ModelType type() const override { return Solid::model_contact; }
 
       //! reset class variables (without jacobian) [derived]
       void reset(const Core::LinAlg::Vector<double>& x) override;
@@ -85,7 +82,7 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void predict(const Inpar::Solid::PredEnum& pred_type) override {};
+      void predict(const Solid::PredEnum& pred_type) override {};
 
       //! recover condensed Lagrange multipliers
       void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
@@ -169,7 +166,7 @@ namespace Solid
        *
        *  */
       std::shared_ptr<Core::LinAlg::Vector<double>> assemble_force_of_models(
-          const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr,
+          const std::vector<Solid::ModelType>* without_these_models = nullptr,
           const bool apply_dbc = false) const;
 
       [[nodiscard]] virtual std::shared_ptr<Core::LinAlg::SparseOperator> get_aux_displ_jacobian()

@@ -13,12 +13,12 @@
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_utils_gauss_point_extrapolation.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_solid_ele_calc_lib.hpp"
 #include "4C_solid_ele_utils.hpp"
 #include "4C_structure_new_gauss_point_data_output_manager.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -96,7 +96,7 @@ namespace Discret::Elements
   }
 
   template <typename T>
-  inline Inpar::Solid::StressType get_io_stress_type(
+  inline FourC::Solid::StressType get_io_stress_type(
       const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_solid_params_interface())
@@ -105,12 +105,12 @@ namespace Discret::Elements
     }
     else
     {
-      return Teuchos::getIntegralValue<Inpar::Solid::StressType>(params, "iostress");
+      return Teuchos::getIntegralValue<FourC::Solid::StressType>(params, "iostress");
     }
   }
 
   template <typename T>
-  inline Inpar::Solid::StrainType get_io_strain_type(
+  inline FourC::Solid::StrainType get_io_strain_type(
       const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_solid_params_interface())
@@ -119,7 +119,7 @@ namespace Discret::Elements
     }
     else
     {
-      return Teuchos::getIntegralValue<Inpar::Solid::StrainType>(params, "iostrain");
+      return Teuchos::getIntegralValue<FourC::Solid::StrainType>(params, "iostrain");
     }
   }
 
@@ -142,12 +142,12 @@ namespace Discret::Elements
           gl_strain,
       const Stress<celltype>& stress,
       const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
-      const Inpar::Solid::StrainType strain_type, Core::LinAlg::SerialDenseMatrix& data,
+      const FourC::Solid::StrainType strain_type, Core::LinAlg::SerialDenseMatrix& data,
       const int row)
   {
     switch (strain_type)
     {
-      case Inpar::Solid::strain_gl:
+      case FourC::Solid::strain_gl:
       {
         if constexpr (Core::FE::dim<celltype> == 2)
         {
@@ -161,7 +161,7 @@ namespace Discret::Elements
         }
         return;
       }
-      case Inpar::Solid::strain_ea:
+      case FourC::Solid::strain_ea:
       {
         if constexpr (Core::FE::dim<celltype> == 2)
         {
@@ -189,7 +189,7 @@ namespace Discret::Elements
         }
         return;
       }
-      case Inpar::Solid::strain_log:
+      case FourC::Solid::strain_log:
       {
         if constexpr (Core::FE::dim<celltype> == 2)
         {
@@ -207,7 +207,7 @@ namespace Discret::Elements
         }
         return;
       }
-      case Inpar::Solid::strain_none:
+      case FourC::Solid::strain_none:
         return;
       default:
         FOUR_C_THROW("strain type not supported");
@@ -229,12 +229,12 @@ namespace Discret::Elements
   template <Core::FE::CellType celltype>
   void assemble_stress_type_to_matrix_row(const ElementProperties<celltype>& element_properties,
       const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
-      const Stress<celltype>& stress, const Inpar::Solid::StressType stress_type,
+      const Stress<celltype>& stress, const FourC::Solid::StressType stress_type,
       Core::LinAlg::SerialDenseMatrix& data, const int row)
   {
     switch (stress_type)
     {
-      case Inpar::Solid::stress_2pk:
+      case FourC::Solid::stress_2pk:
       {
         if constexpr (Core::FE::dim<celltype> == 2)
         {
@@ -248,7 +248,7 @@ namespace Discret::Elements
         }
         return;
       }
-      case Inpar::Solid::stress_cauchy:
+      case FourC::Solid::stress_cauchy:
       {
         if constexpr (Core::FE::dim<celltype> == 2)
         {
@@ -272,7 +272,7 @@ namespace Discret::Elements
         }
         return;
       }
-      case Inpar::Solid::stress_none:
+      case FourC::Solid::stress_none:
 
         return;
       default:
@@ -355,7 +355,7 @@ namespace Discret::Elements
       {
         switch (gp_data_output_manager.get_output_type())
         {
-          case Inpar::Solid::GaussPointDataOutputType::element_center:
+          case FourC::Solid::GaussPointDataOutputType::element_center:
           {
             // compute average of the quantities
             std::shared_ptr<Core::LinAlg::MultiVector<double>> global_data =
@@ -363,7 +363,7 @@ namespace Discret::Elements
             Core::FE::assemble_averaged_element_values(*global_data, gp_data, ele);
             break;
           }
-          case Inpar::Solid::GaussPointDataOutputType::nodes:
+          case FourC::Solid::GaussPointDataOutputType::nodes:
           {
             std::shared_ptr<Core::LinAlg::MultiVector<double>> global_data =
                 gp_data_output_manager.get_nodal_data().at(quantity_name);
@@ -376,14 +376,14 @@ namespace Discret::Elements
             Core::FE::assemble_nodal_element_count(global_nodal_element_count, ele);
             break;
           }
-          case Inpar::Solid::GaussPointDataOutputType::gauss_points:
+          case FourC::Solid::GaussPointDataOutputType::gauss_points:
           {
             std::vector<std::shared_ptr<Core::LinAlg::MultiVector<double>>>& global_data =
                 gp_data_output_manager.get_gauss_point_data().at(quantity_name);
             Core::FE::assemble_gauss_point_values(global_data, gp_data, ele);
             break;
           }
-          case Inpar::Solid::GaussPointDataOutputType::none:
+          case FourC::Solid::GaussPointDataOutputType::none:
             FOUR_C_THROW(
                 "You specified a Gauss point data output type of none, so you should not end up "
                 "here.");

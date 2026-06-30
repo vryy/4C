@@ -9,7 +9,6 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_visualization_parameters.hpp"
@@ -17,6 +16,7 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_utils.hpp"
@@ -298,16 +298,16 @@ void Solid::ModelEvaluator::SpringDashpot::update_step_state(const double& timef
   fstructold_ptr->update(timefac_n, *fspring_np_ptr_, 1.0);
 
   // check for prestressing and reset if necessary
-  const Inpar::Solid::PreStress prestress_type = tim_int().get_data_sdyn().get_pre_stress_type();
+  const Solid::PreStress prestress_type = tim_int().get_data_sdyn().get_pre_stress_type();
   const double prestress_time = tim_int().get_data_sdyn().get_pre_stress_time();
 
-  if (prestress_type != Inpar::Solid::PreStress::none &&
+  if (prestress_type != Solid::PreStress::none &&
       global_state().get_time_np() <= prestress_time + 1.0e-15)
   {
     switch (prestress_type)
     {
-      case Inpar::Solid::PreStress::mulf:
-      case Inpar::Solid::PreStress::material_iterative:
+      case Solid::PreStress::mulf:
+      case Solid::PreStress::material_iterative:
         for (const auto& spring : springs_) spring->reset_prestress(*global_state().get_dis_np());
       default:
         break;

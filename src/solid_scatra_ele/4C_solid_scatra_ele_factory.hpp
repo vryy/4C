@@ -76,19 +76,19 @@ namespace Discret::Elements
 
     // Eas evaluators
     template <Core::FE::CellType celltype, Discret::Elements::EasType eas_type,
-        Inpar::Solid::KinemType kinem_type>
+        FourC::Solid::KinemType kinem_type>
     using EASSolidScatraIntegrator =
         SolidScatraEleCalc<celltype, EASFormulation<celltype, eas_type, kinem_type>>;
     template <unsigned dim>
     using EASScatraEvaluators = std::conditional_t<dim == 3,
         Core::FE::BaseTypeList<
             EASSolidScatraIntegrator<Core::FE::CellType::hex8,
-                Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>,
+                Discret::Elements::EasType::eastype_h8_9, FourC::Solid::KinemType::nonlinearTotLag>,
             EASSolidScatraIntegrator<Core::FE::CellType::hex8,
                 Discret::Elements::EasType::eastype_h8_21,
-                Inpar::Solid::KinemType::nonlinearTotLag>>,
+                FourC::Solid::KinemType::nonlinearTotLag>>,
         Core::FE::BaseTypeList<EASSolidScatraIntegrator<Core::FE::CellType::quad4,
-            Discret::Elements::EasType::eastype_q4_4, Inpar::Solid::KinemType::nonlinearTotLag>>>;
+            Discret::Elements::EasType::eastype_q4_4, FourC::Solid::KinemType::nonlinearTotLag>>>;
 
     template <unsigned dim>
     using SolidScatraEvaluators = std::conditional_t<dim == 3,

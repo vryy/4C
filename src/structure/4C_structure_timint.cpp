@@ -79,7 +79,7 @@ Solid::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       solveradapttol_(sdynparams.get<bool>("ADAPTCONV")),
       solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
       dbcmaps_(std::make_shared<Core::LinAlg::MapExtractor>()),
-      divcontype_(Teuchos::getIntegralValue<Inpar::Solid::DivContAct>(sdynparams, "DIVERCONT")),
+      divcontype_(Teuchos::getIntegralValue<Solid::DivContAct>(sdynparams, "DIVERCONT")),
       divconrefinementlevel_(0),
       divconnumfinestep_(0),
       sdynparams_(sdynparams),
@@ -91,15 +91,15 @@ Solid::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       writeele_(ioparams.get<bool>("STRUCT_ELE")),
       writestate_(ioparams.get<bool>("STRUCT_DISP")),
       writeresultsevery_(timeparams.get<int>("RESULTSEVERY")),
-      writestress_(Teuchos::getIntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_STRESS")),
-      writestrain_(Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_STRAIN")),
+      writestress_(Teuchos::getIntegralValue<Solid::StressType>(ioparams, "STRUCT_STRESS")),
+      writestrain_(Teuchos::getIntegralValue<Solid::StrainType>(ioparams, "STRUCT_STRAIN")),
       writeplstrain_(
-          Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN")),
+          Teuchos::getIntegralValue<Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN")),
       writeenergyevery_(sdynparams.get<int>("RESEVERYERGY")),
       writesurfactant_(ioparams.get<bool>("STRUCT_SURFACTANT")),
       writerotation_(ioparams.get<bool>("OUTPUT_ROT")),
       energyfile_(nullptr),
-      damping_(Teuchos::getIntegralValue<Inpar::Solid::DampKind>(sdynparams, "DAMPING")),
+      damping_(Teuchos::getIntegralValue<Solid::DampKind>(sdynparams, "DAMPING")),
       dampk_(sdynparams.get<double>("K_DAMP")),
       dampm_(sdynparams.get<double>("M_DAMP")),
       conman_(nullptr),
@@ -345,9 +345,9 @@ void Solid::TimInt::create_fields()
   // create empty matrices
   stiff_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, false, true);
   mass_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, false, true);
-  if (damping_ != Inpar::Solid::damp_none)
+  if (damping_ != Solid::damp_none)
   {
-    if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_none)
+    if (have_nonlinear_mass() == Solid::MassLin::ml_none)
     {
       damp_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, false, true);
     }
@@ -942,7 +942,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     // on
     discret_->set_state(0, "acceleration", *acc_aux);
 
-    if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", *(*vel_)(0));
+    if (damping_ == Solid::damp_material) discret_->set_state(0, "velocity", *(*vel_)(0));
 
     discret_->evaluate(p, stiff_, mass_, fint, nullptr, fintn_str_);
     discret_->clear_state();
@@ -955,7 +955,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
   stiff_->complete();
 
   // build Rayleigh damping matrix if desired
-  if (damping_ == Inpar::Solid::damp_rayleigh)
+  if (damping_ == Solid::damp_rayleigh)
   {
     damp_->add(*stiff_, false, dampk_, 0.0);
     damp_->add(*mass_, false, dampm_, 1.0);
@@ -980,7 +980,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
    */
   {
     // Contribution to rhs due to damping forces
-    if (damping_ == Inpar::Solid::damp_rayleigh)
+    if (damping_ == Solid::damp_rayleigh)
     {
       damp_->multiply(false, (*vel_)[0], *rhs);
     }
@@ -1172,8 +1172,8 @@ void Solid::TimInt::update_step_contact_vum()
       double alpham = 0.0;
       double beta = 0.0;
       double gamma = 0.0;
-      if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYPE") ==
-          Inpar::Solid::DynamicType::GenAlpha)
+      if (Teuchos::getIntegralValue<Solid::DynamicType>(sdynparams, "DYNAMICTYPE") ==
+          Solid::DynamicType::GenAlpha)
       {
         auto* genAlpha = dynamic_cast<Solid::TimIntGenAlpha*>(this);
         alpham = genAlpha->tim_int_param_alpham();
@@ -1813,8 +1813,8 @@ void Solid::TimInt::output_step(const bool forced_writerestart)
 
   // output stress & strain
   if (writeresultsevery_ and
-      ((writestress_ != Inpar::Solid::stress_none) or (writestrain_ != Inpar::Solid::strain_none) or
-          (writeplstrain_ != Inpar::Solid::strain_none)) and
+      ((writestress_ != Solid::stress_none) or (writestrain_ != Solid::strain_none) or
+          (writeplstrain_ != Solid::strain_none)) and
       (step_ % writeresultsevery_ == 0))
   {
     output_stress_strain(datawritten);
@@ -2037,8 +2037,8 @@ void Solid::TimInt::add_restart_to_output_state()
 void Solid::TimInt::determine_stress_strain()
 {
   if (writeresultsevery_ and
-      ((writestress_ != Inpar::Solid::stress_none) or (writestrain_ != Inpar::Solid::strain_none) or
-          (writeplstrain_ != Inpar::Solid::strain_none)) and
+      ((writestress_ != Solid::stress_none) or (writestrain_ != Solid::strain_none) or
+          (writeplstrain_ != Solid::strain_none)) and
       (stepn_ % writeresultsevery_ == 0))
   {
     //-------------------------------
@@ -2053,16 +2053,16 @@ void Solid::TimInt::determine_stress_strain()
     stressdata_ = std::make_shared<std::vector<char>>();
     p.set("stress", stressdata_);
 
-    p.set<Inpar::Solid::StressType>("iostress", writestress_);
+    p.set<Solid::StressType>("iostress", writestress_);
 
     straindata_ = std::make_shared<std::vector<char>>();
     p.set("strain", straindata_);
-    p.set<Inpar::Solid::StrainType>("iostrain", writestrain_);
+    p.set<Solid::StrainType>("iostrain", writestrain_);
 
     // plastic strain
     plstraindata_ = std::make_shared<std::vector<char>>();
     p.set("plstrain", plstraindata_);
-    p.set<Inpar::Solid::StrainType>("ioplstrain", writeplstrain_);
+    p.set<Solid::StrainType>("ioplstrain", writeplstrain_);
 
     // rotation tensor
     rotdata_ = std::make_shared<std::vector<char>>();
@@ -2139,14 +2139,14 @@ void Solid::TimInt::output_stress_strain(bool& datawritten)
   datawritten = true;
 
   // write stress
-  if (writestress_ != Inpar::Solid::stress_none)
+  if (writestress_ != Solid::stress_none)
   {
     std::string stresstext = "";
-    if (writestress_ == Inpar::Solid::stress_cauchy)
+    if (writestress_ == Solid::stress_cauchy)
     {
       stresstext = "gauss_cauchy_stresses_xyz";
     }
-    else if (writestress_ == Inpar::Solid::stress_2pk)
+    else if (writestress_ == Solid::stress_2pk)
     {
       stresstext = "gauss_2PK_stresses_xyz";
     }
@@ -2160,18 +2160,18 @@ void Solid::TimInt::output_stress_strain(bool& datawritten)
   }
 
   // write strain
-  if (writestrain_ != Inpar::Solid::strain_none)
+  if (writestrain_ != Solid::strain_none)
   {
     std::string straintext = "";
-    if (writestrain_ == Inpar::Solid::strain_ea)
+    if (writestrain_ == Solid::strain_ea)
     {
       straintext = "gauss_EA_strains_xyz";
     }
-    else if (writestrain_ == Inpar::Solid::strain_gl)
+    else if (writestrain_ == Solid::strain_gl)
     {
       straintext = "gauss_GL_strains_xyz";
     }
-    else if (writestrain_ == Inpar::Solid::strain_log)
+    else if (writestrain_ == Solid::strain_log)
     {
       straintext = "gauss_LOG_strains_xyz";
     }
@@ -2185,14 +2185,14 @@ void Solid::TimInt::output_stress_strain(bool& datawritten)
   }
 
   // write plastic strain
-  if (writeplstrain_ != Inpar::Solid::strain_none)
+  if (writeplstrain_ != Solid::strain_none)
   {
     std::string plstraintext = "";
-    if (writeplstrain_ == Inpar::Solid::strain_ea)
+    if (writeplstrain_ == Solid::strain_ea)
     {
       plstraintext = "gauss_pl_EA_strains_xyz";
     }
-    else if (writeplstrain_ == Inpar::Solid::strain_gl)
+    else if (writeplstrain_ == Solid::strain_gl)
     {
       plstraintext = "gauss_pl_GL_strains_xyz";
     }
@@ -2255,17 +2255,17 @@ void Solid::TimInt::apply_force_external(const double time,
   discret_->set_state(0, "displacement", *dis);
   discret_->set_state(0, "displacement new", *disn);
 
-  if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", vel);
+  if (damping_ == Solid::damp_material) discret_->set_state(0, "velocity", vel);
 
   discret_->evaluate_neumann(p, fext);
 }
 
 /*----------------------------------------------------------------------*/
 /* check whether we have nonlinear inertia forces or not */
-Inpar::Solid::MassLin Solid::TimInt::have_nonlinear_mass() const
+Solid::MassLin Solid::TimInt::have_nonlinear_mass() const
 {
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-  auto masslin = Teuchos::getIntegralValue<Inpar::Solid::MassLin>(sdyn, "MASSLIN");
+  auto masslin = Teuchos::getIntegralValue<Solid::MassLin>(sdyn, "MASSLIN");
 
   return masslin;
 }
@@ -2310,9 +2310,8 @@ void Solid::TimInt::nonlinear_mass_sanity_check(
         dispnorm, velnorm, accnorm);
   }
 
-  if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_rotations and
-      Teuchos::getIntegralValue<Inpar::Solid::PredEnum>(*sdynparams, "PREDICT") !=
-          Inpar::Solid::pred_constdis)
+  if (have_nonlinear_mass() == Solid::MassLin::ml_rotations and
+      Teuchos::getIntegralValue<Solid::PredEnum>(*sdynparams, "PREDICT") != Solid::pred_constdis)
   {
     FOUR_C_THROW(
         "Only constant displacement consistent velocity and acceleration "
@@ -2321,9 +2320,9 @@ void Solid::TimInt::nonlinear_mass_sanity_check(
 
   if (sdynparams != nullptr)
   {
-    if (have_nonlinear_mass() == Inpar::Solid::MassLin::ml_rotations and
-        Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(*sdynparams, "DYNAMICTYPE") !=
-            Inpar::Solid::DynamicType::GenAlpha)
+    if (have_nonlinear_mass() == Solid::MassLin::ml_rotations and
+        Teuchos::getIntegralValue<Solid::DynamicType>(*sdynparams, "DYNAMICTYPE") !=
+            Solid::DynamicType::GenAlpha)
     {
       FOUR_C_THROW(
           "Nonlinear inertia forces for rotational DoFs only implemented "
@@ -2355,7 +2354,7 @@ void Solid::TimInt::apply_force_internal(const double time, const double dt,
   discret_->set_state("residual displacement", *disi);  // these are incremental
   discret_->set_state("displacement", *dis);
 
-  if (damping_ == Inpar::Solid::damp_material) discret_->set_state("velocity", vel);
+  if (damping_ == Solid::damp_material) discret_->set_state("velocity", vel);
   // fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->evaluate(p, nullptr, nullptr, fint, nullptr, nullptr);
 
@@ -2363,39 +2362,38 @@ void Solid::TimInt::apply_force_internal(const double time, const double dt,
 }
 
 /*----------------------------------------------------------------------*/
-Inpar::Solid::ConvergenceStatus Solid::TimInt::perform_error_action(
-    Inpar::Solid::ConvergenceStatus nonlinsoldiv)
+Solid::ConvergenceStatus Solid::TimInt::perform_error_action(Solid::ConvergenceStatus nonlinsoldiv)
 {
   // what to do when nonlinear solver does not converge
   switch (divcontype_)
   {
-    case Inpar::Solid::divcont_stop:
+    case Solid::divcont_stop:
     {
       // write restart output of last converged step before stopping
       output(true);
 
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");
-      return Inpar::Solid::conv_nonlin_fail;
+      return Solid::conv_nonlin_fail;
     }
-    case Inpar::Solid::divcont_continue:
+    case Solid::divcont_continue:
     {
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");
-      return Inpar::Solid::conv_nonlin_fail;
+      return Solid::conv_nonlin_fail;
     }
     break;
-    case Inpar::Solid::divcont_repeat_step:
+    case Solid::divcont_repeat_step:
     {
       Core::IO::cout << "Nonlinear solver failed to converge repeat time step" << Core::IO::endl;
 
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Inpar::Solid::conv_success;
+      return Solid::conv_success;
     }
     break;
-    case Inpar::Solid::divcont_halve_step:
+    case Solid::divcont_halve_step:
     {
       Core::IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
                      << ". Divide timestep in half. "
@@ -2412,10 +2410,10 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::perform_error_action(
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Inpar::Solid::conv_success;
+      return Solid::conv_success;
     }
     break;
-    case Inpar::Solid::divcont_adapt_step:
+    case Solid::divcont_adapt_step:
     {
       // maximal possible refinementlevel
       const int maxdivconrefinementlevel = 10;
@@ -2446,11 +2444,11 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::perform_error_action(
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Inpar::Solid::conv_success;
+      return Solid::conv_success;
     }
     break;
-    case Inpar::Solid::divcont_rand_adapt_step:
-    case Inpar::Solid::divcont_rand_adapt_step_ele_err:
+    case Solid::divcont_rand_adapt_step:
+    case Solid::divcont_rand_adapt_step_ele_err:
     {
       // generate random number between 0.51 and 1.99 (as mean value of random
       // numbers generated on all processors), alternating values larger
@@ -2482,10 +2480,10 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::perform_error_action(
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Inpar::Solid::conv_success;
+      return Solid::conv_success;
     }
     break;
-    case Inpar::Solid::divcont_adapt_penaltycontact:
+    case Solid::divcont_adapt_penaltycontact:
     {
       // adapt penalty and search parameter
       if (have_contact_meshtying())
@@ -2494,21 +2492,21 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::perform_error_action(
       }
     }
     break;
-    case Inpar::Solid::divcont_repeat_simulation:
+    case Solid::divcont_repeat_simulation:
     {
-      if (nonlinsoldiv == Inpar::Solid::conv_nonlin_fail)
+      if (nonlinsoldiv == Solid::conv_nonlin_fail)
       {
         Core::IO::cout << "Nonlinear solver failed to converge and DIVERCONT = "
                           "repeat_simulation, hence leaving structural time integration "
                        << Core::IO::endl;
       }
-      else if (nonlinsoldiv == Inpar::Solid::conv_lin_fail)
+      else if (nonlinsoldiv == Solid::conv_lin_fail)
       {
         Core::IO::cout << "Linear solver failed to converge and DIVERCONT = "
                           "repeat_simulation, hence leaving structural time integration "
                        << Core::IO::endl;
       }
-      else if (nonlinsoldiv == Inpar::Solid::conv_ele_fail)
+      else if (nonlinsoldiv == Solid::conv_ele_fail)
       {
         Core::IO::cout
             << "Element failure in form of a negative Jacobian determinant and DIVERCONT = "
@@ -2519,10 +2517,10 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::perform_error_action(
     }
     default:
       FOUR_C_THROW("Unknown DIVER_CONT case");
-      return Inpar::Solid::conv_nonlin_fail;
+      return Solid::conv_nonlin_fail;
       break;
   }
-  return Inpar::Solid::conv_success;  // make compiler happy
+  return Solid::conv_success;  // make compiler happy
 }
 
 /*----------------------------------------------------------------------*/

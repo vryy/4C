@@ -86,7 +86,7 @@ void Solid::TimIntExpl::setup()
     FOUR_C_THROW("Explicit time integration schemes cannot handle local co-ordinate systems");
 
   // explicit time integrators cannot handle nonlinear inertia forces
-  if (have_nonlinear_mass() != Inpar::Solid::MassLin::ml_none)
+  if (have_nonlinear_mass() != Solid::MassLin::ml_none)
     FOUR_C_THROW(
         "Explicit time integration schemes cannot handle nonlinear inertia forces (flag: MASSLIN)");
 
@@ -110,7 +110,7 @@ void Solid::TimIntExpl::apply_force_external(const double time,  //!< evaluation
   discret_->set_state(0, "displacement", *dis);
   discret_->set_state(0, "displacement new", *dis);
 
-  if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", vel);
+  if (damping_ == Solid::damp_material) discret_->set_state(0, "velocity", vel);
   // get load vector
   discret_->evaluate_neumann(p, fext);
 

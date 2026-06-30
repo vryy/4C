@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 Solid::ModelEvaluator::GaussPointDataOutputManager::GaussPointDataOutputManager(
-    Inpar::Solid::GaussPointDataOutputType output_type)
+    Solid::GaussPointDataOutputType output_type)
     : output_type_(output_type),
       max_num_gp_(0),
       data_nodes_({}),
@@ -83,16 +83,16 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_data(
 {
   switch (output_type_)
   {
-    case Inpar::Solid::GaussPointDataOutputType::nodes:
+    case Solid::GaussPointDataOutputType::nodes:
       prepare_nodal_data_vectors(node_col_map);
       break;
-    case Inpar::Solid::GaussPointDataOutputType::element_center:
+    case Solid::GaussPointDataOutputType::element_center:
       prepare_element_center_data_vectors(element_row_map);
       break;
-    case Inpar::Solid::GaussPointDataOutputType::gauss_points:
+    case Solid::GaussPointDataOutputType::gauss_points:
       prepare_gauss_point_data_vectors(element_row_map);
       break;
-    case Inpar::Solid::GaussPointDataOutputType::none:
+    case Solid::GaussPointDataOutputType::none:
       FOUR_C_THROW("Your Gauss point data output type is none, so you don't need to prepare data!");
     default:
       FOUR_C_THROW("Unknown Gauss point data output type");
@@ -149,7 +149,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_gauss_point_dat
 
 void Solid::ModelEvaluator::GaussPointDataOutputManager::post_evaluate()
 {
-  if (output_type_ == Inpar::Solid::GaussPointDataOutputType::nodes)
+  if (output_type_ == Solid::GaussPointDataOutputType::nodes)
   {
     // divide nodal quantities by the nodal count
     for (const auto& name_and_size : quantities_)

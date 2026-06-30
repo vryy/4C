@@ -39,7 +39,7 @@ void Solid::IMPLICIT::Statics::setup()
   Generic::setup();
 
   // check for valid parameter combinations:
-  if (eval_data().get_damping_type() != Inpar::Solid::damp_none)
+  if (eval_data().get_damping_type() != Solid::damp_none)
     FOUR_C_THROW("ERROR: Damping not provided for statics time integration!");
 
   issetup_ = true;
@@ -103,7 +103,7 @@ bool Solid::IMPLICIT::Statics::apply_force_stiff(const Core::LinAlg::Vector<doub
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::Statics::assemble_force(Core::LinAlg::Vector<double>& f,
-    const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+    const std::vector<Solid::ModelType>* without_these_models) const
 {
   check_init_setup();
   return model_eval().assemble_force(1.0, f, without_these_models);
@@ -185,14 +185,14 @@ void Solid::IMPLICIT::Statics::pre_update()
   // get the time step size
   const double dt = global_state().get_delta_time()[0];
 
-  const Inpar::Solid::PredEnum& pred_type = impl_ptr->predictor().get_type();
+  const Solid::PredEnum& pred_type = impl_ptr->predictor().get_type();
   std::shared_ptr<Core::LinAlg::Vector<double>>& accnp_ptr = global_state().get_acc_np();
   std::shared_ptr<Core::LinAlg::Vector<double>>& velnp_ptr = global_state().get_vel_np();
 
   switch (pred_type)
   {
     // case: constant acceleration
-    case Inpar::Solid::pred_constacc:
+    case Solid::pred_constacc:
     {
       // read-only access
       std::shared_ptr<const Core::LinAlg::Vector<double>> veln_ptr = global_state().get_vel_n();
@@ -202,7 +202,7 @@ void Solid::IMPLICIT::Statics::pre_update()
       [[fallthrough]];
     }
     // case: constant acceleration OR constant velocity
-    case Inpar::Solid::pred_constvel:
+    case Solid::pred_constvel:
     {
       // read-only access
       std::shared_ptr<const Core::LinAlg::Vector<double>> disn_ptr = global_state().get_dis_n();

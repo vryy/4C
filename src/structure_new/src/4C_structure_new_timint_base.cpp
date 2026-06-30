@@ -214,14 +214,14 @@ std::shared_ptr<Core::Conditions::LocsysManager> Solid::TimeInt::Base::locsys_ma
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const Solid::ModelEvaluator::Generic& Solid::TimeInt::Base::model_evaluator(
-    Inpar::Solid::ModelType mtype) const
+    Solid::ModelType mtype) const
 {
   return integrator().model_eval().evaluator(mtype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::ModelEvaluator::Generic& Solid::TimeInt::Base::model_evaluator(Inpar::Solid::ModelType mtype)
+Solid::ModelEvaluator::Generic& Solid::TimeInt::Base::model_evaluator(Solid::ModelType mtype)
 {
   return integrator().model_eval().evaluator(mtype);
 }
@@ -315,24 +315,24 @@ void Solid::TimeInt::Base::select_energy_types_to_be_written()
   Solid::ModelEvaluator::Data& evaldata = int_ptr_->eval_data();
 
   // decide which types of energy contributions shall be written separately
-  const std::set<Inpar::Solid::ModelType>& mtypes = datasdyn_->get_model_types();
+  const std::set<Solid::ModelType>& mtypes = datasdyn_->get_model_types();
 
-  std::set<Inpar::Solid::ModelType>::const_iterator model_iter;
+  std::set<Solid::ModelType>::const_iterator model_iter;
   for (model_iter = mtypes.begin(); model_iter != mtypes.end(); ++model_iter)
   {
     switch (*model_iter)
     {
-      case Inpar::Solid::model_structure:
+      case Solid::model_structure:
       {
         evaldata.insert_energy_type_to_be_considered(Solid::internal_energy);
         evaldata.insert_energy_type_to_be_considered(Solid::kinetic_energy);
         break;
       }
-      case Inpar::Solid::model_beaminteraction:
+      case Solid::model_beaminteraction:
       {
         Solid::ModelEvaluator::BeamInteractionModelEvaluator const beaminteraction_evaluator =
             dynamic_cast<Solid::ModelEvaluator::BeamInteractionModelEvaluator const&>(
-                int_ptr_->model_eval_ptr()->evaluator(Inpar::Solid::model_beaminteraction));
+                int_ptr_->model_eval_ptr()->evaluator(Solid::model_beaminteraction));
 
         if (beaminteraction_evaluator.have_sub_model_type(
                 BeamInteraction::SubModelType::submodel_beamcontact))
@@ -358,11 +358,11 @@ void Solid::TimeInt::Base::select_energy_types_to_be_written()
         }
         break;
       }
-      case Inpar::Solid::model_constraints:
+      case Solid::model_constraints:
       {
         Solid::ModelEvaluator::Constraint const constraints_evaluator =
             dynamic_cast<Solid::ModelEvaluator::Constraint const&>(
-                int_ptr_->model_eval_ptr()->evaluator(Inpar::Solid::model_constraints));
+                int_ptr_->model_eval_ptr()->evaluator(Solid::model_constraints));
 
         if (constraints_evaluator.have_sub_model_type(Constraints::SubModelType::embeddedmesh))
         {

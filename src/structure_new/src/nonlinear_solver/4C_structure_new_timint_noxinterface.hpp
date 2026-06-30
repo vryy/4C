@@ -29,13 +29,10 @@ namespace Core::LinAlg
   class SparseOperator;
   class SparseMatrix;
 }  // namespace Core::LinAlg
-namespace Inpar
+namespace Solid
 {
-  namespace Solid
-  {
-    enum ModelType : int;
-  }  // namespace Solid
-}  // namespace Inpar
+  enum ModelType : int;
+}  // namespace Solid
 namespace Solid
 {
   class Dbc;
@@ -143,7 +140,7 @@ namespace Solid
       void check_init_setup() const;
 
       void find_constraint_models(const ::NOX::Abstract::Group* grp,
-          std::vector<Inpar::Solid::ModelType>& constraint_models) const;
+          std::vector<Solid::ModelType>& constraint_models) const;
 
      protected:
       //! init flag

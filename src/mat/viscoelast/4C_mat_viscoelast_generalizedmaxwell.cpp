@@ -8,7 +8,6 @@
 #include "4C_mat_viscoelast_generalizedmaxwell.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor_conversion.hpp"
@@ -16,6 +15,7 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -487,9 +487,9 @@ namespace Mat::ViscoElast
         point.visco_mat_id, point.gp, point.ele_gid);
 
     RuntimeContext runtime_context;
-    const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
-        structural_dynamic_parameters, "DYNAMICTYPE");
-    if (dyntype == Inpar::Solid::DynamicType::OneStepTheta)
+    const auto dyntype =
+        Teuchos::getIntegralValue<Solid::DynamicType>(structural_dynamic_parameters, "DYNAMICTYPE");
+    if (dyntype == Solid::DynamicType::OneStepTheta)
       runtime_context.one_step_theta =
           structural_dynamic_parameters.sublist("ONESTEPTHETA").get<double>("THETA");
 

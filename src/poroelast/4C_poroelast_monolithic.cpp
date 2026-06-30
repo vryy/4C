@@ -103,7 +103,7 @@ PoroElast::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& t
   equilibration_method_ =
       Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(poroparams, "EQUILIBRATION");
 
-  strmethodname_ = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYPE");
+  strmethodname_ = Teuchos::getIntegralValue<Solid::DynamicType>(sdynparams, "DYNAMICTYPE");
   no_penetration_ = false;
   nit_contact_ = false;
   // if inpar is set to nopenetration for contact!!! to be done!
@@ -400,10 +400,10 @@ void PoroElast::Monolithic::setup_system()
 {
   // new timint with nitsche contact. For old timint this is in the constructor but for new it has
   // to be after poroalgo->read_restart(restart);
-  if ((!oldstructimint_) && structure_field()->have_model(Inpar::Solid::model_contact))
+  if ((!oldstructimint_) && structure_field()->have_model(Solid::model_contact))
   {
     auto& model_evaluator_contact = dynamic_cast<Solid::ModelEvaluator::Contact&>(
-        structure_field()->model_evaluator(Inpar::Solid::model_contact));
+        structure_field()->model_evaluator(Solid::model_contact));
 
     std::shared_ptr<CONTACT::NitscheStrategyPoro> contact_strategy_nitsche_poro =
         std::dynamic_pointer_cast<CONTACT::NitscheStrategyPoro>(
@@ -416,7 +416,7 @@ void PoroElast::Monolithic::setup_system()
     }
   }
 
-  if (no_penetration_ && not(strmethodname_ == Inpar::Solid::DynamicType::OneStepTheta))
+  if (no_penetration_ && not(strmethodname_ == Solid::DynamicType::OneStepTheta))
   {
     FOUR_C_THROW(
         "Porous contact with no penetration is only implemented for OneStepTheta. Please set "
@@ -1852,7 +1852,7 @@ void PoroElast::Monolithic::set_poro_contact_states()
   else if (nit_contact_)  // new time integration with nitsche contact
   {
     auto& model_evaluator_contact = dynamic_cast<Solid::ModelEvaluator::Contact&>(
-        structure_field()->model_evaluator(Inpar::Solid::model_contact));
+        structure_field()->model_evaluator(Solid::model_contact));
 
     std::shared_ptr<CONTACT::NitscheStrategyPoro> contact_strategy_nitsche_poro =
         std::dynamic_pointer_cast<CONTACT::NitscheStrategyPoro>(
@@ -1984,7 +1984,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
   else if (nit_contact_)  // new time integration with nitsche contact
   {
     auto& model_evaluator_contact = dynamic_cast<Solid::ModelEvaluator::Contact&>(
-        structure_field()->model_evaluator(Inpar::Solid::model_contact));
+        structure_field()->model_evaluator(Solid::model_contact));
 
     std::shared_ptr<CONTACT::NitscheStrategyPoro> contact_strategy_nitsche_poro =
         std::dynamic_pointer_cast<CONTACT::NitscheStrategyPoro>(

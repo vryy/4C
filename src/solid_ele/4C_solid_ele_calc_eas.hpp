@@ -13,7 +13,6 @@
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_element.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_solid_ele_calc.hpp"
 #include "4C_solid_ele_calc_eas_helpers.hpp"
 #include "4C_solid_ele_calc_lib.hpp"
@@ -21,6 +20,7 @@
 #include "4C_solid_ele_properties.hpp"
 #include "4C_solver_nonlin_nox_enum_lists.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -42,7 +42,7 @@ namespace Discret::Elements
    * @tparam celltype
    */
   template <Core::FE::CellType celltype, Discret::Elements::EasType eastype,
-      Inpar::Solid::KinemType kinematic_type>
+      FourC::Solid::KinemType kinematic_type>
   struct EASFormulation
   {
     static constexpr bool has_gauss_point_history = false;
@@ -283,7 +283,7 @@ namespace Discret::Elements
   };
 
   template <Core::FE::CellType celltype, Discret::Elements::EasType eastype,
-      Inpar::Solid::KinemType kinematic_type>
+      FourC::Solid::KinemType kinematic_type>
   using EASSolidIntegrator =
       SolidEleCalc<celltype, EASFormulation<celltype, eastype, kinematic_type>>;
 }  // namespace Discret::Elements

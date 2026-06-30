@@ -33,10 +33,7 @@ namespace Adapter
     StructureTimeAdaJoint(Global::Problem& problem, std::shared_ptr<Structure> structure);
 
     //! Provide the name
-    Inpar::Solid::TimAdaKind method_name() const override
-    {
-      return Inpar::Solid::timada_kind_joint_explicit;
-    }
+    Solid::TimAdaKind method_name() const override { return Solid::timada_kind_joint_explicit; }
 
     std::string method_title() const override;
 

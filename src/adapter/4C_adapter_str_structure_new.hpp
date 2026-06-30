@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_str_structure.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <set>
@@ -224,8 +224,7 @@ namespace Adapter
     /// fixme: this can go when the old structure time integration is gone and PerformErrorAction is
     /// only called in Solid::TimeInt::Implicit::Solve() and not on the structure in the adapter
     /// time loop
-    Inpar::Solid::ConvergenceStatus perform_error_action(
-        Inpar::Solid::ConvergenceStatus nonlinsoldiv) override
+    Solid::ConvergenceStatus perform_error_action(Solid::ConvergenceStatus nonlinsoldiv) override
     {
       FOUR_C_THROW("You should not be here");
       return nonlinsoldiv;
@@ -357,7 +356,7 @@ namespace Adapter
     for the time step. All boundary conditions have
     been set.
     */
-    Inpar::Solid::ConvergenceStatus solve() override = 0;
+    Solid::ConvergenceStatus solve() override = 0;
 
     /*!
     \brief linear structure solve with just a interface load
@@ -447,10 +446,10 @@ namespace Adapter
 
     /// access the desired model evaluator (read-only)
     [[nodiscard]] virtual const Solid::ModelEvaluator::Generic& model_evaluator(
-        Inpar::Solid::ModelType mtype) const = 0;
+        Solid::ModelType mtype) const = 0;
 
     /// access the desired model evaluator (read and write)
-    Solid::ModelEvaluator::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override = 0;
+    Solid::ModelEvaluator::Generic& model_evaluator(Solid::ModelType mtype) override = 0;
 
     /// direct access to discretization
     std::shared_ptr<Core::FE::Discretization> discretization() override = 0;
@@ -462,7 +461,7 @@ namespace Adapter
     std::shared_ptr<Constraints::ConstrManager> get_constraint_manager() override = 0;
 
     /// Get type of thickness scaling for thin shell structures
-    Inpar::Solid::StcScale get_stc_algo() override = 0;
+    Solid::StcScale get_stc_algo() override = 0;
 
     /// Access to scaling matrix for STC
     std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() override = 0;
@@ -634,10 +633,10 @@ namespace Adapter
      *  the Generic::check_init() and Generic::check_init_setup() routines, instead.
      *
      */
-    void set_model_types(std::set<Inpar::Solid::ModelType>& modeltypes) const;
+    void set_model_types(std::set<Solid::ModelType>& modeltypes) const;
 
     /// Set all found model types.
-    void detect_element_technologies(std::set<Inpar::Solid::EleTech>& eletechs) const;
+    void detect_element_technologies(std::set<Solid::EleTech>& eletechs) const;
 
     /// Set different time integrator specific parameters in the different parameter lists
     virtual void set_params(Teuchos::ParameterList& ioflags, Teuchos::ParameterList& xparams,

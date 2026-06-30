@@ -87,7 +87,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_constraint_rhs_norms(
 
   Core::LinAlg::Vector<double> F_copy(F);
   std::shared_ptr<Core::LinAlg::Vector<double>> constrRhs =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, F_copy);
+      gstate_ptr_->extract_model_entries(Solid::model_lag_pen_constraint, F_copy);
 
   // no constraint contributions present
   if (!constrRhs) return 0.0;
@@ -110,9 +110,9 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_rms(
   Core::LinAlg::Vector<double> xNew_copy(xNew);
   // export the constraint solution
   std::shared_ptr<Core::LinAlg::Vector<double>> lagincr_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xOld_copy);
+      gstate_ptr_->extract_model_entries(Solid::model_lag_pen_constraint, xOld_copy);
   std::shared_ptr<const Core::LinAlg::Vector<double>> lagnew_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xNew_copy);
+      gstate_ptr_->extract_model_entries(Solid::model_lag_pen_constraint, xNew_copy);
 
   lagincr_ptr->update(1.0, *lagnew_ptr, -1.0);
 
@@ -136,9 +136,9 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_norms(
 
   // export the constraint solution
   std::shared_ptr<Core::LinAlg::Vector<double>> lagincr_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xOld_copy);
+      gstate_ptr_->extract_model_entries(Solid::model_lag_pen_constraint, xOld_copy);
   std::shared_ptr<const Core::LinAlg::Vector<double>> lagnew_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xNew_copy);
+      gstate_ptr_->extract_model_entries(Solid::model_lag_pen_constraint, xNew_copy);
 
   lagincr_ptr->update(1.0, *lagnew_ptr, -1.0);
 
@@ -157,7 +157,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
 
   // export the constraint solution
   std::shared_ptr<Core::LinAlg::Vector<double>> lagold_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xOld_copy);
+      gstate_ptr_->extract_model_entries(Solid::model_lag_pen_constraint, xOld_copy);
 
   return NOX::Nln::Aux::calc_vector_norm(*lagold_ptr, type, isScaled);
 }

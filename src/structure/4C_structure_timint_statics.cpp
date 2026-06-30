@@ -49,13 +49,11 @@ void Solid::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
   // call init() in base class
   Solid::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
-  auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYPE");
-  const Inpar::Solid::PreStress pre_stress_type =
-      Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-          Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
+  auto dyntype = Teuchos::getIntegralValue<Solid::DynamicType>(sdynparams, "DYNAMICTYPE");
+  const Solid::PreStress pre_stress_type = Teuchos::getIntegralValue<Solid::PreStress>(
+      Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
 
-  if (pre_stress_type != Inpar::Solid::PreStress::none &&
-      dyntype != Inpar::Solid::DynamicType::Statics)
+  if (pre_stress_type != Solid::PreStress::none && dyntype != Solid::DynamicType::Statics)
   {
     FOUR_C_THROW(
         "Paranoia Error: PRESTRESS is only allowed in combinations with DYNAMICTYPE Statics!!");
@@ -65,7 +63,7 @@ void Solid::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
   if (myrank_ == 0 && bool(printscreen_))
   {
     // check if we are in prestressing mode
-    if (pre_stress_type == Inpar::Solid::PreStress::mulf)
+    if (pre_stress_type == Solid::PreStress::mulf)
       Core::IO::cout << "with static MULF prestress" << Core::IO::endl;
     else
       Core::IO::cout << "with statics" << Core::IO::endl;
@@ -362,10 +360,9 @@ void Solid::TimIntStatics::update_step_state()
 {
   // calculate pseudo velocity and acceleration for predictor and/or binning
   // of the contact interface before updates
-  if (pred_ == Inpar::Solid::pred_constvel || pred_ == Inpar::Solid::pred_constacc ||
-      have_contact_meshtying())
+  if (pred_ == Solid::pred_constvel || pred_ == Solid::pred_constacc || have_contact_meshtying())
     veln_->update(1. / (*(*dt_)(0)), *disn_, -1. / (*(*dt_)(0)), *(*dis_)(0), 0.);
-  if (pred_ == Inpar::Solid::pred_constacc)
+  if (pred_ == Solid::pred_constacc)
     accn_->update(1. / (*(*dt_)(0)), *veln_, -1. / (*(*dt_)(0)), *(*vel_)(0), 0.);
 
   // update state

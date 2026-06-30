@@ -7,8 +7,8 @@
 
 #include "4C_contact_input.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_spec_builders.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -131,24 +131,24 @@ Core::IO::InputSpec CONTACT::valid_parameters()
                   .default_value = 0.0}),
 
           // solver convergence test parameters for contact/meshtying in saddlepoint formulation
-          deprecated_selection<Inpar::Solid::BinaryOp>("NORMCOMBI_RESFCONTCONSTR",
+          deprecated_selection<Solid::BinaryOp>("NORMCOMBI_RESFCONTCONSTR",
               {
-                  {"And", Inpar::Solid::bop_and},
-                  {"Or", Inpar::Solid::bop_or},
+                  {"And", Solid::bop_and},
+                  {"Or", Solid::bop_or},
               },
               {.description =
                       "binary operator to combine contact constraints and residual force values",
-                  .default_value = Inpar::Solid::bop_and}),
+                  .default_value = Solid::bop_and}),
 
-          deprecated_selection<Inpar::Solid::BinaryOp>("NORMCOMBI_DISPLAGR",
+          deprecated_selection<Solid::BinaryOp>("NORMCOMBI_DISPLAGR",
               {
-                  {"And", Inpar::Solid::bop_and},
-                  {"Or", Inpar::Solid::bop_or},
+                  {"And", Solid::bop_and},
+                  {"Or", Solid::bop_or},
               },
               {.description =
                       "binary operator to combine displacement increments and Lagrange multiplier "
                       "increment values",
-                  .default_value = Inpar::Solid::bop_and}),
+                  .default_value = Solid::bop_and}),
 
           parameter<double>("TOLCONTCONSTR",
               {.description = "tolerance in the contact constraint norm for the newton "

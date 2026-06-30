@@ -9,13 +9,13 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_solid_ele.hpp"
 #include "4C_solid_ele_interface_serializable.hpp"
 #include "4C_stru_multi_microstatic.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -98,8 +98,8 @@ Mat::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
 
   // check whether we are using modified Newton as a nonlinear solver
   // on the macroscale or not
-  if (Teuchos::getIntegralValue<Inpar::Solid::NonlinSolTech>(sdyn_micro, "NLNSOL") ==
-      Inpar::Solid::soltech_newtonmod)
+  if (Teuchos::getIntegralValue<Solid::NonlinSolTech>(sdyn_micro, "NLNSOL") ==
+      Solid::soltech_newtonmod)
     mod_newton_ = true;
   else
     mod_newton_ = false;

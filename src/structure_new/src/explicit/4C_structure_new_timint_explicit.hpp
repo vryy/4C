@@ -51,7 +51,7 @@ namespace Solid
 
       void reset_step() override;
 
-      Inpar::Solid::ConvergenceStatus solve() override;
+      Solid::ConvergenceStatus solve() override;
 
       void prepare_partition_step() override;
 
@@ -59,7 +59,7 @@ namespace Solid
 
       void print_step() override;
 
-      Inpar::Solid::StcScale get_stc_algo() override;
+      Solid::StcScale get_stc_algo() override;
 
       std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() override;
 
@@ -81,7 +81,7 @@ namespace Solid
       //! @name Attribute access functions
       //@{
 
-      Inpar::Solid::DynamicType method_name() const override;
+      Solid::DynamicType method_name() const override;
 
       bool is_implicit() const override { return false; }
 

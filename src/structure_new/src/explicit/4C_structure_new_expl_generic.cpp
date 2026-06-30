@@ -134,7 +134,7 @@ void Solid::EXPLICIT::Generic::compute_jacobian_contributions_from_element_level
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::EXPLICIT::Generic::assemble_force(Core::LinAlg::Vector<double>& f,
-    const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+    const std::vector<Solid::ModelType>* without_these_models) const
 {
   FOUR_C_THROW("{} is not yet implemented", __FUNCTION__);
   return false;

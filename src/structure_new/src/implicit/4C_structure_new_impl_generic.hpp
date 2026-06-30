@@ -43,7 +43,7 @@ namespace Solid
 
       //! derived
       bool apply_correction_system(const NOX::Nln::CorrectionType type,
-          const std::vector<Inpar::Solid::ModelType>& constraint_models,
+          const std::vector<Solid::ModelType>& constraint_models,
           const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f,
           Core::LinAlg::SparseOperator& jac) override;
 
@@ -53,7 +53,7 @@ namespace Solid
 
       //! derived
       bool assemble_jac(Core::LinAlg::SparseOperator& jac,
-          const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr) const override
+          const std::vector<Solid::ModelType>* without_these_models = nullptr) const override
       {
         return false;
       };
@@ -158,7 +158,7 @@ namespace Solid
       //@{
 
       //! Provide Name
-      virtual Inpar::Solid::DynamicType method_name() const = 0;
+      virtual Solid::DynamicType method_name() const = 0;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$

@@ -232,14 +232,14 @@ namespace
   compute_linearization_of_deformation_gradient_transposed_wrt_disp(
       const Discret::Elements::JacobianMapping<celltype>& jacobian_mapping,
       const Discret::Elements::SpatialMaterialMapping<celltype>& spatial_material_mapping,
-      const Inpar::Solid::KinemType& kinematictype = Inpar::Solid::KinemType::nonlinearTotLag)
+      const Solid::KinemType& kinematictype = Solid::KinemType::nonlinearTotLag)
   {
     Core::LinAlg::Matrix<Discret::Elements::Internal::num_dim<celltype> *
                              Discret::Elements::Internal::num_dim<celltype>,
         Discret::Elements::Internal::num_dim<celltype> *
             Discret::Elements::Internal::num_nodes<celltype>>
         dInverseDeformationGradientTransposed_dDisp(Core::LinAlg::Initialization::zero);
-    if (kinematictype != Inpar::Solid::KinemType::linear)
+    if (kinematictype != Solid::KinemType::linear)
     {
       // dF^-T/dus
       for (int i = 0; i < Discret::Elements::Internal::num_dim<celltype>; i++)
@@ -286,7 +286,7 @@ namespace
               Discret::Elements::Internal::num_nodes<celltype>>&
           d_inverse_deformationgradient_transposed_ddisp,
       const Core::LinAlg::Matrix<Discret::Elements::Internal::num_dim<celltype>, 1>& Gradp,
-      const Inpar::Solid::KinemType& kinematictype = Inpar::Solid::KinemType::nonlinearTotLag)
+      const Solid::KinemType& kinematictype = Solid::KinemType::nonlinearTotLag)
   {
     // dF^-T/dus * Grad p
     Core::LinAlg::Matrix<Discret::Elements::Internal::num_dim<celltype> *
@@ -294,7 +294,7 @@ namespace
         Discret::Elements::Internal::num_dim<celltype> *
             Discret::Elements::Internal::num_nodes<celltype>>
         dInverseDeformationGradient_dDisp_Gradp(Core::LinAlg::Initialization::zero);
-    if (kinematictype != Inpar::Solid::KinemType::linear)
+    if (kinematictype != Solid::KinemType::linear)
     {
       for (int i = 0; i < Discret::Elements::Internal::num_dim<celltype>; i++)
       {
@@ -352,7 +352,7 @@ template <Core::FE::CellType celltype, Discret::Elements::PorosityFormulation po
 void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
     porosity_formulation>::evaluate_nonlinear_force_stiffness(const Core::Elements::Element& ele,
     Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
-    AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
+    AnisotropyProperties anisotropy_properties, const Solid::KinemType& kinematictype,
     const Core::FE::Discretization& discretization,
     const SolidPoroPrimaryVariables<porosity_formulation>& primary_variables,
     Teuchos::ParameterList& params,
@@ -363,11 +363,10 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
   DiagonalBlockMatrixViews<celltype, porosity_formulation> matrix_views =
       make_optional_block_matrix_view<celltype>(diagonal_block_matrices);
 
-  Inpar::Solid::DampKind damping =
-      params.get<Inpar::Solid::DampKind>("damping", Inpar::Solid::damp_none);
+  Solid::DampKind damping = params.get<Solid::DampKind>("damping", Solid::damp_none);
 
   auto react_matrix = make_optional_matrix_view<num_dim_ * num_nodes_, num_dim_ * num_nodes_>(
-      damping == Inpar::Solid::damp_material ? reactive_matrix : nullptr);
+      damping == Solid::damp_material ? reactive_matrix : nullptr);
 
 
   // get primary variables of porous medium flow
@@ -619,7 +618,7 @@ template <Core::FE::CellType celltype, Discret::Elements::PorosityFormulation po
 void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
     porosity_formulation>::evaluate_nonlinear_force_stiffness_od(const Core::Elements::Element& ele,
     Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
-    AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
+    AnisotropyProperties anisotropy_properties, const Solid::KinemType& kinematictype,
     const Core::FE::Discretization& discretization,
     const SolidPoroPrimaryVariables<porosity_formulation>& primary_variables,
     Teuchos::ParameterList& params,

@@ -40,9 +40,9 @@ namespace Solid
 
       //! @name Functions which are derived from the base generic class
       //! @{
-      [[nodiscard]] Inpar::Solid::ModelType type() const override
+      [[nodiscard]] Solid::ModelType type() const override
       {
-        return Inpar::Solid::model_partitioned_coupling;
+        return Solid::model_partitioned_coupling;
       }
 
       bool assemble_force(Core::LinAlg::Vector<double>& f, const double& timefac_np) const override;

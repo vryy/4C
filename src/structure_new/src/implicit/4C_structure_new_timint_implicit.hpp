@@ -57,7 +57,7 @@ namespace Solid
        *  Do the nonlinear solve, i.e. (multiple) corrector,
        *  for the time step. All boundary conditions have
        *  been set. */
-      Inpar::Solid::ConvergenceStatus solve() override;
+      Solid::ConvergenceStatus solve() override;
 
       /** \brief Identify residual
        *
@@ -87,11 +87,10 @@ namespace Solid
       };
 
       //! do something in case nonlinear solution does not converge for some reason
-      Inpar::Solid::ConvergenceStatus perform_error_action(
-          Inpar::Solid::ConvergenceStatus nonlinsoldiv) override;
+      Solid::ConvergenceStatus perform_error_action(Solid::ConvergenceStatus nonlinsoldiv) override;
 
       //! check, if according to divercont flag time step size can be increased
-      void check_for_time_step_increase(Inpar::Solid::ConvergenceStatus& status);
+      void check_for_time_step_increase(Solid::ConvergenceStatus& status);
 
       //! returns pointer to generic implicit object
       std::shared_ptr<Solid::IMPLICIT::Generic> impl_int_ptr()
@@ -169,7 +168,7 @@ namespace Solid
       //@{
 
       //! Provide Name
-      Inpar::Solid::DynamicType method_name() const override;
+      Solid::DynamicType method_name() const override;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$

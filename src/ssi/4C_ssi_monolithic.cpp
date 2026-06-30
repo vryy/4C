@@ -508,8 +508,8 @@ void SSI::SsiMono::init(MPI_Comm comm, const Teuchos::ParameterList& globaltimep
       ScaTra::velocity_Navier_Stokes)
     FOUR_C_THROW("Invalid type of velocity field for scalar-structure interaction!");
 
-  if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYPE") ==
-      Inpar::Solid::DynamicType::Statics)
+  if (Teuchos::getIntegralValue<Solid::DynamicType>(structparams, "DYNAMICTYPE") ==
+      Solid::DynamicType::Statics)
   {
     FOUR_C_THROW(
         "Mass conservation is not fulfilled if 'Statics' time integration is chosen since the "

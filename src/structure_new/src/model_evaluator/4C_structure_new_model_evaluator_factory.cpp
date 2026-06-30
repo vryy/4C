@@ -12,7 +12,7 @@
 #include "4C_cardiovascular0d_structure_new_model_evaluator.hpp"
 #include "4C_constraint_framework_model_evaluator.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_model_evaluator_contact.hpp"
 #include "4C_structure_new_model_evaluator_lagpenconstraint.hpp"
 #include "4C_structure_new_model_evaluator_meshtying.hpp"
@@ -33,70 +33,69 @@ Solid::ModelEvaluator::Factory::Factory()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Solid::ModelEvaluatorManager::Map>
-Solid::ModelEvaluator::Factory::build_model_evaluators(
-    const std::set<Inpar::Solid::ModelType>& modeltypes,
+Solid::ModelEvaluator::Factory::build_model_evaluators(const std::set<Solid::ModelType>& modeltypes,
     const std::shared_ptr<Solid::ModelEvaluator::Generic>& coupling_model_ptr) const
 {
   // create a new standard map
   std::shared_ptr<Solid::ModelEvaluatorManager::Map> model_map =
       std::make_shared<Solid::ModelEvaluatorManager::Map>();
 
-  std::set<Inpar::Solid::ModelType>::const_iterator mt_iter;
+  std::set<Solid::ModelType>::const_iterator mt_iter;
   for (mt_iter = modeltypes.begin(); mt_iter != modeltypes.end(); ++mt_iter)
   {
     switch (*mt_iter)
     {
-      case Inpar::Solid::model_structure:
+      case Solid::model_structure:
         (*model_map)[*mt_iter] = build_structure_model_evaluator();
         break;
-      case Inpar::Solid::model_springdashpot:
+      case Solid::model_springdashpot:
         (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::SpringDashpot>();
         break;
-      case Inpar::Solid::model_browniandyn:
+      case Solid::model_browniandyn:
         (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::BrownianDyn>();
         break;
-      case Inpar::Solid::model_beaminteraction:
+      case Solid::model_beaminteraction:
         (*model_map)[*mt_iter] =
             std::make_shared<Solid::ModelEvaluator::BeamInteractionModelEvaluator>();
         break;
-      case Inpar::Solid::model_contact:
+      case Solid::model_contact:
       {
         (*model_map)[*mt_iter] = build_contact_model_evaluator();
         break;
       }
-      case Inpar::Solid::model_lag_pen_constraint:
+      case Solid::model_lag_pen_constraint:
         (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::LagPenConstraint>();
         break;
-      case Inpar::Solid::model_cardiovascular0d:
+      case Solid::model_cardiovascular0d:
         (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::Cardiovascular0D>();
         break;
-      case Inpar::Solid::model_monolithic_coupling:
+      case Solid::model_monolithic_coupling:
       {
         if (!coupling_model_ptr)
           FOUR_C_THROW("The monolithic coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
-      case Inpar::Solid::model_partitioned_coupling:
+      case Solid::model_partitioned_coupling:
       {
         if (!coupling_model_ptr)
           FOUR_C_THROW("The partitioned coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
-      case Inpar::Solid::model_basic_coupling:
+      case Solid::model_basic_coupling:
       {
         if (!coupling_model_ptr) FOUR_C_THROW("The basic coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
-      case Inpar::Solid::model_meshtying:
+      case Solid::model_meshtying:
         (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::Meshtying>();
         break;
-      case Inpar::Solid::model_constraints:
+      case Solid::model_constraints:
         (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::Constraint>();
         break;
-      case Inpar::Solid::model_multiscale:
+      case Solid::model_multiscale:
         (*model_map)[*mt_iter] = std::make_shared<Solid::ModelEvaluator::Multiscale>();
         break;
       default:
@@ -128,7 +127,7 @@ Solid::ModelEvaluator::Factory::build_structure_model_evaluator() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Solid::ModelEvaluatorManager::Map> Solid::ModelEvaluator::build_model_evaluators(
-    const std::set<Inpar::Solid::ModelType>& modeltypes,
+    const std::set<Solid::ModelType>& modeltypes,
     const std::shared_ptr<Solid::ModelEvaluator::Generic>& coupling_model_ptr)
 {
   Factory factory;

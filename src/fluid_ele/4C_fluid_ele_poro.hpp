@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fluid_ele.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -130,9 +130,9 @@ namespace Discret
       }
 
 
-      void set_kinematic_type(Inpar::Solid::KinemType kintype) { kintype_ = kintype; }
+      void set_kinematic_type(Solid::KinemType kintype) { kintype_ = kintype; }
 
-      Inpar::Solid::KinemType kinematic_type() const { return kintype_; }
+      Solid::KinemType kinematic_type() const { return kintype_; }
 
       //! Set anisotropic permeability directions obtained from structure element during cloning
       void set_anisotropic_permeability_directions(
@@ -200,7 +200,7 @@ namespace Discret
       FluidPoro& operator=(const FluidPoro& old);
 
       //! kinematic type
-      Inpar::Solid::KinemType kintype_;
+      Solid::KinemType kintype_;
 
       //! directions for anisotropic permeability
       std::vector<std::vector<double>> anisotropic_permeability_directions_;

@@ -144,9 +144,9 @@ namespace Mat
     }
 
     //! check if element kinematics and material kinematics are compatible
-    void valid_kinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Solid::KinemType kinem) override
     {
-      if (!(kinem == Inpar::Solid::KinemType::linear))
+      if (!(kinem == Solid::KinemType::linear))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 

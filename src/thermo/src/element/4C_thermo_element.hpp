@@ -16,8 +16,8 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -335,15 +335,15 @@ namespace Thermo
     //@}
 
     //! kinematic type passed from structural element
-    virtual void set_kinematic_type(Inpar::Solid::KinemType kintype)
+    virtual void set_kinematic_type(Solid::KinemType kintype)
     {
       kintype_ = kintype;
       return;
     };
     //! kinematic type
-    Inpar::Solid::KinemType kintype_;
+    Solid::KinemType kintype_;
 
-    Inpar::Solid::KinemType kin_type() const { return kintype_; }
+    Solid::KinemType kin_type() const { return kintype_; }
 
    private:
     //! number of dofs per node (for systems of thermo equations)

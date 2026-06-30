@@ -8,7 +8,6 @@
 #include "4C_solver_nonlin_nox_globaldata.hpp"  // class definition
 
 #include "4C_comm_mpi_utils.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
@@ -19,6 +18,7 @@
 #include "4C_solver_nonlin_nox_meritfunction_factory.hpp"
 #include "4C_solver_nonlin_nox_scaling.hpp"
 #include "4C_solver_nonlin_nox_solver_prepostop_generic.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <NOX_Utils.H>

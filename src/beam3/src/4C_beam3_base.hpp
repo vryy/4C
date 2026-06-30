@@ -18,8 +18,8 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_integration.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

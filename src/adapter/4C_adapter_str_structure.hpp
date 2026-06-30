@@ -13,7 +13,7 @@
 
 #include "4C_adapter_field.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
 
@@ -217,14 +217,14 @@ namespace Adapter
     virtual std::shared_ptr<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() = 0;
 
     /// do we have this model
-    virtual bool have_model(Inpar::Solid::ModelType model)
+    virtual bool have_model(Solid::ModelType model)
     {
       FOUR_C_THROW("new time integration only");
       return false;
     }
 
     /// return model evaluator
-    virtual Solid::ModelEvaluator::Generic& model_evaluator(Inpar::Solid::ModelType mtype) = 0;
+    virtual Solid::ModelEvaluator::Generic& model_evaluator(Solid::ModelType mtype) = 0;
 
     // access to locsys manager
     virtual std::shared_ptr<Core::Conditions::LocsysManager> locsys_manager() = 0;
@@ -245,7 +245,7 @@ namespace Adapter
     virtual std::shared_ptr<Constraints::SpringDashpotManager> get_spring_dashpot_manager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
-    virtual Inpar::Solid::StcScale get_stc_algo() = 0;
+    virtual Solid::StcScale get_stc_algo() = 0;
 
     /// Access to scaling matrix for STC
     virtual std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() = 0;
@@ -307,8 +307,8 @@ namespace Adapter
     virtual int integrate() = 0;
 
     //! do something in case nonlinear solution does not converge for some reason
-    virtual Inpar::Solid::ConvergenceStatus perform_error_action(
-        Inpar::Solid::ConvergenceStatus nonlinsoldiv) = 0;
+    virtual Solid::ConvergenceStatus perform_error_action(
+        Solid::ConvergenceStatus nonlinsoldiv) = 0;
 
     /// tests if there are more time steps to do
     [[nodiscard]] virtual bool not_finished() const = 0;
@@ -447,7 +447,7 @@ namespace Adapter
     for the time step. All boundary conditions have
     been set.
     */
-    virtual Inpar::Solid::ConvergenceStatus solve() = 0;
+    virtual Solid::ConvergenceStatus solve() = 0;
 
     /*!
     \brief linear structure solve with just a interface load

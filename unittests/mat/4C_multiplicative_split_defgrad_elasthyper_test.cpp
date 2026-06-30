@@ -105,7 +105,7 @@ namespace
       // set parameter list
       auto parameter_list_pointer = std::make_shared<Teuchos::ParameterList>();
       parameter_list_pointer->sublist("STRUCTURAL DYNAMIC", false)
-          .set("MASSLIN", Inpar::Solid::MassLin::ml_none);
+          .set("MASSLIN", Solid::MassLin::ml_none);
       parameter_list_pointer->sublist("SSI CONTROL")
           .set("COUPALGO", SSI::SolutionSchemeOverFields::ssi_IterStagg);
 

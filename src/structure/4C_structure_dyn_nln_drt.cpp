@@ -14,11 +14,11 @@
 #include "4C_fem_condition_periodic.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_resulttest.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -37,16 +37,16 @@ void caldyn_drt()
   // get input lists
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   // major switch to different time integrators
-  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYPE"))
+  switch (Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE"))
   {
-    case Inpar::Solid::DynamicType::Statics:
-    case Inpar::Solid::DynamicType::GenAlpha:
-    case Inpar::Solid::DynamicType::GenAlphaLieGroup:
-    case Inpar::Solid::DynamicType::OneStepTheta:
-    case Inpar::Solid::DynamicType::ExplEuler:
-    case Inpar::Solid::DynamicType::CentrDiff:
-    case Inpar::Solid::DynamicType::AdamsBashforth2:
-    case Inpar::Solid::DynamicType::AdamsBashforth4:
+    case Solid::DynamicType::Statics:
+    case Solid::DynamicType::GenAlpha:
+    case Solid::DynamicType::GenAlphaLieGroup:
+    case Solid::DynamicType::OneStepTheta:
+    case Solid::DynamicType::ExplEuler:
+    case Solid::DynamicType::CentrDiff:
+    case Solid::DynamicType::AdamsBashforth2:
+    case Solid::DynamicType::AdamsBashforth4:
       dyn_nlnstructural_drt();
       break;
     default:
@@ -83,14 +83,13 @@ void dyn_nlnstructural_drt()
   std::shared_ptr<Adapter::Structure> structadapter = nullptr;
   // FixMe The following switch is just a temporal hack, such we can jump between the new and the
   // old structure implementation. Has to be deleted after the clean-up has been finished!
-  const auto intstrat =
-      Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+  const auto intstrat = Teuchos::getIntegralValue<Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
   switch (intstrat)
   {
     // -------------------------------------------------------------------
     // old implementation
     // -------------------------------------------------------------------
-    case Inpar::Solid::int_old:
+    case Solid::int_old:
     {
       auto& problem = *Global::Problem::instance();
       Adapter::StructureBaseAlgorithm adapterbase_old_ptr(

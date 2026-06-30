@@ -15,10 +15,10 @@
 #include "4C_fem_general_largerotations.hpp"
 #include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_shared_ptr_from_ref.hpp"
 

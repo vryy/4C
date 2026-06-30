@@ -11,7 +11,6 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_general_cell_type_traits.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_solid_ele_calc_displacement_based.hpp"
 #include "4C_solid_ele_calc_displacement_based_linear_kinematics.hpp"
 #include "4C_solid_ele_calc_eas.hpp"
@@ -23,6 +22,7 @@
 #include "4C_solid_ele_calc_shell_eas_ans.hpp"
 #include "4C_solid_ele_factory_lib.hpp"
 #include "4C_solid_ele_properties.hpp"
+#include "4C_structure_new_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -63,17 +63,17 @@ namespace Discret::Elements
     using EASEvaluators = std::conditional_t<dim == 3,
         Core::FE::BaseTypeList<
             EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
-                Inpar::Solid::KinemType::nonlinearTotLag>,
+                FourC::Solid::KinemType::nonlinearTotLag>,
             EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_21,
-                Inpar::Solid::KinemType::nonlinearTotLag>,
+                FourC::Solid::KinemType::nonlinearTotLag>,
             EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_sh8_7,
-                Inpar::Solid::KinemType::nonlinearTotLag>,
+                FourC::Solid::KinemType::nonlinearTotLag>,
             EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_9,
-                Inpar::Solid::KinemType::linear>,
+                FourC::Solid::KinemType::linear>,
             EASSolidIntegrator<Core::FE::CellType::hex8, Discret::Elements::EasType::eastype_h8_21,
-                Inpar::Solid::KinemType::linear>>,
+                FourC::Solid::KinemType::linear>>,
         Core::FE::BaseTypeList<EASSolidIntegrator<Core::FE::CellType::quad4,
-            Discret::Elements::EasType::eastype_q4_4, Inpar::Solid::KinemType::nonlinearTotLag>>>;
+            Discret::Elements::EasType::eastype_q4_4, FourC::Solid::KinemType::nonlinearTotLag>>>;
 
     using MulfEvaluators =
         Core::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes<3>>;

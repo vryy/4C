@@ -472,9 +472,9 @@ namespace Discret::Elements
           displacements,
       const SpatialMaterialMapping<celltype>& spatial_material_mapping,
       const JacobianMapping<celltype>& jacobian_mapping, const Core::Elements::Element& ele,
-      const Inpar::Solid::KinemType& kinematictype)
+      const FourC::Solid::KinemType& kinematictype)
   {
-    if (kinematictype == Inpar::Solid::KinemType::linear)
+    if (kinematictype == FourC::Solid::KinemType::linear)
     {
       Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_dim<celltype>> dispgrad(
           Core::LinAlg::Initialization::zero);
@@ -512,11 +512,11 @@ namespace Discret::Elements
   compute_linearization_of_detdefgrad_wrt_disp(
       const SpatialMaterialMapping<celltype> spatial_material_mapping,
       const JacobianMapping<celltype> jacobian_mapping,
-      const Inpar::Solid::KinemType& kinematictype)
+      const FourC::Solid::KinemType& kinematictype)
   {
     Core::LinAlg::Matrix<1, Internal::num_dof_per_ele<celltype>> ddet_defgrd_ddisp;
 
-    if (kinematictype == Inpar::Solid::KinemType::linear)
+    if (kinematictype == FourC::Solid::KinemType::linear)
     {
       ddet_defgrd_ddisp.clear();
       return ddet_defgrd_ddisp;
@@ -561,9 +561,9 @@ namespace Discret::Elements
       const Core::LinAlg::Matrix<1, Internal::num_dim<celltype> * Internal::num_nodes<celltype>>
           ddet_defgrd_ddisp,
       const JacobianMapping<celltype>& jacobian_mapping,
-      const Inpar::Solid::KinemType& kinematictype)
+      const FourC::Solid::KinemType& kinematictype)
   {
-    if (kinematictype == Inpar::Solid::KinemType::linear)
+    if (kinematictype == FourC::Solid::KinemType::linear)
     {
       Core::LinAlg::Matrix<1, Internal::num_dof_per_ele<celltype>> dVolchange_dDisp;
 

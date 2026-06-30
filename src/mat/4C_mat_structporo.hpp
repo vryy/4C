@@ -158,7 +158,7 @@ namespace Mat
     double inv_bulk_modulus() const;
 
     //! check if element kinematics and material kinematics are compatible
-    void valid_kinematics(Inpar::Solid::KinemType kinem) override { mat_->valid_kinematics(kinem); }
+    void valid_kinematics(Solid::KinemType kinem) override { mat_->valid_kinematics(kinem); }
 
     //! return material
     std::shared_ptr<Core::Mat::Material> get_material() const { return mat_; }

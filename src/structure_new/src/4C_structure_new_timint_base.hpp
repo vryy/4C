@@ -126,7 +126,7 @@ namespace Solid
       std::shared_ptr<Core::LinAlg::Solver> linear_solver() override
       {
         check_init();
-        return datasdyn_->get_lin_solvers()[Inpar::Solid::model_structure];
+        return datasdyn_->get_lin_solvers()[Solid::model_structure];
       }
 
       /// Return MapExtractor for Dirichlet boundary conditions
@@ -138,10 +138,10 @@ namespace Solid
 
       //! Return the desired model evaluator (read-only)
       [[nodiscard]] const Solid::ModelEvaluator::Generic& model_evaluator(
-          Inpar::Solid::ModelType mtype) const override;
+          Solid::ModelType mtype) const override;
 
       //! Return the desired model evaluator (read and write)
-      Solid::ModelEvaluator::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override;
+      Solid::ModelEvaluator::Generic& model_evaluator(Solid::ModelType mtype) override;
 
       ///@}
 
@@ -265,7 +265,7 @@ namespace Solid
       bool have_constraint() override
       {
         check_init_setup();
-        return datasdyn_->have_model_type(Inpar::Solid::model_lag_pen_constraint);
+        return datasdyn_->have_model_type(Solid::model_lag_pen_constraint);
       }
 
       /// FixMe get constraint manager defined in the structure
@@ -283,10 +283,7 @@ namespace Solid
       }
 
       /// do we have this model
-      bool have_model(Inpar::Solid::ModelType model) override
-      {
-        return datasdyn_->have_model_type(model);
-      }
+      bool have_model(Solid::ModelType model) override { return datasdyn_->have_model_type(model); }
 
       /// Add residual increment to Lagrange multipliers stored in Constraint manager (derived)
       /// FixMe Different behavior for the implicit and explicit case!!!
@@ -399,7 +396,7 @@ namespace Solid
       }
 
       //! Get divcont type
-      [[nodiscard]] virtual Inpar::Solid::DivContAct get_divergence_action() const
+      [[nodiscard]] virtual Solid::DivContAct get_divergence_action() const
       {
         check_init_setup();
         return datasdyn_->get_divergence_action();
@@ -661,7 +658,7 @@ namespace Solid
       //@{
 
       //! Provide Name
-      virtual Inpar::Solid::DynamicType method_name() const = 0;
+      virtual Solid::DynamicType method_name() const = 0;
 
       //! Provide title
       std::string method_title() const;

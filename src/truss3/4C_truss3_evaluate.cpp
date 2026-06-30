@@ -477,7 +477,7 @@ void Discret::Elements::Truss3::calc_gp_stresses(
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   std::shared_ptr<std::vector<char>> stressdata = nullptr;
-  Inpar::Solid::StressType iostress;
+  Solid::StressType iostress;
   if (is_params_interface())
   {
     stressdata = params_interface().stress_data_ptr();
@@ -486,7 +486,7 @@ void Discret::Elements::Truss3::calc_gp_stresses(
   else
   {
     stressdata = params.get<std::shared_ptr<std::vector<char>>>("stress", nullptr);
-    iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
+    iostress = params.get<Solid::StressType>("iostress", Solid::stress_none);
   }
 
   const Core::FE::IntegrationPoints1D intpoints(gaussrule_);
@@ -511,19 +511,19 @@ void Discret::Elements::Truss3::calc_gp_stresses(
   {
     switch (iostress)
     {
-      case Inpar::Solid::stress_2pk:
+      case Solid::stress_2pk:
       {
         stress(gp, 0) = PK2;
         break;
       }
-      case Inpar::Solid::stress_cauchy:
+      case Solid::stress_cauchy:
       {
         const double def_grad = curr_length(curr_nodal_coords) / lrefe_;
         stress(gp, 0) = PK2 * def_grad;
         break;
       }
 
-      case Inpar::Solid::stress_none:
+      case Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("Requested stress type not available");

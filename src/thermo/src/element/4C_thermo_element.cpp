@@ -193,7 +193,7 @@ Thermo::Element::Element(int id, int owner)
     : Core::Elements::Element(id, owner), distype_(Core::FE::CellType::dis_none)
 {
   // default: geometrically linear, also including purely thermal problem
-  kintype_ = Inpar::Solid::KinemType::linear;
+  kintype_ = Solid::KinemType::linear;
   return;
 }  // ctor
 

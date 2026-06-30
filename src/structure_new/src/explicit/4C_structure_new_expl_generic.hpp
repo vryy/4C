@@ -48,7 +48,7 @@ namespace Solid
        *
        */
       bool apply_correction_system(const NOX::Nln::CorrectionType type,
-          const std::vector<Inpar::Solid::ModelType>& constraint_models,
+          const std::vector<Solid::ModelType>& constraint_models,
           const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f,
           Core::LinAlg::SparseOperator& jac) override
       {
@@ -69,8 +69,7 @@ namespace Solid
 
       //! Assemble the right hand side
       bool assemble_force(Core::LinAlg::Vector<double>& f,
-          const std::vector<Inpar::Solid::ModelType>* without_these_models =
-              nullptr) const override;
+          const std::vector<Solid::ModelType>* without_these_models = nullptr) const override;
 
       //! @name Monolithic update routines
       //! @{
@@ -99,7 +98,7 @@ namespace Solid
       //@{
 
       //! Provide Name
-      [[nodiscard]] virtual Inpar::Solid::DynamicType method_name() const = 0;
+      [[nodiscard]] virtual Solid::DynamicType method_name() const = 0;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$

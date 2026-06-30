@@ -55,7 +55,7 @@ Solid::Nln::SOLVER::Nox::Nox(const Teuchos::ParameterList& default_params,
   std::vector<NOX::Nln::SolutionType> soltypes;
   // map of linear solvers, the key is the solution type
   NOX::Nln::LinearSystem::SolverMap linsolvers;
-  /* convert the Inpar::Solid::ModelType to a NOX::Nln::SolType
+  /* convert the Solid::ModelType to a NOX::Nln::SolType
    * and fill the linear solver map. */
   Solid::Nln::convert_model_type2_sol_type(
       soltypes, linsolvers, data_sdyn().get_model_types(), data_sdyn().get_lin_solvers());
@@ -175,7 +175,7 @@ void Solid::Nln::SOLVER::Nox::reset_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::solve()
+Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::solve()
 {
 #if !(FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 4))
   const auto solver_type =
@@ -196,7 +196,7 @@ Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::solve()
 
   // Check if we do something special if the non-linear solver fails,
   // otherwise an error is thrown.
-  if (data_sdyn().get_divergence_action() == Inpar::Solid::divcont_stop)
+  if (data_sdyn().get_divergence_action() == Solid::divcont_stop)
     problem_->check_final_status(finalstatus);
 
   return convert_final_status(finalstatus);
@@ -205,27 +205,27 @@ Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::solve()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::convert_final_status(
+Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::convert_final_status(
     const ::NOX::StatusTest::StatusType& finalstatus) const
 {
-  Inpar::Solid::ConvergenceStatus convstatus = Inpar::Solid::conv_success;
+  Solid::ConvergenceStatus convstatus = Solid::conv_success;
 
   switch (finalstatus)
   {
     case ::NOX::StatusTest::Unevaluated:
-      convstatus = Inpar::Solid::conv_ele_fail;
+      convstatus = Solid::conv_ele_fail;
       break;
     case ::NOX::StatusTest::Unconverged:
     case ::NOX::StatusTest::Failed:
-      convstatus = Inpar::Solid::conv_nonlin_fail;
+      convstatus = Solid::conv_nonlin_fail;
       break;
     case ::NOX::StatusTest::Converged:
-      convstatus = Inpar::Solid::conv_success;
+      convstatus = Solid::conv_success;
       break;
     default:
       FOUR_C_THROW(
           "Conversion of the ::NOX::StatusTest::StatusType to "
-          "a Inpar::Solid::ConvergenceStatus is not possible!");
+          "a Solid::ConvergenceStatus is not possible!");
       break;
   }
 

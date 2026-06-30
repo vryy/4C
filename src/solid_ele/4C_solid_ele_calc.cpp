@@ -10,7 +10,6 @@
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_element_integration_select.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_tensor_generators.hpp"
 #include "4C_mat_so3_material.hpp"
@@ -31,6 +30,7 @@
 #include "4C_solid_ele_calc_shell_eas_ans.hpp"
 #include "4C_solid_ele_formulation.hpp"
 #include "4C_solid_ele_interface_serializable.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_demangle.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -791,27 +791,27 @@ template class Discret::Elements::SolidEleCalc<Core::FE::CellType::wedge6,
 // explicit instantiations for hex8 with EAS
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>>;
+        Discret::Elements::EasType::eastype_h8_9, Solid::KinemType::nonlinearTotLag>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::nonlinearTotLag>>;
+        Discret::Elements::EasType::eastype_h8_21, Solid::KinemType::nonlinearTotLag>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_sh8_7, Inpar::Solid::KinemType::nonlinearTotLag>>;
+        Discret::Elements::EasType::eastype_sh8_7, Solid::KinemType::nonlinearTotLag>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::linear>>;
+        Discret::Elements::EasType::eastype_h8_9, Solid::KinemType::linear>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::linear>>;
+        Discret::Elements::EasType::eastype_h8_21, Solid::KinemType::linear>>;
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_sh8_7, Inpar::Solid::KinemType::linear>>;
+        Discret::Elements::EasType::eastype_sh8_7, Solid::KinemType::linear>>;
 
 
 // explicit instantiations for quad4 with EAS
 template class Discret::Elements::SolidEleCalc<Core::FE::CellType::quad4,
     Discret::Elements::EASFormulation<Core::FE::CellType::quad4,
-        Discret::Elements::EasType::eastype_q4_4, Inpar::Solid::KinemType::nonlinearTotLag>>;
+        Discret::Elements::EasType::eastype_q4_4, Solid::KinemType::nonlinearTotLag>>;
 
 FOUR_C_NAMESPACE_CLOSE

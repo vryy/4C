@@ -8,7 +8,6 @@
 #include "4C_global_legacy_module_validmaterials.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_field.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_io_input_spec_storage.hpp"
@@ -23,6 +22,7 @@
 #include "4C_mat_scatra_growth_remodel.hpp"
 #include "4C_mat_scatra_nonlocal_stimulus.hpp"
 #include "4C_porofluid_pressure_based_elast_scatra_input.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <filesystem>
 #include <optional>

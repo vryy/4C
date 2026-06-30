@@ -41,10 +41,7 @@ namespace Adapter
     }
 
     //! Provide the name
-    Inpar::Solid::TimAdaKind method_name() const override
-    {
-      return Inpar::Solid::timada_kind_zienxie;
-    }
+    Solid::TimAdaKind method_name() const override { return Solid::timada_kind_zienxie; }
 
     std::string method_title() const override { return "ZienkiewiczXie"; }
 

@@ -71,8 +71,8 @@ TSI::Algorithm::Algorithm(MPI_Comm comm)
     volcoupl_->setup(problem_->volmortar_params(), problem_->cut_general_params());
   }
 
-  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
-          problem_->structural_dynamic_params(), "INT_STRATEGY") == Inpar::Solid::int_old)
+  if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(
+          problem_->structural_dynamic_params(), "INT_STRATEGY") == Solid::int_old)
     FOUR_C_THROW("old structural time integration no longer supported in tsi");
   else
   {
@@ -266,7 +266,7 @@ void TSI::Algorithm::prepare_contact_strategy()
 
   if (stype == CONTACT::SolvingStrategy::lagmult)
   {
-    if (structure_field()->have_model(Inpar::Solid::model_contact))
+    if (structure_field()->have_model(Solid::model_contact))
     {
       FOUR_C_THROW(
           "structure should not have a Lagrange strategy ... as long as condensed"
@@ -327,7 +327,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     contact_strategy_lagrange_->evaluate_reference_state();
     contact_strategy_lagrange_->inttime_init();
     contact_strategy_lagrange_->set_time_integration_info(structure_field()->tim_int_param(),
-        Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
+        Teuchos::getIntegralValue<Solid::DynamicType>(
             problem_->structural_dynamic_params(), "DYNAMICTYPE"));
     contact_strategy_lagrange_->redistribute_contact(
         structure_field()->dispn(), structure_field()->veln());

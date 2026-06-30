@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_exporter.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_structure_new_input.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -42,7 +42,7 @@ namespace Solid
     class GaussPointDataOutputManager
     {
      public:
-      explicit GaussPointDataOutputManager(Inpar::Solid::GaussPointDataOutputType output_type);
+      explicit GaussPointDataOutputManager(Solid::GaussPointDataOutputType output_type);
 
       void add_quantity_if_not_existent(const std::string& name, int size);
 
@@ -117,7 +117,7 @@ namespace Solid
         return quantities_;
       }
 
-      inline Inpar::Solid::GaussPointDataOutputType get_output_type() const { return output_type_; }
+      inline Solid::GaussPointDataOutputType get_output_type() const { return output_type_; }
 
      private:
       static constexpr int MPI_TAG = 545;
@@ -143,7 +143,7 @@ namespace Solid
       void prepare_gauss_point_data_vectors(const Core::LinAlg::Map& element_col_map);
 
       //! output type of the data
-      Inpar::Solid::GaussPointDataOutputType output_type_;
+      Solid::GaussPointDataOutputType output_type_;
 
       //! maximum number of Gauss points of all elements
       int max_num_gp_;

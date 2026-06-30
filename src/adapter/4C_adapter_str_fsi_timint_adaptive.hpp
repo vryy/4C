@@ -104,7 +104,7 @@ namespace Adapter
         double& errinfother  ///< L-inf-norm of temporal discretization error based on interior DOFs
     );
 
-    Inpar::Solid::VectorNorm errnorm_;  //!< norm for local error vector
+    Solid::VectorNorm errnorm_;  //!< norm for local error vector
 
     int numdbcdofs_;       ///< number of DOFs with Dirichlet boundary condition
     int numdbcfsidofs_;    ///< number of interface DOFs with Dirichlet boundary condition

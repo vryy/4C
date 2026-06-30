@@ -766,8 +766,8 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
     auto structdis = problem->get_dis(struct_disname);
 
     // build structure based on new structural time integration
-    if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
-            structparams, "INT_STRATEGY") == Inpar::Solid::IntegrationStrategy::int_standard)
+    if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(structparams, "INT_STRATEGY") ==
+        Solid::IntegrationStrategy::int_standard)
     {
       struct_adapterbase_ptr_ = Adapter::build_structure_algorithm(*problem, structparams);
 
@@ -776,8 +776,8 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
     }
     // build structure based on old structural time integration
-    else if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
-                 structparams, "INT_STRATEGY") == Inpar::Solid::IntegrationStrategy::int_old)
+    else if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(structparams, "INT_STRATEGY") ==
+             Solid::IntegrationStrategy::int_old)
     {
       Adapter::StructureBaseAlgorithm structure(*problem, *structtimeparams,
           const_cast<Teuchos::ParameterList&>(structparams), structdis);
@@ -870,11 +870,11 @@ void SSI::SSIBase::check_adaptive_time_stepping(
         "Must provide adaptive time stepping algorithm in one of the sub problems. (Currently "
         "just ScaTra)");
   }
-  if (Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(
-          structparams.sublist("TIMEADAPTIVITY"), "KIND") != Inpar::Solid::timada_kind_none)
+  if (Teuchos::getIntegralValue<Solid::TimAdaKind>(
+          structparams.sublist("TIMEADAPTIVITY"), "KIND") != Solid::timada_kind_none)
     FOUR_C_THROW("Adaptive time stepping in SSI currently just from ScaTra");
-  if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYPE") ==
-      Inpar::Solid::DynamicType::AdamsBashforth2)
+  if (Teuchos::getIntegralValue<Solid::DynamicType>(structparams, "DYNAMICTYPE") ==
+      Solid::DynamicType::AdamsBashforth2)
     FOUR_C_THROW("Currently, only one step methods are allowed for adaptive time stepping");
 }
 
@@ -919,8 +919,8 @@ bool SSI::SSIBase::check_s2i_kinetics_condition_for_pseudo_contact(
   }
 
   const bool do_output_cauchy_stress =
-      Teuchos::getIntegralValue<Inpar::Solid::StressType>(problem->io_params(), "STRUCT_STRESS") ==
-      Inpar::Solid::stress_cauchy;
+      Teuchos::getIntegralValue<Solid::StressType>(problem->io_params(), "STRUCT_STRESS") ==
+      Solid::stress_cauchy;
 
   if (is_s2i_kinetic_with_pseudo_contact and !do_output_cauchy_stress)
   {
@@ -989,15 +989,15 @@ void SSI::SSIBase::setup_contact_strategy()
 
   if (contact_solution_type == CONTACT::SolvingStrategy::nitsche)
   {
-    if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
-            problem->structural_dynamic_params(), "INT_STRATEGY") != Inpar::Solid::int_standard)
+    if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(
+            problem->structural_dynamic_params(), "INT_STRATEGY") != Solid::int_standard)
     {
       FOUR_C_THROW("ssi contact only with new structural time integration");
     }
 
     // get the contact model evaluator and store a pointer to the strategy
     auto& model_evaluator_contact = dynamic_cast<Solid::ModelEvaluator::Contact&>(
-        structure_field()->model_evaluator(Inpar::Solid::model_contact));
+        structure_field()->model_evaluator(Solid::model_contact));
     contact_strategy_nitsche_ = std::dynamic_pointer_cast<CONTACT::NitscheStrategySsi>(
         model_evaluator_contact.strategy_ptr());
   }

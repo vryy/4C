@@ -7,9 +7,9 @@
 
 #include "4C_inpar_io.hpp"
 
-#include "4C_inpar_structure.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_io_pstream.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_thermo_input.hpp"
 FOUR_C_NAMESPACE_OPEN
 
@@ -45,71 +45,71 @@ std::vector<Core::IO::InputSpec> Inpar::IO::valid_parameters()
               "STRUCT_ELE", {.description = "Output of element properties", .default_value = true}),
           parameter<bool>(
               "STRUCT_DISP", {.description = "Output of displacements", .default_value = true}),
-          deprecated_selection<Inpar::Solid::StressType>("STRUCT_STRESS",
+          deprecated_selection<Solid::StressType>("STRUCT_STRESS",
               {
-                  {"No", Inpar::Solid::stress_none},
-                  {"no", Inpar::Solid::stress_none},
-                  {"NO", Inpar::Solid::stress_none},
-                  {"Yes", Inpar::Solid::stress_2pk},
-                  {"yes", Inpar::Solid::stress_2pk},
-                  {"YES", Inpar::Solid::stress_2pk},
-                  {"Cauchy", Inpar::Solid::stress_cauchy},
-                  {"cauchy", Inpar::Solid::stress_cauchy},
-                  {"2PK", Inpar::Solid::stress_2pk},
-                  {"2pk", Inpar::Solid::stress_2pk},
+                  {"No", Solid::stress_none},
+                  {"no", Solid::stress_none},
+                  {"NO", Solid::stress_none},
+                  {"Yes", Solid::stress_2pk},
+                  {"yes", Solid::stress_2pk},
+                  {"YES", Solid::stress_2pk},
+                  {"Cauchy", Solid::stress_cauchy},
+                  {"cauchy", Solid::stress_cauchy},
+                  {"2PK", Solid::stress_2pk},
+                  {"2pk", Solid::stress_2pk},
               },
               {.description = "Output of stress. This is only possible in the new vtk-based "
                               "output. Make sure to set INTERVAL_STEPS accordingly.",
-                  .default_value = Inpar::Solid::stress_none}),
-          deprecated_selection<Inpar::Solid::StrainType>("STRUCT_STRAIN",
+                  .default_value = Solid::stress_none}),
+          deprecated_selection<Solid::StrainType>("STRUCT_STRAIN",
               {
-                  {"No", Inpar::Solid::strain_none},
-                  {"no", Inpar::Solid::strain_none},
-                  {"NO", Inpar::Solid::strain_none},
-                  {"Yes", Inpar::Solid::strain_gl},
-                  {"yes", Inpar::Solid::strain_gl},
-                  {"YES", Inpar::Solid::strain_gl},
-                  {"EA", Inpar::Solid::strain_ea},
-                  {"ea", Inpar::Solid::strain_ea},
-                  {"GL", Inpar::Solid::strain_gl},
-                  {"gl", Inpar::Solid::strain_gl},
-                  {"LOG", Inpar::Solid::strain_log},
-                  {"log", Inpar::Solid::strain_log},
+                  {"No", Solid::strain_none},
+                  {"no", Solid::strain_none},
+                  {"NO", Solid::strain_none},
+                  {"Yes", Solid::strain_gl},
+                  {"yes", Solid::strain_gl},
+                  {"YES", Solid::strain_gl},
+                  {"EA", Solid::strain_ea},
+                  {"ea", Solid::strain_ea},
+                  {"GL", Solid::strain_gl},
+                  {"gl", Solid::strain_gl},
+                  {"LOG", Solid::strain_log},
+                  {"log", Solid::strain_log},
               },
               {.description = "Output of strains. This is only possible in the new vtk-based "
                               "output. Make sure to set INTERVAL_STEPS accordingly.",
-                  .default_value = Inpar::Solid::strain_none}),
-          deprecated_selection<Inpar::Solid::StrainType>("STRUCT_PLASTIC_STRAIN",
+                  .default_value = Solid::strain_none}),
+          deprecated_selection<Solid::StrainType>("STRUCT_PLASTIC_STRAIN",
               {
-                  {"No", Inpar::Solid::strain_none},
-                  {"no", Inpar::Solid::strain_none},
-                  {"NO", Inpar::Solid::strain_none},
-                  {"Yes", Inpar::Solid::strain_gl},
-                  {"yes", Inpar::Solid::strain_gl},
-                  {"YES", Inpar::Solid::strain_gl},
-                  {"EA", Inpar::Solid::strain_ea},
-                  {"ea", Inpar::Solid::strain_ea},
-                  {"GL", Inpar::Solid::strain_gl},
-                  {"gl", Inpar::Solid::strain_gl},
+                  {"No", Solid::strain_none},
+                  {"no", Solid::strain_none},
+                  {"NO", Solid::strain_none},
+                  {"Yes", Solid::strain_gl},
+                  {"yes", Solid::strain_gl},
+                  {"YES", Solid::strain_gl},
+                  {"EA", Solid::strain_ea},
+                  {"ea", Solid::strain_ea},
+                  {"GL", Solid::strain_gl},
+                  {"gl", Solid::strain_gl},
               },
-              {.description = "", .default_value = Inpar::Solid::strain_none}),
+              {.description = "", .default_value = Solid::strain_none}),
 
           parameter<bool>("STRUCT_SURFACTANT", {.description = "", .default_value = false}),
 
           parameter<bool>("STRUCT_JACOBIAN_MATLAB", {.description = "", .default_value = false}),
 
-          deprecated_selection<Inpar::Solid::ConditionNumber>("STRUCT_CONDITION_NUMBER",
+          deprecated_selection<Solid::ConditionNumber>("STRUCT_CONDITION_NUMBER",
               {
-                  {"gmres_estimate", Inpar::Solid::ConditionNumber::gmres_estimate},
-                  {"max_min_ev_ratio", Inpar::Solid::ConditionNumber::max_min_ev_ratio},
-                  {"one-norm", Inpar::Solid::ConditionNumber::one_norm},
-                  {"inf-norm", Inpar::Solid::ConditionNumber::inf_norm},
-                  {"none", Inpar::Solid::ConditionNumber::none},
+                  {"gmres_estimate", Solid::ConditionNumber::gmres_estimate},
+                  {"max_min_ev_ratio", Solid::ConditionNumber::max_min_ev_ratio},
+                  {"one-norm", Solid::ConditionNumber::one_norm},
+                  {"inf-norm", Solid::ConditionNumber::inf_norm},
+                  {"none", Solid::ConditionNumber::none},
               },
               {.description =
                       "Compute the condition number of the structural system matrix and write "
                       "it to a text file.",
-                  .default_value = Inpar::Solid::ConditionNumber::none}),
+                  .default_value = Solid::ConditionNumber::none}),
 
           parameter<bool>("FLUID_STRESS", {.description = "", .default_value = false}),
 

@@ -101,18 +101,18 @@ void Solid::Integrator::setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::Integrator::set_initial_displacement(
-    const Inpar::Solid::InitialDisp init, const int startfuncno)
+    const Solid::InitialDisp init, const int startfuncno)
 {
   switch (init)
   {
-    case Inpar::Solid::initdisp_zero_disp:
+    case Solid::initdisp_zero_disp:
     {
       global_state().get_dis_n()->put_scalar(0.0);
       global_state().get_dis_np()->put_scalar(0.0);
 
       break;
     }
-    case Inpar::Solid::initdisp_disp_by_function:
+    case Solid::initdisp_disp_by_function:
     {
       const Core::LinAlg::Map* dofrowmap = global_state().get_discret()->dof_row_map();
 
@@ -223,8 +223,8 @@ void Solid::Integrator::compute_mass_matrix_and_init_acc()
   // ---------------------------------------------------------------------------
   // get the structural linear solver
   std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>> str_linsolver;
-  str_linsolver[NOX::Nln::sol_structure] = Teuchos::rcpFromRef(
-      *tim_int().get_data_sdyn().get_lin_solvers().at(Inpar::Solid::model_structure));
+  str_linsolver[NOX::Nln::sol_structure] =
+      Teuchos::rcpFromRef(*tim_int().get_data_sdyn().get_lin_solvers().at(Solid::model_structure));
 
   // copy the nox parameter-list
   Teuchos::ParameterList p_nox = tim_int().get_data_sdyn().get_nox_params();
@@ -248,7 +248,7 @@ void Solid::Integrator::compute_mass_matrix_and_init_acc()
 
   // extract the solid part of the rhs
   std::shared_ptr rhs_solid =
-      global_state().extract_model_entries(Inpar::Solid::model_structure, rhs_full);
+      global_state().extract_model_entries(Solid::model_structure, rhs_full);
 
   // add inertial and viscous contributions to rhs
   /* note: this needs to be done 'manually' here because in the RHS evaluation
@@ -375,7 +375,7 @@ double Solid::Integrator::get_total_mid_time_str_energy(const Core::LinAlg::Vect
 
   eval_data().clear_values_for_all_energy_types();
   Solid::ModelEvaluator::Structure& str_model =
-      dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
+      dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Solid::model_structure));
 
   std::shared_ptr<const Core::LinAlg::Vector<double>> dis_avg =
       mt_energy_.average(disnp, *global_state().get_dis_n(), get_int_param());
@@ -565,7 +565,7 @@ std::shared_ptr<const Solid::ModelEvaluatorManager> Solid::Integrator::model_eva
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::ModelEvaluator::Generic& Solid::Integrator::evaluator(const Inpar::Solid::ModelType& mt)
+Solid::ModelEvaluator::Generic& Solid::Integrator::evaluator(const Solid::ModelType& mt)
 {
   check_init_setup();
   return model_eval().evaluator(mt);
@@ -573,8 +573,7 @@ Solid::ModelEvaluator::Generic& Solid::Integrator::evaluator(const Inpar::Solid:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Solid::ModelEvaluator::Generic& Solid::Integrator::evaluator(
-    const Inpar::Solid::ModelType& mt) const
+const Solid::ModelEvaluator::Generic& Solid::Integrator::evaluator(const Solid::ModelType& mt) const
 {
   check_init_setup();
   return model_eval().evaluator(mt);
@@ -676,14 +675,14 @@ void Solid::Integrator::post_time_loop()
   model_eval().post_time_loop();
 
   Solid::ModelEvaluator::Structure& str_model =
-      dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
+      dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Solid::model_structure));
   str_model.evaluate_analytical_error();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::Integrator::MidTimeEnergy::MidTimeEnergy(const Integrator& integrator)
-    : integrator_(integrator), avg_type_(Inpar::Solid::midavg_vague)
+    : integrator_(integrator), avg_type_(Solid::midavg_vague)
 { /* empty */
 }
 
@@ -698,7 +697,7 @@ void Solid::Integrator::MidTimeEnergy::print(std::ostream& os) const
   os << "external energy (dead load/potential) = " << ext_energy_np_ << "\n";
   os << "kinetic energy                        = " << kin_energy_np_ << "\n";
 
-  if (avg_type_ == Inpar::Solid::midavg_trlike)
+  if (avg_type_ == Solid::midavg_trlike)
   {
     os << "--- Contributions of time step n   (previously accepted)\n";
     os << "strain energy                         = " << int_energy_n_ << "\n";
@@ -722,7 +721,7 @@ double Solid::Integrator::MidTimeEnergy::get_total() const
 
   double total_energy = 0.0;
   total_energy = int_energy_np_ - kin_energy_np_ - ext_energy_np_;
-  if (avg_type_ == Inpar::Solid::midavg_trlike)
+  if (avg_type_ == Solid::midavg_trlike)
   {
     const double energy_n = int_energy_n_ - kin_energy_n_ - ext_energy_n_;
     total_energy = fac_np * total_energy + fac_n * energy_n;
@@ -743,10 +742,10 @@ std::shared_ptr<const Core::LinAlg::Vector<double>> Solid::Integrator::MidTimeEn
       std::make_shared<Core::LinAlg::Vector<double>>(state_np);
   switch (avg_type_)
   {
-    case Inpar::Solid::midavg_vague:
-    case Inpar::Solid::midavg_trlike:
+    case Solid::midavg_vague:
+    case Solid::midavg_trlike:
       return state_avg;
-    case Inpar::Solid::midavg_imrlike:
+    case Solid::midavg_imrlike:
     {
       state_avg->update(fac_n, state_n, fac_np);
       return state_avg;
@@ -771,9 +770,9 @@ bool Solid::Integrator::MidTimeEnergy::is_correctly_configured() const
 {
   FOUR_C_ASSERT(issetup_, "Call setup() first.");
 
-  if (avg_type_ == Inpar::Solid::midavg_vague)
+  if (avg_type_ == Solid::midavg_vague)
   {
-    if (integrator_.s_dyn().get_dynamic_type() != Inpar::Solid::DynamicType::Statics) return false;
+    if (integrator_.s_dyn().get_dynamic_type() != Solid::DynamicType::Statics) return false;
   }
   return true;
 }
@@ -782,7 +781,7 @@ bool Solid::Integrator::MidTimeEnergy::is_correctly_configured() const
  *----------------------------------------------------------------------------*/
 bool Solid::Integrator::MidTimeEnergy::store_energy_n() const
 {
-  return avg_type_ == Inpar::Solid::midavg_trlike;
+  return avg_type_ == Solid::midavg_trlike;
 }
 
 /*----------------------------------------------------------------------------*

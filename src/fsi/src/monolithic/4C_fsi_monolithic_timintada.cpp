@@ -116,8 +116,7 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
   //----------------------------------------------------------------------------
   // check on which fields time adaptivity should be based on
   //----------------------------------------------------------------------------
-  if (not(Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(sada, "KIND") ==
-          Inpar::Solid::timada_kind_none))
+  if (not(Teuchos::getIntegralValue<Solid::TimAdaKind>(sada, "KIND") == Solid::timada_kind_none))
     isadastructure_ = true;
 
   if (not(Teuchos::getIntegralValue<FSI::FluidMethod>(fsiada, "AUXINTEGRATORFLUID") ==
@@ -333,7 +332,7 @@ void FSI::Monolithic::write_ada_file_header() const
     // get string of type of auxiliary time integration scheme in structure field
     const Teuchos::ParameterList& sdyn = problem->structural_dynamic_params();
     const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
-    const auto strmethod = Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(sada, "KIND");
+    const auto strmethod = Teuchos::getIntegralValue<Solid::TimAdaKind>(sada, "KIND");
 
     // print the actual header
     (*logada_) << "Time Adaptivity in monolithic Fluid-Structure-Interaction:"

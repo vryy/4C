@@ -30,9 +30,9 @@ namespace
 {
   bool is_mulf_active(const double time)
   {
-    static const bool is_mulf = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
+    static const bool is_mulf = Teuchos::getIntegralValue<Solid::PreStress>(
                                     Global::Problem::instance()->structural_dynamic_params(),
-                                    "PRESTRESS") == Inpar::Solid::PreStress::mulf;
+                                    "PRESTRESS") == Solid::PreStress::mulf;
     static const double is_mulf_time =
         Global::Problem::instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
 
