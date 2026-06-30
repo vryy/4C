@@ -19,6 +19,8 @@
 #include "4C_particle_engine_interface.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
+#include <map>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
@@ -568,47 +570,55 @@ namespace Particle
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
     /*!
-     * \brief determine particles that need to be refreshed
+     * \brief pack particles to be refreshed into send buffers
      *
-     * Determine particles that need to be refreshed on other processors based on the direct
-     * ghosting targets map.
+     * Pack all states of particles that need to be refreshed on other processors directly into
+     * send buffers, bypassing ParticleObject creation.
      *
      *
-     * \param[out] particlestosend particles to be send to other processors
+     * \param[out] sdata send buffers indexed by target processor rank
      */
-    void determine_particles_to_be_refreshed(
-        std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
+    void pack_particles_to_be_refreshed(std::map<int, std::vector<char>>& sdata) const;
 
     /*!
-     * \brief determine specific states of particles of specific type that need to be refreshed
+     * \brief pack specific states of particles of specific types into send buffers
+     *
+     * Pack the information of specific states of particles of specific types directly into
+     * send buffers, bypassing ParticleObject creation.
      *
      *
      * \param[in]  particlestatestotypes particle types and corresponding particle states to be
      *                                   refreshed
-     * \param[out] particlestosend       particles to be send to other processors
+     * \param[out] sdata                 send buffers indexed by target processor rank
      */
-    void determine_specific_states_of_particles_of_specific_types_to_be_refreshed(
+    void pack_specific_states_of_particles_to_be_refreshed(
         const StatesOfTypesToRefresh& particlestatestotypes,
-        std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
+        std::map<int, std::vector<char>>& sdata) const;
 
     /*!
      * \brief communicate particles
      *
      * This method communicates particles to be send to other processors and receives particles from
-     * other processors. When send_to_procs and receive_from_procs are provided, the communication
-     * uses the known graph directly without collective communication. Otherwise a collective
-     * communication is used to determine the number of incoming messages.
+     * other processors.
      *
      *
-     * \param[in]  particlestosend      particles to be send to other processors
-     * \param[out] particlestoreceive   particles to be received on this processor
-     * \param[in]  send_to_procs        optional set of processors to send data to
-     * \param[in]  receive_from_procs   optional set of processors to receive data from
+     * \param[in]  particlestosend    particles to be send to other processors
+     * \param[out] particlestoreceive particles to be received on this processor
      */
     void communicate_particles(std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
-        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive,
-        const std::set<int>* send_to_procs = nullptr,
-        const std::set<int>* receive_from_procs = nullptr) const;
+        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive) const;
+
+    /*!
+     * \brief communicate refreshed particles using cached communication graph
+     *
+     * Uses the pre-computed cached_procs_send_ghost_data_to_ and
+     * cached_procs_receive_ghost_data_from_ to exchange refreshed particle data. Unpacks received
+     * data directly into ghosted particle containers without ParticleObject creation.
+     *
+     *
+     * \param[in] sdata pre-packed send buffers indexed by target processor rank
+     */
+    void communicate_refreshed_particles(std::map<int, std::vector<char>>& sdata) const;
 
     /*!
      * \brief communicate and build map for direct ghosting
@@ -641,15 +651,6 @@ namespace Particle
     void insert_ghosted_particles(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert,
         std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>& directghosting);
-
-    /*!
-     * \brief insert refreshed particles received from other processors
-     *
-     *
-     * \param[in] particlestoinsert particles to be inserted into containers on this processor
-     */
-    void insert_refreshed_particles(
-        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) const;
 
     /*!
      * \brief remove particles from containers
