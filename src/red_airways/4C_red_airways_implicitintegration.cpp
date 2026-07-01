@@ -345,6 +345,11 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
     }
   }
 
+  visualization_writer_ = std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(
+      actdis, Core::IO::visualization_parameters_factory(
+                  Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+                  *Global::Problem::instance()->output_control_file(), time_));
+
 }  // RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt
 
 
@@ -1315,6 +1320,85 @@ void Airway::RedAirwayImplicitTimeInt::load_state()
 }  // RedAirwayImplicitTimeInt::LoadState
 
 
+void Airway::RedAirwayImplicitTimeInt::collect_runtime_output_data(bool CoupledTo3D, int step)
+{
+  // "pressure" vectors
+  visualization_writer_->append_result_data_vector_with_context(
+      *pnp_, Core::IO::OutputEntity::dof, {"pressure"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *p_nonlin_, Core::IO::OutputEntity::dof, {"pressure_error"});
+
+
+  // write the flow values
+  visualization_writer_->append_result_data_vector_with_context(
+      *qin_np_, Core::IO::OutputEntity::element, {"flow_in"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *qout_np_, Core::IO::OutputEntity::element, {"flow_out"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *x_np_, Core::IO::OutputEntity::element, {"x_np"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *open_, Core::IO::OutputEntity::element, {"open"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *p_extnp_, Core::IO::OutputEntity::element, {"p_extnp"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *p_extn_, Core::IO::OutputEntity::element, {"p_extn"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *airway_acinus_dep_, Core::IO::OutputEntity::element, {"airway_acinus_dep"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *elemVolumenp_, Core::IO::OutputEntity::element, {"airway_volume"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *elemRadiusnp_, Core::IO::OutputEntity::element, {"radius_current"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *acini_e_volumenp_, Core::IO::OutputEntity::element, {"acini_volume"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *acini_e_volume_strain_, Core::IO::OutputEntity::element, {"acini_volumetric_strain"});
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *acini_e_volume0_, Core::IO::OutputEntity::element, {"acini_volume0"});
+
+
+  if (step_ == upres_)
+  {
+    visualization_writer_->append_result_data_vector_with_context(
+        *elemVolume0_, Core::IO::OutputEntity::element, {"airway_volume0"});
+
+    visualization_writer_->append_result_data_vector_with_context(
+        *nodeIds_, Core::IO::OutputEntity::dof, {"NodeIDs"});
+
+    visualization_writer_->append_result_data_vector_with_context(
+        *radii_, Core::IO::OutputEntity::dof, {"radii"});
+
+    visualization_writer_->append_result_data_vector_with_context(
+        *generations_, Core::IO::OutputEntity::element, {"generations"});
+
+    visualization_writer_->append_result_data_vector_with_context(
+        *acini_bc_, Core::IO::OutputEntity::element, {"acin_bc"});
+
+    visualization_writer_->append_element_owner("Owner");
+
+    visualization_writer_->append_result_data_vector_with_context(
+        *elemArea0_, Core::IO::OutputEntity::element, {"elemArea0"});
+  }
+
+  if (CoupledTo3D)
+  {
+    std::vector<double> Actual_RedD_step;
+    Actual_RedD_step.emplace_back(step);
+    visualization_writer_->append_field_data_vector(Actual_RedD_step, {"Actual_RedD_step"});
+  }
+}
+
 /*----------------------------------------------------------------------*
  | Output of solution vector to binio                       ismail 07/09|
  *----------------------------------------------------------------------*/
@@ -1326,6 +1410,7 @@ void Airway::RedAirwayImplicitTimeInt::output(
   int uprestart = 0;
   double time_backup = 0.0;
 
+
   // If coupled to 3D problem, then get the export information from
   // the 3D problem
   if (CoupledTo3D)
@@ -1336,103 +1421,18 @@ void Airway::RedAirwayImplicitTimeInt::output(
     time_ = CouplingParams->get<double>("time");
   }
 
+  // do the runtime output
   if (step_ % upres_ == 0)
   {
-    // step number and time
-    output_.new_step(step_, time_);
+    visualization_writer_->reset();
 
-    // "pressure" vectors
-    output_.write_vector("pnm", pnm_);
-    output_.write_vector("on", on_);
-    output_.write_vector("pnp", pnp_);
-    output_.write_vector("p_nonlin", p_nonlin_);
+    collect_runtime_output_data(CoupledTo3D, step);
 
-    // write the flow values
-    Core::LinAlg::export_to(*qin_nm_, *qexp_);
-    output_.write_vector("qin_nm", qexp_);
-    Core::LinAlg::export_to(*qin_n_, *qexp_);
-    output_.write_vector("qin_n", qexp_);
-    Core::LinAlg::export_to(*qin_np_, *qexp_);
-    output_.write_vector("qin_np", qexp_);
-
-    Core::LinAlg::export_to(*qout_nm_, *qexp_);
-    output_.write_vector("qout_nm", qexp_);
-    Core::LinAlg::export_to(*qout_n_, *qexp_);
-    output_.write_vector("qout_n", qexp_);
-    Core::LinAlg::export_to(*qout_np_, *qexp_);
-    output_.write_vector("qout_np", qexp_);
-
-    Core::LinAlg::export_to(*x_n_, *qexp_);
-    output_.write_vector("x_n", qexp_);
-    Core::LinAlg::export_to(*x_np_, *qexp_);
-    output_.write_vector("x_np", qexp_);
-    Core::LinAlg::export_to(*open_, *qexp_);
-    output_.write_vector("open", qexp_);
-    Core::LinAlg::export_to(*p_extnp_, *qexp_);
-    output_.write_vector("p_extnp", qexp_);
-    Core::LinAlg::export_to(*p_extn_, *qexp_);
-    output_.write_vector("p_extn", qexp_);
-    Core::LinAlg::export_to(*airway_acinus_dep_, *qexp_);
-    output_.write_vector("airway_acinus_dep", qexp_);
-
-    Core::LinAlg::export_to(*elemVolumenm_, *qexp_);
-    output_.write_vector("elemVolumenm", qexp_);
-    Core::LinAlg::export_to(*elemVolumen_, *qexp_);
-    output_.write_vector("elemVolumen", qexp_);
-    Core::LinAlg::export_to(*elemVolumenp_, *qexp_);
-    output_.write_vector("elemVolumenp", qexp_);
-
-    Core::LinAlg::export_to(*elemRadiusnp_, *qexp_);
-    output_.write_vector("elemRadius_current", qexp_);
-
-    {
-      Core::LinAlg::Export exporter(acini_e_volumenm_->get_map(), qexp_->get_map());
-      qexp_->export_to(*acini_e_volumenm_, exporter, Core::LinAlg::CombineMode::zero);
-      output_.write_vector("acini_vnm", qexp_);
-    }
-    {
-      Core::LinAlg::Export exporter(acini_e_volumen_->get_map(), qexp_->get_map());
-      qexp_->export_to(*acini_e_volumen_, exporter, Core::LinAlg::CombineMode::zero);
-      output_.write_vector("acini_vn", qexp_);
-    }
-    {
-      Core::LinAlg::Export exporter(acini_e_volumenp_->get_map(), qexp_->get_map());
-      qexp_->export_to(*acini_e_volumenp_, exporter, Core::LinAlg::CombineMode::zero);
-      output_.write_vector("acini_vnp", qexp_);
-    }
-    {
-      Core::LinAlg::Export exporter(acini_e_volume_strain_->get_map(), qexp_->get_map());
-      qexp_->export_to(*acini_e_volume_strain_, exporter, Core::LinAlg::CombineMode::zero);
-      output_.write_vector("acini_volumetric_strain", qexp_);
-    }
-    {
-      Core::LinAlg::Export exporter(acini_e_volume0_->get_map(), qexp_->get_map());
-      qexp_->export_to(*acini_e_volume0_, exporter, Core::LinAlg::CombineMode::zero);
-      output_.write_vector("acini_v0", qexp_);
-    }
-
-    if (step_ == upres_)
-    {
-      Core::LinAlg::export_to(*elemVolume0_, *qexp_);
-      output_.write_vector("elemVolume0", qexp_);
-      output_.write_vector("NodeIDs", nodeIds_);
-      output_.write_vector("radii", radii_);
-      Core::LinAlg::export_to(*generations_, *qexp_);
-      output_.write_vector("generations", qexp_);
-      Core::LinAlg::export_to(*acini_bc_, *qexp_);
-      output_.write_vector("acin_bc", qexp_);
-      output_.write_element_data(true);
-      Core::LinAlg::export_to(*elemArea0_, *qexp_);
-      output_.write_vector("elemArea0", qexp_);
-    }
-
-    if (CoupledTo3D)
-    {
-      output_.write_int("Actual_RedD_step", step);
-    }
+    visualization_writer_->write_to_disk(time_, step_);
   }
-  // write restart also when uprestart_ is not a integer multiple of upres_
-  else if (uprestart_ != 0 && step_ % uprestart_ == 0)
+
+  // write restart
+  if (uprestart_ != 0 && step_ % uprestart_ == 0)
   {
     // step number and time
     output_.new_step(step_, time_);
@@ -1490,17 +1490,17 @@ void Airway::RedAirwayImplicitTimeInt::output(
     Core::LinAlg::export_to(*acini_e_volume0_, *qexp_);
     output_.write_vector("acini_v0", qexp_);
 
-    // write mesh in each restart step --- the elements are required since
-    // they contain history variables (the time dependent subscales)
-    output_.write_mesh(step_, time_);
-
     if (CoupledTo3D)
     {
       output_.write_int("Actual_RedD_step", step);
     }
+
+    // write mesh in each restart step --- the elements are required since
+    // they contain history variables (the time dependent subscales)
+    output_.write_mesh(step_, time_);
   }
 
-  // If coupled to 3D problem, then retrieve the old information of the
+  // If coupled to 3D problem, then retrieve the old information of
   // the reduced model problem
   if (CoupledTo3D)
   {
@@ -1509,7 +1509,7 @@ void Airway::RedAirwayImplicitTimeInt::output(
     uprestart_ = uprestart;
     time_ = time_backup;
   }
-  return;
+
 }  // RedAirwayImplicitTimeInt::Output
 
 /*----------------------------------------------------------------------*

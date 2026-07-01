@@ -65,49 +65,6 @@ void StructureFilter::write_all_results(PostField* field)
   writer_->write_result("H1_norm", "H1_norm", elementbased, 1);
   writer_->write_result("Energy_norm", "Energy_norm", elementbased, 1);
 
-  // one-dimensional artery
-  writer_->write_result("one_d_artery_pressure", "pressure", nodebased, 1);
-  writer_->write_result("one_d_artery_flow", "flow", nodebased, 1);
-  writer_->write_result("one_d_artery_area", "area", nodebased, 1);
-  writer_->write_result("forward_speed", "forward_speed", nodebased, 1);
-  writer_->write_result("forward_speed0", "forward_speed0", nodebased, 1);
-  writer_->write_result("backward_speed", "backward_speed", nodebased, 1);
-  writer_->write_result("backward_speed0", "backward_speed0", nodebased, 1);
-
-  // reduced dimensional airway
-  writer_->write_result("pnp", "pressure", dofbased, 1);
-  writer_->write_result("p_nonlin", "pressure_error", dofbased, 1);
-  writer_->write_result("NodeIDs", "NodeIDs", dofbased, 1);
-  writer_->write_result("radii", "radii", dofbased, 1);
-  //  writer_->WriteResult("juncVolMix", "juncVolMix", dofbased, 1);
-  //  writer_->WriteResult("forwardVolume","forwardVolume", dofbased, 1);
-  writer_->write_result("scatraO2np", "scatraO2", dofbased, 1);
-  writer_->write_result("PO2", "PO2", dofbased, 1);
-  writer_->write_result("dVO2", "dVO2", dofbased, 1);
-  writer_->write_result("AcinarPO2", "AcinarPO2", dofbased, 1);
-  //  writer_->WriteResult("e1scatranp","e1scatranp",elementbased, 1);
-  //  writer_->WriteResult("e2scatranp","e2scatranp",elementbased, 1);
-  writer_->write_result("juncVolMix", "juncVolMix", dofbased, 1);
-
-  writer_->write_result("acini_vnp", "acini_volume", elementbased, 1);
-  writer_->write_result("acini_volumetric_strain", "acini_volume_strain", elementbased, 1);
-  writer_->write_result("acini_max_strain_location", "acini_max_strain_location", elementbased, 1);
-  writer_->write_result("acin_bc", "acini_bc", elementbased, 1);
-  writer_->write_result("acini_v0", "acini_volume0", elementbased, 1);
-
-  writer_->write_result("qin_np", "flow_in", elementbased, 1);
-  writer_->write_result("qout_np", "flow_out", elementbased, 1);
-  writer_->write_result("x_np", "x_np", elementbased, 1);
-  writer_->write_result("open", "open", elementbased, 1);
-  writer_->write_result("p_extnp", "p_extnp", elementbased, 1);
-  writer_->write_result("p_extn", "p_extn", elementbased, 1);
-  writer_->write_result("airway_acinus_dep", "airway_acinus_dep", elementbased, 1);
-  writer_->write_result("generations", "generations", elementbased, 1);
-  writer_->write_result("elemVolumenp", "airway_volume", elementbased, 1);
-  writer_->write_result("elemVolume0", "airway_volume0", elementbased, 1);
-  writer_->write_result("elemRadius_current", "radius_current", elementbased, 1);
-
-
   // additional forces due to lung fsi (volume constraint)
   writer_->write_result("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());
 
