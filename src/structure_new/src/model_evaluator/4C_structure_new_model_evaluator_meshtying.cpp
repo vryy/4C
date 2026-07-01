@@ -81,14 +81,15 @@ void Solid::ModelEvaluator::Meshtying::setup()
   // build the meshtying interfaces
   // ---------------------------------------------------------------------
   // FixMe Would be great, if we get rid of these poro parameters...
-  bool poroslave = false;
-  bool poromaster = false;
-  factory.build_interfaces(cparams, interfaces, poroslave, poromaster);
+  bool poro_source = false;
+  bool poro_target = false;
+  factory.build_interfaces(cparams, interfaces, poro_source, poro_target);
 
   // ---------------------------------------------------------------------
   // build the solver strategy object
   // ---------------------------------------------------------------------
-  strategy_ptr_ = factory.build_strategy(cparams, poroslave, poromaster, dof_offset(), interfaces);
+  strategy_ptr_ =
+      factory.build_strategy(cparams, poro_source, poro_target, dof_offset(), interfaces);
 
   // build the search tree
   factory.build_search_tree(interfaces);
@@ -116,10 +117,10 @@ void Solid::ModelEvaluator::Meshtying::setup()
 
     if (mesh_relocation_parameter == Mortar::relocation_initial)
     {
-      std::shared_ptr<const Core::LinAlg::Vector<double>> Xslavemod =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> X_source_mod =
           dynamic_cast<Mortar::StrategyBase&>(*strategy_ptr_).mesh_initialization();
-      std::shared_ptr<const Core::LinAlg::Vector<double>> Xslavemod_noredist;
-      if (Xslavemod != nullptr)
+      std::shared_ptr<const Core::LinAlg::Vector<double>> X_source_mod_noredist;
+      if (X_source_mod != nullptr)
       {
         mesh_relocation_ =
             std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map());
@@ -131,15 +132,15 @@ void Solid::ModelEvaluator::Meshtying::setup()
                   *(strategy_ptr_->non_redist_source_row_dofs()), true);
 
           Core::LinAlg::Export exporter(
-              Xslavemod->get_map(), *strategy_ptr_->non_redist_source_row_dofs());
+              X_source_mod->get_map(), *strategy_ptr_->non_redist_source_row_dofs());
 
-          original_vec->export_to(*Xslavemod, exporter, Core::LinAlg::CombineMode::insert);
+          original_vec->export_to(*X_source_mod, exporter, Core::LinAlg::CombineMode::insert);
 
-          Xslavemod_noredist = original_vec;
+          X_source_mod_noredist = original_vec;
         }
         else
         {
-          Xslavemod_noredist = Xslavemod;
+          X_source_mod_noredist = X_source_mod;
         }
 
         for (const auto& node : gdiscret->my_row_node_range())
@@ -151,12 +152,12 @@ void Solid::ModelEvaluator::Meshtying::setup()
             {
               mesh_relocation_->get_values()[mesh_relocation_->get_map().lid(dof)] =
                   node.x()[d] -
-                  Xslavemod_noredist->get_values()[Xslavemod_noredist->get_map().lid(dof)];
+                  X_source_mod_noredist->get_values()[X_source_mod_noredist->get_map().lid(dof)];
             }
           }
         }
 
-        apply_mesh_initialization(Xslavemod_noredist);
+        apply_mesh_initialization(X_source_mod_noredist);
       }
     }
   }
@@ -389,30 +390,31 @@ bool Solid::ModelEvaluator::Meshtying::evaluate_stiff()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Meshtying::apply_mesh_initialization(
-    std::shared_ptr<const Core::LinAlg::Vector<double>> Xslavemod)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> X_source_mod)
 {
   // check modified positions vector
-  if (Xslavemod == nullptr) return;
+  if (X_source_mod == nullptr) return;
 
-  // create fully overlapping slave node map
-  std::shared_ptr<const Core::LinAlg::Map> slavemap = strategy_ptr_->source_row_nodes_ptr();
-  std::shared_ptr<Core::LinAlg::Map> allreduceslavemap = Core::LinAlg::allreduce_e_map(*slavemap);
+  // create fully overlapping source node map
+  std::shared_ptr<const Core::LinAlg::Map> source_map = strategy_ptr_->source_row_nodes_ptr();
+  std::shared_ptr<Core::LinAlg::Map> all_reduce_source_map =
+      Core::LinAlg::allreduce_e_map(*source_map);
 
   // export modified node positions to column map of problem discretization
   const Core::LinAlg::Map* dof_colmap = discret_ptr()->dof_col_map();
   const Core::LinAlg::Map* node_colmap = discret_ptr()->node_col_map();
-  std::shared_ptr<Core::LinAlg::Vector<double>> Xslavemodcol =
+  std::shared_ptr<Core::LinAlg::Vector<double>> X_source_mod_col =
       std::make_shared<Core::LinAlg::Vector<double>>(*dof_colmap, false);
-  Core::LinAlg::export_to(*Xslavemod, *Xslavemodcol);
+  Core::LinAlg::export_to(*X_source_mod, *X_source_mod_col);
 
-  const int numnode = allreduceslavemap->num_my_elements();
+  const int numnode = all_reduce_source_map->num_my_elements();
   const int numdim = Global::Problem::instance()->n_dim();
-  const Core::LinAlg::Vector<double>& gvector = *Xslavemodcol;
+  const Core::LinAlg::Vector<double>& gvector = *X_source_mod_col;
 
-  // loop over all slave nodes (for all procs)
+  // loop over all source nodes (for all procs)
   for (int index = 0; index < numnode; ++index)
   {
-    int gid = allreduceslavemap->gid(index);
+    int gid = all_reduce_source_map->gid(index);
 
     // only do something for nodes in my column map
     int ilid = node_colmap->lid(gid);

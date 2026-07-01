@@ -126,7 +126,7 @@ int Discret::Elements::ConstraintElement3::evaluate(Teuchos::ParameterList& para
         const std::vector<double>& direct =
             condition->parameters().get<std::vector<double>>("direction");
 
-        // Compute weighted difference between masternode and other node and it's derivative
+        // Compute weighted difference between anchor node and other node and it's derivative
         compute_first_deriv_weighted_distance(elevec1, direct);
         elevec2 = elevec1;
 

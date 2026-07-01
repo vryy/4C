@@ -297,19 +297,19 @@ namespace Discret
           const Core::LinAlg::Matrix<3, 1>& elenormal  ///< element normal
       );
 
-      /// Compute difference of nodal displacement to masternode in given direction
+      /// Compute difference of nodal displacement to anchor node in given direction
       double compute_weighted_distance(
-          const std::vector<double> disp,   ///< displacement vector of current node and masternode
+          const std::vector<double> disp,   ///< displacement vector of current node and anchor node
           const std::vector<double> direct  ///< direction to weight with
       );
 
-      /// Compute first derivatives nodal displacement to masternode in given direction
+      /// Compute first derivatives nodal displacement to anchor node in given direction
       void compute_first_deriv_weighted_distance(
           Core::LinAlg::SerialDenseVector& elevector,  ///< vector to store results into
           const std::vector<double> direct             ///< direction to weight with
       );
 
-      /// Compute difference of spatial configuration to masternode in given direction
+      /// Compute difference of spatial configuration to anchor node in given direction
       double compute_weighted_distance(
           const Core::LinAlg::Matrix<2, 3> disp, const std::vector<double> direct);
     };  // class ConstraintElement3

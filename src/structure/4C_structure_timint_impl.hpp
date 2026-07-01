@@ -813,10 +813,10 @@ namespace Solid
     double normcontconstr_;  //!< norm of contact/meshtying constraint rhs (contact/meshtying in
                              //!< saddlepoint formulation only)
     double normlagr_;        //!< norm of lagrange multipliers
-    double normw_;           //!< norm of wear
-    double normwrhs_;
-    double normwm_;  //!< norm of wear master
-    double normwmrhs_;
+    double norm_wear_;       //!< norm of wear
+    double norm_wear_rhs_;
+    double norm_wear_target_;  //!< norm of wear target
+    double norm_wear_target_rhs_;
     double alpha_ls_;    //!< line search step reduction
     double sigma_ls_;    //!< line search sufficient descent factor
     double ls_maxiter_;  //!< maximum number of line search steps

@@ -147,7 +147,6 @@ std::shared_ptr<Core::LinAlg::Map> PoroElast::MonolithicSplit::fsidbc_map()
   for (int i = 0; i < mylength; ++i)
   {
     int gid = mygids[i];
-    // FOUR_C_ASSERT(slavemastermap.count(gid),"master gid not found on slave side");
     gidmarker_struct.replace_global_value(gid, 1.0);
   }
 

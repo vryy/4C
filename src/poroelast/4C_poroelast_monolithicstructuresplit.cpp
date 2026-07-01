@@ -225,16 +225,16 @@ void PoroElast::MonolithicStructureSplit::setup_vector(Core::LinAlg::Vector<doub
     {
       const double alpha = -ftiparam + stiparam * (1.0 - ftiparam) / (1.0 - stiparam);
 
-      // lambda contribution from "slave" map
-      auto lambda_structure_slave = structure_to_fluid_at_interface(*lambda_);
+      // lambda contribution from source map
+      auto lambda_structure_source = structure_to_fluid_at_interface(*lambda_);
 
       // ensure lambda_temp matches modfvs map before update
       const auto& modfv_map = modfv->get_map();
-      const auto& lambda_map = lambda_structure_slave->get_map();
+      const auto& lambda_map = lambda_structure_source->get_map();
 
       if (modfv_map.point_same_as(lambda_map))
       {
-        modfv->update(alpha, *lambda_structure_slave, 1.0);
+        modfv->update(alpha, *lambda_structure_source, 1.0);
       }
     }
 

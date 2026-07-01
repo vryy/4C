@@ -122,9 +122,9 @@ TSI::Algorithm::Algorithm(MPI_Comm comm)
   // setup coupling object for matching discretization
   if (matchinggrid_)
   {
-    coupST_ = std::make_shared<Coupling::Adapter::Coupling>();
-    coupST_->setup_coupling(*structure_field()->discretization(), *thermo_field()->discretization(),
-        *structure_field()->discretization()->node_row_map(),
+    structure_thermo_coupling_ = std::make_shared<Coupling::Adapter::Coupling>();
+    structure_thermo_coupling_->setup_coupling(*structure_field()->discretization(),
+        *thermo_field()->discretization(), *structure_field()->discretization()->node_row_map(),
         *thermo_field()->discretization()->node_row_map(), 1, true);
   }
 
@@ -226,10 +226,14 @@ void TSI::Algorithm::apply_thermo_coupling_state(
   }
 
   // set new temperatures to contact
+  if (contact_strategy_lagrange_ != nullptr)
   {
-    if (contact_strategy_lagrange_ != nullptr)
-      contact_strategy_lagrange_->set_state(
-          Mortar::state_temperature, *coupST_->source_to_target(*thermo_field()->tempnp()));
+    FOUR_C_ASSERT_ALWAYS(structure_thermo_coupling_ != nullptr,
+        "Invalid configuration: structure_thermo_coupling_ is required for contact with thermal "
+        "coupling, but is only initialized for matching grids. Either disable TSI contact or use "
+        "matching grids.");
+    contact_strategy_lagrange_->set_state(Mortar::state_temperature,
+        *structure_thermo_coupling_->source_to_target(*thermo_field()->tempnp()));
   }
 }  // apply_thermo_coupling_state()
 
@@ -298,15 +302,15 @@ void TSI::Algorithm::prepare_contact_strategy()
     // build the contact interfaces
     // ---------------------------------------------------------------------
     // FixMe Would be great, if we get rid of these poro parameters...
-    bool poroslave = false;
-    bool poromaster = false;
-    factory.build_interfaces(cparams, interfaces, poroslave, poromaster);
+    bool poro_source = false;
+    bool poro_target = false;
+    factory.build_interfaces(cparams, interfaces, poro_source, poro_target);
 
     // ---------------------------------------------------------------------
     // build the solver strategy object
     // ---------------------------------------------------------------------
     contact_strategy_lagrange_ = std::dynamic_pointer_cast<CONTACT::LagrangeStrategyTsi>(
-        factory.build_strategy(cparams, poroslave, poromaster, 1e8, interfaces));
+        factory.build_strategy(cparams, poro_source, poro_target, 1e8, interfaces));
 
     // build the search tree
     factory.build_search_tree(interfaces);
@@ -334,8 +338,12 @@ void TSI::Algorithm::prepare_contact_strategy()
 
     if (contact_strategy_lagrange_ != nullptr)
     {
+      FOUR_C_ASSERT_ALWAYS(structure_thermo_coupling_ != nullptr,
+          "Invalid configuration: structure_thermo_coupling_ is required for contact with thermal "
+          "coupling, but is only initialized for matching grids. Either disable TSI contact or use "
+          "matching grids.");
       contact_strategy_lagrange_->set_alphaf_thermo(problem_->thermal_dynamic_params());
-      contact_strategy_lagrange_->set_coupling(coupST_);
+      contact_strategy_lagrange_->set_coupling(structure_thermo_coupling_);
     }
   }
 }
