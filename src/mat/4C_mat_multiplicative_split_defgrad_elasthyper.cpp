@@ -692,8 +692,12 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_kin_quant_elast(
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(CiFiniCeM, CiFiniCe9x1);
 
   // derivatives of the elastic right CG
+  Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> dCedC_tensor;
+  Core::LinAlg::Tensor<double, 3, 3, 3, 3> dCediFin_tensor;
   Mat::elast_hyper_get_derivs_of_elastic_right_cg_tensor(Core::LinAlg::make_tensor(iFinM),
-      Core::LinAlg::assume_symmetry(Core::LinAlg::make_tensor(CM)), dCedC, dCediFin);
+      Core::LinAlg::assume_symmetry(Core::LinAlg::make_tensor(CM)), dCedC_tensor, dCediFin_tensor);
+  dCedC = Core::LinAlg::make_6x6_voigt_matrix_from_tensor(dCedC_tensor);
+  dCediFin = Core::LinAlg::make_6x9_voigt_matrix_from_tensor(dCediFin_tensor);
 }
 
 /*--------------------------------------------------------------------*

@@ -12,6 +12,7 @@
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_symmetric_tensor_eigen.hpp"
 #include "4C_linalg_tensor_conversion.hpp"
+#include "4C_linalg_tensor_einstein.hpp"
 #include "4C_linalg_tensor_generators.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_linalg_vector.hpp"
@@ -577,32 +578,24 @@ void Mat::elast_hyper_check_polyconvexity(const Core::LinAlg::Tensor<double, 3, 
 
 void Mat::elast_hyper_get_derivs_of_elastic_right_cg_tensor(
     const Core::LinAlg::Tensor<double, 3, 3>& iFinM,
-    const Core::LinAlg::SymmetricTensor<double, 3, 3>& CM, Core::LinAlg::Matrix<6, 6>& dCedC,
-    Core::LinAlg::Matrix<6, 9>& dCediFin)
+    const Core::LinAlg::SymmetricTensor<double, 3, 3>& CM,
+    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& dCedC,
+    Core::LinAlg::Tensor<double, 3, 3, 3, 3>& dCediFin)
 {
-  Core::LinAlg::Matrix<3, 3> iFinM_mat = Core::LinAlg::make_matrix_view(iFinM);
-  const Core::LinAlg::Matrix<3, 3> C_mat = Core::LinAlg::make_matrix(Core::LinAlg::get_full(CM));
-  // auxiliaries
-  Core::LinAlg::Matrix<3, 3> id3x3(Core::LinAlg::Initialization::zero);
-  for (int i = 0; i < 3; ++i) id3x3(i, i) = 1.0;
-  Core::LinAlg::Matrix<9, 9> temp9x9(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::FourTensor<3> tempFourTensor(true);
+  // F_in^{-T} and the 2nd order identity tensor
+  const Core::LinAlg::Tensor<double, 3, 3> iFinT = Core::LinAlg::transpose(iFinM);
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> id =
+      Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
 
   // \frac{\partial C^e}{\partial C}
-  dCedC.clear();
-  Core::LinAlg::Matrix<3, 3> iFinTM(Core::LinAlg::Initialization::zero);
-  iFinTM.multiply_nt(1.0, id3x3, iFinM_mat, 0.0);
-  Core::LinAlg::FourTensorOperations::add_kronecker_tensor_product(dCedC, 1.0, iFinTM, iFinTM, 0.0);
+  dCedC = Core::LinAlg::assume_symmetry(0.5 * (Core::LinAlg::einsum<"ik", "jl">(iFinT, iFinT) +
+                                                  Core::LinAlg::einsum<"il", "jk">(iFinT, iFinT)));
+
+  const Core::LinAlg::Tensor<double, 3, 3> iFinTC = Core::LinAlg::dot(iFinT, CM);
 
   // \frac{\partial C^e}{\partial F_{in}^{-1}}
-  dCediFin.clear();
-  Core::LinAlg::Matrix<3, 3> iFinTCM(Core::LinAlg::Initialization::zero);
-  iFinTCM.multiply_tn(1.0, iFinM_mat, C_mat, 0.0);
-  temp9x9.clear();
-  Core::LinAlg::FourTensorOperations::add_adbc_tensor_product(1.0, id3x3, iFinTCM, temp9x9);
-  Core::LinAlg::FourTensorOperations::add_non_symmetric_product(1.0, iFinTCM, id3x3, temp9x9);
-  Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
-  Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor(dCediFin, tempFourTensor);
+  dCediFin =
+      Core::LinAlg::einsum<"ad", "bc">(id, iFinTC) + Core::LinAlg::einsum<"ac", "bd">(iFinTC, id);
 }
 
 FOUR_C_NAMESPACE_CLOSE

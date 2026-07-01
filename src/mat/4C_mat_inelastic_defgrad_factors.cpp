@@ -1989,8 +1989,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   // determine scalar quantities of invariants / pseudoinvariants needed to compute the
   // equivalent tensile stress
   double Mtheta_dev_sym_contract_Mtheta_dev_sym =
-      Core::LinAlg::FourTensorOperations::contract_matrix_matrix(
-          state_quantities.curr_Mtheta_dev_sym_M, state_quantities.curr_Mtheta_dev_sym_M);
+      Core::LinAlg::ddot(Core::LinAlg::make_tensor_view(state_quantities.curr_Mtheta_dev_sym_M),
+          Core::LinAlg::make_tensor_view(state_quantities.curr_Mtheta_dev_sym_M));
   Core::LinAlg::Matrix<3, 3> Mtheta_dev_sym_squared_M(Core::LinAlg::Initialization::zero);
   Mtheta_dev_sym_squared_M.multiply_nn(
       1.0, state_quantities.curr_Mtheta_dev_sym_M, state_quantities.curr_Mtheta_dev_sym_M, 0.0);
@@ -2197,9 +2197,14 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
 
 
   // compute the relevant derivatives of the elastic right Cauchy-Green deformation tensor
+  Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> dCedC_tensor;
+  Core::LinAlg::Tensor<double, 3, 3, 3, 3> dCediFin_tensor;
   Mat::elast_hyper_get_derivs_of_elastic_right_cg_tensor(Core::LinAlg::make_tensor(iFinM),
-      Core::LinAlg::assume_symmetry(Core::LinAlg::make_tensor(CM)),
-      state_quantity_derivatives.curr_dCedC, state_quantity_derivatives.curr_dCediFin);
+      Core::LinAlg::assume_symmetry(Core::LinAlg::make_tensor(CM)), dCedC_tensor, dCediFin_tensor);
+  state_quantity_derivatives.curr_dCedC =
+      Core::LinAlg::make_6x6_voigt_matrix_from_tensor(dCedC_tensor);
+  state_quantity_derivatives.curr_dCediFin =
+      Core::LinAlg::make_6x9_voigt_matrix_from_tensor(dCediFin_tensor);
   // save these also as four tensors
   Core::LinAlg::FourTensor<3> dCediFin_FourTensor(true);
   Core::LinAlg::Voigt::setup_four_tensor_from_6x9_voigt_matrix(

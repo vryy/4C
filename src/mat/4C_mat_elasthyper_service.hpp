@@ -379,15 +379,16 @@ namespace Mat
    * @param[in] iFinM    Inverse inelastic deformation gradient
    * @param[in] CM Right Cauchy-Green deformation tensor
    * @param[out] dCedC         Partial derivative of the elastic right CG tensor w.r.t. right CG
-   *                           tensor (Voigt stress-stress notation)
+   *                           tensor (symmetric 4th order tensor)
    * @param[out] dCediFin      Partial derivative of the elastic right CG tensor w.r.t. inelastic
-   *                           deformation gradient (Voigt stress notation)
+   *                           deformation gradient (full 4th order tensor)
    *
    */
   void elast_hyper_get_derivs_of_elastic_right_cg_tensor(
       const Core::LinAlg::Tensor<double, 3, 3>& iFinM,
-      const Core::LinAlg::SymmetricTensor<double, 3, 3>& CM, Core::LinAlg::Matrix<6, 6>& dCedC,
-      Core::LinAlg::Matrix<6, 9>& dCediFin);
+      const Core::LinAlg::SymmetricTensor<double, 3, 3>& CM,
+      Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& dCedC,
+      Core::LinAlg::Tensor<double, 3, 3, 3, 3>& dCediFin);
 
   /**
    * \brief Class for holding the summand formulation properties

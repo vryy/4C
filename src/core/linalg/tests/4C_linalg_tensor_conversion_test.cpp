@@ -12,6 +12,7 @@
 #include "4C_linalg_tensor_conversion.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_symmetric_tensor_eigen.hpp"
 #include "4C_linalg_tensor_generators.hpp"
@@ -313,6 +314,82 @@ namespace
     EXPECT_DOUBLE_EQ(nested_array[0][1], 2.0);
     EXPECT_DOUBLE_EQ(nested_array[1][1], 4.0);
     EXPECT_DOUBLE_EQ(nested_array[2][1], 6.0);
+  }
+  TEST(TensorConversionTest, Make6x9VoigtMatrixFromTensorTest)
+  {
+    // arbitrary (non-symmetric) 4th order tensor; both paths apply the same 1st-pair symmetrization
+    Core::LinAlg::Tensor<double, 3, 3, 3, 3> T{};
+    Core::LinAlg::FourTensor<3> ft(true);
+    int v = 1;
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j)
+        for (int k = 0; k < 3; ++k)
+          for (int l = 0; l < 3; ++l)
+          {
+            const double val = 0.1 * (v++);
+            T(i, j, k, l) = val;
+            ft(i, j, k, l) = val;
+          }
+
+    const Core::LinAlg::Matrix<6, 9> new_voigt = Core::LinAlg::make_6x9_voigt_matrix_from_tensor(T);
+    Core::LinAlg::Matrix<6, 9> old_voigt(Core::LinAlg::Initialization::zero);
+    Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor(old_voigt, ft);
+
+    FOUR_C_EXPECT_NEAR(new_voigt, old_voigt, 1e-12);
+  }
+
+  TEST(TensorConversionTest, Make9x6VoigtMatrixFromTensorTest)
+  {
+    // arbitrary (non-symmetric) 4th order tensor; both paths apply the same 2nd-pair symmetrization
+    Core::LinAlg::Tensor<double, 3, 3, 3, 3> T{};
+    Core::LinAlg::FourTensor<3> ft(true);
+    int v = 1;
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j)
+        for (int k = 0; k < 3; ++k)
+          for (int l = 0; l < 3; ++l)
+          {
+            const double val = 0.1 * (v++);
+            T(i, j, k, l) = val;
+            ft(i, j, k, l) = val;
+          }
+
+    const Core::LinAlg::Matrix<9, 6> new_voigt = Core::LinAlg::make_9x6_voigt_matrix_from_tensor(T);
+    Core::LinAlg::Matrix<9, 6> old_voigt(Core::LinAlg::Initialization::zero);
+    Core::LinAlg::Voigt::setup_9x6_voigt_matrix_from_four_tensor(old_voigt, ft);
+
+    FOUR_C_EXPECT_NEAR(new_voigt, old_voigt, 1e-12);
+  }
+
+  TEST(TensorConversionTest, Make6x6StressLikeVoigtMatrixFromTensorTest)
+  {
+    Core::LinAlg::Matrix<3, 3> A;
+    A(0, 0) = 1.0;
+    A(0, 1) = 2.0;
+    A(0, 2) = 3.0;
+    A(1, 0) = 0.5;
+    A(1, 1) = 4.0;
+    A(1, 2) = 1.2;
+    A(2, 0) = 7.0;
+    A(2, 1) = 0.3;
+    A(2, 2) = 6.0;
+
+    Core::LinAlg::Tensor<double, 3, 3, 3, 3> C_full{};
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j)
+        for (int k = 0; k < 3; ++k)
+          for (int l = 0; l < 3; ++l)
+            C_full(i, j, k, l) = 0.5 * (A(i, k) * A(j, l) + A(i, l) * A(j, k));
+    const Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> C =
+        Core::LinAlg::assume_symmetry(C_full);
+
+    const Core::LinAlg::Matrix<6, 6> result = Core::LinAlg::make_6x6_voigt_matrix_from_tensor(C);
+
+    // reference: add_kronecker_tensor_product called on non-symmetric matrix
+    Core::LinAlg::Matrix<6, 6> ref(Core::LinAlg::Initialization::zero);
+    Core::LinAlg::FourTensorOperations::add_kronecker_tensor_product(ref, 1.0, A, A, 0.0);
+
+    FOUR_C_EXPECT_NEAR(result, ref, 1e-12);
   }
 }  // namespace
 

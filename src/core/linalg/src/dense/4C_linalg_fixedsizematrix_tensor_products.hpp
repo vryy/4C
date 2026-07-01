@@ -21,7 +21,6 @@
 #include "4C_linalg_four_tensor.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg::FourTensorOperations
@@ -99,25 +98,6 @@ namespace Core::LinAlg::FourTensorOperations
       const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B,
       const double scalar_this);
 
-  /*!
-   * @brief Multiply two 2nd order tensors A o B and add the result to a 4th order material tensor
-   * in matrix notation, possessing left minor symmetry.
-   *
-   * In tensor index notation this method does
-   * \f[
-   * C_{IJKL} := \text{scalar_this} \cdot C_{IJKL} + \frac{1}{2} \cdot \text{scalar_AB} \cdot \left(
-   *             A_{IK} \cdot B_{JL} + A_{IL} \cdot B_{JK} \right) \f]
-   *
-   *
-   * @param[in,out] C       Material tangent matrix to be modified
-   * @param[in] scalar_AB    Scalar to multiply with A o B
-   * @param[in] A           Dense matrix (3 x 3) as 2nd order tensor A
-   * @param[in] B           Dense matrix (3 x 3) as 2nd order tensor B
-   * @param[in] scalar_this  Scalar to multiply with C before adding A o B
-   */
-  void add_kronecker_tensor_product(Core::LinAlg::Matrix<6, 9>& C, const double scalar_AB,
-      const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B,
-      const double scalar_this);
 
 
   /*!
@@ -444,16 +424,6 @@ namespace Core::LinAlg::FourTensorOperations
   void add_contraction_matrix_four_tensor(Core::LinAlg::Matrix<3, 3>& matrix_result,
       const double scale, const Core::LinAlg::FourTensor<3>& four_tensor,
       const Core::LinAlg::Matrix<3, 3>& matrix);
-
-  /*!
-   * @brief Returns the double contraction of two 2nd order tensors
-   *
-   * @param[out]    scalarContraction   0th order tensor \f$s = A_{ij} B^{ij}\f$
-   * @param[in]     matrix_A             2nd order tensor \f$A_{ij}\f$
-   * @param[in]     matrix_B             2nd order tensor \f$B^{ij}\f$
-   */
-  double contract_matrix_matrix(
-      const Core::LinAlg::Matrix<3, 3>& matrix_A, const Core::LinAlg::Matrix<3, 3>& matrix_B);
 
 }  // namespace Core::LinAlg::FourTensorOperations
 
