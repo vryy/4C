@@ -57,8 +57,6 @@ namespace Solid
    *  */
   class MonitorDbc
   {
-    const static unsigned DIM = 3;
-
     /// constants for the SCREEN output
     const static unsigned OS_WIDTH = 14;
 
@@ -97,15 +95,15 @@ namespace Solid
 
     void create_reaction_maps(const Core::FE::Discretization& discret,
         const Core::Conditions::Condition& rcond,
-        std::shared_ptr<Core::LinAlg::Map>* react_maps) const;
+        std::vector<std::shared_ptr<Core::LinAlg::Map>>& react_maps) const;
 
     void get_area(double area_ref[], const Core::Conditions::Condition* rcond) const;
 
-    double get_reaction_force(Core::LinAlg::Matrix<3, 1>& rforce_xyz,
-        const std::shared_ptr<Core::LinAlg::Map>* react_maps) const;
+    void get_reaction_force(Core::LinAlg::Matrix<3, 1>& rforce_xyz,
+        const std::vector<std::shared_ptr<Core::LinAlg::Map>>& react_maps) const;
 
-    double get_reaction_moment(Core::LinAlg::Matrix<3, 1>& rmoment_xyz,
-        const std::shared_ptr<Core::LinAlg::Map>* react_maps,
+    void get_reaction_moment(Core::LinAlg::Matrix<3, 1>& rmoment_xyz,
+        const std::vector<std::shared_ptr<Core::LinAlg::Map>>& react_maps,
         const Core::Conditions::Condition* rcond) const;
 
     void write_condition_header(std::ostream& os, const int col_width,
@@ -114,12 +112,12 @@ namespace Solid
     void write_column_header(std::ostream& os, const int col_width) const;
 
     void write_results_to_screen(const Core::Conditions::Condition& rcond_ptr,
-        const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
+        const Core::LinAlg::Matrix<3, 1>& rforce, const Core::LinAlg::Matrix<3, 1>& rmoment,
         const double& area_ref, const double& area_curr) const;
 
     void write_results(std::ostream& os, const int col_width, const int precision,
-        const unsigned step, const double time, const Core::LinAlg::Matrix<DIM, 1>& rforce,
-        const Core::LinAlg::Matrix<DIM, 1>& rmoment, const double& area_ref,
+        const unsigned step, const double time, const Core::LinAlg::Matrix<3, 1>& rforce,
+        const Core::LinAlg::Matrix<3, 1>& rmoment, const double& area_ref,
         const double& area_cur) const;
 
     inline MPI_Comm get_comm() const;
