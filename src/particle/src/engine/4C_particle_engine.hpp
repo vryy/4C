@@ -607,8 +607,8 @@ namespace Particle
     /*!
      * \brief communicate refreshed particles using cached communication graph
      *
-     * Uses the pre-computed refresh_send_procs_ and refresh_recv_procs_ to exchange refreshed
-     * particle data without an MPI_Allreduce for target discovery.
+     * Uses the pre-computed cached_procs_send_ghost_data_to_ and
+     * cached_procs_receive_ghost_data_from_ to exchange refreshed particle.
      *
      *
      * \param[in]  particlestosend    particles to be send to other processors
@@ -755,10 +755,10 @@ namespace Particle
     bool validdirectghosting_;
 
     //! cached set of procs to send refreshed particle data to
-    std::set<int> refresh_send_procs_;
+    std::set<int> cached_procs_send_ghost_data_to_;
 
     //! cached set of procs to receive refreshed particle data from
-    std::set<int> refresh_recv_procs_;
+    std::set<int> cached_procs_receive_ghost_data_from_;
   };
 
 }  // namespace Particle
