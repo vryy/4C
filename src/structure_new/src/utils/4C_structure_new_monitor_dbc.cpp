@@ -508,8 +508,8 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
     for (unsigned i = 0; i < num_fnodes; ++i)
     {
       const Core::Nodes::Node& fnode = *fnodes[i];
-      std::copy(fnode.x().data(), fnode.x().data() + 3, &xyze_ref(0, i));
-      std::copy(fnode.x().data(), fnode.x().data() + 3, &xyze_curr(0, i));
+      std::copy(fnode.x().data(), fnode.x().data() + fnode.n_dim(), &xyze_ref(0, i));
+      std::copy(fnode.x().data(), fnode.x().data() + fnode.n_dim(), &xyze_curr(0, i));
 
       std::vector<int> ndofs;
       discret.dof(structural_dof_set_, &fnode, ndofs);
