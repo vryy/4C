@@ -204,13 +204,13 @@ void Solid::MonitorDbc::setup()
   for (const auto& rcond_ptr : rconds)
   {
     const Core::Conditions::Condition& rcond = *rcond_ptr;
-    auto ipair = react_maps_.insert(std::make_pair(
-        rcond.node_set_name(), std::vector<std::shared_ptr<Core::LinAlg::Map>>(3, nullptr)));
+    auto ipair = react_maps_.insert(std::make_pair(rcond.node_set_name(),
+        std::vector<std::shared_ptr<Core::LinAlg::Map>>(discret_ptr_->n_dim(), nullptr)));
 
     if (not ipair.second)
       FOUR_C_THROW("The reaction condition id #{} seems to be non-unique!", rcond.node_set_name());
 
-    create_reaction_maps(*discret_ptr_, rcond, ipair.first->second.data());
+    create_reaction_maps(*discret_ptr_, rcond, ipair.first->second);
 
     switch (file_type_)
     {
@@ -223,8 +223,8 @@ void Solid::MonitorDbc::setup()
         const int csv_precision = 16;
         dbc_monitor_csvwriter_.back()->register_data_vector("ref_area", 1, csv_precision);
         dbc_monitor_csvwriter_.back()->register_data_vector("curr_area", 1, csv_precision);
-        dbc_monitor_csvwriter_.back()->register_data_vector("f", DIM, csv_precision);
-        dbc_monitor_csvwriter_.back()->register_data_vector("m", DIM, csv_precision);
+        dbc_monitor_csvwriter_.back()->register_data_vector("f", 3, csv_precision);
+        dbc_monitor_csvwriter_.back()->register_data_vector("m", 3, csv_precision);
         break;
       }
       case IOMonitorStructureDBC::FileType::yaml:
@@ -278,11 +278,15 @@ void Solid::MonitorDbc::setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& discret,
-    const Core::Conditions::Condition& rcond, std::shared_ptr<Core::LinAlg::Map>* react_maps) const
+    const Core::Conditions::Condition& rcond,
+    std::vector<std::shared_ptr<Core::LinAlg::Map>>& react_maps) const
 {
   const auto onoff = rcond.parameters().get<std::vector<int>>("ONOFF");
+  FOUR_C_ASSERT(onoff.size() >= react_maps.size(),
+      "The ONOFF vector of the monitored Dirichlet condition provides fewer entries than there "
+      "are spatial dimensions!");
   const auto* nids = rcond.get_nodes();
-  std::vector<int> my_dofs[DIM];
+  std::vector<std::vector<int>> my_dofs(react_maps.size());
   int ndof = 0;
   for (int i : onoff) ndof += i;
 
@@ -296,11 +300,11 @@ void Solid::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& dis
 
     const Core::Nodes::Node* node = discret.l_row_node(rlid);
 
-    for (unsigned i = 0; i < DIM; ++i)
+    for (unsigned i = 0; i < react_maps.size(); ++i)
       if (onoff[i] == 1) my_dofs[i].push_back(discret.dof(structural_dof_set_, node, i));
   }
 
-  for (unsigned i = 0; i < DIM; ++i)
+  for (unsigned i = 0; i < react_maps.size(); ++i)
     react_maps[i] =
         std::make_shared<Core::LinAlg::Map>(-1, my_dofs[i].size(), my_dofs[i].data(), 0, comm);
 }
@@ -320,25 +324,23 @@ void Solid::MonitorDbc::execute(Core::IO::DiscretizationWriter& writer)
   std::array<double, 2> area = {0.0, 0.0};
   double& area_ref = area[0];
   double& area_curr = area[1];
-  Core::LinAlg::Matrix<DIM, 1> rforce_xyz(Core::LinAlg::Initialization::uninitialized);
-  Core::LinAlg::Matrix<DIM, 1> rmoment_xyz(Core::LinAlg::Initialization::uninitialized);
+  Core::LinAlg::Matrix<3, 1> rforce_xyz(Core::LinAlg::Initialization::uninitialized);
+  Core::LinAlg::Matrix<3, 1> rmoment_xyz(Core::LinAlg::Initialization::uninitialized);
 
   for (std::size_t condition_counter = 0; condition_counter < rconds.size(); ++condition_counter)
   {
     std::fill_n(area.data(), 2, 0.0);
-    std::fill_n(rforce_xyz.data(), DIM, 0.0);
-    std::fill_n(rmoment_xyz.data(), DIM, 0.0);
+    std::fill_n(rforce_xyz.data(), 3, 0.0);
+    std::fill_n(rmoment_xyz.data(), 3, 0.0);
 
     const auto* const rcond_ptr = rconds[condition_counter];
     const std::string rcond_name = rcond_ptr->node_set_name();
     get_area(area.data(), rcond_ptr);
 
-    get_reaction_force(rforce_xyz, react_maps_[rcond_name].data());
-    get_reaction_moment(rmoment_xyz, react_maps_[rcond_name].data(), rcond_ptr);
-    std::vector<double> rforce_vec(DIM);
-    std::vector<double> rmoment_vec(DIM);
-    rforce_vec.assign(rforce_xyz.data(), rforce_xyz.data() + DIM);
-    rmoment_vec.assign(rmoment_xyz.data(), rmoment_xyz.data() + DIM);
+    get_reaction_force(rforce_xyz, react_maps_[rcond_name]);
+    get_reaction_moment(rmoment_xyz, react_maps_[rcond_name], rcond_ptr);
+    std::vector<double> rforce_vec(rforce_xyz.data(), rforce_xyz.data() + 3);
+    std::vector<double> rmoment_vec(rmoment_xyz.data(), rmoment_xyz.data() + 3);
 
     switch (file_type_)
     {
@@ -394,7 +396,7 @@ void Solid::MonitorDbc::execute(Core::IO::DiscretizationWriter& writer)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::MonitorDbc::write_results_to_screen(const Core::Conditions::Condition& rcond,
-    const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
+    const Core::LinAlg::Matrix<3, 1>& rforce, const Core::LinAlg::Matrix<3, 1>& rmoment,
     const double& area_ref, const double& area_curr) const
 {
   if (Core::Communication::my_mpi_rank(get_comm()) != 0) return;
@@ -432,16 +434,16 @@ void Solid::MonitorDbc::write_column_header(std::ostream& os, const int col_widt
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::MonitorDbc::write_results(std::ostream& os, const int col_width, const int precision,
-    const unsigned step, const double time, const Core::LinAlg::Matrix<DIM, 1>& rforce,
-    const Core::LinAlg::Matrix<DIM, 1>& rmoment, const double& area_ref,
+    const unsigned step, const double time, const Core::LinAlg::Matrix<3, 1>& rforce,
+    const Core::LinAlg::Matrix<3, 1>& rmoment, const double& area_ref,
     const double& area_curr) const
 {
   os << std::setw(col_width) << step << std::setprecision(precision);
   os << std::setw(col_width) << std::scientific << time << std::setw(col_width) << std::scientific
      << area_ref << std::setw(col_width) << std::scientific << area_curr;
 
-  for (unsigned i = 0; i < DIM; ++i) os << std::setw(col_width) << std::scientific << rforce(i, 0);
-  for (unsigned i = 0; i < DIM; ++i) os << std::setw(col_width) << std::scientific << rmoment(i, 0);
+  for (unsigned i = 0; i < 3; ++i) os << std::setw(col_width) << std::scientific << rforce(i, 0);
+  for (unsigned i = 0; i < 3; ++i) os << std::setw(col_width) << std::scientific << rmoment(i, 0);
 
   os << "\n";
   os << std::flush;
@@ -493,21 +495,21 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
     const Core::Nodes::Node* const* fnodes = fele->nodes();
     const unsigned num_fnodes = fele->num_node();
     std::vector<int> fele_dofs;
-    fele_dofs.reserve(num_fnodes * DIM);
+    fele_dofs.reserve(num_fnodes * 3);
 
     for (unsigned i = 0; i < num_fnodes; ++i)
       discret.dof(structural_dof_set_, fele, fnodes[i], fele_dofs);
 
     std::vector<double> mydispn = Core::FE::extract_values(dispn_col, fele_dofs);
 
-    xyze_ref.reshape(DIM, num_fnodes);
-    xyze_curr.reshape(DIM, num_fnodes);
+    xyze_ref.reshape(3, num_fnodes);
+    xyze_curr.reshape(3, num_fnodes);
 
     for (unsigned i = 0; i < num_fnodes; ++i)
     {
       const Core::Nodes::Node& fnode = *fnodes[i];
-      std::copy(fnode.x().data(), fnode.x().data() + DIM, &xyze_ref(0, i));
-      std::copy(fnode.x().data(), fnode.x().data() + DIM, &xyze_curr(0, i));
+      std::copy(fnode.x().data(), fnode.x().data() + fnode.n_dim(), &xyze_ref(0, i));
+      std::copy(fnode.x().data(), fnode.x().data() + fnode.n_dim(), &xyze_curr(0, i));
 
       std::vector<int> ndofs;
       discret.dof(structural_dof_set_, &fnode, ndofs);
@@ -541,14 +543,14 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::MonitorDbc::get_reaction_force(Core::LinAlg::Matrix<DIM, 1>& rforce_xyz,
-    const std::shared_ptr<Core::LinAlg::Map>* react_maps) const
+void Solid::MonitorDbc::get_reaction_force(Core::LinAlg::Matrix<3, 1>& rforce_xyz,
+    const std::vector<std::shared_ptr<Core::LinAlg::Map>>& react_maps) const
 {
   Core::LinAlg::Vector<double> complete_freact(*gstate_ptr_->get_freact_np());
   dbc_ptr_->rotate_global_to_local(complete_freact);
 
-  Core::LinAlg::Matrix<DIM, 1> lrforce_xyz(Core::LinAlg::Initialization::zero);
-  for (unsigned d = 0; d < DIM; ++d)
+  Core::LinAlg::Matrix<3, 1> lrforce_xyz(Core::LinAlg::Initialization::zero);
+  for (unsigned d = 0; d < react_maps.size(); ++d)
   {
     std::shared_ptr<Core::LinAlg::Vector<double>> partial_freact_ptr =
         Core::LinAlg::extract_my_vector(complete_freact, *(react_maps[d]));
@@ -559,13 +561,12 @@ double Solid::MonitorDbc::get_reaction_force(Core::LinAlg::Matrix<DIM, 1>& rforc
   }
 
   rforce_xyz = Core::Communication::sum_all(lrforce_xyz, discret_ptr_->get_comm());
-  return rforce_xyz.norm2();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmoment_xyz,
-    const std::shared_ptr<Core::LinAlg::Map>* react_maps,
+void Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<3, 1>& rmoment_xyz,
+    const std::vector<std::shared_ptr<Core::LinAlg::Map>>& react_maps,
     const Core::Conditions::Condition* rcond) const
 {
   std::shared_ptr<const Core::LinAlg::Vector<double>> dispn = gstate_ptr_->get_dis_np();
@@ -573,19 +574,14 @@ double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmom
   Core::LinAlg::Vector<double> complete_freact(*gstate_ptr_->get_freact_np());
   dbc_ptr_->rotate_global_to_local(complete_freact);
 
-  Core::LinAlg::Matrix<DIM, 1> lrmoment_xyz(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<DIM, 1> node_reaction_force(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<DIM, 1> node_position(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<DIM, 1> node_reaction_moment(Core::LinAlg::Initialization::zero);
-  std::vector<int> node_gid(3);
+  Core::LinAlg::Matrix<3, 1> lrmoment_xyz(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<3, 1> node_reaction_force(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<3, 1> node_position(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<3, 1> node_reaction_moment(Core::LinAlg::Initialization::zero);
+  std::vector<int> node_gid(react_maps.size());
 
   const auto onoff = rcond->parameters().get<std::vector<int>>("ONOFF");
   const std::vector<int>* nids = rcond->get_nodes();
-  std::vector<int> my_dofs[DIM];
-  int ndof = 0;
-  for (int i : onoff) ndof += i;
-
-  for (unsigned i = 0; i < DIM; ++i) my_dofs[i].reserve(nids->size() * ndof);
 
   for (int nid : *nids)
   {
@@ -595,16 +591,16 @@ double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmom
 
     const Core::Nodes::Node* node = discret_ptr_->l_row_node(rlid);
 
-    for (unsigned i = 0; i < DIM; ++i)
+    for (unsigned i = 0; i < react_maps.size(); ++i)
       node_gid[i] = discret_ptr_->dof(structural_dof_set_, node, i);
 
     std::vector<double> mydisp = Core::FE::extract_values(*dispn, node_gid);
-    for (unsigned i = 0; i < DIM; ++i) node_position(i) = node->x()[i] + mydisp[i];
+    for (unsigned i = 0; i < react_maps.size(); ++i) node_position(i) = node->x()[i] + mydisp[i];
 
     // Get the reaction force at this node. This force will only contain non-zero values at the DOFs
     // where the DBC is active.
     node_reaction_force.put_scalar(0.0);
-    for (unsigned i = 0; i < DIM; ++i)
+    for (unsigned i = 0; i < react_maps.size(); ++i)
     {
       if (onoff[i] == 1)
       {
@@ -622,7 +618,6 @@ double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmom
   }
 
   rmoment_xyz = Core::Communication::sum_all(lrmoment_xyz, discret_ptr_->get_comm());
-  return rmoment_xyz.norm2();
 }
 
 FOUR_C_NAMESPACE_CLOSE
