@@ -362,8 +362,9 @@ void Particle::ParticleEngine::refresh_particles() const
   // determine particles that need to be refreshed
   determine_particles_to_be_refreshed(particlestosend);
 
-  // communicate refreshed particles using cached communication graph
-  communicate_refreshed_particles(particlestosend, particlestoinsert);
+  // communicate particles using cached communication graph
+  communicate_particles(particlestosend, particlestoinsert, &cached_procs_send_ghost_data_to_,
+      &cached_procs_receive_ghost_data_from_);
 
   // insert refreshed particles received from other processors
   insert_refreshed_particles(particlestoinsert);
@@ -383,8 +384,9 @@ void Particle::ParticleEngine::refresh_particles_of_specific_states_and_types(
   determine_specific_states_of_particles_of_specific_types_to_be_refreshed(
       particlestatestotypes, particlestosend);
 
-  // communicate refreshed particles using cached communication graph
-  communicate_refreshed_particles(particlestosend, particlestoinsert);
+  // communicate particles using cached communication graph
+  communicate_particles(particlestosend, particlestoinsert, &cached_procs_send_ghost_data_to_,
+      &cached_procs_receive_ghost_data_from_);
 
   // insert refreshed particles received from other processors
   insert_refreshed_particles(particlestoinsert);
@@ -1680,78 +1682,44 @@ void Particle::ParticleEngine::
 
 void Particle::ParticleEngine::communicate_particles(
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
-    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive) const
+    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive,
+    const std::set<int>* send_to_procs, const std::set<int>* receive_from_procs) const
 {
+  FOUR_C_ASSERT_ALWAYS(
+      (send_to_procs && receive_from_procs) || (!send_to_procs && !receive_from_procs),
+      "Either both senders and receivers must be specified or none of them!");
+
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
   std::map<int, std::vector<char>> rdata;
 
   // pack data for sending
-  for (int torank = 0; torank < Core::Communication::num_mpi_ranks(comm_); ++torank)
+  auto pack_for_rank = [&](int torank)
   {
-    if (particlestosend[torank].empty()) continue;
-
+    if (particlestosend[torank].empty()) return;
     for (const auto& iter : particlestosend[torank])
     {
       Core::Communication::PackBuffer data;
       iter->pack(data);
       sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
     }
-  }
+  };
+
+  if (send_to_procs)
+    for (int torank : *send_to_procs) pack_for_rank(torank);
+  else
+    for (int torank = 0; torank < Core::Communication::num_mpi_ranks(comm_); ++torank)
+      pack_for_rank(torank);
 
   // clear after all particles are packed
   particlestosend.clear();
 
-  // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
-
-  // unpack and store received data
-  for (const auto& p : rdata)
-  {
-    const int msgsource = p.first;
-    const std::vector<char>& rmsg = p.second;
-
-    Core::Communication::UnpackBuffer buffer(rmsg);
-    while (!buffer.at_end())
-    {
-      std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(buffer));
-      ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
-      if (particleobject == nullptr) FOUR_C_THROW("received object is not a particle object!");
-
-      // store received particle
-      particlestoreceive[particleobject->return_particle_type()].push_back(
-          std::make_pair(msgsource, particleobject));
-    }
-  }
-}
-
-void Particle::ParticleEngine::communicate_refreshed_particles(
-    std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
-    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive) const
-{
-  // prepare buffer for sending
-  std::map<int, std::vector<char>> sdata;
-
-  // pack data for sending (only to known refresh targets)
-  for (int torank : cached_procs_send_ghost_data_to_)
-  {
-    if (particlestosend[torank].empty()) continue;
-
-    for (const auto& iter : particlestosend[torank])
-    {
-      Core::Communication::PackBuffer data;
-      iter->pack(data);
-      sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
-    }
-  }
-
-  // clear after all particles are packed
-  particlestosend.clear();
-
-  // communicate data via cached send/receive graph
-  std::map<int, std::vector<char>> rdata;
-  ParticleUtils::immediate_send_recv_known_procs(
-      comm_, sdata, rdata, cached_procs_send_ghost_data_to_, cached_procs_receive_ghost_data_from_);
+  // communicate data
+  if (send_to_procs && receive_from_procs)
+    ParticleUtils::immediate_send_recv_known_procs(
+        comm_, sdata, rdata, *send_to_procs, *receive_from_procs);
+  else
+    ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
 
   // unpack and store received data
   for (const auto& p : rdata)
@@ -1766,6 +1734,7 @@ void Particle::ParticleEngine::communicate_refreshed_particles(
       ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
       FOUR_C_ASSERT_ALWAYS(particleobject, "received object is not a particle object!");
 
+      // store received particle
       particlestoreceive[particleobject->return_particle_type()].push_back(
           std::make_pair(msgsource, particleobject));
     }
@@ -1782,8 +1751,8 @@ void Particle::ParticleEngine::communicate_direct_ghosting_map(
   // invalidate flags denoting validity of direct ghosting
   validdirectghosting_ = false;
 
-  // cache procs from which we receive refreshed particle data: these are the procs that sent
-  // ghost particles to us (keys of directghosting map)
+  // cache procs from which this proc receives refreshed particle data: these are the procs that
+  // sent ghost particles to us (keys of directghosting map)
   cached_procs_receive_ghost_data_from_.clear();
   for (const auto& p : directghosting) cached_procs_receive_ghost_data_from_.insert(p.first);
 
@@ -1839,7 +1808,7 @@ void Particle::ParticleEngine::communicate_direct_ghosting_map(
   // validate flags denoting validity of direct ghosting
   validdirectghosting_ = true;
 
-  // cache procs to which we send refreshed particle data
+  // cache procs to which this proc sends refreshed particle data
   cached_procs_send_ghost_data_to_.clear();
   for (const auto& type : particlecontainerbundle_->get_particle_types())
     for (const auto& [ownedindex, targets] : directghostingtargets_[type])

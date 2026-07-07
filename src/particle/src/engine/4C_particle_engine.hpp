@@ -595,28 +595,20 @@ namespace Particle
      * \brief communicate particles
      *
      * This method communicates particles to be send to other processors and receives particles from
-     * other processors.
+     * other processors. When send_to_procs and receive_from_procs are provided, the communication
+     * uses the known graph directly without collective communication. Otherwise a collective
+     * communication is used to determine the number of incoming messages.
      *
      *
-     * \param[in]  particlestosend    particles to be send to other processors
-     * \param[out] particlestoreceive particles to be received on this processor
+     * \param[in]  particlestosend      particles to be send to other processors
+     * \param[out] particlestoreceive   particles to be received on this processor
+     * \param[in]  send_to_procs        optional set of processors to send data to
+     * \param[in]  receive_from_procs   optional set of processors to receive data from
      */
     void communicate_particles(std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
-        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive) const;
-
-    /*!
-     * \brief communicate refreshed particles using cached communication graph
-     *
-     * Uses the pre-computed cached_procs_send_ghost_data_to_ and
-     * cached_procs_receive_ghost_data_from_ to exchange refreshed particle.
-     *
-     *
-     * \param[in]  particlestosend    particles to be send to other processors
-     * \param[out] particlestoreceive particles to be received on this processor
-     */
-    void communicate_refreshed_particles(
-        std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
-        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive) const;
+        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive,
+        const std::set<int>* send_to_procs = nullptr,
+        const std::set<int>* receive_from_procs = nullptr) const;
 
     /*!
      * \brief communicate and build map for direct ghosting
