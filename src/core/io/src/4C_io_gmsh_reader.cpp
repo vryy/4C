@@ -14,8 +14,6 @@
 #include "4C_io_mesh.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <boost/algorithm/cxx11/iota.hpp>
-
 #include <array>
 #include <iostream>
 #include <map>
@@ -254,7 +252,7 @@ namespace
       node_count = externalNodeTags.size();
       // reorder nodes and elements to have contiguous numbering starting from 1
       std::vector<std::size_t> contiguous_node_tags(node_count);
-      boost::algorithm::iota(contiguous_node_tags, gmsh_numbering_offset);
+      std::iota(contiguous_node_tags.begin(), contiguous_node_tags.end(), gmsh_numbering_offset);
       gmsh::model::mesh::renumberNodes(externalNodeTags, contiguous_node_tags);
     }
 
