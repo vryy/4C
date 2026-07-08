@@ -236,7 +236,7 @@ void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const unsigned int n_integration_segments = params()->n_integration_segments;
 
   // Set Gauss integration rule applied in each integration segment
-  Core::FE::GaussRule1D gaussrule = get_gauss_rule();
+  Core::FE::GaussRule1D gaussrule = get_gauss_rule(params()->n_gauss_points);
 
   // Get Gauss points (gp) for integration
   Core::FE::IntegrationPoints1D gausspoints(gaussrule);
@@ -620,7 +620,7 @@ void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const unsigned int n_integration_segments = params()->n_integration_segments;
 
   // Set Gauss integration rule applied in each integration segment
-  Core::FE::GaussRule1D gaussrule = get_gauss_rule();
+  Core::FE::GaussRule1D gaussrule = get_gauss_rule(params()->n_gauss_points);
 
   // Get Gauss points (gp) for integration
   Core::FE::IntegrationPoints1D gausspoints(gaussrule);
@@ -1161,8 +1161,18 @@ void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // number of integration segments per element
   const unsigned int n_integration_segments = params()->n_integration_segments;
 
-  // Set Gauss integration rule applied in each integration segment
-  Core::FE::GaussRule1D gaussrule = get_gauss_rule();
+  // Set Gauss integration rule applied in each integration segment with adaptive number of Gauss
+  // points if desired
+  int n_gauss_points = params()->n_gauss_points;
+  if (potential_reduction_length.has_value() &&
+      params()->potential_reduction_adaptive_n_gauss_points.has_value() &&
+      (length_prior_left < potential_reduction_length.value() ||
+          length_prior_right < potential_reduction_length.value()))
+  {
+    n_gauss_points = params()->potential_reduction_adaptive_n_gauss_points.value();
+  }
+
+  Core::FE::GaussRule1D gaussrule = get_gauss_rule(n_gauss_points);
 
   // Get Gauss points (gp) for integration
   Core::FE::IntegrationPoints1D gausspoints(gaussrule);

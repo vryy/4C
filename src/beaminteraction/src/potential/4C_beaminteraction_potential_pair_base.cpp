@@ -201,9 +201,10 @@ void BeamInteraction::BeamPotentialPair::check_init_setup() const
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Core::FE::GaussRule1D BeamInteraction::BeamPotentialPair::get_gauss_rule() const
+Core::FE::GaussRule1D BeamInteraction::BeamPotentialPair::get_gauss_rule(
+    const int n_gauss_points) const
 {
-  switch (params()->n_gauss_points)
+  switch (n_gauss_points)
   {
     case 5:
     {
@@ -236,7 +237,7 @@ Core::FE::GaussRule1D BeamInteraction::BeamPotentialPair::get_gauss_rule() const
     }
 
     default:
-      FOUR_C_THROW("{} Gauss points are not supported yet!", params()->n_gauss_points);
+      FOUR_C_THROW("{} Gauss points are not supported yet!", n_gauss_points);
   }
 
   return Core::FE::GaussRule1D::undefined;

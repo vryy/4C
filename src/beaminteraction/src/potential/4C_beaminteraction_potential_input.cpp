@@ -99,6 +99,13 @@ Core::IO::InputSpec BeamInteraction::Potential::valid_parameters()
                   .store = in_struct(
                       &BeamPotentialParameters::potential_reduction_endpoint_moment_compensation)}),
 
+          parameter<std::optional<int>>("potential_reduction_adaptive_n_gauss_points",
+              {.description = "Number of Gauss points used per integration segment if the target "
+                              "beam element lies within the potential reduction length.",
+                  .validator = null_or(positive<int>()),
+                  .store = in_struct(
+                      &BeamPotentialParameters::potential_reduction_adaptive_n_gauss_points)}),
+
           group<BeamPotentialRegularizationParameters>("regularization",
               {
                   parameter<Potential::RegularizationType>("type",
