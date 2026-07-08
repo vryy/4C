@@ -109,6 +109,12 @@ namespace BeamInteraction
       const BeamToSolid::BeamToSolidMortarShapefunctions shape_function, const unsigned int n_dim);
 
   /**
+   * \brief Check if there is only one nonzero entry per row of a matrix.
+   * @param D_matrix (in) matrix to be checked for diagonal like structure.
+   */
+  void check_diagonal_like_structure(const std::shared_ptr<Core::LinAlg::SparseMatrix>& D_matrix);
+
+  /**
    * \brief Setup the triad interpolation scheme for the current triad and reference triad of the
    * given beam element.
    * @param discret (in) discretization.
