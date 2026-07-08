@@ -10,6 +10,8 @@
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <set>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
@@ -131,6 +133,77 @@ void Particle::ParticleUtils::immediate_recv_blocking_send(
   MPI_Waitall(numsendtoprocs, sendrequest.data(), MPI_STATUSES_IGNORE);
 
   // clear send buffer after successful communication
+  sdata.clear();
+
+  // ---- wait for completion of receive operations ----
+  MPI_Waitall(numrecvfromprocs, recvrequest.data(), MPI_STATUSES_IGNORE);
+}
+
+void Particle::ParticleUtils::immediate_send_recv_known_procs(MPI_Comm comm,
+    std::map<int, std::vector<char>>& sdata, std::map<int, std::vector<char>>& rdata,
+    const std::set<int>& send_to_procs, const std::set<int>& receive_from_procs)
+{
+  const int numsendtoprocs = static_cast<int>(send_to_procs.size());
+  const int numrecvfromprocs = static_cast<int>(receive_from_procs.size());
+
+  // ---- send size of messages to ALL known targets (0 if no data) ----
+  std::vector<MPI_Request> sizesendrequest(numsendtoprocs);
+  std::vector<int> msgsizestosend(numsendtoprocs);
+  {
+    int counter = 0;
+    for (int torank : send_to_procs)
+    {
+      auto it = sdata.find(torank);
+      msgsizestosend[counter] = (it != sdata.end()) ? static_cast<int>(it->second.size()) : 0;
+      MPI_Isend(
+          &msgsizestosend[counter], 1, MPI_INT, torank, 1234, comm, &sizesendrequest[counter]);
+      ++counter;
+    }
+  }
+
+  // ---- receive size of messages from ALL known senders ----
+  std::vector<int> recvsources(receive_from_procs.begin(), receive_from_procs.end());
+  std::vector<int> msgsizestorecv(numrecvfromprocs);
+  std::vector<MPI_Request> sizerecvrequest(numrecvfromprocs);
+  for (int i = 0; i < numrecvfromprocs; ++i)
+  {
+    MPI_Irecv(&msgsizestorecv[i], 1, MPI_INT, recvsources[i], 1234, comm, &sizerecvrequest[i]);
+  }
+
+  // ---- wait for all size receives to complete ----
+  MPI_Waitall(numrecvfromprocs, sizerecvrequest.data(), MPI_STATUSES_IGNORE);
+
+  // ---- post receives for actual data from senders with non-zero size ----
+  std::vector<MPI_Request> recvrequest(numrecvfromprocs);
+  for (int i = 0; i < numrecvfromprocs; ++i)
+  {
+    if (msgsizestorecv[i] > 0)
+    {
+      rdata[recvsources[i]].resize(msgsizestorecv[i]);
+      MPI_Irecv(rdata[recvsources[i]].data(), msgsizestorecv[i], MPI_CHAR, recvsources[i], 5678,
+          comm, &recvrequest[i]);
+    }
+    else
+    {
+      recvrequest[i] = MPI_REQUEST_NULL;
+    }
+  }
+
+  // ---- wait for size sends to complete, then send data ----
+  MPI_Waitall(numsendtoprocs, sizesendrequest.data(), MPI_STATUSES_IGNORE);
+
+  std::vector<MPI_Request> sendrequest;
+  sendrequest.reserve(sdata.size());
+  for (auto& p : sdata)
+  {
+    sendrequest.emplace_back();
+    MPI_Isend(p.second.data(), static_cast<int>(p.second.size()), MPI_CHAR, p.first, 5678, comm,
+        &sendrequest.back());
+  }
+
+  // ---- wait for completion of send operations ----
+  if (!sendrequest.empty())
+    MPI_Waitall(static_cast<int>(sendrequest.size()), sendrequest.data(), MPI_STATUSES_IGNORE);
   sdata.clear();
 
   // ---- wait for completion of receive operations ----
