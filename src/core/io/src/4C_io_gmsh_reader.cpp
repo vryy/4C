@@ -247,14 +247,13 @@ namespace
 
     {
       std::vector<double> parametricCoord;
-      std::vector<std::size_t> nodeTags;
       // get node tags before renumbering
       gmsh::model::mesh::getNodes(externalNodeTags, coord, parametricCoord);
       node_count = externalNodeTags.size();
       // reorder nodes and elements to have contiguous numbering starting from 1
-      gmsh::model::mesh::renumberNodes();
-      // get renumbered nodes
-      gmsh::model::mesh::getNodes(nodeTags, coord, parametricCoord);
+      std::vector<std::size_t> contiguous_node_tags(node_count);
+      std::iota(contiguous_node_tags.begin(), contiguous_node_tags.end(), gmsh_numbering_offset);
+      gmsh::model::mesh::renumberNodes(externalNodeTags, contiguous_node_tags);
     }
 
     mesh.external_ids = std::vector<int>(externalNodeTags.begin(), externalNodeTags.end());
