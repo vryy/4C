@@ -162,7 +162,7 @@ namespace BeamInteraction
     void check_init_setup() const;
 
     //! get Gauss rule to be used
-    Core::FE::GaussRule1D get_gauss_rule() const;
+    Core::FE::GaussRule1D get_gauss_rule(const int n_gauss_points) const;
 
     /*!
     \brief Set first element

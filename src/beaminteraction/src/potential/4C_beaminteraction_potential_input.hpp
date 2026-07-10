@@ -102,6 +102,7 @@ namespace BeamInteraction::Potential
     std::optional<double> potential_reduction_length{};
     ReductionFunction potential_reduction_function{};
     bool potential_reduction_endpoint_moment_compensation = false;
+    std::optional<int> potential_reduction_adaptive_n_gauss_points{};
     BeamPotentialVisualizationParameters runtime_output_params{};
 
     // data container for prior element lengths for potential reduction strategy
