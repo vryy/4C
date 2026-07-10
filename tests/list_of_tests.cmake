@@ -2719,6 +2719,7 @@ four_c_test(TEST_FILE mixture_prestress_iterative_prescribed.4C.yaml NP 2 REQUIR
 four_c_test(TEST_FILE ssi_homogenized_constraint_mixture_qcyl.4C.yaml NP 2 REQUIRED_DEPENDENCIES VTK TRILINOS_MUMPS)
 four_c_test(TEST_FILE ssi_homogenized_constraint_mixture_prestress_qcyl.4C.yaml NP 2 REQUIRED_DEPENDENCIES VTK TRILINOS_MUMPS)
 four_c_test(TEST_FILE solid_vtu_input.4C.yaml NP 2 REQUIRED_DEPENDENCIES VTK TRILINOS_MUMPS RETURN_AS current)
+four_c_test(TEST_FILE solid_vtu_mixed_element_block.4C.yaml NP 2 REQUIRED_DEPENDENCIES VTK TRILINOS_MUMPS)
 __four_c_test_restart(BASED_ON ${current} SAME_FILE NP 2 RESTART_STEP 5 REQUIRED_DEPENDENCIES VTK TRILINOS_MUMPS)
 four_c_test(TEST_FILE solid_vtu_field_input.4C.yaml NP 2 REQUIRED_DEPENDENCIES VTK TRILINOS_MUMPS RETURN_AS current)
 __four_c_test_restart(BASED_ON ${current} SAME_FILE NP 2 RESTART_STEP 5 REQUIRED_DEPENDENCIES VTK TRILINOS_MUMPS)
