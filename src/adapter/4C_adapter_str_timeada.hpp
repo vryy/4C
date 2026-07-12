@@ -94,9 +94,6 @@ namespace Adapter
     /// output results
     void output(bool forced_writerestart = false) override;
 
-    /// wrapper for things that should be done after the output
-    void post_output() override {};
-
     //! Provide the name
     virtual Solid::TimAdaKind method_name() const = 0;
 

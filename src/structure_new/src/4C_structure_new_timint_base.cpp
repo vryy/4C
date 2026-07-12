@@ -477,7 +477,6 @@ void Solid::TimeInt::Base::output(bool forced_writerestart)
   output_step(forced_writerestart);
   // write Gmsh output
   write_gmsh_struct_output_step();
-  int_ptr_->post_output();
 }
 
 /*----------------------------------------------------------------------------*

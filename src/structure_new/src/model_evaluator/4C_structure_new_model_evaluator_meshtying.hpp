@@ -138,9 +138,6 @@ namespace Solid
       std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
-      //! [derived]
-      void post_output() override {};
-
       /*! \brief Reset model specific variables (without jacobian) [derived]
        *
        * Nothing to do in case of meshtying.

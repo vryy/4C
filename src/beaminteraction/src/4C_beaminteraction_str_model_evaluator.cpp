@@ -1315,15 +1315,6 @@ Solid::ModelEvaluator::BeamInteractionModelEvaluator::get_last_time_step_solutio
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::BeamInteractionModelEvaluator::post_output()
-{
-  //  tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->ApplyDirichlet(
-  //  global_state().get_time_n()
-  //  );
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BeamInteractionModelEvaluator::reset_step_state()
 {
   Vector::iterator some_iter;

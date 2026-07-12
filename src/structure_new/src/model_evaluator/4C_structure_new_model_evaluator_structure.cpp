@@ -1830,14 +1830,6 @@ Solid::ModelEvaluator::Structure::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Structure::post_output()
-{
-  check_init_setup();
-  // empty
-}  // post_output()
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fint_np()
 {
   check_init();

@@ -735,14 +735,6 @@ void Solid::ModelEvaluator::Contact::extend_lagrange_multiplier_domain(
     FOUR_C_THROW("Unconsidered case.");
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Contact::post_output()
-{
-  check_init_setup();
-  // empty
-}  // post_output()
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Contact::run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,

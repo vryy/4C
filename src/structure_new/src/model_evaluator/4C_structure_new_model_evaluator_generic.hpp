@@ -393,9 +393,6 @@ namespace Solid
       //! reset routine for model evlaluator
       virtual void reset_step_state() = 0;
 
-      //! post output routine for model evlaluator
-      virtual void post_output() = 0;
-
       //! things that should be done after the timeloop
       virtual void post_time_loop() {};
 

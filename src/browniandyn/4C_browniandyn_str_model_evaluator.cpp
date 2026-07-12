@@ -531,10 +531,6 @@ Solid::ModelEvaluator::BrownianDyn::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::BrownianDyn::post_output() { check_init_setup(); }
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BrownianDyn::reset_step_state()
 {
   check_init_setup();

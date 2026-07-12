@@ -132,9 +132,6 @@ namespace Solid
       void reset_step_state() override { return; };
 
       //! [derived]
-      void post_output() override { return; };
-
-      //! [derived]
       std::shared_ptr<const Core::LinAlg::Map> get_block_dof_row_map_ptr() const override;
 
       //! [derived]

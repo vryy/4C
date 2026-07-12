@@ -118,8 +118,6 @@ namespace Solid
         return nullptr;
       };
 
-      void post_output() override {};
-
      private:
       //! visualization parameters
       Core::IO::VisualizationParameters macro_visualization_params_;

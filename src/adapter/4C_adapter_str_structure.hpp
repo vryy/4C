@@ -430,9 +430,6 @@ namespace Adapter
     /// wrapper for things that should be done after solving the update
     virtual void post_update() = 0;
 
-    /// wrapper for things that should be done after the output
-    virtual void post_output() = 0;
-
     /// wrapper for things that should be done after the actual time loop is finished
     virtual void post_time_loop() = 0;
 

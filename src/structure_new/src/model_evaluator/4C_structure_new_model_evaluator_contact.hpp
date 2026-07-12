@@ -144,9 +144,6 @@ namespace Solid
       get_last_time_step_solution_ptr() const override;
 
       //! [derived]
-      void post_output() override;
-
-      //! [derived]
       bool evaluate_cheap_soc_rhs() override;
 
       //! [derived]

@@ -339,9 +339,6 @@ namespace Adapter
     /// wrapper for things that should be done after solving the update
     void post_update() override = 0;
 
-    /// wrapper for things that should be done after the output
-    void post_output() override = 0;
-
     /// wrapper for things that should be done after the actual time loop is finished
     void post_time_loop() override = 0;
 

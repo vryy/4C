@@ -352,12 +352,4 @@ Solid::ModelEvaluator::LagPenConstraint::get_last_time_step_solution_ptr() const
   return nullptr;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::LagPenConstraint::post_output()
-{
-  check_init_setup();
-  // empty
-}  // post_output()
-
 FOUR_C_NAMESPACE_CLOSE

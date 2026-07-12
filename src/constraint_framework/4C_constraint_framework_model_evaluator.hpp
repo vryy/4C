@@ -120,8 +120,6 @@ namespace Solid
       std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
-      void post_output() override;
-
       void evaluate_jacobian_contributions_from_element_level_for_ptc() override;
 
       void assemble_jacobian_contributions_from_element_level_for_ptc(

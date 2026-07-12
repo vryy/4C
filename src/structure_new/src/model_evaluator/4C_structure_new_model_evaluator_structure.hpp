@@ -165,9 +165,6 @@ namespace Solid
           const override;
 
       //! [derived]
-      void post_output() override;
-
-      //! [derived]
       void evaluate_jacobian_contributions_from_element_level_for_ptc() override;
 
       //! calculate the L2 displacement error in comparison to the analytical solution.

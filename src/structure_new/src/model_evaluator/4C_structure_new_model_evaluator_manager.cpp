@@ -768,14 +768,6 @@ void Solid::ModelEvaluatorManager::runtime_output_step_state() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluatorManager::post_output()
-{
-  check_init_setup();
-  for (const auto& me_iter : *me_vec_ptr_) me_iter->post_output();
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluatorManager::reset_step_state()
 {
   check_init_setup();
