@@ -439,6 +439,14 @@ void Solid::ModelEvaluator::BrownianDyn::read_restart(Core::IO::DiscretizationRe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void Solid::ModelEvaluator::BrownianDyn::predict(const Solid::PredEnum& pred_type)
+{
+  check_init_setup();
+  generate_gaussian_random_numbers();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BrownianDyn::run_post_compute_x(
     const Core::LinAlg::Vector<double>& xold, const Core::LinAlg::Vector<double>& dir,
     const Core::LinAlg::Vector<double>& xnew)
@@ -523,14 +531,7 @@ Solid::ModelEvaluator::BrownianDyn::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::BrownianDyn::post_output()
-{
-  check_init_setup();
-  // -------------------------------------------------------------------------
-  // Generate new random forces
-  // -------------------------------------------------------------------------
-  generate_gaussian_random_numbers();
-}
+void Solid::ModelEvaluator::BrownianDyn::post_output() { check_init_setup(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
