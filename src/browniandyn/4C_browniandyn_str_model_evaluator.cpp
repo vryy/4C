@@ -386,6 +386,7 @@ void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(Teuchos::ParameterLis
     std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec)
 {
   check_init_setup();
+  generate_gaussian_random_numbers();
 
   // todo: this needs to go, just pass params_interface to elements
   if (p.numParams() > 1)
@@ -435,14 +436,6 @@ void Solid::ModelEvaluator::BrownianDyn::write_restart(
 void Solid::ModelEvaluator::BrownianDyn::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   // nothing to do
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::BrownianDyn::predict(const Solid::PredEnum& pred_type)
-{
-  check_init_setup();
-  generate_gaussian_random_numbers();
 }
 
 /*----------------------------------------------------------------------------*
