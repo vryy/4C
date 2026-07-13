@@ -133,7 +133,6 @@ void dyn_nlnstructural_drt()
       constexpr bool force_prepare = true;
       structadapter->prepare_output(force_prepare);
       structadapter->output();
-      structadapter->post_output();
     }
   }
 

@@ -62,7 +62,6 @@ int Adapter::StructureTimeLoop::integrate()
 
       // write output
       output();
-      post_output();
 
       // print info about finished time step
       print_step();

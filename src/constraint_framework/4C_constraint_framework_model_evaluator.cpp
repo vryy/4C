@@ -385,10 +385,6 @@ Solid::ModelEvaluator::Constraint::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Constraint::post_output() {}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Constraint::evaluate_jacobian_contributions_from_element_level_for_ptc()
 {
   FOUR_C_THROW("This function is not yet implemented");

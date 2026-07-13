@@ -236,7 +236,6 @@ int Solid::TimAda::integrate()
     sti_->update_step_element();
     sti_->post_update();
     output_period();
-    sti_->post_output();
     output_step_size();
     sti_->print_step();
 

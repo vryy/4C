@@ -89,9 +89,6 @@ namespace Solid
       /// wrapper for things that should be done before solving the nonlinear iterations
       void pre_solve() override {}
 
-      /// wrapper for things that should be done after convergence of Newton scheme
-      void post_output() override {}
-
       /// things that should be done after the actual time loop is finished
       void post_time_loop() override;
 

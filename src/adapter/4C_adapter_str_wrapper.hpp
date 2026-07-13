@@ -403,9 +403,6 @@ namespace Adapter
     /// wrapper for things that should be done after solving the update
     void post_update() override { structure_->post_update(); }
 
-    /// wrapper for things that should be done after the output
-    void post_output() override { structure_->post_output(); }
-
     /// wrapper for things that should be done after the actual time loop is finished
     void post_time_loop() override { structure_->post_time_loop(); }
 

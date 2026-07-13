@@ -100,8 +100,6 @@ namespace Solid
       std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
-      void post_output() override;
-
      private:
       //! all spring dashpot instances
       std::vector<std::shared_ptr<Constraints::SpringDashpot>> springs_;

@@ -292,9 +292,6 @@ namespace Solid
     //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
     virtual void update_constant_state_contributions() = 0;
 
-    //! things that should be done after output
-    virtual void post_output();
-
     void monitor_dbc(Core::IO::DiscretizationWriter& writer) const;
     //!@}
 

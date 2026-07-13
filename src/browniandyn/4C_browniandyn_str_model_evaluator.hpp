@@ -121,9 +121,6 @@ namespace Solid
           const override;
 
       //! derived
-      void post_output() override;
-
-      //! derived
       void reset_step_state() override;
       //! @}
 

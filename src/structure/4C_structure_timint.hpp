@@ -936,9 +936,6 @@ namespace Solid
     /// wrapper for things that should be done after solving the update
     void post_update() final {};
 
-    /// wrapper for things that should be done after convergence of Newton scheme
-    void post_output() final {};
-
     /// wrapper for things that should be done after the actual time loop is finished
     void post_time_loop() final {};
 

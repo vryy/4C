@@ -380,9 +380,6 @@ namespace Solid
     //! Write the current step state during runtime
     void runtime_output_step_state() const;
 
-    //! Do things after writing output
-    void post_output();
-
     /*!
      * \brief Reset the current state variables to the ones of the previous timestep
      *

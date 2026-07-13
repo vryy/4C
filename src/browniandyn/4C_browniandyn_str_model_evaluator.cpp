@@ -386,6 +386,7 @@ void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(Teuchos::ParameterLis
     std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec)
 {
   check_init_setup();
+  generate_gaussian_random_numbers();
 
   // todo: this needs to go, just pass params_interface to elements
   if (p.numParams() > 1)
@@ -519,17 +520,6 @@ Solid::ModelEvaluator::BrownianDyn::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return nullptr;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::BrownianDyn::post_output()
-{
-  check_init_setup();
-  // -------------------------------------------------------------------------
-  // Generate new random forces
-  // -------------------------------------------------------------------------
-  generate_gaussian_random_numbers();
 }
 
 /*----------------------------------------------------------------------------*
