@@ -21,6 +21,7 @@
 #include "4C_particle_engine_container.hpp"
 #include "4C_particle_engine_container_bundle.hpp"
 #include "4C_particle_engine_object.hpp"
+#include "4C_particle_engine_refresh_entry.hpp"
 #include "4C_particle_engine_runtime_vtp_writer.hpp"
 #include "4C_particle_engine_unique_global_id.hpp"
 #include "4C_particle_input.hpp"
@@ -1603,23 +1604,13 @@ void Particle::ParticleEngine::pack_states_and_append_to_send_buffers(ParticleTy
     const std::vector<std::pair<int, int>>& targets, const ParticleStates& states,
     std::map<int, std::vector<char>>& sdata) const
 {
-  // pre-pack states data (reused for all targets of this particle)
+  // pre-pack states data once (reused for all targets of this particle)
   Core::Communication::PackBuffer statesdata;
   add_to_pack(statesdata, states);
 
   // iterate over target processors
   for (const auto& [sendtoproc, ghostedindex] : targets)
-  {
-    // pack type and ghosted index header
-    Core::Communication::PackBuffer header;
-    add_to_pack(header, static_cast<int>(type));
-    add_to_pack(header, ghostedindex);
-
-    // append header + pre-packed states to send buffer
-    auto& buf = sdata[sendtoproc];
-    buf.insert(buf.end(), header().begin(), header().end());
-    buf.insert(buf.end(), statesdata().begin(), statesdata().end());
-  }
+    ParticleRefreshEntry::pack(type, ghostedindex, statesdata, sdata[sendtoproc]);
 }
 
 std::map<int, std::vector<char>>
@@ -1738,23 +1729,13 @@ void Particle::ParticleEngine::communicate_refreshed_particles(
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
-      // unpack particle type
-      int type_int;
-      extract_from_pack(buffer, type_int);
-      ParticleType type = static_cast<ParticleType>(type_int);
-
-      // unpack ghosted index
-      int ghostedindex;
-      extract_from_pack(buffer, ghostedindex);
-
-      // unpack states
-      ParticleStates states;
-      extract_from_pack(buffer, states);
+      // unpack refresh entry packed by ParticleRefreshEntry::pack()
+      ParticleRefreshEntry entry = ParticleRefreshEntry::unpack(buffer);
 
       // replace particle directly in container of ghosted particles
       ParticleContainer* container =
-          particlecontainerbundle_->get_specific_container(type, Ghosted);
-      container->replace_particle(ghostedindex, -1, states);
+          particlecontainerbundle_->get_specific_container(entry.type, Ghosted);
+      container->replace_particle(entry.ghostedindex, -1, entry.states);
     }
   }
 }
