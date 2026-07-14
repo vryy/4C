@@ -576,9 +576,9 @@ namespace Particle
      * send buffers, bypassing ParticleObject creation.
      *
      *
-     * \param[out] sdata send buffers indexed by target processor rank
+     * \return send buffers indexed by target processor rank
      */
-    void pack_particles_to_be_refreshed(std::map<int, std::vector<char>>& sdata) const;
+    std::map<int, std::vector<char>> pack_particles_to_be_refreshed() const;
 
     /*!
      * \brief pack specific states of particles of specific types into send buffers
@@ -587,12 +587,26 @@ namespace Particle
      * send buffers, bypassing ParticleObject creation.
      *
      *
-     * \param[in]  particlestatestotypes particle types and corresponding particle states to be
-     *                                   refreshed
-     * \param[out] sdata                 send buffers indexed by target processor rank
+     * \param[in] particlestatestotypes particle types and corresponding particle states to be
+     *                                  refreshed
+     * \return send buffers indexed by target processor rank
      */
-    void pack_specific_states_of_particles_to_be_refreshed(
-        const StatesOfTypesToRefresh& particlestatestotypes,
+    std::map<int, std::vector<char>> pack_specific_states_of_particles_to_be_refreshed(
+        const StatesOfTypesToRefresh& particlestatestotypes) const;
+
+    /*!
+     * \brief pack particle states and append to send buffers for all ghosting targets
+     *
+     * Pre-packs the given particle states and appends the type/ghosted-index header together with
+     * the states data to the corresponding send buffers for all target processors.
+     *
+     * \param[in]  type        particle type
+     * \param[in]  targets     map from owned index to list of (target proc, ghosted index) pairs
+     * \param[in]  states      particle states to send
+     * \param[out] sdata       send buffers indexed by target processor rank
+     */
+    void pack_states_and_append_to_send_buffers(ParticleType type,
+        const std::vector<std::pair<int, int>>& targets, const ParticleStates& states,
         std::map<int, std::vector<char>>& sdata) const;
 
     /*!

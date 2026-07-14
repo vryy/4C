@@ -356,8 +356,7 @@ void Particle::ParticleEngine::refresh_particles() const
   TEUCHOS_FUNC_TIME_MONITOR("Particle::ParticleEngine::RefreshParticles");
 
   // pack particles to be refreshed directly into send buffers
-  std::map<int, std::vector<char>> sdata;
-  pack_particles_to_be_refreshed(sdata);
+  auto sdata = pack_particles_to_be_refreshed();
 
   // communicate and unpack refreshed particles directly into containers
   communicate_refreshed_particles(sdata);
@@ -370,8 +369,7 @@ void Particle::ParticleEngine::refresh_particles_of_specific_states_and_types(
       "Particle::ParticleEngine::refresh_particles_of_specific_states_and_types");
 
   // pack specific states of particles directly into send buffers
-  std::map<int, std::vector<char>> sdata;
-  pack_specific_states_of_particles_to_be_refreshed(particlestatestotypes, sdata);
+  auto sdata = pack_specific_states_of_particles_to_be_refreshed(particlestatestotypes);
 
   // communicate and unpack refreshed particles directly into containers
   communicate_refreshed_particles(sdata);
@@ -1568,11 +1566,12 @@ void Particle::ParticleEngine::determine_particles_to_be_ghosted(
   }
 }
 
-void Particle::ParticleEngine::pack_particles_to_be_refreshed(
-    std::map<int, std::vector<char>>& sdata) const
+std::map<int, std::vector<char>> Particle::ParticleEngine::pack_particles_to_be_refreshed() const
 {
   // safety check
-  if (not validdirectghosting_) FOUR_C_THROW("invalid direct ghosting!");
+  FOUR_C_ASSERT_ALWAYS(validdirectghosting_, "invalid direct ghosting!");
+
+  std::map<int, std::vector<char>> sdata;
 
   // iterate over particle types
   for (const auto& type : particlecontainerbundle_->get_particle_types())
@@ -1593,36 +1592,44 @@ void Particle::ParticleEngine::pack_particles_to_be_refreshed(
       ParticleStates states;
       container->get_particle(ownedindex, globalid, states);
 
-      // pre-pack states data (reused for all targets of this particle)
-      Core::Communication::PackBuffer statesdata;
-      add_to_pack(statesdata, states);
-
-      // iterate over target processors
-      for (const auto& targetIt : indexIt.second)
-      {
-        int sendtoproc = targetIt.first;
-        int ghostedindex = targetIt.second;
-
-        // pack type and ghosted index header
-        Core::Communication::PackBuffer header;
-        add_to_pack(header, static_cast<int>(type));
-        add_to_pack(header, ghostedindex);
-
-        // append header + pre-packed states to send buffer
-        auto& buf = sdata[sendtoproc];
-        buf.insert(buf.end(), header().begin(), header().end());
-        buf.insert(buf.end(), statesdata().begin(), statesdata().end());
-      }
+      pack_states_and_append_to_send_buffers(type, indexIt.second, states, sdata);
     }
+  }
+
+  return sdata;
+}
+
+void Particle::ParticleEngine::pack_states_and_append_to_send_buffers(ParticleType type,
+    const std::vector<std::pair<int, int>>& targets, const ParticleStates& states,
+    std::map<int, std::vector<char>>& sdata) const
+{
+  // pre-pack states data (reused for all targets of this particle)
+  Core::Communication::PackBuffer statesdata;
+  add_to_pack(statesdata, states);
+
+  // iterate over target processors
+  for (const auto& [sendtoproc, ghostedindex] : targets)
+  {
+    // pack type and ghosted index header
+    Core::Communication::PackBuffer header;
+    add_to_pack(header, static_cast<int>(type));
+    add_to_pack(header, ghostedindex);
+
+    // append header + pre-packed states to send buffer
+    auto& buf = sdata[sendtoproc];
+    buf.insert(buf.end(), header().begin(), header().end());
+    buf.insert(buf.end(), statesdata().begin(), statesdata().end());
   }
 }
 
-void Particle::ParticleEngine::pack_specific_states_of_particles_to_be_refreshed(
-    const StatesOfTypesToRefresh& particlestatestotypes,
-    std::map<int, std::vector<char>>& sdata) const
+std::map<int, std::vector<char>>
+Particle::ParticleEngine::pack_specific_states_of_particles_to_be_refreshed(
+    const StatesOfTypesToRefresh& particlestatestotypes) const
 {
   // safety check
-  if (not validdirectghosting_) FOUR_C_THROW("invalid direct ghosting!");
+  FOUR_C_ASSERT_ALWAYS(validdirectghosting_, "invalid direct ghosting!");
+
+  std::map<int, std::vector<char>> sdata;
 
   // iterate over particle types
   for (const auto& typeIt : particlestatestotypes)
@@ -1661,28 +1668,11 @@ void Particle::ParticleEngine::pack_specific_states_of_particles_to_be_refreshed
         states[state].assign(state_ptr, state_ptr + statedim);
       }
 
-      // pre-pack states data (reused for all targets of this particle)
-      Core::Communication::PackBuffer statesdata;
-      add_to_pack(statesdata, states);
-
-      // iterate over target processors
-      for (const auto& targetIt : indexIt.second)
-      {
-        int sendtoproc = targetIt.first;
-        int ghostedindex = targetIt.second;
-
-        // pack type and ghosted index header
-        Core::Communication::PackBuffer header;
-        add_to_pack(header, static_cast<int>(type));
-        add_to_pack(header, ghostedindex);
-
-        // append header + pre-packed states to send buffer
-        auto& buf = sdata[sendtoproc];
-        buf.insert(buf.end(), header().begin(), header().end());
-        buf.insert(buf.end(), statesdata().begin(), statesdata().end());
-      }
+      pack_states_and_append_to_send_buffers(type, indexIt.second, states, sdata);
     }
   }
+
+  return sdata;
 }
 
 void Particle::ParticleEngine::communicate_particles(
@@ -1739,9 +1729,6 @@ void Particle::ParticleEngine::communicate_refreshed_particles(
   std::map<int, std::vector<char>> rdata;
   ParticleUtils::immediate_send_recv_known_procs(
       comm_, sdata, rdata, cached_procs_send_ghost_data_to_, cached_procs_receive_ghost_data_from_);
-
-  // clear after all particles are communicated
-  sdata.clear();
 
   // unpack received data directly into ghosted particle containers
   for (const auto& p : rdata)
