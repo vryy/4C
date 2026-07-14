@@ -115,7 +115,7 @@ namespace PoroPressureBased
     PorofluidAlgorithm* porofluid_algorithm_;
 
     //! global parameter list of the algorithm
-    const Teuchos::ParameterList& params_;
+    [[maybe_unused]] const Teuchos::ParameterList& params_;
 
     //! parameter list of porofluid algorithm
     const Teuchos::ParameterList& porofluid_params_;
