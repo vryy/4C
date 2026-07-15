@@ -166,7 +166,7 @@ namespace FLD
     void setup();
 
     //! time step size
-    double dt_;
+    [[maybe_unused]] double dt_;
 
     //! parameters for sampling/dumping period
     //! start of sampling at step samstart
