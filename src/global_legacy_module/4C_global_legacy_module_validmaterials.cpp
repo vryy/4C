@@ -19,6 +19,7 @@
 #include "4C_mat_fluidporo_singlephase.hpp"
 #include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_mat_micromaterial.hpp"
+#include "4C_mat_plasticdruckerprager.hpp"
 #include "4C_mat_scatra_growth_remodel.hpp"
 #include "4C_mat_scatra_nonlocal_stimulus.hpp"
 #include "4C_porofluid_pressure_based_elast_scatra_input.hpp"
@@ -1151,24 +1152,42 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   /*----------------------------------------------------------------------*/
   // Plastic linear elastic St.Venant Kirchhoff / Drucker Prager plasticity
   {
+    using namespace Core::IO::InputSpecBuilders::Validators;
     known_materials[Core::Materials::m_pldruckprag] = group("MAT_Struct_DruckerPrager",
         {
-            parameter<double>("YOUNG", {.description = "Young's modulus"}),
-            parameter<double>("NUE", {.description = "Poisson's ratio"}),
-            parameter<double>("DENS", {.description = "Density"}),
-            parameter<double>("ISOHARD", {.description = "linear isotropic hardening"}),
-            parameter<double>("TOL", {.description = "Local Newton iteration tolerance"}),
-            parameter<double>("C", {.description = "cohesion"}),
-            parameter<double>("ETA", {.description = "Drucker Prager Constant Eta"}),
-            parameter<double>("XI", {.description = "Drucker Prager Constant Xi"}),
-            parameter<double>("ETABAR", {.description = "Drucker Prager Constant Etabar"}),
-            parameter<std::string>("TANG", {.description = "Method to compute the material tangent",
-                                               .default_value = "consistent"}),
-            parameter<int>(
-                "MAXITER", {.description = "Maximum Iterations for local Neutron Raphson",
-                               .default_value = 50}),
+            parameter<double>(
+                "YOUNG", {.description = "Young's modulus", .validator = positive<double>()}),
+            parameter<double>(
+                "NUE", {.description = "Poisson's ratio (must be in (-1, 0.5) for stability)",
+                           .validator = in_range(excl(-1.0), excl(0.5))}),
+            parameter<double>(
+                "DENS", {.description = "Density", .validator = positive_or_zero<double>()}),
+            parameter<double>(
+                "ISOHARD", {.description = "linear isotropic hardening modulus $H_\\mathrm{iso}$",
+                               .validator = positive_or_zero<double>()}),
+            parameter<double>(
+                "C", {.description = "cohesion $c$", .validator = positive<double>()}),
+            parameter<double>("ETA", {.description = "Drucker Prager Constant $\\eta$"}),
+            parameter<double>("XI", {.description = "Drucker Prager Constant $\\xi$"}),
+            parameter<double>("ETABAR",
+                {.description = "Drucker Prager Constant $\\overline{\\eta}$ "
+                                "(set $\\overline{\\eta} = \\eta$ for associative flow rule)"}),
+            parameter<Mat::PAR::PlasticDruckerPrager::TangentType>("TANG",
+                {.description = "Method to compute the material tangent (consistent / elastic)",
+                    .default_value = Mat::PAR::PlasticDruckerPrager::TangentType::consistent}),
+            parameter<double>("TOL", {.description = "Local Newton iteration tolerance",
+                                         .default_value = 1.0e-08,
+                                         .validator = positive<double>()}),
+            parameter<int>("MAXITER", {.description = "Maximum Iterations for local Newton Raphson",
+                                          .default_value = 50,
+                                          .validator = positive<int>()}),
         },
-        {.description = "elastic St.Venant Kirchhoff / plastic drucker prager"});
+        {.description = "Linear-elasto-plastic material with a Drucker-Prager yield surface: "
+                        "$\\phi = \\sqrt{J_2} + \\eta \\, \\mathrm{tr}(\\mathbf{\\sigma}) - "
+                        "\\xi\\, (c + H_\\mathrm{iso}\\varepsilon_\\mathrm{p}^\\mathrm{acc}$ "
+                        "and a potentially non-associated plastic potential: = "
+                        "\\sqrt{J_2} + \\overline{\\eta} \\, \\mathrm{tr}(\\mathbf{\\sigma}) - "
+                        "\\xi\\, (c + H_\\mathrm{iso}\\varepsilon_\\mathrm{p}^\\mathrm{acc}$"});
   }
 
   /*----------------------------------------------------------------------*/
