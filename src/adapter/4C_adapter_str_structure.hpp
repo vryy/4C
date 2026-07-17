@@ -421,9 +421,6 @@ namespace Adapter
     /// wrapper for things that should be done before prepare_time_step is called
     virtual void pre_predict() = 0;
 
-    /// wrapper for things that should be done before solving the nonlinear iterations
-    virtual void pre_solve() = 0;
-
     /// wrapper for things that should be done before updating
     virtual void pre_update() = 0;
 

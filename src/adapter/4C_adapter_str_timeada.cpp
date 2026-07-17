@@ -203,9 +203,6 @@ int Adapter::StructureTimeAda::integrate()
       pre_predict();
       prepare_time_step();
 
-      // integrate system with marching TIS and
-      // stm_->IntegrateStep();
-      pre_solve();
       convergencestatus = solve();
 
       if (convergencestatus != Solid::conv_success)

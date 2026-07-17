@@ -86,9 +86,6 @@ namespace Solid
       /// wrapper for things that should be done before prepare_time_step is called
       void pre_predict() override {}
 
-      /// wrapper for things that should be done before solving the nonlinear iterations
-      void pre_solve() override {}
-
       /// things that should be done after the actual time loop is finished
       void post_time_loop() override;
 

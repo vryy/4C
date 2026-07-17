@@ -1539,7 +1539,6 @@ void ScaTra::ScaTraTimIntImpl::time_loop()
     // store time before calling nonlinear solver
     double time = Teuchos::Time::wallTime();
 
-    pre_solve();
     solve();
     post_solve();
 

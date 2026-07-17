@@ -1195,9 +1195,6 @@ Solid::ConvergenceStatus Solid::TimIntImpl::solve()
   check_is_init();
   check_is_setup();
 
-  // things to be done before solving
-  pre_solve();
-
   int nonlin_error = 0;
   // special nonlinear iterations for contact / meshtying
   if (have_contact_meshtying())

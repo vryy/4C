@@ -43,9 +43,6 @@ namespace Adapter
     /// wrapper for things that should be done before prepare_time_step is called
     void pre_predict() override {};
 
-    /// wrapper for things that should be done before solving the nonlinear iterations
-    void pre_solve() override {};
-
     /// wrapper for things that should be done before updating
     void pre_update() override {};
 

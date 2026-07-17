@@ -40,7 +40,6 @@ int Adapter::StructureTimeLoop::integrate()
 
     // integrate time step, i.e. do corrector steps
     // after this step we hold disn_, etc
-    pre_solve();
     convergencestatus = solve();
 
     // if everything is fine

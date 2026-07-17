@@ -41,8 +41,6 @@ namespace ScaTra
 
     void setup() override;
 
-    void pre_solve() override {};
-
     void post_solve() override {};
 
     void print_time_step_info() override;
