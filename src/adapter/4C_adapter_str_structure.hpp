@@ -418,9 +418,6 @@ namespace Adapter
     /// set the state of the nox group and the global state data container (implicit only)
     virtual void set_state(const std::shared_ptr<Core::LinAlg::Vector<double>>& x) = 0;
 
-    /// wrapper for things that should be done before prepare_time_step is called
-    virtual void pre_predict() = 0;
-
     /// wrapper for things that should be done before updating
     virtual void pre_update() = 0;
 

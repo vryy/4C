@@ -924,9 +924,6 @@ namespace Solid
     //! evaluate reference state for frictional contact at t=0)
     void prepare_step_contact();
 
-    /// wrapper for things that should be done before prepare_time_step is called
-    void pre_predict() final {};
-
     /// wrapper for things that should be done before updating
     void pre_update() final {};
 

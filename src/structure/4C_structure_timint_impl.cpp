@@ -303,9 +303,6 @@ void Solid::TimIntImpl::predict()
   check_is_init();
   check_is_setup();
 
-  // things that need to be done before Predict
-  pre_predict();
-
   // Update locals systems (which may be time dependent)
   if (locsysman_ != nullptr)
     locsysman_->update(timen_, {}, Global::Problem::instance()->function_manager());

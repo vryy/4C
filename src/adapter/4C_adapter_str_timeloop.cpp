@@ -35,7 +35,6 @@ int Adapter::StructureTimeLoop::integrate()
          (convergencestatus == Solid::conv_success or convergencestatus == Solid::conv_fail_repeat))
   {
     // call the predictor
-    pre_predict();
     prepare_time_step();
 
     // integrate time step, i.e. do corrector steps

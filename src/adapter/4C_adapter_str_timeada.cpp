@@ -200,7 +200,6 @@ int Adapter::StructureTimeAda::integrate()
       integrate_step_auxiliary();
 
       // call the predictor
-      pre_predict();
       prepare_time_step();
 
       convergencestatus = solve();

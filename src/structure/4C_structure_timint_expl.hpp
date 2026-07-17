@@ -224,9 +224,6 @@ namespace Solid
       // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
       set_timen((*time_)[0] + (*dt_)[0]);
 
-      // things that need to be done before Predict
-      pre_predict();
-
       // prepare contact for new time step
       prepare_step_contact();
 
