@@ -22,6 +22,7 @@ jobs:
           sysctl -n hw.physicalcpu
           pwd
           brew tap botantony/cmake3
+          brew trust botantony/cmake3
           brew install cmake3
           echo "/opt/homebrew/opt/cmake3/bin" >> $GITHUB_PATH
           sudo ln -sf $(brew --prefix gcc@14)/bin/gfortran-14 /opt/homebrew/bin/gfortran
