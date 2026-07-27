@@ -2875,6 +2875,7 @@ __four_c_test_vtk(BASED_ON ${current} PVD_RESULT xxx-beam-to-solid-surface-nodal
 four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_volume_coupling_mortar.4C.yaml NP 2 REQUIRED_DEPENDENCIES ArborX)
 four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_volume_meshtying_2d-3d.4C.yaml NP 3 REQUIRED_DEPENDENCIES ArborX)
 four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_volume_meshtying_2d-3d_mortar.4C.yaml NP 3 REQUIRED_DEPENDENCIES ArborX RETURN_AS current)
+__four_c_test_add_csv_yaml_comparison(BASED_ON ${current} RESULT_FILE xxx_energy.csv REFERENCE_FILE ref/beam3r_herm2line3_static_beam_to_solid_volume_meshtying_2d-3d_mortar_energy.csv TOL_R 1.0e-12 TOL_A 1.0e-12)
 __four_c_test_vtk(BASED_ON ${current} PVD_RESULT xxx-beam-to-solid-volume-mortar-continuous.pvd PVD_REFERENCE ref/beam3r_herm2line3_static_beam_to_solid_volume_meshtying_2d-3d_mortar-vtk/beam-to-solid-volume-mortar-continuous.pvd TOLERANCE 1e-08 TIME_STEPS 5.0000001e-1 1.0)
 four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_volume_meshtying_2d-3d_mortar_gauss_point_projections.4C.yaml NP 1 REQUIRED_DEPENDENCIES ArborX)
 four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_volume_meshtying_beam_along_solid_boundary_gauss_point_projection_boundary_segmentation.4C.yaml NP 2 REQUIRED_DEPENDENCIES ArborX)
