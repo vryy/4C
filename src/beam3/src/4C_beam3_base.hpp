@@ -623,11 +623,12 @@ namespace Discret
       /**
        * \brief Get the bounding volume of the element for geometric search
        *
+       * @param bounding_volumes vector of bounding volumes to be filled
        * @param discret discretization of the respective field
        * @param result_data_dofbased Result data vector used for extracting positions
-       * @return bounding volume of the respective element
        */
-      Core::GeometricSearch::BoundingVolume get_bounding_volume(
+      void get_bounding_volume(
+          std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& bounding_volumes,
           const Core::FE::Discretization& discret,
           const Core::LinAlg::Vector<double>& result_data_dofbased,
           const Core::GeometricSearch::GeometricSearchParams& params) const override;

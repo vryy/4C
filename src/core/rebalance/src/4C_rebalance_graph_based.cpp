@@ -393,19 +393,16 @@ std::shared_ptr<const Core::LinAlg::Graph> Core::Rebalance::build_monolithic_nod
     if (displacement == nullptr)
     {
       Core::LinAlg::Vector<double> zero_vector(*dis.dof_col_map(), true);
-
-      bounding_boxes.emplace_back(std::make_pair(element.global_id(),
-          element.user_element()->get_bounding_volume(dis, zero_vector, params)));
+      element.user_element()->get_bounding_volume(bounding_boxes, dis, zero_vector, params);
     }
     else
     {
-      bounding_boxes.emplace_back(std::make_pair(element.global_id(),
-          element.user_element()->get_bounding_volume(dis, *displacement, params)));
+      element.user_element()->get_bounding_volume(bounding_boxes, dis, *displacement, params);
     }
   }
 
   auto result = Core::GeometricSearch::global_collision_search_print_results(
-      bounding_boxes, bounding_boxes, dis.get_comm(), params.verbosity_);
+      bounding_boxes, bounding_boxes, dis.get_comm(), params.verbosity);
 
   // 2. Get nodal connectivity of each element
   const int n_nodes_per_element_max = 27;  // element with highest node count is hex27
@@ -459,14 +456,12 @@ std::shared_ptr<const Core::LinAlg::Graph> Core::Rebalance::build_monolithic_nod
   }
 
   // 5. Fill the graph with the geometric close entries
-  for (const auto& [predicate_lid, predicate_gid, primitive_gid, primitive_proc] : result)
+  for (const auto& [_, predicate_gid, primitive_gid, primitive_proc] : result)
   {
     int predicate_lid_discretization = dis.element_row_map()->lid(predicate_gid);
     if (predicate_lid_discretization < 0)
       FOUR_C_THROW("Could not find lid for predicate with gid {} on rank {}", predicate_gid,
           Core::Communication::my_mpi_rank(dis.get_comm()));
-    if (predicate_lid != predicate_lid_discretization)
-      FOUR_C_THROW("The ids dont match from arborx and the discretization");
     const auto* predicate = dis.g_element(predicate_gid);
 
     int primitive_lid_in_map = my_colliding_primitives_map.lid(primitive_gid);

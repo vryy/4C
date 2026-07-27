@@ -486,9 +486,9 @@ void Solid::ModelEvaluator::BeamInteractionModelEvaluator::partition_problem()
 
   if (!use_binning_based_partitioning())
   {
-    const auto geometric_search_params_ptr_ = Core::GeometricSearch::GeometricSearchParams(
-        Global::Problem::instance()->geometric_search_params(),
-        Global::Problem::instance()->io_params());
+    const auto geometric_search_params_ptr_ =
+        Core::GeometricSearch::geometric_search_params_factory(
+            Global::Problem::instance()->parameters());
 
     std::shared_ptr<const Core::LinAlg::Graph> enriched_graph =
         Core::Rebalance::build_monolithic_node_graph(

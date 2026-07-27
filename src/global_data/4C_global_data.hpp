@@ -219,10 +219,6 @@ namespace Global
     {
       return parameters_->sublist("BINNING STRATEGY");
     }
-    const Teuchos::ParameterList& geometric_search_params() const
-    {
-      return parameters_->sublist("BOUNDINGVOLUME STRATEGY");
-    }
     const Teuchos::ParameterList& io_params() const { return parameters_->sublist("IO"); }
     const Teuchos::ParameterList& structural_dynamic_params() const
     {

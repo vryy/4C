@@ -91,9 +91,8 @@ do_rebalance_discretization(const Core::LinAlg::Graph& graph,
           {.fill_complete = Core::FE::OptionsFillComplete{.do_boundary_conditions = false}});
 
       std::shared_ptr<const Core::LinAlg::Graph> enriched_graph =
-          Core::Rebalance::build_monolithic_node_graph(discretization,
-              Core::GeometricSearch::GeometricSearchParams(
-                  parameters.geometric_search_parameters, parameters.io_parameters));
+          Core::Rebalance::build_monolithic_node_graph(
+              discretization, parameters.geometric_search_parameters);
 
       std::tie(rowmap, colmap) =
           Core::Rebalance::rebalance_node_maps(*enriched_graph, rebalanceParams);

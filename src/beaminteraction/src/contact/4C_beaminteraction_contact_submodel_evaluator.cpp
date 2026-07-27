@@ -32,7 +32,7 @@
 #include "4C_binstrategy.hpp"
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_geometric_search_bvh.hpp"
-#include "4C_geometric_search_params.hpp"
+#include "4C_geometric_search_input.hpp"
 #include "4C_geometric_search_visualization.hpp"
 #include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "4C_global_data.hpp"
@@ -73,9 +73,9 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::setup()
 
   // build a new data container to manage geometric search parameters
   geometric_search_params_ptr_ = std::make_shared<Core::GeometricSearch::GeometricSearchParams>(
-      Global::Problem::instance()->geometric_search_params(),
-      Global::Problem::instance()->io_params());
-  if (geometric_search_params_ptr_->get_write_visualization_flag())
+      Core::GeometricSearch::geometric_search_params_factory(
+          Global::Problem::instance()->parameters()));
+  if (geometric_search_params_ptr_->write_geometric_search_visualization)
   {
     geometric_search_visualization_ptr_ =
         std::make_shared<Core::GeometricSearch::GeometricSearchVisualization>(
@@ -912,18 +912,16 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::find_and_store_neighboring
 
   // Get vector of all beam element bounding boxes.
   int const numroweles = ele_type_map_extractor_ptr()->beam_map()->num_my_elements();
-  std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> beam_bounding_boxes(
-      numroweles);
+  std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> beam_bounding_boxes;
+  // Reserving the number of row elements is a good initial guess for the minimum final size of the
+  // vector.
+  beam_bounding_boxes.reserve(numroweles);
   for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
   {
     int const elegid = ele_type_map_extractor_ptr()->beam_map()->gid(rowele_i);
     Core::Elements::Element* currele = discret().g_element(elegid);
-    const auto bounding_volume = currele->get_bounding_volume(discret(),
+    currele->get_bounding_volume(beam_bounding_boxes, discret(),
         *beam_interaction_data_state_ptr()->get_dis_col_np(), *geometric_search_params_ptr_);
-
-    auto& bounding_volume_pair = beam_bounding_boxes.at(rowele_i);
-    bounding_volume_pair.first = elegid;
-    bounding_volume_pair.second = bounding_volume;
   }
 
   // Get vector of the bounding boxes of all possible interacting elements (also including beams
@@ -938,16 +936,14 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::find_and_store_neighboring
         BeamInteraction::Utils::convert_element_to_bin_content_type(currele);
     if (have_contact_type(contact_type))
     {
-      const auto bounding_volume = currele->get_bounding_volume(discret(),
+      currele->get_bounding_volume(other_bounding_boxes, discret(),
           *beam_interaction_data_state_ptr()->get_dis_col_np(), *geometric_search_params_ptr_);
-
-      other_bounding_boxes.emplace_back(std::make_pair(currele->id(), bounding_volume));
     }
   }
 
   // Get colliding pairs.
   const auto& collision_pairs = collision_search_print_results(other_bounding_boxes,
-      beam_bounding_boxes, discret().get_comm(), geometric_search_params_ptr_->verbosity_);
+      beam_bounding_boxes, discret().get_comm(), geometric_search_params_ptr_->verbosity);
 
   // Create the beam-to-xxx pair pointers according to the search.
   for (const auto& pair : collision_pairs)

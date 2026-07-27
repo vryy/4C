@@ -66,9 +66,8 @@ namespace ReducedLung
                   .mesh_partitioning_parameters =
                       problem.parameters().get<Core::Rebalance::MeshPartitioningParameters>(
                           "MESH PARTITIONING"),
-                  .geometric_search_parameters = problem.geometric_search_params(),
-                  .io_parameters = problem.io_params(),
-              },
+                  .geometric_search_parameters =
+                      Core::GeometricSearch::geometric_search_params_factory(problem.parameters())},
           .io_parameters = problem.io_params(),
           .linear_solver_parameters = problem.solver_params(parameters.dynamics.linear_solver),
           .solver_params_callback = problem.solver_params_callback(),
