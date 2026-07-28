@@ -289,8 +289,10 @@ void Particle::UniqueGlobalIdHandler::distribute_requested_global_ids_from_maste
   if (myrank_ != masterrank_)
   {
     // unpack and store received data
+    const auto rit = rdata.find(masterrank_);
+    if (rit != rdata.end())
     {
-      const std::vector<char>& rmsg = rdata.at(masterrank_);
+      const std::vector<char>& rmsg = rit->second;
 
       Core::Communication::UnpackBuffer buffer(rmsg);
       while (!buffer.at_end())
