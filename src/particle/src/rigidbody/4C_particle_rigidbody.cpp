@@ -584,7 +584,6 @@ void Particle::RigidBodyHandler::relate_owned_rigid_bodies_to_hosting_procs()
 
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // iterate over hosted rigid bodies
   for (const int rigidbody_k : hostedrigidbodies_)
@@ -605,16 +604,12 @@ void Particle::RigidBodyHandler::relate_owned_rigid_bodies_to_hosting_procs()
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // unpack and store received data
-  for (auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    int msgsource = p.first;
-    std::vector<char>& rmsg = p.second;
-
-
-
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
@@ -632,7 +627,6 @@ void Particle::RigidBodyHandler::communicate_rigid_body_states(
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // iterate over previously owned rigid bodies
   for (const int rigidbody_k : previouslyownedrigidbodies)
@@ -673,14 +667,13 @@ void Particle::RigidBodyHandler::communicate_rigid_body_states(
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // unpack and store received data
-  for (auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    std::vector<char>& rmsg = p.second;
-
-
+    (void)msgsource;
 
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
@@ -861,7 +854,6 @@ void Particle::RigidBodyHandler::gather_partial_mass_quantities(
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // iterate over hosted rigid bodies
   for (const int rigidbody_k : hostedrigidbodies_)
@@ -898,14 +890,13 @@ void Particle::RigidBodyHandler::gather_partial_mass_quantities(
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // unpack and store received data
-  for (auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    std::vector<char>& rmsg = p.second;
-
-
+    (void)msgsource;
 
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
@@ -1097,7 +1088,6 @@ void Particle::RigidBodyHandler::gather_partial_and_compute_full_force_and_torqu
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // iterate over hosted rigid bodies
   for (const int rigidbody_k : hostedrigidbodies_)
@@ -1124,14 +1114,13 @@ void Particle::RigidBodyHandler::gather_partial_and_compute_full_force_and_torqu
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // unpack and store received data
-  for (auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    std::vector<char>& rmsg = p.second;
-
-
+    (void)msgsource;
 
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
@@ -1293,7 +1282,6 @@ void Particle::RigidBodyHandler::broadcast_rigid_body_positions()
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // iterate over owned rigid bodies
   for (const int rigidbody_k : ownedrigidbodies_)
@@ -1318,14 +1306,13 @@ void Particle::RigidBodyHandler::broadcast_rigid_body_positions()
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // unpack and store received data
-  for (auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    std::vector<char>& rmsg = p.second;
-
-
+    (void)msgsource;
 
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
@@ -1347,7 +1334,6 @@ void Particle::RigidBodyHandler::broadcast_rigid_body_velocities()
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // iterate over owned rigid bodies
   for (const int rigidbody_k : ownedrigidbodies_)
@@ -1373,14 +1359,13 @@ void Particle::RigidBodyHandler::broadcast_rigid_body_velocities()
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // unpack and store received data
-  for (auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    std::vector<char>& rmsg = p.second;
-
-
+    (void)msgsource;
 
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
@@ -1402,7 +1387,6 @@ void Particle::RigidBodyHandler::broadcast_rigid_body_accelerations()
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // iterate over owned rigid bodies
   for (const int rigidbody_k : ownedrigidbodies_)
@@ -1428,14 +1412,13 @@ void Particle::RigidBodyHandler::broadcast_rigid_body_accelerations()
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // unpack and store received data
-  for (auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    std::vector<char>& rmsg = p.second;
-
-
+    (void)msgsource;
 
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())

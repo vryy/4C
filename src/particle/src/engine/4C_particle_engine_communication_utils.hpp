@@ -37,10 +37,10 @@ namespace Particle::ParticleUtils
    *
    * \param[in]  comm  communicator
    * \param[in]  sdata send buffers related to corresponding target processors
-   * \param[out] rdata receive buffers related to corresponding source processors
+   * \return           receive buffers related to corresponding source processors
    */
-  void immediate_recv_blocking_send(MPI_Comm comm, std::map<int, std::vector<char>>& sdata,
-      std::map<int, std::vector<char>>& rdata);
+  std::map<int, std::vector<char>> immediate_recv_blocking_send(
+      MPI_Comm comm, const std::map<int, std::vector<char>>& sdata);
 
   /*!
    * \brief communicate data using a cached communication graph
@@ -57,12 +57,12 @@ namespace Particle::ParticleUtils
    *
    * \param[in]  comm                communicator
    * \param[in]  sdata               send buffers related to corresponding target processors
-   * \param[out] rdata               receive buffers related to corresponding source processors
    * \param[in]  send_to_procs       set of processors to send data to
    * \param[in]  receive_from_procs  set of processors to receive data from
+   * \return                         receive buffers related to corresponding source processors
    */
-  void immediate_send_recv_known_procs(MPI_Comm comm, std::map<int, std::vector<char>>& sdata,
-      std::map<int, std::vector<char>>& rdata, const std::set<int>& send_to_procs,
+  std::map<int, std::vector<char>> immediate_send_recv_known_procs(MPI_Comm comm,
+      const std::map<int, std::vector<char>>& sdata, const std::set<int>& send_to_procs,
       const std::set<int>& receive_from_procs);
 
   //@}

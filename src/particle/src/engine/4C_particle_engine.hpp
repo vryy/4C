@@ -632,7 +632,7 @@ namespace Particle
      *
      * \param[in] sdata pre-packed send buffers indexed by target processor rank
      */
-    void communicate_refreshed_particles(std::map<int, std::vector<char>>& sdata) const;
+    void communicate_refreshed_particles(const std::map<int, std::vector<char>>& sdata) const;
 
     /*!
      * \brief communicate and build map for direct ghosting
@@ -644,7 +644,8 @@ namespace Particle
      * \param[in] directghosting direct ghosting information
      */
     void communicate_direct_ghosting_map(
-        std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>& directghosting);
+        const std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>&
+            directghosting);
 
     /*!
      * \brief insert owned particles received from other processors

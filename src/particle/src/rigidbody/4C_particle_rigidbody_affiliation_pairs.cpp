@@ -103,7 +103,6 @@ void Particle::RigidBodyAffiliationPairs::communicate_specific_affiliation_pairs
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // pack affiliation pairs
   for (int torank = 0; torank < Core::Communication::num_mpi_ranks(comm_); ++torank)
@@ -126,10 +125,11 @@ void Particle::RigidBodyAffiliationPairs::communicate_specific_affiliation_pairs
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // unpack affiliation pairs
-  for (auto& p : rdata) unpack_affiliation_pairs(p.second);
+  for (const auto& p : rdata) unpack_affiliation_pairs(p.second);
 }
 
 void Particle::RigidBodyAffiliationPairs::pack_all_affiliation_pairs(

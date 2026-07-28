@@ -112,7 +112,6 @@ void Particle::UniqueGlobalIdHandler::gather_reusable_global_ids_from_all_procs_
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   if (myrank_ != masterrank_)
   {
@@ -128,16 +127,14 @@ void Particle::UniqueGlobalIdHandler::gather_reusable_global_ids_from_all_procs_
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (myrank_ != masterrank_)
   {
-    for (const auto& p : rdata)
+    for (const auto& [msgsource, rmsg] : rdata)
     {
-      const int msgsource = p.first;
-      const std::vector<char>& rmsg = p.second;
-
       if (rmsg.size() != 0)
         FOUR_C_THROW(
             "not expected to received reusable global ids on processor {} from processor {}!",
@@ -152,11 +149,9 @@ void Particle::UniqueGlobalIdHandler::gather_reusable_global_ids_from_all_procs_
     std::vector<int> receivedreusableglobalids;
 
     // unpack and store received data
-    for (const auto& p : rdata)
+    for (const auto& [msgsource, rmsg] : rdata)
     {
-      const std::vector<char>& rmsg = p.second;
-
-
+      (void)msgsource;
       Core::Communication::UnpackBuffer buffer(rmsg);
       while (!buffer.at_end())
       {
@@ -262,7 +257,6 @@ void Particle::UniqueGlobalIdHandler::distribute_requested_global_ids_from_maste
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   if (myrank_ == masterrank_)
   {
@@ -280,14 +274,12 @@ void Particle::UniqueGlobalIdHandler::distribute_requested_global_ids_from_maste
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  for (const auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    const int msgsource = p.first;
-    const std::vector<char>& rmsg = p.second;
-
     if (msgsource != masterrank_ and rmsg.size() != 0)
       FOUR_C_THROW("not expected to received global ids on processor {} from processor {}!",
           myrank_, msgsource);
@@ -298,8 +290,7 @@ void Particle::UniqueGlobalIdHandler::distribute_requested_global_ids_from_maste
   {
     // unpack and store received data
     {
-      std::vector<char>& rmsg = rdata[masterrank_];
-
+      const std::vector<char>& rmsg = rdata.at(masterrank_);
 
       Core::Communication::UnpackBuffer buffer(rmsg);
       while (!buffer.at_end())

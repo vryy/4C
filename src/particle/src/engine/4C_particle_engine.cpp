@@ -357,7 +357,7 @@ void Particle::ParticleEngine::refresh_particles() const
   TEUCHOS_FUNC_TIME_MONITOR("Particle::ParticleEngine::RefreshParticles");
 
   // pack particles to be refreshed directly into send buffers
-  auto sdata = pack_particles_to_be_refreshed();
+  const auto sdata = pack_particles_to_be_refreshed();
 
   // communicate and unpack refreshed particles directly into containers
   communicate_refreshed_particles(sdata);
@@ -370,7 +370,7 @@ void Particle::ParticleEngine::refresh_particles_of_specific_states_and_types(
       "Particle::ParticleEngine::refresh_particles_of_specific_states_and_types");
 
   // pack specific states of particles directly into send buffers
-  auto sdata = pack_specific_states_of_particles_to_be_refreshed(particlestatestotypes);
+  const auto sdata = pack_specific_states_of_particles_to_be_refreshed(particlestatestotypes);
 
   // communicate and unpack refreshed particles directly into containers
   communicate_refreshed_particles(sdata);
@@ -1143,7 +1143,6 @@ void Particle::ParticleEngine::determine_ghosting_dependent_maps_and_sets()
 
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // pack data for sending
   Core::Communication::PackBuffer data;
@@ -1158,19 +1157,15 @@ void Particle::ParticleEngine::determine_ghosting_dependent_maps_and_sets()
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // init receiving vector
   std::set<int> receivedbins;
 
   // unpack and store received data
-  for (const auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    const int msgsource = p.first;
-    const std::vector<char>& rmsg = p.second;
-
-
-
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
@@ -1672,7 +1667,6 @@ void Particle::ParticleEngine::communicate_particles(
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // pack data for sending
   for (int torank = 0; torank < Core::Communication::num_mpi_ranks(comm_); ++torank)
@@ -1691,14 +1685,12 @@ void Particle::ParticleEngine::communicate_particles(
   particlestosend.clear();
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // unpack and store received data
-  for (const auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    const int msgsource = p.first;
-    const std::vector<char>& rmsg = p.second;
-
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
@@ -1714,17 +1706,16 @@ void Particle::ParticleEngine::communicate_particles(
 }
 
 void Particle::ParticleEngine::communicate_refreshed_particles(
-    std::map<int, std::vector<char>>& sdata) const
+    const std::map<int, std::vector<char>>& sdata) const
 {
   // communicate data via cached send/receive graph
-  std::map<int, std::vector<char>> rdata;
-  ParticleUtils::immediate_send_recv_known_procs(
-      comm_, sdata, rdata, cached_procs_send_ghost_data_to_, cached_procs_receive_ghost_data_from_);
+  const std::map<int, std::vector<char>> rdata = ParticleUtils::immediate_send_recv_known_procs(
+      comm_, sdata, cached_procs_send_ghost_data_to_, cached_procs_receive_ghost_data_from_);
 
   // unpack received data directly into ghosted particle containers
-  for (const auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    const std::vector<char>& rmsg = p.second;
+    (void)msgsource;
 
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
@@ -1741,7 +1732,7 @@ void Particle::ParticleEngine::communicate_refreshed_particles(
 }
 
 void Particle::ParticleEngine::communicate_direct_ghosting_map(
-    std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>& directghosting)
+    const std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>& directghosting)
 {
   // iterate over particle types
   for (const auto& type : particlecontainerbundle_->get_particle_types())
@@ -1757,7 +1748,6 @@ void Particle::ParticleEngine::communicate_direct_ghosting_map(
 
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // pack data for sending
   for (const auto& p : directghosting)
@@ -1767,19 +1757,17 @@ void Particle::ParticleEngine::communicate_direct_ghosting_map(
     std::swap(sdata[p.first], data());
   }
 
-  // clear after all ghosting information is packed
-  directghosting.clear();
-
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // init receiving map
   std::map<ParticleType, std::map<int, std::pair<int, int>>> receiveddirectghosting;
 
   // unpack and store received data
-  for (const auto& p : rdata)
+  for (const auto& [msgsource, rmsg] : rdata)
   {
-    const std::vector<char>& rmsg = p.second;
+    (void)msgsource;
 
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())

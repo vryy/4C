@@ -491,7 +491,6 @@ void Particle::PDNeighborPairs::communicate_bond_list(
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
   std::vector<std::set<std::pair<int, int>>> communicated_bonds_per_target(
       Core::Communication::num_mpi_ranks(comm_));
 
@@ -539,12 +538,13 @@ void Particle::PDNeighborPairs::communicate_bond_list(
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   std::set<long> known_bond_hashes = build_known_peridynamic_bond_hashes(bondlist_);
 
   // unpack global ids and initialize remaining bond data
-  for (auto& p : rdata) unpack_peridynamic_bond_list_data(p.second, known_bond_hashes);
+  for (const auto& p : rdata) unpack_peridynamic_bond_list_data(p.second, known_bond_hashes);
 }
 
 void Particle::PDNeighborPairs::unpack_peridynamic_bond_list_data(
