@@ -145,18 +145,17 @@ namespace BeamInteraction
     }
 
     /**
-     * \brief Get energy of penalty contact. Not yet implemented.
+     * \brief The mortar energy contribution will be calculated globally in the mortar manager.
      */
-    double get_energy() const override
-    {
-      FOUR_C_THROW("get_energy not implemented yet!");
-      return 0.0;
-    }
+    [[nodiscard]] double get_energy() const override { return 0.0; }
 
     /**
      * \brief Returns the type of this beam contact element pair.
      */
-    ContactPairType get_type() const override { return ContactPairType::beam_to_solid_base; }
+    [[nodiscard]] ContactPairType get_type() const override
+    {
+      return ContactPairType::beam_to_solid_base;
+    }
 
    protected:
     /**

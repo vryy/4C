@@ -51,6 +51,7 @@ STRUCTURAL DYNAMIC:
   MAXTIME: 1
   PREDICT: "TangDis"
   LINEAR_SOLVER: 1
+  RESEVERYERGY: 1
 SOLVER 1:
   SOLVER: "Superlu"
   NAME: "Structure_Solver"
