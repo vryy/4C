@@ -248,7 +248,6 @@ void Particle::DEMHistoryPairs::communicate_specific_history_pairs(
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
 
   // pack history pairs
   for (int torank = 0; torank < Core::Communication::num_mpi_ranks(comm_); ++torank)
@@ -272,10 +271,11 @@ void Particle::DEMHistoryPairs::communicate_specific_history_pairs(
   }
 
   // communicate data via non-buffered send from proc to proc
-  ParticleUtils::immediate_recv_blocking_send(comm_, sdata, rdata);
+  const std::map<int, std::vector<char>> rdata =
+      ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // unpack history pairs
-  for (auto& p : rdata) unpack_history_pairs(p.second, historydata);
+  for (const auto& p : rdata) unpack_history_pairs(p.second, historydata);
 }
 
 template <typename Historypairtype>

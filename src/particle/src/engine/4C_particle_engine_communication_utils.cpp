@@ -17,9 +17,12 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-void Particle::ParticleUtils::immediate_recv_blocking_send(
-    MPI_Comm comm, std::map<int, std::vector<char>>& sdata, std::map<int, std::vector<char>>& rdata)
+std::map<int, std::vector<char>> Particle::ParticleUtils::immediate_recv_blocking_send(
+    MPI_Comm comm, const std::map<int, std::vector<char>>& sdata)
 {
+  // buffer for receiving
+  std::map<int, std::vector<char>> rdata;
+
   // number of processors
   int const numproc = Core::Communication::num_mpi_ranks(comm);
 
@@ -119,7 +122,7 @@ void Particle::ParticleUtils::immediate_recv_blocking_send(
       if (torank < 0) FOUR_C_THROW("processor can not send messages to processor < 0!");
 
       // reference to send buffer
-      std::vector<char>& sbuffer = sdata[torank];
+      const std::vector<char>& sbuffer = sdata.at(torank);
 
       // perform non-blocking send operation
       MPI_Isend((void*)(sbuffer.data()), static_cast<int>(sbuffer.size()), MPI_CHAR, torank, 5678,
@@ -132,17 +135,19 @@ void Particle::ParticleUtils::immediate_recv_blocking_send(
   // ---- wait for completion of send operations ----
   MPI_Waitall(numsendtoprocs, sendrequest.data(), MPI_STATUSES_IGNORE);
 
-  // clear send buffer after successful communication
-  sdata.clear();
-
   // ---- wait for completion of receive operations ----
   MPI_Waitall(numrecvfromprocs, recvrequest.data(), MPI_STATUSES_IGNORE);
+
+  return rdata;
 }
 
-void Particle::ParticleUtils::immediate_send_recv_known_procs(MPI_Comm comm,
-    std::map<int, std::vector<char>>& sdata, std::map<int, std::vector<char>>& rdata,
+std::map<int, std::vector<char>> Particle::ParticleUtils::immediate_send_recv_known_procs(
+    MPI_Comm comm, const std::map<int, std::vector<char>>& sdata,
     const std::set<int>& send_to_procs, const std::set<int>& receive_from_procs)
 {
+  // buffer for receiving
+  std::map<int, std::vector<char>> rdata;
+
   const int numsendtoprocs = static_cast<int>(send_to_procs.size());
   const int numrecvfromprocs = static_cast<int>(receive_from_procs.size());
 
@@ -204,10 +209,11 @@ void Particle::ParticleUtils::immediate_send_recv_known_procs(MPI_Comm comm,
   // ---- wait for completion of send operations ----
   if (!sendrequest.empty())
     MPI_Waitall(static_cast<int>(sendrequest.size()), sendrequest.data(), MPI_STATUSES_IGNORE);
-  sdata.clear();
 
   // ---- wait for completion of receive operations ----
   MPI_Waitall(numrecvfromprocs, recvrequest.data(), MPI_STATUSES_IGNORE);
+
+  return rdata;
 }
 
 FOUR_C_NAMESPACE_CLOSE
