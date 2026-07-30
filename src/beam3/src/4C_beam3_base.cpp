@@ -13,7 +13,7 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_geometric_search_bounding_volume.hpp"
-#include "4C_geometric_search_params.hpp"
+#include "4C_geometric_search_input.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_beam_templated_material_generic.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
@@ -412,35 +412,87 @@ void Discret::Elements::Beam3Base::get_triad_of_binding_spot(Core::LinAlg::Matri
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-Core::GeometricSearch::BoundingVolume Discret::Elements::Beam3Base::get_bounding_volume(
+void Discret::Elements::Beam3Base::get_bounding_volume(
+    std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& bounding_volumes,
     const Core::FE::Discretization& discret,
     const Core::LinAlg::Vector<double>& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
 {
-  // Get the centerline dof values of the beam.
-  std::vector<double> element_posdofvec;
-  BeamInteraction::Utils::extract_pos_dof_vec_values(
-      discret, this, result_data_dofbased, element_posdofvec);
-  Core::GeometricSearch::BoundingVolume bounding_volume;
+  std::vector<double> beamelement_displacement_vector;
+  BeamInteraction::Utils::get_current_element_dis(
+      discret, this, result_data_dofbased, beamelement_displacement_vector);
 
-  Core::LinAlg::Matrix<3, 1, double> point;
-
-  // TODO: replace this with convex hull from bezier curve (small student project?)
-  // Add a certain number of points along the beam.
-  const unsigned int n_points = 5;
-  for (unsigned int i_point = 0; i_point < n_points; ++i_point)
+  if (params.beam_bounding_volume.bounding_volume_type ==
+      Core::GeometricSearch::BeamBoundingVolumeType::centerline_kdop)
   {
-    const double xi = -1.0 + 2.0 / (n_points - 1) * i_point;
-    this->get_pos_at_xi(point, xi, element_posdofvec);
-    bounding_volume.add_point(point);
+    Core::GeometricSearch::BoundingVolume bounding_volume;
+    Core::LinAlg::Matrix<3, 1, double> point;
+
+    // TODO: replace this with convex hull from bezier curve (small student project?)
+    // Add a certain number of points along the beam.
+    const unsigned int n_points = 5;
+    for (unsigned int i_point = 0; i_point < n_points; ++i_point)
+    {
+      const double xi = -1.0 + 2.0 / (n_points - 1) * i_point;
+      this->get_pos_at_xi(point, xi, beamelement_displacement_vector);
+      bounding_volume.add_point(point);
+    }
+
+    // Add the radius times a safety factor.
+    const double safety_factor = params.beam_bounding_volume.radius_extension_factor;
+    const double radius = get_circular_cross_section_radius_for_interactions();
+    bounding_volume.extend_boundaries(radius * safety_factor);
+
+    bounding_volumes.emplace_back(this->id(), bounding_volume);
   }
+  else if (params.beam_bounding_volume.bounding_volume_type ==
+           Core::GeometricSearch::BeamBoundingVolumeType::integration_points_surface)
+  {
+    const double radius = get_circular_cross_section_radius_for_interactions();
 
-  // Add the radius times a safety factor.
-  const double safety_factor = params.get_beam_bounding_volume_scaling();
-  const double radius = get_circular_cross_section_radius_for_interactions();
-  bounding_volume.extend_boundaries(radius * safety_factor);
+    const auto gauss_rule = Core::FE::num_gauss_points_to_gauss_rule<Core::FE::CellType::line2>(
+        params.beam_bounding_volume.integration_points_axial.value());
+    Core::FE::IntegrationPoints1D integration_points_centerline(gauss_rule);
+    const int n_integration_points_circumference =
+        params.beam_bounding_volume.integration_points_circumference.value();
 
-  return bounding_volume;
+    Core::LinAlg::Matrix<3, 1> centerline_point;
+    Core::LinAlg::Matrix<3, 3> triad;
+    Core::LinAlg::Matrix<3, 1> eta_cross_section;
+    Core::LinAlg::Matrix<3, 1> gauss_point_position;
+
+    for (unsigned int index_gp_axis = 0;
+        index_gp_axis < (unsigned int)integration_points_centerline.nquad; index_gp_axis++)
+    {
+      const auto eta = integration_points_centerline.qxg[index_gp_axis][0];
+      get_pos_at_xi(centerline_point, eta, beamelement_displacement_vector);
+      get_triad_at_xi(triad, eta, beamelement_displacement_vector);
+
+      for (unsigned int index_gp_circ = 0;
+          index_gp_circ < (unsigned int)n_integration_points_circumference; index_gp_circ++)
+      {
+        // Coordinates in the cross section.
+        const double alpha =
+            2.0 * std::numbers::pi / double(n_integration_points_circumference) * index_gp_circ;
+        eta_cross_section(0) = 0;
+        eta_cross_section(1) = cos(alpha) * radius;
+        eta_cross_section(2) = sin(alpha) * radius;
+
+        // Get the point on the beams surface.
+        gauss_point_position.multiply(triad, eta_cross_section);
+        gauss_point_position += centerline_point;
+
+        // Create the Gauss point bounding volume.
+        Core::GeometricSearch::BoundingVolume bounding_volume;
+        bounding_volume.add_point(gauss_point_position);
+        bounding_volumes.emplace_back(this->id(), bounding_volume);
+      }
+    }
+  }
+  else
+  {
+    FOUR_C_THROW("Unknown beam bounding volume type.");
+  }
 }
 
 /*--------------------------------------------------------------------------------------------*

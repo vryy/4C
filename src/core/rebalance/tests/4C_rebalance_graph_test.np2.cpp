@@ -10,6 +10,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_geometric_search_input.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -115,15 +116,16 @@ namespace
   {
     EXPECT_EQ(false, testdis_->filled());
 
-    Teuchos::ParameterList geometric_search_params;
-    geometric_search_params.set("BEAM_RADIUS_EXTENSION_FACTOR", 1.0);
-    geometric_search_params.set("SPHERE_RADIUS_EXTENSION_FACTOR", 1.0);
-    geometric_search_params.set("POINT_TOLERANCE", 1e-4);
-    geometric_search_params.set("WRITE_GEOMETRIC_SEARCH_VISUALIZATION", false);
-    Teuchos::ParameterList io_params;
-    io_params.set("VERBOSITY", verbosity_);
-
-    Core::GeometricSearch::GeometricSearchParams search_params(geometric_search_params, io_params);
+    Core::GeometricSearch::GeometricSearchParams search_params{
+        .beam_bounding_volume =
+            Core::GeometricSearch::BeamBoundingVolume{
+                .bounding_volume_type =
+                    Core::GeometricSearch::BeamBoundingVolumeType::centerline_kdop,
+                .radius_extension_factor = 1.0},
+        .sphere_radius_extension_factor = 1.0,
+        .point_tolerance = 1e-4,
+        .write_geometric_search_visualization = false,
+        .verbosity = Core::IO::minimal};
 
     EXPECT_ANY_THROW(Core::Rebalance::build_monolithic_node_graph(*testdis_, search_params));
   }

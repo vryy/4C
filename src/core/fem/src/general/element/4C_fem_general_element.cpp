@@ -13,7 +13,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_geometric_search_bounding_volume.hpp"
-#include "4C_geometric_search_params.hpp"
+#include "4C_geometric_search_input.hpp"
 #include "4C_io_element_append_visualization.hpp"
 #include "4C_material_base.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -796,7 +796,8 @@ unsigned int Core::Elements::Element::append_visualization_node_based_result_dat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::GeometricSearch::BoundingVolume Core::Elements::Element::get_bounding_volume(
+void Core::Elements::Element::get_bounding_volume(
+    std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& bounding_volumes,
     const Core::FE::Discretization& discret,
     const Core::LinAlg::Vector<double>& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
@@ -826,7 +827,7 @@ Core::GeometricSearch::BoundingVolume Core::Elements::Element::get_bounding_volu
     bounding_box.add_point(point);
   }
 
-  return bounding_box;
+  bounding_volumes.emplace_back(this->id(), bounding_box);
 }
 
 /*----------------------------------------------------------------------*

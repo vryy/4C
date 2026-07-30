@@ -19,6 +19,7 @@
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
+#include "4C_geometric_search_input.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_global_legacy_module_validconditions.hpp"
 #include "4C_global_legacy_module_validmaterials.hpp"
@@ -227,9 +228,8 @@ std::unique_ptr<Core::IO::MeshReader> Global::read_discretization(
           .mesh_partitioning_parameters =
               Problem::instance()->parameters().get<Core::Rebalance::MeshPartitioningParameters>(
                   "MESH PARTITIONING"),
-          .geometric_search_parameters = Problem::instance()->geometric_search_params(),
-          .io_parameters = Problem::instance()->io_params(),
-      });
+          .geometric_search_parameters = Core::GeometricSearch::geometric_search_params_factory(
+              Problem::instance()->parameters())});
   auto& meshreader = *meshreader_out;
 
   MPI_Comm comm = problem.get_communicators().local_comm();
@@ -1142,8 +1142,9 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
             {.mesh_partitioning_parameters = Problem::instance()
                     ->parameters()
                     .get<Core::Rebalance::MeshPartitioningParameters>("MESH PARTITIONING"),
-                .geometric_search_parameters = Problem::instance()->geometric_search_params(),
-                .io_parameters = Problem::instance()->io_params()});
+                .geometric_search_parameters =
+                    Core::GeometricSearch::geometric_search_params_factory(
+                        Problem::instance()->parameters())});
 
         if (micro_dis_name == "structure")
         {
@@ -1280,8 +1281,8 @@ void Global::read_microfields_np_support(Global::Problem& problem)
         {.mesh_partitioning_parameters =
                 Problem::instance()->parameters().get<Core::Rebalance::MeshPartitioningParameters>(
                     "MESH PARTITIONING"),
-            .geometric_search_parameters = Problem::instance()->geometric_search_params(),
-            .io_parameters = Problem::instance()->io_params()});
+            .geometric_search_parameters = Core::GeometricSearch::geometric_search_params_factory(
+                Problem::instance()->parameters())});
     micromeshreader.attach_discretization(structdis_micro, "STRUCTURE");
     micromeshreader.read_and_partition();
 

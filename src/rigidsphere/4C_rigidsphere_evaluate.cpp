@@ -10,7 +10,7 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_geometric_search_bounding_volume.hpp"
-#include "4C_geometric_search_params.hpp"
+#include "4C_geometric_search_input.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -331,7 +331,8 @@ int Discret::Elements::Rigidsphere::how_many_random_numbers_i_need()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::GeometricSearch::BoundingVolume Discret::Elements::Rigidsphere::get_bounding_volume(
+void Discret::Elements::Rigidsphere::get_bounding_volume(
+    std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& bounding_volumes,
     const Core::FE::Discretization& discret,
     const Core::LinAlg::Vector<double>& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
@@ -352,11 +353,11 @@ Core::GeometricSearch::BoundingVolume Discret::Elements::Rigidsphere::get_boundi
   bounding_volume.add_point(sphere_center);
 
   // Add the radius times a safety factor.
-  const double safety_factor = params.get_sphere_bounding_volume_scaling();
+  const double safety_factor = params.sphere_radius_extension_factor;
   const double radius = Rigidsphere::radius();
   bounding_volume.extend_boundaries(radius * safety_factor);
 
-  return bounding_volume;
+  bounding_volumes.emplace_back(this->id(), bounding_volume);
 }
 
 /*----------------------------------------------------------------------------*

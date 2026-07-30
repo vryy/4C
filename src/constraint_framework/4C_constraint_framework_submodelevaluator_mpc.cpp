@@ -124,7 +124,8 @@ void Constraints::SubmodelEvaluator::RveMultiPointConstraintManager::check_input
   if (Core::Communication::num_mpi_ranks(discret_ptr_->get_comm()) > 1)
     FOUR_C_THROW("periodic boundary conditions for RVEs are not implemented in parallel.");
 
-  auto geom_search_parameter_list = Global::Problem::instance()->geometric_search_params();
+  const auto geometric_search_params = Core::GeometricSearch::geometric_search_params_factory(
+      Global::Problem::instance()->parameters());
   auto constraint_parameter_list = Global::Problem::instance()->constraint_params();
 
   strategy_ = Teuchos::getIntegralValue<Constraints::EnforcementStrategy>(
@@ -136,7 +137,7 @@ void Constraints::SubmodelEvaluator::RveMultiPointConstraintManager::check_input
       Teuchos::getIntegralValue<Constraints::MultiPoint::RveReferenceDeformationDefinition>(
           mpc_parameter_list, "RVE_REFERENCE_POINTS");
 
-  node_search_toler_ = Teuchos::getDoubleParameter(geom_search_parameter_list, "POINT_TOLERANCE");
+  node_search_toler_ = geometric_search_params.point_tolerance;
 
   // Check the enforcement strategy
   switch (strategy_)

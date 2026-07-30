@@ -24,7 +24,7 @@ namespace Core::Elements
 
 namespace Core::GeometricSearch
 {
-  class GeometricSearchParams;
+  struct GeometricSearchParams;
   class GeometricSearchVisualization;
 }  // namespace Core::GeometricSearch
 

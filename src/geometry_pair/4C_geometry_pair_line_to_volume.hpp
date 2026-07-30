@@ -24,13 +24,6 @@ namespace Core::LinAlg
   template <unsigned int rows, unsigned int cols, class ValueType>
   class Matrix;
 }
-namespace Discret
-{
-  namespace Utils
-  {
-    struct IntegrationPoints1D;
-  }
-}  // namespace Discret
 
 namespace Core::Elements
 {

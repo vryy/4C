@@ -10,6 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_geometric_search_input.hpp"
+
 #include <mpi.h>
 #include <Teuchos_ParameterList.hpp>
 
@@ -71,12 +73,7 @@ namespace Core::Rebalance
     /**
      * Geometric search parameters for certain partitioning methods.
      */
-    Teuchos::ParameterList geometric_search_parameters;
-
-    /**
-     * General verbosity settings and I/O parameters.
-     */
-    Teuchos::ParameterList io_parameters;
+    Core::GeometricSearch::GeometricSearchParams geometric_search_parameters;
   };
 
 

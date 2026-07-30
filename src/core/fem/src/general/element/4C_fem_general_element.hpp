@@ -39,7 +39,7 @@ namespace Core::Mat
 namespace Core::GeometricSearch
 {
   struct BoundingVolume;
-  class GeometricSearchParams;
+  struct GeometricSearchParams;
 }  // namespace Core::GeometricSearch
 
 namespace Core::FE::MeshFree
@@ -1143,7 +1143,8 @@ might become invalid after a redistribution of the discretization.
     /**
      * \brief Add the current position of all nodes of the element to a boundary volume.
      */
-    virtual Core::GeometricSearch::BoundingVolume get_bounding_volume(
+    virtual void get_bounding_volume(
+        std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& bounding_volumes,
         const Core::FE::Discretization& discret,
         const Core::LinAlg::Vector<double>& result_data_dofbased,
         const Core::GeometricSearch::GeometricSearchParams& params) const;
