@@ -49,9 +49,11 @@
     </ParameterList>
     <!-- =========== SINGLE FIELD PRECONDITIONER FOR BEAM ======================= -->
     <ParameterList name="Inverse2">
-      <Parameter name="Type" type="string" value="Ifpack"/>
-      <Parameter name="Prec Type" type="string" value="Amesos"/>
-      <Parameter name="Overlap" type="int" value="1"/>
+      <Parameter name="Type" type="string" value="Amesos"/>
+      <Parameter name="Solver Type" type="string" value="Klu"/>
+      <ParameterList name="Amesos Settings">
+        <Parameter name="Reindex" type="bool" value="true"/>
+      </ParameterList>
     </ParameterList>
   </ParameterList>
 </ParameterList>
