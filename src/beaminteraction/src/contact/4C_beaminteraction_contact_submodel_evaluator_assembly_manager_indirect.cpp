@@ -13,6 +13,7 @@
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_vector.hpp"
 
 #include <memory>
@@ -97,7 +98,8 @@ void BeamInteraction::SubmodelEvaluator::BeamContactAssemblyManagerInDirect::eva
       if (fe_sysmat != nullptr)
       {
         sysmat_penalty->left_scale(augmentation_scaling_vector);
-        fe_sysmat->add(*sysmat_penalty, false, 1.0, 1.0);
+        auto sysmat_penalty_filtered = Core::LinAlg::threshold_matrix(*sysmat_penalty, 1e-14);
+        fe_sysmat->add(*sysmat_penalty_filtered, false, 1.0, 1.0);
       }
       if (fe_sysvec != nullptr)
       {
