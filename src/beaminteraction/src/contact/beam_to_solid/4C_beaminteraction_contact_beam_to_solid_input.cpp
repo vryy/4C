@@ -95,13 +95,13 @@ std::vector<Core::IO::InputSpec> BeamToSolid::valid_parameters()
           {.description = "For the augmented Lagrange formulation, this parameter scales all "
                           "penalty terms in the beam equations.",
               .default_value = 1.0,
-              .validator = Validators::positive<double>()}),
+              .validator = Validators::positive_or_zero<double>()}),
 
       parameter<double>("AUGMENTATION_SCALING_PARAMETER_SOLID",
           {.description = "For the augmented Lagrange formulation, this parameter scales all "
                           "penalty terms in the solid equations.",
               .default_value = 1.0,
-              .validator = Validators::positive<double>()}),
+              .validator = Validators::positive_or_zero<double>()}),
 
       // This option only has an effect during a restart simulation.
       // - No:  (default) The coupling is treated the same way as during a non restart
