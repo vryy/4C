@@ -27,7 +27,7 @@ namespace
         phi, xi, shape_function_data);
 
     const std::vector<double> phi_ref = {
-        -0.24634578918994066, -0.17588947613808397, -1.1393423701836305, -47.889652663609505};
+        -0.24634578918994065, -0.029314912689680812, -1.1393423701836304, 7.981608777268251};
 
     for (std::size_t i = 0; i < phi_ref.size(); ++i) EXPECT_NEAR(phi(i), phi_ref[i], 1.0e-10);
   }

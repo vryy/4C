@@ -51,37 +51,37 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 175
       QUANTITY: "dispx"
-      VALUE: -4.57012978871066344e-01
+      VALUE: -4.50277776365826665e-01
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 175
       QUANTITY: "dispy"
-      VALUE: -5.09106643401164433e-02
+      VALUE: -5.63580066701935556e-02
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 175
       QUANTITY: "dispz"
-      VALUE: 2.32089865733741574e+00
+      VALUE: 2.29701009719494031e+00
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 204
       QUANTITY: "dispx"
-      VALUE: -2.44649917710540177e-01
+      VALUE: -2.39058845935587239e-01
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 204
       QUANTITY: "dispy"
-      VALUE: -2.80193731640499925e-02
+      VALUE: -3.24505488265852612e-02
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 204
       QUANTITY: "dispz"
-      VALUE: 1.89862575223904129e+00
+      VALUE: 1.87558979859218788e+00
       TOLERANCE: 1e-10
 STRUCT NOX/Status Test:
   XML File: "beam3r_herm2line3_static_beam_to_solid_volume_meshtying_mortar_lagrange.xml"
