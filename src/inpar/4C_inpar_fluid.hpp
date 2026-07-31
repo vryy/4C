@@ -21,7 +21,6 @@ namespace Core::Conditions
 {
   class ConditionDefinition;
 }
-/*----------------------------------------------------------------------*/
 namespace Inpar
 {
   namespace FLUID
@@ -432,15 +431,8 @@ namespace Inpar
 
   }  // namespace FLUID
 
-  namespace LowMach
-  {
-    /// low mach number parameters
-    Core::IO::InputSpec valid_parameters();
-  }  // namespace LowMach
-
 }  // namespace Inpar
 
-/*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

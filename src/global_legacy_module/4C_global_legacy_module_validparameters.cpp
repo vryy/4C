@@ -45,6 +45,7 @@
 #include "4C_io_pstream.hpp"
 #include "4C_levelset_input.hpp"
 #include "4C_linear_solver_method_input.hpp"
+#include "4C_loma_input.hpp"
 #include "4C_lubrication_input.hpp"
 #include "4C_mortar_input.hpp"
 #include "4C_particle_input.hpp"
@@ -322,7 +323,7 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
   push_specs(specs, TSI::valid_parameters());
 
   push_specs(specs, Inpar::FLUID::valid_parameters());
-  push_specs(specs, Inpar::LowMach::valid_parameters());
+  push_specs(specs, LowMach::valid_parameters());
   push_specs(specs, Cut::valid_parameters());
   push_specs(specs, XFEM::valid_parameters());
   push_specs(specs, Constraints::valid_parameters());
