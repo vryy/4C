@@ -34,7 +34,6 @@
 #include "4C_global_legacy_module_problem_type_string.hpp"
 #include "4C_inpar_io.hpp"
 #include "4C_inpar_IO_runtime_output.hpp"
-#include "4C_inpar_IO_runtime_output_fluid.hpp"
 #include "4C_inpar_IO_runtime_vtk_output_structure.hpp"
 #include "4C_inpar_IO_runtime_vtp_output_structure.hpp"
 #include "4C_io_gridgenerator.hpp"
@@ -313,7 +312,6 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
   push_specs(specs, CONTACT::valid_parameters());
   push_specs(specs, Coupling::VolMortar::valid_parameters());
   push_specs(specs, Wear::valid_parameters());
-  push_specs(specs, Inpar::IORuntimeOutput::FLUID::valid_parameters());
   push_specs(specs, Inpar::IORuntimeOutput::Solid::valid_parameters());
   push_specs(specs, Beam::IORuntimeOutput::valid_parameters());
   push_specs(specs, BeamInteraction::valid_parameters());
