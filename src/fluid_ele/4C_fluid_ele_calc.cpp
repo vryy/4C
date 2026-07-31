@@ -270,7 +270,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Element
   double* saccn = nullptr;
   double* sveln = nullptr;
   double* svelnp = nullptr;
-  if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent)
+  if (fldpara_->tds() == FLUID::subscales_time_dependent)
   {
     ele->activate_tds(intpoints.num_points(), nsd_, &saccn, &sveln, &svelnp);
     tds_ = ele->tds();  // store reference to the required tds element data
@@ -284,7 +284,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Element
   const Teuchos::ParameterList& fluidparams = Global::Problem::instance()->fluid_dynamic_params();
   int corrtermfuncnum = (fluidparams.get<int>("CORRTERMFUNCNO"));
   ecorrectionterm_.clear();
-  if (fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes && corrtermfuncnum > 0)
+  if (fldpara_->physical_type() == FLUID::weakly_compressible_stokes && corrtermfuncnum > 0)
   {
     correction_term(ele, ecorrectionterm_);
   }
@@ -307,13 +307,12 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Element
 
   evelam_.clear();
   epream_.clear();
-  if (fldpara_->physical_type() == Inpar::FLUID::weakly_compressible &&
-      fldparatimint_->is_genalpha())
+  if (fldpara_->physical_type() == FLUID::weakly_compressible && fldparatimint_->is_genalpha())
   {
     extract_values_from_global_vector(
         discretization, lm, *rotsymmpbc_, &evelam_, &epream_, "velam");
   }
-  if (fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes &&
+  if (fldpara_->physical_type() == FLUID::weakly_compressible_stokes &&
       fldparatimint_->is_genalpha())
   {
     extract_values_from_global_vector(
@@ -376,7 +375,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Element
 
 
   // set element advective field for Oseen problems
-  if (fldpara_->physical_type() == Inpar::FLUID::oseen) set_advective_vel_oseen(ele);
+  if (fldpara_->physical_type() == FLUID::oseen) set_advective_vel_oseen(ele);
 
 
   gradphiele_.clear();
@@ -476,13 +475,13 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Element
   // ---------------------------------------------------------------------
   fsevelaf_.clear();
   fsescaaf_.clear();
-  if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv or
-      fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+  if (fldpara_->fssgv() != FLUID::no_fssgv or
+      fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
   {
     extract_values_from_global_vector(
         discretization, lm, *rotsymmpbc_, &fsevelaf_, nullptr, "fsvelaf");
-    if (fldpara_->physical_type() == Inpar::FLUID::loma and
-        fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->physical_type() == FLUID::loma and
+        fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
       extract_values_from_global_vector(
           discretization, lm, *rotsymmpbc_, nullptr, &fsescaaf_, "fsscaaf");
   }
@@ -506,7 +505,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Element
   //----------------------------------------------------------------
   double CsDeltaSq = 0.0;
   double CiDeltaSq = 0.0;
-  if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
+  if (fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky)
   {
     std::shared_ptr<Core::LinAlg::Vector<double>> ele_CsDeltaSq =
         params.sublist("TURBULENCE MODEL")
@@ -602,8 +601,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Teuchos::Paramet
   double Ci_delta_sq = 0.0;
   double Cv = 0.0;
   visceff_ = 0.0;
-  if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_vreman)
-    Cv = params.get<double>("C_vreman");
+  if (fldpara_->turb_mod_action() == FLUID::dynamic_vreman) Cv = params.get<double>("C_vreman");
 
 
   // remember the layer of averaging for the dynamic Smagorinsky model
@@ -719,18 +717,18 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
 
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::vreman or
-        fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_vreman)
+    if (fldpara_->turb_mod_action() == FLUID::smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::vreman or
+        fldpara_->turb_mod_action() == FLUID::dynamic_vreman)
     {
-      if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_vreman)
+      if (fldpara_->turb_mod_action() == FLUID::dynamic_vreman)
         Cs_delta_sq = Cv;  // use the declaration of Cs_delta_sq for the dynamic Vreman constant
       calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
-    else if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+    else if (fldpara_->fssgv() != FLUID::no_fssgv)
       calc_fine_scale_subgr_visc(evelaf, fsevelaf, vol);
   }
 
@@ -741,7 +739,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
 
   // coefficient D of fine-scale scalar (loma only)
   double D_mfs = 0.0;
-  if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+  if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
   {
     if (not fldpara_->b_gp())
     {
@@ -768,7 +766,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
 
 
   // calculate stabilization parameter at element center
-  if (not fldpara_->tau_gp() and fldpara_->stab_type() == Inpar::FLUID::stabtype_residualbased)
+  if (not fldpara_->tau_gp() and fldpara_->stab_type() == FLUID::stabtype_residualbased)
   {
     // get convective velocity at element center
     // for evaluation of stabilization parameter
@@ -781,7 +779,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
     set_convective_velint(isale);
 
 
-    if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent)
+    if (fldpara_->tds() == FLUID::subscales_time_dependent)
     {
       // get velocity derivatives at integration point
       // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -830,7 +828,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
 
     // get fine-scale velocity and its derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+    if (fldpara_->fssgv() != FLUID::no_fssgv)
     {
       fsvderxy_.multiply_nt(fsevelaf, derxy_);
     }
@@ -838,7 +836,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
     {
       fsvderxy_.clear();
     }
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
     {
       fsvelint_.multiply(fsevelaf, funct_);
       fsvderxy_.multiply_nt(fsevelaf, derxy_);
@@ -898,24 +896,24 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
 
-      if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-          fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-          fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+      if (fldpara_->turb_mod_action() == FLUID::smagorinsky or
+          fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+          fldpara_->turb_mod_action() == FLUID::vreman)
       {
         calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
-      else if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+      else if (fldpara_->fssgv() != FLUID::no_fssgv)
         calc_fine_scale_subgr_visc(evelaf, fsevelaf, vol);
     }
 
     // calculate stabilization parameter at integration point
-    if (fldpara_->tau_gp() and fldpara_->stab_type() == Inpar::FLUID::stabtype_residualbased)
+    if (fldpara_->tau_gp() and fldpara_->stab_type() == FLUID::stabtype_residualbased)
       calc_stab_parameter(vol);
 
     // potential evaluation of coefficient of multifractal subgrid-scales at integration point
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
     {
       if (fldpara_->b_gp())
       {
@@ -948,7 +946,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
       mffsvdiv_ = mffsvderxy_(0, 0) + mffsvderxy_(1, 1) + mffsvderxy_(2, 2);
 
       // only required for variable-density flow at low Mach number
-      if (fldpara_->physical_type() == Inpar::FLUID::loma)
+      if (fldpara_->physical_type() == FLUID::loma)
       {
         if (isale) FOUR_C_THROW("Multifractal subgrid-scales with ale and loma not supported");
         mfssgscaint_ = D_mfs * funct_.dot(fsescaaf);
@@ -1037,7 +1035,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
     conres_old_ = vdiv_;
 
     // following computations only required for variable-density flow at low Mach number
-    if (fldpara_->physical_type() == Inpar::FLUID::loma)
+    if (fldpara_->physical_type() == FLUID::loma)
     {
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
@@ -1047,8 +1045,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
       conres_old_ -= rhscon_;
 
       if (fldpara_->update_mat() or fldpara_->conti_supg() or
-          fldpara_->conti_cross() != Inpar::FLUID::cross_stress_stab_none or
-          fldpara_->conti_reynolds() != Inpar::FLUID::reynolds_stress_stab_none or
+          fldpara_->conti_cross() != FLUID::cross_stress_stab_none or
+          fldpara_->conti_reynolds() != FLUID::reynolds_stress_stab_none or
           fldpara_->multi_frac_loma_conti())
       {
         // compute subgrid-scale part of scalar
@@ -1060,21 +1058,21 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
         {
           // since we update the viscosity in the next step, a potential subgrid-scale velocity
           // would be overwritten
-          if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-              fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-              fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+          if (fldpara_->turb_mod_action() == FLUID::smagorinsky or
+              fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+              fldpara_->turb_mod_action() == FLUID::vreman)
             FOUR_C_THROW("No material update in combination with smagorinsky model!");
 
-          if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+          if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
             update_material_params(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
                 thermpressam, mfssgscaint_);
           else
             update_material_params(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
                 thermpressam, sgscaint_);
           visceff_ = visc_;
-          if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-              fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-              fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+          if (fldpara_->turb_mod_action() == FLUID::smagorinsky or
+              fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+              fldpara_->turb_mod_action() == FLUID::vreman)
             visceff_ += sgvisc_;
         }
 
@@ -1084,7 +1082,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
         recompute_gal_and_compute_cross_rhs_cont_eq();
       }
     }
-    else if (fldpara_->physical_type() == Inpar::FLUID::artcomp)
+    else if (fldpara_->physical_type() == FLUID::artcomp)
     {
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
@@ -1093,8 +1091,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
       // add to residual of continuity equation
       conres_old_ -= rhscon_;
     }
-    else if (fldpara_->physical_type() == Inpar::FLUID::weakly_compressible or
-             fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
+    else if (fldpara_->physical_type() == FLUID::weakly_compressible or
+             fldpara_->physical_type() == FLUID::weakly_compressible_stokes)
     {
       // update material parameters
       update_material_params(
@@ -1118,8 +1116,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
     lin_gal_mom_res_u(lin_resM_Du_, timefacfac);
 
     // potentially rescale first version of velocity-based momentum residual
-    if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent &&
-        fldpara_->transient() == Inpar::FLUID::inertia_stab_keep)
+    if (fldpara_->tds() == FLUID::subscales_time_dependent &&
+        fldpara_->transient() == FLUID::inertia_stab_keep)
     {
       lin_gal_mom_res_u_subscales(estif_p_v_, lin_resM_Du_, resM_Du_, timefacfac, facMtau);
     }
@@ -1143,9 +1141,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
     // 3) stabilization of continuity equation,
     //    standard Galerkin viscous part for low-Mach-number flow and
     //    right-hand-side part of standard Galerkin viscous term
-    if (fldpara_->c_stab() or fldpara_->physical_type() == Inpar::FLUID::loma or
-        fldpara_->physical_type() == Inpar::FLUID::weakly_compressible or
-        fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
+    if (fldpara_->c_stab() or fldpara_->physical_type() == FLUID::loma or
+        fldpara_->physical_type() == FLUID::weakly_compressible or
+        fldpara_->physical_type() == FLUID::weakly_compressible_stokes)
       cont_stab(estif_u_, velforce_, fldparatimint_->time_fac(), timefacfac, timefacfacpre, rhsfac);
 
     // 4) standard Galerkin pressure term
@@ -1165,23 +1163,22 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
 
     // 8) additional standard Galerkin terms for low-Mach-number flow and
     //    artificial compressibility (only right-hand side in latter case)
-    if (fldpara_->physical_type() == Inpar::FLUID::loma or
-        fldpara_->physical_type() == Inpar::FLUID::artcomp or
-        fldpara_->physical_type() == Inpar::FLUID::weakly_compressible or
-        fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
+    if (fldpara_->physical_type() == FLUID::loma or fldpara_->physical_type() == FLUID::artcomp or
+        fldpara_->physical_type() == FLUID::weakly_compressible or
+        fldpara_->physical_type() == FLUID::weakly_compressible_stokes)
     {
       loma_gal_part(estif_q_u_, preforce_, timefacfac, rhsfac);
     }
 
     // 9) additional standard Galerkin term for temporal derivative of pressure
     //    in case of artificial compressibility (only left-hand side)
-    if (fldpara_->physical_type() == Inpar::FLUID::artcomp and not fldparatimint_->is_stationary())
+    if (fldpara_->physical_type() == FLUID::artcomp and not fldparatimint_->is_stationary())
       art_comp_pressure_inertia_gal_partand_cont_stab(estif_p_v_, ppmat_);
 
     // 10) additional standard Galerkin term for temporal derivative of pressure
     //     in case of weakly_compressible flow
-    if (fldpara_->physical_type() == Inpar::FLUID::weakly_compressible or
-        fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
+    if (fldpara_->physical_type() == FLUID::weakly_compressible or
+        fldpara_->physical_type() == FLUID::weakly_compressible_stokes)
     {
       weak_comp_pressure_inertia_gal_part(estif_p_v_, ppmat_);
     }
@@ -1209,14 +1206,14 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
     }
 
     // 12) reactive stabilization term
-    if (fldpara_->r_stab() != Inpar::FLUID::reactive_stab_none)
+    if (fldpara_->r_stab() != FLUID::reactive_stab_none)
     {
       reac_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
     }
 
     // 13) viscous stabilization term
-    if (is_higher_order_ele_ and (fldpara_->v_stab() != Inpar::FLUID::viscous_stab_none))
+    if (is_higher_order_ele_ and (fldpara_->v_stab() != FLUID::viscous_stab_none))
     {
       visc_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
@@ -1233,7 +1230,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
 
     // 14) cross-stress term: second part on left-hand side (only for Newton
     //     iteration) as well as cross-stress term on right-hand side
-    if (fldpara_->cross() != Inpar::FLUID::cross_stress_stab_none)
+    if (fldpara_->cross() != FLUID::cross_stress_stab_none)
     {
       cross_stress_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
@@ -1241,14 +1238,14 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
 
     // 15) Reynolds-stress term: second part on left-hand side
     //     (only for Newton iteration)
-    if (fldpara_->reynolds() == Inpar::FLUID::reynolds_stress_stab and fldpara_->is_newton())
+    if (fldpara_->reynolds() == FLUID::reynolds_stress_stab and fldpara_->is_newton())
     {
       reynolds_stress_stab(estif_u_, estif_p_v_, lin_resM_Du_, timefacfac, timefacfacpre, fac3);
     }
 
     // 16) fine-scale subgrid-viscosity term
     //     (contribution only to right-hand-side vector)
-    if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+    if (fldpara_->fssgv() != FLUID::no_fssgv)
     {
       const double fssgviscfac = fssgvisc_ * rhsfac;
 
@@ -1256,7 +1253,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
     }
 
     // 17) subgrid-stress term (multifractal subgrid scales)
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
     {
       multfrac_sub_grid_scales_cross(estif_u_, velforce_, timefacfac, rhsfac);
 
@@ -1405,7 +1402,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::body_force(Discret::Elem
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
 void Discret::Elements::FluidEleCalc<distype, enrtype>::body_force(Discret::Elements::Fluid* ele,
-    const double time, const Inpar::FLUID::PhysicalType physicaltype,
+    const double time, const FLUID::PhysicalType physicaltype,
     Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf, Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
     Core::LinAlg::Matrix<nen_, 1>& escabofoaf)
 {
@@ -1503,7 +1500,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::body_force(Discret::Elem
 
   // get nodal values of scatra bodyforce for variable-density flow
   // at low Mach number
-  if (physicaltype == Inpar::FLUID::loma)
+  if (physicaltype == FLUID::loma)
   {
     std::vector<const Core::Conditions::Condition*> myscatraneumcond;
 
@@ -1732,8 +1729,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_ale(
 {
   switch (fldpara_->physical_type())
   {
-    case Inpar::FLUID::oseen:
-    case Inpar::FLUID::stokes:
+    case FLUID::oseen:
+    case FLUID::stokes:
     {
       FOUR_C_THROW(
           "ALE with Oseen or Stokes seems to be a tricky combination. Think deep before removing "
@@ -1773,24 +1770,24 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::set_convective_velint(co
   // get convective velocity at integration point
   switch (fldpara_->physical_type())
   {
-    case Inpar::FLUID::incompressible:
-    case Inpar::FLUID::weakly_compressible:
-    case Inpar::FLUID::artcomp:
-    case Inpar::FLUID::varying_density:
-    case Inpar::FLUID::loma:
-    case Inpar::FLUID::tempdepwater:
-    case Inpar::FLUID::boussinesq:
+    case FLUID::incompressible:
+    case FLUID::weakly_compressible:
+    case FLUID::artcomp:
+    case FLUID::varying_density:
+    case FLUID::loma:
+    case FLUID::tempdepwater:
+    case FLUID::boussinesq:
     {
       convvelint_.update(velint_);
       break;
     }
-    case Inpar::FLUID::oseen:
+    case FLUID::oseen:
     {
       convvelint_.multiply(eadvvel_, funct_);
       break;
     }
-    case Inpar::FLUID::stokes:
-    case Inpar::FLUID::weakly_compressible_stokes:
+    case FLUID::stokes:
+    case FLUID::weakly_compressible_stokes:
     {
       convvelint_.clear();
       break;
@@ -1820,7 +1817,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::set_advective_vel_oseen(
     Discret::Elements::Fluid* ele)
 {
   // set element advective field for Oseen problems
-  if (fldpara_->physical_type() == Inpar::FLUID::oseen)
+  if (fldpara_->physical_type() == FLUID::oseen)
   {
     const int funcnum = fldpara_->oseen_field_func_no();
     const double time = fldparatimint_->time();
@@ -1887,7 +1884,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_material_params(
     viscn = visc;
 
     // artificial compressibility
-    if (fldpara_->physical_type() == Inpar::FLUID::artcomp)
+    if (fldpara_->physical_type() == FLUID::artcomp)
     {
       // get norm of convective velocity
       const double vel_norm = convvelint_.norm2();
@@ -1910,7 +1907,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_material_params(
       scadtfac_ = 1.0 / std::pow(maxvel, 2);
     }
     // varying Density
-    else if (fldpara_->physical_type() == Inpar::FLUID::varying_density)
+    else if (fldpara_->physical_type() == FLUID::varying_density)
     {
       const double density_0 = actmat->density();
 
@@ -1919,7 +1916,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_material_params(
       densn = funct_.dot(escaam) * density_0;
     }
     // Boussinesq approximation: Calculation of delta rho
-    else if (fldpara_->physical_type() == Inpar::FLUID::boussinesq)
+    else if (fldpara_->physical_type() == FLUID::boussinesq)
     {
       const double density_0 = actmat->density();
 
@@ -2361,17 +2358,17 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
   const double mk = get_mk();
 
 
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)  // quasistatic case
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)  // quasistatic case
   {
     // computation depending on which parameter definition is used
     switch (fldpara_->which_tau())
     {
-      case Inpar::FLUID::tau_taylor_hughes_zarins:
-      case Inpar::FLUID::tau_taylor_hughes_zarins_wo_dt:
-      case Inpar::FLUID::tau_taylor_hughes_zarins_whiting_jansen:
-      case Inpar::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt:
-      case Inpar::FLUID::tau_taylor_hughes_zarins_scaled:
-      case Inpar::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt:
+      case FLUID::tau_taylor_hughes_zarins:
+      case FLUID::tau_taylor_hughes_zarins_wo_dt:
+      case FLUID::tau_taylor_hughes_zarins_whiting_jansen:
+      case FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt:
+      case FLUID::tau_taylor_hughes_zarins_scaled:
+      case FLUID::tau_taylor_hughes_zarins_scaled_wo_dt:
       {
         /*
 
@@ -2429,9 +2426,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
         // due to time factor and reaction coefficient (reaction coefficient
         // ensured to remain zero in get_material_params for non-reactive material)
         double sigma_tot = reacoeff_;
-        if (fldpara_->which_tau() == Inpar::FLUID::tau_taylor_hughes_zarins or
-            fldpara_->which_tau() == Inpar::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
-            fldpara_->which_tau() == Inpar::FLUID::tau_taylor_hughes_zarins_scaled)
+        if (fldpara_->which_tau() == FLUID::tau_taylor_hughes_zarins or
+            fldpara_->which_tau() == FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+            fldpara_->which_tau() == FLUID::tau_taylor_hughes_zarins_scaled)
           sigma_tot += 1.0 / fldparatimint_->dt();
 
         // definition of constants as described above
@@ -2483,7 +2480,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall:
+      case FLUID::tau_franca_barrenechea_valentin_frey_wall:
       {
         /*
 
@@ -2560,7 +2557,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
+      case FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
       {
         /*
 
@@ -2617,8 +2614,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_shakib_hughes_codina:
-      case Inpar::FLUID::tau_shakib_hughes_codina_wo_dt:
+      case FLUID::tau_shakib_hughes_codina:
+      case FLUID::tau_shakib_hughes_codina_wo_dt:
       {
         /*
 
@@ -2656,7 +2653,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
         // due to time factor and reaction coefficient (reaction coefficient
         // ensured to remain zero in get_material_params for non-reactive material)
         double sigma_tot = reacoeff_;
-        if (fldpara_->which_tau() == Inpar::FLUID::tau_shakib_hughes_codina)
+        if (fldpara_->which_tau() == FLUID::tau_shakib_hughes_codina)
           sigma_tot += 1.0 / fldparatimint_->dt();
 
         // definition of constants as described above
@@ -2695,9 +2692,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_codina:
-      case Inpar::FLUID::tau_codina_wo_dt:
-      case Inpar::FLUID::tau_codina_convscaled:
+      case FLUID::tau_codina:
+      case FLUID::tau_codina_wo_dt:
+      case FLUID::tau_codina_convscaled:
       {
         /*
 
@@ -2724,8 +2721,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
         // due to time factor and reaction coefficient (reaction coefficient
         // ensured to remain zero in get_material_params for non-reactive material)
         double sigma_tot = reacoeff_;
-        if (fldpara_->which_tau() == Inpar::FLUID::tau_codina ||
-            fldpara_->which_tau() == Inpar::FLUID::tau_codina_convscaled)
+        if (fldpara_->which_tau() == FLUID::tau_codina ||
+            fldpara_->which_tau() == FLUID::tau_codina_convscaled)
           sigma_tot += 1.0 / fldparatimint_->dt();
 
         // definition of constants as described above
@@ -2735,7 +2732,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
 
         // for high-order elements or non-polynomial enrichments,
         // a scaling of the convective term like this gives good results
-        if (fldpara_->which_tau() == Inpar::FLUID::tau_codina_convscaled) c2 = sqrt(c3 / 3.0);
+        if (fldpara_->which_tau() == FLUID::tau_codina_convscaled) c2 = sqrt(c3 / 3.0);
 
         // compute stabilization parameter tau_Mu
         tau_(0) = 1.0 / (c1 * densaf_ * sigma_tot + c2 * densaf_ * vel_norm / h_u +
@@ -2758,8 +2755,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_franca_madureira_valentin_badia_codina:
-      case Inpar::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt:
+      case FLUID::tau_franca_madureira_valentin_badia_codina:
+      case FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt:
       {
         /*
 
@@ -2779,7 +2776,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
         // total reaction coefficient sigma_tot: sum of "artificial" reaction
         // due to time factor and reaction coefficient
         double sigma_tot = reacoeff_;
-        if (fldpara_->which_tau() == Inpar::FLUID::tau_franca_madureira_valentin_badia_codina)
+        if (fldpara_->which_tau() == FLUID::tau_franca_madureira_valentin_badia_codina)
           sigma_tot += 1.0 / fldparatimint_->time_fac();
 
         // calculate characteristic element length
@@ -2803,7 +2800,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_hughes_franca_balestra_wo_dt:
+      case FLUID::tau_hughes_franca_balestra_wo_dt:
       {
         /*----------------------------------------------------------------------*/
         /*
@@ -2833,8 +2830,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
 
       default:
       {
-        if (not(fldpara_->stab_type() == Inpar::FLUID::stabtype_edgebased and
-                fldpara_->which_tau() == Inpar::FLUID::tau_not_defined))
+        if (not(fldpara_->stab_type() == FLUID::stabtype_edgebased and
+                fldpara_->which_tau() == FLUID::tau_not_defined))
           FOUR_C_THROW("unknown definition for tau_M\n {}  ", fldpara_->which_tau());
 
         break;
@@ -2855,8 +2852,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
     // computation depending on which parameter definition is used
     switch (fldpara_->which_tau())
     {
-      case Inpar::FLUID::tau_taylor_hughes_zarins:
-      case Inpar::FLUID::tau_taylor_hughes_zarins_wo_dt:
+      case FLUID::tau_taylor_hughes_zarins:
+      case FLUID::tau_taylor_hughes_zarins_wo_dt:
       {
         /*
 
@@ -2879,8 +2876,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_taylor_hughes_zarins_whiting_jansen:
-      case Inpar::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt:
+      case FLUID::tau_taylor_hughes_zarins_whiting_jansen:
+      case FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt:
       {
         /*
 
@@ -2905,8 +2902,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_taylor_hughes_zarins_scaled:
-      case Inpar::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt:
+      case FLUID::tau_taylor_hughes_zarins_scaled:
+      case FLUID::tau_taylor_hughes_zarins_scaled_wo_dt:
       {
         /*
 
@@ -2945,8 +2942,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall:
-      case Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
+      case FLUID::tau_franca_barrenechea_valentin_frey_wall:
+      case FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
       {
         /*
 
@@ -2977,8 +2974,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_shakib_hughes_codina:
-      case Inpar::FLUID::tau_shakib_hughes_codina_wo_dt:
+      case FLUID::tau_shakib_hughes_codina:
+      case FLUID::tau_shakib_hughes_codina_wo_dt:
       {
         /*
 
@@ -2995,9 +2992,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_codina:
-      case Inpar::FLUID::tau_codina_wo_dt:
-      case Inpar::FLUID::tau_codina_convscaled:
+      case FLUID::tau_codina:
+      case FLUID::tau_codina_wo_dt:
+      case FLUID::tau_codina_convscaled:
       {
         /*
 
@@ -3016,8 +3013,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_franca_madureira_valentin_badia_codina:
-      case Inpar::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt:
+      case FLUID::tau_franca_madureira_valentin_badia_codina:
+      case FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt:
       {
         /*
 
@@ -3039,7 +3036,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
       }
       break;
 
-      case Inpar::FLUID::tau_hughes_franca_balestra_wo_dt:
+      case FLUID::tau_hughes_franca_balestra_wo_dt:
       {
         /*----------------------------------------------------------------------*/
         /*
@@ -3065,8 +3062,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
 
       default:
       {
-        if (not(fldpara_->stab_type() == Inpar::FLUID::stabtype_edgebased and
-                fldpara_->which_tau() == Inpar::FLUID::tau_not_defined))
+        if (not(fldpara_->stab_type() == FLUID::stabtype_edgebased and
+                fldpara_->which_tau() == FLUID::tau_not_defined))
           FOUR_C_THROW("unknown definition for tau_C\n {}  ", fldpara_->which_tau());
 
         break;
@@ -3078,7 +3075,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
   //-----------------------------------------------------------
   //-----------------------------------------------------------
 
-  else  // Inpar::FLUID::subscales_time_dependent
+  else  // FLUID::subscales_time_dependent
   {
     // norms of velocity in gausspoint, time n+af and time n+1
     const double vel_normaf = convvelint_.norm2();
@@ -3107,8 +3104,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
 
     switch (fldpara_->which_tau())
     {
-      case Inpar::FLUID::tau_taylor_hughes_zarins_whiting_jansen:
-      case Inpar::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt:
+      case FLUID::tau_taylor_hughes_zarins_whiting_jansen:
+      case FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt:
       {
         /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
 
@@ -3247,8 +3244,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
         tau_(2) = 1. / (tau_(0) * normgsq);
       }
       break;
-      case Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall:
-      case Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
+      case FLUID::tau_franca_barrenechea_valentin_frey_wall:
+      case FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
       {
         // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
         //
@@ -3329,7 +3326,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
         tau_(2) = vel_normnp * h_p * 0.5 * xi_tau_c;
       }
       break;
-      case Inpar::FLUID::tau_codina:
+      case FLUID::tau_codina:
       {
         // Parameter from Codina, Badia (Constants are chosen according to
         // the values in the standard definition above)
@@ -3378,7 +3375,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
   {
     // a) streamlength due to Tezduyar et al. (1992) -> default
     // normed velocity vector
-    case Inpar::FLUID::streamlength_u:
+    case FLUID::streamlength_u:
     {
       static Core::LinAlg::Matrix<nsd_, 1> velino(Core::LinAlg::Initialization::zero);
       if (vel_norm >= 1e-6)
@@ -3411,14 +3408,14 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
     break;
 
     // b) volume-equivalent diameter (warning: 3-D formula!)
-    case Inpar::FLUID::volume_equivalent_diameter_u:
+    case FLUID::volume_equivalent_diameter_u:
     {
       h_u = std::pow((6. * vol / std::numbers::pi), (1.0 / 3.0)) / sqrt(3.0);
     }
     break;
 
     // c) cubic/square root of element volume/area or element length (3- and 2-D)
-    case Inpar::FLUID::root_of_volume_u:
+    case FLUID::root_of_volume_u:
     {
       // cast dimension to a double variable -> pow()
       const double dim = double(nsd_);
@@ -3439,7 +3436,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
   {
     // a) streamlength due to Tezduyar et al. (1992) -> default
     // normed velocity vector
-    case Inpar::FLUID::streamlength_pc:
+    case FLUID::streamlength_pc:
     {
       static Core::LinAlg::Matrix<nsd_, 1> velino(Core::LinAlg::Initialization::zero);
       if (vel_norm >= 1e-6)
@@ -3470,14 +3467,14 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
     break;
 
     // b) volume-equivalent diameter (warning: 3-D formula!)
-    case Inpar::FLUID::volume_equivalent_diameter_pc:
+    case FLUID::volume_equivalent_diameter_pc:
     {
       h_p = std::pow((6. * vol / std::numbers::pi), (1.0 / 3.0)) / sqrt(3.0);
     }
     break;
 
     // c) cubic/square root of element volume/area or element length (3- and 2-D)
-    case Inpar::FLUID::root_of_volume_pc:
+    case FLUID::root_of_volume_pc:
     {
       // cast dimension to a double variable -> pow()
       const double dim = double(nsd_);
@@ -3526,9 +3523,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_div_eps(
   visc_old_.clear();
 
   double prefac;
-  if (fldpara_->physical_type() == Inpar::FLUID::loma or
-      fldpara_->physical_type() == Inpar::FLUID::weakly_compressible or
-      fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
+  if (fldpara_->physical_type() == FLUID::loma or
+      fldpara_->physical_type() == FLUID::weakly_compressible or
+      fldpara_->physical_type() == FLUID::weakly_compressible_stokes)
   // if(loma_)
   {
     prefac = 1.0 / 3.0;
@@ -3683,7 +3680,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
   if (fldparatimint_->is_genalpha())
   {
     // rhs of momentum equation: density*bodyforce at n+alpha_F
-    if (fldpara_->physical_type() == Inpar::FLUID::boussinesq)
+    if (fldpara_->physical_type() == FLUID::boussinesq)
     {
       // safety check
       if (fldparatimint_->alpha_f() != 1.0 or fldparatimint_->gamma() != 1.0)
@@ -3720,7 +3717,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho -
       // rho_0)*g else:                                      f = rho * g Changed density from densn_
       // to densaf_. Makes the OST consistent with the gen-alpha.
-      if (fldpara_->physical_type() == Inpar::FLUID::boussinesq)
+      if (fldpara_->physical_type() == FLUID::boussinesq)
         rhsmom_.update((densaf_ / fldparatimint_->dt() / fldparatimint_->theta()), histmom_,
             deltadens_, bodyforce_);
       else
@@ -3746,7 +3743,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho -
       // rho_0)*g else:                                      f = rho * g and pressure gradient
       // prescribed as body force (not density weighted)
-      if (fldpara_->physical_type() == Inpar::FLUID::boussinesq)
+      if (fldpara_->physical_type() == FLUID::boussinesq)
         rhsmom_.update(deltadens_, bodyforce_, 1.0, generalbodyforce_);
       else
         rhsmom_.update(densaf_, bodyforce_, 1.0, generalbodyforce_);
@@ -3769,7 +3766,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
   // 1) quasi-static subgrid scales
   // Definition of subgrid-scale velocity is not consistent for the SUPG term and Franca, Valentin,
   // ... Definition of subgrid velocity used by Hughes
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
   {
     sgvelint_.update(-tau_(1), momres_old_, 0.0);
   }
@@ -3874,10 +3871,10 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
   // include computed subgrid-scale velocity in convective term
   // -> only required for cross- and Reynolds-stress terms
   //----------------------------------------------------------------------
-  if (fldpara_->cross() != Inpar::FLUID::cross_stress_stab_none or
-      fldpara_->reynolds() != Inpar::FLUID::reynolds_stress_stab_none or
-      fldpara_->conti_cross() != Inpar::FLUID::cross_stress_stab_none or
-      fldpara_->conti_reynolds() != Inpar::FLUID::reynolds_stress_stab_none)
+  if (fldpara_->cross() != FLUID::cross_stress_stab_none or
+      fldpara_->reynolds() != FLUID::reynolds_stress_stab_none or
+      fldpara_->conti_cross() != FLUID::cross_stress_stab_none or
+      fldpara_->conti_reynolds() != FLUID::reynolds_stress_stab_none)
     sgconv_c_.multiply_tn(derxy_, sgvelint_);
   else
     sgconv_c_.clear();
@@ -3974,7 +3971,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_u(
     }
   }
 
-  if (fldpara_->cross() == Inpar::FLUID::cross_stress_stab)
+  if (fldpara_->cross() == FLUID::cross_stress_stab)
   {
     // const double rhsresfac_densaf=rhsresfac*densaf_;
     for (int ui = 0; ui < nen_; ++ui)
@@ -4155,7 +4152,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_u_subsca
 
   for (int idim = 0; idim < nsd_; ++idim)
   {
-    if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent)
+    if (fldpara_->tds() == FLUID::subscales_time_dependent)
       // see implementation by Peter Gamnitzer
       resM_Du(idim) += (timefacfac / fldparatimint_->alpha_f()) *
                        (-densaf_ * sgvelint_(idim) / tau_(0) - gradp_(idim) +
@@ -4181,8 +4178,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::stab_lin_gal_mom_res_u(
      + sigma*Du + nabla o eps | Du |
                                \  /
   */
-  if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent ||
-      fldpara_->cross() == Inpar::FLUID::cross_stress_stab)
+  if (fldpara_->tds() == FLUID::subscales_time_dependent ||
+      fldpara_->cross() == FLUID::cross_stress_stab)
   {
     //----------------------------------------------------------------------
     /* GALERKIN residual was rescaled and cannot be reused; so rebuild it */
@@ -4326,7 +4323,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_react
             \                /
   */
   if ((fldpara_->is_newton() or
-          (is_higher_order_ele_ and fldpara_->tds() == Inpar::FLUID::subscales_time_dependent)))
+          (is_higher_order_ele_ and fldpara_->tds() == FLUID::subscales_time_dependent)))
   {
     for (int ui = 0; ui < nen_; ++ui)
     {
@@ -4365,8 +4362,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_react
     {
       if (fldparatimint_->is_genalpha())
       {
-        if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent &&
-            fldpara_->transient() == Inpar::FLUID::inertia_stab_keep)
+        if (fldpara_->tds() == FLUID::subscales_time_dependent &&
+            fldpara_->transient() == FLUID::inertia_stab_keep)
         {
           ;  // do nothing here! Whole term already set in lin_gal_mom_res_u_subscales()
         }
@@ -4381,8 +4378,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_react
   // convective terms of rhs
   for (int idim = 0; idim < nsd_; ++idim)
   {
-    if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent &&
-        fldpara_->transient() == Inpar::FLUID::inertia_stab_keep)
+    if (fldpara_->tds() == FLUID::subscales_time_dependent &&
+        fldpara_->transient() == FLUID::inertia_stab_keep)
     {
       ;  // do nothing here! Whole term already set in lin_gal_mom_res_u_subscales()
     }
@@ -4501,16 +4498,16 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::cont_stab(
     conti_stab_and_vol_visc_fac += timefacfacpre * tau_(2);
     conti_stab_and_vol_visc_rhs -= rhsfac * tau_(2) * conres_old_;
   }
-  if (fldpara_->physical_type() == Inpar::FLUID::loma or
-      fldpara_->physical_type() == Inpar::FLUID::weakly_compressible or
-      fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
+  if (fldpara_->physical_type() == FLUID::loma or
+      fldpara_->physical_type() == FLUID::weakly_compressible or
+      fldpara_->physical_type() == FLUID::weakly_compressible_stokes)
   {
     conti_stab_and_vol_visc_fac -= (2.0 / 3.0) * visceff_ * timefacfac;
     conti_stab_and_vol_visc_rhs += (2.0 / 3.0) * rhsfac * visceff_ * vdiv_;
     // additional term q_sq_ for dynamics Smagorisnky only
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+    if (fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::vreman)
       conti_stab_and_vol_visc_rhs += (2.0 / 3.0) * rhsfac * q_sq_;
   }
 
@@ -4722,9 +4719,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::conservative_formulation
     {
       // compute prefactor
       double v = timefacfac * densaf_ * vdiv_;
-      if (fldpara_->physical_type() == Inpar::FLUID::loma)
+      if (fldpara_->physical_type() == FLUID::loma)
         v -= timefacfac * densaf_ * scaconvfacaf_ * conv_scaaf_;
-      else if (fldpara_->physical_type() == Inpar::FLUID::varying_density)
+      else if (fldpara_->physical_type() == FLUID::varying_density)
       {
         v += timefacfac * conv_scaaf_;
         //         o
@@ -4782,13 +4779,13 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::conservative_formulation
          |  (i)  \            /       |
          \                           /
         */
-        if (fldpara_->physical_type() == Inpar::FLUID::loma or
-            fldpara_->physical_type() == Inpar::FLUID::varying_density)
+        if (fldpara_->physical_type() == FLUID::loma or
+            fldpara_->physical_type() == FLUID::varying_density)
         {
           double v_idim = 0.0;
-          if (fldpara_->physical_type() == Inpar::FLUID::loma)
+          if (fldpara_->physical_type() == FLUID::loma)
             v_idim = -timefacfac * densaf_ * scaconvfacaf_ * grad_scaaf_(idim) * velint_(idim);
-          else if (fldpara_->physical_type() == Inpar::FLUID::varying_density)
+          else if (fldpara_->physical_type() == FLUID::varying_density)
             v_idim = +timefacfac * grad_scaaf_(idim) * velint_(idim);
 
           for (int vi = 0; vi < nen_; ++vi)
@@ -4813,9 +4810,9 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::conservative_formulation
       /* convection (conservative addition) on right-hand side */
       double v = -rhsfac * densaf_ * velint_(idim) * vdiv_;
 
-      if (fldpara_->physical_type() == Inpar::FLUID::loma)
+      if (fldpara_->physical_type() == FLUID::loma)
         v += rhsfac * velint_(idim) * densaf_ * scaconvfacaf_ * conv_scaaf_;
-      else if (fldpara_->physical_type() == Inpar::FLUID::varying_density)
+      else if (fldpara_->physical_type() == FLUID::varying_density)
         v -= rhsfac * velint_(idim) * conv_scaaf_;
 
       for (int vi = 0; vi < nen_; ++vi) velforce(idim, vi) += v * funct_(vi);
@@ -4846,7 +4843,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::pspg(
 
   double scal_grad_q = 0.0;
 
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
   {
     scal_grad_q = tau_(1);
   }
@@ -4952,7 +4949,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::pspg(
   for (int idim = 0; idim < nsd_; ++idim)
   {
     double sgvel = 0.0;
-    if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+    if (fldpara_->tds() == FLUID::subscales_quasistatic)
     {
       sgvel = sgvelint_(idim);
     }
@@ -4990,7 +4987,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supg(
   static Core::LinAlg::Matrix<nsd_, 1> temp;
 
   double supgfac;
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
     supgfac = densaf_ * tau_(0);
   else
     supgfac = densaf_ * fldparatimint_->alpha_f() * fac3;
@@ -5001,7 +4998,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supg(
     supg_test(vi) = supgfac * conv_c_(vi);
   }
 
-  if (fldpara_->reynolds() == Inpar::FLUID::reynolds_stress_stab)
+  if (fldpara_->reynolds() == FLUID::reynolds_stress_stab)
   {
     for (int vi = 0; vi < nen_; ++vi)
     {
@@ -5101,7 +5098,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supg(
   */
   if (fldpara_->is_newton())
   {
-    if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+    if (fldpara_->tds() == FLUID::subscales_quasistatic)
     {
       for (int jdim = 0; jdim < nsd_; ++jdim)
       {
@@ -5185,7 +5182,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supg(
     }
   }  // end for(idim)
 
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
   {
     for (int jdim = 0; jdim < nsd_; ++jdim)
     {
@@ -5211,9 +5208,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supg(
 
   // SUPG and Reynolds-stress term on right-hand side of
   // continuity equation for low-Mach-number flow
-  if (fldpara_->physical_type() == Inpar::FLUID::loma and
-      (fldpara_->conti_supg() or
-          fldpara_->conti_reynolds() != Inpar::FLUID::reynolds_stress_stab_none))
+  if (fldpara_->physical_type() == FLUID::loma and
+      (fldpara_->conti_supg() or fldpara_->conti_reynolds() != FLUID::reynolds_stress_stab_none))
   {
     const double temp_supg = rhsfac * scaconvfacaf_ * sgscaint_;
 
@@ -5225,7 +5221,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supg(
       }
     }
 
-    if (fldpara_->conti_reynolds() != Inpar::FLUID::reynolds_stress_stab_none)
+    if (fldpara_->conti_reynolds() != FLUID::reynolds_stress_stab_none)
     {
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -5245,7 +5241,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::reac_stab(
     const double& timefacfacpre, const double& rhsfac, const double& fac3)
 {
   double reac_tau;
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
     reac_tau = fldpara_->visc_rea_stab_fac() * reacoeff_ * tau_(1);
   else
   {
@@ -5391,7 +5387,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::visc_stab(
 {
   // preliminary parameter computation
   double two_visc_tau;
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
     two_visc_tau = -fldpara_->visc_rea_stab_fac() * 2.0 * visc_ * tau_(1);
   else
     two_visc_tau = -fldpara_->visc_rea_stab_fac() * 2.0 * visc_ * fldparatimint_->alpha_f() * fac3;
@@ -5577,13 +5573,13 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::cross_stress_stab(
    */
 
   double crossfac;
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
     crossfac = densaf_ * tau_(1);
   else
     crossfac = densaf_ * fldparatimint_->alpha_f() * fac3;
 
   // Stabilization of lhs and the rhs
-  if (fldpara_->cross() == Inpar::FLUID::cross_stress_stab and fldpara_->is_newton())
+  if (fldpara_->cross() == FLUID::cross_stress_stab and fldpara_->is_newton())
   {
     /*
            /                         \
@@ -5665,7 +5661,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::cross_stress_stab(
         }
       }  // end for(idim)
     }  // vi
-  }  // end if (cross_ == Inpar::FLUID::cross_stress_stab) and (is_newton)
+  }  // end if (cross_ == FLUID::cross_stress_stab) and (is_newton)
 
   // Stabilization only of the rhs
   static Core::LinAlg::Matrix<nsd_, 1> temp;
@@ -5718,7 +5714,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::reynolds_stress_stab(
   */
 
   double reyfac;
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
   {
     // if(fldpara_->IsGenalpha())
     reyfac = densaf_ * tau_(1);
@@ -6337,8 +6333,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::compute_error(Discret::El
   Core::LinAlg::Matrix<nsd_, nsd_> deltadervel(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<nsd_, nsd_> dervelint(Core::LinAlg::Initialization::zero);
 
-  const auto calcerr =
-      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(params, "calculate error");
+  const auto calcerr = Teuchos::getIntegralValue<FLUID::CalcError>(params, "calculate error");
   const int calcerrfunctno = params.get<int>("error function number");
 
   //----------------------------------------------------------------------------
@@ -6475,15 +6470,15 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::compute_error(Discret::El
 
 template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
 void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_solution_point(
-    const Core::LinAlg::Matrix<nsd_, 1>& xyzint, const double t,
-    const Inpar::FLUID::CalcError calcerr, const int calcerrfunctno,
-    const std::shared_ptr<Core::Mat::Material>& mat, Core::LinAlg::Matrix<nsd_, 1>& u, double& p,
-    Core::LinAlg::Matrix<nsd_, nsd_>& dervel, bool isFullImplPressure, double deltat)
+    const Core::LinAlg::Matrix<nsd_, 1>& xyzint, const double t, const FLUID::CalcError calcerr,
+    const int calcerrfunctno, const std::shared_ptr<Core::Mat::Material>& mat,
+    Core::LinAlg::Matrix<nsd_, 1>& u, double& p, Core::LinAlg::Matrix<nsd_, nsd_>& dervel,
+    bool isFullImplPressure, double deltat)
 {
   // Compute analytical solution
   switch (calcerr)
   {
-    case Inpar::FLUID::beltrami_flow:
+    case FLUID::beltrami_flow:
     {
       if (nsd_ == 3)
       {
@@ -6581,7 +6576,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
         FOUR_C_THROW("action 'calc_fluid_beltrami_error' is a 3D specific action");
     }
     break;
-    case Inpar::FLUID::shear_flow:
+    case FLUID::shear_flow:
     {
       const double maxvel = 1.0;
       const double height = 1.0;
@@ -6602,7 +6597,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
       }
     }
     break;
-    case Inpar::FLUID::gravitation:
+    case FLUID::gravitation:
     {
       const double gravity = 10.0;
       const double height = 1.0;
@@ -6625,7 +6620,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
       }
     }
     break;
-    case Inpar::FLUID::channel2D:
+    case FLUID::channel2D:
     {
       const double maxvel = 1.0;
       const double height = 1.0;
@@ -6646,7 +6641,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
         FOUR_C_THROW("3D analytical solution is not implemented yet");
     }
     break;
-    case Inpar::FLUID::byfunct:
+    case FLUID::byfunct:
     {
       // function evaluation requires a 3D position vector!!
       double position[3];
@@ -6768,7 +6763,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
         FOUR_C_THROW("invalid dimension");
     }
     break;
-    case Inpar::FLUID::fsi_fluid_pusher:
+    case FLUID::fsi_fluid_pusher:
     {
       /* Since the fluid pusher solution depends only on time, but not on spatial
        * coordinates x,y,z, we only compute the L2-error and no H1-error.
@@ -6842,7 +6837,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
         FOUR_C_THROW("Material is not a Newtonian Fluid");
     }
     break;
-    case Inpar::FLUID::channel_weakly_compressible:
+    case FLUID::channel_weakly_compressible:
     {
       // Steady, weakly compressible isothermal flow of a Newtonian fluid
       // with pressure-dependent density according to Murnaghan-Tait law
@@ -7102,7 +7097,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
 
   // if not available, the arrays for the subscale quantities have to be
   // resized and initialised to zero
-  if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent)
+  if (fldpara_->tds() == FLUID::subscales_time_dependent)
     FOUR_C_THROW("Time-dependent subgrid scales not supported");
 
   // get all general state vectors: velocity/pressure, scalar,
@@ -7121,12 +7116,11 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
 
   Core::LinAlg::Matrix<nsd_, nen_> evelam(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<nen_, 1> epream(Core::LinAlg::Initialization::zero);
-  if (fldpara_->physical_type() == Inpar::FLUID::weakly_compressible &&
-      fldparatimint_->is_genalpha())
+  if (fldpara_->physical_type() == FLUID::weakly_compressible && fldparatimint_->is_genalpha())
   {
     extract_values_from_global_vector(discretization, lm, *rotsymmpbc_, &evelam, &epream, "velam");
   }
-  if (fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes &&
+  if (fldpara_->physical_type() == FLUID::weakly_compressible_stokes &&
       fldparatimint_->is_genalpha())
   {
     extract_values_from_global_vector(discretization, lm, *rotsymmpbc_, &evelam, &epream, "velam");
@@ -7180,13 +7174,13 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
   // scheme and at time n+1 for all other schemes
   Core::LinAlg::Matrix<nsd_, nen_> fsevelaf(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<nen_, 1> fsescaaf(Core::LinAlg::Initialization::zero);
-  if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv or
-      fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+  if (fldpara_->fssgv() != FLUID::no_fssgv or
+      fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
   {
     extract_values_from_global_vector(
         discretization, lm, *rotsymmpbc_, &fsevelaf, nullptr, "fsvelaf");
-    if (fldpara_->physical_type() == Inpar::FLUID::loma and
-        fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->physical_type() == FLUID::loma and
+        fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
       extract_values_from_global_vector(
           discretization, lm, *rotsymmpbc_, nullptr, &fsescaaf, "fsscaaf");
   }
@@ -7226,7 +7220,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
 
   double CsDeltaSq = 0.0;
   double CiDeltaSq = 0.0;
-  if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
+  if (fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky)
   {
     std::shared_ptr<Core::LinAlg::Vector<double>> ele_CsDeltaSq =
         params.sublist("TURBULENCE MODEL")
@@ -7334,15 +7328,15 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
 
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+    if (fldpara_->turb_mod_action() == FLUID::smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::vreman)
     {
       calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
-    else if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+    else if (fldpara_->fssgv() != FLUID::no_fssgv)
       calc_fine_scale_subgr_visc(evelaf, fsevelaf, vol);
   }
 
@@ -7351,7 +7345,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
   Core::LinAlg::Matrix<nsd_, 1> B_mfs(Core::LinAlg::Initialization::zero);
   // coefficient D of fine-scale scalar (loma only)
   double D_mfs = 0.0;
-  if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+  if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
   {
     if (not fldpara_->b_gp())
     {
@@ -7412,7 +7406,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
 
     // get fine-scale velocity and its derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+    if (fldpara_->fssgv() != FLUID::no_fssgv)
     {
       fsvderxy_.multiply_nt(fsevelaf, derxy_);
     }
@@ -7420,7 +7414,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
     {
       fsvderxy_.clear();
     }
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
     {
       fsvelint_.multiply(fsevelaf, funct_);
       fsvderxy_.multiply_nt(fsevelaf, derxy_);
@@ -7498,20 +7492,20 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
 
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
-      if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-          fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-          fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+      if (fldpara_->turb_mod_action() == FLUID::smagorinsky or
+          fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+          fldpara_->turb_mod_action() == FLUID::vreman)
       {
         calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
-      else if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+      else if (fldpara_->fssgv() != FLUID::no_fssgv)
         calc_fine_scale_subgr_visc(evelaf, fsevelaf, vol);
     }
 
     // potential evaluation of coefficient of multifractal subgrid-scales at integration point
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
     {
       if (fldpara_->b_gp())
       {
@@ -7545,7 +7539,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
     conres_old_ = vdiv_;
 
     // following computations only required for variable-density flow at low Mach number
-    if (fldpara_->physical_type() == Inpar::FLUID::loma)
+    if (fldpara_->physical_type() == FLUID::loma)
     {
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
@@ -7566,16 +7560,16 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
       // update material parameters including subgrid-scale part of scalar
       if (fldpara_->update_mat())
       {
-        if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+        if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
           update_material_params(mat, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
               thermpressam, mfssgscaint_);
         else
           update_material_params(
               mat, evelaf, epreaf, epream, escaaf, escaam, thermpressaf, thermpressam, sgscaint_);
         visceff_ = visc_;
-        if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-            fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-            fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+        if (fldpara_->turb_mod_action() == FLUID::smagorinsky or
+            fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+            fldpara_->turb_mod_action() == FLUID::vreman)
           visceff_ += sgvisc_;
       }
     }
@@ -7634,7 +7628,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
     }
 
     // dissipation by cross-stress-stabilization
-    if (fldpara_->cross() != Inpar::FLUID::cross_stress_stab_none)
+    if (fldpara_->cross() != FLUID::cross_stress_stab_none)
     {
       for (int rr = 0; rr < nsd_; rr++)
       {
@@ -7645,7 +7639,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
     }
 
     // dissipation by reynolds-stress-stabilization
-    if (fldpara_->reynolds() != Inpar::FLUID::reynolds_stress_stab_none)
+    if (fldpara_->reynolds() != FLUID::reynolds_stress_stab_none)
     {
       for (int rr = 0; rr < nsd_; rr++)
       {
@@ -7675,7 +7669,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
     //---------------------------------------------------------------
 
     // dissipation multifractal subgrid-scales
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
     {
       for (int rr = 0; rr < nsd_; rr++)
       {
@@ -7712,7 +7706,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
                turb   |       \      /         \     /   |
                        \                                /
   */
-    if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+    if (fldpara_->fssgv() != FLUID::no_fssgv)
     {
       Core::LinAlg::Matrix<nsd_, nsd_> fstwo_epsilon;
       for (int rr = 0; rr < nsd_; ++rr)
@@ -7730,7 +7724,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
           eps_avm3 += 0.5 * fssgvisc_ * fac_ * fstwo_epsilon(rr, mm) * fstwo_epsilon(rr, mm);
         }
       }
-      if (fldpara_->physical_type() == Inpar::FLUID::loma)
+      if (fldpara_->physical_type() == FLUID::loma)
       {
         FOUR_C_THROW("Read warning before usage!");
         // Warning: Here, we should use the deviatoric part of the strain-rate tensor.
@@ -7759,8 +7753,8 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
         two_epsilon(rr, mm) = vderxy_(rr, mm) + vderxy_(mm, rr);
       }
     }
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky)
+    if (fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::smagorinsky)
     {
       for (int rr = 0; rr < nsd_; ++rr)
       {
@@ -7769,7 +7763,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
           eps_smag += 0.5 * sgvisc_ * fac_ * two_epsilon(rr, mm) * two_epsilon(rr, mm);
         }
       }
-      if (fldpara_->physical_type() == Inpar::FLUID::loma)
+      if (fldpara_->physical_type() == FLUID::loma)
         eps_smag -= (2.0 / 3.0) * fac_ * (sgvisc_ * vdiv_ + q_sq_) * vdiv_;
     }
 
@@ -7808,7 +7802,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
         eps_visc += 0.5 * visc_ * fac_ * two_epsilon(rr, mm) * two_epsilon(rr, mm);
       }
     }
-    if (fldpara_->physical_type() == Inpar::FLUID::loma)
+    if (fldpara_->physical_type() == FLUID::loma)
       eps_visc -= (2.0 / 3.0) * visc_ * fac_ * vdiv_ * vdiv_;
 
 
@@ -7982,7 +7976,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
     //---------------------------------------------------------------
     // element averages of cross stresses and cross stresses
     //---------------------------------------------------------------
-    if (fldpara_->cross() != Inpar::FLUID::cross_stress_stab_none)
+    if (fldpara_->cross() != FLUID::cross_stress_stab_none)
     {
       mean_crossstress(0) +=
           fac_ * tau_(0) * (momres_old_(0) * velint_(0) + velint_(0) * momres_old_(0));
@@ -7998,7 +7992,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
           fac_ * tau_(0) * (momres_old_(2) * velint_(0) + velint_(2) * momres_old_(0));
     }
 
-    if (fldpara_->reynolds() != Inpar::FLUID::reynolds_stress_stab_none)
+    if (fldpara_->reynolds() != FLUID::reynolds_stress_stab_none)
     {
       mean_reystress(0) -= fac_ * tau_(0) * tau_(0) *
                            (momres_old_(0) * momres_old_(0) + momres_old_(0) * momres_old_(0));
@@ -8589,7 +8583,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_mass_matrix(
   }  // end for (ui)
 
   // add terms associated to pressure dofs for weakly_compressible flows
-  if (fldpara_->physical_type() == Inpar::FLUID::weakly_compressible)
+  if (fldpara_->physical_type() == FLUID::weakly_compressible)
   {
     FOUR_C_THROW("Evaluation of the mass matrix for pressure dofs");
     // check fluid material
@@ -10478,7 +10472,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq_
   */
   // recover the convective velocity for the evaluation of RHS of continuity equation
   // in case of a weakly_compressible_stokes problem
-  if (fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
+  if (fldpara_->physical_type() == FLUID::weakly_compressible_stokes)
   {
     convvelint_.update(velint_);
     if (isale)
@@ -10532,7 +10526,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq_
 
   // delete again the convective velocity
   // in case of a weakly_compressible_stokes problem
-  if (fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
+  if (fldpara_->physical_type() == FLUID::weakly_compressible_stokes)
   {
     convvelint_.clear();
   }
@@ -10845,7 +10839,7 @@ void Discret::Elements::FluidEleCalc<distype,
 
   // add (first) subgrid-scale-velocity part to rhs of continuity equation
   // (identical for all time-integration schemes)
-  if (fldpara_->conti_cross() != Inpar::FLUID::cross_stress_stab_none)
+  if (fldpara_->conti_cross() != FLUID::cross_stress_stab_none)
   {
     rhscon_ += scaconvfacaf_ * sgvelint_.dot(grad_scaaf_);
   }
@@ -10879,7 +10873,7 @@ void Discret::Elements::FluidEleCalc<distype,
 
       // add second subgrid-scale-velocity part to rhs of continuity equation
       // (subgrid-scale velocity at n+1 also approximately used at n)
-      if (fldpara_->cross() != Inpar::FLUID::cross_stress_stab_none)
+      if (fldpara_->cross() != FLUID::cross_stress_stab_none)
         rhscon_ += (fldparatimint_->om_theta() / fldparatimint_->theta()) * scaconvfacn_ *
                    sgvelint_.dot(grad_scan_);
     }
@@ -10899,8 +10893,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::loma_gal_part(
   // 2) additional rhs term of continuity equation
   //----------------------------------------------------------------------
 
-  if (fldpara_->physical_type() != Inpar::FLUID::weakly_compressible &&
-      fldpara_->physical_type() != Inpar::FLUID::weakly_compressible_stokes)
+  if (fldpara_->physical_type() != FLUID::weakly_compressible &&
+      fldpara_->physical_type() != FLUID::weakly_compressible_stokes)
   {
     if (fldpara_->is_newton())
     {
@@ -11164,18 +11158,18 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
 
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::vreman or
-        fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_vreman)
+    if (fldpara_->turb_mod_action() == FLUID::smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::vreman or
+        fldpara_->turb_mod_action() == FLUID::dynamic_vreman)
     {
-      if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_vreman)
+      if (fldpara_->turb_mod_action() == FLUID::dynamic_vreman)
         Cs_delta_sq = Cv;  // use the declaration of Cs_delta_sq for the dynamic Vreman constant
       calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
-    else if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+    else if (fldpara_->fssgv() != FLUID::no_fssgv)
       calc_fine_scale_subgr_visc(evelaf, fsevelaf, vol);
   }
 
@@ -11186,7 +11180,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
 
   // coefficient D of fine-scale scalar (loma only)
   double D_mfs = 0.0;
-  if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+  if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
   {
     if (not fldpara_->b_gp())
     {
@@ -11213,7 +11207,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
 
 
   // calculate stabilization parameter at element center
-  if (not fldpara_->tau_gp() and fldpara_->stab_type() == Inpar::FLUID::stabtype_residualbased)
+  if (not fldpara_->tau_gp() and fldpara_->stab_type() == FLUID::stabtype_residualbased)
   {
     // get convective velocity at element center
     // for evaluation of stabilization parameter
@@ -11230,7 +11224,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     set_convective_velint(isale);
 
 
-    if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent)
+    if (fldpara_->tds() == FLUID::subscales_time_dependent)
     {
       // get velocity derivatives at integration point
       // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -11279,7 +11273,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
 
     // get fine-scale velocity and its derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+    if (fldpara_->fssgv() != FLUID::no_fssgv)
     {
       fsvderxy_.multiply_nt(fsevelaf, derxy_);
     }
@@ -11287,7 +11281,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     {
       fsvderxy_.clear();
     }
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
     {
       fsvelint_.multiply(fsevelaf, funct_);
       fsvderxy_.multiply_nt(fsevelaf, derxy_);
@@ -11354,24 +11348,24 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
 
-      if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-          fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-          fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+      if (fldpara_->turb_mod_action() == FLUID::smagorinsky or
+          fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+          fldpara_->turb_mod_action() == FLUID::vreman)
       {
         calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
-      else if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+      else if (fldpara_->fssgv() != FLUID::no_fssgv)
         calc_fine_scale_subgr_visc(evelaf, fsevelaf, vol);
     }
 
     // calculate stabilization parameter at integration point
-    if (fldpara_->tau_gp() and fldpara_->stab_type() == Inpar::FLUID::stabtype_residualbased)
+    if (fldpara_->tau_gp() and fldpara_->stab_type() == FLUID::stabtype_residualbased)
       calc_stab_parameter(vol);
 
     // potential evaluation of coefficient of multifractal subgrid-scales at integration point
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
     {
       if (fldpara_->b_gp())
       {
@@ -11404,7 +11398,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
       mffsvdiv_ = mffsvderxy_(0, 0) + mffsvderxy_(1, 1) + mffsvderxy_(2, 2);
 
       // only required for variable-density flow at low Mach number
-      if (fldpara_->physical_type() == Inpar::FLUID::loma)
+      if (fldpara_->physical_type() == FLUID::loma)
       {
         mfssgscaint_ = D_mfs * funct_.dot(fsescaaf);
         grad_fsscaaf_.multiply(derxy_, fsescaaf);
@@ -11528,7 +11522,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     conres_oldn_ = vdivn_;
 
     // following computations only required for variable-density flow at low Mach number
-    if (fldpara_->physical_type() == Inpar::FLUID::loma)
+    if (fldpara_->physical_type() == FLUID::loma)
     {
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
@@ -11538,8 +11532,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
       conres_old_ -= rhscon_;
 
       if (fldpara_->update_mat() or fldpara_->conti_supg() or
-          fldpara_->conti_cross() != Inpar::FLUID::cross_stress_stab_none or
-          fldpara_->conti_reynolds() != Inpar::FLUID::reynolds_stress_stab_none or
+          fldpara_->conti_cross() != FLUID::cross_stress_stab_none or
+          fldpara_->conti_reynolds() != FLUID::reynolds_stress_stab_none or
           fldpara_->multi_frac_loma_conti())
       {
         // compute subgrid-scale part of scalar
@@ -11551,21 +11545,21 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
         {
           // since we update the viscosity in the next step, a potential subgrid-scale velocity
           // would be overwritten
-          if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-              fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-              fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+          if (fldpara_->turb_mod_action() == FLUID::smagorinsky or
+              fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+              fldpara_->turb_mod_action() == FLUID::vreman)
             FOUR_C_THROW("No material update in combination with smagorinsky model!");
 
-          if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+          if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
             update_material_params(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
                 thermpressam, mfssgscaint_);
           else
             update_material_params(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
                 thermpressam, sgscaint_);
           visceff_ = visc_;
-          if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-              fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-              fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+          if (fldpara_->turb_mod_action() == FLUID::smagorinsky or
+              fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+              fldpara_->turb_mod_action() == FLUID::vreman)
             visceff_ += sgvisc_;
         }
 
@@ -11575,7 +11569,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
         recompute_gal_and_compute_cross_rhs_cont_eq();
       }
     }
-    else if (fldpara_->physical_type() == Inpar::FLUID::artcomp)
+    else if (fldpara_->physical_type() == FLUID::artcomp)
     {
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
@@ -11595,8 +11589,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     lin_gal_mom_res_uost_new(lin_resM_Du_, timefacfac);
 
     // potentially rescale first version of velocity-based momentum residual
-    if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent &&
-        fldpara_->transient() == Inpar::FLUID::inertia_stab_keep)
+    if (fldpara_->tds() == FLUID::subscales_time_dependent &&
+        fldpara_->transient() == FLUID::inertia_stab_keep)
     {
       lin_gal_mom_res_u_subscales(estif_p_v_, lin_resM_Du_, resM_Du_, timefacfac, facMtau);
     }
@@ -11622,7 +11616,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     // 3) stabilization of continuity equation,
     //    standard Galerkin viscous part for low-Mach-number flow and
     //    right-hand-side part of standard Galerkin viscous term
-    if (fldpara_->c_stab() or fldpara_->physical_type() == Inpar::FLUID::loma)
+    if (fldpara_->c_stab() or fldpara_->physical_type() == FLUID::loma)
       cont_stab(estif_u_, velforce_, fldparatimint_->time_fac(), timefacfac, timefacfacpre, rhsfac,
           rhsfacn);
 
@@ -11646,15 +11640,14 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     // 8) additional standard Galerkin terms for low-Mach-number flow and
     //    artificial compressibility (only right-hand side in latter case)
     //    New One Step Theta not implemented for LOMA as of yet.
-    if (fldpara_->physical_type() == Inpar::FLUID::loma or
-        fldpara_->physical_type() == Inpar::FLUID::artcomp)
+    if (fldpara_->physical_type() == FLUID::loma or fldpara_->physical_type() == FLUID::artcomp)
     {
       loma_gal_part(estif_q_u_, preforce_, timefacfac, rhsfac);
     }
 
     // 9) additional standard Galerkin term for temporal derivative of pressure
     //    in case of artificial compressibility (only left-hand side)
-    if (fldpara_->physical_type() == Inpar::FLUID::artcomp and not fldparatimint_->is_stationary())
+    if (fldpara_->physical_type() == FLUID::artcomp and not fldparatimint_->is_stationary())
       art_comp_pressure_inertia_gal_partand_cont_stab(estif_p_v_, ppmat_);
 
     //----------------------------------------------------------------------
@@ -11680,14 +11673,14 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     }
 
     // 12) reactive stabilization term
-    if (fldpara_->r_stab() != Inpar::FLUID::reactive_stab_none)
+    if (fldpara_->r_stab() != FLUID::reactive_stab_none)
     {
       reac_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
     }
 
     // 13) viscous stabilization term
-    if (is_higher_order_ele_ and (fldpara_->v_stab() != Inpar::FLUID::viscous_stab_none))
+    if (is_higher_order_ele_ and (fldpara_->v_stab() != FLUID::viscous_stab_none))
     {
       visc_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
@@ -11704,7 +11697,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
 
     // 14) cross-stress term: second part on left-hand side (only for Newton
     //     iteration) as well as cross-stress term on right-hand side
-    if (fldpara_->cross() != Inpar::FLUID::cross_stress_stab_none)
+    if (fldpara_->cross() != FLUID::cross_stress_stab_none)
     {
       cross_stress_stab(
           estif_u_, estif_p_v_, velforce_, lin_resM_Du_, timefacfac, timefacfacpre, rhsfac, fac3);
@@ -11712,14 +11705,14 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
 
     // 15) Reynolds-stress term: second part on left-hand side
     //     (only for Newton iteration)
-    if (fldpara_->reynolds() == Inpar::FLUID::reynolds_stress_stab and fldpara_->is_newton())
+    if (fldpara_->reynolds() == FLUID::reynolds_stress_stab and fldpara_->is_newton())
     {
       reynolds_stress_stab(estif_u_, estif_p_v_, lin_resM_Du_, timefacfac, timefacfacpre, fac3);
     }
 
     // 16) fine-scale subgrid-viscosity term
     //     (contribution only to right-hand-side vector)
-    if (fldpara_->fssgv() != Inpar::FLUID::no_fssgv)
+    if (fldpara_->fssgv() != FLUID::no_fssgv)
     {
       const double fssgviscfac = fssgvisc_ * rhsfac;
 
@@ -11727,7 +11720,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     }
 
     // 17) subgrid-stress term (multifractal subgrid scales)
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales)
     {
       multfrac_sub_grid_scales_cross(estif_u_, velforce_, timefacfac, rhsfac);
 
@@ -11889,7 +11882,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_div_eps(
   visc_oldn_.clear();
 
   double prefac;
-  if (fldpara_->physical_type() == Inpar::FLUID::loma)
+  if (fldpara_->physical_type() == FLUID::loma)
   // if(loma_)
   {
     prefac = 1.0 / 3.0;
@@ -12101,7 +12094,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
   //----------------------------------------------------------------------
   if (fldparatimint_->is_genalpha())
   {
-    if (fldpara_->physical_type() == Inpar::FLUID::boussinesq)
+    if (fldpara_->physical_type() == FLUID::boussinesq)
       FOUR_C_THROW(
           "The combination of generalized-alpha time integration and a Boussinesq approximation "
           "has not been implemented yet!");
@@ -12134,7 +12127,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
       // density*theta*bodyforce at n+1 + density*(histmom/dt)
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho -
       // rho_0)*g else:                                      f = rho * g
-      if (fldpara_->physical_type() == Inpar::FLUID::boussinesq)
+      if (fldpara_->physical_type() == FLUID::boussinesq)
       {
         //      Made old OST impl equivalent to gen-alpha (alpha_f=alpha_m=1) (multiplied with
         //      \rho_(n+1))
@@ -12216,7 +12209,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho -
       // rho_0)*g else:                                      f = rho * g and pressure gradient
       // prescribed as body force (not density weighted)
-      if (fldpara_->physical_type() == Inpar::FLUID::boussinesq)
+      if (fldpara_->physical_type() == FLUID::boussinesq)
         rhsmom_.update(deltadens_, bodyforce_, 1.0, generalbodyforce_);
       else
         rhsmom_.update(densaf_, bodyforce_, 1.0, generalbodyforce_);
@@ -12242,7 +12235,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
   // 1) quasi-static subgrid scales
   // Definition of subgrid-scale velocity is not consistent for the SUPG term and Franca, Valentin,
   // ... Definition of subgrid velocity used by Hughes
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
   {
     sgvelint_.update(-tau_(1), momres_old_, 0.0);
   }
@@ -12347,10 +12340,10 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
   // include computed subgrid-scale velocity in convective term
   // -> only required for cross- and Reynolds-stress terms
   //----------------------------------------------------------------------
-  if (fldpara_->cross() != Inpar::FLUID::cross_stress_stab_none or
-      fldpara_->reynolds() != Inpar::FLUID::reynolds_stress_stab_none or
-      fldpara_->conti_cross() != Inpar::FLUID::cross_stress_stab_none or
-      fldpara_->conti_reynolds() != Inpar::FLUID::reynolds_stress_stab_none)
+  if (fldpara_->cross() != FLUID::cross_stress_stab_none or
+      fldpara_->reynolds() != FLUID::reynolds_stress_stab_none or
+      fldpara_->conti_cross() != FLUID::cross_stress_stab_none or
+      fldpara_->conti_reynolds() != FLUID::reynolds_stress_stab_none)
     sgconv_c_.multiply_tn(derxy_, sgvelint_);
   else
     sgconv_c_.clear();
@@ -12453,7 +12446,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_uost_new
     }
   }
 
-  if (fldpara_->cross() == Inpar::FLUID::cross_stress_stab)
+  if (fldpara_->cross() == FLUID::cross_stress_stab)
   {
     // const double rhsresfac_densaf=rhsresfac*densaf_;
     for (int ui = 0; ui < nen_; ++ui)
@@ -12510,7 +12503,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_react
             \                /
   */
   if ((fldpara_->is_newton() or
-          (is_higher_order_ele_ and fldpara_->tds() == Inpar::FLUID::subscales_time_dependent)))
+          (is_higher_order_ele_ and fldpara_->tds() == FLUID::subscales_time_dependent)))
   {
     for (int ui = 0; ui < nen_; ++ui)
     {
@@ -12549,8 +12542,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_react
     {
       if (fldparatimint_->is_genalpha())
       {
-        if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent &&
-            fldpara_->transient() == Inpar::FLUID::inertia_stab_keep)
+        if (fldpara_->tds() == FLUID::subscales_time_dependent &&
+            fldpara_->transient() == FLUID::inertia_stab_keep)
         {
           ;  // do nothing here! Whole term already set in lin_gal_mom_res_u_subscales()
         }
@@ -12578,8 +12571,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_react
   // convective terms of rhs
   for (int idim = 0; idim < nsd_; ++idim)
   {
-    if (fldpara_->tds() == Inpar::FLUID::subscales_time_dependent &&
-        fldpara_->transient() == Inpar::FLUID::inertia_stab_keep)
+    if (fldpara_->tds() == FLUID::subscales_time_dependent &&
+        fldpara_->transient() == FLUID::inertia_stab_keep)
     {
       ;  // do nothing here! Whole term already set in lin_gal_mom_res_u_subscales()
     }
@@ -12743,14 +12736,14 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::cont_stab(
       conti_stab_and_vol_visc_rhs -= fac_ * fldparatimint_->dt() * tau_(2) * conres_old_;
     }
   }
-  if (fldpara_->physical_type() == Inpar::FLUID::loma)
+  if (fldpara_->physical_type() == FLUID::loma)
   {
     conti_stab_and_vol_visc_fac -= (2.0 / 3.0) * visceff_ * timefacfac;
     conti_stab_and_vol_visc_rhs += (2.0 / 3.0) * rhsfac * visceff_ * vdiv_;
     // additional term q_sq_ for dynamics Smagorisnky only
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+    if (fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::vreman)
       conti_stab_and_vol_visc_rhs += (2.0 / 3.0) * rhsfac * q_sq_;
   }
 
@@ -12968,7 +12961,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::pspgost_new(
 
   double scal_grad_q = 0.0;
 
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
   {
     scal_grad_q = tau_(1);
   }
@@ -13079,7 +13072,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::pspgost_new(
   for (int idim = 0; idim < nsd_; ++idim)
   {
     double sgvel = 0.0;
-    if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+    if (fldpara_->tds() == FLUID::subscales_quasistatic)
     {
       sgvel = sgvelint_(idim);
     }
@@ -13117,7 +13110,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supgost_new(
   static Core::LinAlg::Matrix<nsd_, 1> temp;
 
   double supgfac;
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
     supgfac = densaf_ * tau_(0);
   else
     supgfac = densaf_ * fldparatimint_->alpha_f() * fac3;
@@ -13128,7 +13121,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supgost_new(
     supg_test(vi) = supgfac * conv_c_(vi);
   }
 
-  if (fldpara_->reynolds() == Inpar::FLUID::reynolds_stress_stab)
+  if (fldpara_->reynolds() == FLUID::reynolds_stress_stab)
   {
     for (int vi = 0; vi < nen_; ++vi)
     {
@@ -13228,7 +13221,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supgost_new(
   */
   if (fldpara_->is_newton())
   {
-    if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+    if (fldpara_->tds() == FLUID::subscales_quasistatic)
     {
       for (int jdim = 0; jdim < nsd_; ++jdim)
       {
@@ -13320,7 +13313,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supgost_new(
     }
   }  // end for(idim)
 
-  if (fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (fldpara_->tds() == FLUID::subscales_quasistatic)
   {
     for (int jdim = 0; jdim < nsd_; ++jdim)
     {
@@ -13346,9 +13339,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supgost_new(
 
   // SUPG and Reynolds-stress term on right-hand side of
   // continuity equation for low-Mach-number flow
-  if (fldpara_->physical_type() == Inpar::FLUID::loma and
-      (fldpara_->conti_supg() or
-          fldpara_->conti_reynolds() != Inpar::FLUID::reynolds_stress_stab_none))
+  if (fldpara_->physical_type() == FLUID::loma and
+      (fldpara_->conti_supg() or fldpara_->conti_reynolds() != FLUID::reynolds_stress_stab_none))
   {
     const double temp_supg = rhsfac * scaconvfacaf_ * sgscaint_;
 
@@ -13360,7 +13352,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::supgost_new(
       }
     }
 
-    if (fldpara_->conti_reynolds() != Inpar::FLUID::reynolds_stress_stab_none)
+    if (fldpara_->conti_reynolds() != FLUID::reynolds_stress_stab_none)
     {
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -13383,8 +13375,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_aleost
 {
   switch (fldpara_->physical_type())
   {
-    case Inpar::FLUID::oseen:
-    case Inpar::FLUID::stokes:
+    case FLUID::oseen:
+    case FLUID::stokes:
     {
       FOUR_C_THROW(
           "ALE with Oseen or Stokes seems to be a tricky combination. Think deep before removing "
@@ -13412,22 +13404,22 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::set_convective_velint_n(
   // get convective velocity at integration point
   switch (fldpara_->physical_type())
   {
-    case Inpar::FLUID::incompressible:
-    case Inpar::FLUID::artcomp:
-    case Inpar::FLUID::varying_density:
-    case Inpar::FLUID::loma:
-    case Inpar::FLUID::tempdepwater:
-    case Inpar::FLUID::boussinesq:
+    case FLUID::incompressible:
+    case FLUID::artcomp:
+    case FLUID::varying_density:
+    case FLUID::loma:
+    case FLUID::tempdepwater:
+    case FLUID::boussinesq:
     {
       convvelintn_.update(velintn_);
       break;
     }
-    case Inpar::FLUID::oseen:
+    case FLUID::oseen:
     {
       FOUR_C_THROW("not supported for new ost up to now");
       break;
     }
-    case Inpar::FLUID::stokes:
+    case FLUID::stokes:
     {
       convvelintn_.clear();
       break;
@@ -13457,11 +13449,11 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_turbulence_params(
     Teuchos::ParameterList& turbmodelparams, double& Cs_delta_sq, double& Ci_delta_sq, int& nlayer,
     double CsDeltaSq, double CiDeltaSq)
 {
-  if (fldpara_->turb_mod_action() != Inpar::FLUID::no_model and nsd_ == 2)
+  if (fldpara_->turb_mod_action() != FLUID::no_model and nsd_ == 2)
     FOUR_C_THROW("turbulence and 2D flow does not make any sense");
 
   // classical smagorinsky does only have constant parameter
-  if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky_with_van_Driest_damping)
+  if (fldpara_->turb_mod_action() == FLUID::smagorinsky_with_van_Driest_damping)
   {
     // this will be the y-coordinate of a point in the element interior
     // we will determine the element layer in which he is contained to
@@ -13496,7 +13488,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_turbulence_params(
   // --------------------------------------------------
   // Smagorinsky model with dynamic Computation of Cs
   // else if (physical_turbulence_model == "Dynamic_Smagorinsky")
-  else if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
+  else if (fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky)
   {
     // turb_mod_action_ = Fluid::dynamic_smagorinsky;
 
@@ -13511,7 +13503,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_turbulence_params(
             turbmodelparams.get<std::shared_ptr<std::vector<double>>>("averaged_MijMij_");
         std::shared_ptr<std::vector<double>> averaged_CI_numerator = nullptr;
         std::shared_ptr<std::vector<double>> averaged_CI_denominator = nullptr;
-        if (fldpara_->physical_type() == Inpar::FLUID::loma)
+        if (fldpara_->physical_type() == FLUID::loma)
         {
           averaged_CI_numerator =
               turbmodelparams.get<std::shared_ptr<std::vector<double>>>("averaged_CI_numerator_");
@@ -13641,7 +13633,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_turbulence_params(
         if (Cs_delta_sq < 0) Cs_delta_sq = 0.0;
 
         // Ci_delta_sq is set by the averaged quantities
-        if (fldpara_->physical_type() == Inpar::FLUID::loma and fldpara_->include_ci() == true)
+        if (fldpara_->physical_type() == FLUID::loma and fldpara_->include_ci() == true)
         {
           if ((*averaged_CI_denominator)[nlayer] > 1E-16)
             Ci_delta_sq =
@@ -13658,7 +13650,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_turbulence_params(
     {
       // when no averaging was done, we just keep the calculated (clipped) value
       Cs_delta_sq = CsDeltaSq;
-      if (fldpara_->physical_type() == Inpar::FLUID::loma and fldpara_->include_ci() == true)
+      if (fldpara_->physical_type() == FLUID::loma and fldpara_->include_ci() == true)
         Ci_delta_sq = CiDeltaSq;
     }
   }
@@ -13702,13 +13694,13 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
   double rateofstrain = -1.0e30;
   rateofstrain = get_strain_rate(evelaf);
 
-  if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
+  if (fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky)
   {
     // subgrid viscosity
     sgvisc_ = densaf_ * Cs_delta_sq * rateofstrain;
 
     // calculate isotropic part of subgrid-stress tensor (loma only)
-    if (fldpara_->physical_type() == Inpar::FLUID::loma)
+    if (fldpara_->physical_type() == FLUID::loma)
     {
       if (fldpara_->include_ci() and is_inflow_ele_ == false)
       {
@@ -13731,8 +13723,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
   // Vreman turbulence model according to
   //"An eddy-viscosity subgrid-scale model for turbulent shear flow: Algebraic theory and
   // applications", 2004
-  else if (fldpara_->turb_mod_action() == Inpar::FLUID::vreman or
-           fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_vreman)
+  else if (fldpara_->turb_mod_action() == FLUID::vreman or
+           fldpara_->turb_mod_action() == FLUID::dynamic_vreman)
   {
     if (nsd_ == 3)
     {
@@ -13757,7 +13749,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
       //- direction dependent using the element length in x, y and z
       //- cube root of element volume
       //- minimum element length (of x, y, z)
-      if (fldpara_->vrfi() == Inpar::FLUID::dir_dep)
+      if (fldpara_->vrfi() == FLUID::dir_dep)
       {
         double xmin = 0.0;
         double ymin = 0.0;
@@ -13790,7 +13782,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
         hkypow2 = (ymax - ymin) * (ymax - ymin);
         hkzpow2 = (zmax - zmin) * (zmax - zmin);
       }
-      else if (fldpara_->vrfi() == Inpar::FLUID::cuberootvol)
+      else if (fldpara_->vrfi() == FLUID::cuberootvol)
       {
         hkxpow2 = pow(vol, (2.0 / 3.0));
         hkypow2 = hkxpow2;
@@ -13875,7 +13867,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
         sgvisc_ = 0.0;
       else
       {
-        if (fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+        if (fldpara_->turb_mod_action() == FLUID::vreman)
           sgvisc_ = densaf_ * cs *
                     sqrt(bbeta / alphavreman);  // c_vreman=2.5*(c_smagorinsky*c_smagorinsky)
         else
@@ -13893,7 +13885,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
   else
   {
     double van_Driest_damping = 1.0;
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky_with_van_Driest_damping)
+    if (fldpara_->turb_mod_action() == FLUID::smagorinsky_with_van_Driest_damping)
     {
       // since the Smagorinsky constant is only valid if hk is in the inertial
       // subrange of turbulent flows, the mixing length is damped in the
@@ -13946,7 +13938,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
     sgvisc_ = densaf_ * Cs_delta_sq * rateofstrain;
 
     // calculate isotropic part of subgrid-stress tensor (loma only)
-    if (fldpara_->physical_type() == Inpar::FLUID::loma)
+    if (fldpara_->physical_type() == FLUID::loma)
     {
       if (fldpara_->include_ci() and is_inflow_ele_ == false)
       {
@@ -13985,7 +13977,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_fine_scale_subgr_vi
   // 2D: hk = A^1/2
   const double hk = std::pow(vol, (1.0 / dim));
 
-  if (fldpara_->fssgv() == Inpar::FLUID::smagorinsky_all)
+  if (fldpara_->fssgv() == FLUID::smagorinsky_all)
   {
     //
     // ALL-SCALE SMAGORINSKY MODEL
@@ -14006,7 +13998,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_fine_scale_subgr_vi
 
     fssgvisc_ = densaf_ * fldpara_->cs() * fldpara_->cs() * hk * hk * rateofstrain;
   }
-  else if (fldpara_->fssgv() == Inpar::FLUID::smagorinsky_small)
+  else if (fldpara_->fssgv() == FLUID::smagorinsky_small)
   {
     //
     // FINE-SCALE SMAGORINSKY MODEL
@@ -14385,7 +14377,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::prepare_multifractal_sub
   // prepare calculation of subgrid-scalar coefficient for loma
   // required if further subgrid-scale terms of cross- and Reynolds-stress
   // type arising in the continuity equation should be included
-  if (fldpara_->physical_type() == Inpar::FLUID::loma)
+  if (fldpara_->physical_type() == FLUID::loma)
   {
     // set input parameters
     double Csgs_phi = fldpara_->csgs_phi();
@@ -14660,7 +14652,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::multfrac_sub_grid_scales
         velforce(2, vi) -= rhsfac * densaf_ * funct_(vi, 0) *
                            (mffsvelint_(2, 0) * vdiv_ + convvelint_(2, 0) * mffsvdiv_);
 
-        if (fldpara_->physical_type() == Inpar::FLUID::loma)
+        if (fldpara_->physical_type() == FLUID::loma)
         {
           FOUR_C_THROW("Conservative formulation not supported for loma!");
         }
@@ -14743,7 +14735,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::multfrac_sub_grid_scales
                     beta * timefacfac * densaf_ * funct_(vi) * funct_(ui) * mffsvdiv_;
               }
 
-              if (fldpara_->physical_type() == Inpar::FLUID::loma)
+              if (fldpara_->physical_type() == FLUID::loma)
               {
                 FOUR_C_THROW("Conservative formulation not supported for loma!");
               }
@@ -14809,7 +14801,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::multfrac_sub_grid_scales
         velforce(1, vi) -= rhsfac * densaf_ * funct_(vi, 0) * (mffsvelint_(1, 0) * mffsvdiv_);
         velforce(2, vi) -= rhsfac * densaf_ * funct_(vi, 0) * (mffsvelint_(2, 0) * mffsvdiv_);
 
-        if (fldpara_->physical_type() == Inpar::FLUID::loma)
+        if (fldpara_->physical_type() == FLUID::loma)
         {
           FOUR_C_THROW("Conservative formulation not supported for loma!");
         }
@@ -14835,7 +14827,7 @@ template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType e
 void Discret::Elements::FluidEleCalc<distype,
     enrtype>::multfrac_sub_grid_scales_consistent_residual()
 {
-  if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales &&
+  if (fldpara_->turb_mod_action() == FLUID::multifractal_subgrid_scales &&
       fldpara_->consistent_mfs_residual())
   {
     if (not fldparatimint_->is_genalpha())
@@ -14904,8 +14896,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::store_model_parameters_f
   // do the fastest test first
   if (isowned)
   {
-    if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-        fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky_with_van_Driest_damping)
+    if (fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+        fldpara_->turb_mod_action() == FLUID::smagorinsky_with_van_Driest_damping)
     {
       if (turbmodelparams.get<std::string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
       {
@@ -14923,10 +14915,10 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::store_model_parameters_f
           const double vol = fac_;
 
           // to compare it with the standard Smagorinsky Cs
-          if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
+          if (fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky)
             (*(turbmodelparams.get<std::shared_ptr<std::vector<double>>>(
                 "local_Cs_sum")))[nlayer] += sqrt(Cs_delta_sq) / pow((vol), (1.0 / 3.0));
-          else if (fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky_with_van_Driest_damping)
+          else if (fldpara_->turb_mod_action() == FLUID::smagorinsky_with_van_Driest_damping)
             (*(turbmodelparams.get<std::shared_ptr<std::vector<double>>>(
                 "local_Cs_sum")))[nlayer] += fldpara_->cs() * fldpara_->van_driestdamping();
           else

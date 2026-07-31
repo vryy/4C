@@ -138,8 +138,7 @@ namespace Adapter
     {
       return fluid_->get_dbc_map_extractor();
     }
-    void set_initial_flow_field(
-        const Inpar::FLUID::InitialField initfield, const int startfuncno) override
+    void set_initial_flow_field(const FLUID::InitialField initfield, const int startfuncno) override
     {
       return fluid_->set_initial_flow_field(initfield, startfuncno);
     }
@@ -383,7 +382,7 @@ namespace Adapter
       static std::shared_ptr<FLD::Utils::MapExtractor> ret = nullptr;
       return ret;
     }
-    Inpar::FLUID::TimeIntegrationScheme tim_int_scheme() const override
+    FLUID::TimeIntegrationScheme tim_int_scheme() const override
     {
       return fluid_->tim_int_scheme();
     }
@@ -482,7 +481,7 @@ namespace Adapter
     }
 
     /// return physical type of fluid algorithm
-    Inpar::FLUID::PhysicalType physical_type() const override { return fluid_->physical_type(); }
+    FLUID::PhysicalType physical_type() const override { return fluid_->physical_type(); }
 
    protected:
     std::shared_ptr<Fluid> fluid_;

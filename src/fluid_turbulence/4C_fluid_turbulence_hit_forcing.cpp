@@ -12,10 +12,10 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_implicit_integration.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_fluid_timint_genalpha.hpp"
 #include "4C_fluid_timint_hdg.hpp"
 #include "4C_fluid_xwall.hpp"
-#include "4C_inpar_fluid.hpp"
 
 #include <complex>
 
@@ -37,7 +37,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   HomoIsoTurbForcing::HomoIsoTurbForcing(FluidImplicitTimeInt& timeint)
       : ForcingInterface(),
-        forcing_type_(Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(
+        forcing_type_(Teuchos::getIntegralValue<FLUID::ForcingType>(
             timeint.params_->sublist("TURBULENCE MODEL"), "FORCING_TYPE")),
         discret_(timeint.discret_),
         forcing_(timeint.forcing_),
@@ -238,12 +238,12 @@ namespace FLD
   /*--------------------------------------------------------------*
    | initialize energy spectrum by initial field  rasthofer 05/13 |
    *--------------------------------------------------------------*/
-  void HomoIsoTurbForcing::set_initial_spectrum(Inpar::FLUID::InitialField init_field_type)
+  void HomoIsoTurbForcing::set_initial_spectrum(FLUID::InitialField init_field_type)
   {
-    if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
+    if (forcing_type_ == FLUID::linear_compensation_from_intermediate_spectrum)
     {
 #ifdef USE_TARGET_SPECTRUM
-      if (init_field_type == Inpar::FLUID::initfield_forced_hit_simple_algebraic_spectrum)
+      if (init_field_type == FLUID::initfield_forced_hit_simple_algebraic_spectrum)
       {
         for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
         {
@@ -253,7 +253,7 @@ namespace FLD
             (*energyspectrum_n_)[rr] = 0.0;
         }
       }
-      else if (init_field_type == Inpar::FLUID::initfield_passive_hit_const_input)
+      else if (init_field_type == FLUID::initfield_passive_hit_const_input)
       {
         (*energyspectrum_n_)[0] = 0.0;
         for (std::size_t rr = 1; rr < wavenumbers_->size(); rr++)
@@ -265,7 +265,7 @@ namespace FLD
                 0.1 * pow(2.0, 5.0 / 3.0) * pow((*wavenumbers_)[rr], -5.0 / 3.0);
         }
       }
-      else if (init_field_type == Inpar::FLUID::initfield_hit_comte_bellot_corrsin)
+      else if (init_field_type == FLUID::initfield_hit_comte_bellot_corrsin)
       {
         //----------------------------------------
         // set-up wave numbers
@@ -477,8 +477,8 @@ namespace FLD
         // get local dof id corresponding to the global id
         int lid = discret_->dof_row_map()->lid(dofs[0]);
         // set value
-        if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum or
-            (forcing_type_ == Inpar::FLUID::fixed_power_input and (not is_genalpha_)))
+        if (forcing_type_ == FLUID::linear_compensation_from_intermediate_spectrum or
+            (forcing_type_ == FLUID::fixed_power_input and (not is_genalpha_)))
         {
           (local_u1)[pos] = velnp_->local_values_as_span()[lid];
           // analogously for remaining directions
@@ -670,7 +670,7 @@ namespace FLD
             const double energy =
                 0.5 * (norm((u1_hat)[pos]) + norm((u2_hat)[pos]) + norm((u3_hat)[pos]));
 
-            if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
+            if (forcing_type_ == FLUID::linear_compensation_from_intermediate_spectrum)
             {
               // get wave number
               const double k = sqrt(k_1 * k_1 + k_2 * k_2 + k_3 * k_3);
@@ -685,7 +685,7 @@ namespace FLD
                 }
               }
             }
-            else if (forcing_type_ == Inpar::FLUID::fixed_power_input)
+            else if (forcing_type_ == FLUID::fixed_power_input)
             {
               if ((abs(k_1) < threshold_wavenumber_ and abs(k_2) < threshold_wavenumber_ and
                       abs(k_3) < threshold_wavenumber_) and
@@ -747,7 +747,7 @@ namespace FLD
               }
             }
 
-            if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
+            if (forcing_type_ == FLUID::linear_compensation_from_intermediate_spectrum)
             {
               // compute linear compensation factor from energy spectrum
 
@@ -785,7 +785,7 @@ namespace FLD
                 (*force_fac_)(pos) = (1.0 / (2.0 * E_np)) * (E_np - E_n) / dt_;
               }
             }
-            else if (forcing_type_ == Inpar::FLUID::fixed_power_input)
+            else if (forcing_type_ == FLUID::fixed_power_input)
             {
               // compute power input
 
@@ -1093,7 +1093,7 @@ namespace FLD
   void HomoIsoTurbForcing::time_update_forcing()
   {
 #ifdef TIME_UPDATE_FORCING_SPECTRUM
-    if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
+    if (forcing_type_ == FLUID::linear_compensation_from_intermediate_spectrum)
     {
       // compute E^n+1 from forced solution
       CalculateForcing(0);
@@ -1198,7 +1198,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | initialize energy spectrum by initial field         bk 04/15 |
    *--------------------------------------------------------------*/
-  void HomoIsoTurbForcingHDG::set_initial_spectrum(Inpar::FLUID::InitialField init_field_type)
+  void HomoIsoTurbForcingHDG::set_initial_spectrum(FLUID::InitialField init_field_type)
   {
 #ifdef USE_TARGET_SPECTRUM
     HomoIsoTurbForcing::set_initial_spectrum(init_field_type);
@@ -1253,8 +1253,8 @@ namespace FLD
       Teuchos::ParameterList params;
       params.set<FLD::Action>("action", FLD::interpolate_hdg_for_hit);
 
-      if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum or
-          (forcing_type_ == Inpar::FLUID::fixed_power_input and (not is_genalpha_)))
+      if (forcing_type_ == FLUID::linear_compensation_from_intermediate_spectrum or
+          (forcing_type_ == FLUID::fixed_power_input and (not is_genalpha_)))
       {
         discret_->set_state(1, "intvelnp", *velnp_);
       }
@@ -1489,7 +1489,7 @@ namespace FLD
             const double energy =
                 0.5 * (norm((u1_hat)[pos]) + norm((u2_hat)[pos]) + norm((u3_hat)[pos]));
 
-            if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
+            if (forcing_type_ == FLUID::linear_compensation_from_intermediate_spectrum)
             {
               // get wave number
               const double k = sqrt(k_1 * k_1 + k_2 * k_2 + k_3 * k_3);
@@ -1504,7 +1504,7 @@ namespace FLD
                 }
               }
             }
-            else if (forcing_type_ == Inpar::FLUID::fixed_power_input)
+            else if (forcing_type_ == FLUID::fixed_power_input)
             {
               if ((abs(k_1) < threshold_wavenumber_ and abs(k_2) < threshold_wavenumber_ and
                       abs(k_3) < threshold_wavenumber_) and
@@ -1566,7 +1566,7 @@ namespace FLD
               }
             }
 
-            if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
+            if (forcing_type_ == FLUID::linear_compensation_from_intermediate_spectrum)
             {
               // compute linear compensation factor from energy spectrum
 
@@ -1604,7 +1604,7 @@ namespace FLD
                 (*force_fac_)(pos) = (1.0 / (2.0 * E_np)) * (E_np - E_n) / dt_;
               }
             }
-            else if (forcing_type_ == Inpar::FLUID::fixed_power_input)
+            else if (forcing_type_ == FLUID::fixed_power_input)
             {
               // compute power input
 

@@ -78,7 +78,7 @@ namespace FLD
 
     /// set initial flow field for fluid domains
     void set_initial_flow_field(
-        const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
+        const FLUID::InitialField initfield, const int startfuncno) override;
 
     /// set fluid-fluid interface fixed for current time step
     void set_interface_fixed();

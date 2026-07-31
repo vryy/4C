@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_discretization.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -379,7 +379,7 @@ namespace FLD
       std::shared_ptr<Core::LinAlg::SparseMatrix> sep_enr_;
 
       /// wss calculation type
-      const Inpar::FLUID::WSSType wss_type_;
+      const FLUID::WSSType wss_type_;
 
       /// weighted sum of all prior stresses
       std::shared_ptr<Core::LinAlg::Vector<double>> sum_stresses_;
@@ -471,7 +471,7 @@ namespace FLD
      */
     std::map<int, double> compute_flow_rates(Core::FE::Discretization& dis,
         Core::LinAlg::Vector<double>& velnp, const std::string& condstring,
-        const Inpar::FLUID::PhysicalType physicaltype);
+        const FLUID::PhysicalType physicaltype);
 
     /**
      * \param dis          The discretization, including node distribution and conditions.
@@ -488,7 +488,7 @@ namespace FLD
         Core::LinAlg::Vector<double>& velnp,
         const std::shared_ptr<Core::LinAlg::Vector<double>>& gridvel,
         const std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp, const std::string& condstring,
-        const Inpar::FLUID::PhysicalType physicaltype);
+        const FLUID::PhysicalType physicaltype);
 
     /**
      * \param dis          The discretization, including node distribution and conditions.
@@ -503,7 +503,7 @@ namespace FLD
         const std::shared_ptr<Core::LinAlg::Vector<double>>& velnp,
         const std::shared_ptr<Core::LinAlg::Vector<double>>& gridvel,
         const std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp,
-        const Inpar::FLUID::PhysicalType physicaltype);
+        const FLUID::PhysicalType physicaltype);
 
     /*!
      * \brief proc 0 writes the flow rate values for each condition ID to a file

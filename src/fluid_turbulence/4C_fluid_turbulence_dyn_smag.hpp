@@ -12,7 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_discretization.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_scatra_input.hpp"
@@ -140,7 +140,7 @@ namespace FLD
     //! parameterlist including time params, stabilization params and turbulence sublist
     Teuchos::ParameterList& params_;
     //! flag for physical type of fluid flow
-    Inpar::FLUID::PhysicalType physicaltype_;
+    FLUID::PhysicalType physicaltype_;
     //@}
 
     //! @name control parameters

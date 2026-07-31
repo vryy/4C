@@ -67,25 +67,25 @@ void Discret::Elements::FluidEleParameterTimInt::set_element_time_parameter(
   }
 
   // set flag, time integration scheme
-  timealgo_ = Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(
-      params, "TimeIntegrationScheme");
+  timealgo_ =
+      Teuchos::getIntegralValue<FLUID::TimeIntegrationScheme>(params, "TimeIntegrationScheme");
 
   // set time integration scheme-specific element parameters
-  if (timealgo_ == Inpar::FLUID::timeint_stationary)
+  if (timealgo_ == FLUID::timeint_stationary)
   {
     is_genalpha_ = false;
     is_stationary_ = true;
     is_genalpha_np_ = false;
     is_one_step_theta_ = false;
   }
-  else if (timealgo_ == Inpar::FLUID::timeint_afgenalpha)
+  else if (timealgo_ == FLUID::timeint_afgenalpha)
   {
     is_genalpha_ = true;
     is_stationary_ = false;
     is_genalpha_np_ = false;
     is_one_step_theta_ = false;
   }
-  else if (timealgo_ == Inpar::FLUID::timeint_npgenalpha)
+  else if (timealgo_ == FLUID::timeint_npgenalpha)
   {
     is_genalpha_ = true;
     is_stationary_ = false;
@@ -159,13 +159,13 @@ void Discret::Elements::FluidEleParameterTimInt::set_element_time_parameter(
     afgdt_ = alpha_f_ * gamma_ * dt_;
 
     // timeint_gen_alpha = p(n+1) (Peter's genalpha)
-    if (timealgo_ == Inpar::FLUID::timeint_npgenalpha)
+    if (timealgo_ == FLUID::timeint_npgenalpha)
     {
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
       timefacpre_ = gamma_ / alpha_m_ * dt_;
       timefacrhs_ = gamma_ / alpha_m_ * dt_;
     }
-    else if (timealgo_ == Inpar::FLUID::timeint_afgenalpha)
+    else if (timealgo_ == FLUID::timeint_afgenalpha)
     {
       timefacpre_ = gamma_ * alpha_f_ / alpha_m_ * dt_;
       timefacrhs_ = gamma_ / alpha_m_ * dt_;
@@ -178,19 +178,18 @@ void Discret::Elements::FluidEleParameterTimInt::set_element_time_parameter(
       timefacrhs_ = gamma_ * alpha_f_ / alpha_m_ * dt_;
 
       // set flag, time integration scheme
-      ostalgo_ =
-          Teuchos::getIntegralValue<Inpar::FLUID::OstContAndPress>(params, "ost cont and press");
+      ostalgo_ = Teuchos::getIntegralValue<FLUID::OstContAndPress>(params, "ost cont and press");
       ostnew_ = params.get<bool>("ost new", false);
 
       if (ostnew_)
       {
         // set time integration scheme-specific element parameters
-        if (ostalgo_ == Inpar::FLUID::Cont_impl_Press_impl)
+        if (ostalgo_ == FLUID::Cont_impl_Press_impl)
         {
           is_cont_impl_press_impl_ = true;
           is_cont_impl_press_normal_ = false;
         }
-        else if (ostalgo_ == Inpar::FLUID::Cont_impl_Press_normal)
+        else if (ostalgo_ == FLUID::Cont_impl_Press_normal)
         {
           is_cont_impl_press_impl_ = false;
           is_cont_impl_press_normal_ = true;

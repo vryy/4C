@@ -11,7 +11,7 @@
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_geometry_position_array.hpp"
 #include "4C_fem_nurbs_discretization_utils.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_mat_fourier.hpp"
 #include "4C_mat_sutherland.hpp"
 #include "4C_scatra_ele.hpp"
@@ -155,7 +155,7 @@ void Discret::Elements::ScaTraEleCalcLoma<distype>::mat_sutherland(
   // get also fluid viscosity if subgrid-scale velocity is to be included
   // or multifractal subgrid-scales are used
   if (my::scatrapara_->rb_sub_gr_vel() or
-      my::turbparams_->turb_model() == Inpar::FLUID::multifractal_subgrid_scales)
+      my::turbparams_->turb_model() == FLUID::multifractal_subgrid_scales)
     visc = actmat->compute_viscosity(tempnp);
 
   return;

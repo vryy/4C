@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_discretization.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
@@ -269,13 +269,13 @@ namespace FLD
     double dens_;
 
     //! when and how to update tauw
-    Inpar::FLUID::XWallTauwType tauwtype_;
+    FLUID::XWallTauwType tauwtype_;
 
     //! how to calculate tauw
-    Inpar::FLUID::XWallTauwCalcType tauwcalctype_;
+    FLUID::XWallTauwCalcType tauwcalctype_;
 
     //! how to blend
-    Inpar::FLUID::XWallBlendingType blendingtype_;
+    FLUID::XWallBlendingType blendingtype_;
 
     //! projection
     bool proj_;

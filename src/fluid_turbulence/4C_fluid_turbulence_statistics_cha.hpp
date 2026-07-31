@@ -14,7 +14,7 @@
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fem_nurbs_discretization_control_point.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_scatra_input.hpp"
 
@@ -273,7 +273,7 @@ namespace FLD
     int countrecord_;
 
     //! flag for physical type of fluid flow (standard: incompressible)
-    Inpar::FLUID::PhysicalType physicaltype_;
+    FLUID::PhysicalType physicaltype_;
 
     //! The discretization (required for nodes, dofs etc;)
     std::shared_ptr<Core::FE::Discretization> discret_;

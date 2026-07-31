@@ -52,7 +52,7 @@ void ScaTra::TimIntStationary::init()
   // fine-scale vector
   if (fssgd_ != ScaTra::fssugrdiff_no)
     fsphinp_ = std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
-  if (turbmodel_ != Inpar::FLUID::no_model) FOUR_C_THROW("Turbulence is not stationary problem!");
+  if (turbmodel_ != FLUID::no_model) FOUR_C_THROW("Turbulence is not stationary problem!");
 
   // -------------------------------------------------------------------
   // set element parameters

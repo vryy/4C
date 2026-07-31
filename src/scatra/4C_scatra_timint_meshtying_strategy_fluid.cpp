@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
 ScaTra::MeshtyingStrategyFluid::MeshtyingStrategyFluid(ScaTra::ScaTraTimIntImpl* scatratimint)
-    : MeshtyingStrategyBase(scatratimint), meshtying_(nullptr), type_(Inpar::FLUID::no_meshtying)
+    : MeshtyingStrategyBase(scatratimint), meshtying_(nullptr), type_(FLUID::no_meshtying)
 {
   return;
 }  // ScaTra::MeshtyingStrategyFluid::MeshtyingStrategyFluid
@@ -88,11 +88,11 @@ void ScaTra::MeshtyingStrategyFluid::init_meshtying()
 
   // Important: Meshtying for scalar transport is not well tested!
   // get meshtying type
-  type_ = Teuchos::getIntegralValue<Inpar::FLUID::MeshTying>(
+  type_ = Teuchos::getIntegralValue<FLUID::MeshTying>(
       *(scatratimint_->scatra_parameter_list()), "MESHTYING");
 
   // safety checks
-  if (type_ == Inpar::FLUID::condensed_bmat)
+  if (type_ == FLUID::condensed_bmat)
     FOUR_C_THROW(
         "The 2x2 block solver algorithm for a block matrix system has not been activated yet. Just "
         "do it!");

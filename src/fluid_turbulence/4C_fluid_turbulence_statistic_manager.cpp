@@ -54,7 +54,7 @@ namespace FLD
         mystressmanager_(fluid.stressmanager_),
         flow_(no_special_flow),
         withscatra_(false),
-        turbmodel_(Inpar::FLUID::no_model),
+        turbmodel_(FLUID::no_model),
         subgrid_dissipation_(false),
         inflow_(false),
         statistics_outfilename_(fluid.statistics_outfilename_),
@@ -240,18 +240,18 @@ namespace FLD
               "Smagorinsky_with_van_Driest_damping" ||
           modelparams->get<std::string>("PHYSICAL_MODEL", "no_model") == "Smagorinsky")
       {
-        turbmodel_ = Inpar::FLUID::dynamic_smagorinsky;
+        turbmodel_ = FLUID::dynamic_smagorinsky;
       }
       // check if we want to compute averages of multifractal
       // quantities (N, B)
       else if (modelparams->get<std::string>("PHYSICAL_MODEL", "no_model") ==
                "Multifractal_Subgrid_Scales")
       {
-        turbmodel_ = Inpar::FLUID::multifractal_subgrid_scales;
+        turbmodel_ = FLUID::multifractal_subgrid_scales;
       }
       else if (modelparams->get<std::string>("PHYSICAL_MODEL", "no_model") == "Dynamic_Vreman")
       {
-        turbmodel_ = Inpar::FLUID::dynamic_vreman;
+        turbmodel_ = FLUID::dynamic_vreman;
         // some dummy values into the parameter list
         params_->set<double>("C_vreman", 0.0);
         params_->set<double>("C_vreman_theoretical", 0.0);
@@ -259,7 +259,7 @@ namespace FLD
       }
     }
     else
-      turbmodel_ = Inpar::FLUID::no_model;
+      turbmodel_ = FLUID::no_model;
 
     // parameters for sampling/dumping period
     if (flow_ != no_special_flow)
@@ -342,7 +342,7 @@ namespace FLD
         {
           // add computed dynamic Smagorinsky quantities
           // (effective viscosity etc. used during the computation)
-          if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
+          if (turbmodel_ == FLUID::dynamic_smagorinsky)
           {
             if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
             {
@@ -523,16 +523,16 @@ namespace FLD
               if (scatradis_ != nullptr) FOUR_C_THROW("Not supported!");
             }
 
-            auto time_int_algo = Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(
-                *params_, "time int algo");
+            auto time_int_algo =
+                Teuchos::getIntegralValue<FLUID::TimeIntegrationScheme>(*params_, "time int algo");
 
-            if (time_int_algo == Inpar::FLUID::timeint_afgenalpha or
-                time_int_algo == Inpar::FLUID::timeint_npgenalpha)
+            if (time_int_algo == FLUID::timeint_afgenalpha or
+                time_int_algo == FLUID::timeint_npgenalpha)
             {
               statevecs.insert(
                   std::pair<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>(
                       "velaf", myvelaf_));
-              if (time_int_algo == Inpar::FLUID::timeint_npgenalpha)
+              if (time_int_algo == FLUID::timeint_npgenalpha)
                 statevecs.insert(
                     std::pair<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>(
                         "velnp", myvelnp_));
@@ -566,19 +566,19 @@ namespace FLD
                       "hist", myscatrahist_));
             }
 
-            if (Teuchos::getIntegralValue<Inpar::FLUID::FineSubgridVisc>(
+            if (Teuchos::getIntegralValue<FLUID::FineSubgridVisc>(
                     params_->sublist("TURBULENCE MODEL"), "FSSUGRVISC") !=
-                    Inpar::FLUID::FineSubgridVisc::no_fssgv or
-                turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
+                    FLUID::FineSubgridVisc::no_fssgv or
+                turbmodel_ == FLUID::multifractal_subgrid_scales)
             {
               statevecs.insert(
                   std::pair<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>(
                       "fsvelaf", myfsvelaf_));
               if (myfsvelaf_ == nullptr) FOUR_C_THROW("Have not got fsvel!");
 
-              if (Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(
-                      *params_, "Physical Type") == Inpar::FLUID::loma and
-                  turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
+              if (Teuchos::getIntegralValue<FLUID::PhysicalType>(*params_, "Physical Type") ==
+                      FLUID::loma and
+                  turbmodel_ == FLUID::multifractal_subgrid_scales)
               {
                 statevecs.insert(
                     std::pair<std::string, std::shared_ptr<Core::LinAlg::Vector<double>>>(
@@ -632,18 +632,18 @@ namespace FLD
         std::cout << "\n";
       }
 
-      if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and inflow_ == false and
+      if (turbmodel_ == FLUID::multifractal_subgrid_scales and inflow_ == false and
           myxwall_ == nullptr)
       {
-        auto time_int_scheme = Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(
-            *params_, "time int algo");
+        auto time_int_scheme =
+            Teuchos::getIntegralValue<FLUID::TimeIntegrationScheme>(*params_, "time int algo");
         switch (flow_)
         {
           case channel_flow_of_height_2:
           {
             // add parameters of multifractal subgrid-scales model
-            if (time_int_scheme == Inpar::FLUID::timeint_afgenalpha or
-                time_int_scheme == Inpar::FLUID::timeint_npgenalpha)
+            if (time_int_scheme == FLUID::timeint_afgenalpha or
+                time_int_scheme == FLUID::timeint_npgenalpha)
               statistics_channel_->add_model_params_multifractal(myvelaf_, myfsvelaf_, false);
             else
               statistics_channel_->add_model_params_multifractal(myvelnp_, myfsvelaf_, false);
@@ -652,8 +652,8 @@ namespace FLD
           case scatra_channel_flow_of_height_2:
           {
             // add parameters of multifractal subgrid-scales model
-            if (time_int_scheme == Inpar::FLUID::timeint_afgenalpha or
-                time_int_scheme == Inpar::FLUID::timeint_npgenalpha)
+            if (time_int_scheme == FLUID::timeint_afgenalpha or
+                time_int_scheme == FLUID::timeint_npgenalpha)
               statistics_channel_->add_model_params_multifractal(myvelaf_, myfsvelaf_, true);
             else
               statistics_channel_->add_model_params_multifractal(myvelnp_, myfsvelaf_, false);
@@ -916,7 +916,7 @@ namespace FLD
     }  // end step is in sampling period
 
     if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 and
-        turbmodel_ == Inpar::FLUID::dynamic_vreman)
+        turbmodel_ == FLUID::dynamic_vreman)
     {
       std::string fnamevreman(statistics_outfilename_);
 

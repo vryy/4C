@@ -7,9 +7,9 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_scatra_ele.hpp"
@@ -94,7 +94,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter
   }
 
   // calculate vreman part
-  if (turbparams_->turb_model() == Inpar::FLUID::dynamic_vreman)
+  if (turbparams_->turb_model() == FLUID::dynamic_vreman)
   {
     if (nsd_ == 3)
     {
@@ -640,7 +640,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_subgr_diff(
 
   // all-scale subgrid diffusivity due to Smagorinsky model divided by
   // turbulent Prandtl number
-  if (turbparams_->turb_model() == Inpar::FLUID::smagorinsky)
+  if (turbparams_->turb_model() == FLUID::smagorinsky)
   {
     //
     // SMAGORINSKY MODEL
@@ -681,7 +681,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_subgr_diff(
     // of subgrid-scale velocity when turbulence model is applied
     if (scatrapara_->rb_sub_gr_vel()) visc += sgdiff * tpn_;
   }
-  else if (turbparams_->turb_model() == Inpar::FLUID::dynamic_smagorinsky)
+  else if (turbparams_->turb_model() == FLUID::dynamic_smagorinsky)
   {
     // compute (all-scale) rate of strain
     double rateofstrain = -1.0e30;
@@ -691,7 +691,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_subgr_diff(
     // remark: for dynamic estimation, tpn corresponds to (Cs*h)^2 / Pr_t
     sgdiff = densnp * rateofstrain * tpn_;
   }
-  else if (turbparams_->turb_model() == Inpar::FLUID::dynamic_vreman)
+  else if (turbparams_->turb_model() == FLUID::dynamic_vreman)
   {
     if (nsd_ == 3)
     {
@@ -1333,7 +1333,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::store_model_parameters_
 {
   if (isowned)
   {
-    if (turbparams_->turb_model() == Inpar::FLUID::dynamic_smagorinsky)
+    if (turbparams_->turb_model() == FLUID::dynamic_smagorinsky)
     {
       if (turbulencelist.get<std::string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
       {
@@ -1422,7 +1422,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
   //    if (params.get<bool>("turbulent inflow",false))
   //    {
   //      if (ScaTra::inflow_element(ele))
-  //        turbmodel_ = Inpar::FLUID::no_model;
+  //        turbmodel_ = FLUID::no_model;
   //    }
 
   // set time integration
@@ -1432,7 +1432,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
   tpn_ = turbparams_->tpn();
 
   // if we have a dynamic model,we overwrite this value by a local element-based one here
-  if (turbparams_->turb_model() == Inpar::FLUID::dynamic_smagorinsky)
+  if (turbparams_->turb_model() == FLUID::dynamic_smagorinsky)
   {
     Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
     // remark: for dynamic estimation, this returns (Cs*h)^2 / Pr_t
@@ -1516,7 +1516,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
 
   // get fine-scale values
   if (turbparams_->which_fssgd() == ScaTra::fssugrdiff_smagorinsky_small or
-      turbparams_->turb_model() == Inpar::FLUID::multifractal_subgrid_scales)
+      turbparams_->turb_model() == FLUID::multifractal_subgrid_scales)
   {
     // get fine scale scalar field
     std::shared_ptr<const Core::LinAlg::Vector<double>> gfsphinp =
@@ -1620,9 +1620,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
   {
     // calculation of all-scale subgrid diffusivity (by, e.g.,
     // Smagorinsky model) at element center
-    if (turbparams_->turb_model() == Inpar::FLUID::smagorinsky or
-        turbparams_->turb_model() == Inpar::FLUID::dynamic_smagorinsky or
-        turbparams_->turb_model() == Inpar::FLUID::dynamic_vreman)
+    if (turbparams_->turb_model() == FLUID::smagorinsky or
+        turbparams_->turb_model() == FLUID::dynamic_smagorinsky or
+        turbparams_->turb_model() == FLUID::dynamic_vreman)
     {
       calc_subgr_diff(visc, vol, 0, densnp[0]);
     }
@@ -1650,7 +1650,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
   Core::LinAlg::Matrix<nsd_, 1> B_mfs(Core::LinAlg::Initialization::zero);
   // coefficient D of fine-scale scalar
   double D_mfs = 0.0;
-  if (turbparams_->turb_model() == Inpar::FLUID::multifractal_subgrid_scales)
+  if (turbparams_->turb_model() == FLUID::multifractal_subgrid_scales)
   {
     if (not turbparams_->bd_gp())
     {
@@ -1713,7 +1713,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
 
     // get fine-scale velocity and its derivatives at integration point
     Core::LinAlg::Matrix<nsd_, 1> fsvelint(Core::LinAlg::Initialization::zero);
-    if (turbparams_->turb_model() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (turbparams_->turb_model() == FLUID::multifractal_subgrid_scales)
       fsvelint.multiply(efsvel_, funct_);
 
     // compute gradient of fine-scale part of scalar value
@@ -1740,9 +1740,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
 
       // calculation of all-scale subgrid diffusivity (by, e.g.,
       // Smagorinsky model) at element center
-      if (turbparams_->turb_model() == Inpar::FLUID::smagorinsky or
-          turbparams_->turb_model() == Inpar::FLUID::dynamic_smagorinsky or
-          turbparams_->turb_model() == Inpar::FLUID::dynamic_vreman)
+      if (turbparams_->turb_model() == FLUID::smagorinsky or
+          turbparams_->turb_model() == FLUID::dynamic_smagorinsky or
+          turbparams_->turb_model() == FLUID::dynamic_vreman)
       {
         calc_subgr_diff(visc, vol, 0, densnp[0]);
       }
@@ -1783,7 +1783,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     double mfsvdiv(0.0);
     double mfssgphi(0.0);
     Core::LinAlg::Matrix<nsd_, 1> mfsggradphi(Core::LinAlg::Initialization::zero);
-    if (turbparams_->turb_model() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (turbparams_->turb_model() == FLUID::multifractal_subgrid_scales)
     {
       if (turbparams_->bd_gp())
         // calculate model coefficients
@@ -1828,7 +1828,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     // Sutherland law and progress variable, for the time being)
     //    if (update_mat_)
     //    {
-    //      if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
+    //      if (turbmodel_ == FLUID::multifractal_subgrid_scales)
     //        update_material_params(ele,mfssgphi_[0],0);
     //      else
     //        update_material_params(ele,sgphi_[0],0);
@@ -1889,7 +1889,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     //---------------------------------------------------------------
 
     // dissipation multifractal subgrid-scales
-    if (turbparams_->turb_model() == Inpar::FLUID::multifractal_subgrid_scales)
+    if (turbparams_->turb_model() == FLUID::multifractal_subgrid_scales)
     {
       eps_mfs -= densnp[0] *
                  (mfssgphi * convelint.dot(gradphi) + phinp * mfsgvelint.dot(gradphi) +
@@ -1915,8 +1915,8 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     //---------------------------------------------------------------
 
     // dissipation (Smagorinsky)
-    if (scatrapara_->assgd() or turbparams_->turb_model() == Inpar::FLUID::smagorinsky or
-        turbparams_->turb_model() == Inpar::FLUID::dynamic_smagorinsky)
+    if (scatrapara_->assgd() or turbparams_->turb_model() == FLUID::smagorinsky or
+        turbparams_->turb_model() == FLUID::dynamic_smagorinsky)
     {
       eps_smag += diffmanager_->get_sub_gr_diff(0) * gradphi.dot(gradphi) * fac;
     }

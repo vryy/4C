@@ -161,8 +161,7 @@ namespace Discret
       Core::LinAlg::Matrix<nsd_, nsd_> grad_u_err(Core::LinAlg::Initialization::zero);
       double p_err = 0.0;
 
-      const auto calcerr =
-          Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(params, "calculate error");
+      const auto calcerr = Teuchos::getIntegralValue<FLUID::CalcError>(params, "calculate error");
       const int calcerrfunctno = params.get<int>("error function number");
 
       const double t = my::fldparatimint_->time();
@@ -352,10 +351,10 @@ namespace Discret
       // Compute analytical solution
       switch (calcerr)
       {
-        case Inpar::FLUID::beltrami_stat_stokes:
-        case Inpar::FLUID::beltrami_stat_navier_stokes:
-        case Inpar::FLUID::beltrami_instat_stokes:
-        case Inpar::FLUID::beltrami_instat_navier_stokes:
+        case FLUID::beltrami_stat_stokes:
+        case FLUID::beltrami_stat_navier_stokes:
+        case FLUID::beltrami_instat_stokes:
+        case FLUID::beltrami_instat_navier_stokes:
         {
           // function evaluation requires a 3D position vector!!
           double position[3];
@@ -416,7 +415,7 @@ namespace Discret
         }
         break;
 
-        case Inpar::FLUID::beltrami_flow:
+        case FLUID::beltrami_flow:
         {
           if (nsd_ == 3)
           {
@@ -479,10 +478,10 @@ namespace Discret
         }
         break;
 
-        case Inpar::FLUID::kimmoin_stat_stokes:
-        case Inpar::FLUID::kimmoin_stat_navier_stokes:
-        case Inpar::FLUID::kimmoin_instat_stokes:
-        case Inpar::FLUID::kimmoin_instat_navier_stokes:
+        case FLUID::kimmoin_stat_stokes:
+        case FLUID::kimmoin_stat_navier_stokes:
+        case FLUID::kimmoin_instat_stokes:
+        case FLUID::kimmoin_instat_navier_stokes:
         {
           // function evaluation requires a 3D position vector!!
           double position[3];
@@ -506,13 +505,12 @@ namespace Discret
 
           // evaluate velocity and pressure
           // evaluate the velocity gradient
-          if (calcerr == Inpar::FLUID::kimmoin_stat_stokes or
-              calcerr == Inpar::FLUID::kimmoin_stat_navier_stokes)
+          if (calcerr == FLUID::kimmoin_stat_stokes or calcerr == FLUID::kimmoin_stat_navier_stokes)
           {
             is_stationary = true;
           }
-          else if (calcerr == Inpar::FLUID::kimmoin_instat_stokes or
-                   calcerr == Inpar::FLUID::kimmoin_instat_navier_stokes)
+          else if (calcerr == FLUID::kimmoin_instat_stokes or
+                   calcerr == FLUID::kimmoin_instat_navier_stokes)
           {
             is_stationary = false;
           }
@@ -555,7 +553,7 @@ namespace Discret
         }
         break;
 
-        case Inpar::FLUID::shear_flow:
+        case FLUID::shear_flow:
         {
           const double maxvel = 1.0;
           const double height = 1.0;
@@ -577,7 +575,7 @@ namespace Discret
         }
         break;
 
-        case Inpar::FLUID::gravitation:
+        case FLUID::gravitation:
         {
           const double gravity = 10.0;
           const double height = 1.0;
@@ -601,7 +599,7 @@ namespace Discret
         }
         break;
 
-        case Inpar::FLUID::channel2D:
+        case FLUID::channel2D:
         {
           const double maxvel = 1.25;
           const double height = 1.0;
@@ -623,7 +621,7 @@ namespace Discret
         }
         break;
 
-        case Inpar::FLUID::byfunct:
+        case FLUID::byfunct:
         {
           // function evaluation requires a 3D position vector!!
           double position[3];
@@ -786,8 +784,7 @@ namespace Discret
       if (cond_manager == nullptr) FOUR_C_THROW("set the condition manager!");
 #endif
 
-      const auto calcerr =
-          Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(params, "calculate error");
+      const auto calcerr = Teuchos::getIntegralValue<FLUID::CalcError>(params, "calculate error");
       const int calcerrfunctno = params.get<int>("error function number");
 
       const double t = my::fldparatimint_->time();
@@ -839,7 +836,7 @@ namespace Discret
       // ---------------------------------------------------------------------
       // set element advective field for Oseen problems
       // ---------------------------------------------------------------------
-      if (my::fldpara_->physical_type() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
+      if (my::fldpara_->physical_type() == FLUID::oseen) my::set_advective_vel_oseen(ele);
 
 
       // ---------------------------------------------------------------------
@@ -1374,7 +1371,7 @@ namespace Discret
       // ---------------------------------------------------------------------
       // set element advective field for Oseen problems
       // ---------------------------------------------------------------------
-      if (my::fldpara_->physical_type() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
+      if (my::fldpara_->physical_type() == FLUID::oseen) my::set_advective_vel_oseen(ele);
 
       // compute characteristic element length based on the background element
       const double h_k = XFEM::Utils::compute_char_ele_length<distype>(
@@ -3249,7 +3246,7 @@ namespace Discret
       // ---------------------------------------------------------------------
       // set element advective field for Oseen problems
       // ---------------------------------------------------------------------
-      if (my::fldpara_->physical_type() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
+      if (my::fldpara_->physical_type() == FLUID::oseen) my::set_advective_vel_oseen(ele);
 
 
       //-----------------------------------------------------------------------------------

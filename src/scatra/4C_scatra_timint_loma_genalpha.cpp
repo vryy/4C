@@ -326,7 +326,7 @@ void ScaTra::TimIntLomaGenAlpha::read_restart(
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntLomaGenAlpha::dynamic_computation_of_cs()
 {
-  if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
+  if (turbmodel_ == FLUID::dynamic_smagorinsky)
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
@@ -344,7 +344,7 @@ void ScaTra::TimIntLomaGenAlpha::dynamic_computation_of_cs()
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntLomaGenAlpha::dynamic_computation_of_cv()
 {
-  if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
+  if (turbmodel_ == FLUID::dynamic_vreman)
   {
     const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(

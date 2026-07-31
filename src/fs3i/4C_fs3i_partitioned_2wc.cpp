@@ -138,8 +138,7 @@ void FS3I::PartFS3I2Wc::initial_calculations()
   // for constant thermodynamic pressure in low-Mach-number flow and
   // for temperature-dependent water, thermodynamic pressure is set
   // to a constant here and never touched again
-  if ((fsi_->fluid_field()->physical_type() == Inpar::FLUID::tempdepwater) &&
-      (consthermpress_ != "Yes"))
+  if ((fsi_->fluid_field()->physical_type() == FLUID::tempdepwater) && (consthermpress_ != "Yes"))
     FOUR_C_THROW(
         "Constant thermodynamic pressure required if TFSI algorithm is used with "
         "temperature-dependent water!");
@@ -272,9 +271,9 @@ void FS3I::PartFS3I2Wc::set_scatra_values_in_fsi()
   // TO DO: check dynamic cast with "Iter" routine
   switch (fsi_->fluid_field()->tim_int_scheme())
   {
-    case Inpar::FLUID::timeint_afgenalpha:
+    case FLUID::timeint_afgenalpha:
     {
-      if (fsi_->fluid_field()->physical_type() == Inpar::FLUID::tempdepwater)
+      if (fsi_->fluid_field()->physical_type() == FLUID::tempdepwater)
         fsi_->fluid_field()->set_iter_scalar_fields(
             fluid_scalar_to_fluid(scatravec_[0]->scatra_field()->phiaf()),
             fluid_scalar_to_fluid(scatravec_[0]->scatra_field()->phiam()),
@@ -297,9 +296,9 @@ void FS3I::PartFS3I2Wc::set_scatra_values_in_fsi()
                 ->discretization());
     }
     break;
-    case Inpar::FLUID::timeint_one_step_theta:
+    case FLUID::timeint_one_step_theta:
     {
-      if (fsi_->fluid_field()->physical_type() == Inpar::FLUID::tempdepwater)
+      if (fsi_->fluid_field()->physical_type() == FLUID::tempdepwater)
         fsi_->fluid_field()->set_iter_scalar_fields(
             fluid_scalar_to_fluid(scatravec_[0]->scatra_field()->phinp()),
             fluid_scalar_to_fluid(scatravec_[0]->scatra_field()->phin()),

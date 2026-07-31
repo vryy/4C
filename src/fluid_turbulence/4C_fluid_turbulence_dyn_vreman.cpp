@@ -27,7 +27,7 @@ FLD::Vreman::Vreman(
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
+      physicaltype_(Teuchos::getIntegralValue<FLUID::PhysicalType>(params_, "Physical Type"))
 {
   boxf_ = std::make_shared<FLD::Boxfilter>(discret_, params_);
   // Initialize Boxfilter

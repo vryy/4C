@@ -12,7 +12,7 @@
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
 #include "4C_fluid_ele_interface.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_utils_enum.hpp"
 

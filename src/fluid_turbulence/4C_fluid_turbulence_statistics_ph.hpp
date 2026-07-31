@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_discretization.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"

@@ -1044,7 +1044,7 @@ namespace FLD
       }
     }
 
-    if (fldpara->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
+    if (fldpara->turb_mod_action() == FLUID::dynamic_smagorinsky)
     {
       // get velocity (n+alpha_F/1,i) derivatives at integration point
       //
@@ -1122,7 +1122,7 @@ namespace FLD
     // determine contribution to patch volume
     volume = wquad * det;
 
-    if (not(fldpara->turb_mod_action() == Inpar::FLUID::dynamic_vreman))
+    if (not(fldpara->turb_mod_action() == FLUID::dynamic_vreman))
     {
       for (int rr = 0; rr < NSD; ++rr)
       {
@@ -1131,8 +1131,8 @@ namespace FLD
         // add contribution to integral over velocities
         (vel_hat)[rr] += tmp;
         // add contribution to integral over dens times velocity
-        if (fldpara->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky and
-            fldpara->physical_type() == Inpar::FLUID::loma)
+        if (fldpara->turb_mod_action() == FLUID::dynamic_smagorinsky and
+            fldpara->physical_type() == FLUID::loma)
           (densvel_hat)[rr] += dens * tmp;
 
         // add contribution to integral over reynolds stresses
@@ -1144,7 +1144,7 @@ namespace FLD
     }
 
 
-    if (fldpara->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
+    if (fldpara->turb_mod_action() == FLUID::dynamic_smagorinsky)
     {
       // add contribution to integral over the modeled part of subgrid
       // scale stresses
@@ -1154,14 +1154,14 @@ namespace FLD
         for (int nn = 0; nn < NSD; ++nn)
         {
           (modeled_subgrid_stress)[rr][nn] += rateofstrain_volume * epsilon(rr, nn);
-          if (fldpara->physical_type() == Inpar::FLUID::loma and nn == rr)
+          if (fldpara->physical_type() == FLUID::loma and nn == rr)
             (modeled_subgrid_stress)[rr][nn] -= 1.0 / 3.0 * rateofstrain_volume * vdiv;
         }
       }
 
       // add additional scalar quantities for loma
       // i.e., filtered density and filtered density times strainrate^2
-      if (fldpara->physical_type() == Inpar::FLUID::loma)
+      if (fldpara->physical_type() == FLUID::loma)
       {
         dens_hat = dens * volume;
         dens_strainrate_hat = dens * volume * rateofstrain * rateofstrain;
@@ -1169,7 +1169,7 @@ namespace FLD
     }
 
 
-    if (fldpara->turb_mod_action() == Inpar::FLUID::dynamic_vreman)
+    if (fldpara->turb_mod_action() == FLUID::dynamic_vreman)
     {
       // In the literature about the Vreman model, the indices i and j are swapped compared to the
       // standard definition in 4C. All variables used for the Vreman model are used as in
@@ -1363,7 +1363,7 @@ namespace FLD
       }
     }
 
-    if (fldpara->physical_type() == Inpar::FLUID::loma)
+    if (fldpara->physical_type() == FLUID::loma)
     {
       for (int nn = 0; nn < iel; ++nn)
       {
@@ -1613,7 +1613,7 @@ namespace FLD
     double densint_hat = 0.0;
     double densstrainrateint_hat = 0.0;
 
-    if (fldpara->physical_type() == Inpar::FLUID::loma)
+    if (fldpara->physical_type() == FLUID::loma)
     {
       // get filtered density times velocity at integration point
       /*
@@ -1764,7 +1764,7 @@ namespace FLD
         M_ij(rr, mm) = filtered_modeled_subgrid_stress_hat(rr, mm) -
                        filterwidthratio * filterwidthratio * densint_hat * rateofstrain_hat *
                            epsilon_hat(rr, mm);
-        if (fldpara->physical_type() == Inpar::FLUID::loma and rr == mm)
+        if (fldpara->physical_type() == FLUID::loma and rr == mm)
           M_ij(rr, mm) += filterwidthratio * filterwidthratio * densint_hat * rateofstrain_hat *
                           1.0 / 3.0 * div_vel_hat;
       }
@@ -1782,7 +1782,7 @@ namespace FLD
     }
 
     // calculate CI for trace of modeled subgrid-stress tensor (loma only)
-    if (fldpara->physical_type() == Inpar::FLUID::loma)
+    if (fldpara->physical_type() == FLUID::loma)
     {
       CI_numerator = restress_hat(0, 0) + restress_hat(1, 1) + restress_hat(2, 2) -
                      densvelint_hat.dot(densvelint_hat) / densint_hat;
@@ -2557,7 +2557,7 @@ namespace FLD
         gamma = 4.0 / 3.0;
       else  // Pr >> 1
       {
-        if (fldpara->physical_type() == Inpar::FLUID::loma) FOUR_C_THROW("Loma with Pr>>1?");
+        if (fldpara->physical_type() == FLUID::loma) FOUR_C_THROW("Loma with Pr>>1?");
         if (Nvel[0] < 1.0)  // Sc >> 1 and fluid fully resolved, i.e., case 2 (ii)
           gamma = 2.0;
         else  // Sc >> 1 and fluid not fully resolved, i.e., case 2 (i)
@@ -2608,8 +2608,8 @@ namespace FLD
     // calculate subgrid-viscosity, if small-scale eddy-viscosity term is included
     double sgvisc = 0.0;
     if (params.sublist("TURBULENCE MODEL")
-            .get<Inpar::FLUID::FineSubgridVisc>("FSSUGRVISC",
-                Inpar::FLUID::FineSubgridVisc::no_fssgv) != Inpar::FLUID::FineSubgridVisc::no_fssgv)
+            .get<FLUID::FineSubgridVisc>("FSSUGRVISC", FLUID::FineSubgridVisc::no_fssgv) !=
+        FLUID::FineSubgridVisc::no_fssgv)
     {
       // get filter width and Smagorinsky-coefficient
       const double hk_sgvisc = std::pow(vol, (1.0 / nsd));
@@ -2628,14 +2628,12 @@ namespace FLD
       fsvelintderxy.multiply_nt(efsvel, derxy);
 
       if (params.sublist("TURBULENCE MODEL")
-              .get<Inpar::FLUID::FineSubgridVisc>(
-                  "FSSUGRVISC", Inpar::FLUID::FineSubgridVisc::no_fssgv) ==
-          Inpar::FLUID::FineSubgridVisc::smagorinsky_all)
+              .get<FLUID::FineSubgridVisc>("FSSUGRVISC", FLUID::FineSubgridVisc::no_fssgv) ==
+          FLUID::FineSubgridVisc::smagorinsky_all)
         velderxy = velintderxy;
       else if (params.sublist("TURBULENCE MODEL")
-                   .get<Inpar::FLUID::FineSubgridVisc>(
-                       "FSSUGRVISC", Inpar::FLUID::FineSubgridVisc::no_fssgv) ==
-               Inpar::FLUID::FineSubgridVisc::smagorinsky_small)
+                   .get<FLUID::FineSubgridVisc>("FSSUGRVISC", FLUID::FineSubgridVisc::no_fssgv) ==
+               FLUID::FineSubgridVisc::smagorinsky_small)
         velderxy = fsvelintderxy;
       else
         FOUR_C_THROW("fssgvisc-type unknown");

@@ -9,9 +9,9 @@
 
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_visualization_parameters.hpp"
 #include "4C_linalg_map.hpp"
@@ -42,10 +42,8 @@ FLD::TimInt::TimInt(const std::shared_ptr<Core::FE::Discretization>& discret,
       itemax_(params_->get<int>("max nonlin iter steps")),
       uprestart_(params_->get("write restart every", -1)),
       upres_(params_->get("write solution every", -1)),
-      timealgo_(Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(
-          *params_, "time int algo")),
-      physicaltype_(
-          Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(*params_, "Physical Type")),
+      timealgo_(Teuchos::getIntegralValue<FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
+      physicaltype_(Teuchos::getIntegralValue<FLUID::PhysicalType>(*params_, "Physical Type")),
       myrank_(Core::Communication::my_mpi_rank(discret_->get_comm())),
       updateprojection_(false),
       projector_(nullptr),

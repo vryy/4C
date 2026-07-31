@@ -51,10 +51,10 @@ FLD::XWall::XWall(std::shared_ptr<Core::FE::Discretization> dis, int nsd,
 
   // some exclusions and safety checks:
   if (nsd != 3) FOUR_C_THROW("Only 3D problems considered in xwall modelling!");
-  if (Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
-          Inpar::FLUID::timeint_afgenalpha &&
-      (Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
-          Inpar::FLUID::timeint_npgenalpha))
+  if (Teuchos::getIntegralValue<FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
+          FLUID::timeint_afgenalpha &&
+      (Teuchos::getIntegralValue<FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
+          FLUID::timeint_npgenalpha))
     FOUR_C_THROW(
         "Use Af-Genalpha for time integration in combination with xwall wall modeling. There would "
         "be additional updates necessary otherwise");
@@ -65,9 +65,9 @@ FLD::XWall::XWall(std::shared_ptr<Core::FE::Discretization> dis, int nsd,
   std::string tauwtype = params_->sublist("WALL MODEL").get<std::string>("Tauw_Type", "constant");
 
   if (tauwtype == "constant")
-    tauwtype_ = Inpar::FLUID::constant;
+    tauwtype_ = FLUID::constant;
   else if (tauwtype == "between_steps")
-    tauwtype_ = Inpar::FLUID::between_steps;
+    tauwtype_ = FLUID::between_steps;
   else
     FOUR_C_THROW("unknown Tauw_Type");
 
@@ -75,11 +75,11 @@ FLD::XWall::XWall(std::shared_ptr<Core::FE::Discretization> dis, int nsd,
       params_->sublist("WALL MODEL").get<std::string>("Tauw_Calc_Type", "residual");
 
   if (tauwcalctype == "residual")
-    tauwcalctype_ = Inpar::FLUID::residual;
+    tauwcalctype_ = FLUID::residual;
   else if (tauwcalctype == "gradient")
-    tauwcalctype_ = Inpar::FLUID::gradient;
+    tauwcalctype_ = FLUID::gradient;
   else if (tauwcalctype == "gradient_to_residual")
-    tauwcalctype_ = Inpar::FLUID::gradient_to_residual;
+    tauwcalctype_ = FLUID::gradient_to_residual;
   else
     FOUR_C_THROW("unknown Tauw_Calc_Type");
 
@@ -117,9 +117,9 @@ FLD::XWall::XWall(std::shared_ptr<Core::FE::Discretization> dis, int nsd,
       params_->sublist("WALL MODEL").get<std::string>("Blending_Type", "none");
 
   if (blendingtype == "none")
-    blendingtype_ = Inpar::FLUID::none;
+    blendingtype_ = FLUID::none;
   else if (blendingtype == "ramp_function")
-    blendingtype_ = Inpar::FLUID::ramp_function;
+    blendingtype_ = FLUID::ramp_function;
   else
     FOUR_C_THROW("unknown Blending_Type");
 
@@ -133,10 +133,10 @@ FLD::XWall::XWall(std::shared_ptr<Core::FE::Discretization> dis, int nsd,
     smooth_res_aggregation_ = false;
 
   switch_step_ = params_->sublist("WALL MODEL").get<int>("Switch_Step");
-  if (tauwcalctype_ == Inpar::FLUID::gradient_to_residual && switch_step_ < 2)
+  if (tauwcalctype_ == FLUID::gradient_to_residual && switch_step_ < 2)
     FOUR_C_THROW("provide reasonable Switch_Step if you want to use gradient_to_residual");
 
-  if (smooth_res_aggregation_ && tauwcalctype_ == Inpar::FLUID::gradient)
+  if (smooth_res_aggregation_ && tauwcalctype_ == FLUID::gradient)
     FOUR_C_THROW(
         "smoothing of tauw works only for residual-based tauw, as the residual is smoothed");
 
@@ -533,7 +533,7 @@ void FLD::XWall::init_toggle_vector()
       }
       else
       {
-        if (blendingtype_ != Inpar::FLUID::ramp_function)
+        if (blendingtype_ != FLUID::ramp_function)
         {
           xtoggleloc_->replace_local_value(j, 0.7);
         }
@@ -869,8 +869,8 @@ void FLD::XWall::update_tau_w(int step, std::shared_ptr<Core::LinAlg::Vector<dou
   {
     wss = restart_wss_;
   }
-  else if (((tauwcalctype_ == Inpar::FLUID::gradient_to_residual && step >= switch_step_) ||
-               (tauwcalctype_ != Inpar::FLUID::gradient_to_residual && step > 1)))
+  else if (((tauwcalctype_ == FLUID::gradient_to_residual && step >= switch_step_) ||
+               (tauwcalctype_ != FLUID::gradient_to_residual && step > 1)))
   {
     if (mystressmanager_ == nullptr) FOUR_C_THROW("wssmanager not available in xwall");
     // fix nodal forces on dirichlet inflow surfaces if desired
@@ -879,14 +879,14 @@ void FLD::XWall::update_tau_w(int step, std::shared_ptr<Core::LinAlg::Vector<dou
 
   switch (tauwtype_)
   {
-    case Inpar::FLUID::constant:  // works
+    case FLUID::constant:  // works
     {
       if (step == 1) calc_mk();
       // tauw_ is constant and inctauw_ is zero
       return;
     }
     break;
-    case Inpar::FLUID::between_steps:
+    case FLUID::between_steps:
     {
       inctauw_->put_scalar(0.0);
 
@@ -929,7 +929,7 @@ void FLD::XWall::update_tau_w(int step, std::shared_ptr<Core::LinAlg::Vector<dou
   if (proj_)
   {
     if (myrank_ == 0) std::cout << "  L2-project... ";
-    if (tauwtype_ == Inpar::FLUID::between_steps)
+    if (tauwtype_ == FLUID::between_steps)
     {
       l2_project_vector(*veln, nullptr, accn);
 
@@ -962,12 +962,12 @@ void FLD::XWall::calc_tau_w(
   Core::LinAlg::Vector<double> newtauw2(*xwallrownodemap_, true);
   Core::LinAlg::Vector<double> tauw(*(discret_->node_col_map()), true);
 
-  if (tauwcalctype_ == Inpar::FLUID::gradient_to_residual && switch_step_ == step && myrank_ == 0)
+  if (tauwcalctype_ == FLUID::gradient_to_residual && switch_step_ == step && myrank_ == 0)
     std::cout << "\n switching from gradient to residual \n" << std::endl;
 
 
-  if (tauwcalctype_ == Inpar::FLUID::residual ||
-      (tauwcalctype_ == Inpar::FLUID::gradient_to_residual && step >= switch_step_))
+  if (tauwcalctype_ == FLUID::residual ||
+      (tauwcalctype_ == FLUID::gradient_to_residual && step >= switch_step_))
   {
     FOUR_C_ASSERT_ALWAYS(wss, "No wall shear stress given.");
     for (int lnodeid = 0; lnodeid < dircolnodemap_->num_my_elements(); lnodeid++)
@@ -997,8 +997,8 @@ void FLD::XWall::calc_tau_w(
       }
     }
   }
-  else if (tauwcalctype_ == Inpar::FLUID::gradient ||
-           (tauwcalctype_ == Inpar::FLUID::gradient_to_residual && step < switch_step_))
+  else if (tauwcalctype_ == FLUID::gradient ||
+           (tauwcalctype_ == FLUID::gradient_to_residual && step < switch_step_))
   {
     // necessary to set right state (the maps of the state vector and discretization have to be
     // equal)
@@ -1715,7 +1715,7 @@ void FLD::XWallAleFSI::update_tau_w(int step,
 {
   update_w_dist_wale();
   FLD::XWall::update_tau_w(step, trueresidual, itnum, accn, velnp, veln);
-  if (tauwtype_ == Inpar::FLUID::constant)
+  if (tauwtype_ == FLUID::constant)
   {
     if (proj_)
     {

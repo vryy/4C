@@ -76,7 +76,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(std::shared_ptr<Core::FE::Discretizat
       matrixtype_(Teuchos::getIntegralValue<Core::LinAlg::MatrixType>(*params, "MATRIXTYPE")),
       incremental_(true),
       fssgd_(Teuchos::getIntegralValue<ScaTra::FSSUGRDIFF>(*params, "FSSUGRDIFF")),
-      turbmodel_(Inpar::FLUID::no_model),
+      turbmodel_(FLUID::no_model),
       s2ikinetics_(actdis->has_condition("S2IKinetics")),
       s2imeshtying_(actdis->has_condition("S2IMeshtying")),
       arterycoupling_(
@@ -161,7 +161,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(std::shared_ptr<Core::FE::Discretizat
       residual_(nullptr),
       trueresidual_(nullptr),
       increment_(nullptr),
-      msht_(Teuchos::getIntegralValue<Inpar::FLUID::MeshTying>(*params, "MESHTYING")),
+      msht_(Teuchos::getIntegralValue<FLUID::MeshTying>(*params, "MESHTYING")),
       // Initialization of AVM3 variables
       sysmat_sd_(nullptr),
       Sep_(nullptr),
@@ -283,7 +283,7 @@ void ScaTra::ScaTraTimIntImpl::init()
   // initialize meshtying strategy (including standard strategy without meshtying)
   // -----------------------------------------------------------------------------
   // safety checks
-  if (msht_ != Inpar::FLUID::no_meshtying and s2imeshtying_)
+  if (msht_ != FLUID::no_meshtying and s2imeshtying_)
   {
     FOUR_C_THROW(
         "Fluid-fluid meshtying in combination with scatra-scatra interface mesh tying is not "
@@ -782,12 +782,12 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
     if (turbparams->get<std::string>("PHYSICAL_MODEL") != "Multifractal_Subgrid_Scales")
     {
       if (fssgd_ == ScaTra::fssugrdiff_smagorinsky_small and
-          turbparams->get<Inpar::FLUID::FineSubgridVisc>("FSSUGRVISC") !=
-              Inpar::FLUID::FineSubgridVisc::smagorinsky_small)
+          turbparams->get<FLUID::FineSubgridVisc>("FSSUGRVISC") !=
+              FLUID::FineSubgridVisc::smagorinsky_small)
         FOUR_C_THROW("Same subgrid-viscosity approach expected!");
       if (fssgd_ == ScaTra::fssugrdiff_smagorinsky_all and
-          turbparams->get<Inpar::FLUID::FineSubgridVisc>("FSSUGRVISC") !=
-              Inpar::FLUID::FineSubgridVisc::smagorinsky_all)
+          turbparams->get<FLUID::FineSubgridVisc>("FSSUGRVISC") !=
+              FLUID::FineSubgridVisc::smagorinsky_all)
         FOUR_C_THROW("Same subgrid-viscosity approach expected!");
     }
   }
@@ -797,14 +797,14 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
   // -------------------------------------------------------------------
   // get turbulence model and parameters
   // -------------------------------------------------------------------
-  turbmodel_ = Inpar::FLUID::no_model;
+  turbmodel_ = FLUID::no_model;
 
   if (turbparams->get<bool>("TURBMODEL_LS"))
   {
     // set turbulence model
     if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Smagorinsky")
     {
-      turbmodel_ = Inpar::FLUID::smagorinsky;
+      turbmodel_ = FLUID::smagorinsky;
 
       // Output
       if (turbmodel_ and myrank_ == 0)
@@ -816,13 +816,13 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
     }
     else if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
     {
-      turbmodel_ = Inpar::FLUID::dynamic_smagorinsky;
+      turbmodel_ = FLUID::dynamic_smagorinsky;
       // access to the dynamic Smagorinsky class will provided by the
       // scatra fluid couling algorithm
     }
     else if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
     {
-      turbmodel_ = Inpar::FLUID::multifractal_subgrid_scales;
+      turbmodel_ = FLUID::multifractal_subgrid_scales;
 
       // initialize matrix used to build the scale separation operator
       sysmat_sd_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 27);
@@ -842,7 +842,7 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
     else if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Dynamic_Vreman")
     {
       // equivalent to dynamic smagorinsky
-      turbmodel_ = Inpar::FLUID::dynamic_vreman;
+      turbmodel_ = FLUID::dynamic_vreman;
     }
 
     // warning No. 1: if classical (all-scale) turbulence model other than
@@ -861,7 +861,7 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
 
     // warning No. 2: if classical (all-scale) turbulence model and fine-scale
     // subgrid-viscosity approach are intended to be used simultaneously
-    if (turbmodel_ == Inpar::FLUID::smagorinsky and fssgd_ != ScaTra::fssugrdiff_no)
+    if (turbmodel_ == FLUID::smagorinsky and fssgd_ != ScaTra::fssugrdiff_no)
     {
       FOUR_C_THROW(
           "No combination of classical turbulence model and fine-scale subgrid-diffusivity "
@@ -869,7 +869,7 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
     }
   }
 
-  if (turbmodel_ != Inpar::FLUID::no_model and num_scal() > 1)
+  if (turbmodel_ != FLUID::no_model and num_scal() > 1)
     FOUR_C_THROW("Turbulent passive scalar transport not supported for more than one scalar!");
 
   // -------------------------------------------------------------------
@@ -1029,13 +1029,12 @@ void ScaTra::ScaTraTimIntImpl::set_element_turbulence_parameters(
   {
     // deactivate turbulence model when calculating initial time
     // derivative
-    Teuchos::setStringToIntegralParameter<Inpar::FLUID::TurbModelAction>("PHYSICAL_MODEL",
-        "no_model",
+    Teuchos::setStringToIntegralParameter<FLUID::TurbModelAction>("PHYSICAL_MODEL", "no_model",
         "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
         Teuchos::tuple<std::string>("no_model"),
         Teuchos::tuple<std::string>("If classical LES is our turbulence approach, this is a "
                                     "contradiction and should cause a FOUR_C_THROW."),
-        Teuchos::tuple<Inpar::FLUID::TurbModelAction>(Inpar::FLUID::no_model),
+        Teuchos::tuple<FLUID::TurbModelAction>(FLUID::no_model),
         &eleparams.sublist("TURBULENCE MODEL"));
   }
 
@@ -1143,7 +1142,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_time_step()
   //           preparation of AVM3-based scale separation
   // -------------------------------------------------------------------
   if ((step_ == 1 or (turbinflow_ and step_ == numinflowsteps_ + 1)) and
-      (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales))
+      (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == FLUID::multifractal_subgrid_scales))
     avm3_preparation();
 
   // -------------------------------------------------------------------
@@ -1199,7 +1198,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_first_time_step()
 void ScaTra::ScaTraTimIntImpl::prepare_linear_solve()
 {
   // special preparations for multifractal subgrid-scale model
-  if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales) recompute_mean_csgs_b();
+  if (turbmodel_ == FLUID::multifractal_subgrid_scales) recompute_mean_csgs_b();
 
   // call elements to calculate system matrix and rhs and assemble
   assemble_mat_and_rhs();
@@ -1487,7 +1486,7 @@ bool ScaTra::ScaTraTimIntImpl::fine_scale_velocity_field_required() const
 
   // in case the fine-scale subgrid-viscosity is turned off in the scalar field, the fine scale
   // velocity is not necessary
-  if (turbmodel_ == Inpar::FLUID::no_model and fssgd_ == ScaTra::fssugrdiff_no) return false;
+  if (turbmodel_ == FLUID::no_model and fssgd_ == ScaTra::fssugrdiff_no) return false;
 
   // do not communicate the fine scale velocity field before it was calculated, i.e., in the initial
   // step
@@ -2414,7 +2413,7 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
     }  // loop over modes
 
     // adapt weight vector according to meshtying case
-    if (msht_ != Inpar::FLUID::no_meshtying)
+    if (msht_ != FLUID::no_meshtying)
     {
       FOUR_C_THROW(
           "Since meshtying for scatra is not tested under Krylov projection FOUR_C_THROW is "
@@ -2430,7 +2429,7 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
   }
 
   // adapt kernel vector according to meshtying case
-  if (msht_ != Inpar::FLUID::no_meshtying)
+  if (msht_ != FLUID::no_meshtying)
   {
     FOUR_C_THROW(
         "Since meshtying for scatra is not tested under Krylov projection FOUR_C_THROW is "
@@ -2447,7 +2446,7 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
  *----------------------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::create_meshtying_strategy()
 {
-  if (msht_ != Inpar::FLUID::no_meshtying)  // fluid meshtying
+  if (msht_ != FLUID::no_meshtying)  // fluid meshtying
   {
     strategy_ = std::make_shared<MeshtyingStrategyFluid>(this);
   }
@@ -2731,7 +2730,7 @@ void ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs()
 
   // AVM3 separation for incremental solver: get fine-scale part of scalar
   if (incremental_ and step_ > 0 and
-      (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales))
+      (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == FLUID::multifractal_subgrid_scales))
     avm3_separation();
 
   // add state vectors according to time-integration scheme
@@ -2884,7 +2883,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_solve()
   print_time_step_info();
 
   // special preparations for multifractal subgrid-scale model
-  if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales) recompute_mean_csgs_b();
+  if (turbmodel_ == FLUID::multifractal_subgrid_scales) recompute_mean_csgs_b();
 
   //------------------------------ turn adaptive solver tolerance on/off
   const double ittol = params_->sublist("NONLINEAR").get<double>("CONVTOL");

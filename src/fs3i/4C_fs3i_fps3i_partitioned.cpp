@@ -247,10 +247,10 @@ void FS3I::PartFPS3I::init()
   auto scatratimealgo =
       Teuchos::getIntegralValue<ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
   auto fluidtimealgo =
-      Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
+      Teuchos::getIntegralValue<FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
   auto structtimealgo = Teuchos::getIntegralValue<Solid::DynamicType>(structdyn, "DYNAMICTYPE");
 
-  if (fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
+  if (fluidtimealgo == FLUID::timeint_one_step_theta)
   {
     if (scatratimealgo != ScaTra::timeint_one_step_theta or
         structtimealgo != Solid::DynamicType::OneStepTheta)
@@ -266,7 +266,7 @@ void FS3I::PartFPS3I::init()
           "Parameter(s) theta for one-step-theta time-integration scheme defined in one or more of "
           "the individual fields do(es) not match for partitioned FS3I computation.");
   }
-  else if (fluidtimealgo == Inpar::FLUID::timeint_afgenalpha)
+  else if (fluidtimealgo == FLUID::timeint_afgenalpha)
   {
     if (scatratimealgo != ScaTra::timeint_gen_alpha or
         structtimealgo != Solid::DynamicType::GenAlpha)
@@ -276,14 +276,13 @@ void FS3I::PartFPS3I::init()
           "to be used for the fluid subproblem, and different schemes are intended to be used for "
           "the structure and/or scalar transport subproblems!");
   }
-  else if (fluidtimealgo == Inpar::FLUID::timeint_npgenalpha)
+  else if (fluidtimealgo == FLUID::timeint_npgenalpha)
   {
     FOUR_C_THROW(
         "Partitioned FS3I computations do not support n+1-based generalized-alpha time-integration "
         "schemes for the fluid subproblem!");
   }
-  else if (fluidtimealgo == Inpar::FLUID::timeint_bdf2 or
-           fluidtimealgo == Inpar::FLUID::timeint_stationary)
+  else if (fluidtimealgo == FLUID::timeint_bdf2 or fluidtimealgo == FLUID::timeint_stationary)
   {
     FOUR_C_THROW(
         "Partitioned FS3I computations do not support stationary of BDF2 time-integration schemes "

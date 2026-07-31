@@ -25,13 +25,13 @@
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_fem_geometry_searchtree_input.hpp"
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_fpsi_input.hpp"
 #include "4C_fs3i_biofilm_fsi_input.hpp"
 #include "4C_fs3i_input.hpp"
 #include "4C_fsi_input.hpp"
 #include "4C_geometric_search_input.hpp"
 #include "4C_global_legacy_module_problem_type_string.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_inpar_io.hpp"
 #include "4C_inpar_IO_runtime_output.hpp"
 #include "4C_inpar_IO_runtime_output_fluid.hpp"
@@ -322,7 +322,7 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
   push_specs(specs, Thermo::valid_parameters());
   push_specs(specs, TSI::valid_parameters());
 
-  push_specs(specs, Inpar::FLUID::valid_parameters());
+  push_specs(specs, FLUID::valid_parameters());
   push_specs(specs, LowMach::valid_parameters());
   push_specs(specs, Cut::valid_parameters());
   push_specs(specs, XFEM::valid_parameters());

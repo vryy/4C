@@ -31,7 +31,7 @@ FLD::TimIntHDG::TimIntHDG(const std::shared_ptr<Core::FE::Discretization>& actdi
     const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntGenAlpha(actdis, solver, params, output, alefluid),
-      timealgoset_(Inpar::FLUID::timeint_afgenalpha),
+      timealgoset_(FLUID::timeint_afgenalpha),
       first_assembly_(false)
 {
 }
@@ -87,23 +87,23 @@ void FLD::TimIntHDG::init()
   velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
   // implement ost and bdf2 through gen-alpha facilities
-  if (timealgo_ == Inpar::FLUID::timeint_bdf2)
+  if (timealgo_ == FLUID::timeint_bdf2)
   {
     alphaM_ = 1.5;
     alphaF_ = 1.0;
     gamma_ = 1.0;
   }
-  else if (timealgo_ == Inpar::FLUID::timeint_one_step_theta)
+  else if (timealgo_ == FLUID::timeint_one_step_theta)
   {
     alphaM_ = 1.0;
     alphaF_ = 1.0;
     gamma_ = params_->get<double>("theta");
   }
-  else if (timealgo_ == Inpar::FLUID::timeint_stationary)
+  else if (timealgo_ == FLUID::timeint_stationary)
     FOUR_C_THROW("Stationary case not implemented for HDG");
 
   timealgoset_ = timealgo_;
-  timealgo_ = Inpar::FLUID::timeint_afgenalpha;
+  timealgo_ = FLUID::timeint_afgenalpha;
 
   // call init()-functions of base classes
   // note: this order is important
@@ -124,10 +124,10 @@ void FLD::TimIntHDG::set_theta()
   //  integration and values at intermediate time steps
   // -------------------------------------------------------------------
   // starting algorithm
-  if (startalgo_ || (step_ <= 2 && timealgoset_ == Inpar::FLUID::timeint_bdf2))
+  if (startalgo_ || (step_ <= 2 && timealgoset_ == FLUID::timeint_bdf2))
   {
     // use backward-Euler-type parameter combination
-    if (step_ <= numstasteps_ || (step_ <= 1 && timealgoset_ == Inpar::FLUID::timeint_bdf2))
+    if (step_ <= numstasteps_ || (step_ <= 1 && timealgoset_ == FLUID::timeint_bdf2))
     {
       if (myrank_ == 0)
       {
@@ -142,12 +142,12 @@ void FLD::TimIntHDG::set_theta()
     else
     {
       // recall original user wish
-      if (timealgoset_ == Inpar::FLUID::timeint_one_step_theta)
+      if (timealgoset_ == FLUID::timeint_one_step_theta)
       {
         alphaM_ = alphaF_ = 1.0;
         gamma_ = params_->get<double>("theta");
       }
-      else if (timealgoset_ == Inpar::FLUID::timeint_bdf2)
+      else if (timealgoset_ == FLUID::timeint_bdf2)
       {
         alphaF_ = gamma_ = 1.0;
         alphaM_ = 3. / 2.;
@@ -331,12 +331,12 @@ void FLD::TimIntHDG::time_update()
  |  set initial flow field for test cases              kronbichler 05/14|
  *----------------------------------------------------------------------*/
 void FLD::TimIntHDG::set_initial_flow_field(
-    const Inpar::FLUID::InitialField initfield, const int startfuncno)
+    const FLUID::InitialField initfield, const int startfuncno)
 {
-  if (initfield == Inpar::FLUID::initfield_hit_comte_bellot_corrsin or
-      initfield == Inpar::FLUID::initfield_forced_hit_simple_algebraic_spectrum or
-      initfield == Inpar::FLUID::initfield_forced_hit_numeric_spectrum or
-      initfield == Inpar::FLUID::initfield_passive_hit_const_input)
+  if (initfield == FLUID::initfield_hit_comte_bellot_corrsin or
+      initfield == FLUID::initfield_forced_hit_simple_algebraic_spectrum or
+      initfield == FLUID::initfield_forced_hit_numeric_spectrum or
+      initfield == FLUID::initfield_passive_hit_const_input)
   {
     // initialize calculation of initial field based on fast Fourier transformation
     HomoIsoTurbInitialFieldHDG HitInitialFieldHDG(*this, initfield);
@@ -357,7 +357,7 @@ void FLD::TimIntHDG::set_initial_flow_field(
     Teuchos::ParameterList initParams;
     initParams.set<FLD::Action>("action", FLD::project_fluid_field);
     initParams.set("startfuncno", startfuncno);
-    initParams.set<Inpar::FLUID::InitialField>("initfield", initfield);
+    initParams.set<FLUID::InitialField>("initfield", initfield);
     // loop over all elements on the processor
     Core::Elements::LocationArray la(2);
     double error = 0;
@@ -411,17 +411,16 @@ void FLD::TimIntHDG::set_initial_flow_field(
 std::shared_ptr<std::vector<double>> FLD::TimIntHDG::evaluate_error_compared_to_analytical_sol()
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
-  const auto calcerr =
-      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error");
+  const auto calcerr = Teuchos::getIntegralValue<FLUID::CalcError>(*params_, "calculate error");
 
   switch (calcerr)
   {
-    case Inpar::FLUID::beltrami_flow:
-    case Inpar::FLUID::channel2D:
-    case Inpar::FLUID::gravitation:
-    case Inpar::FLUID::shear_flow:
-    case Inpar::FLUID::fsi_fluid_pusher:
-    case Inpar::FLUID::byfunct:
+    case FLUID::beltrami_flow:
+    case FLUID::channel2D:
+    case FLUID::gravitation:
+    case FLUID::shear_flow:
+    case FLUID::fsi_fluid_pusher:
+    case FLUID::byfunct:
       discret_->set_state(1, "intvelnp", *intvelnp_);
       break;
     default:
@@ -567,8 +566,8 @@ void FLD::TimIntHDG::calc_intermediate_solution()
   if ((special_flow_ == "forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "decaying_homogeneous_isotropic_turbulence") and
-      Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
-          "FORCING_TYPE") == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
+      Teuchos::getIntegralValue<FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
+          "FORCING_TYPE") == FLUID::linear_compensation_from_intermediate_spectrum)
   {
     std::shared_ptr<Core::LinAlg::Vector<double>> inttmp =
         std::make_shared<Core::LinAlg::Vector<double>>(*discret_->dof_row_map(1), true);

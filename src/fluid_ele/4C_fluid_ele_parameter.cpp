@@ -21,42 +21,42 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------*/
 Discret::Elements::FluidEleParameter::FluidEleParameter()
     : set_general_fluid_parameter_(false),
-      physicaltype_(Inpar::FLUID::incompressible),
-      stabtype_(Inpar::FLUID::stabtype_nostab),  // stabilization parameters
+      physicaltype_(FLUID::incompressible),
+      stabtype_(FLUID::stabtype_nostab),  // stabilization parameters
       is_conservative_(false),
       is_newton_(false),
       is_inconsistent_(false),
       reaction_(false),
       oseenfieldfuncno_(-1),
       is_reconstructder_(false),
-      tds_(Inpar::FLUID::subscales_quasistatic),
-      transient_(Inpar::FLUID::inertia_stab_drop),
+      tds_(FLUID::subscales_quasistatic),
+      transient_(FLUID::inertia_stab_drop),
       pspg_(true),
       supg_(true),
-      vstab_(Inpar::FLUID::viscous_stab_none),
-      rstab_(Inpar::FLUID::reactive_stab_none),
+      vstab_(FLUID::viscous_stab_none),
+      rstab_(FLUID::reactive_stab_none),
       graddiv_(true),
-      cross_(Inpar::FLUID::cross_stress_stab_none),
-      reynolds_(Inpar::FLUID::reynolds_stress_stab_none),
-      whichtau_(Inpar::FLUID::tau_not_defined),
-      charelelengthu_(Inpar::FLUID::streamlength_u),
-      charelelengthpc_(Inpar::FLUID::volume_equivalent_diameter_pc),
+      cross_(FLUID::cross_stress_stab_none),
+      reynolds_(FLUID::reynolds_stress_stab_none),
+      whichtau_(FLUID::tau_not_defined),
+      charelelengthu_(FLUID::streamlength_u),
+      charelelengthpc_(FLUID::volume_equivalent_diameter_pc),
       viscreastabfac_(0.0),
       ppp_(false),
       mat_gp_(false),             // standard evaluation of the material at the element center
       tau_gp_(false),             // standard evaluation of tau at the element center
       interface_thickness_(0.0),  // two phase parameters
       enhanced_gaussrule_(false),
-      include_surface_tension_(false),           // include the surface tension in the calculations.
-      turb_mod_action_(Inpar::FLUID::no_model),  // turbulence parameters
+      include_surface_tension_(false),    // include the surface tension in the calculations.
+      turb_mod_action_(FLUID::no_model),  // turbulence parameters
       Cs_(0.0),
       Cs_averaged_(false),
       Ci_(0.0),
       include_Ci_(false),
       van_Driest_damping_(1.0),
       l_tau_(0.0),
-      fssgv_(Inpar::FLUID::no_fssgv),
-      vrfi_(Inpar::FLUID::cuberootvol),
+      fssgv_(FLUID::no_fssgv),
+      vrfi_(FLUID::cuberootvol),
       Csgs_(0.0),
       Csgs_phi_(0.0),
       alpha_(0.0),
@@ -76,8 +76,8 @@ Discret::Elements::FluidEleParameter::FluidEleParameter()
       consistent_mfs_residual_(false),
       update_mat_(false),
       conti_supg_(true),
-      conti_cross_(Inpar::FLUID::cross_stress_stab_none),
-      conti_reynolds_(Inpar::FLUID::reynolds_stress_stab_none),
+      conti_cross_(FLUID::cross_stress_stab_none),
+      conti_reynolds_(FLUID::reynolds_stress_stab_none),
       multifrac_loma_conti_(false)
 {
   // we have to know the time parameters here to check for illegal combinations
@@ -123,35 +123,34 @@ void Discret::Elements::FluidEleParameter::set_element_general_fluid_parameter(
   }
 
   // set flag for physical type of fluid flow
-  physicaltype_ = Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params, "Physical Type");
-  if (((physicaltype_ == Inpar::FLUID::loma) or
-          (physicaltype_ == Inpar::FLUID::varying_density)) and
+  physicaltype_ = Teuchos::getIntegralValue<FLUID::PhysicalType>(params, "Physical Type");
+  if (((physicaltype_ == FLUID::loma) or (physicaltype_ == FLUID::varying_density)) and
       (fldparatimint_->is_stationary() == true))
     FOUR_C_THROW("physical type is not supported in stationary FLUID implementation.");
 
   // set flag for type of linearization (fixed-point-like or Newton)
   //  fix-point like for Oseen or Stokes problems
-  if (Teuchos::getIntegralValue<Inpar::FLUID::LinearisationAction>(params, "Linearisation") ==
-      Inpar::FLUID::Newton)
+  if (Teuchos::getIntegralValue<FLUID::LinearisationAction>(params, "Linearisation") ==
+      FLUID::Newton)
   {
-    if ((physicaltype_ == Inpar::FLUID::oseen) or (physicaltype_ == Inpar::FLUID::stokes))
+    if ((physicaltype_ == FLUID::oseen) or (physicaltype_ == FLUID::stokes))
       FOUR_C_THROW(
           "Full Newton-linearization does not make sense for Oseen or Stokes problems.\nThey are "
           "already linear problems. Fix input file!");
     is_newton_ = true;
   }
 
-  if (fldparatimint_->is_genalpha_np() and physicaltype_ == Inpar::FLUID::loma)
+  if (fldparatimint_->is_genalpha_np() and physicaltype_ == FLUID::loma)
     FOUR_C_THROW("the combination Np_Gen_Alpha and loma is not supported");
 
-  if (not fldparatimint_->is_genalpha() and physicaltype_ == Inpar::FLUID::loma)
+  if (not fldparatimint_->is_genalpha() and physicaltype_ == FLUID::loma)
     FOUR_C_THROW("the combination OST and loma is said to be supported but does not work!!");
 
   if (fldparatimint_->is_genalpha_np() and is_conservative_)
     FOUR_C_THROW("the combination Np_Gen_Alpha and conservative flow is not supported");
 
   if (not fldparatimint_->is_stationary() and is_conservative_ and
-      physicaltype_ != Inpar::FLUID::incompressible)
+      physicaltype_ != FLUID::incompressible)
   {
     if (myrank == 0)
       std::cout << std::endl
@@ -161,30 +160,29 @@ void Discret::Elements::FluidEleParameter::set_element_general_fluid_parameter(
   }
 
   // get function number of given Oseen advective field if necessary
-  if (physicaltype_ == Inpar::FLUID::oseen) oseenfieldfuncno_ = params.get<int>("OSEENFIELDFUNCNO");
+  if (physicaltype_ == FLUID::oseen) oseenfieldfuncno_ = params.get<int>("OSEENFIELDFUNCNO");
 
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
   //----------------------------------------------------------------------
   Teuchos::ParameterList& stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
 
-  stabtype_ = Teuchos::getIntegralValue<Inpar::FLUID::StabType>(stablist, "STABTYPE");
+  stabtype_ = Teuchos::getIntegralValue<FLUID::StabType>(stablist, "STABTYPE");
 
-  if (stabtype_ == Inpar::FLUID::stabtype_residualbased)
+  if (stabtype_ == FLUID::stabtype_residualbased)
   {
     // no safety check necessary since all options are used
-    tds_ = Teuchos::getIntegralValue<Inpar::FLUID::SubscalesTD>(stablist, "TDS");
-    transient_ = Teuchos::getIntegralValue<Inpar::FLUID::Transient>(stablist, "TRANSIENT");
+    tds_ = Teuchos::getIntegralValue<FLUID::SubscalesTD>(stablist, "TDS");
+    transient_ = Teuchos::getIntegralValue<FLUID::Transient>(stablist, "TRANSIENT");
     pspg_ = stablist.get<bool>("PSPG");
     supg_ = stablist.get<bool>("SUPG");
-    vstab_ = Teuchos::getIntegralValue<Inpar::FLUID::VStab>(stablist, "VSTAB");
-    rstab_ = Teuchos::getIntegralValue<Inpar::FLUID::RStab>(stablist, "RSTAB");
+    vstab_ = Teuchos::getIntegralValue<FLUID::VStab>(stablist, "VSTAB");
+    rstab_ = Teuchos::getIntegralValue<FLUID::RStab>(stablist, "RSTAB");
     graddiv_ = stablist.get<bool>("GRAD_DIV");
-    cross_ = Teuchos::getIntegralValue<Inpar::FLUID::CrossStress>(stablist, "CROSS-STRESS");
-    reynolds_ =
-        Teuchos::getIntegralValue<Inpar::FLUID::ReynoldsStress>(stablist, "REYNOLDS-STRESS");
+    cross_ = Teuchos::getIntegralValue<FLUID::CrossStress>(stablist, "CROSS-STRESS");
+    reynolds_ = Teuchos::getIntegralValue<FLUID::ReynoldsStress>(stablist, "REYNOLDS-STRESS");
 
-    if (supg_ and (physicaltype_ == Inpar::FLUID::stokes))
+    if (supg_ and (physicaltype_ == FLUID::stokes))
       FOUR_C_THROW(
           "Having SUPG-stabilization switched on (by default?) for Stokes problems, does not make "
           "sense! Please turn on brain before using 4C!");
@@ -199,98 +197,92 @@ void Discret::Elements::FluidEleParameter::set_element_general_fluid_parameter(
     // get tau definition
     //-------------------------------
 
-    whichtau_ = Teuchos::getIntegralValue<Inpar::FLUID::TauType>(stablist, "DEFINITION_TAU");
+    whichtau_ = Teuchos::getIntegralValue<FLUID::TauType>(stablist, "DEFINITION_TAU");
     // check if tau can be handled
-    if (not(whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins or
-            whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins_wo_dt or
-            whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
-            whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
-            whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins_scaled or
-            whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
-            whichtau_ == Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall or
-            whichtau_ == Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
-            whichtau_ == Inpar::FLUID::tau_shakib_hughes_codina or
-            whichtau_ == Inpar::FLUID::tau_shakib_hughes_codina_wo_dt or
-            whichtau_ == Inpar::FLUID::tau_codina or
-            whichtau_ == Inpar::FLUID::tau_codina_convscaled or
-            whichtau_ == Inpar::FLUID::tau_codina_wo_dt or
-            whichtau_ == Inpar::FLUID::tau_franca_madureira_valentin_badia_codina or
-            whichtau_ == Inpar::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt or
-            whichtau_ == Inpar::FLUID::tau_hughes_franca_balestra_wo_dt))
+    if (not(whichtau_ == FLUID::tau_taylor_hughes_zarins or
+            whichtau_ == FLUID::tau_taylor_hughes_zarins_wo_dt or
+            whichtau_ == FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+            whichtau_ == FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
+            whichtau_ == FLUID::tau_taylor_hughes_zarins_scaled or
+            whichtau_ == FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
+            whichtau_ == FLUID::tau_franca_barrenechea_valentin_frey_wall or
+            whichtau_ == FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+            whichtau_ == FLUID::tau_shakib_hughes_codina or
+            whichtau_ == FLUID::tau_shakib_hughes_codina_wo_dt or whichtau_ == FLUID::tau_codina or
+            whichtau_ == FLUID::tau_codina_convscaled or whichtau_ == FLUID::tau_codina_wo_dt or
+            whichtau_ == FLUID::tau_franca_madureira_valentin_badia_codina or
+            whichtau_ == FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt or
+            whichtau_ == FLUID::tau_hughes_franca_balestra_wo_dt))
       FOUR_C_THROW("Definition of Tau cannot be handled by the element");
 
     // set correct stationary definition of stabilization parameter automatically
     if (fldparatimint_->is_stationary())
     {
-      if (whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins)
-        whichtau_ = Inpar::FLUID::tau_taylor_hughes_zarins_wo_dt;
-      else if (whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins_whiting_jansen)
-        whichtau_ = Inpar::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt;
-      else if (whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins_scaled)
-        whichtau_ = Inpar::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt;
-      else if (whichtau_ == Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall)
-        whichtau_ = Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt;
-      else if (whichtau_ == Inpar::FLUID::tau_shakib_hughes_codina)
-        whichtau_ = Inpar::FLUID::tau_shakib_hughes_codina_wo_dt;
-      else if (whichtau_ == Inpar::FLUID::tau_codina)
-        whichtau_ = Inpar::FLUID::tau_codina_wo_dt;
-      else if (whichtau_ == Inpar::FLUID::tau_franca_madureira_valentin_badia_codina)
-        whichtau_ = Inpar::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
-      else if (whichtau_ == Inpar::FLUID::tau_codina_convscaled)
+      if (whichtau_ == FLUID::tau_taylor_hughes_zarins)
+        whichtau_ = FLUID::tau_taylor_hughes_zarins_wo_dt;
+      else if (whichtau_ == FLUID::tau_taylor_hughes_zarins_whiting_jansen)
+        whichtau_ = FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt;
+      else if (whichtau_ == FLUID::tau_taylor_hughes_zarins_scaled)
+        whichtau_ = FLUID::tau_taylor_hughes_zarins_scaled_wo_dt;
+      else if (whichtau_ == FLUID::tau_franca_barrenechea_valentin_frey_wall)
+        whichtau_ = FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt;
+      else if (whichtau_ == FLUID::tau_shakib_hughes_codina)
+        whichtau_ = FLUID::tau_shakib_hughes_codina_wo_dt;
+      else if (whichtau_ == FLUID::tau_codina)
+        whichtau_ = FLUID::tau_codina_wo_dt;
+      else if (whichtau_ == FLUID::tau_franca_madureira_valentin_badia_codina)
+        whichtau_ = FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
+      else if (whichtau_ == FLUID::tau_codina_convscaled)
         FOUR_C_THROW("This stabilization Parameter is not implemented for stationary flows");
     }
 
     // tau_donea_huerta_wo_dt should only be used for stokes problems and vice versa
-    if ((physicaltype_ == Inpar::FLUID::stokes) !=
-        (whichtau_ == Inpar::FLUID::tau_hughes_franca_balestra_wo_dt))
+    if ((physicaltype_ == FLUID::stokes) != (whichtau_ == FLUID::tau_hughes_franca_balestra_wo_dt))
       FOUR_C_THROW(
           "Tau from Hughes, Franca & Balestra should only be used for Stokes problems and vice "
           "versa!");
 
     // get and check characteristic element length for stabilization parameter tau_Mu
-    charelelengthu_ =
-        Teuchos::getIntegralValue<Inpar::FLUID::CharEleLengthU>(stablist, "CHARELELENGTH_U");
-    if (not(charelelengthu_ == Inpar::FLUID::streamlength_u or
-            charelelengthu_ == Inpar::FLUID::volume_equivalent_diameter_u or
-            charelelengthu_ == Inpar::FLUID::root_of_volume_u))
+    charelelengthu_ = Teuchos::getIntegralValue<FLUID::CharEleLengthU>(stablist, "CHARELELENGTH_U");
+    if (not(charelelengthu_ == FLUID::streamlength_u or
+            charelelengthu_ == FLUID::volume_equivalent_diameter_u or
+            charelelengthu_ == FLUID::root_of_volume_u))
       FOUR_C_THROW("Unknown characteristic element length for tau_Mu!");
 
     // get and check characteristic element length for stabilization parameter
     // tau_Mp and tau_C
     charelelengthpc_ =
-        Teuchos::getIntegralValue<Inpar::FLUID::CharEleLengthPC>(stablist, "CHARELELENGTH_PC");
-    if (not(charelelengthpc_ == Inpar::FLUID::streamlength_pc or
-            charelelengthpc_ == Inpar::FLUID::volume_equivalent_diameter_pc or
-            charelelengthpc_ == Inpar::FLUID::root_of_volume_pc))
+        Teuchos::getIntegralValue<FLUID::CharEleLengthPC>(stablist, "CHARELELENGTH_PC");
+    if (not(charelelengthpc_ == FLUID::streamlength_pc or
+            charelelengthpc_ == FLUID::volume_equivalent_diameter_pc or
+            charelelengthpc_ == FLUID::root_of_volume_pc))
       FOUR_C_THROW("Unknown characteristic element length for tau_Mp and tau_C!");
 
     // in case of viscous and/or reactive stabilization, decide whether to use
     // GLS or USFEM and ensure compatibility of respective definitions
-    if (vstab_ == Inpar::FLUID::viscous_stab_usfem or
-        vstab_ == Inpar::FLUID::viscous_stab_usfem_only_rhs)
+    if (vstab_ == FLUID::viscous_stab_usfem or vstab_ == FLUID::viscous_stab_usfem_only_rhs)
     {
       viscreastabfac_ = -1.0;
-      if (rstab_ == Inpar::FLUID::reactive_stab_gls)
+      if (rstab_ == FLUID::reactive_stab_gls)
         FOUR_C_THROW("inconsistent reactive and viscous stabilization!");
     }
-    else if (vstab_ == Inpar::FLUID::viscous_stab_gls or
-             vstab_ == Inpar::FLUID::viscous_stab_gls_only_rhs)
+    else if (vstab_ == FLUID::viscous_stab_gls or vstab_ == FLUID::viscous_stab_gls_only_rhs)
     {
       viscreastabfac_ = 1.0;
-      if (rstab_ == Inpar::FLUID::reactive_stab_usfem)
+      if (rstab_ == FLUID::reactive_stab_usfem)
         FOUR_C_THROW("inconsistent reactive and viscous stabilization!");
     }
-    else if (vstab_ == Inpar::FLUID::viscous_stab_none)
+    else if (vstab_ == FLUID::viscous_stab_none)
     {
-      if (rstab_ == Inpar::FLUID::reactive_stab_usfem)
+      if (rstab_ == FLUID::reactive_stab_usfem)
         viscreastabfac_ = -1.0;
-      else if (rstab_ == Inpar::FLUID::reactive_stab_gls)
+      else if (rstab_ == FLUID::reactive_stab_gls)
         viscreastabfac_ = 1.0;
     }
 
     // XFEM specific ghost penalty stabilization are set in the fluid_ele_parameter_intface-class
   }
-  else if (stabtype_ == Inpar::FLUID::stabtype_edgebased)
+  else if (stabtype_ == FLUID::stabtype_edgebased)
   {
     if (myrank == 0)
     {
@@ -310,21 +302,21 @@ void Discret::Elements::FluidEleParameter::set_element_general_fluid_parameter(
     // are switched off
     pspg_ = false;
     supg_ = false;
-    vstab_ = Inpar::FLUID::viscous_stab_none;
-    rstab_ = Inpar::FLUID::reactive_stab_none;
+    vstab_ = FLUID::viscous_stab_none;
+    rstab_ = FLUID::reactive_stab_none;
     graddiv_ = false;
-    cross_ = Inpar::FLUID::cross_stress_stab_none;
-    reynolds_ = Inpar::FLUID::reynolds_stress_stab_none;
-    tds_ = Inpar::FLUID::subscales_quasistatic;
-    transient_ = Inpar::FLUID::inertia_stab_drop;
+    cross_ = FLUID::cross_stress_stab_none;
+    reynolds_ = FLUID::reynolds_stress_stab_none;
+    tds_ = FLUID::subscales_quasistatic;
+    transient_ = FLUID::inertia_stab_drop;
     is_inconsistent_ = false;
 
     // all edge-based flags are set in the fluid_ele_parameter_intface-class
   }
-  else if (stabtype_ == Inpar::FLUID::stabtype_pressureprojection)
+  else if (stabtype_ == FLUID::stabtype_pressureprojection)
   {
     if (not(fldparatimint_->is_stationary() and
-            ((physicaltype_ == Inpar::FLUID::stokes) or (physicaltype_ == Inpar::FLUID::oseen))))
+            ((physicaltype_ == FLUID::stokes) or (physicaltype_ == FLUID::oseen))))
       FOUR_C_THROW(
           "Polynomial pressure projection has only been tested for stationary Stokes/Oseen "
           "problems. \n"
@@ -355,19 +347,19 @@ void Discret::Elements::FluidEleParameter::set_element_general_fluid_parameter(
     pspg_ = false;
     supg_ = false;
     graddiv_ = false;
-    vstab_ = Inpar::FLUID::viscous_stab_none;
-    rstab_ = Inpar::FLUID::reactive_stab_none;
-    cross_ = Inpar::FLUID::cross_stress_stab_none;
-    reynolds_ = Inpar::FLUID::reynolds_stress_stab_none;
-    tds_ = Inpar::FLUID::subscales_quasistatic;
-    transient_ = Inpar::FLUID::inertia_stab_drop;
+    vstab_ = FLUID::viscous_stab_none;
+    rstab_ = FLUID::reactive_stab_none;
+    cross_ = FLUID::cross_stress_stab_none;
+    reynolds_ = FLUID::reynolds_stress_stab_none;
+    tds_ = FLUID::subscales_quasistatic;
+    transient_ = FLUID::inertia_stab_drop;
     is_inconsistent_ = false;
 
     //---------------------------------
     // polynomial pressure projection is switched on
     ppp_ = true;
   }
-  else if (stabtype_ == Inpar::FLUID::stabtype_nostab)
+  else if (stabtype_ == FLUID::stabtype_nostab)
   {
     if (myrank == 0)
     {
@@ -384,13 +376,13 @@ void Discret::Elements::FluidEleParameter::set_element_general_fluid_parameter(
     }
     pspg_ = false;
     supg_ = false;
-    vstab_ = Inpar::FLUID::viscous_stab_none;
-    rstab_ = Inpar::FLUID::reactive_stab_none;
+    vstab_ = FLUID::viscous_stab_none;
+    rstab_ = FLUID::reactive_stab_none;
     graddiv_ = false;
-    cross_ = Inpar::FLUID::cross_stress_stab_none;
-    reynolds_ = Inpar::FLUID::reynolds_stress_stab_none;
-    tds_ = Inpar::FLUID::subscales_quasistatic;
-    transient_ = Inpar::FLUID::inertia_stab_drop;
+    cross_ = FLUID::cross_stress_stab_none;
+    reynolds_ = FLUID::reynolds_stress_stab_none;
+    tds_ = FLUID::subscales_quasistatic;
+    transient_ = FLUID::inertia_stab_drop;
     is_inconsistent_ = false;
   }
   else
@@ -398,8 +390,7 @@ void Discret::Elements::FluidEleParameter::set_element_general_fluid_parameter(
 
   //---------------------------------
   // safety checks for time-dependent subgrid scales
-  if ((tds_ == Inpar::FLUID::subscales_time_dependent) or
-      (transient_ != Inpar::FLUID::inertia_stab_drop))
+  if ((tds_ == FLUID::subscales_time_dependent) or (transient_ != FLUID::inertia_stab_drop))
   {
     if (not fldparatimint_->is_genalpha_np())
       FOUR_C_THROW(
@@ -447,15 +438,15 @@ void Discret::Elements::FluidEleParameter::set_element_loma_parameter(
 
   conti_supg_ = stabparams.get<bool>("LOMA_CONTI_SUPG");
   conti_cross_ =
-      Teuchos::getIntegralValue<Inpar::FLUID::CrossStress>(stabparams, "LOMA_CONTI_CROSS_STRESS");
-  conti_reynolds_ = Teuchos::getIntegralValue<Inpar::FLUID::ReynoldsStress>(
-      stabparams, "LOMA_CONTI_REYNOLDS_STRESS");
+      Teuchos::getIntegralValue<FLUID::CrossStress>(stabparams, "LOMA_CONTI_CROSS_STRESS");
+  conti_reynolds_ =
+      Teuchos::getIntegralValue<FLUID::ReynoldsStress>(stabparams, "LOMA_CONTI_REYNOLDS_STRESS");
 
   //---------------------------------------------------------------------------------
   // parameter for additional multifractal subgrid-scale terms
   //---------------------------------------------------------------------------------
 
-  if (turb_mod_action_ == Inpar::FLUID::multifractal_subgrid_scales)
+  if (turb_mod_action_ == FLUID::multifractal_subgrid_scales)
     multifrac_loma_conti_ = turbmodelparamsmfs.get<bool>("LOMA_CONTI");
 
   return;
@@ -494,28 +485,27 @@ void Discret::Elements::FluidEleParameter::set_element_turbulence_parameters(
 
   // get flag for fine-scale subgrid-viscosity approach
   {
-    const auto fssgvdef = turbmodelparams.get<Inpar::FLUID::FineSubgridVisc>(
-        "FSSUGRVISC", Inpar::FLUID::FineSubgridVisc::no_fssgv);
+    const auto fssgvdef =
+        turbmodelparams.get<FLUID::FineSubgridVisc>("FSSUGRVISC", FLUID::FineSubgridVisc::no_fssgv);
 
-    if (fssgvdef == Inpar::FLUID::FineSubgridVisc::smagorinsky_all)
-      fssgv_ = Inpar::FLUID::smagorinsky_all;
-    else if (fssgvdef == Inpar::FLUID::FineSubgridVisc::smagorinsky_small)
-      fssgv_ = Inpar::FLUID::smagorinsky_small;
+    if (fssgvdef == FLUID::FineSubgridVisc::smagorinsky_all)
+      fssgv_ = FLUID::smagorinsky_all;
+    else if (fssgvdef == FLUID::FineSubgridVisc::smagorinsky_small)
+      fssgv_ = FLUID::smagorinsky_small;
   }
 
   // get Smagorinsky model parameter for fine-scale subgrid viscosity
   // (Since either all-scale Smagorinsky model (i.e., classical LES model
   // as will be inititalized below) or fine-scale Smagorinsky model is
   // used (and never both), the same input parameter can be exploited.)
-  if (fssgv_ != Inpar::FLUID::no_fssgv)
-    Cs_ = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY", 0.0);
+  if (fssgv_ != FLUID::no_fssgv) Cs_ = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY", 0.0);
 
   //---------------------------------------------------------------------------------
   // parameter for turbulence approach
   //---------------------------------------------------------------------------------
 
   // the default action is no model
-  turb_mod_action_ = Inpar::FLUID::no_model;
+  turb_mod_action_ = FLUID::no_model;
 
   // No turbulent flow: TURBULENCE_APPROACH = DNS
   if (turbmodelparams.get<std::string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
@@ -530,7 +520,7 @@ void Discret::Elements::FluidEleParameter::set_element_turbulence_parameters(
     if (physical_turbulence_model == "Smagorinsky")
     {
       // the classic Smagorinsky model only requires one constant parameter
-      turb_mod_action_ = Inpar::FLUID::smagorinsky;
+      turb_mod_action_ = FLUID::smagorinsky;
       Cs_ = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY");
       include_Ci_ = turbmodelparamssgvisc.get<bool>("C_INCLUDE_CI");
       Ci_ = turbmodelparamssgvisc.get<double>("C_YOSHIZAWA");
@@ -547,7 +537,7 @@ void Discret::Elements::FluidEleParameter::set_element_turbulence_parameters(
 
       // for the Smagorinsky model with van Driest damping, we need
       // a viscous length to determine the y+ (height in wall units)
-      turb_mod_action_ = Inpar::FLUID::smagorinsky_with_van_Driest_damping;
+      turb_mod_action_ = FLUID::smagorinsky_with_van_Driest_damping;
 
       // get parameters of model
       Cs_ = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY");
@@ -558,7 +548,7 @@ void Discret::Elements::FluidEleParameter::set_element_turbulence_parameters(
     // Smagorinsky model with dynamic Computation of Cs
     else if (physical_turbulence_model == "Dynamic_Smagorinsky")
     {
-      turb_mod_action_ = Inpar::FLUID::dynamic_smagorinsky;
+      turb_mod_action_ = FLUID::dynamic_smagorinsky;
 
       // In the case of dynamic Smagorinsky:
       // Cs_ is calculated from Cs_sqrt_delta to compare it with the standard
@@ -570,7 +560,7 @@ void Discret::Elements::FluidEleParameter::set_element_turbulence_parameters(
     }
     else if (physical_turbulence_model == "Multifractal_Subgrid_Scales")
     {
-      turb_mod_action_ = Inpar::FLUID::multifractal_subgrid_scales;
+      turb_mod_action_ = FLUID::multifractal_subgrid_scales;
 
       // get parameters of model
       Csgs_ = turbmodelparamsmfs.get<double>("CSGS");
@@ -634,31 +624,29 @@ void Discret::Elements::FluidEleParameter::set_element_turbulence_parameters(
     }
     else if (physical_turbulence_model == "Vreman")
     {
-      turb_mod_action_ = Inpar::FLUID::vreman;
+      turb_mod_action_ = FLUID::vreman;
       Cs_ = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY");
 
-      if (turbmodelparamssgvisc.get<Inpar::FLUID::VremanFiMethod>("FILTER_WIDTH",
-              Inpar::FLUID::VremanFiMethod::cuberootvol) == Inpar::FLUID::VremanFiMethod::dir_dep)
-        vrfi_ = Inpar::FLUID::dir_dep;
-      else if (turbmodelparamssgvisc.get<Inpar::FLUID::VremanFiMethod>(
-                   "FILTER_WIDTH", Inpar::FLUID::VremanFiMethod::cuberootvol) ==
-               Inpar::FLUID::VremanFiMethod::min_len)
-        vrfi_ = Inpar::FLUID::min_len;
+      if (turbmodelparamssgvisc.get<FLUID::VremanFiMethod>(
+              "FILTER_WIDTH", FLUID::VremanFiMethod::cuberootvol) == FLUID::VremanFiMethod::dir_dep)
+        vrfi_ = FLUID::dir_dep;
+      else if (turbmodelparamssgvisc.get<FLUID::VremanFiMethod>("FILTER_WIDTH",
+                   FLUID::VremanFiMethod::cuberootvol) == FLUID::VremanFiMethod::min_len)
+        vrfi_ = FLUID::min_len;
       else
-        vrfi_ = Inpar::FLUID::cuberootvol;
+        vrfi_ = FLUID::cuberootvol;
     }
     else if (physical_turbulence_model == "Dynamic_Vreman")
     {
-      turb_mod_action_ = Inpar::FLUID::dynamic_vreman;
-      if (turbmodelparamssgvisc.get<Inpar::FLUID::VremanFiMethod>("FILTER_WIDTH",
-              Inpar::FLUID::VremanFiMethod::cuberootvol) == Inpar::FLUID::VremanFiMethod::dir_dep)
-        vrfi_ = Inpar::FLUID::dir_dep;
-      else if (turbmodelparamssgvisc.get<Inpar::FLUID::VremanFiMethod>(
-                   "FILTER_WIDTH", Inpar::FLUID::VremanFiMethod::cuberootvol) ==
-               Inpar::FLUID::VremanFiMethod::min_len)
-        vrfi_ = Inpar::FLUID::min_len;
+      turb_mod_action_ = FLUID::dynamic_vreman;
+      if (turbmodelparamssgvisc.get<FLUID::VremanFiMethod>(
+              "FILTER_WIDTH", FLUID::VremanFiMethod::cuberootvol) == FLUID::VremanFiMethod::dir_dep)
+        vrfi_ = FLUID::dir_dep;
+      else if (turbmodelparamssgvisc.get<FLUID::VremanFiMethod>("FILTER_WIDTH",
+                   FLUID::VremanFiMethod::cuberootvol) == FLUID::VremanFiMethod::min_len)
+        vrfi_ = FLUID::min_len;
       else
-        vrfi_ = Inpar::FLUID::cuberootvol;
+        vrfi_ = FLUID::cuberootvol;
     }
     else
     {

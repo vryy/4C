@@ -1010,11 +1010,11 @@ double Discret::Elements::FluidEleCalcXWall<distype, enrtype>::calc_mk()
       Core::LinAlg::generalized_eigen_max_real_eigenvalue(elemat1, elemat2);
 
   double h_u = 0.0;
-  if (my::fldpara_->which_tau() == Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall ||
-      my::fldpara_->which_tau() == Inpar::FLUID::tau_codina ||
-      my::fldpara_->which_tau() == Inpar::FLUID::tau_codina_convscaled)
+  if (my::fldpara_->which_tau() == FLUID::tau_franca_barrenechea_valentin_frey_wall ||
+      my::fldpara_->which_tau() == FLUID::tau_codina ||
+      my::fldpara_->which_tau() == FLUID::tau_codina_convscaled)
   {
-    if (!(my::fldpara_->char_ele_length_u() == Inpar::FLUID::volume_equivalent_diameter_u))
+    if (!(my::fldpara_->char_ele_length_u() == FLUID::volume_equivalent_diameter_u))
       FOUR_C_THROW("only volume equivalent diameter defined up to now");
 
     // volume equivalent diameter

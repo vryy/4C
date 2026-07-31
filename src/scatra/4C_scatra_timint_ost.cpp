@@ -60,7 +60,7 @@ void ScaTra::TimIntOneStepTheta::setup()
   const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 
   // fine-scale vector at time n+1
-  if (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
+  if (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == FLUID::multifractal_subgrid_scales)
     fsphinp_ = std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
   // -------------------------------------------------------------------
@@ -203,7 +203,7 @@ void ScaTra::TimIntOneStepTheta::avm3_separation()
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntOneStepTheta::dynamic_computation_of_cs()
 {
-  if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
+  if (turbmodel_ == FLUID::dynamic_smagorinsky)
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
@@ -217,7 +217,7 @@ void ScaTra::TimIntOneStepTheta::dynamic_computation_of_cs()
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntOneStepTheta::dynamic_computation_of_cv()
 {
-  if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
+  if (turbmodel_ == FLUID::dynamic_vreman)
   {
     const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
@@ -347,7 +347,7 @@ void ScaTra::TimIntOneStepTheta::read_restart(
 
   read_restart_problem_specific(step, *reader);
 
-  if (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
+  if (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == FLUID::multifractal_subgrid_scales)
     avm3_preparation();
 
   // read restart on micro scale in multi-scale simulations if necessary

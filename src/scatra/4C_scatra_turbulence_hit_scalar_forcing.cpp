@@ -31,7 +31,7 @@ namespace ScaTra
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
   HomoIsoTurbScalarForcing::HomoIsoTurbScalarForcing(ScaTraTimIntImpl* timeint)
-      : forcing_type_(Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(
+      : forcing_type_(Teuchos::getIntegralValue<FLUID::ForcingType>(
             timeint->extraparams_->sublist("TURBULENCE MODEL"), "FORCING_TYPE")),
         discret_(timeint->discret_),
         forcing_(timeint->forcing_),
@@ -252,8 +252,7 @@ namespace ScaTra
     }
 #else
     CalculateForcing(0);
-    if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
-      TimeUpdateForcing();
+    if (forcing_type_ == FLUID::linear_compensation_from_intermediate_spectrum) TimeUpdateForcing();
 #endif
     return;
   }
@@ -482,7 +481,7 @@ namespace ScaTra
           // instead
           const double scalarvariance = 0.5 * norm((phi_hat)[pos]);
 
-          if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
+          if (forcing_type_ == FLUID::linear_compensation_from_intermediate_spectrum)
           {
             // get wave number
             const double k = sqrt(k_1 * k_1 + k_2 * k_2 + k_3 * k_3);
@@ -548,7 +547,7 @@ namespace ScaTra
             }
           }
 
-          if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
+          if (forcing_type_ == FLUID::linear_compensation_from_intermediate_spectrum)
           {
             // compute linear compensation factor from energy spectrum
 

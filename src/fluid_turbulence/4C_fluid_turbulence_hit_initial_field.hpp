@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_vector.hpp"
 
 #include <memory>
@@ -33,8 +33,7 @@ namespace FLD
   {
    public:
     //! constructor
-    HomoIsoTurbInitialField(
-        FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield);
+    HomoIsoTurbInitialField(FluidImplicitTimeInt& timeint, const FLUID::InitialField initfield);
 
     //! destructor
     virtual ~HomoIsoTurbInitialField() = default;
@@ -70,7 +69,7 @@ namespace FLD
     std::shared_ptr<Core::LinAlg::Vector<double>> veln_;
     std::shared_ptr<Core::LinAlg::Vector<double>> velnm_;
     //! type of energy spectrum for initialization
-    Inpar::FLUID::InitialField type_;
+    FLUID::InitialField type_;
 
     //! number of resolved mode
     int nummodes_;
@@ -90,8 +89,7 @@ namespace FLD
   {
    public:
     //! constructor
-    HomoIsoTurbInitialFieldHDG(
-        FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield);
+    HomoIsoTurbInitialFieldHDG(FluidImplicitTimeInt& timeint, const FLUID::InitialField initfield);
 
 
     //! calculate initial field

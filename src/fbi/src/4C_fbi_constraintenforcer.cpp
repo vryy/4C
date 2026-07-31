@@ -22,10 +22,10 @@
 #include "4C_fem_discretization_faces.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_fluid_utils.hpp"
 #include "4C_geometry_pair.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_mapextractor.hpp"
@@ -67,8 +67,7 @@ void Adapter::FBIConstraintenforcer::setup(std::shared_ptr<Adapter::FSIStructure
       *(fluid_->discretization()), 3, *velocity_pressure_splitter_);
 
   const bool meshtying =
-      (Global::Problem::instance()->fluid_dynamic_params().get<Inpar::FLUID::MeshTying>(
-          "MESHTYING"));
+      (Global::Problem::instance()->fluid_dynamic_params().get<FLUID::MeshTying>("MESHTYING"));
 
   std::shared_ptr<Core::LinAlg::SparseOperator> fluidmatrix(nullptr);
 

@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_scatra_timint_meshtying_strategy_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -88,7 +88,7 @@ namespace ScaTra
     std::shared_ptr<FLD::Meshtying> meshtying_;
 
     //! type of fluid-fluid meshtying
-    Inpar::FLUID::MeshTying type_;
+    FLUID::MeshTying type_;
 
    private:
     //! copy constructor

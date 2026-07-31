@@ -14,7 +14,7 @@
 #include "4C_fem_general_utils_shapevalues_hdg.hpp"
 #include "4C_fluid_ele_hdg_weak_comp.hpp"
 #include "4C_fluid_ele_interface.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_serialdensesolver.hpp"
 #include "4C_utils_singleton_owner.hpp"
 

@@ -15,8 +15,8 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_geometry_searchtree.hpp"
 #include "4C_fem_geometry_searchtree_service.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_rebalance_binning_based.hpp"
@@ -39,10 +39,10 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
               .get<double>("SEARCH_RADIUS")),
       edgebased_fluidstabilization_(false)
 {
-  edgebased_fluidstabilization_ = (Teuchos::getIntegralValue<Inpar::FLUID::StabType>(
+  edgebased_fluidstabilization_ = (Teuchos::getIntegralValue<FLUID::StabType>(
                                        Global::Problem::instance()->fluid_dynamic_params().sublist(
                                            "RESIDUAL-BASED STABILIZATION"),
-                                       "STABTYPE") == Inpar::FLUID::stabtype_edgebased);
+                                       "STABTYPE") == FLUID::stabtype_edgebased);
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIGeometryCoupler::setup(

@@ -16,7 +16,7 @@
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_intfaces_calc.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_newtonianfluid.hpp"

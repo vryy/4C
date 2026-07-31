@@ -172,7 +172,7 @@ void FLD::TimIntStationaryHDG::clear_state_assemble_mat_and_rhs()
  |  set initial flow field for test cases              kronbichler 05/14|
  *----------------------------------------------------------------------*/
 void FLD::TimIntStationaryHDG::set_initial_flow_field(
-    const Inpar::FLUID::InitialField initfield, const int startfuncno)
+    const FLUID::InitialField initfield, const int startfuncno)
 {
   const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
   Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
@@ -180,7 +180,7 @@ void FLD::TimIntStationaryHDG::set_initial_flow_field(
   Teuchos::ParameterList initParams;
   initParams.set<FLD::Action>("action", FLD::project_fluid_field);
   initParams.set("startfuncno", startfuncno);
-  initParams.set<Inpar::FLUID::InitialField>("initfield", initfield);
+  initParams.set<FLUID::InitialField>("initfield", initfield);
   // loop over all elements on the processor
   Core::Elements::LocationArray la(2);
   double error = 0;
@@ -231,10 +231,10 @@ void FLD::TimIntStationaryHDG::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
+  eleparams.set<FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // set time integration scheme
-  eleparams.set<Inpar::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
+  eleparams.set<FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
 
   // set general element parameters
   eleparams.set("dt", dta_);

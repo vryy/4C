@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fluid_input.hpp"
 #include "4C_fluid_turbulence_input.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_scatra_ele_parameter_base.hpp"
 #include "4C_scatra_input.hpp"
 
@@ -41,8 +41,8 @@ namespace Discret
 
       //! @name return turbulence parameters
       //! @{
-      Inpar::FLUID::TurbModelAction turb_model() { return turbmodel_; };
-      Inpar::FLUID::ScalarForcing scalar_forcing() { return scalarforcing_; };
+      FLUID::TurbModelAction turb_model() { return turbmodel_; };
+      FLUID::ScalarForcing scalar_forcing() { return scalarforcing_; };
       ScaTra::FSSUGRDIFF which_fssgd() { return whichfssgd_; };
       bool fssgd() { return fssgd_; };
       double cs() { return cs_; };
@@ -87,10 +87,10 @@ namespace Discret
       //! @name turbulence parameters
       //! @{
       //! definition of turbulence model
-      Inpar::FLUID::TurbModelAction turbmodel_;
+      FLUID::TurbModelAction turbmodel_;
 
       //! define forcing for scalar field
-      Inpar::FLUID::ScalarForcing scalarforcing_;
+      FLUID::ScalarForcing scalarforcing_;
 
       //! flag to activate AVM3
       bool fssgd_;

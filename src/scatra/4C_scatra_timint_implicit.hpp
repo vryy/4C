@@ -12,7 +12,7 @@
 
 #include "4C_adapter_scatra_wrapper.hpp"
 #include "4C_fem_condition.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -1270,7 +1270,7 @@ namespace ScaTra
     ScaTra::FSSUGRDIFF fssgd_;
 
     //! LOMA-specific parameter: turbulence model
-    Inpar::FLUID::TurbModelAction turbmodel_;
+    FLUID::TurbModelAction turbmodel_;
 
     //! flag indicating availability of scatra-scatra interface kinetics condition(s)
     bool s2ikinetics_;
@@ -1543,7 +1543,7 @@ namespace ScaTra
     std::shared_ptr<Core::LinAlg::Vector<double>> increment_;
 
     //! options for meshtying
-    Inpar::FLUID::MeshTying msht_;
+    FLUID::MeshTying msht_;
 
     /*========================================================================*/
     //! @name AVM3 variables

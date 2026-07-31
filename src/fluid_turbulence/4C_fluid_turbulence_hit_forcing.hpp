@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_vector.hpp"
 
@@ -38,7 +38,7 @@ namespace FLD
 
     virtual ~ForcingInterface() = default;
     //! initialize with initial spectrum
-    virtual void set_initial_spectrum(Inpar::FLUID::InitialField init_field_type) = 0;
+    virtual void set_initial_spectrum(FLUID::InitialField init_field_type) = 0;
 
     //! turn on forcing
     virtual void activate_forcing(const bool activate) = 0;
@@ -60,7 +60,7 @@ namespace FLD
     HomoIsoTurbForcing(FluidImplicitTimeInt& timeint);
 
     //! initialize with initial spectrum
-    void set_initial_spectrum(Inpar::FLUID::InitialField init_field_type) override;
+    void set_initial_spectrum(FLUID::InitialField init_field_type) override;
 
     //! turn on forcing
     void activate_forcing(const bool activate) override;
@@ -86,7 +86,7 @@ namespace FLD
     };
 
     //! type of forcing
-    Inpar::FLUID::ForcingType forcing_type_;
+    FLUID::ForcingType forcing_type_;
 
     //! fluid discretization
     std::shared_ptr<Core::FE::Discretization> discret_;
@@ -166,7 +166,7 @@ namespace FLD
     HomoIsoTurbForcingHDG(FluidImplicitTimeInt& timeint);
 
     //! initialize with initial spectrum
-    void set_initial_spectrum(Inpar::FLUID::InitialField init_field_type) override;
+    void set_initial_spectrum(FLUID::InitialField init_field_type) override;
 
     //! calculate power input
     void calculate_forcing(const int step) override;
@@ -185,7 +185,7 @@ namespace FLD
     PeriodicHillForcing(FluidImplicitTimeInt& timeint);
 
     //! initialize with initial spectrum
-    void set_initial_spectrum(Inpar::FLUID::InitialField init_field_type) override { return; }
+    void set_initial_spectrum(FLUID::InitialField init_field_type) override { return; }
 
     //! turn on forcing
     void activate_forcing(const bool activate) override { return; }

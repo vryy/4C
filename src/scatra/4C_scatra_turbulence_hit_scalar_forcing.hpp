@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_scatra_input.hpp"
@@ -63,7 +63,7 @@ namespace ScaTra
 
    private:
     //! type of forcing
-    Inpar::FLUID::ForcingType forcing_type_;
+    FLUID::ForcingType forcing_type_;
 
     //! scatra discretization
     std::shared_ptr<Core::FE::Discretization> discret_;

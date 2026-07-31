@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -57,7 +57,7 @@ namespace Discret
 
       /// parameters for the time integration
       //! time algorithm
-      Inpar::FLUID::TimeIntegrationScheme time_algo() { return timealgo_; };
+      FLUID::TimeIntegrationScheme time_algo() { return timealgo_; };
       //! actual time to evaluate the body BC
       double time() { return time_; };
       //! time-step length
@@ -102,9 +102,9 @@ namespace Discret
 
       /// parameters for the time integration
       //! time algorithm
-      Inpar::FLUID::TimeIntegrationScheme timealgo_;
+      FLUID::TimeIntegrationScheme timealgo_;
       //! One Step Theta discretization for the continuity and pressure.
-      Inpar::FLUID::OstContAndPress ostalgo_;
+      FLUID::OstContAndPress ostalgo_;
       //! New One Step Theta implementation flag
       bool ostnew_;
       //! actual time to evaluate the body BC

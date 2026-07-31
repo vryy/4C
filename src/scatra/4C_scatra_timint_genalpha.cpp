@@ -73,7 +73,7 @@ void ScaTra::TimIntGenAlpha::setup()
   genalphafac_ = gamma_ / alphaM_;
 
   // fine-scale vector at time n+alpha_F
-  if (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
+  if (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == FLUID::multifractal_subgrid_scales)
     fsphiaf_ = std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
   // -------------------------------------------------------------------
@@ -238,7 +238,7 @@ void ScaTra::TimIntGenAlpha::avm3_separation()
 
   // set fine-scale velocity for parallel nightly tests
   // separation matrix depends on the number of proc here
-  if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and
+  if (turbmodel_ == FLUID::multifractal_subgrid_scales and
       extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").get<bool>("SET_FINE_SCALE_VEL"))
     fsphiaf_->put_scalar(0.01);
 
@@ -252,7 +252,7 @@ void ScaTra::TimIntGenAlpha::avm3_separation()
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntGenAlpha::dynamic_computation_of_cs()
 {
-  if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
+  if (turbmodel_ == FLUID::dynamic_smagorinsky)
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
@@ -274,7 +274,7 @@ void ScaTra::TimIntGenAlpha::dynamic_computation_of_cs()
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntGenAlpha::dynamic_computation_of_cv()
 {
-  if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
+  if (turbmodel_ == FLUID::dynamic_vreman)
   {
     const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
@@ -443,7 +443,7 @@ void ScaTra::TimIntGenAlpha::read_restart(
 
   read_restart_problem_specific(step, *reader);
 
-  if (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
+  if (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == FLUID::multifractal_subgrid_scales)
     avm3_preparation();
 }
 

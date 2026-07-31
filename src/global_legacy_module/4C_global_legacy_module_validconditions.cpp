@@ -18,10 +18,10 @@
 #include "4C_ehl_input.hpp"
 #include "4C_elch_input.hpp"
 #include "4C_fem_condition_definition.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_fpsi_input.hpp"
 #include "4C_fs3i_biofilm_fsi_input.hpp"
 #include "4C_fsi_input.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_levelset_input.hpp"
 #include "4C_mortar_input.hpp"
@@ -831,7 +831,7 @@ std::vector<Core::Conditions::ConditionDefinition> Global::valid_conditions()
   S2I::set_valid_conditions(condlist);
   ScaTra::set_valid_conditions(condlist);
   ElCh::set_valid_conditions(condlist);
-  Inpar::FLUID::set_valid_conditions(condlist);
+  FLUID::set_valid_conditions(condlist);
   ALE::set_valid_conditions(condlist);
   FSI::set_valid_conditions(condlist);
   FPSI::set_valid_conditions(condlist);

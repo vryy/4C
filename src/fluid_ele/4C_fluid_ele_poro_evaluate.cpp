@@ -29,13 +29,12 @@ int Discret::Elements::FluidPoro::evaluate(Teuchos::ParameterList& params,
 
   // switch between different physical types as used below
   std::string impltype = "poro";
-  switch (
-      params.get<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::physicaltype_undefined))
+  switch (params.get<FLUID::PhysicalType>("Physical Type", FLUID::physicaltype_undefined))
   {
-    case Inpar::FLUID::poro:
+    case FLUID::poro:
       impltype = "poro";
       break;
-    case Inpar::FLUID::poro_p1:
+    case FLUID::poro_p1:
       impltype = "poro_p1";
       break;
     default:
@@ -74,10 +73,9 @@ int Discret::Elements::FluidPoro::evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_poroscatra_mono_odblock:
     {
-      switch (params.get<Inpar::FLUID::PhysicalType>(
-          "Physical Type", Inpar::FLUID::physicaltype_undefined))
+      switch (params.get<FLUID::PhysicalType>("Physical Type", FLUID::physicaltype_undefined))
       {
-        case Inpar::FLUID::poro:
+        case FLUID::poro:
         {
           // no coupling
           return 0;

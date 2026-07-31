@@ -1060,7 +1060,7 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
   // action for elements
   fparams.set<FLD::Action>("action", FLD::calc_porousflow_fluid_coupling);
   // physical type
-  fparams.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
+  fparams.set<FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
   // other parameters that might be needed by the elements
   fparams.set("delta time", dt());
   fparams.set("total time", time());
@@ -1082,8 +1082,8 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
   fluid_field()->discretization()->set_state(0, "hist", *fluid_field()->hist());
 
   // set scheme-specific element parameters and vector values
-  if (fluid_field()->tim_int_scheme() == Inpar::FLUID::timeint_npgenalpha or
-      fluid_field()->tim_int_scheme() == Inpar::FLUID::timeint_npgenalpha)
+  if (fluid_field()->tim_int_scheme() == FLUID::timeint_npgenalpha or
+      fluid_field()->tim_int_scheme() == FLUID::timeint_npgenalpha)
     fluid_field()->discretization()->set_state(0, "velaf", *fluid_field()->velaf());
   else
     fluid_field()->discretization()->set_state(0, "velaf", *fluid_field()->velnp());
@@ -1114,7 +1114,7 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
     params.set("delta time", dt());
     params.set<PoroElast::Coupltype>("coupling", PoroElast::fluidstructure);
     params.set("timescale", fluid_field()->residual_scaling());
-    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
+    params.set<FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", *fluid_field()->dispnp());
@@ -1133,7 +1133,7 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
     // action for elements
     params.set<FLD::BoundaryAction>("action", FLD::poro_prescoupl);
     params.set<PoroElast::Coupltype>("coupling", PoroElast::fluidstructure);
-    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
+    params.set<FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", *fluid_field()->dispnp());

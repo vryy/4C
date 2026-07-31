@@ -453,7 +453,7 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::project_field(
       "Wrong size in project vector 2");
 
   // get initial function and current time
-  const auto* initfield = params.getPtr<Inpar::FLUID::InitialField>("initfield");
+  const auto* initfield = params.getPtr<FLUID::InitialField>("initfield");
   const int* startfunc = params.getPtr<int>("startfuncno");
   double* time = params.getPtr<double>("time");
 
@@ -1095,14 +1095,14 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_i
     const std::vector<double>& accel, const std::vector<double>& alevel)
 {
   // set convective flag
-  Inpar::FLUID::PhysicalType physicaltype = fldpara_->physical_type();
-  convective = (physicaltype != Inpar::FLUID::weakly_compressible_stokes_dens_mom);
+  FLUID::PhysicalType physicaltype = fldpara_->physical_type();
+  convective = (physicaltype != FLUID::weakly_compressible_stokes_dens_mom);
 
   // set unsteady flag
   const Teuchos::ParameterList& fluidparams = Global::Problem::instance()->fluid_dynamic_params();
   auto timeintegr =
-      Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fluidparams, "TIMEINTEGR");
-  unsteady = (timeintegr != Inpar::FLUID::TimeIntegrationScheme::timeint_stationary);
+      Teuchos::getIntegralValue<FLUID::TimeIntegrationScheme>(fluidparams, "TIMEINTEGR");
+  unsteady = (timeintegr != FLUID::TimeIntegrationScheme::timeint_stationary);
 
   // get material properties
   const Mat::WeaklyCompressibleFluid* actmat =

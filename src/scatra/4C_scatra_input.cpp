@@ -9,7 +9,7 @@
 
 #include "4C_art_net_input.hpp"
 #include "4C_fem_condition_definition.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_io_input_spec.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_linalg_equilibrate.hpp"
@@ -235,15 +235,15 @@ std::vector<Core::IO::InputSpec> ScaTra::valid_parameters()
               },
               {.description = "fine-scale subgrid diffusivity", .default_value = fssugrdiff_no}),
 
-          deprecated_selection<Inpar::FLUID::MeshTying>("MESHTYING",
+          deprecated_selection<FLUID::MeshTying>("MESHTYING",
               {
-                  {"no", Inpar::FLUID::no_meshtying},
-                  {"Condensed_Smat", Inpar::FLUID::condensed_smat},
-                  {"Condensed_Bmat", Inpar::FLUID::condensed_bmat},
-                  {"Condensed_Bmat_merged", Inpar::FLUID::condensed_bmat_merged},
+                  {"no", FLUID::no_meshtying},
+                  {"Condensed_Smat", FLUID::condensed_smat},
+                  {"Condensed_Bmat", FLUID::condensed_bmat},
+                  {"Condensed_Bmat_merged", FLUID::condensed_bmat_merged},
               },
               {.description = "Flag to (de)activate mesh tying algorithm",
-                  .default_value = Inpar::FLUID::no_meshtying}),
+                  .default_value = FLUID::no_meshtying}),
 
           // Type of coupling strategy between the two fields
           deprecated_selection<ScaTra::FieldCoupling>("FIELDCOUPLING",
