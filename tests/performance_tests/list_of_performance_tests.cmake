@@ -56,6 +56,19 @@ four_c_performance_test(
   ${PROJECT_SOURCE_DIR}/tests/performance_tests/Kremer_2019_OCP_NMC622.csv
   )
 
+four_c_performance_test(
+  TEST_FILE
+  reduced_lung.4C.yaml
+  MESH
+  reduced_lung_tree.vtu
+  NP_MINIMAL
+  1
+  NP_FULL
+  1
+  REQUIRED_DEPENDENCIES
+  VTK
+  )
+
 if(DEFINED FOUR_C_PERFORMANCE_TESTS_COLLECTION_FILE
    AND NOT "${FOUR_C_PERFORMANCE_TESTS_COLLECTION_FILE}" STREQUAL ""
    )
