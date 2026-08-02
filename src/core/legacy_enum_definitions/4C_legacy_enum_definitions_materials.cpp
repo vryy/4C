@@ -67,6 +67,8 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "MAT_Muscle_Giantesio";
     case m_myocard:
       return "MAT_myocard";
+    case m_ogden_tca:
+      return "MAT_Ogden_TCA";
     case m_sutherland:
       return "MAT_sutherland";
     case m_ion:

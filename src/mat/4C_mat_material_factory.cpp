@@ -103,6 +103,7 @@
 #include "4C_mat_newman.hpp"
 #include "4C_mat_newman_multiscale.hpp"
 #include "4C_mat_newtonianfluid.hpp"
+#include "4C_mat_ogden_tca.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_particle_dem.hpp"
 #include "4C_mat_particle_pd.hpp"
@@ -368,6 +369,10 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     case Core::Materials::m_myocard:
     {
       return make_parameter_impl<Mat::PAR::Myocard>(id, type, input_data);
+    }
+    case Core::Materials::m_ogden_tca:
+    {
+      return make_parameter_impl<Mat::PAR::OgdenTCA>(id, type, input_data);
     }
     case Core::Materials::m_sutherland:
     {
