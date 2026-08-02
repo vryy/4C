@@ -200,12 +200,8 @@ int Adapter::StructureTimeAda::integrate()
       integrate_step_auxiliary();
 
       // call the predictor
-      pre_predict();
       prepare_time_step();
 
-      // integrate system with marching TIS and
-      // stm_->IntegrateStep();
-      pre_solve();
       convergencestatus = solve();
 
       if (convergencestatus != Solid::conv_success)

@@ -391,12 +391,6 @@ namespace Adapter
       structure_->set_action_type(action);
     }
 
-    /// wrapper for things that should be done before prepare_time_step is called
-    void pre_predict() override { structure_->pre_predict(); }
-
-    /// wrapper for things that should be done before solving the nonlinear iterations
-    void pre_solve() override { structure_->pre_solve(); }
-
     /// wrapper for things that should be done before updating
     void pre_update() override { structure_->pre_update(); }
 

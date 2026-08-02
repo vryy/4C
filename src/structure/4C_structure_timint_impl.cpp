@@ -303,9 +303,6 @@ void Solid::TimIntImpl::predict()
   check_is_init();
   check_is_setup();
 
-  // things that need to be done before Predict
-  pre_predict();
-
   // Update locals systems (which may be time dependent)
   if (locsysman_ != nullptr)
     locsysman_->update(timen_, {}, Global::Problem::instance()->function_manager());
@@ -1194,9 +1191,6 @@ Solid::ConvergenceStatus Solid::TimIntImpl::solve()
   // safety check
   check_is_init();
   check_is_setup();
-
-  // things to be done before solving
-  pre_solve();
 
   int nonlin_error = 0;
   // special nonlinear iterations for contact / meshtying

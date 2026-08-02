@@ -67,8 +67,6 @@ void Solid::TimeInt::Explicit::setup()
 void Solid::TimeInt::Explicit::prepare_time_step()
 {
   check_init_setup();
-  // things that need to be done before predict
-  pre_predict();
 
   // ToDo prepare contact for new time step
   // PrepareStepContact();

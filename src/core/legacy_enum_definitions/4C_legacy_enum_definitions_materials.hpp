@@ -10,8 +10,6 @@
 
 #include "4C_config.hpp"
 
-#include <string_view>
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Materials
@@ -298,9 +296,6 @@ namespace Core::Materials
                                                    ///< contribution
     mix_solid_material                             ///< Solid material for constituents
   };
-
-
-  std::string_view to_string(MaterialType material_type);
 }  // namespace Core::Materials
 
 

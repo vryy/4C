@@ -97,9 +97,6 @@ void Solid::TimIntCentrDiff::resize_m_step()
 /* Integrate step */
 int Solid::TimIntCentrDiff::integrate_step()
 {
-  // things to be done before integrating
-  pre_solve();
-
   // time this step
   timer_->reset();
 

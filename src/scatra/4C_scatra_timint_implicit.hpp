@@ -358,9 +358,6 @@ namespace ScaTra
     //! do time integration (time loop)
     virtual void time_loop();
 
-    //! operator for manipulations before call to \ref Solve() ; May be overridden by subclass.
-    virtual void pre_solve() {};
-
     //! general solver call for coupled algorithms (decides if linear/nonlinear internally)
     virtual void solve();
 

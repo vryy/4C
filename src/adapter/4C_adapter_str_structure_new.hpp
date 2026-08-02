@@ -327,12 +327,6 @@ namespace Adapter
         std::shared_ptr<std::vector<char>> elementdata,
         std::shared_ptr<std::vector<char>> nodedata) override = 0;
 
-    /// wrapper for things that should be done before prepare_time_step is called
-    void pre_predict() override = 0;
-
-    /// wrapper for things that should be done before solving the nonlinear iterations
-    void pre_solve() override = 0;
-
     /// wrapper for things that should be done before updating
     void pre_update() override = 0;
 

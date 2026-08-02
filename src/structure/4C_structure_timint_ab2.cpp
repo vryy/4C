@@ -112,9 +112,6 @@ int Solid::TimIntAB2::integrate_step()
   check_is_init();
   check_is_setup();
 
-  // things to be done before integrating
-  pre_solve();
-
   // time this step
   timer_->reset();
 
