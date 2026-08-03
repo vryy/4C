@@ -7,11 +7,11 @@
 
 #include "4C_fluid_timint_poro.hpp"
 
-#include "4C_fem_general_node.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_parameter_poro.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
+#include "4C_io_visualization_parameters.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_poroelast_utils.hpp"
 #include "4C_utils_enum.hpp"
@@ -22,15 +22,21 @@ FOUR_C_NAMESPACE_OPEN
 FLD::TimIntPoro::TimIntPoro(const std::shared_ptr<Core::FE::Discretization>& actdis,
     const std::shared_ptr<Core::LinAlg::Solver>& solver,
     const std::shared_ptr<Teuchos::ParameterList>& params,
-    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid)
 {
+  auto use_all_elements = [](const Core::Elements::Element* element) { return true; };
+  visualization_writer_fluid_poro_ =
+      std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(actdis,
+          Core::IO::visualization_parameters_factory(
+              Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+              *Global::Problem::instance()->output_control_file(), time_),
+          use_all_elements, "fluid-poro");
 }
 
 void FLD::TimIntPoro::init()
 {
-  Teuchos::ParameterList* stabparams;
-  stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
+  Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
   if (stabparams->get<FLUID::StabType>("STABTYPE") == FLUID::StabType::stabtype_residualbased)
   {
@@ -163,14 +169,6 @@ void FLD::TimIntPoro::update_iter_incrementally(
   }
 }
 
-void FLD::TimIntPoro::write_output() const
-{
-  auto convel = std::make_shared<Core::LinAlg::Vector<double>>(*velnp_);
-  convel->update(-1.0, *gridv_, 1.0);
-  output_->write_vector("convel", convel);
-  output_->write_vector("gridv", gridv_);
-}
-
 void FLD::TimIntPoro::write_restart() const { output_->write_vector("gridv", gridv_); }
 
 void FLD::TimIntPoro::output()
@@ -179,10 +177,28 @@ void FLD::TimIntPoro::output()
   // output of solution
   if (upres_ > 0 && step_ % upres_ == 0)
   {
-    write_output();
+    visualization_writer_fluid_poro_->reset();
+
+    const unsigned int n_dim = discret_->n_dim();
+    {
+      auto convel = Core::LinAlg::Vector<double>(*velnp_);
+      convel.update(-1.0, *gridv_, 1.0);
+
+      const std::vector<std::optional<std::string>> context(n_dim, "convective_velocity");
+      visualization_writer_fluid_poro_->append_result_data_vector_with_context(
+          convel, Core::IO::OutputEntity::dof, context);
+    }
+
+    {
+      const std::vector<std::optional<std::string>> context(n_dim, "grid_velocity");
+      visualization_writer_fluid_poro_->append_result_data_vector_with_context(
+          *gridv_, Core::IO::OutputEntity::dof, context);
+    }
+
+    visualization_writer_fluid_poro_->write_to_disk(time_, step_);
   }
-  // write restart also when uprestart_ is not a integer multiple of upres_
-  else if (uprestart_ > 0 && step_ % uprestart_ == 0)
+  // write restart
+  if (uprestart_ > 0 && step_ % uprestart_ == 0)
   {
     write_restart();
   }

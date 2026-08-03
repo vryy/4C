@@ -12,6 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fluid_implicit_integration.hpp"
+#include "4C_io_discretization_visualization_writer_mesh.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -70,9 +71,6 @@ namespace FLD
     */
     void output() override;
 
-    //! write output for each step as defined in the input file
-    void write_output() const;
-
     //! write restart information for each step as defined in the input file
     void write_restart() const;
 
@@ -121,6 +119,8 @@ namespace FLD
     std::shared_ptr<Core::LinAlg::Vector<double>> init_porosity_field_;
 
    private:
+    std::unique_ptr<Core::IO::DiscretizationVisualizationWriterMesh>
+        visualization_writer_fluid_poro_{nullptr};
   };
 
 }  // namespace FLD
