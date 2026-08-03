@@ -542,11 +542,8 @@ namespace FLD
 
     virtual void output_to_gmsh(const int step, const double time, const bool inflow) const;
 
-    /*!
-    \output of external forces for restart
-
-    */
-    virtual void output_external_forces();
+    //! write external forces for restart
+    virtual void write_restart_external_forces();
 
     /*!
     \brief get access to map extractor for velocity and pressure
