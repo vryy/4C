@@ -9,22 +9,21 @@
 
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_general_node.hpp"
+#include "4C_fluid_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
 
-#include <stdio.h>
+#include <cstdio>
 
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                    ismail 09/10|
  *----------------------------------------------------------------------*/
 FLD::Utils::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper(
     std::shared_ptr<Core::FE::Discretization> actdis, double dta)
-    :  // call constructor for "nontrivial" objects
-      discret_(actdis)
+    : discret_(actdis)
 {
   //--------------------------------------------------------------------
   // extract the womersley boundary dof
@@ -88,12 +87,12 @@ FLD::Utils::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::Utils::FluidVolumetricSurfaceFlowWrapper::output(
+void FLD::Utils::FluidVolumetricSurfaceFlowWrapper::write_restart(
     Core::IO::DiscretizationWriter& output) const
 {
   for (const auto& mapiter : fvsf_map_)
   {
-    mapiter.second->FluidVolumetricSurfaceFlowBc::output(
+    mapiter.second->FluidVolumetricSurfaceFlowBc::write_restart(
         output, "VolumetricSurfaceFlowCond", mapiter.first);
   }
 }
@@ -379,20 +378,20 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::center_of_mass_calculation(
   if (myrank_ == 0)
   {
     // print the center of mass
-    printf("center of mass of cond(%d) is evaluated:\n", condid_);
+    std::printf("center of mass of cond(%d) is evaluated:\n", condid_);
     for (unsigned int i = 0; i < coords->size(); i++)
     {
-      printf("| %f |", (*coords)[i]);
+      std::printf("| %f |", (*coords)[i]);
     }
-    printf("\n");
+    std::printf("\n");
 
     // print the average normal
-    printf("average normal of cond(%d) surface is:\n", condid_);
+    std::printf("average normal of cond(%d) surface is:\n", condid_);
     for (unsigned int i = 0; i < coords->size(); i++)
     {
-      printf("| %f |", (*normal)[i]);
+      std::printf("| %f |", (*normal)[i]);
     }
-    printf("\n");
+    std::printf("\n");
   }
 }
 
@@ -765,10 +764,9 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
 
 
 /*----------------------------------------------------------------------*
- |  Output (public)                                         ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::Utils::FluidVolumetricSurfaceFlowBc::output(
-    Core::IO::DiscretizationWriter& output, std::string ds_condname, int condnum) const
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::write_restart(
+    Core::IO::DiscretizationWriter& output, const std::string& ds_condname, int condnum) const
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
@@ -794,7 +792,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::output(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidVolumetricSurfaceFlowBc::read_restart(
-    Core::IO::DiscretizationReader& reader, std::string ds_condname, int condnum)
+    Core::IO::DiscretizationReader& reader, const std::string& ds_condname, int condnum)
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
@@ -904,7 +902,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::reset_traction_velocity_comp()
  |  Evaluates the Velocity components of the traction        ismail 05/11|
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(
-    Teuchos::ParameterList eleparams, std::string condname, double flowrate, int condid_,
+    Teuchos::ParameterList eleparams, std::string condname, double flowrate, int condid,
     double time, double theta, double dta)
 {
   //  double norm2= 0.0;
@@ -922,7 +920,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(
 
   eleparams.set<FLD::BoundaryAction>("action", FLD::traction_velocity_component);
   eleparams.set("velocities", cond_velocities_);
-  discret_->evaluate_condition(eleparams, cond_traction_vel_, condname, condid_);
+  discret_->evaluate_condition(eleparams, cond_traction_vel_, condname, condid);
 }
 
 
@@ -1198,8 +1196,8 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
   {
     double flow_error = 0.0;
     flow_error = actflowrate - flowrate;
-    printf("DIR(%f): Flow_estimated = %f : Flow_wanted = %f : Flow_correction = %f\n", flow_dir_,
-        actflowrate, flowrate, flow_error);
+    std::printf("DIR(%f): Flow_estimated = %f : Flow_wanted = %f : Flow_correction = %f\n",
+        flow_dir_, actflowrate, flowrate, flow_error);
   }
 
   // loop over all of the nodes
@@ -1885,11 +1883,11 @@ void FLD::Utils::TotalTractionCorrector::update_residual(Core::LinAlg::Vector<do
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::Utils::TotalTractionCorrector::output(Core::IO::DiscretizationWriter& output) const
+void FLD::Utils::TotalTractionCorrector::write_restart(Core::IO::DiscretizationWriter& output) const
 {
   for (const auto& mapiter : fvsf_map_)
   {
-    mapiter.second->FluidVolumetricSurfaceFlowBc::output(
+    mapiter.second->FluidVolumetricSurfaceFlowBc::write_restart(
         output, "TotalTractionCorrectionCond", mapiter.first);
   }
 }
