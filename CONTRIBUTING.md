@@ -49,3 +49,10 @@ We desire a clean commit history. This may require rebasing the commits before m
 
 ## Documentation
 In 4C, we have two types of documentation. The general [4C documentation](https://4c-multiphysics.github.io/4C/documentation/) generated with [Sphinx](https://www.sphinx-doc.org/en/master/#) and the [4C source code documentation](https://4c-multiphysics.github.io/4C/doxygen/) generated with [Doxygen](https://doxygen.nl/index.html). We welcome any improvements to our documentation. More information can be found [here](doc/README.md).
+
+## AI-assisted contributions
+Any AI-assisted code must be reviewed, understood, and validated by the contributing author, who takes full responsibility for the contribution. Specifically, contributors must ensure that AI-assisted code:
+* does not introduce third-party code incompatible with the project's [LGPL-3.0-or-later license](LICENSE)
+* adheres to our [code of conduct](CODE_OF_CONDUCT.md) and this contributing guide.
+
+We recommend declaring AI usage in the pull request description to ensure transparency and assist review. When code is fully AI-generated, we encourage adding attribution to the commit message.
