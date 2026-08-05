@@ -1083,7 +1083,7 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
 
   // set scheme-specific element parameters and vector values
   if (fluid_field()->tim_int_scheme() == FLUID::timeint_npgenalpha or
-      fluid_field()->tim_int_scheme() == FLUID::timeint_npgenalpha)
+      fluid_field()->tim_int_scheme() == FLUID::timeint_afgenalpha)
     fluid_field()->discretization()->set_state(0, "velaf", *fluid_field()->velaf());
   else
     fluid_field()->discretization()->set_state(0, "velaf", *fluid_field()->velnp());
