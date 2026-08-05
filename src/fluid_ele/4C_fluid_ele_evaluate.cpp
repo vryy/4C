@@ -48,12 +48,11 @@ int Discret::Elements::Fluid::evaluate(Teuchos::ParameterList& params,
   const int nsd = Core::FE::get_dimension(shape());
 
   // Retrieve the physical type from the parameters
-  auto physicalType =
-      params.get<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::incompressible);
+  auto physicalType = params.get<FLUID::PhysicalType>("Physical Type", FLUID::incompressible);
   std::string impltype;
   switch (physicalType)
   {
-    case Inpar::FLUID::loma:
+    case FLUID::loma:
       impltype = "loma";
       break;
     default:
@@ -238,7 +237,7 @@ int Discret::Elements::Fluid::evaluate(Teuchos::ParameterList& params,
         // pointer to class FluidEleParameter (access to the general parameter)
         Discret::Elements::FluidEleParameterStd* fldpara =
             Discret::Elements::FluidEleParameterStd::instance();
-        if (fldpara->physical_type() == Inpar::FLUID::loma)
+        if (fldpara->physical_type() == FLUID::loma)
         {
           std::shared_ptr<const Core::LinAlg::Vector<double>> temp =
               discretization.get_state("T (trial)");
@@ -332,7 +331,7 @@ int Discret::Elements::Fluid::evaluate(Teuchos::ParameterList& params,
         std::shared_ptr<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel = nullptr;
         std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_dens = nullptr;
         std::shared_ptr<Core::LinAlg::Vector<double>> col_filtered_dens_strainrate = nullptr;
-        if (fldpara->physical_type() == Inpar::FLUID::loma)
+        if (fldpara->physical_type() == FLUID::loma)
         {
           col_filtered_dens_vel = params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(
               "col_filtered_dens_vel");
@@ -389,7 +388,7 @@ int Discret::Elements::Fluid::evaluate(Teuchos::ParameterList& params,
           Cs_delta_sq = 0.0;
         }
 
-        if (fldpara->physical_type() == Inpar::FLUID::loma)
+        if (fldpara->physical_type() == FLUID::loma)
         {
           // and set Ci_delta_sq without averaging (only clipping) for loma
           if (abs(CI_denominator) < 1E-16)

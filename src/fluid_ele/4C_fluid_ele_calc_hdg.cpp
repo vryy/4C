@@ -342,8 +342,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::compute_error(Discret::Elements
   Core::LinAlg::Matrix<nsd_, nsd_> dervel(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<nsd_, 1> xyz(Core::LinAlg::Initialization::zero);
 
-  const auto calcerr =
-      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(params, "calculate error");
+  const auto calcerr = Teuchos::getIntegralValue<FLUID::CalcError>(params, "calculate error");
   const int calcerrfunctno = params.get<int>("error function number");
 
   double err_u = 0., err_p = 0., err_h = 0., norm_u = 0., norm_p = 0., norm_h = 0.;
@@ -416,7 +415,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements
       "Wrong size in project vector 2");
 
   // get initial function and current time
-  const auto* initfield = params.getPtr<Inpar::FLUID::InitialField>("initfield");
+  const auto* initfield = params.getPtr<FLUID::InitialField>("initfield");
   const int* startfunc = params.getPtr<int>("startfuncno");
   double* time = params.getPtr<double>("time");
 
@@ -452,7 +451,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements
 
       // This function returns the values of velocity, gradient and pressure from the given
       // initial field that can be a know field or a user-defined one
-      evaluate_all(*startfunc, Inpar::FLUID::InitialField(*initfield), xyz, u, grad, p);
+      evaluate_all(*startfunc, FLUID::InitialField(*initfield), xyz, u, grad, p);
 
       // now fill the components in the one-sided mass matrix and the right hand side
       // shapes_->ndofs_ gives the number of shape functions present in the element
@@ -585,7 +584,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements
       // Deciding if we are initializing a field or if it is a time dependant
       // boundary condition
       if (initfield != nullptr)  // Initial function
-        evaluate_velocity(*startfunc, Inpar::FLUID::InitialField(*initfield), xyz, u);
+        evaluate_velocity(*startfunc, FLUID::InitialField(*initfield), xyz, u);
       else
       {
         // This is used to project a function only on the boundary during the
@@ -1207,7 +1206,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDG<distype>::evaluate_velocity(const int startfunc,
-    const Inpar::FLUID::InitialField initfield, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
+    const FLUID::InitialField initfield, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
     Core::LinAlg::Matrix<nsd_, 1>& u) const
 {
   // pass on dummy entries (costs a little but will not be significant)
@@ -1221,12 +1220,12 @@ void Discret::Elements::FluidEleCalcHDG<distype>::evaluate_velocity(const int st
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDG<distype>::evaluate_all(const int startfunc,
-    const Inpar::FLUID::InitialField initfield, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
+    const FLUID::InitialField initfield, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
     Core::LinAlg::Matrix<nsd_, 1>& u, Core::LinAlg::Matrix<nsd_, nsd_>& grad, double& p) const
 {
   switch (initfield)
   {
-    case Inpar::FLUID::initfield_beltrami_flow:
+    case FLUID::initfield_beltrami_flow:
       // check whether present flow is indeed three-dimensional
       {
         if (nsd_ != 3) FOUR_C_THROW("Beltrami flow is a three-dimensional flow!");
@@ -1271,7 +1270,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::evaluate_all(const int startfu
       }
       break;
 
-    case Inpar::FLUID::initfield_channel_weakly_compressible:
+    case FLUID::initfield_channel_weakly_compressible:
     {
       FLD::ChannelWeaklyCompressibleFunction* channelfunc =
           new FLD::ChannelWeaklyCompressibleFunction;
@@ -1285,8 +1284,8 @@ void Discret::Elements::FluidEleCalcHDG<distype>::evaluate_all(const int startfu
     }
     break;
 
-    case Inpar::FLUID::initfield_field_by_function:
-    case Inpar::FLUID::initfield_disturbed_field_from_function:
+    case FLUID::initfield_field_by_function:
+    case FLUID::initfield_disturbed_field_from_function:
     {
       for (unsigned int index = 0; index < nsd_; ++index)
         u(index) = Global::Problem::instance()
@@ -1345,7 +1344,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::evaluate_pressure_average(
 
   // get function used to evaluate the error
   const Teuchos::ParameterList fluidparams = Global::Problem::instance()->fluid_dynamic_params();
-  const auto calcerr = Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(fluidparams, "CALCERROR");
+  const auto calcerr = Teuchos::getIntegralValue<FLUID::CalcError>(fluidparams, "CALCERROR");
   const int calcerrfunctno = fluidparams.get<int>("CALCERRORFUNCNO");
 
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -1438,11 +1437,10 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_
     const std::vector<double>& interiorebodyforce)
 {
   // get physical type
-  Inpar::FLUID::PhysicalType physicaltype = fldpara_->physical_type();
-  stokes = (physicaltype == Inpar::FLUID::stokes ||
-            physicaltype == Inpar::FLUID::weakly_compressible_stokes);
-  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
-                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
+  FLUID::PhysicalType physicaltype = fldpara_->physical_type();
+  stokes = (physicaltype == FLUID::stokes || physicaltype == FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == FLUID::weakly_compressible ||
+                        physicaltype == FLUID::weakly_compressible_stokes);
 
   gRes.putScalar(0.0);
   upRes.putScalar(0.0);
@@ -1650,11 +1648,10 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_
     const std::shared_ptr<Core::Mat::Material>& mat, const bool evaluateOnlyNonlinear)
 {
   // get physical type
-  Inpar::FLUID::PhysicalType physicaltype = fldpara_->physical_type();
-  stokes = (physicaltype == Inpar::FLUID::stokes ||
-            physicaltype == Inpar::FLUID::weakly_compressible_stokes);
-  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
-                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
+  FLUID::PhysicalType physicaltype = fldpara_->physical_type();
+  stokes = (physicaltype == FLUID::stokes || physicaltype == FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == FLUID::weakly_compressible ||
+                        physicaltype == FLUID::weakly_compressible_stokes);
 
   const double invtimefac = 1.0 / (fldparatimint_->time_fac());
   // Decide if the complete matrix has to be inverted
@@ -1904,11 +1901,10 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_face_resi
     const std::vector<double>& traceval, Core::LinAlg::SerialDenseVector& elevec)
 {
   // get physical type
-  Inpar::FLUID::PhysicalType physicaltype = fldpara_->physical_type();
-  stokes = (physicaltype == Inpar::FLUID::stokes ||
-            physicaltype == Inpar::FLUID::weakly_compressible_stokes);
-  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
-                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
+  FLUID::PhysicalType physicaltype = fldpara_->physical_type();
+  stokes = (physicaltype == FLUID::stokes || physicaltype == FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == FLUID::weakly_compressible ||
+                        physicaltype == FLUID::weakly_compressible_stokes);
 
   // compute pressure average on element
   double presavg = 0.;
@@ -2059,11 +2055,10 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_face_matr
     Core::LinAlg::SerialDenseMatrix& elemat)
 {
   // get physical type
-  Inpar::FLUID::PhysicalType physicaltype = fldpara_->physical_type();
-  stokes = (physicaltype == Inpar::FLUID::stokes ||
-            physicaltype == Inpar::FLUID::weakly_compressible_stokes);
-  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
-                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
+  FLUID::PhysicalType physicaltype = fldpara_->physical_type();
+  stokes = (physicaltype == FLUID::stokes || physicaltype == FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == FLUID::weakly_compressible ||
+                        physicaltype == FLUID::weakly_compressible_stokes);
 
   trMat.shape(ndofs_ * nsd_, shapesface_.nfdofs_);
   trMatAvg.shape(ndofs_ * nsd_, shapesface_.nfdofs_);
@@ -2222,9 +2217,9 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::eliminate_velocit
     Core::LinAlg::SerialDenseMatrix& elemat)
 {
   // get physical type
-  Inpar::FLUID::PhysicalType physicaltype = fldpara_->physical_type();
-  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
-                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
+  FLUID::PhysicalType physicaltype = fldpara_->physical_type();
+  weaklycompressible = (physicaltype == FLUID::weakly_compressible ||
+                        physicaltype == FLUID::weakly_compressible_stokes);
 
   // invert mass matrix. Inverse will be stored in massMat, too
   {
@@ -2277,9 +2272,9 @@ template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::solve_residual()
 {
   // get physical type
-  Inpar::FLUID::PhysicalType physicaltype = fldpara_->physical_type();
-  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
-                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
+  FLUID::PhysicalType physicaltype = fldpara_->physical_type();
+  weaklycompressible = (physicaltype == FLUID::weakly_compressible ||
+                        physicaltype == FLUID::weakly_compressible_stokes);
 
   for (unsigned int i = 0; i < (nsd_ + 1) * ndofs_ + 1; ++i) upUpd(i) = upRes(i);
 

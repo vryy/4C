@@ -12,7 +12,7 @@
 
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_interface.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -217,7 +217,7 @@ namespace Discret
        \brief Evaluates the analytic solution in the given point
        */
       static void evaluate_analytic_solution_point(const Core::LinAlg::Matrix<nsd_, 1>& xyzint,
-          const double t, const Inpar::FLUID::CalcError calcerr, const int calcerrfunctno,
+          const double t, const FLUID::CalcError calcerr, const int calcerrfunctno,
           const std::shared_ptr<Core::Mat::Material>& mat, Core::LinAlg::Matrix<nsd_, 1>& u,
           double& p, Core::LinAlg::Matrix<nsd_, nsd_>& dervel, bool isFullImplPressure = false,
           double deltat = 0.0);
@@ -368,7 +368,7 @@ namespace Discret
       /// for its use in FluidEleCalcHDG.
       static void body_force(Discret::Elements::Fluid* ele,  //< pointer to element
           const double time,                                 //< current time
-          const Inpar::FLUID::PhysicalType physicaltype,     //< physical type
+          const FLUID::PhysicalType physicaltype,            //< physical type
           Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,         //< body force at nodes
           Core::LinAlg::Matrix<nsd_, nen_>&
               eprescpgaf,  //< prescribed pressure gradient (required for turbulent channel flow!)

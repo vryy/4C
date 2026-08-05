@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_io_input_spec_builders.hpp"
@@ -14,18 +14,19 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
+std::vector<Core::IO::InputSpec> FLUID::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
   std::vector<Core::IO::InputSpec> specs;
+
   specs.push_back(group("FLUID DYNAMIC",
       {
 
           // physical type of fluid flow (incompressible, varying density, loma, Boussinesq
           // approximation,
           // temperature-dependent water)
-          deprecated_selection<Inpar::FLUID::PhysicalType>("PHYSICAL_TYPE",
+          deprecated_selection<FLUID::PhysicalType>("PHYSICAL_TYPE",
               {
                   {"Incompressible", incompressible},
                   {"Weakly_compressible", weakly_compressible},
@@ -57,7 +58,7 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
                   .default_value = -1}),
 
           // Flag to define the way of calculating stresses and wss
-          deprecated_selection<Inpar::FLUID::WSSType>("WSS_TYPE",
+          deprecated_selection<FLUID::WSSType>("WSS_TYPE",
               {
                   {"Standard", wss_standard},
                   {"Aggregation", wss_aggregation},
@@ -74,7 +75,7 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
                               "wallshearstress via plain aggregation.",
                   .default_value = -1}),
 
-          deprecated_selection<Inpar::FLUID::TimeIntegrationScheme>("TIMEINTEGR",
+          deprecated_selection<FLUID::TimeIntegrationScheme>("TIMEINTEGR",
               {
                   {"Stationary", timeint_stationary},
                   {"Np_Gen_Alpha", timeint_npgenalpha},
@@ -84,12 +85,12 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
               },
               {.description = "Time Integration Scheme", .default_value = timeint_one_step_theta}),
 
-          parameter<Inpar::FLUID::OstContAndPress>(
+          parameter<FLUID::OstContAndPress>(
               "OST_CONT_PRESS", {.description = "One step theta option for time discretization of "
                                                 "continuity eq. and pressure",
                                     .default_value = Cont_normal_Press_normal}),
 
-          parameter<Inpar::FLUID::LinearisationAction>("NONLINITER",
+          parameter<FLUID::LinearisationAction>("NONLINITER",
               {.description = "Nonlinear iteration scheme", .default_value = fixed_point_like}),
 
           deprecated_selection<std::string>("PREDICTOR",
@@ -99,7 +100,7 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
                   .default_value = "steady_state"}),
 
 
-          deprecated_selection<Inpar::FLUID::ItNorm>("CONVCHECK",
+          deprecated_selection<FLUID::ItNorm>("CONVCHECK",
               {
                   {"L_2_norm", fncc_L2},
               },
@@ -113,7 +114,7 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
 
 
 
-          deprecated_selection<Inpar::FLUID::InitialField>("INITIALFIELD",
+          deprecated_selection<FLUID::InitialField>("INITIALFIELD",
               {
                   {"zero_field", initfield_zero_field},
                   {"field_by_function", initfield_field_by_function},
@@ -147,7 +148,7 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
               {.description = "Flag to activate check for potential nonlinear boundary conditions",
                   .default_value = false}),
 
-          deprecated_selection<Inpar::FLUID::MeshTying>("MESHTYING",
+          deprecated_selection<FLUID::MeshTying>("MESHTYING",
               {
                   {"no", no_meshtying},
                   {"Condensed_Smat", condensed_smat},
@@ -157,7 +158,7 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
               {.description = "Flag to (de)activate mesh tying algorithm",
                   .default_value = no_meshtying}),
 
-          parameter<Inpar::FLUID::Gridvel>("GRIDVEL",
+          parameter<FLUID::Gridvel>("GRIDVEL",
               {.description = "scheme for determination of gridvelocity from displacements",
                   .default_value = BE}),
 
@@ -278,7 +279,7 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
                   .default_value = -1}),
 
 
-          deprecated_selection<Inpar::FLUID::GradientReconstructionMethod>("VELGRAD_PROJ_METHOD",
+          deprecated_selection<FLUID::GradientReconstructionMethod>("VELGRAD_PROJ_METHOD",
               {
                   {"none", gradreco_none},
                   {"superconvergent_patch_recovery", gradreco_spr},
@@ -318,7 +319,7 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
       {
 
           // this parameter defines various stabilized methods
-          deprecated_selection<Inpar::FLUID::StabType>("STABTYPE",
+          deprecated_selection<FLUID::StabType>("STABTYPE",
               {
                   {"no_stabilization", stabtype_nostab},
                   {"residual_based", stabtype_residualbased},
@@ -606,30 +607,28 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
           //! this parameter selects the definition of Edge-based stabilization parameter
           deprecated_selection<EosTauType>("EOS_DEFINITION_TAU",
               {
-                  {"Burman_Fernandez_Hansbo", Inpar::FLUID::EOS_tau_burman_fernandez_hansbo},
-                  {"Burman_Fernandez_Hansbo_wo_dt",
-                      Inpar::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt},
-                  {"Braack_Burman_John_Lube", Inpar::FLUID::EOS_tau_braack_burman_john_lube},
+                  {"Burman_Fernandez_Hansbo", FLUID::EOS_tau_burman_fernandez_hansbo},
+                  {"Burman_Fernandez_Hansbo_wo_dt", FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt},
+                  {"Braack_Burman_John_Lube", FLUID::EOS_tau_braack_burman_john_lube},
                   {"Braack_Burman_John_Lube_wo_divjump",
-                      Inpar::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump},
+                      FLUID::EOS_tau_braack_burman_john_lube_wo_divjump},
                   {"Franca_Barrenechea_Valentin_Wall",
-                      Inpar::FLUID::EOS_tau_franca_barrenechea_valentin_wall},
-                  {"Burman_Fernandez", Inpar::FLUID::EOS_tau_burman_fernandez},
-                  {"Burman_Hansbo_DAngelo_Zunino",
-                      Inpar::FLUID::EOS_tau_burman_hansbo_dangelo_zunino},
+                      FLUID::EOS_tau_franca_barrenechea_valentin_wall},
+                  {"Burman_Fernandez", FLUID::EOS_tau_burman_fernandez},
+                  {"Burman_Hansbo_DAngelo_Zunino", FLUID::EOS_tau_burman_hansbo_dangelo_zunino},
                   {"Burman_Hansbo_DAngelo_Zunino_wo_dt",
-                      Inpar::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt},
+                      FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt},
                   {"Schott_Massing_Burman_DAngelo_Zunino",
-                      Inpar::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino},
+                      FLUID::EOS_tau_schott_massing_burman_dangelo_zunino},
                   {"Schott_Massing_Burman_DAngelo_Zunino_wo_dt",
-                      Inpar::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt},
-                  {"Burman", Inpar::FLUID::EOS_tau_burman},
+                      FLUID::EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt},
+                  {"Burman", FLUID::EOS_tau_burman},
                   {"Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling",
-                      Inpar::FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling},
-                  {"tau_not_defined", Inpar::FLUID::EOS_tau_not_defined},
+                      FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling},
+                  {"tau_not_defined", FLUID::EOS_tau_not_defined},
               },
               {.description = "Definition of stabilization parameter for edge-based stabilization",
-                  .default_value = Inpar::FLUID::EOS_tau_burman_hansbo_dangelo_zunino}),
+                  .default_value = FLUID::EOS_tau_burman_hansbo_dangelo_zunino}),
 
           //! this parameter selects how the element length of Edge-based stabilization is defined
           parameter<EosElementLength>("EOS_H_DEFINITION",
@@ -661,7 +660,7 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
                                        .default_value = 1.0}),
 
           // this parameter defines various stabilized methods
-          deprecated_selection<Inpar::FLUID::StabType>("STABTYPE",
+          deprecated_selection<FLUID::StabType>("STABTYPE",
               {
                   {"no_stabilization", stabtype_nostab},
                   {"residual_based", stabtype_residualbased},
@@ -894,7 +893,7 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
                       "Dynamic Vreman model according to You and Moin (2007)",
                   .default_value = "no_model"}),
 
-          deprecated_selection<Inpar::FLUID::FineSubgridVisc>("FSSUGRVISC",
+          deprecated_selection<FLUID::FineSubgridVisc>("FSSUGRVISC",
               {
                   {"No", no_fssgv},
                   {"Smagorinsky_all", smagorinsky_all},
@@ -1449,58 +1448,54 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
               "ADAPTIVE_DT_INC", {.description = "Increment of whole step for adaptive dt via CFL",
                                      .default_value = 0.8})},
       {.required = false}));
+
+  /*----------------------------------------------------------------------*/
+  // sublist with runtime output parameters
+  specs.push_back(group("IO/RUNTIME VTK OUTPUT/FLUID",
+      {
+          // whether to write output for fluid
+          parameter<bool>(
+              "OUTPUT_FLUID", {.description = "write fluid output", .default_value = false}),
+
+          // whether to write velocity state
+          parameter<bool>(
+              "VELOCITY", {.description = "write velocity output", .default_value = false}),
+
+          // whether to write pressure state
+          parameter<bool>(
+              "PRESSURE", {.description = "write pressure output", .default_value = false}),
+
+          // whether to write acceleration state
+          parameter<bool>(
+              "ACCELERATION", {.description = "write acceleration output", .default_value = false}),
+
+          // whether to write displacement state
+          parameter<bool>(
+              "DISPLACEMENT", {.description = "write displacement output", .default_value = false}),
+
+          // whether to write displacement state
+          parameter<bool>("GRIDVELOCITY",
+              {.description = "write grid velocity output", .default_value = false}),
+
+          // whether to write element owner
+          parameter<bool>(
+              "ELEMENT_OWNER", {.description = "write element owner", .default_value = false}),
+
+          // whether to write element GIDs
+          parameter<bool>("ELEMENT_GID",
+              {.description = "write 4C internal element GIDs", .default_value = false}),
+
+          // whether to write node GIDs
+          parameter<bool>(
+              "NODE_GID", {.description = "write 4C internal node GIDs", .default_value = false}),
+      },
+      {.required = false}));
+
   return specs;
 }
 
 
-
-Core::IO::InputSpec Inpar::LowMach::valid_parameters()
-{
-  using namespace Core::IO::InputSpecBuilders;
-  Core::IO::InputSpec spec = group("LOMA CONTROL",
-      {
-
-          parameter<bool>(
-              "MONOLITHIC", {.description = "monolithic solver", .default_value = false}),
-          parameter<int>(
-              "NUMSTEP", {.description = "Total number of time steps", .default_value = 24}),
-
-          parameter<double>("TIMESTEP", {.description = "Time increment dt", .default_value = 0.1}),
-          parameter<double>(
-              "MAXTIME", {.description = "Total simulation time", .default_value = 1000.0}),
-          parameter<int>(
-              "ITEMAX", {.description = "Maximum number of outer iterations", .default_value = 10}),
-          parameter<int>(
-              "ITEMAX_BEFORE_SAMPLING", {.description = "Maximum number of outer iterations before "
-                                                        "sampling (for turbulent flows only)",
-                                            .default_value = 1}),
-          parameter<double>(
-              "CONVTOL", {.description = "Tolerance for convergence check", .default_value = 1e-6}),
-          parameter<int>("RESULTSEVERY",
-              {.description = "Increment for writing solution", .default_value = 1}),
-          parameter<int>(
-              "RESTARTEVERY", {.description = "Increment for writing restart", .default_value = 1}),
-
-
-          deprecated_selection<std::string>("CONSTHERMPRESS", {"No_energy", "No_mass", "Yes"},
-              {.description = "treatment of thermodynamic pressure in time",
-                  .default_value = "Yes"}),
-
-          parameter<bool>("SGS_MATERIAL_UPDATE",
-              {.description = "update material by adding subgrid-scale scalar field",
-                  .default_value = false}),
-
-          // number of linear solver used for LOMA solver
-          parameter<int>(
-              "LINEAR_SOLVER", {.description = "number of linear solver used for LOMA problem",
-                                   .default_value = -1})},
-      {.required = false});
-  return spec;
-}
-
-
-void Inpar::FLUID::set_valid_conditions(
-    std::vector<Core::Conditions::ConditionDefinition>& condlist)
+void FLUID::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -1910,7 +1905,7 @@ void Inpar::FLUID::set_valid_conditions(
   condlist.push_back(poropresint_line);
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::StabType stabtype)
+std::string FLUID::to_string(FLUID::StabType stabtype)
 {
   switch (stabtype)
   {
@@ -1927,7 +1922,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::StabType stabtype)
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::TauType tau)
+std::string FLUID::to_string(FLUID::TauType tau)
 {
   switch (tau)
   {
@@ -1969,7 +1964,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::TauType tau)
   return "not_defined";
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::CrossStress crossstress)
+std::string FLUID::to_string(FLUID::CrossStress crossstress)
 {
   switch (crossstress)
   {
@@ -1984,7 +1979,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::CrossStress crossstress)
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::VStab vstab)
+std::string FLUID::to_string(FLUID::VStab vstab)
 {
   switch (vstab)
   {
@@ -2003,7 +1998,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::VStab vstab)
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::RStab rstab)
+std::string FLUID::to_string(FLUID::RStab rstab)
 {
   switch (rstab)
   {
@@ -2018,7 +2013,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::RStab rstab)
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::ReynoldsStress reynoldsstress)
+std::string FLUID::to_string(FLUID::ReynoldsStress reynoldsstress)
 {
   switch (reynoldsstress)
   {
@@ -2033,7 +2028,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::ReynoldsStress reynoldsstress)
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::Transient transient)
+std::string FLUID::to_string(FLUID::Transient transient)
 {
   switch (transient)
   {
@@ -2048,7 +2043,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::Transient transient)
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::EosPres eospres)
+std::string FLUID::to_string(FLUID::EosPres eospres)
 {
   switch (eospres)
   {
@@ -2063,7 +2058,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::EosPres eospres)
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::EosConvStream eosconvstream)
+std::string FLUID::to_string(FLUID::EosConvStream eosconvstream)
 {
   switch (eosconvstream)
   {
@@ -2078,7 +2073,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::EosConvStream eosconvstream)
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::EosConvCross eosconvcross)
+std::string FLUID::to_string(FLUID::EosConvCross eosconvcross)
 {
   switch (eosconvcross)
   {
@@ -2093,7 +2088,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::EosConvCross eosconvcross)
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::EosDiv eosdiv)
+std::string FLUID::to_string(FLUID::EosDiv eosdiv)
 {
   switch (eosdiv)
   {
@@ -2112,7 +2107,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::EosDiv eosdiv)
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::EosTauType eostautype)
+std::string FLUID::to_string(FLUID::EosTauType eostautype)
 {
   switch (eostautype)
   {
@@ -2149,7 +2144,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::EosTauType eostautype)
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::EosElementLength eoselementlength)
+std::string FLUID::to_string(FLUID::EosElementLength eoselementlength)
 {
   switch (eoselementlength)
   {
@@ -2170,7 +2165,7 @@ std::string Inpar::FLUID::to_string(Inpar::FLUID::EosElementLength eoselementlen
   }
 }
 
-std::string Inpar::FLUID::to_string(Inpar::FLUID::VremanFiMethod vremanfimethod)
+std::string FLUID::to_string(FLUID::VremanFiMethod vremanfimethod)
 {
   switch (vremanfimethod)
   {

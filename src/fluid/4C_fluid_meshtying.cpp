@@ -134,8 +134,8 @@ void FLD::Meshtying::setup_meshtying(const std::vector<int>& coupleddof, const b
 
   switch (msht_)
   {
-    case Inpar::FLUID::condensed_bmat:
-    case Inpar::FLUID::condensed_bmat_merged:
+    case FLUID::condensed_bmat:
+    case FLUID::condensed_bmat_merged:
     {
       if (!pcoupled_)
       {
@@ -184,7 +184,7 @@ void FLD::Meshtying::setup_meshtying(const std::vector<int>& coupleddof, const b
           solver_.params().isSublist("Teko Parameters"))
       {
         // fixing length of nullspace for block matrix (solver/preconditioner ML)
-        if (msht_ == Inpar::FLUID::condensed_bmat_merged)
+        if (msht_ == FLUID::condensed_bmat_merged)
         {
           std::string inv = "BMatMerged";
           const Core::LinAlg::Map& oldmap = *(dofrowmap_);
@@ -193,7 +193,7 @@ void FLD::Meshtying::setup_meshtying(const std::vector<int>& coupleddof, const b
               inv.data(), oldmap, newmap, solver_.params());
           std::cout << std::endl;
         }
-        else if (msht_ == Inpar::FLUID::condensed_bmat)
+        else if (msht_ == FLUID::condensed_bmat)
         {
           // fixing length of Inverse1 nullspace (solver/preconditioner ML)
           {
@@ -217,7 +217,7 @@ void FLD::Meshtying::setup_meshtying(const std::vector<int>& coupleddof, const b
       }
     }
     break;
-    case Inpar::FLUID::condensed_smat:
+    case FLUID::condensed_smat:
     {
       // slave dof rowmap
       gsdofrowmap_ = adaptermeshtying_->source_dof_map();
@@ -250,8 +250,8 @@ std::shared_ptr<Core::LinAlg::SparseOperator> FLD::Meshtying::init_system_matrix
 {
   switch (msht_)
   {
-    case Inpar::FLUID::condensed_bmat:
-    case Inpar::FLUID::condensed_bmat_merged:
+    case FLUID::condensed_bmat:
+    case FLUID::condensed_bmat_merged:
     {
       // generate map for blockmatrix
       std::vector<std::shared_ptr<const Core::LinAlg::Map>> fluidmaps;
@@ -285,7 +285,7 @@ std::shared_ptr<Core::LinAlg::SparseOperator> FLD::Meshtying::init_system_matrix
 
       return mat;
     }
-    case Inpar::FLUID::condensed_smat:
+    case FLUID::condensed_smat:
     {
       return std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap_, 108, false, true);
     }
@@ -401,7 +401,7 @@ void FLD::Meshtying::dirichlet_on_master(std::shared_ptr<const Core::LinAlg::Map
   //      (in project_master_to_slave_for_overlapping_bc()) (-> disabled)
   //      -> DC also influence slave nodes which are not part of the inflow
   //
-  //      if(msht_ != Inpar::FLUID::no_meshtying)
+  //      if(msht_ != FLUID::no_meshtying)
   //        meshtying_->project_master_to_slave_for_overlapping_bc(velnp_, dbcmaps_->cond_map());
   //
   // (c)  DC are included in the condensation process (-> actual strategy)
@@ -487,11 +487,11 @@ void FLD::Meshtying::prepare_meshtying_system(
 {
   switch (msht_)
   {
-    case Inpar::FLUID::condensed_bmat:
-    case Inpar::FLUID::condensed_bmat_merged:
+    case FLUID::condensed_bmat:
+    case FLUID::condensed_bmat_merged:
       condensation_block_matrix(sysmat, residual, velnp);
       break;
-    case Inpar::FLUID::condensed_smat:
+    case FLUID::condensed_smat:
       condensation_sparse_matrix(sysmat, residual, velnp);
       break;
     default:
@@ -536,8 +536,8 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::Meshtying::adapt_krylov_proje
 
     switch (msht_)
     {
-      case Inpar::FLUID::condensed_bmat:
-      case Inpar::FLUID::condensed_bmat_merged:
+      case FLUID::condensed_bmat:
+      case FLUID::condensed_bmat_merged:
       {
         std::shared_ptr<Core::LinAlg::Vector<double>> vec_mesht =
             std::make_shared<Core::LinAlg::Vector<double>>(*mergedmap_, true);
@@ -545,7 +545,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::Meshtying::adapt_krylov_proje
         vec = vec_mesht;
       }
       break;
-      case Inpar::FLUID::condensed_smat:
+      case FLUID::condensed_smat:
         break;
       default:
         FOUR_C_THROW("Krylov projection not supported for this meshtying option.");
@@ -573,7 +573,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
 
   switch (msht_)
   {
-    case Inpar::FLUID::condensed_bmat:
+    case FLUID::condensed_bmat:
     {
       std::shared_ptr<Core::LinAlg::Vector<double>> res =
           std::make_shared<Core::LinAlg::Vector<double>>(*mergedmap_, true);
@@ -614,7 +614,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
       }
     }
     break;
-    case Inpar::FLUID::condensed_bmat_merged:
+    case FLUID::condensed_bmat_merged:
     {
       std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmatnew =
           std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat);
@@ -658,7 +658,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
       }
     }
     break;
-    case Inpar::FLUID::condensed_smat:
+    case FLUID::condensed_smat:
     {
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.3)   - Solve");

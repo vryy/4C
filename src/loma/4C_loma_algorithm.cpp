@@ -130,8 +130,8 @@ void LowMach::Algorithm::setup()
 
     // check whether (fluid) linearization scheme is a fixed-point-like scheme,
     // which is the only one enabled for monolithic solver, for the time being
-    auto linearization = fluiddyn.get<Inpar::FLUID::LinearisationAction>("NONLINITER");
-    if (linearization != Inpar::FLUID::fixed_point_like)
+    auto linearization = fluiddyn.get<FLUID::LinearisationAction>("NONLINITER");
+    if (linearization != FLUID::fixed_point_like)
       FOUR_C_THROW(
           "Only a fixed-point-like iteration scheme is enabled for monolithic low-Mach-number "
           "solver, for the time being!");
@@ -544,7 +544,7 @@ void LowMach::Algorithm::set_fluid_values_in_scatra()
   // and discretization based on time-integration scheme
   switch (fluid_field()->tim_int_scheme())
   {
-    case Inpar::FLUID::timeint_afgenalpha:
+    case FLUID::timeint_afgenalpha:
     {
       scatra_field()->set_acceleration_field(*fluid_field()->accam());
       scatra_field()->set_convective_velocity(*fluid_field()->velaf());
@@ -556,8 +556,8 @@ void LowMach::Algorithm::set_fluid_values_in_scatra()
       }
     }
     break;
-    case Inpar::FLUID::timeint_one_step_theta:
-    case Inpar::FLUID::timeint_bdf2:
+    case FLUID::timeint_one_step_theta:
+    case FLUID::timeint_bdf2:
     {
       scatra_field()->set_acceleration_field(*fluid_field()->hist());
       scatra_field()->set_convective_velocity(*fluid_field()->velnp());
@@ -583,9 +583,9 @@ void LowMach::Algorithm::set_scatra_values_in_fluid()
   // derivatives and discretization based on time-integration scheme
   switch (fluid_field()->tim_int_scheme())
   {
-    case Inpar::FLUID::timeint_afgenalpha:
+    case FLUID::timeint_afgenalpha:
     {
-      if (fluid_field()->physical_type() == Inpar::FLUID::tempdepwater)
+      if (fluid_field()->physical_type() == FLUID::tempdepwater)
         fluid_field()->set_iter_scalar_fields(scatra_field()->phiaf(), scatra_field()->phiam(),
             scatra_field()->phidtam(), scatra_field()->discretization());
       else
@@ -600,9 +600,9 @@ void LowMach::Algorithm::set_scatra_values_in_fluid()
             scatra_field()->discretization());
     }
     break;
-    case Inpar::FLUID::timeint_one_step_theta:
+    case FLUID::timeint_one_step_theta:
     {
-      if (fluid_field()->physical_type() == Inpar::FLUID::tempdepwater)
+      if (fluid_field()->physical_type() == FLUID::tempdepwater)
         fluid_field()->set_iter_scalar_fields(scatra_field()->phinp(), scatra_field()->phin(),
             scatra_field()->phidtnp(), scatra_field()->discretization());
       else
@@ -718,7 +718,7 @@ void LowMach::Algorithm::evaluate_loma_od_block_mat_fluid(
   fluid_field()->discretization()->set_state(0, "scaam", *fluid_field()->scaam());
 
   // set time-integration-scheme-specific element parameters and vector values
-  if (fluid_field()->tim_int_scheme() == Inpar::FLUID::timeint_afgenalpha)
+  if (fluid_field()->tim_int_scheme() == FLUID::timeint_afgenalpha)
   {
     // set thermodynamic pressures
     fparams.set("thermpress at n+alpha_F/n+1",
@@ -733,7 +733,7 @@ void LowMach::Algorithm::evaluate_loma_od_block_mat_fluid(
     // set velocity vector
     fluid_field()->discretization()->set_state(0, "velaf", *fluid_field()->velaf());
   }
-  else if (fluid_field()->tim_int_scheme() == Inpar::FLUID::timeint_one_step_theta)
+  else if (fluid_field()->tim_int_scheme() == FLUID::timeint_one_step_theta)
   {
     // set thermodynamic pressures
     fparams.set("thermpress at n+alpha_F/n+1",

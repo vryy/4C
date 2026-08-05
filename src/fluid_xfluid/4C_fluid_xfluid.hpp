@@ -193,7 +193,7 @@ namespace FLD
 
     /// set an initial flow field
     void set_initial_flow_field(
-        const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
+        const FLUID::InitialField initfield, const int startfuncno) override;
 
     //    /// compute interface velocities from function
     //    void ComputeInterfaceVelocities();
@@ -292,9 +292,9 @@ namespace FLD
     /// scale the residual (inverse of the weighting of the quantities w.r.t the new timestep)
     double residual_scaling() const override
     {
-      if (tim_int_scheme() == Inpar::FLUID::timeint_stationary)
+      if (tim_int_scheme() == FLUID::timeint_stationary)
         return 1.0;
-      else if (tim_int_scheme() == Inpar::FLUID::timeint_afgenalpha)
+      else if (tim_int_scheme() == FLUID::timeint_afgenalpha)
         return alphaM_ / (gamma_ * dta_);
       else
         return 1.0 / (theta_ * dta_);
@@ -419,7 +419,7 @@ namespace FLD
 
     void set_old_part_of_righthandside(Core::LinAlg::Vector<double>& veln,
         Core::LinAlg::Vector<double>& velnm, Core::LinAlg::Vector<double>& accn,
-        const Inpar::FLUID::TimeIntegrationScheme timealgo, const double dta, const double theta,
+        const FLUID::TimeIntegrationScheme timealgo, const double dta, const double theta,
         Core::LinAlg::Vector<double>& hist);
 
     void set_gamma(Teuchos::ParameterList& eleparams) override;
@@ -707,7 +707,7 @@ namespace FLD
     //@}
 
     /// initial flow field
-    Inpar::FLUID::InitialField initfield_;
+    FLUID::InitialField initfield_;
 
     /// start function number for an initial field
     int startfuncno_;
@@ -737,7 +737,7 @@ namespace FLD
     //--------------------------------------------------------------------
 
     //! do we have a turblence model?
-    Inpar::FLUID::TurbModelAction turbmodel_;
+    FLUID::TurbModelAction turbmodel_;
     //@}
 
 

@@ -29,7 +29,7 @@ namespace FLD
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
   HomoIsoTurbInitialField::HomoIsoTurbInitialField(
-      FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield)
+      FluidImplicitTimeInt& timeint, const FLUID::InitialField initfield)
       : discret_(timeint.discret_),
         velnp_(timeint.velnp_),
         veln_(timeint.veln_),
@@ -181,7 +181,7 @@ namespace FLD
     //-------------------------------------------------
     // non-dimensionalize and store experimental data
 
-    if (type_ == Inpar::FLUID::initfield_hit_comte_bellot_corrsin)
+    if (type_ == FLUID::initfield_hit_comte_bellot_corrsin)
       // of Comte-Bellot-Corrsin experiment
       prepare_exparimental_data();
 
@@ -295,7 +295,7 @@ namespace FLD
 
               // estimate energy at wave number from energy spectrum
               double energy = 0.0;
-              if (type_ == Inpar::FLUID::initfield_hit_comte_bellot_corrsin)
+              if (type_ == FLUID::initfield_hit_comte_bellot_corrsin)
                 energy = interpolate_energy_from_spectrum(k);
               else
                 energy = calculate_energy_from_spectrum(k);
@@ -675,19 +675,19 @@ namespace FLD
 
     double energy = 0.0;
 
-    if (type_ == Inpar::FLUID::initfield_forced_hit_simple_algebraic_spectrum)
+    if (type_ == FLUID::initfield_forced_hit_simple_algebraic_spectrum)
     {
       // initial spectrum as used in Hickel et al. 2006
       energy = 0.5 * pow(k, -5.0 / 3.0);
     }
-    else if (type_ == Inpar::FLUID::initfield_passive_hit_const_input)
+    else if (type_ == FLUID::initfield_passive_hit_const_input)
     {
       if (k <= 2)
         energy = 0.1 * 1.0;
       else
         energy = 0.1 * pow(2.0, 5.0 / 3.0) * pow(k, -5.0 / 3.0);
     }
-    else if (type_ == Inpar::FLUID::initfield_forced_hit_numeric_spectrum)
+    else if (type_ == FLUID::initfield_forced_hit_numeric_spectrum)
     {
       // initial spectrum as used in Bazilevs et al. 2007 (from Langford & Moser 1999)
       std::vector<double> k_vec(48);
@@ -822,7 +822,7 @@ namespace FLD
    | constructor                                         bk 03/15 |
    *--------------------------------------------------------------*/
   HomoIsoTurbInitialFieldHDG::HomoIsoTurbInitialFieldHDG(
-      FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield)
+      FluidImplicitTimeInt& timeint, const FLUID::InitialField initfield)
       : HomoIsoTurbInitialField(timeint, initfield)
   {
     // here we are using the interior velocity
@@ -978,7 +978,7 @@ namespace FLD
 
               // estimate energy at wave number from energy spectrum
               double energy = 0.0;
-              if (type_ == Inpar::FLUID::initfield_hit_comte_bellot_corrsin)
+              if (type_ == FLUID::initfield_hit_comte_bellot_corrsin)
                 energy = interpolate_energy_from_spectrum(k);
               else
                 energy = calculate_energy_from_spectrum(k);

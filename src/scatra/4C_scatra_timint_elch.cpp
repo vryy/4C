@@ -1867,7 +1867,7 @@ void ScaTra::ScaTraTimIntElch::init_nernst_bc()
 void ScaTra::ScaTraTimIntElch::create_meshtying_strategy()
 {
   // fluid meshtying
-  if (msht_ != Inpar::FLUID::no_meshtying)
+  if (msht_ != FLUID::no_meshtying)
   {
     strategy_ = std::make_shared<MeshtyingStrategyFluidElch>(this);
   }

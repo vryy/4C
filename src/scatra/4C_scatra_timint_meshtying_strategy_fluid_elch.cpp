@@ -30,8 +30,8 @@ void ScaTra::MeshtyingStrategyFluidElch::init_meshtying()
 {
   // Important: Meshtying for electrochemistry problems is not well tested!
   // safety check
-  if (Teuchos::getIntegralValue<Inpar::FLUID::MeshTying>(*(scatratimint_->scatra_parameter_list()),
-          "MESHTYING") == Inpar::FLUID::condensed_bmat_merged and
+  if (Teuchos::getIntegralValue<FLUID::MeshTying>(*(scatratimint_->scatra_parameter_list()),
+          "MESHTYING") == FLUID::condensed_bmat_merged and
       elch_tim_int()->equ_pot() == ElCh::equpot_enc)
     FOUR_C_THROW(
         "In the context of meshtying, the ion-transport system including the electroneutrality "

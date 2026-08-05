@@ -12,9 +12,9 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_fluid_timint.hpp"
 #include "4C_fluid_turbulence_input.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -544,7 +544,7 @@ namespace FLD
 
     */
     void set_initial_flow_field(
-        const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
+        const FLUID::InitialField initfield, const int startfuncno) override;
 
     /// Implement Adapter::Fluid
     std::shared_ptr<const Core::LinAlg::Vector<double>> extract_velocity_part(
@@ -637,7 +637,7 @@ namespace FLD
 
       // set fine-scale velocity for parallel nightly tests
       // separation matrix depends on the number of proc here
-      if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and
+      if (turbmodel_ == FLUID::multifractal_subgrid_scales and
           params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<bool>("SET_FINE_SCALE_VEL"))
         fsvelaf_->put_scalar(0.01);
 
@@ -1104,7 +1104,7 @@ namespace FLD
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool alefluid_;
     //! do we have a turbulence model?
-    Inpar::FLUID::TurbModelAction turbmodel_;
+    FLUID::TurbModelAction turbmodel_;
 
     //@}
 
@@ -1120,7 +1120,7 @@ namespace FLD
     double gasconstant_;
 
     //! use (or not) linearisation of reactive terms on the element
-    Inpar::FLUID::LinearisationAction newton_;
+    FLUID::LinearisationAction newton_;
 
     //! kind of predictor used in nonlinear iteration
     std::string predictor_;
@@ -1152,8 +1152,8 @@ namespace FLD
     std::string statistics_outfilename_;
 
     //! @name cfl number for adaptive time step
-    Inpar::FLUID::AdaptiveTimeStepEstimator cfl_estimator_;  ///< type of adaptive estimator
-    double cfl_;                                             ///< cfl number
+    FLUID::AdaptiveTimeStepEstimator cfl_estimator_;  ///< type of adaptive estimator
+    double cfl_;                                      ///< cfl number
     //@}
 
     //! @name norms for convergence check
@@ -1181,7 +1181,7 @@ namespace FLD
     std::string convform_;
 
     /// fine-scale subgrid-viscosity flag
-    Inpar::FLUID::FineSubgridVisc fssgv_;
+    FLUID::FineSubgridVisc fssgv_;
 
     /// cpu-time measures
     double dtele_;
@@ -1341,7 +1341,7 @@ namespace FLD
     std::shared_ptr<FLD::XWall> xwall_;
 
     /// flag for mesh-tying
-    Inpar::FLUID::MeshTying msht_;
+    FLUID::MeshTying msht_;
 
     /// face discretization (only initialized for edge-based stabilization)
     std::shared_ptr<Core::FE::DiscretizationFaces> facediscret_;

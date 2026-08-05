@@ -160,7 +160,7 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
 
   /* safety check for BDF2 time integration in fluid
    * (cf. PhD Thesis [Bornemann, 2003, p. 61, eq. (3.40)]) */
-  if (fluid_field()->tim_int_scheme() == Inpar::FLUID::timeint_bdf2 and
+  if (fluid_field()->tim_int_scheme() == FLUID::timeint_bdf2 and
       fsiada.get<double>("SIZERATIOMAX") >= 1.0 + sqrt(2))
   {
     FOUR_C_THROW(

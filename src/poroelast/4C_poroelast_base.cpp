@@ -151,22 +151,22 @@ PoroElast::PoroBase::PoroBase(MPI_Comm comm, const Teuchos::ParameterList& timep
     // check time integration algo -> currently only one-step-theta scheme supported
     auto structtimealgo = Teuchos::getIntegralValue<Solid::DynamicType>(sdyn, "DYNAMICTYPE");
     auto fluidtimealgo =
-        Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
+        Teuchos::getIntegralValue<FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
 
     if (not((structtimealgo == Solid::DynamicType::OneStepTheta and
-                fluidtimealgo == Inpar::FLUID::timeint_one_step_theta) or
+                fluidtimealgo == FLUID::timeint_one_step_theta) or
             (structtimealgo == Solid::DynamicType::Statics and
-                fluidtimealgo == Inpar::FLUID::timeint_stationary) or
+                fluidtimealgo == FLUID::timeint_stationary) or
             (structtimealgo == Solid::DynamicType::GenAlpha and
-                (fluidtimealgo == Inpar::FLUID::timeint_afgenalpha or
-                    fluidtimealgo == Inpar::FLUID::timeint_npgenalpha))))
+                (fluidtimealgo == FLUID::timeint_afgenalpha or
+                    fluidtimealgo == FLUID::timeint_npgenalpha))))
     {
       FOUR_C_THROW(
           "porous media problem is limited in functionality (only one-step-theta scheme, "
           "stationary and (af)genalpha case possible)");
     }
 
-    if (fluidtimealgo == Inpar::FLUID::timeint_npgenalpha)
+    if (fluidtimealgo == FLUID::timeint_npgenalpha)
     {
       FOUR_C_THROW(
           "npgenalpha time integration for porous fluid is possibly not valid. Either check the "
@@ -174,7 +174,7 @@ PoroElast::PoroBase::PoroBase(MPI_Comm comm, const Teuchos::ParameterList& timep
     }
 
     if (structtimealgo == Solid::DynamicType::OneStepTheta and
-        fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
+        fluidtimealgo == FLUID::timeint_one_step_theta)
     {
       double theta_struct = sdyn.sublist("ONESTEPTHETA").get<double>("THETA");
       double theta_fluid = fdyn.get<double>("THETA");
@@ -197,9 +197,8 @@ PoroElast::PoroBase::PoroBase(MPI_Comm comm, const Teuchos::ParameterList& timep
 
     // access the problem-specific parameter lists
     const Teuchos::ParameterList& pedyn = Global::Problem::instance()->poroelast_dynamic_params();
-    auto physicaltype =
-        Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE");
-    if (porosity_dof_ and physicaltype != Inpar::FLUID::poro_p1)
+    auto physicaltype = Teuchos::getIntegralValue<FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE");
+    if (porosity_dof_ and physicaltype != FLUID::poro_p1)
     {
       FOUR_C_THROW(
           "Poro P1 elements need a special fluid. Set 'PHYSICAL_TYPE' to 'Poro_P1' in the "
@@ -209,7 +208,7 @@ PoroElast::PoroBase::PoroBase(MPI_Comm comm, const Teuchos::ParameterList& timep
     auto transientfluid = Teuchos::getIntegralValue<PoroElast::TransientEquationsOfPoroFluid>(
         pedyn, "TRANSIENT_TERMS");
 
-    if (fluidtimealgo == Inpar::FLUID::timeint_stationary)
+    if (fluidtimealgo == FLUID::timeint_stationary)
     {
       if (transientfluid != PoroElast::transient_none)
       {

@@ -28,7 +28,7 @@ FLD::DynSmagFilter::DynSmagFilter(
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
+      physicaltype_(Teuchos::getIntegralValue<FLUID::PhysicalType>(params_, "Physical Type"))
 {
   // the default is do nothing
   apply_dynamic_smagorinsky_ = false;
@@ -78,7 +78,7 @@ FLD::DynSmagFilter::DynSmagFilter(
       }
 
       // check whether we would like to include a model for the isotropic part
-      if (physicaltype_ == Inpar::FLUID::loma)
+      if (physicaltype_ == FLUID::loma)
       {
         if (params_.sublist("SUBGRID VISCOSITY").get<bool>("C_INCLUDE_CI"))
         {
@@ -166,7 +166,7 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
     boxf_->get_filtered_reynolds_stress(*col_filtered_reynoldsstress_);
     boxf_->get_filtered_modeled_subgrid_stress(*col_filtered_modeled_subgrid_stress_);
 
-    if (physicaltype_ == Inpar::FLUID::loma)
+    if (physicaltype_ == FLUID::loma)
     {
       col_filtered_dens_vel_ =
           std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
@@ -421,7 +421,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
   calc_smag_const_params.set(
       "col_filtered_modeled_subgrid_stress", col_filtered_modeled_subgrid_stress_);
 
-  if (physicaltype_ == Inpar::FLUID::loma)
+  if (physicaltype_ == FLUID::loma)
   {
     calc_smag_const_params.set("col_filtered_dens", col_filtered_dens_);
     calc_smag_const_params.set("col_filtered_dens_vel", col_filtered_dens_vel_);
@@ -472,7 +472,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       double MijMij = calc_smag_const_params.get<double>("MijMij");
       double CI_numerator = 0.0;
       double CI_denominator = 0.0;
-      if (physicaltype_ == Inpar::FLUID::loma)
+      if (physicaltype_ == FLUID::loma)
       {
         CI_numerator = calc_smag_const_params.get<double>("CI_numerator");
         CI_denominator = calc_smag_const_params.get<double>("CI_denominator");
@@ -576,7 +576,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       // add it up
       local_ele_sum_LijMij[nlayer] += LijMij;
       local_ele_sum_MijMij[nlayer] += MijMij;
-      if (physicaltype_ == Inpar::FLUID::loma)
+      if (physicaltype_ == FLUID::loma)
       {
         local_ele_sum_CI_numerator[nlayer] += CI_numerator;
         local_ele_sum_CI_denominator[nlayer] += CI_denominator;
@@ -623,7 +623,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
           Core::Communication::sum_all((local_ele_sum_LijMij[rr]), discret_->get_comm());
       ((*averaged_MijMij)[rr]) =
           Core::Communication::sum_all((local_ele_sum_MijMij[rr]), discret_->get_comm());
-      if (physicaltype_ == Inpar::FLUID::loma)
+      if (physicaltype_ == FLUID::loma)
       {
         ((*averaged_CI_numerator)[rr]) =
             Core::Communication::sum_all((local_ele_sum_CI_numerator[rr]), discret_->get_comm());
@@ -639,7 +639,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       if (count_for_average[rr] == 0 and
           ((*averaged_LijMij)[rr] != 0.0 or (*averaged_MijMij)[rr] != 0.0))
         FOUR_C_THROW("Expected 'averaged_LijMij' or 'averaged_MijMij' equal zero!");
-      if (physicaltype_ == Inpar::FLUID::loma)
+      if (physicaltype_ == FLUID::loma)
       {
         if (count_for_average[rr] == 0 and
             ((*averaged_CI_numerator)[rr] != 0.0 or (*averaged_CI_denominator)[rr] != 0.0))
@@ -653,7 +653,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       {
         (*averaged_LijMij)[rr] /= count_for_average[rr];
         (*averaged_MijMij)[rr] /= count_for_average[rr];
-        if (physicaltype_ == Inpar::FLUID::loma)
+        if (physicaltype_ == FLUID::loma)
         {
           (*averaged_CI_numerator)[rr] /= count_for_average[rr];
           (*averaged_CI_denominator)[rr] /= count_for_average[rr];
@@ -664,7 +664,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
     {
       modelparams->set<std::shared_ptr<std::vector<double>>>("averaged_LijMij_", averaged_LijMij);
       modelparams->set<std::shared_ptr<std::vector<double>>>("averaged_MijMij_", averaged_MijMij);
-      if (physicaltype_ == Inpar::FLUID::loma)
+      if (physicaltype_ == FLUID::loma)
       {
         modelparams->set<std::shared_ptr<std::vector<double>>>(
             "averaged_CI_numerator_", averaged_CI_numerator);

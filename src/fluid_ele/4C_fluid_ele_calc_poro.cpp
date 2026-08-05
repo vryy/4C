@@ -1494,7 +1494,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::Par
     // 5) standard Galerkin bodyforce term on right-hand side
     Base::body_force_rhs_term(velforce, rhsfac);
 
-    if (Base::fldpara_->pspg() or Base::fldpara_->r_stab() != Inpar::FLUID::reactive_stab_none or
+    if (Base::fldpara_->pspg() or Base::fldpara_->r_stab() != FLUID::reactive_stab_none or
         Base::fldpara_->supg())
       compute_lin_res_m_du_stabilization(timefacfac, lin_resM_Du);
 
@@ -1506,7 +1506,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::Par
     }
 
     // 7) reactive stabilization term
-    if (Base::fldpara_->r_stab() != Inpar::FLUID::reactive_stab_none)
+    if (Base::fldpara_->r_stab() != FLUID::reactive_stab_none)
     {
       reac_stab(estif_u, estif_p_v, velforce, lin_resM_Du, lin_resM_Dp, dphi_dp, timefacfac,
           timefacfacpre, rhsfac, 0.0);
@@ -1903,9 +1903,9 @@ void Discret::Elements::FluidEleCalcPoro<distype>::fill_matrix_momentum_od(const
   }
 
   //**************************************************************************
-  if (Base::fldpara_->r_stab() != Inpar::FLUID::reactive_stab_none)
+  if (Base::fldpara_->r_stab() != FLUID::reactive_stab_none)
   {
-    if (Base::fldpara_->tds() != Inpar::FLUID::subscales_quasistatic)
+    if (Base::fldpara_->tds() != FLUID::subscales_quasistatic)
       FOUR_C_THROW("Is this factor correct? Check for bugs!");
     const double reac_tau = Base::fldpara_->visc_rea_stab_fac() * Base::reacoeff_ * Base::tau_(1);
 
@@ -2174,7 +2174,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::fill_matrix_conti_od(const do
   {
     double scal_grad_q = 0.0;
 
-    if (Base::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+    if (Base::fldpara_->tds() == FLUID::subscales_quasistatic)
     {
       scal_grad_q = Base::tau_(1);
     }
@@ -2305,9 +2305,9 @@ void Discret::Elements::FluidEleCalcPoro<distype>::lin_3d_mesh_motion_od(
     const double& timefacfac)
 {
   double addstab = 0.0;
-  if (Base::fldpara_->r_stab() != Inpar::FLUID::reactive_stab_none)
+  if (Base::fldpara_->r_stab() != FLUID::reactive_stab_none)
   {
-    if (Base::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+    if (Base::fldpara_->tds() == FLUID::subscales_quasistatic)
       addstab = Base::fldpara_->visc_rea_stab_fac() * Base::reacoeff_ * Base::tau_(1);
     else
     {
@@ -3136,7 +3136,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::lin_3d_mesh_motion_od(
   }
 
   //*************************** ReacStab**********************************
-  if (Base::fldpara_->r_stab() != Inpar::FLUID::reactive_stab_none)
+  if (Base::fldpara_->r_stab() != FLUID::reactive_stab_none)
   {
     const double refgradp_0 = refgrad_press_(0);
     const double refgradp_1 = refgrad_press_(1);
@@ -3475,7 +3475,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::lin_mesh_motion_3d_pres_od(
 
     double scal_grad_q = 0.0;
 
-    if (Base::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+    if (Base::fldpara_->tds() == FLUID::subscales_quasistatic)
     {
       scal_grad_q = Base::tau_(1);
     }
@@ -3806,9 +3806,9 @@ void Discret::Elements::FluidEleCalcPoro<distype>::lin_2d_mesh_motion_od(
     const double& timefacfac)
 {
   double addstab = 0.0;
-  if (Base::fldpara_->r_stab() != Inpar::FLUID::reactive_stab_none)
+  if (Base::fldpara_->r_stab() != FLUID::reactive_stab_none)
   {
-    if (Base::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+    if (Base::fldpara_->tds() == FLUID::subscales_quasistatic)
       addstab = Base::fldpara_->visc_rea_stab_fac() * Base::reacoeff_ * Base::tau_(1);
     else
     {
@@ -4077,7 +4077,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::lin_2d_mesh_motion_od(
   }
 
   //*************************** ReacStab**********************************
-  if (Base::fldpara_->r_stab() != Inpar::FLUID::reactive_stab_none)
+  if (Base::fldpara_->r_stab() != FLUID::reactive_stab_none)
   {
     const double refgradp_0 = refgrad_press_(0);
     const double refgradp_1 = refgrad_press_(1);
@@ -4264,7 +4264,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::lin_mesh_motion_2d_pres_od(
 
     double scal_grad_q = 0.0;
 
-    if (Base::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+    if (Base::fldpara_->tds() == FLUID::subscales_quasistatic)
     {
       scal_grad_q = Base::tau_(1);
     }
@@ -4482,7 +4482,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::pspg(
 
   double scal_grad_q = 0.0;
 
-  if (Base::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (Base::fldpara_->tds() == FLUID::subscales_quasistatic)
   {
     scal_grad_q = Base::tau_(1);
   }
@@ -4955,7 +4955,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::reac_stab(
 
   // do almost the same as the standard implementation
   double reac_tau;
-  if (Base::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+  if (Base::fldpara_->tds() == FLUID::subscales_quasistatic)
     reac_tau = Base::fldpara_->visc_rea_stab_fac() * Base::reacoeff_ * Base::tau_(1);
   else
   {
@@ -5386,12 +5386,11 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_stabilization_paramet
   if (Base::fldpara_->tau_gp())
   {
     // check stabilization parameter definition for porous flow
-    if (not(Base::fldpara_->which_tau() ==
-                Inpar::FLUID::tau_franca_madureira_valentin_badia_codina or
+    if (not(Base::fldpara_->which_tau() == FLUID::tau_franca_madureira_valentin_badia_codina or
             Base::fldpara_->which_tau() ==
-                Inpar::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt or
-            Base::fldpara_->which_tau() == Inpar::FLUID::tau_not_defined or
-            Base::fldpara_->which_tau() == Inpar::FLUID::tau_taylor_hughes_zarins))
+                FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt or
+            Base::fldpara_->which_tau() == FLUID::tau_not_defined or
+            Base::fldpara_->which_tau() == FLUID::tau_taylor_hughes_zarins))
       FOUR_C_THROW("incorrect definition of stabilization parameter for porous flow");
 
     if (porosity_ < 1e-15) FOUR_C_THROW("zero porosity!");
@@ -6251,8 +6250,7 @@ int Discret::Elements::FluidEleCalcPoro<distype>::compute_error(Discret::Element
   Core::LinAlg::Matrix<nsd_, 1> deltavel(Core::LinAlg::Initialization::zero);
   double deltap = 0.0;
 
-  const auto calcerr =
-      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(params, "calculate error");
+  const auto calcerr = Teuchos::getIntegralValue<FLUID::CalcError>(params, "calculate error");
 
   //----------------------------------------------------------------------------
   //   Extract velocity/pressure from global vectors
@@ -6332,7 +6330,7 @@ int Discret::Elements::FluidEleCalcPoro<distype>::compute_error(Discret::Element
     // Compute analytical solution
     switch (calcerr)
     {
-      case Inpar::FLUID::byfunct:
+      case FLUID::byfunct:
       {
         const int func_no = 1;
 

@@ -22,6 +22,7 @@ set(_dependencies
     fluid_ele
     fluid_xfluid
     fs3i
+    loma
     lubrication
     mat
     membrane

@@ -7,7 +7,7 @@
 
 #include "4C_poroelast_input.hpp"
 
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_linalg_equilibrate.hpp"
 FOUR_C_NAMESPACE_OPEN
@@ -26,12 +26,12 @@ Core::IO::InputSpec PoroElast::valid_parameters()
 
           // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq
           // approximation)
-          deprecated_selection<Inpar::FLUID::PhysicalType>("PHYSICAL_TYPE",
+          deprecated_selection<FLUID::PhysicalType>("PHYSICAL_TYPE",
               {
-                  {"Poro", Inpar::FLUID::poro},
-                  {"Poro_P1", Inpar::FLUID::poro_p1},
+                  {"Poro", FLUID::poro},
+                  {"Poro_P1", FLUID::poro_p1},
               },
-              {.description = "Physical Type of Porofluid", .default_value = Inpar::FLUID::poro}),
+              {.description = "Physical Type of Porofluid", .default_value = FLUID::poro}),
 
           // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq
           // approximation)

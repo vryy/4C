@@ -7,7 +7,7 @@
 
 #include "4C_fluid_utils_infnormscaling.hpp"
 
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_sparsematrix.hpp"

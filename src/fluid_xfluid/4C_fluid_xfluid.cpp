@@ -63,7 +63,7 @@ FLD::XFluid::XFluid(const std::shared_ptr<Core::FE::Discretization>& actdis,
       xfluid_timint_check_interfacetips_(true),
       xfluid_timint_check_sliding_on_surface_(true),
       edgestab_(std::make_shared<XFEM::XfemEdgeStab>()),
-      turbmodel_(Inpar::FLUID::dynamic_smagorinsky),
+      turbmodel_(FLUID::dynamic_smagorinsky),
       evaluate_cut_(true),
       newton_restart_monolithic_(false)
 {
@@ -368,18 +368,18 @@ void FLD::XFluid::set_x_fluid_params()
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
   {
     bool edge_based =
-        (params_->sublist("RESIDUAL-BASED STABILIZATION").get<Inpar::FLUID::StabType>("STABTYPE") ==
-                Inpar::FLUID::StabType::stabtype_edgebased or
-            params_->sublist("EDGE-BASED STABILIZATION").get<Inpar::FLUID::EosPres>("EOS_PRES") !=
-                Inpar::FLUID::EosPres::EOS_PRES_none or
+        (params_->sublist("RESIDUAL-BASED STABILIZATION").get<FLUID::StabType>("STABTYPE") ==
+                FLUID::StabType::stabtype_edgebased or
+            params_->sublist("EDGE-BASED STABILIZATION").get<FLUID::EosPres>("EOS_PRES") !=
+                FLUID::EosPres::EOS_PRES_none or
             params_->sublist("EDGE-BASED STABILIZATION")
-                    .get<Inpar::FLUID::EosConvStream>("EOS_CONV_STREAM") !=
-                Inpar::FLUID::EosConvStream::EOS_CONV_STREAM_none or
+                    .get<FLUID::EosConvStream>("EOS_CONV_STREAM") !=
+                FLUID::EosConvStream::EOS_CONV_STREAM_none or
             params_->sublist("EDGE-BASED STABILIZATION")
-                    .get<Inpar::FLUID::EosConvCross>("EOS_CONV_CROSS") !=
-                Inpar::FLUID::EosConvCross::EOS_CONV_CROSS_none or
-            params_->sublist("EDGE-BASED STABILIZATION").get<Inpar::FLUID::EosDiv>("EOS_DIV") !=
-                Inpar::FLUID::EosDiv::EOS_DIV_none);
+                    .get<FLUID::EosConvCross>("EOS_CONV_CROSS") !=
+                FLUID::EosConvCross::EOS_CONV_CROSS_none or
+            params_->sublist("EDGE-BASED STABILIZATION").get<FLUID::EosDiv>("EOS_DIV") !=
+                FLUID::EosDiv::EOS_DIV_none);
 
     // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to
     // Nitsche's method has to be integrated
@@ -418,19 +418,19 @@ void FLD::XFluid::set_element_general_fluid_xfem_parameter()
   //------------------------------------------------------------------------------------------------------
   // set general element parameters
   eleparams.set("form of convective term", convform_);
-  eleparams.set<Inpar::FLUID::LinearisationAction>("Linearisation", newton_);
-  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
+  eleparams.set<FLUID::LinearisationAction>("Linearisation", newton_);
+  eleparams.set<FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // parameter for stabilization
   eleparams.sublist("RESIDUAL-BASED STABILIZATION") =
       params_->sublist("RESIDUAL-BASED STABILIZATION");
 
   // get function number of given Oseen advective field if necessary
-  if (physicaltype_ == Inpar::FLUID::oseen)
+  if (physicaltype_ == FLUID::oseen)
     eleparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
 
   // set time integration scheme
-  eleparams.set<Inpar::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
+  eleparams.set<FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
 
   //------------------------------------------------------------------------------------------------------
   // set general parameters for turbulent flow
@@ -473,14 +473,14 @@ void FLD::XFluid::set_face_general_fluid_xfem_parameter()
 
     faceparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
-    faceparams.set<Inpar::FLUID::StabType>(
-        "STABTYPE", Teuchos::getIntegralValue<Inpar::FLUID::StabType>(
+    faceparams.set<FLUID::StabType>(
+        "STABTYPE", Teuchos::getIntegralValue<FLUID::StabType>(
                         params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
 
-    faceparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
+    faceparams.set<FLUID::PhysicalType>("Physical Type", physicaltype_);
 
     // get function number of given Oseen advective field if necessary
-    if (physicaltype_ == Inpar::FLUID::oseen)
+    if (physicaltype_ == FLUID::oseen)
       faceparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
 
     Discret::Elements::FluidEleParameterIntFace* fldintfacepara =
@@ -516,18 +516,18 @@ void FLD::XFluid::set_element_time_parameter()
   Teuchos::ParameterList eleparams;
 
   // set time integration scheme
-  eleparams.set<Inpar::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
+  eleparams.set<FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
   // set general element parameters
   eleparams.set("dt", dta_);
   eleparams.set("theta", theta_);
   eleparams.set("omtheta", omtheta_);
 
   // set scheme-specific element parameters and vector values
-  if (timealgo_ == Inpar::FLUID::timeint_stationary)
+  if (timealgo_ == FLUID::timeint_stationary)
   {
     eleparams.set("total time", time_);
   }
-  else if (timealgo_ == Inpar::FLUID::timeint_afgenalpha)
+  else if (timealgo_ == FLUID::timeint_afgenalpha)
   {
     eleparams.set("total time", time_ - (1 - alphaF_) * dta_);
     eleparams.set("alphaF", alphaF_);
@@ -537,8 +537,8 @@ void FLD::XFluid::set_element_time_parameter()
   else
   {
     eleparams.set("total time", time_);
-    eleparams.set<Inpar::FLUID::OstContAndPress>(
-        "ost cont and press", params_->get<Inpar::FLUID::OstContAndPress>("ost cont and press"));
+    eleparams.set<FLUID::OstContAndPress>(
+        "ost cont and press", params_->get<FLUID::OstContAndPress>("ost cont and press"));
     eleparams.set<bool>("ost new", params_->get<bool>("ost new"));
   }
 
@@ -1641,10 +1641,9 @@ std::shared_ptr<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_ana
   // file
 
   // how is the analytical solution available (implemented of via function?)
-  const auto calcerr =
-      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error");
+  const auto calcerr = Teuchos::getIntegralValue<FLUID::CalcError>(*params_, "calculate error");
 
-  if (calcerr != Inpar::FLUID::no)
+  if (calcerr != FLUID::no)
   {
     // define the norms that have to be computed
 
@@ -1773,8 +1772,7 @@ std::shared_ptr<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_ana
         std::cout.precision(8);
         Core::IO::cout << Core::IO::endl
                        << "---- error norm for analytical solution Nr. "
-                       << Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(
-                              *params_, "calculate error")
+                       << Teuchos::getIntegralValue<FLUID::CalcError>(*params_, "calculate error")
                        << " ----------" << Core::IO::endl;
         Core::IO::cout << "-------------- domain error norms -----------------------"
                        << Core::IO::endl;
@@ -2189,20 +2187,20 @@ void FLD::XFluid::print_time_step_info()
   {
     switch (timealgo_)
     {
-      case Inpar::FLUID::timeint_stationary:
+      case FLUID::timeint_stationary:
         printf("Stationary Fluid Solver - STEP = %4d/%4d \n", step_, stepmax_);
         break;
-      case Inpar::FLUID::timeint_one_step_theta:
+      case FLUID::timeint_one_step_theta:
         printf(
             "TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta  (theta = %11.2E)  STEP = %4d/%4d "
             "\n",
             time_, maxtime_, dta_, theta_, step_, stepmax_);
         break;
-      case Inpar::FLUID::timeint_afgenalpha:
+      case FLUID::timeint_afgenalpha:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n", time_,
             maxtime_, dta_, step_, stepmax_);
         break;
-      case Inpar::FLUID::timeint_bdf2:
+      case FLUID::timeint_bdf2:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E       BDF2          STEP = %4d/%4d \n", time_,
             maxtime_, dta_, step_, stepmax_);
         break;
@@ -2225,7 +2223,7 @@ bool FLD::XFluid::not_finished()
   //                    stop criterium for timeloop
   // -------------------------------------------------------------------
 
-  if (timealgo_ == Inpar::FLUID::timeint_stationary)
+  if (timealgo_ == FLUID::timeint_stationary)
     return step_ < stepmax_;
   else
     return step_ < stepmax_ and time_ < maxtime_;
@@ -2294,7 +2292,7 @@ void FLD::XFluid::set_theta()
 {
   // Sets theta_ to a specific value for bdf2 and calculates
   // a pseudo-theta for genalpha (the latter in case of startalgo_)
-  if (timealgo_ == Inpar::FLUID::timeint_stationary)
+  if (timealgo_ == FLUID::timeint_stationary)
   {
     theta_ = 1.0;
     omtheta_ = 0.0;
@@ -2319,14 +2317,14 @@ void FLD::XFluid::set_theta()
     else
     {
       // for OST
-      if (timealgo_ == Inpar::FLUID::timeint_one_step_theta)
+      if (timealgo_ == FLUID::timeint_one_step_theta)
       {
         theta_ = params_->get<double>("theta");
         omtheta_ = 1.0 - theta_;
       }
 
       // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
-      if (timealgo_ == Inpar::FLUID::timeint_bdf2)
+      if (timealgo_ == FLUID::timeint_bdf2)
       {
         theta_ = (dta_ + dtp_) / (2.0 * dta_ + dtp_);
         omtheta_ = 0.0;
@@ -2550,7 +2548,7 @@ void FLD::XFluid::solve()
     // need the velocities at n+alpha_F in a potential coupling
     // algorithm, for instance.
     // -------------------------------------------------------------------
-    if (timealgo_ == Inpar::FLUID::timeint_afgenalpha)
+    if (timealgo_ == FLUID::timeint_afgenalpha)
     {
       gen_alpha_update_acceleration();
 
@@ -2615,7 +2613,7 @@ bool FLD::XFluid::convergence_check(int itnum, int itemax, const double velresto
       printf("|   --/%3d   | %10.3E  | %10.3E  |      --     |      --     |", itemax, vresnorm_,
           presnorm_);
       printf(" (      --     ,te=%10.3E", dtele_);
-      if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
+      if (turbmodel_ == FLUID::dynamic_smagorinsky)
       {
         printf(",tf=%10.3E", dtfilter_);
       }
@@ -2639,7 +2637,7 @@ bool FLD::XFluid::convergence_check(int itnum, int itemax, const double velresto
         printf("|  %3d/%3d   | %10.3E  | %10.3E  | %10.3E  | %10.3E  |", itnum, itemax, vresnorm_,
             presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
         printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
-        if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
+        if (turbmodel_ == FLUID::dynamic_smagorinsky)
         {
           printf(",tf=%10.3E", dtfilter_);
         }
@@ -2653,7 +2651,7 @@ bool FLD::XFluid::convergence_check(int itnum, int itemax, const double velresto
         printf("|  %3d/%3d   | %10.3E  | %10.3E  | %10.3E  | %10.3E  |", itnum, itemax, vresnorm_,
             presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
         printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
-        if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
+        if (turbmodel_ == FLUID::dynamic_smagorinsky)
         {
           printf(",tf=%10.3E", dtfilter_);
         }
@@ -3120,15 +3118,15 @@ void FLD::XFluid::evaluate(
  *----------------------------------------------------------------------*/
 void FLD::XFluid::time_update()
 {
-  if (timealgo_ == Inpar::FLUID::timeint_stationary) return;
+  if (timealgo_ == FLUID::timeint_stationary) return;
 
 
   if (myrank_ == 0) Core::IO::cout << "FLD::XFluid::TimeUpdate " << Core::IO::endl;
 
   Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
-  if (Teuchos::getIntegralValue<Inpar::FLUID::SubscalesTD>(*stabparams, "TDS") ==
-      Inpar::FLUID::SubscalesTD::subscales_time_dependent)
+  if (Teuchos::getIntegralValue<FLUID::SubscalesTD>(*stabparams, "TDS") ==
+      FLUID::SubscalesTD::subscales_time_dependent)
   {
     FOUR_C_THROW("check this implementation");
     const double tcpu = Teuchos::Time::wallTime();
@@ -3218,7 +3216,7 @@ void FLD::XFluid::cut_and_set_state_vectors()
 
   //------------------------------------------------------------------------------------
   // not required for stationary time integration
-  if (timealgo_ == Inpar::FLUID::timeint_stationary) return;
+  if (timealgo_ == FLUID::timeint_stationary) return;
 
   //------------------------------------------------------------------------------------
   // not required if neither the background mesh nor the interfaces move
@@ -3496,7 +3494,7 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
   if (myrank_ == 0 and screen_out) Core::IO::cout << "XFEM::TIMEINTEGRATION: ..." << Core::IO::endl;
 
   //---------------------------------------------------------------
-  if (timealgo_ != Inpar::FLUID::timeint_one_step_theta)
+  if (timealgo_ != FLUID::timeint_one_step_theta)
     FOUR_C_THROW("check which vectors have to be reconstructed for non-OST scheme");
 
   //---------------------------------------------------------------
@@ -3559,12 +3557,12 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
     oldRowStateVectors.push_back(veln_Intn_);
     newRowStateVectors.push_back(state_->veln_);
 
-    if (timealgo_ == Inpar::FLUID::timeint_one_step_theta)
+    if (timealgo_ == FLUID::timeint_one_step_theta)
     {
       oldRowStateVectors.push_back(accn_Intn_);
       newRowStateVectors.push_back(state_->accn_);
     }
-    else if (timealgo_ == Inpar::FLUID::timeint_bdf2)
+    else if (timealgo_ == FLUID::timeint_bdf2)
     {
       oldRowStateVectors.push_back(velnm_Intn_);
       newRowStateVectors.push_back(state_->velnm_);
@@ -4370,20 +4368,20 @@ double FLD::XFluid::tim_int_param() const
   double retval = 0.0;
   switch (tim_int_scheme())
   {
-    case Inpar::FLUID::timeint_afgenalpha:
-    case Inpar::FLUID::timeint_npgenalpha:
+    case FLUID::timeint_afgenalpha:
+    case FLUID::timeint_npgenalpha:
       // this is the interpolation weight for quantities from last time step
       retval = 1.0 - alphaF_;
       break;
-    case Inpar::FLUID::timeint_one_step_theta:
+    case FLUID::timeint_one_step_theta:
       // this is the interpolation weight for quantities from last time step
       retval = 0.0;
       break;
-    case Inpar::FLUID::timeint_bdf2:
+    case FLUID::timeint_bdf2:
       // this is the interpolation weight for quantities from last time step
       retval = 0.0;
       break;
-    case Inpar::FLUID::timeint_stationary:
+    case FLUID::timeint_stationary:
       // this is the interpolation weight for quantities from last time step
       retval = 0.0;
       break;
@@ -4428,8 +4426,7 @@ void FLD::XFluid::output()
 /*----------------------------------------------------------------------*
  |  set an initial flow field                              schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::set_initial_flow_field(
-    const Inpar::FLUID::InitialField initfield, const int startfuncno)
+void FLD::XFluid::set_initial_flow_field(const FLUID::InitialField initfield, const int startfuncno)
 {
   const int restart = Global::Problem::instance()->restart();
 
@@ -4439,8 +4436,8 @@ void FLD::XFluid::set_initial_flow_field(
 
   // initial field by (undisturbed) function (init==2)
   // or disturbed function (init==3)
-  if (initfield == Inpar::FLUID::initfield_field_by_function/* or
-      initfield == Inpar::FLUID::initfield_disturbed_field_from_function*/)
+  if (initfield == FLUID::initfield_field_by_function/* or
+      initfield == FLUID::initfield_disturbed_field_from_function*/)
   {
     if (myrank_ == 0)
       std::cout << "SetInitialFlowField with function number " << startfuncno << std::endl;
@@ -4472,7 +4469,7 @@ void FLD::XFluid::set_initial_flow_field(
     state_->accn_->put_scalar(0.0);
   }
   // special initial function: Beltrami flow (3-D)
-  else if (initfield == Inpar::FLUID::initfield_beltrami_flow)
+  else if (initfield == FLUID::initfield_beltrami_flow)
   {
     const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 
@@ -4545,7 +4542,7 @@ void FLD::XFluid::set_initial_flow_field(
   //----------------------------------------------------------------------------------------------
   // flame-vortex interaction problem: two counter-rotating vortices (2-D) moving the flame front
   //----------------------------------------------------------------------------------------------
-  else if (initfield == Inpar::FLUID::initfield_flame_vortex_interaction)
+  else if (initfield == FLUID::initfield_flame_vortex_interaction)
   {
     // TODO: shift this function to the condition-manager!
 
@@ -5266,13 +5263,13 @@ void FLD::XFluid::update_gridv()
   // from input file data
   const Teuchos::ParameterList& fluiddynparams =
       Global::Problem::instance()->fluid_dynamic_params();
-  const auto order = Teuchos::getIntegralValue<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
+  const auto order = Teuchos::getIntegralValue<FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
   Core::LinAlg::Vector<double> gridv(dispnp_->get_map(), true);
 
   switch (order)
   {
-    case Inpar::FLUID::BE:
+    case FLUID::BE:
       /* get gridvelocity from BE time discretisation of mesh motion:
            -> cheap
            -> easy
@@ -5283,7 +5280,7 @@ void FLD::XFluid::update_gridv()
                     Delta t                        */
       gridvnp_->update(1 / dta_, *dispnp_, -1 / dta_, *dispn_, 0.0);
       break;
-    case Inpar::FLUID::BDF2:
+    case FLUID::BDF2:
       /* get gridvelocity from BDF2 time discretisation of mesh motion:
            -> requires one more previous mesh position or displacement
            -> somewhat more complicated
@@ -5291,7 +5288,7 @@ void FLD::XFluid::update_gridv()
       gridvnp_->update(1.5 / dta_, *dispnp_, -2.0 / dta_, *dispn_, 0.0);
       gridvnp_->update(0.5 / dta_, *dispnm_, 1.0);
       break;
-    case Inpar::FLUID::OST:
+    case FLUID::OST:
     {
       /* get gridvelocity from OST time discretisation of mesh motion:
          -> needed to allow consistent linearization of FPSI problem  */
@@ -5330,7 +5327,7 @@ void FLD::XFluid::set_old_part_of_righthandside()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::set_old_part_of_righthandside(Core::LinAlg::Vector<double>& veln,
     Core::LinAlg::Vector<double>& velnm, Core::LinAlg::Vector<double>& accn,
-    const Inpar::FLUID::TimeIntegrationScheme timealgo, const double dta, const double theta,
+    const FLUID::TimeIntegrationScheme timealgo, const double dta, const double theta,
     Core::LinAlg::Vector<double>& hist)
 {
   /*!
@@ -5359,17 +5356,17 @@ void FLD::XFluid::set_old_part_of_righthandside(Core::LinAlg::Vector<double>& ve
    */
   switch (timealgo)
   {
-    case Inpar::FLUID::timeint_stationary: /* Stationary algorithm */
-    case Inpar::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
-    case Inpar::FLUID::timeint_npgenalpha:
+    case FLUID::timeint_stationary: /* Stationary algorithm */
+    case FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
+    case FLUID::timeint_npgenalpha:
       hist.put_scalar(0.0);
       break;
 
-    case Inpar::FLUID::timeint_one_step_theta: /* One step Theta time integration */
+    case FLUID::timeint_one_step_theta: /* One step Theta time integration */
       hist.update(1.0, veln, dta * (1.0 - theta), accn, 0.0);
       break;
 
-    case Inpar::FLUID::timeint_bdf2: /* 2nd order backward differencing BDF2 */
+    case FLUID::timeint_bdf2: /* 2nd order backward differencing BDF2 */
       hist.update(4. / 3., veln, -1. / 3., velnm, 0.0);
       break;
 
@@ -5386,15 +5383,15 @@ void FLD::XFluid::set_old_part_of_righthandside(Core::LinAlg::Vector<double>& ve
  *----------------------------------------------------------------------*/
 void FLD::XFluid::set_gamma(Teuchos::ParameterList& eleparams)
 {
-  if (timealgo_ == Inpar::FLUID::timeint_afgenalpha)
+  if (timealgo_ == FLUID::timeint_afgenalpha)
   {
     eleparams.set("gamma", gamma_);
   }
-  else if (timealgo_ == Inpar::FLUID::timeint_one_step_theta)
+  else if (timealgo_ == FLUID::timeint_one_step_theta)
   {
     eleparams.set("gamma", theta_);
   }
-  else if (timealgo_ == Inpar::FLUID::timeint_bdf2)
+  else if (timealgo_ == FLUID::timeint_bdf2)
   {
     eleparams.set("gamma", 1.0);
   }
@@ -5407,7 +5404,7 @@ void FLD::XFluid::set_gamma(Teuchos::ParameterList& eleparams)
 void FLD::XFluid::set_state_tim_int()
 {
   // set scheme-specific element parameters and vector values
-  if (timealgo_ == Inpar::FLUID::timeint_afgenalpha)
+  if (timealgo_ == FLUID::timeint_afgenalpha)
     discret_->set_state("velaf", *state_->velaf_);
   else
     discret_->set_state("velaf", *state_->velnp_);
@@ -5446,12 +5443,12 @@ void FLD::XFluid::calculate_acceleration(
 
   switch (timealgo_)
   {
-    case Inpar::FLUID::timeint_stationary: /* no accelerations for stationary problems*/
+    case FLUID::timeint_stationary: /* no accelerations for stationary problems*/
     {
       accnp->put_scalar(0.0);
       break;
     }
-    case Inpar::FLUID::timeint_one_step_theta: /* One-step-theta time integration */
+    case FLUID::timeint_one_step_theta: /* One-step-theta time integration */
     {
       const double fact1 = 1.0 / (theta_ * dta_);
       const double fact2 = -1.0 / theta_ + 1.0; /* = -1/Theta + 1 */
@@ -5461,7 +5458,7 @@ void FLD::XFluid::calculate_acceleration(
       accnp->update(fact2, *accn, 1.0);
       break;
     }
-    case Inpar::FLUID::timeint_bdf2: /* 2nd order backward differencing BDF2 */
+    case FLUID::timeint_bdf2: /* 2nd order backward differencing BDF2 */
     {
       // TODO: computed, even though not really used afterwards! CHECK!!!
       if (dta_ * dtp_ < 1e-15) FOUR_C_THROW("Zero time step size!!!!!");
@@ -5471,8 +5468,8 @@ void FLD::XFluid::calculate_acceleration(
       accnp->update(dta_ / (dtp_ * sum), *velnm, 1.0);
       break;
     }
-    case Inpar::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
-    case Inpar::FLUID::timeint_npgenalpha:
+    case FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
+    case FLUID::timeint_npgenalpha:
     {
       // do nothing: new acceleration is calculated at beginning of next time step
       break;

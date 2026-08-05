@@ -25,16 +25,15 @@
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_fem_geometry_searchtree_input.hpp"
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_fpsi_input.hpp"
 #include "4C_fs3i_biofilm_fsi_input.hpp"
 #include "4C_fs3i_input.hpp"
 #include "4C_fsi_input.hpp"
 #include "4C_geometric_search_input.hpp"
 #include "4C_global_legacy_module_problem_type_string.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_inpar_io.hpp"
 #include "4C_inpar_IO_runtime_output.hpp"
-#include "4C_inpar_IO_runtime_output_fluid.hpp"
 #include "4C_inpar_IO_runtime_vtk_output_structure.hpp"
 #include "4C_inpar_IO_runtime_vtp_output_structure.hpp"
 #include "4C_io_gridgenerator.hpp"
@@ -45,6 +44,7 @@
 #include "4C_io_pstream.hpp"
 #include "4C_levelset_input.hpp"
 #include "4C_linear_solver_method_input.hpp"
+#include "4C_loma_input.hpp"
 #include "4C_lubrication_input.hpp"
 #include "4C_mortar_input.hpp"
 #include "4C_particle_input.hpp"
@@ -312,7 +312,6 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
   push_specs(specs, CONTACT::valid_parameters());
   push_specs(specs, Coupling::VolMortar::valid_parameters());
   push_specs(specs, Wear::valid_parameters());
-  push_specs(specs, Inpar::IORuntimeOutput::FLUID::valid_parameters());
   push_specs(specs, Inpar::IORuntimeOutput::Solid::valid_parameters());
   push_specs(specs, Beam::IORuntimeOutput::valid_parameters());
   push_specs(specs, BeamInteraction::valid_parameters());
@@ -321,8 +320,8 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
   push_specs(specs, Thermo::valid_parameters());
   push_specs(specs, TSI::valid_parameters());
 
-  push_specs(specs, Inpar::FLUID::valid_parameters());
-  push_specs(specs, Inpar::LowMach::valid_parameters());
+  push_specs(specs, FLUID::valid_parameters());
+  push_specs(specs, LowMach::valid_parameters());
   push_specs(specs, Cut::valid_parameters());
   push_specs(specs, XFEM::valid_parameters());
   push_specs(specs, Constraints::valid_parameters());

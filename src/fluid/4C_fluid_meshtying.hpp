@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter_mortar.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_vector.hpp"
 

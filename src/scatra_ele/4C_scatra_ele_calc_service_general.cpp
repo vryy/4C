@@ -350,7 +350,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
       if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
-      if (turbparams_->turb_model() != Inpar::FLUID::multifractal_subgrid_scales)
+      if (turbparams_->turb_model() != FLUID::multifractal_subgrid_scales)
         FOUR_C_THROW("Multifractal_Subgrid_Scales expected");
 
       double Cai = 0.0;

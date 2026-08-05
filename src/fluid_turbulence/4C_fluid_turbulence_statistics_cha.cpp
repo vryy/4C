@@ -84,7 +84,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   // switches, control parameters, material parameters
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
-  physicaltype_ = Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params, "Physical Type");
+  physicaltype_ = Teuchos::getIntegralValue<FLUID::PhysicalType>(params, "Physical Type");
 
   // get the plane normal direction from the parameterlist
   {
@@ -162,7 +162,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   // not supported yet
   if (myxwall_ != nullptr) multifractal_ = false;
 
-  if (physicaltype_ == Inpar::FLUID::incompressible)
+  if (physicaltype_ == FLUID::incompressible)
   {
     // get fluid viscosity from material definition --- for computation
     // of ltau
@@ -179,7 +179,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       visc_ = actmat->viscosity_ / dens_;
     }
   }
-  else if (physicaltype_ == Inpar::FLUID::loma)
+  else if (physicaltype_ == FLUID::loma)
   {
     // get specific heat capacity --- for computation
     // of Temp_tau
@@ -1254,7 +1254,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   {
     std::string s(statistics_outfilename_);
 
-    if (physicaltype_ == Inpar::FLUID::loma)
+    if (physicaltype_ == FLUID::loma)
     {
       if (inflowchannel_)
         s.append(".inflow.loma_statistics");
@@ -5718,7 +5718,7 @@ void FLD::TurbulenceStatisticsCha::clear_statistics()
   }
 
   meanvelnp_->put_scalar(0.0);
-  if (physicaltype_ == Inpar::FLUID::loma) meanscanp_->put_scalar(0.0);
+  if (physicaltype_ == FLUID::loma) meanscanp_->put_scalar(0.0);
 
   // reset sampling for dynamic Smagorinsky model
   if (smagorinsky_)
@@ -5863,7 +5863,7 @@ void FLD::TurbulenceStatisticsCha::store_scatra_discret_and_params(
     std::cout << "-> added ScaTra discretization to channel-flow-statistics manager\n" << std::endl;
   }
 
-  if (physicaltype_ == Inpar::FLUID::incompressible)  // not required for loma
+  if (physicaltype_ == FLUID::incompressible)  // not required for loma
   {
     // get diffusivity from material definition --- for computation
     // of additional mfs-statistics

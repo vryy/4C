@@ -50,7 +50,7 @@ void FLD::TimIntGenAlpha::init()
   // -> check for time-integration scheme and reasonable number of steps
   if (numstasteps_ > 0)
   {
-    if (timealgo_ != Inpar::FLUID::timeint_afgenalpha)
+    if (timealgo_ != FLUID::timeint_afgenalpha)
       FOUR_C_THROW("no starting algorithm supported for schemes other than af-gen-alpha");
     else
       startalgo_ = true;
@@ -76,13 +76,13 @@ void FLD::TimIntGenAlpha::print_time_step_info()
   {
     switch (timealgo_)
     {
-      case Inpar::FLUID::timeint_afgenalpha:
+      case FLUID::timeint_afgenalpha:
         printf(
             "TIME: %11.4E/%11.4E  DT = %11.4E  Af-Generalized-Alpha (gamma = %0.2f, alphaF = "
             "%0.2f, alphaM = %0.2f) STEP = %4d/%4d \n",
             time_, maxtime_, dta_, gamma_, alphaF_, alphaM_, step_, stepmax_);
         break;
-      case Inpar::FLUID::timeint_npgenalpha:
+      case FLUID::timeint_npgenalpha:
         printf(
             "TIME: %11.4E/%11.4E  DT = %11.4E  Np-Generalized-Alpha (gamma = %0.2f, alphaF = "
             "%0.2f, alphaM = %0.2f) STEP = %4d/%4d \n",
@@ -185,9 +185,8 @@ void FLD::TimIntGenAlpha::gen_alpha_update_acceleration()
   // extract and update only velocity degrees of freedom, since in
   // low-Mach-number flow, 'pressure' components are used to store
   // temporal derivatives of scalar/temperature values
-  if (physicaltype_ == Inpar::FLUID::artcomp or
-      physicaltype_ == Inpar::FLUID::weakly_compressible or
-      physicaltype_ == Inpar::FLUID::weakly_compressible_stokes)
+  if (physicaltype_ == FLUID::artcomp or physicaltype_ == FLUID::weakly_compressible or
+      physicaltype_ == FLUID::weakly_compressible_stokes)
   {
     accnp_->update(fact2, *accn_, 0.0);
     accnp_->update(fact1, *velnp_, -fact1, *veln_, 1.0);
@@ -230,9 +229,8 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
   // extract and update only velocity degrees of freedom, since in
   // low-Mach-number flow, 'pressure' components are used to store
   // temporal derivatives of scalar/temperature values
-  if (physicaltype_ == Inpar::FLUID::artcomp or
-      physicaltype_ == Inpar::FLUID::weakly_compressible or
-      physicaltype_ == Inpar::FLUID::weakly_compressible_stokes)
+  if (physicaltype_ == FLUID::artcomp or physicaltype_ == FLUID::weakly_compressible or
+      physicaltype_ == FLUID::weakly_compressible_stokes)
   {
     accam_->update((alphaM_), *accnp_, (1.0 - alphaM_), *accn_, 0.0);
   }
@@ -309,7 +307,7 @@ void FLD::TimIntGenAlpha::set_state_tim_int()
 {
   discret_->set_state("velaf", *velaf_);
   discret_->set_state("velam", *velam_);
-  if (timealgo_ == Inpar::FLUID::timeint_npgenalpha) discret_->set_state("velnp", *velnp_);
+  if (timealgo_ == FLUID::timeint_npgenalpha) discret_->set_state("velnp", *velnp_);
 }
 
 /*----------------------------------------------------------------------*|
@@ -409,10 +407,10 @@ void FLD::TimIntGenAlpha::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
+  eleparams.set<FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // set time integration scheme
-  eleparams.set<Inpar::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
+  eleparams.set<FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
   // set general element parameters
   eleparams.set("dt", dta_);
   eleparams.set("theta", theta_);

@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_graph.hpp"
 #include "4C_linalg_map.hpp"
@@ -212,7 +212,7 @@ namespace Adapter
 
     /// set initial flow field
     virtual void set_initial_flow_field(
-        const Inpar::FLUID::InitialField initfield, const int startfuncno) = 0;
+        const FLUID::InitialField initfield, const int startfuncno) = 0;
 
     /// set initial flow field
     virtual void set_initial_porosity_field(
@@ -479,7 +479,7 @@ namespace Adapter
     virtual std::shared_ptr<FLD::Utils::MapExtractor> const& fpsi_interface() const = 0;
 
     /// return type of time integration scheme
-    virtual Inpar::FLUID::TimeIntegrationScheme tim_int_scheme() const = 0;
+    virtual FLUID::TimeIntegrationScheme tim_int_scheme() const = 0;
 
     //! @name Extract the velocity-related part of a fluid vector (e.g. velnp, veln, residual)
     /// The idea is to have one function that does the extraction and call it
@@ -584,7 +584,7 @@ namespace Adapter
     virtual void calculate_error() = 0;
 
     /// return physical type of fluid algorithm
-    virtual Inpar::FLUID::PhysicalType physical_type() const = 0;
+    virtual FLUID::PhysicalType physical_type() const = 0;
   };
 }  // namespace Adapter
 

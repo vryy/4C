@@ -1063,8 +1063,7 @@ void PoroElastScaTra::PoroScatraMono::evaluate_od_block_mat_poro()
   // action for elements
   fparams.set<FLD::Action>("action", FLD::calc_poroscatra_mono_odblock);
   // physical type
-  fparams.set<Inpar::FLUID::PhysicalType>(
-      "Physical Type", poro_field()->fluid_field()->physical_type());
+  fparams.set<FLUID::PhysicalType>("Physical Type", poro_field()->fluid_field()->physical_type());
 
   // other parameters that might be needed by the elements
   fparams.set("delta time", dt());

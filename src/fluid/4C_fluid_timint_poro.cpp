@@ -32,11 +32,9 @@ void FLD::TimIntPoro::init()
   Teuchos::ParameterList* stabparams;
   stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
-  if (stabparams->get<Inpar::FLUID::StabType>("STABTYPE") ==
-      Inpar::FLUID::StabType::stabtype_residualbased)
+  if (stabparams->get<FLUID::StabType>("STABTYPE") == FLUID::StabType::stabtype_residualbased)
   {
-    if (stabparams->get<Inpar::FLUID::SubscalesTD>("TDS") ==
-        Inpar::FLUID::SubscalesTD::subscales_time_dependent)
+    if (stabparams->get<FLUID::SubscalesTD>("TDS") == FLUID::SubscalesTD::subscales_time_dependent)
     {
       FOUR_C_THROW(
           "TDS is not implemented for Poro yet. An error will occur in "
@@ -81,8 +79,8 @@ void FLD::TimIntPoro::set_element_custom_parameter()
 
   // set general element parameters
   eleparams.set("form of convective term", convform_);
-  eleparams.set<Inpar::FLUID::LinearisationAction>("Linearisation", newton_);
-  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
+  eleparams.set<FLUID::LinearisationAction>("Linearisation", newton_);
+  eleparams.set<FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // set poro specific element parameters
   eleparams.set<bool>("conti partial integration", params_->get<bool>("conti partial integration"));
@@ -186,7 +184,7 @@ void FLD::TimIntPoro::output()
 
 void FLD::TimIntPoro::set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams)
 {
-  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
+  eleparams.set<FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // just for poroelasticity
   discret_->set_state("dispn", *dispn_);
@@ -214,7 +212,7 @@ void FLD::TimIntPoro::poro_int_update()
     eleparams.set("total time", time_);
     eleparams.set("delta time", dta_);
     eleparams.set<PoroElast::Coupltype>("coupling", PoroElast::fluidfluid);
-    eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
+    eleparams.set<FLUID::PhysicalType>("Physical Type", physicaltype_);
 
     discret_->clear_state();
     discret_->set_state("dispnp", *dispnp_);
@@ -236,7 +234,7 @@ void FLD::TimIntPoro::poro_int_update()
     // set action for elements
     eleparams.set<FLD::BoundaryAction>("action", FLD::poro_prescoupl);
     eleparams.set<PoroElast::Coupltype>("coupling", PoroElast::fluidfluid);
-    eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
+    eleparams.set<FLUID::PhysicalType>("Physical Type", physicaltype_);
 
     discret_->clear_state();
     discret_->set_state("dispnp", *dispnp_);

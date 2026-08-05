@@ -13,8 +13,8 @@
 #include "4C_fem_general_utils_superconvergent_patch_recovery.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_implicit_integration.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -40,7 +40,7 @@ FLD::Utils::StressManager::StressManager(std::shared_ptr<Core::FE::Discretizatio
       alefluid_(alefluid),
       numdim_(numdim),
       sep_enr_(nullptr),
-      wss_type_(Teuchos::getIntegralValue<Inpar::FLUID::WSSType>(
+      wss_type_(Teuchos::getIntegralValue<FLUID::WSSType>(
           Global::Problem::instance()->fluid_dynamic_params(), "WSS_TYPE")),
       sum_stresses_(nullptr),
       sum_wss_(nullptr),
@@ -50,13 +50,13 @@ FLD::Utils::StressManager::StressManager(std::shared_ptr<Core::FE::Discretizatio
 {
   switch (wss_type_)
   {
-    case Inpar::FLUID::wss_standard:
+    case FLUID::wss_standard:
       isinit_ = true;  // in this cases nothing has to be initialized
       break;
-    case Inpar::FLUID::wss_aggregation:
+    case FLUID::wss_aggregation:
       isinit_ = false;  // we do this in InitAggr()
       break;
-    case Inpar::FLUID::wss_mean:
+    case FLUID::wss_mean:
       sum_stresses_ =
           std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true),
       sum_wss_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true),
@@ -74,7 +74,7 @@ FLD::Utils::StressManager::StressManager(std::shared_ptr<Core::FE::Discretizatio
  *----------------------------------------------------------------------*/
 void FLD::Utils::StressManager::init_aggr(std::shared_ptr<Core::LinAlg::SparseOperator> sysmat)
 {
-  if (wss_type_ != Inpar::FLUID::wss_aggregation)
+  if (wss_type_ != FLUID::wss_aggregation)
     FOUR_C_THROW("One should end up here just in case of aggregated stresses!");
 
   calc_sep_enr(sysmat);
@@ -95,13 +95,13 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::get_wal
 
   switch (wss_type_)
   {
-    case Inpar::FLUID::wss_standard:
+    case FLUID::wss_standard:
       // nothing to do
       break;
-    case Inpar::FLUID::wss_aggregation:
+    case FLUID::wss_aggregation:
       wss = aggreagte_stresses(*wss);
       break;
-    case Inpar::FLUID::wss_mean:
+    case FLUID::wss_mean:
       wss = time_average_wss(*wss, dt);
       break;
     default:
@@ -125,14 +125,14 @@ FLD::Utils::StressManager::get_pre_calc_wall_shear_stresses(
 
   switch (wss_type_)
   {
-    case Inpar::FLUID::wss_standard:
+    case FLUID::wss_standard:
       wss = get_wall_shear_stresses_wo_agg(trueresidual);
       break;
-    case Inpar::FLUID::wss_aggregation:
+    case FLUID::wss_aggregation:
       wss = get_wall_shear_stresses_wo_agg(trueresidual);
       wss = aggreagte_stresses(*wss);
       break;
-    case Inpar::FLUID::wss_mean:
+    case FLUID::wss_mean:
       if (sum_dt_wss_ > 0.0)  // iff we have actually calculated some mean wss
         wss->update(1.0 / sum_dt_wss_, *sum_wss_, 0.0);  // weighted sum of all prior stresses
       break;
@@ -182,13 +182,13 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::get_str
 
   switch (wss_type_)
   {
-    case Inpar::FLUID::wss_standard:
+    case FLUID::wss_standard:
       // nothing to do
       break;
-    case Inpar::FLUID::wss_aggregation:
+    case FLUID::wss_aggregation:
       stresses = aggreagte_stresses(*stresses);
       break;
-    case Inpar::FLUID::wss_mean:
+    case FLUID::wss_mean:
       stresses = time_average_stresses(*stresses, dt);
       break;
     default:
@@ -211,14 +211,14 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::get_pre
 
   switch (wss_type_)
   {
-    case Inpar::FLUID::wss_standard:
+    case FLUID::wss_standard:
       stresses = get_stresses_wo_agg(trueresidual);
       break;
-    case Inpar::FLUID::wss_aggregation:
+    case FLUID::wss_aggregation:
       stresses = get_stresses_wo_agg(trueresidual);
       stresses = aggreagte_stresses(*stresses);
       break;
-    case Inpar::FLUID::wss_mean:
+    case FLUID::wss_mean:
       if (sum_dt_stresses_ > 0.0)  // iff we have actually calculated some mean stresses
         stresses->update(
             1.0 / sum_dt_stresses_, *sum_stresses_, 0.0);  // weighted sum of all prior stresses
@@ -433,7 +433,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::time_av
 void FLD::Utils::StressManager::calc_sep_enr(std::shared_ptr<Core::LinAlg::SparseOperator> sysmat)
 {
   // if we have not specified a multigrid-solver one does not want to smooth the wss
-  if (wss_type_ == Inpar::FLUID::wss_aggregation)
+  if (wss_type_ == FLUID::wss_aggregation)
   {
     std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat2;
 
@@ -811,7 +811,7 @@ void FLD::Utils::write_lift_drag_to_file(
  *----------------------------------------------------------------------*/
 std::map<int, double> FLD::Utils::compute_flow_rates(Core::FE::Discretization& dis,
     Core::LinAlg::Vector<double>& velnp, const std::string& condstring,
-    const Inpar::FLUID::PhysicalType physicaltype)
+    const FLUID::PhysicalType physicaltype)
 {
   return compute_flow_rates(dis, velnp, nullptr, nullptr, condstring, physicaltype);
 }
@@ -821,12 +821,12 @@ std::map<int, double> FLD::Utils::compute_flow_rates(Core::FE::Discretization& d
 std::map<int, double> FLD::Utils::compute_flow_rates(Core::FE::Discretization& dis,
     Core::LinAlg::Vector<double>& velnp, const std::shared_ptr<Core::LinAlg::Vector<double>>& gridv,
     const std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp, const std::string& condstring,
-    const Inpar::FLUID::PhysicalType physicaltype)
+    const FLUID::PhysicalType physicaltype)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
   eleparams.set<FLD::BoundaryAction>("action", FLD::calc_flowrate);
-  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype);
+  eleparams.set<FLUID::PhysicalType>("Physical Type", physicaltype);
 
   // note that the flowrate is not yet divided by the area
   std::map<int, double> volumeflowrateperline;
@@ -885,12 +885,12 @@ std::map<int, double> FLD::Utils::compute_volume(Core::FE::Discretization& dis,
     const std::shared_ptr<Core::LinAlg::Vector<double>>& velnp,
     const std::shared_ptr<Core::LinAlg::Vector<double>>& gridv,
     const std::shared_ptr<Core::LinAlg::Vector<double>>& dispnp,
-    const Inpar::FLUID::PhysicalType physicaltype)
+    const FLUID::PhysicalType physicaltype)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
   eleparams.set<FLD::Action>("action", FLD::calc_volume);
-  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype);
+  eleparams.set<FLUID::PhysicalType>("Physical Type", physicaltype);
 
   std::map<int, double> volumeperline;
 
@@ -977,7 +977,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> FLD::Utils::project_gradient(
     Core::FE::Discretization& discret, const Core::LinAlg::Vector<double>& vel, bool alefluid)
 {
   // reconstruction of second derivatives for fluid residual
-  auto recomethod = Teuchos::getIntegralValue<Inpar::FLUID::GradientReconstructionMethod>(
+  auto recomethod = Teuchos::getIntegralValue<FLUID::GradientReconstructionMethod>(
       Global::Problem::instance()->fluid_dynamic_params(), "VELGRAD_PROJ_METHOD");
 
   const int dim = Global::Problem::instance()->n_dim();
@@ -991,12 +991,12 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> FLD::Utils::project_gradient(
 
   switch (recomethod)
   {
-    case Inpar::FLUID::gradreco_none:
+    case FLUID::gradreco_none:
     {
       // no projection and no parameter in parameter list
     }
     break;
-    case Inpar::FLUID::gradreco_spr:
+    case FLUID::gradreco_spr:
     {
       if (alefluid)
         FOUR_C_THROW(
@@ -1024,7 +1024,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> FLD::Utils::project_gradient(
       }
     }
     break;
-    case Inpar::FLUID::gradreco_l2:
+    case FLUID::gradreco_l2:
     {
       const int solvernumber =
           Global::Problem::instance()->fluid_dynamic_params().get<int>("VELGRAD_PROJ_SOLVER");

@@ -36,8 +36,8 @@ Discret::Elements::ScaTraEleParameterTurbulence::instance(const std::string& dis
 Discret::Elements::ScaTraEleParameterTurbulence::ScaTraEleParameterTurbulence(
     const std::string& disname  //!< name of discretization
     )
-    : turbmodel_(Inpar::FLUID::no_model),
-      scalarforcing_(Inpar::FLUID::scalarforcing_no),
+    : turbmodel_(FLUID::no_model),
+      scalarforcing_(FLUID::scalarforcing_no),
       fssgd_(false),
       whichfssgd_(ScaTra::fssugrdiff_no),
       cs_(0.0),
@@ -80,25 +80,25 @@ void Discret::Elements::ScaTraEleParameterTurbulence::set_parameters(
 
   // set flag for turbulence model
   if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "no_model")
-    turbmodel_ = Inpar::FLUID::no_model;
+    turbmodel_ = FLUID::no_model;
   else if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Smagorinsky")
-    turbmodel_ = Inpar::FLUID::smagorinsky;
+    turbmodel_ = FLUID::smagorinsky;
   else if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
-    turbmodel_ = Inpar::FLUID::dynamic_smagorinsky;
+    turbmodel_ = FLUID::dynamic_smagorinsky;
   else if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
-    turbmodel_ = Inpar::FLUID::multifractal_subgrid_scales;
+    turbmodel_ = FLUID::multifractal_subgrid_scales;
   else if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Dynamic_Vreman")
-    turbmodel_ = Inpar::FLUID::dynamic_vreman;
+    turbmodel_ = FLUID::dynamic_vreman;
   else
     FOUR_C_THROW("Unknown turbulence model for scatra!");
 
   // define forcing for scalar field
   if (turbulencelist.get<std::string>("SCALAR_FORCING", "no") == "isotropic")
-    scalarforcing_ = Inpar::FLUID::scalarforcing_isotropic;
+    scalarforcing_ = FLUID::scalarforcing_isotropic;
   else if (turbulencelist.get<std::string>("SCALAR_FORCING", "no") == "mean_scalar_gradient")
-    scalarforcing_ = Inpar::FLUID::scalarforcing_mean_scalar_gradient;
+    scalarforcing_ = FLUID::scalarforcing_mean_scalar_gradient;
   else
-    scalarforcing_ = Inpar::FLUID::scalarforcing_no;
+    scalarforcing_ = FLUID::scalarforcing_no;
 
   // set flag for fine-scale subgrid diffusivity and perform some checks
   whichfssgd_ = Teuchos::getIntegralValue<ScaTra::FSSUGRDIFF>(parameters, "fs subgrid diffusivity");
@@ -129,10 +129,10 @@ void Discret::Elements::ScaTraEleParameterTurbulence::set_parameters(
   {
     fssgd_ = false;
     whichfssgd_ = ScaTra::fssugrdiff_no;
-    turbmodel_ = Inpar::FLUID::no_model;
+    turbmodel_ = FLUID::no_model;
   }
 
-  if (turbmodel_ != Inpar::FLUID::no_model or (timintparams_->is_incremental() and fssgd_))
+  if (turbmodel_ != FLUID::no_model or (timintparams_->is_incremental() and fssgd_))
   {
     // get Smagorinsky constant and turbulent Prandtl number
     cs_ = sgvisclist.get<double>("C_SMAGORINSKY");
@@ -141,11 +141,10 @@ void Discret::Elements::ScaTraEleParameterTurbulence::set_parameters(
 
     cs_av_ = sgvisclist.get<bool>("C_SMAGORINSKY_AVERAGED");
 
-    if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
-      cs_ = turbulencelist.get<double>("Dt_vreman", 1.0);
+    if (turbmodel_ == FLUID::dynamic_vreman) cs_ = turbulencelist.get<double>("Dt_vreman", 1.0);
 
     // get model parameters
-    if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
+    if (turbmodel_ == FLUID::multifractal_subgrid_scales)
     {
       // necessary parameters for subgrid-scale velocity estimation
       csgs_sgvel_ = mfslist.get<double>("CSGS");

@@ -33,7 +33,7 @@ FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const std::shared_ptr<Core::FE::Discre
     const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntGenAlpha(actdis, solver, params, output, alefluid),
-      timealgoset_(Inpar::FLUID::timeint_afgenalpha),
+      timealgoset_(FLUID::timeint_afgenalpha),
       first_assembly_(false)
 {
 }
@@ -87,19 +87,19 @@ void FLD::TimIntHDGWeakComp::init()
   velpressplitter_->setup(*hdgdis->dof_row_map(), dofmap_r, dofmap_w);
 
   // implement ost and bdf2 through gen-alpha facilities
-  if (timealgo_ == Inpar::FLUID::timeint_bdf2)
+  if (timealgo_ == FLUID::timeint_bdf2)
   {
     alphaM_ = 1.5;
     alphaF_ = 1.0;
     gamma_ = 1.0;
   }
-  else if (timealgo_ == Inpar::FLUID::timeint_one_step_theta)
+  else if (timealgo_ == FLUID::timeint_one_step_theta)
   {
     alphaM_ = 1.0;
     alphaF_ = 1.0;
     gamma_ = params_->get<double>("theta");
   }
-  else if (timealgo_ == Inpar::FLUID::timeint_stationary)
+  else if (timealgo_ == FLUID::timeint_stationary)
   {
     // mimic backward Euler neglecting inertial terms
     alphaM_ = 1.0;
@@ -108,7 +108,7 @@ void FLD::TimIntHDGWeakComp::init()
   }
 
   timealgoset_ = timealgo_;
-  timealgo_ = Inpar::FLUID::timeint_afgenalpha;
+  timealgo_ = FLUID::timeint_afgenalpha;
 
   // call init()-functions of base classes
   // note: this order is important
@@ -129,10 +129,10 @@ void FLD::TimIntHDGWeakComp::set_theta()
   //  integration and values at intermediate time steps
   // -------------------------------------------------------------------
   // starting algorithm
-  if (startalgo_ || (step_ <= 2 && timealgoset_ == Inpar::FLUID::timeint_bdf2))
+  if (startalgo_ || (step_ <= 2 && timealgoset_ == FLUID::timeint_bdf2))
   {
     // use backward-Euler-type parameter combination
-    if (step_ <= numstasteps_ || (step_ <= 1 && timealgoset_ == Inpar::FLUID::timeint_bdf2))
+    if (step_ <= numstasteps_ || (step_ <= 1 && timealgoset_ == FLUID::timeint_bdf2))
     {
       if (myrank_ == 0)
       {
@@ -147,12 +147,12 @@ void FLD::TimIntHDGWeakComp::set_theta()
     else
     {
       // recall original user wish
-      if (timealgoset_ == Inpar::FLUID::timeint_one_step_theta)
+      if (timealgoset_ == FLUID::timeint_one_step_theta)
       {
         alphaM_ = alphaF_ = 1.0;
         gamma_ = params_->get<double>("theta");
       }
-      else if (timealgoset_ == Inpar::FLUID::timeint_bdf2)
+      else if (timealgoset_ == FLUID::timeint_bdf2)
       {
         alphaF_ = gamma_ = 1.0;
         alphaM_ = 3. / 2.;
@@ -393,9 +393,8 @@ void FLD::TimIntHDGWeakComp::time_update()
  *----------------------------------------------------------------------*/
 void FLD::TimIntHDGWeakComp::update_gridv()
 {
-  if (timealgoset_ == Inpar::FLUID::timeint_afgenalpha ||
-      timealgoset_ == Inpar::FLUID::timeint_npgenalpha ||
-      timealgoset_ == Inpar::FLUID::timeint_bdf2)  // 2nd order methods
+  if (timealgoset_ == FLUID::timeint_afgenalpha || timealgoset_ == FLUID::timeint_npgenalpha ||
+      timealgoset_ == FLUID::timeint_bdf2)  // 2nd order methods
   {
     if (step_ <= 1)
     {
@@ -409,12 +408,12 @@ void FLD::TimIntHDGWeakComp::update_gridv()
       gridv_->update(0.5 / dta_, *dispnm_, 1.0);
     }
   }
-  else if (timealgoset_ == Inpar::FLUID::timeint_one_step_theta)  // 1st order methods
+  else if (timealgoset_ == FLUID::timeint_one_step_theta)  // 1st order methods
   {
     // use BDF1
     gridv_->update(1.0 / dta_, *dispnp_, -1.0 / dta_, *dispn_, 0.0);
   }
-  else if (timealgoset_ == Inpar::FLUID::timeint_stationary)
+  else if (timealgoset_ == FLUID::timeint_stationary)
   {
     gridv_->put_scalar(0.0);
   }
@@ -426,7 +425,7 @@ void FLD::TimIntHDGWeakComp::update_gridv()
  |  set initial flow field                                 laspina 08/19|
  *----------------------------------------------------------------------*/
 void FLD::TimIntHDGWeakComp::set_initial_flow_field(
-    const Inpar::FLUID::InitialField initfield, const int startfuncno)
+    const FLUID::InitialField initfield, const int startfuncno)
 {
   const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
   Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
@@ -434,7 +433,7 @@ void FLD::TimIntHDGWeakComp::set_initial_flow_field(
   Teuchos::ParameterList initParams;
   initParams.set<FLD::Action>("action", FLD::project_fluid_field);
   initParams.set("startfuncno", startfuncno);
-  initParams.set<Inpar::FLUID::InitialField>("initfield", initfield);
+  initParams.set<FLUID::InitialField>("initfield", initfield);
 
   // loop over all elements on the processor
   Core::Elements::LocationArray la(2);
@@ -490,17 +489,16 @@ std::shared_ptr<std::vector<double>>
 FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
-  const auto calcerr =
-      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error");
+  const auto calcerr = Teuchos::getIntegralValue<FLUID::CalcError>(*params_, "calculate error");
 
   switch (calcerr)
   {
-    case Inpar::FLUID::no:
+    case FLUID::no:
     {
       return nullptr;
       break;
     }
-    case Inpar::FLUID::byfunct:
+    case FLUID::byfunct:
     {
       discret_->set_state(1, "intvelnp", *intvelnp_);
 
@@ -515,8 +513,8 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
 
       // action for elements
       eleparams.set<FLD::Action>("action", FLD::calc_fluid_error);
-      eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
-      eleparams.set<Inpar::FLUID::CalcError>("calculate error", calcerr);
+      eleparams.set<FLUID::PhysicalType>("Physical Type", physicaltype_);
+      eleparams.set<FLUID::CalcError>("calculate error", calcerr);
 
       // get function number
       const int errorfunctno = params_->get<int>("error function number", -1);

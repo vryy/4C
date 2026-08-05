@@ -941,7 +941,7 @@ void Discret::Elements::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
     {
       double scal_grad_q = 0.0;
 
-      if (Base::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+      if (Base::fldpara_->tds() == FLUID::subscales_quasistatic)
       {
         scal_grad_q = Base::tau_(1);
       }
@@ -990,10 +990,10 @@ void Discret::Elements::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
     }
 
     //*************************************************************************************************************
-    if (Base::fldpara_->r_stab() != Inpar::FLUID::reactive_stab_none)
+    if (Base::fldpara_->r_stab() != FLUID::reactive_stab_none)
     {
       double reac_tau;
-      if (Base::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+      if (Base::fldpara_->tds() == FLUID::subscales_quasistatic)
         reac_tau = Base::fldpara_->visc_rea_stab_fac() * Base::reacoeff_ * Base::tau_(1);
       else
       {

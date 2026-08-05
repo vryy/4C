@@ -233,8 +233,8 @@ int Discret::Elements::FluidBoundaryImpl<distype>::evaluate_neumann(
   Core::LinAlg::Matrix<bdrynen_, 1> epreaf(Core::LinAlg::Initialization::zero);
   Discret::Elements::FluidEleParameter* fldpara =
       Discret::Elements::FluidEleParameterStd::instance();
-  if (fldpara->physical_type() == Inpar::FLUID::weakly_compressible or
-      fldpara->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
+  if (fldpara->physical_type() == FLUID::weakly_compressible or
+      fldpara->physical_type() == FLUID::weakly_compressible_stokes)
   {
     std::shared_ptr<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
     if (velaf == nullptr) FOUR_C_THROW("Cannot get state vector 'velaf'");
@@ -1180,7 +1180,7 @@ void Discret::Elements::FluidBoundaryImpl<distype>::flow_rate_deriv(
 
   // order of accuracy of grid velocity determination
   const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
-  const auto gridvel = Teuchos::getIntegralValue<Inpar::FLUID::Gridvel>(fdyn, "GRIDVEL");
+  const auto gridvel = Teuchos::getIntegralValue<FLUID::Gridvel>(fdyn, "GRIDVEL");
 
   // normal vector
   Core::LinAlg::Matrix<nsd_, 1> normal(Core::LinAlg::Initialization::zero);
@@ -1310,7 +1310,7 @@ void Discret::Elements::FluidBoundaryImpl<distype>::flow_rate_deriv(
         const double dt = params.get<double>("dt", -1.0);
         if (dt < 0.) FOUR_C_THROW("invalid time step size");
 
-        if (gridvel == Inpar::FLUID::BE)  // BE time discretization
+        if (gridvel == FLUID::BE)  // BE time discretization
         {
           for (int node = 0; node < bdrynen_; ++node)
           {
@@ -1396,7 +1396,7 @@ void Discret::Elements::FluidBoundaryImpl<distype>::flow_rate_deriv(
         const double dt = params.get<double>("dt", -1.0);
         if (dt < 0.) FOUR_C_THROW("invalid time step size");
 
-        if (gridvel == Inpar::FLUID::BE)
+        if (gridvel == FLUID::BE)
         {
           for (int node1 = 0; node1 < bdrynen_; ++node1)
           {
@@ -1581,9 +1581,9 @@ void Discret::Elements::FluidBoundaryImpl<distype>::get_density(
     const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(material.get());
 
     // varying density
-    if (fldpara_->physical_type() == Inpar::FLUID::varying_density) densaf_ = funct_.dot(escaaf);
+    if (fldpara_->physical_type() == FLUID::varying_density) densaf_ = funct_.dot(escaaf);
     // Boussinesq approximation: Calculation of delta rho
-    else if (fldpara_->physical_type() == Inpar::FLUID::boussinesq)
+    else if (fldpara_->physical_type() == FLUID::boussinesq)
       FOUR_C_THROW("Boussinesq approximation not yet supported for boundary terms!");
     else
       densaf_ = actmat->density();

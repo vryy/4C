@@ -11,8 +11,8 @@
 #include "4C_config.hpp"
 
 #include "4C_fluid_ele_parameter_timint.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_fluid_turbulence_input.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -57,7 +57,7 @@ namespace Discret
 
       //! Flag for physical type of the fluid flow (incompressible, loma, varying_density,
       //! Boussinesq, poro)
-      Inpar::FLUID::PhysicalType physical_type() const { return physicaltype_; };
+      FLUID::PhysicalType physical_type() const { return physicaltype_; };
       //! flag to (de)activate conservative formulation
       bool is_conservative() const { return is_conservative_; };
       //! flag to (de)activate Newton linearization
@@ -76,32 +76,32 @@ namespace Discret
       /*----------------------------------------------------*/
 
       //! get the stabtype
-      Inpar::FLUID::StabType stab_type() const { return stabtype_; };
+      FLUID::StabType stab_type() const { return stabtype_; };
       /// parameter for residual stabilization
       //! Flag to (de)activate time-dependent subgrid stabilization
-      Inpar::FLUID::SubscalesTD tds() const { return tds_; };
+      FLUID::SubscalesTD tds() const { return tds_; };
       //! Flag to (de)activate time-dependent term in large-scale momentum equation
-      Inpar::FLUID::Transient transient() const { return transient_; };
+      FLUID::Transient transient() const { return transient_; };
       //! Flag to (de)activate PSPG stabilization
       bool pspg() const { return pspg_; };
       //! Flag to (de)activate SUPG stabilization
       bool supg() const { return supg_; };
       //! Flag to (de)activate viscous term in residual-based stabilization
-      Inpar::FLUID::VStab v_stab() const { return vstab_; };
+      FLUID::VStab v_stab() const { return vstab_; };
       //! Flag to (de)activate reactive term in residual-based stabilization
-      Inpar::FLUID::RStab r_stab() const { return rstab_; };
+      FLUID::RStab r_stab() const { return rstab_; };
       //! Flag to (de)activate least-squares stabilization of continuity equation
       bool c_stab() const { return graddiv_; };
       //! Flag to (de)activate cross-stress term -> residual-based VMM
-      Inpar::FLUID::CrossStress cross() const { return cross_; };
+      FLUID::CrossStress cross() const { return cross_; };
       //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
-      Inpar::FLUID::ReynoldsStress reynolds() const { return reynolds_; };
+      FLUID::ReynoldsStress reynolds() const { return reynolds_; };
       //! Flag to define tau
-      Inpar::FLUID::TauType which_tau() const { return whichtau_; };
+      FLUID::TauType which_tau() const { return whichtau_; };
       //! Flag to define characteristic element length for tau_Mu
-      Inpar::FLUID::CharEleLengthU char_ele_length_u() const { return charelelengthu_; };
+      FLUID::CharEleLengthU char_ele_length_u() const { return charelelengthu_; };
       //! Flag to define characteristic element length for tau_Mp and tau_C
-      Inpar::FLUID::CharEleLengthPC char_ele_length_pc() const { return charelelengthpc_; };
+      FLUID::CharEleLengthPC char_ele_length_pc() const { return charelelengthpc_; };
       //! (sign) factor for viscous and reactive stabilization terms
       double visc_rea_stab_fac() const { return viscreastabfac_; };
 
@@ -128,7 +128,7 @@ namespace Discret
       /// constant parameters for the turbulence formulation
       /// subgrid viscosity models
       //! flag to define turbulence model
-      Inpar::FLUID::TurbModelAction turb_mod_action() const { return turb_mod_action_; };
+      FLUID::TurbModelAction turb_mod_action() const { return turb_mod_action_; };
       double cs() const { return Cs_; };
       bool cs_averaged() const { return Cs_averaged_; };
       double ci() const { return Ci_; };
@@ -141,9 +141,9 @@ namespace Discret
       bool include_ci() const { return include_Ci_; };
       double ltau() const { return l_tau_; };
       //! flag to (de)activate fine-scale subgrid viscosity
-      Inpar::FLUID::FineSubgridVisc fssgv() const { return fssgv_; };
+      FLUID::FineSubgridVisc fssgv() const { return fssgv_; };
       // Flag to Vreman filter method
-      Inpar::FLUID::VremanFiMethod vrfi() const { return vrfi_; };
+      FLUID::VremanFiMethod vrfi() const { return vrfi_; };
       /// multifractal subgrid-scales
       double csgs() const { return Csgs_; };
       double csgs_phi() const
@@ -184,9 +184,9 @@ namespace Discret
       //! flag to (de)activate continuity SUPG term
       virtual bool conti_supg() const { return conti_supg_; };
       //! flag to (de)activate continuity cross-stress term -> residual-based VMM
-      virtual Inpar::FLUID::CrossStress conti_cross() const { return conti_cross_; };
+      virtual FLUID::CrossStress conti_cross() const { return conti_cross_; };
       //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
-      virtual Inpar::FLUID::ReynoldsStress conti_reynolds() const { return conti_reynolds_; };
+      virtual FLUID::ReynoldsStress conti_reynolds() const { return conti_reynolds_; };
       //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
       virtual bool multi_frac_loma_conti() const { return multifrac_loma_conti_; };
 
@@ -200,9 +200,9 @@ namespace Discret
 
       //! Flag for physical type of the fluid flow (incompressible, loma, varying_density,
       //! Boussinesq, Poro)
-      Inpar::FLUID::PhysicalType physicaltype_;
+      FLUID::PhysicalType physicaltype_;
       //! parameter to switch the stabilization
-      Inpar::FLUID::StabType stabtype_;
+      FLUID::StabType stabtype_;
       /// Flags to switch on/off the different fluid formulations
       //! flag to (de)activate conservative formulation
       bool is_conservative_;
@@ -223,29 +223,29 @@ namespace Discret
 
       /// parameter for residual based stabilizations
       //! Flag to (de)activate time-dependent subgrid stabilization
-      Inpar::FLUID::SubscalesTD tds_;
+      FLUID::SubscalesTD tds_;
       //! Flag to (de)activate time-dependent term in large-scale momentum equation
-      Inpar::FLUID::Transient transient_;
+      FLUID::Transient transient_;
       //! Flag to (de)activate PSPG stabilization
       bool pspg_;
       //! Flag to (de)activate SUPG stabilization
       bool supg_;
       //! Flag to (de)activate viscous term in residual-based stabilization
-      Inpar::FLUID::VStab vstab_;
+      FLUID::VStab vstab_;
       //! Flag to (de)activate reactive term in residual-based stabilization
-      Inpar::FLUID::RStab rstab_;
+      FLUID::RStab rstab_;
       //! Flag to (de)activate least-squares stabilization of continuity equation
       bool graddiv_;
       //! Flag to (de)activate cross-stress term -> residual-based VMM
-      Inpar::FLUID::CrossStress cross_;
+      FLUID::CrossStress cross_;
       //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
-      Inpar::FLUID::ReynoldsStress reynolds_;
+      FLUID::ReynoldsStress reynolds_;
       //! Flag to define tau
-      Inpar::FLUID::TauType whichtau_;
+      FLUID::TauType whichtau_;
       //! Flag to define characteristic element length for tau_Mu
-      Inpar::FLUID::CharEleLengthU charelelengthu_;
+      FLUID::CharEleLengthU charelelengthu_;
       //! Flag to define characteristic element length for tau_Mp and tau_C
-      Inpar::FLUID::CharEleLengthPC charelelengthpc_;
+      FLUID::CharEleLengthPC charelelengthpc_;
       //! (sign) factor for viscous and reactive stabilization terms
       double viscreastabfac_;
 
@@ -273,7 +273,7 @@ namespace Discret
       /// constant parameters for the turbulence formulation
       /// subgrid viscosity models
       //! flag to define turbulence model
-      Inpar::FLUID::TurbModelAction turb_mod_action_;
+      FLUID::TurbModelAction turb_mod_action_;
       //! smagorinsky constant
       double Cs_;
       bool Cs_averaged_;
@@ -285,9 +285,9 @@ namespace Discret
       //! channel length to normalize the normal wall distance
       double l_tau_;
       //! flag to (de)activate fine-scale subgrid viscosity
-      Inpar::FLUID::FineSubgridVisc fssgv_;
+      FLUID::FineSubgridVisc fssgv_;
       // flag to Vreman filter method
-      Inpar::FLUID::VremanFiMethod vrfi_;
+      FLUID::VremanFiMethod vrfi_;
       /// multifractal subgrid-scales
       double Csgs_;
       double Csgs_phi_;
@@ -316,9 +316,9 @@ namespace Discret
       //! flag to (de)activate continuity SUPG term
       bool conti_supg_;
       //! flag to (de)activate continuity cross-stress term -> residual-based VMM
-      Inpar::FLUID::CrossStress conti_cross_;
+      FLUID::CrossStress conti_cross_;
       //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
-      Inpar::FLUID::ReynoldsStress conti_reynolds_;
+      FLUID::ReynoldsStress conti_reynolds_;
       //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
       bool multifrac_loma_conti_;
 

@@ -7,7 +7,7 @@
 
 #include "4C_fluid_discretization_runtime_output_params.hpp"
 
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.hpp"
 

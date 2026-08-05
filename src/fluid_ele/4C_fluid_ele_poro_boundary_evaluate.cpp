@@ -9,7 +9,7 @@
 #include "4C_fluid_ele_boundary_calc.hpp"
 #include "4C_fluid_ele_boundary_factory.hpp"
 #include "4C_fluid_ele_poro.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -26,12 +26,12 @@ int Discret::Elements::FluidPoroBoundary::evaluate(Teuchos::ParameterList& param
 
   // switch between different physical types as used below
   std::string impltype = "poro";
-  switch (params.get<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro))
+  switch (params.get<FLUID::PhysicalType>("Physical Type", FLUID::poro))
   {
-    case Inpar::FLUID::poro:
+    case FLUID::poro:
       impltype = "poro";
       break;
-    case Inpar::FLUID::poro_p1:
+    case FLUID::poro_p1:
       impltype = "poro_p1";
       break;
     default:

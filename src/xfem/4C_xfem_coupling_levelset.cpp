@@ -12,7 +12,7 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_l2_projection.hpp"
 #include "4C_fluid_ele_action.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"

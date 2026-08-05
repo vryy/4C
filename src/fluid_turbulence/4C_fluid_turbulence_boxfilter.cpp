@@ -28,8 +28,7 @@ FLD::Boxfilter::Boxfilter(
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(
-          Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params_, "Physical Type")),
+      physicaltype_(Teuchos::getIntegralValue<FLUID::PhysicalType>(params_, "Physical Type")),
       //  available control settings
       apply_dynamic_smagorinsky_(false),
       vreman_dynamic_(false),
@@ -63,9 +62,9 @@ FLD::Boxfilter::Boxfilter(
         "Multifractal_Subgrid_Scales")
       apply_box_filter_ = true;
 
-    if (physicaltype_ == Inpar::FLUID::loma) loma_ = true;
+    if (physicaltype_ == FLUID::loma) loma_ = true;
 
-    if (physicaltype_ == Inpar::FLUID::incompressible) incomp_ = true;
+    if (physicaltype_ == FLUID::incompressible) incomp_ = true;
 
     if (modelparams->get<std::string>("PHYSICAL_MODEL", "no_model") == "Dynamic_Vreman")
       vreman_dynamic_ = true;
@@ -648,8 +647,8 @@ void FLD::Boxfilter::apply_box_filter(
 
         // determine density
         double dens = 1.0;
-        if (physicaltype_ == Inpar::FLUID::incompressible)  // this is important to have here,
-        {  //  since, for the pure box filter application,
+        if (physicaltype_ == FLUID::incompressible)  // this is important to have here,
+        {                                            //  since, for the pure box filter application,
            // get fluid viscosity from material definition                                //  we do
            // not want to multiply the reynolds stress by density
           int id =

@@ -252,8 +252,8 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> ScaTra::ScaTraTimIntImpl::cal
       set_element_time_parameter(true);
 
       // AVM3 separation for incremental solver: get fine-scale part of scalar
-      if (incremental_ and (fssgd_ != ScaTra::fssugrdiff_no or
-                               turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales))
+      if (incremental_ and
+          (fssgd_ != ScaTra::fssugrdiff_no or turbmodel_ == FLUID::multifractal_subgrid_scales))
         avm3_separation();
 
       // add element parameters according to time-integration scheme
@@ -1420,7 +1420,7 @@ void ScaTra::ScaTraTimIntImpl::access_dyn_smag_filter(std::shared_ptr<FLD::DynSm
   // access to the dynamic Smagorinsky class is provided
   // by the fluid scatra coupling algorithm
   // therefore, we only have to add some scatra specific parameters here
-  if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
+  if (turbmodel_ == FLUID::dynamic_smagorinsky)
   {
     if (myrank_ == 0)
     {
@@ -1441,7 +1441,7 @@ void ScaTra::ScaTraTimIntImpl::access_vreman(std::shared_ptr<FLD::Vreman> vrem)
   // access to the dynamic Vreman class is provided
   // by the fluid scatra coupling algorithm
   // therefore, we only have to add some scatra specific parameters here
-  if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
+  if (turbmodel_ == FLUID::dynamic_vreman)
   {
     if (myrank_ == 0)
     {
@@ -1549,9 +1549,8 @@ void ScaTra::ScaTraTimIntImpl::calc_intermediate_solution()
   if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" and
       extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") ==
           "isotropic" and
-      Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(
-          extraparams_->sublist("TURBULENCE MODEL"), "FORCING_TYPE") ==
-          Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
+      Teuchos::getIntegralValue<FLUID::ForcingType>(extraparams_->sublist("TURBULENCE MODEL"),
+          "FORCING_TYPE") == FLUID::linear_compensation_from_intermediate_spectrum)
   {
     bool activate = true;
 

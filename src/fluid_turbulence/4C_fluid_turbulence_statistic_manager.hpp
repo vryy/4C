@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_scatra_input.hpp"
 
@@ -259,7 +259,7 @@ namespace FLD
     bool withscatra_;
 
     //! toggle additional evaluations for turbulence models
-    Inpar::FLUID::TurbModelAction turbmodel_;
+    FLUID::TurbModelAction turbmodel_;
 
     //! toggle evaluation of subgrid quantities, dissipation rates etc
     //! this is only possible for the genalpha implementation since

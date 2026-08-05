@@ -546,7 +546,7 @@ namespace FLD
     \brief return type of time integration scheme
 
     */
-    Inpar::FLUID::TimeIntegrationScheme tim_int_scheme() const override { return timealgo_; }
+    FLUID::TimeIntegrationScheme tim_int_scheme() const override { return timealgo_; }
 
     std::shared_ptr<Core::LinAlg::Vector<double>> integrate_interface_shape() override
     {
@@ -595,8 +595,7 @@ namespace FLD
     }
 
     /// set initial flow field
-    void set_initial_flow_field(
-        const Inpar::FLUID::InitialField initfield, const int startfuncno) override
+    void set_initial_flow_field(const FLUID::InitialField initfield, const int startfuncno) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -712,7 +711,7 @@ namespace FLD
       return;
     }
 
-    Inpar::FLUID::PhysicalType physical_type() const override { return physicaltype_; }
+    FLUID::PhysicalType physical_type() const override { return physicaltype_; }
 
    protected:
     //! fluid discretization
@@ -750,8 +749,8 @@ namespace FLD
     int uprestart_;  ///< write restart data every uprestart_ steps
     int upres_;      ///< write result every upres_ steps
 
-    Inpar::FLUID::TimeIntegrationScheme timealgo_;  ///< time algorithm flag
-    Inpar::FLUID::PhysicalType
+    FLUID::TimeIntegrationScheme timealgo_;  ///< time algorithm flag
+    FLUID::PhysicalType
         physicaltype_;  ///< flag for physical type of fluid flow (standard: incompressible)
 
     int myrank_;  ///< the processor ID from the communicator

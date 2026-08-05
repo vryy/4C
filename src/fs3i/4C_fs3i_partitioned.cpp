@@ -758,7 +758,7 @@ void FS3I::PartFS3I::extract_vel(
 
   switch (fsi_->fluid_field()->tim_int_scheme())
   {
-    case Inpar::FLUID::timeint_afgenalpha:
+    case FLUID::timeint_afgenalpha:
     {
       std::shared_ptr<Core::LinAlg::Vector<double>> fluidconvel =
           std::make_shared<Core::LinAlg::Vector<double>>(*(fsi_->fluid_field()->velaf()));
@@ -768,7 +768,7 @@ void FS3I::PartFS3I::extract_vel(
       convel.push_back(fluidconvel);
     }
     break;
-    case Inpar::FLUID::timeint_one_step_theta:
+    case FLUID::timeint_one_step_theta:
     {
       convel.push_back(fsi_->fluid_field()->convective_vel());
       vel.push_back(fsi_->fluid_field()->velnp());
@@ -822,8 +822,8 @@ void FS3I::PartFS3I::extract_wss(
   std::shared_ptr<Core::LinAlg::Vector<double>> WallShearStress =
       fluid->calculate_wall_shear_stresses();
 
-  if (Teuchos::getIntegralValue<Inpar::FLUID::WSSType>(
-          problem->fluid_dynamic_params(), "WSS_TYPE") != Inpar::FLUID::wss_standard)
+  if (Teuchos::getIntegralValue<FLUID::WSSType>(problem->fluid_dynamic_params(), "WSS_TYPE") !=
+      FLUID::wss_standard)
     FOUR_C_THROW("WSS_TYPE not supported for FS3I!");
 
   wss.push_back(WallShearStress);

@@ -396,7 +396,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     params.set("total time", time());
     params.set("delta time", dt());
     params.set("timescale", fluid_field()->residual_scaling());
-    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
+    params.set<FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", *fluid_field()->dispnp());
@@ -434,7 +434,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     params.set("total time", time());
     params.set("delta time", dt());
     params.set("timescale", fluid_field()->residual_scaling());
-    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
+    params.set<FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", *fluid_field()->dispnp());
@@ -467,7 +467,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     params.set("total time", time());
     params.set("delta time", dt());
     params.set("timescale", fluid_field()->residual_scaling());
-    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
+    params.set<FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", *fluid_field()->dispnp());
@@ -496,7 +496,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     params.set("total time", time());
     params.set("delta time", dt());
     params.set("timescale", fluid_field()->residual_scaling());
-    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
+    params.set<FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", *fluid_field()->dispnp());

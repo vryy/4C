@@ -89,16 +89,14 @@ void FLD::XFluidFluid::create_initial_state()
   // base class CreateInitialState
   XFluid::create_initial_state();
 
-  if (Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
-      Inpar::FLUID::no)
+  if (Teuchos::getIntegralValue<FLUID::CalcError>(*params_, "calculate error") != FLUID::no)
   {
     mc_xff_->redistribute_for_error_calculation();
   }
 
   // recreate internal faces of DiscretizationFaces (as the distribution of the embedded
   // discretization may have changed)
-  if (Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
-          Inpar::FLUID::no ||
+  if (Teuchos::getIntegralValue<FLUID::CalcError>(*params_, "calculate error") != FLUID::no ||
       mc_xff_->get_averaging_strategy() == XFEM::Embedded_Sided ||
       mc_xff_->get_averaging_strategy() == XFEM::Mean)
   {
@@ -109,8 +107,8 @@ void FLD::XFluidFluid::create_initial_state()
   // domain
   {
     Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-    if (xff_eos_pres_emb_layer_ && Teuchos::getIntegralValue<Inpar::FLUID::StabType>(*stabparams,
-                                       "STABTYPE") == Inpar::FLUID::stabtype_residualbased)
+    if (xff_eos_pres_emb_layer_ && Teuchos::getIntegralValue<FLUID::StabType>(
+                                       *stabparams, "STABTYPE") == FLUID::stabtype_residualbased)
     {
       std::shared_ptr<Core::FE::DiscretizationFaces> facediscret =
           std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(
@@ -171,7 +169,7 @@ void FLD::XFluidFluid::set_x_fluid_fluid_params()
 }
 
 void FLD::XFluidFluid::set_initial_flow_field(
-    const Inpar::FLUID::InitialField initfield, const int startfuncno)
+    const FLUID::InitialField initfield, const int startfuncno)
 {
   XFluid::set_initial_flow_field(initfield, startfuncno);
   embedded_fluid_->set_initial_flow_field(initfield, startfuncno);
@@ -679,10 +677,9 @@ std::shared_ptr<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_t
   // solutions and an analytical solution which is implemented or given by a function in the input
   // file
 
-  const auto calcerr =
-      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error");
+  const auto calcerr = Teuchos::getIntegralValue<FLUID::CalcError>(*params_, "calculate error");
 
-  if (calcerr == Inpar::FLUID::no) return nullptr;
+  if (calcerr == FLUID::no) return nullptr;
   // set the time to evaluate errors
   //
 
@@ -949,8 +946,7 @@ std::shared_ptr<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_t
       std::cout.precision(8);
       Core::IO::cout << Core::IO::endl
                      << "---- error norm for analytical solution Nr. "
-                     << Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(
-                            *params_, "calculate error")
+                     << Teuchos::getIntegralValue<FLUID::CalcError>(*params_, "calculate error")
                      << " ----------" << Core::IO::endl;
       Core::IO::cout << "-------------- domain error norms (background)------------"
                      << Core::IO::endl;

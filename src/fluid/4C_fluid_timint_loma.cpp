@@ -143,7 +143,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(
     }
     accam_->replace_local_value(localdofid, value);
 
-    if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
+    if (turbmodel_ == FLUID::multifractal_subgrid_scales)
     {
       if (fsscalaraf != nullptr)
         value = fsscalaraf->local_values_as_span()[localscatradofid];
@@ -212,7 +212,7 @@ void FLD::TimIntLoma::print_turbulence_model()
 {
   FluidImplicitTimeInt::print_turbulence_model();
 
-  if (physicaltype_ == Inpar::FLUID::loma and turbmodel_ == Inpar::FLUID::smagorinsky)
+  if (physicaltype_ == FLUID::loma and turbmodel_ == FLUID::smagorinsky)
   {
     if (params_->sublist("SUBGRID VISCOSITY").get<bool>("C_INCLUDE_CI"))
     {
@@ -310,7 +310,7 @@ void FLD::TimIntLoma::avm3_preparation()
 
   // perform initial separation to initialize fsvelaf_
   // required for loma
-  if (physicaltype_ == Inpar::FLUID::loma)
+  if (physicaltype_ == FLUID::loma)
   {
     update_velaf_gen_alpha();
     sep_multiply();

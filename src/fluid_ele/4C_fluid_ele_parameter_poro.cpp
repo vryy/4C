@@ -65,13 +65,13 @@ void Discret::Elements::FluidEleParameterPoro::set_element_poro_parameter(
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
   //----------------------------------------------------------------------
-  if (stabtype_ == Inpar::FLUID::stabtype_residualbased)
+  if (stabtype_ == FLUID::stabtype_residualbased)
   {
     Teuchos::ParameterList& stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
     stab_biot_ = stablist.get<bool>("STAB_BIOT");
     stab_biot_scaling_ = stablist.get<double>("STAB_BIOT_SCALING");
   }
-  else if (stabtype_ == Inpar::FLUID::stabtype_nostab)
+  else if (stabtype_ == FLUID::stabtype_nostab)
   {
     stab_biot_ = false;
     stab_biot_scaling_ = 0.0;

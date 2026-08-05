@@ -116,7 +116,7 @@ namespace FLD
 
     */
     void set_initial_flow_field(
-        const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
+        const FLUID::InitialField initfield, const int startfuncno) override;
 
     /*!
     \brief calculate error between a analytical solution and the
@@ -192,7 +192,7 @@ namespace FLD
     void print_stabilization_details() const override {}
 
     ///< time algorithm flag actually set (we internally reset it)
-    Inpar::FLUID::TimeIntegrationScheme timealgoset_;
+    FLUID::TimeIntegrationScheme timealgoset_;
 
     ///< Keep track of whether we do the first assembly of a time step because we reconstruct the
     ///< local HDG solution as part of assembly

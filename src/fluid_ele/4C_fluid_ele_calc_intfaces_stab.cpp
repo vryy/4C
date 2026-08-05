@@ -10,8 +10,8 @@
 #include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_gder2.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_newtonianfluid.hpp"
@@ -549,10 +549,9 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
           .face_eos_div_div_jump();  // eos/gp divergence stabilization based on divergence jump
 
   // special treatment of this specific tau definition
-  EOS_div =
-      fldintfacepara.eos_which_tau() == Inpar::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump
-          ? false
-          : EOS_div;
+  EOS_div = fldintfacepara.eos_which_tau() == FLUID::EOS_tau_braack_burman_john_lube_wo_divjump
+                ? false
+                : EOS_div;
 
   bool EOS_vel = false;
   // decide if velocity gradient based term has to be assembled
@@ -595,9 +594,9 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
   double timefacrhs = 0.0;
 
   // full matrix pattern (implicit) for streamline and div-stab
-  if (fldparatimint.time_algo() == Inpar::FLUID::timeint_one_step_theta)
+  if (fldparatimint.time_algo() == FLUID::timeint_one_step_theta)
   {
-    //    if (fldpara.TimeAlgo()==Inpar::FLUID::timeint_one_step_theta and fldpara.Theta()!=1.0)
+    //    if (fldpara.TimeAlgo()==FLUID::timeint_one_step_theta and fldpara.Theta()!=1.0)
     //      FOUR_C_THROW("Read remark!");
     // Remark:
     // in the following Paper a fully implicit integration of the stabilization terms is proposed
@@ -622,7 +621,7 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     timefacrhs = fldparatimint.time_fac_rhs();  // factor for rhs (for OST: also theta_*dt_),
                                                 // modified just for genalpha time integration
   }
-  else if (fldparatimint.time_algo() == Inpar::FLUID::timeint_bdf2)
+  else if (fldparatimint.time_algo() == FLUID::timeint_bdf2)
   {
     timefac = fldparatimint.dt();     // set theta = 1.0
     timefacpre = fldparatimint.dt();  // set theta = 1.0
@@ -819,7 +818,7 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
 
 
   // convective velocities
-  if (fldintfacepara.physical_type() == Inpar::FLUID::incompressible)
+  if (fldintfacepara.physical_type() == FLUID::incompressible)
   {
     peconvvelaf_.update(1.0, pevelaf_, 0.0);
     neconvvelaf_.update(1.0, nevelaf_, 0.0);
@@ -831,7 +830,7 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     }
   }
   // set element advective field for Oseen problems
-  else if (fldintfacepara.physical_type() == Inpar::FLUID::oseen)
+  else if (fldintfacepara.physical_type() == FLUID::oseen)
   {
     const int funcnum = fldintfacepara.oseen_field_func_no();
     const double time = fldparatimint.time();
@@ -858,7 +857,7 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
 
     if (pele->is_ale()) FOUR_C_THROW("is ALE for Oseen really reasonable");
   }
-  else if (fldintfacepara.physical_type() == Inpar::FLUID::stokes)
+  else if (fldintfacepara.physical_type() == FLUID::stokes)
   {
     peconvvelaf_.clear();
     neconvvelaf_.clear();
@@ -882,7 +881,7 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
   // compute velocity norm patch of master and slave parent element
   double max_vel_L2_norm = 0.0;
 
-  if (fldintfacepara.physical_type() != Inpar::FLUID::stokes)
+  if (fldintfacepara.physical_type() != FLUID::stokes)
   {
     // get the L_inf-norm of the parent's element velocity for stabilization
     max_vel_L2_norm = std::max(peconvvelaf_.norm_inf(), neconvvelaf_.norm_inf());
@@ -1106,8 +1105,7 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
 
       // assemble special pressure least-squares condition for pseudo 2D examples where pressure
       // level is determined via Krylov-projection
-      if (fldintfacepara.pres_krylov_2dz() and
-          fldintfacepara.eos_pres() == Inpar::FLUID::EOS_PRES_std_eos)
+      if (fldintfacepara.pres_krylov_2dz() and fldintfacepara.eos_pres() == FLUID::EOS_PRES_std_eos)
       {
         pressure_krylov_2dz(tau_timefacfac_pre, tau_timefacfac_rhs);
       }
@@ -2197,22 +2195,22 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
   // get convective velocity at integration point
   switch (fldintfacepara.physical_type())
   {
-    case Inpar::FLUID::incompressible:
-    case Inpar::FLUID::artcomp:
-    case Inpar::FLUID::varying_density:
-    case Inpar::FLUID::loma:
-    case Inpar::FLUID::tempdepwater:
-    case Inpar::FLUID::boussinesq:
+    case FLUID::incompressible:
+    case FLUID::artcomp:
+    case FLUID::varying_density:
+    case FLUID::loma:
+    case FLUID::tempdepwater:
+    case FLUID::boussinesq:
     {
       convvelint_.update(velintaf_);
       break;
     }
-    case Inpar::FLUID::oseen:
+    case FLUID::oseen:
     {
       convvelint_.multiply(peconvvelaf_, pfunct_);
       break;
     }
-    case Inpar::FLUID::stokes:
+    case FLUID::stokes:
     {
       convvelint_.clear();
       break;
@@ -2921,11 +2919,10 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::p
 //------------------------------------------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
 void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_patch_hk(
-    Fluid* master,                             ///< master fluid element
-    Fluid* slave,                              ///< slave fluid element
-    Discret::Elements::FluidIntFace* intface,  ///< intface element
-    const Inpar::FLUID::EosElementLength&
-        eos_element_length  ///< which definition of element length?
+    Fluid* master,                                     ///< master fluid element
+    Fluid* slave,                                      ///< slave fluid element
+    Discret::Elements::FluidIntFace* intface,          ///< intface element
+    const FLUID::EosElementLength& eos_element_length  ///< which definition of element length?
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: element length");
@@ -2935,19 +2932,19 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::c
 
   switch (eos_element_length)
   {
-    case Inpar::FLUID::EOS_he_max_diameter_to_opp_surf:
+    case FLUID::EOS_he_max_diameter_to_opp_surf:
       p_hk_ = compute_patch_hk_diameter_to_opp_surf(master, slave, intface);
       break;
-    case Inpar::FLUID::EOS_he_max_dist_to_opp_surf:
+    case FLUID::EOS_he_max_dist_to_opp_surf:
       p_hk_ = compute_patch_hk_dist_to_opp_surf(master, slave, intface);
       break;
-    case Inpar::FLUID::EOS_he_surf_with_max_diameter:
+    case FLUID::EOS_he_surf_with_max_diameter:
       p_hk_ = compute_patch_hk_surf_with_max_diameter(master, slave, intface);
       break;
-    case Inpar::FLUID::EOS_he_surf_diameter:
+    case FLUID::EOS_he_surf_diameter:
       p_hk_ = compute_surf_diameter(intface);
       break;
-    case Inpar::FLUID::EOS_hk_max_diameter:
+    case FLUID::EOS_hk_max_diameter:
       p_hk_ = compute_patch_hk_ele_diameter(master, slave);
       break;
     default:
@@ -3591,7 +3588,7 @@ double Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
 void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::compute_stabilization_params(const bool is_ghost_penalty_reconstruct,
-    const bool use2ndderiv, const Inpar::FLUID::EosTauType tautype, const bool EOS_conv_stream,
+    const bool use2ndderiv, const FLUID::EosTauType tautype, const bool EOS_conv_stream,
     const bool EOS_conv_cross, const bool EOS_div_vel_jump, const double max_vel_L2_norm,
     const double timefac, const double gamma_ghost_penalty_visc,
     const double gamma_ghost_penalty_trans, const double gamma_ghost_penalty_u_2nd,
@@ -3634,8 +3631,8 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
 
   switch (tautype)
   {
-    case Inpar::FLUID::EOS_tau_burman_fernandez_hansbo:
-    case Inpar::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt:
+    case FLUID::EOS_tau_burman_fernandez_hansbo:
+    case FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt:
     {
       // E.Burman, M.A.Fernandez and P.Hansbo 2006
       // "Continuous interior penalty method for Oseen's equations"
@@ -3699,7 +3696,7 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
       // this does the same, but avoids division by velocity
       // note: this expression is closely related to the definition of
       //       tau_Mp according to Franca_Barrenechea_Valentin_Frey_Wall
-      if (tautype == Inpar::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt)
+      if (tautype == FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt)
         tau_p_ = gamma_p * p_hk_ * p_hk_squared_ / (kinvisc_ * xip);
       else
       {
@@ -3716,8 +3713,8 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
       tau_div_ = gamma_div * xi * max_vel_L2_norm * p_hk_squared_;
     }
     break;
-    case Inpar::FLUID::EOS_tau_burman_hansbo_dangelo_zunino:
-    case Inpar::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt:
+    case FLUID::EOS_tau_burman_hansbo_dangelo_zunino:
+    case FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt:
     {
       // this definition is derived form the following papers
       // E. Burman, P. Hansbo
@@ -3773,7 +3770,7 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
 
       //-----------------------------------------------
       // pressure
-      if (tautype == Inpar::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt)
+      if (tautype == FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt)
         tau_p_ = gamma_p * p_hk_squared_ /
                  (r_min_visc * kinvisc_ / p_hk_ + r_min_conv * max_vel_L2_norm / 6.0);
       else
@@ -3782,8 +3779,8 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
                      r_min_conv * max_vel_L2_norm / 6.0);
     }
     break;
-    case Inpar::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino:
-    case Inpar::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt:
+    case FLUID::EOS_tau_schott_massing_burman_dangelo_zunino:
+    case FLUID::EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt:
     {
       // this definition is derived form the following papers
       // A. Massing, B. Schott, W.A. Wall
@@ -3835,7 +3832,7 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
       // advection-diffusion)
       double regime_scaling = r_min_visc * kinvisc_ + r_min_conv * p_hk_ * 10.0 * max_vel_L2_norm;
 
-      if (tautype != Inpar::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt)
+      if (tautype != FLUID::EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt)
         regime_scaling += p_hk_squared_ / (timefac * 12.0);
 
       //-----------------------------------------------
@@ -3852,7 +3849,7 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
       tau_p_ = gamma_p * p_hk_squared_ * p_hk_ / regime_scaling;
     }
     break;
-    case Inpar::FLUID::EOS_tau_poroelast_fluid:
+    case FLUID::EOS_tau_poroelast_fluid:
     {
       // this definition is derived form the following papers
       // A. Massing, B. Schott, W.A. Wall
@@ -3916,7 +3913,7 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
       tau_p_ = gamma_p * p_hk_squared_ * p_hk_ / regime_scaling_dt;
     }
     break;
-    case Inpar::FLUID::EOS_tau_burman_fernandez:
+    case FLUID::EOS_tau_burman_fernandez:
     {
       // E.Burman, M.A.Fernandez 2009
       // "Finite element methods with symmetric stabilization for the transient
@@ -4007,7 +4004,7 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
       }
     }
     break;
-    case Inpar::FLUID::EOS_tau_burman:
+    case FLUID::EOS_tau_burman:
     {
       // TODO: delete!
       // TODO: pressure and div are not scaled properly with u!!!
@@ -4050,7 +4047,7 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
       tau_div_ = gamma_div * p_hk_squared_;
     }
     break;
-    case Inpar::FLUID::EOS_tau_braack_burman_john_lube:
+    case FLUID::EOS_tau_braack_burman_john_lube:
     {
       // M. Braack, E. Burman, V. John, G. Lube 2007
       // "Stabilized finite element methods for the generalized Oseen problem"
@@ -4102,7 +4099,7 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
       tau_div_ = gamma_div * max_vel_L2_norm * p_hk_squared_;
     }
     break;
-    case Inpar::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump:
+    case FLUID::EOS_tau_braack_burman_john_lube_wo_divjump:
     {
       // M. Braack, E. Burman, V. John, G. Lube 2007
       // "Stabilized finite element methods for the generalized Oseen problem"
@@ -4134,7 +4131,7 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
       tau_p_ = gamma_p * p_hk_cubed_ / (kinvisc_ * xip);
     }
     break;
-    case Inpar::FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling:
+    case FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling:
     {
       gamma_p = 0.02;
       gamma_u = 0.02;
@@ -4168,7 +4165,7 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
       tau_u_ = tau_div_;
     }
     break;
-    case Inpar::FLUID::EOS_tau_franca_barrenechea_valentin_wall:
+    case FLUID::EOS_tau_franca_barrenechea_valentin_wall:
     {
       // stationary definition of stabilization parameters
 

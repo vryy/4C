@@ -98,14 +98,14 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
   {
     case ScaTra::timeint_stationary:
     {
-      if (fluid_field()->tim_int_scheme() != Inpar::FLUID::timeint_stationary)
+      if (fluid_field()->tim_int_scheme() != FLUID::timeint_stationary)
         if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           FOUR_C_THROW("Fluid and scatra time integration schemes do not match!");
       break;
     }
     case ScaTra::timeint_one_step_theta:
     {
-      if (fluid_field()->tim_int_scheme() != Inpar::FLUID::timeint_one_step_theta)
+      if (fluid_field()->tim_int_scheme() != FLUID::timeint_one_step_theta)
         if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           std::cout << "WARNING: Fluid and scatra time integration schemes do not match!"
                     << std::endl;
@@ -113,7 +113,7 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
     }
     case ScaTra::timeint_bdf2:
     {
-      if (fluid_field()->tim_int_scheme() != Inpar::FLUID::timeint_bdf2)
+      if (fluid_field()->tim_int_scheme() != FLUID::timeint_bdf2)
         if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           std::cout << "WARNING: Fluid and scatra time integration schemes do not match!"
                     << std::endl;
@@ -121,8 +121,8 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
     }
     case ScaTra::timeint_gen_alpha:
     {
-      if (fluid_field()->tim_int_scheme() != Inpar::FLUID::timeint_npgenalpha and
-          fluid_field()->tim_int_scheme() != Inpar::FLUID::timeint_afgenalpha)
+      if (fluid_field()->tim_int_scheme() != FLUID::timeint_npgenalpha and
+          fluid_field()->tim_int_scheme() != FLUID::timeint_afgenalpha)
         if (Core::Communication::my_mpi_rank(get_comm()) == 0)
           std::cout << "WARNING: Fluid and scatra time integration schemes do not match!"
                     << std::endl;

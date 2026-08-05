@@ -121,7 +121,7 @@ void FLD::TimIntStationary::solve_stationary_problem()
     // -------------------------------------------------------------------
     //           preparation of AVM3-based scale separation
     // -------------------------------------------------------------------
-    if (step_ == 1 and fssgv_ != Inpar::FLUID::no_fssgv) avm3_preparation();
+    if (step_ == 1 and fssgv_ != FLUID::no_fssgv) avm3_preparation();
 
     // -------------------------------------------------------------------
     //                     solve equation system
@@ -209,10 +209,10 @@ void FLD::TimIntStationary::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
+  eleparams.set<FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // set time integration scheme
-  eleparams.set<Inpar::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
+  eleparams.set<FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
 
   // set general element parameters
   eleparams.set("dt", dta_);

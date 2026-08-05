@@ -109,13 +109,13 @@ int Discret::Elements::FluidEleCalcLoma<distype>::evaluate_od(Discret::Elements:
 
   Core::LinAlg::Matrix<nsd_, nen_> evelam(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<nen_, 1> epream(Core::LinAlg::Initialization::zero);
-  if (my::fldpara_->physical_type() == Inpar::FLUID::weakly_compressible &&
+  if (my::fldpara_->physical_type() == FLUID::weakly_compressible &&
       my::fldparatimint_->is_genalpha())
   {
     my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &evelam, &epream, "velam");
   }
-  if (my::fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes &&
+  if (my::fldpara_->physical_type() == FLUID::weakly_compressible_stokes &&
       my::fldparatimint_->is_genalpha())
   {
     my::extract_values_from_global_vector(
@@ -178,7 +178,7 @@ int Discret::Elements::FluidEleCalcLoma<distype>::evaluate_od(Discret::Elements:
   //----------------------------------------------------------------
   double CsDeltaSq = 0.0;
   double CiDeltaSq = 0.0;
-  if (my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
+  if (my::fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky)
   {
     std::shared_ptr<Core::LinAlg::Vector<double>> ele_CsDeltaSq =
         params.sublist("TURBULENCE MODEL")
@@ -308,9 +308,9 @@ void Discret::Elements::FluidEleCalcLoma<distype>::sysmat_od(
 
     // calculate all-scale subgrid viscosity at element center
     my::visceff_ = my::visc_;
-    if (my::fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-        my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-        my::fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+    if (my::fldpara_->turb_mod_action() == FLUID::smagorinsky or
+        my::fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+        my::fldpara_->turb_mod_action() == FLUID::vreman)
     {
       my::calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
@@ -361,9 +361,9 @@ void Discret::Elements::FluidEleCalcLoma<distype>::sysmat_od(
           thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, vol);
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       my::visceff_ = my::visc_;
-      if (my::fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-          my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-          my::fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+      if (my::fldpara_->turb_mod_action() == FLUID::smagorinsky or
+          my::fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+          my::fldpara_->turb_mod_action() == FLUID::vreman)
       {
         my::calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
@@ -388,16 +388,16 @@ void Discret::Elements::FluidEleCalcLoma<distype>::sysmat_od(
     // update material parameters including subgrid-scale part of scalar
     if (my::fldpara_->update_mat())
     {
-      if (my::fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-          my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-          my::fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+      if (my::fldpara_->turb_mod_action() == FLUID::smagorinsky or
+          my::fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+          my::fldpara_->turb_mod_action() == FLUID::vreman)
         FOUR_C_THROW("No material update in combination with smagorinsky model!");
       my::update_material_params(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
           thermpressam, my::sgscaint_);
       my::visceff_ = my::visc_;
-      if (my::fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
-          my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
-          my::fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
+      if (my::fldpara_->turb_mod_action() == FLUID::smagorinsky or
+          my::fldpara_->turb_mod_action() == FLUID::dynamic_smagorinsky or
+          my::fldpara_->turb_mod_action() == FLUID::vreman)
         my::visceff_ += my::sgvisc_;
     }
     //----------------------------------------------------------------------
@@ -427,8 +427,8 @@ void Discret::Elements::FluidEleCalcLoma<distype>::sysmat_od(
     //----------------------------------------------------------------------
     // subgrid-scale-velocity term (governed by cross-stress flag here)
     //----------------------------------------------------------------------
-    if (my::fldpara_->conti_cross() == Inpar::FLUID::cross_stress_stab or
-        my::fldpara_->conti_reynolds() == Inpar::FLUID::reynolds_stress_stab)
+    if (my::fldpara_->conti_cross() == FLUID::cross_stress_stab or
+        my::fldpara_->conti_reynolds() == FLUID::reynolds_stress_stab)
     {
       //----------------------------------------------------------------------
       //  evaluation of various values at integration point:
@@ -479,7 +479,7 @@ void Discret::Elements::FluidEleCalcLoma<distype>::sysmat_od(
       my::compute_subgrid_scale_velocity(
           eaccam, fac1, fac2, fac3, facMtau, *iquad, saccn, sveln, svelnp);
 
-      if (my::fldpara_->conti_cross() == Inpar::FLUID::cross_stress_stab)
+      if (my::fldpara_->conti_cross() == FLUID::cross_stress_stab)
       {
         // evaluate subgrid-scale-velocity term
         for (int ui = 0; ui < nen_; ++ui)
@@ -524,7 +524,7 @@ void Discret::Elements::FluidEleCalcLoma<distype>::sysmat_od(
       }
 
       // weighting functions for Reynolds-stress term
-      if (my::fldpara_->reynolds() == Inpar::FLUID::reynolds_stress_stab)
+      if (my::fldpara_->reynolds() == FLUID::reynolds_stress_stab)
       {
         for (int vi = 0; vi < nen_; ++vi)
         {

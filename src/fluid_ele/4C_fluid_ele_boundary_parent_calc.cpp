@@ -840,7 +840,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
       double pscaaf = 0.0;
       double pvdiv = 0.0;
       double prefac = 0.0;
-      if (fldpara_->physical_type() == Inpar::FLUID::loma)
+      if (fldpara_->physical_type() == FLUID::loma)
       {
         pscaaf = pfunct.dot(pescaaf);
         if (pscaaf < 0.0)
@@ -2019,7 +2019,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
   // parent velocity at n+1
   std::vector<double> mypvelnp(plm.size());
 
-  if (fldparatimint_->time_algo() == Inpar::FLUID::timeint_npgenalpha)
+  if (fldparatimint_->time_algo() == FLUID::timeint_npgenalpha)
   {
     std::shared_ptr<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velnp");
     if (velnp == nullptr) FOUR_C_THROW("Cannot get state vector 'velnp'");
@@ -4290,7 +4290,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
   // number of internal stress dofs is equivalent to number of second derivatives
   static const int numstressdof_ = Core::FE::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
-  if (fldparatimint_->time_algo() == Inpar::FLUID::timeint_afgenalpha)
+  if (fldparatimint_->time_algo() == FLUID::timeint_afgenalpha)
     FOUR_C_THROW(
         "The use of mixed hybrid boundary conditions and Afgenalpha has not been verified so far!");
 
@@ -4414,7 +4414,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
   if (vel == nullptr) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   // extract local node values for pressure and velocities from global vectors
-  if (fldparatimint_->time_algo() == Inpar::FLUID::timeint_npgenalpha)
+  if (fldparatimint_->time_algo() == FLUID::timeint_npgenalpha)
   {
     std::shared_ptr<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velnp");
     if (velnp == nullptr) FOUR_C_THROW("Cannot get state vector 'velnp'");

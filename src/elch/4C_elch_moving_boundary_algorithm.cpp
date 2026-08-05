@@ -258,11 +258,11 @@ void ElCh::MovingBoundaryAlgorithm::solve_scatra()
 
   switch (fluid_field()->tim_int_scheme())
   {
-    case Inpar::FLUID::timeint_npgenalpha:
-    case Inpar::FLUID::timeint_afgenalpha:
+    case FLUID::timeint_npgenalpha:
+    case FLUID::timeint_afgenalpha:
       FOUR_C_THROW("ConvectiveVel() not implemented for Gen.Alpha versions");
-    case Inpar::FLUID::timeint_one_step_theta:
-    case Inpar::FLUID::timeint_bdf2:
+    case FLUID::timeint_one_step_theta:
+    case FLUID::timeint_bdf2:
     {
       if (not pseudotransient_)
       {

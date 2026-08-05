@@ -77,7 +77,7 @@ namespace FLD
 
     */
     void set_initial_flow_field(
-        const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
+        const FLUID::InitialField initfield, const int startfuncno) override;
 
     /*!
 

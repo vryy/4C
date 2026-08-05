@@ -190,12 +190,12 @@ FSI::MonolithicXFEM::MonolithicXFEM(MPI_Comm comm, const Teuchos::ParameterList&
     // set initial field by given function
     // we do this here, since we have direct access to all necessary parameters
     const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
-    auto initfield = Teuchos::getIntegralValue<Inpar::FLUID::InitialField>(fdyn, "INITIALFIELD");
-    if (initfield != Inpar::FLUID::initfield_zero_field)
+    auto initfield = Teuchos::getIntegralValue<FLUID::InitialField>(fdyn, "INITIALFIELD");
+    if (initfield != FLUID::initfield_zero_field)
     {
       int startfuncno = fdyn.get<int>("STARTFUNCNO");
-      if (initfield != Inpar::FLUID::initfield_field_by_function and
-          initfield != Inpar::FLUID::initfield_disturbed_field_from_function)
+      if (initfield != FLUID::initfield_field_by_function and
+          initfield != FLUID::initfield_disturbed_field_from_function)
       {
         startfuncno = -1;
       }

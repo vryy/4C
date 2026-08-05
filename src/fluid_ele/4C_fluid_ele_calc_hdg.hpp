@@ -14,7 +14,7 @@
 #include "4C_fem_general_utils_shapevalues_hdg.hpp"
 #include "4C_fluid_ele_hdg.hpp"
 #include "4C_fluid_ele_interface.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_fluid_input.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -404,10 +404,10 @@ namespace Discret
           Core::FE::Discretization& discretization, const Core::LinAlg::SerialDenseVector& updateG,
           const Core::LinAlg::SerialDenseVector& updateUp);
 
-      void evaluate_velocity(const int startfunc, const Inpar::FLUID::InitialField initfield,
+      void evaluate_velocity(const int startfunc, const FLUID::InitialField initfield,
           const Core::LinAlg::Matrix<nsd_, 1>& xyz, Core::LinAlg::Matrix<nsd_, 1>& u) const;
 
-      void evaluate_all(const int startfunc, const Inpar::FLUID::InitialField initfield,
+      void evaluate_all(const int startfunc, const FLUID::InitialField initfield,
           const Core::LinAlg::Matrix<nsd_, 1>& xyz, Core::LinAlg::Matrix<nsd_, 1>& u,
           Core::LinAlg::Matrix<nsd_, nsd_>& grad, double& p) const;
 

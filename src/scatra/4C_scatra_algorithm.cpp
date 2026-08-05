@@ -153,10 +153,10 @@ void ScaTra::ScaTraAlgorithm::prepare_time_loop_two_way()
   // safety check
   switch ((fluid_field()->tim_int_scheme()))
   {
-    case Inpar::FLUID::timeint_afgenalpha:
-    case Inpar::FLUID::timeint_bdf2:
-    case Inpar::FLUID::timeint_one_step_theta:
-    case Inpar::FLUID::timeint_stationary:
+    case FLUID::timeint_afgenalpha:
+    case FLUID::timeint_bdf2:
+    case FLUID::timeint_one_step_theta:
+    case FLUID::timeint_stationary:
       break;
     default:
     {
@@ -213,10 +213,10 @@ void ScaTra::ScaTraAlgorithm::prepare_time_step_convection()
 
   switch ((fluid_field()->tim_int_scheme()))
   {
-    case Inpar::FLUID::timeint_afgenalpha:
-    case Inpar::FLUID::timeint_bdf2:
-    case Inpar::FLUID::timeint_one_step_theta:
-    case Inpar::FLUID::timeint_stationary:
+    case FLUID::timeint_afgenalpha:
+    case FLUID::timeint_bdf2:
+    case FLUID::timeint_one_step_theta:
+    case FLUID::timeint_stationary:
     {
       fluid_field()->set_iter_scalar_fields(scatra_field()->densafnp(),
           scatra_field()->densafnp(),  // not needed, provided as dummy vector
@@ -297,8 +297,8 @@ void ScaTra::ScaTraAlgorithm::set_velocity_field()
   //       meshes yet
   switch (fluid_field()->tim_int_scheme())
   {
-    case Inpar::FLUID::timeint_npgenalpha:
-    case Inpar::FLUID::timeint_afgenalpha:
+    case FLUID::timeint_npgenalpha:
+    case FLUID::timeint_afgenalpha:
     {
       scatra_field()->set_acceleration_field(*fluid_to_scatra(fluid_field()->accam()));
       scatra_field()->set_convective_velocity(*fluid_to_scatra(fluid_field()->velaf()));
@@ -310,9 +310,9 @@ void ScaTra::ScaTraAlgorithm::set_velocity_field()
       }
       break;
     }
-    case Inpar::FLUID::timeint_one_step_theta:
-    case Inpar::FLUID::timeint_bdf2:
-    case Inpar::FLUID::timeint_stationary:
+    case FLUID::timeint_one_step_theta:
+    case FLUID::timeint_bdf2:
+    case FLUID::timeint_stationary:
     {
       scatra_field()->set_acceleration_field(*fluid_to_scatra(fluid_field()->hist()));
       scatra_field()->set_convective_velocity(*fluid_to_scatra(fluid_field()->velnp()));
