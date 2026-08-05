@@ -47,7 +47,7 @@ namespace Particle
   using TypeEnum = ParticleType;
 
   //! particle status enum
-  using StatusEnum = ParticleStatus;
+  using Status = ParticleStatus;
 
   //! particle state enum
   using StateEnum = ParticleState;

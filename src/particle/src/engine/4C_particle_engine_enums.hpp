@@ -207,11 +207,11 @@ namespace Particle
    * processor.
    *
    */
-  enum ParticleStatus
+  enum class ParticleStatus
   {
-    Owned,               //!< particle status for particles being owned on processors
-    Ghosted,             //!< particle status for particles being ghosted on processors
-    UninitializedStatus  //!< not yet defined particle status
+    Owned,         //!< particle status for particles being owned on processors
+    Ghosted,       //!< particle status for particles being ghosted on processors
+    Uninitialized  //!< not yet defined particle status
   };
 
   /*!
