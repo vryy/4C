@@ -23,7 +23,7 @@ endif(Backtrace_INCLUDE_DIR)
 
 find_path(Backtrace_INCLUDE_DIR NAMES backtrace.h)
 
-find_library(Backtrace_LIBRARY NAMES libbacktrace.a libbacktrace.so)
+find_library(Backtrace_LIBRARY NAMES backtrace)
 
 # handle the QUIETLY and REQUIRED arguments and set Backtrace_FOUND to TRUE if
 # all listed variables are TRUE
