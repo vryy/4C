@@ -7,6 +7,7 @@
 
 #include "4C_io_input_spec_builders.hpp"
 
+#include "4C_utils_demangle.hpp"
 #include "4C_utils_string.hpp"
 
 #include <format>
@@ -1102,7 +1103,15 @@ bool Core::IO::Internal::ListSpec::match(ConstYamlNodeRef node,
   }
 
   // Everything was correctly matched, so mark the list node as matched.
-  std::any_cast<InputParameterContainer&>(container).add_list(name, std::move(container_list));
+  if (data.store)
+  {
+    [[maybe_unused]] auto [ok, msg] = data.store(container, std::move(container_list));
+    FOUR_C_ASSERT(ok, "Internal error: could not move storage: {}.", msg);
+  }
+  else
+  {
+    std::any_cast<InputParameterContainer&>(container).add_list(name, std::move(container_list));
+  }
   match_entry.state = IO::Internal::MatchEntry::State::matched;
 
   return true;
@@ -1111,8 +1120,6 @@ bool Core::IO::Internal::ListSpec::match(ConstYamlNodeRef node,
 
 void Core::IO::Internal::ListSpec::set_default_value(InputSpecBuilders::Storage& container) const
 {
-  FOUR_C_ASSERT_ALWAYS(Internal::holds<InputParameterContainer>(container),
-      "Internal error: ListSpec can only set default values for InputParameterContainer.");
   std::vector<InputParameterContainer> default_list(data.size);
 
   for (auto& list_entry : default_list)
@@ -1124,7 +1131,17 @@ void Core::IO::Internal::ListSpec::set_default_value(InputSpecBuilders::Storage&
     list_entry = std::any_cast<InputParameterContainer&&>(std::move(subcontainer));
   }
 
-  std::any_cast<InputParameterContainer>(container).add_list(name, std::move(default_list));
+  if (data.store)
+  {
+    [[maybe_unused]] auto [ok, msg] = data.store(container, std::move(default_list));
+    FOUR_C_ASSERT(ok, "Internal error: could not move storage: {}.", msg);
+  }
+  else
+  {
+    FOUR_C_ASSERT_ALWAYS(Internal::holds<InputParameterContainer>(container),
+        "Internal error: ListSpec can only set default values for InputParameterContainer.");
+    std::any_cast<InputParameterContainer&>(container).add_list(name, std::move(default_list));
+  }
 }
 
 
@@ -1394,6 +1411,21 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::list(
     std::string name, Core::IO::InputSpec spec, ListData data)
 {
   spec = wrap_with_all_of(std::move(spec));
+
+  // match() parses every entry into its own InputParameterContainer, so the entry spec must store
+  // there. group() runs the same check against its own StorageType; a list's entry storage is not
+  // configurable, so the target here is always InputParameterContainer. Without this check, an
+  // entry spec that stores to a struct survives construction and only fails once the list is
+  // matched against actual input.
+  if (const auto* stores_to = spec.impl().data.stores_to;
+      stores_to && *stores_to != typeid(InputParameterContainer))
+  {
+    FOUR_C_THROW(
+        "List '{}' parses its entries into an InputParameterContainer, but its entry spec stores "
+        "to '{}'. Only the list itself may store elsewhere, via its own `store`.",
+        name, Core::Utils::try_demangle(stores_to->name()));
+  }
+
   InputSpecImpl::CommonData common_data{
       .name = name,
       .description = data.description,
@@ -1402,7 +1434,7 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::list(
       // a default value.
       .has_default_value = spec.impl().has_default_value() && data.size != dynamic_size,
       .type = InputSpecType::list,
-      .stores_to = &typeid(InputParameterContainer),
+      .stores_to = data.store ? &data.store.stores_to() : &typeid(InputParameterContainer),
   };
 
   return IO::Internal::make_spec(
