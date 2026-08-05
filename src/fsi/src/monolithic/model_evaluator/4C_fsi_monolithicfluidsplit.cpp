@@ -1307,7 +1307,11 @@ void FSI::MonolithicFluidSplit::output_lambda()
   const int upres = timeparams_.get<int>("RESULTSEVERY");
   if ((uprestart != 0 && fluid_field()->step() % uprestart == 0) or
       (upres != 0 and fluid_field()->step() % upres == 0))
+  {
+    // TODO can be removed once this functionality is moved to vtk-based output
+    fluid_field()->disc_writer()->new_step(fluid_field()->step(), fluid_field()->time());
     fluid_field()->disc_writer()->write_vector("fsilambda", lambdafull);
+  }
 }
 
 /*----------------------------------------------------------------------*/
