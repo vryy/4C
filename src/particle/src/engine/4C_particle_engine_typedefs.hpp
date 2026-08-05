@@ -50,7 +50,7 @@ namespace Particle
   using Status = ParticleStatus;
 
   //! particle state enum
-  using StateEnum = ParticleState;
+  using State = ParticleState;
 
   //! states of particle indexed by particle state enum
   using ParticleStates = std::vector<std::vector<double>>;
