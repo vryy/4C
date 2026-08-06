@@ -1403,7 +1403,7 @@ void Airway::RedAirwayImplicitTimeInt::collect_runtime_output_data(bool CoupledT
  | Output of solution vector to binio                       ismail 07/09|
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::output(
-    bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams)
+    const bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams)
 {
   int step = 0;
   int upres = 0;

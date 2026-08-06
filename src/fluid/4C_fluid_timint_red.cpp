@@ -218,48 +218,40 @@ void FLD::TimIntRedModels::set_custom_ele_params_assemble_mat_and_rhs(
 }
 
 /*----------------------------------------------------------------------*
- | output of solution vector of ReducedD problem to binio   ismail 01/13|
  *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::output_reduced_d()
 {
-  // output of solution
-  if (step_ % upres_ == 0)
+  // write reduced model problem
+  // Check if one-dimensional artery network problem exist
+  if (ART_timeInt_ != nullptr)
   {
-    // write reduced model problem
-    // Check if one-dimensional artery network problem exist
-    if (ART_timeInt_ != nullptr)
-    {
-      std::shared_ptr<Teuchos::ParameterList> redD_export_params;
-      redD_export_params = std::make_shared<Teuchos::ParameterList>();
+    const auto redD_export_params = std::make_shared<Teuchos::ParameterList>();
 
-      redD_export_params->set<int>("step", step_);
-      redD_export_params->set<int>("upres", upres_);
-      redD_export_params->set<int>("uprestart", uprestart_);
-      redD_export_params->set<double>("time", time_);
+    redD_export_params->set<int>("step", step_);
+    redD_export_params->set<int>("upres", upres_);
+    redD_export_params->set<int>("uprestart", uprestart_);
+    redD_export_params->set<double>("time", time_);
 
-      ART_timeInt_->output(true, redD_export_params);
-    }
+    ART_timeInt_->output(true, redD_export_params);
+  }
 
-    // Check if one-dimensional artery network problem exist
-    if (airway_imp_timeInt_ != nullptr)
-    {
-      std::shared_ptr<Teuchos::ParameterList> redD_export_params;
-      redD_export_params = std::make_shared<Teuchos::ParameterList>();
+  // Check if one-dimensional artery network problem exist
+  if (airway_imp_timeInt_ != nullptr)
+  {
+    const auto redD_export_params = std::make_shared<Teuchos::ParameterList>();
 
-      redD_export_params->set<int>("step", step_);
-      redD_export_params->set<int>("upres", upres_);
-      redD_export_params->set<int>("uprestart", uprestart_);
-      redD_export_params->set<double>("time", time_);
+    redD_export_params->set<int>("step", step_);
+    redD_export_params->set<int>("upres", upres_);
+    redD_export_params->set<int>("uprestart", uprestart_);
+    redD_export_params->set<double>("time", time_);
 
-      airway_imp_timeInt_->output(true, redD_export_params);
-    }
+    airway_imp_timeInt_->output(true, redD_export_params);
   }
 }  // FLD::TimIntRedModels::OutputReducedD
 
 /*----------------------------------------------------------------------*
- | read some additional data in restart                         bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::read_restart(int step)
+void FLD::TimIntRedModels::read_restart(const int step)
 {
   Core::IO::DiscretizationReader reader(
       *discret_, Global::Problem::instance()->input_control_file(), step);
@@ -283,9 +275,8 @@ void FLD::TimIntRedModels::read_restart(int step)
 }
 
 /*----------------------------------------------------------------------*
- |                                                          ismail 01/13|
- -----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::read_restart_reduced_d(int step)
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModels::read_restart_reduced_d(const int step)
 {
   // Check if one-dimensional artery network problem exist
   if (ART_timeInt_ != nullptr)
@@ -322,46 +313,50 @@ void FLD::TimIntRedModels::setup_meshtying()
 }
 
 /*----------------------------------------------------------------------*
- | output of solution vector to binio                        gammi 04/07|
- | overloading function                                         bk 12/13|
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModels::write_output() const
+{
+  vol_surf_flow_bc_->output(*output_);
+  traction_vel_comp_adder_bc_->output(*output_);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModels::write_restart() const
+{
+  const bool solution_is_written = upres_ > 0 && step_ % upres_ == 0;
+  if (!solution_is_written)
+  {
+    vol_surf_flow_bc_->output(*output_);
+    traction_vel_comp_adder_bc_->output(*output_);
+  }
+
+  // Check if one-dimensional artery network problem exist
+  if (ART_timeInt_ != nullptr)
+  {
+    coupled3D_redDbc_art_->write_restart(*output_);
+  }
+  // Check if zero-dimensional airway network problem exist
+  if (airway_imp_timeInt_ != nullptr)
+  {
+    coupled3D_redDbc_airways_->write_restart(*output_);
+  }
+}
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::output()
 {
   FluidImplicitTimeInt::output();
-  // output of solution
-  if (step_ % upres_ == 0)
+  // write solution
+  if (upres_ > 0 && step_ % upres_ == 0)
   {
-    vol_surf_flow_bc_->output(*output_);
-    traction_vel_comp_adder_bc_->output(*output_);
-
-    if (uprestart_ != 0 && step_ % uprestart_ == 0)  // add restart data
-    {
-      // Check if one-dimensional artery network problem exist
-      if (ART_timeInt_ != nullptr)
-      {
-        coupled3D_redDbc_art_->write_restart(*output_);
-      }
-      // Check if zero-dimensional airway network problem exist
-      if (airway_imp_timeInt_ != nullptr)
-      {
-        coupled3D_redDbc_airways_->write_restart(*output_);
-      }
-    }
+    write_output();
   }
-  // write restart also when uprestart_ is not a integer multiple of upres_
-  else if (uprestart_ > 0 && step_ % uprestart_ == 0)
+  // write restart
+  if (uprestart_ > 0 && step_ % uprestart_ == 0)
   {
-    // write reduced model problem
-    // Check if one-dimensional artery network problem exist
-    if (ART_timeInt_ != nullptr)
-    {
-      coupled3D_redDbc_art_->write_restart(*output_);
-    }
-    // Check if zero-dimensional airway network problem exist
-    if (airway_imp_timeInt_ != nullptr)
-    {
-      coupled3D_redDbc_airways_->write_restart(*output_);
-    }
+    write_restart();
   }
 
   output_reduced_d();

@@ -75,12 +75,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidImpedacnceBc::write_restart
       */
-      void write_restart(Core::IO::DiscretizationWriter& output);
+      void write_restart(Core::IO::DiscretizationWriter& output) const;
 
       /*!
       \brief Wrapper for FluidImpedacnceBc::read_restart
       */
-      void read_restart(Core::IO::DiscretizationReader& reader);
+      void read_restart(Core::IO::DiscretizationReader& reader) const;
 
       /*!
       \brief return vector of relative pressure errors of last cycle
@@ -155,7 +155,7 @@ namespace FLD
       /*!
       \brief write flowrates_ and flowratespos_ to result files
       */
-      void write_restart(Core::IO::DiscretizationWriter& output, const int condnum);
+      void write_restart(Core::IO::DiscretizationWriter& output, const int condnum) const;
 
       /*!
       \brief read flowrates_ and flowratespos_

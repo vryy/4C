@@ -83,43 +83,32 @@ FLD::Utils::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
       FOUR_C_THROW("Each Womersley surface condition must have one and only one border condition");
     }
   }
-
-  return;
 }  // end FluidVolumetricSurfaceFlowWrapper
 
 
 /*----------------------------------------------------------------------*
- |  Output (public)                                         ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::Utils::FluidVolumetricSurfaceFlowWrapper::output(Core::IO::DiscretizationWriter& output)
+void FLD::Utils::FluidVolumetricSurfaceFlowWrapper::output(
+    Core::IO::DiscretizationWriter& output) const
 {
-  std::map<const int, std::shared_ptr<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
-
-  for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
+  for (const auto& mapiter : fvsf_map_)
   {
-    mapiter->second->FluidVolumetricSurfaceFlowBc::output(
-        output, "VolumetricSurfaceFlowCond", mapiter->first);
+    mapiter.second->FluidVolumetricSurfaceFlowBc::output(
+        output, "VolumetricSurfaceFlowCond", mapiter.first);
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |  read_restart (public)                                    ismail 10/10|
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidVolumetricSurfaceFlowWrapper::read_restart(
-    Core::IO::DiscretizationReader& reader)
+    Core::IO::DiscretizationReader& reader) const
 {
-  std::map<const int, std::shared_ptr<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
-
-  for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
+  for (const auto& mapiter : fvsf_map_)
   {
-    mapiter->second->FluidVolumetricSurfaceFlowBc::read_restart(
-        reader, "VolumetricSurfaceFlowCond", mapiter->first);
+    mapiter.second->FluidVolumetricSurfaceFlowBc::read_restart(
+        reader, "VolumetricSurfaceFlowCond", mapiter.first);
   }
 
-  return;
 }  // FluidVolumetricSurfaceFlowWrapper::read_restart
 
 
@@ -779,7 +768,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
  |  Output (public)                                         ismail 10/10|
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidVolumetricSurfaceFlowBc::output(
-    Core::IO::DiscretizationWriter& output, std::string ds_condname, int condnum)
+    Core::IO::DiscretizationWriter& output, std::string ds_condname, int condnum) const
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
@@ -800,11 +789,9 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::output(
 
   stream4 << ds_condname << "_traction_vel_component" << condnum;
   output.write_vector(stream4.str(), cond_traction_vel_);
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  read_restart (public)                                    ismail 11/10|
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidVolumetricSurfaceFlowBc::read_restart(
     Core::IO::DiscretizationReader& reader, std::string ds_condname, int condnum)
@@ -1897,36 +1884,26 @@ void FLD::Utils::TotalTractionCorrector::update_residual(Core::LinAlg::Vector<do
 
 
 /*----------------------------------------------------------------------*
- |  Output (public)                                         ismail 04/11|
  *----------------------------------------------------------------------*/
-void FLD::Utils::TotalTractionCorrector::output(Core::IO::DiscretizationWriter& output)
+void FLD::Utils::TotalTractionCorrector::output(Core::IO::DiscretizationWriter& output) const
 {
-  std::map<const int, std::shared_ptr<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
-
-  for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
+  for (const auto& mapiter : fvsf_map_)
   {
-    mapiter->second->FluidVolumetricSurfaceFlowBc::output(
-        output, "TotalTractionCorrectionCond", mapiter->first);
+    mapiter.second->FluidVolumetricSurfaceFlowBc::output(
+        output, "TotalTractionCorrectionCond", mapiter.first);
   }
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  read_restart (public)                                    ismail 04/11|
  *----------------------------------------------------------------------*/
-void FLD::Utils::TotalTractionCorrector::read_restart(Core::IO::DiscretizationReader& reader)
+void FLD::Utils::TotalTractionCorrector::read_restart(Core::IO::DiscretizationReader& reader) const
 {
-  std::map<const int, std::shared_ptr<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
-
-  for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
+  for (const auto& mapiter : fvsf_map_)
   {
-    mapiter->second->FluidVolumetricSurfaceFlowBc::read_restart(
-        reader, "TotalTractionCorrectionCond", mapiter->first);
+    mapiter.second->FluidVolumetricSurfaceFlowBc::read_restart(
+        reader, "TotalTractionCorrectionCond", mapiter.first);
   }
-
-  return;
 }  // FluidVolumetricSurfaceFlowWrapper::read_restart
 
 /*----------------------------------------------------------------------*

@@ -130,30 +130,23 @@ void FLD::Utils::FluidImpedanceWrapper::time_update_impedances(const double time
 }
 
 /*----------------------------------------------------------------------*
- |  Wrap restart writing                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::Utils::FluidImpedanceWrapper::write_restart(Core::IO::DiscretizationWriter& output)
+void FLD::Utils::FluidImpedanceWrapper::write_restart(Core::IO::DiscretizationWriter& output) const
 {
-  std::map<const int, std::shared_ptr<class FluidImpedanceBc>>::iterator mapiter;
-
-  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
+  for (const auto& mapiter : impmap_)
   {
-    mapiter->second->FluidImpedanceBc::write_restart(output, mapiter->first);
+    mapiter.second->FluidImpedanceBc::write_restart(output, mapiter.first);
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Wrap restart reading                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::Utils::FluidImpedanceWrapper::read_restart(Core::IO::DiscretizationReader& reader)
+void FLD::Utils::FluidImpedanceWrapper::read_restart(Core::IO::DiscretizationReader& reader) const
 {
-  std::map<const int, std::shared_ptr<class FluidImpedanceBc>>::iterator mapiter;
-
-  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
-    mapiter->second->FluidImpedanceBc::read_restart(reader, mapiter->first);
-
-  return;
+  for (const auto& mapiter : impmap_)
+  {
+    mapiter.second->FluidImpedanceBc::read_restart(reader, mapiter.first);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -496,10 +489,9 @@ void FLD::Utils::FluidImpedanceBc::time_update_impedance(const double time, cons
 }  // FluidImplicitTimeInt::outflow_boundary
 
 /*----------------------------------------------------------------------*
- |  Restart writing                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidImpedanceBc::write_restart(
-    Core::IO::DiscretizationWriter& output, const int condnum)
+    Core::IO::DiscretizationWriter& output, const int condnum) const
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
@@ -527,12 +519,9 @@ void FLD::Utils::FluidImpedanceBc::write_restart(
   stream5 << "Q_n" << condnum;
   // write the flux pressure at time step n
   output.write_double(stream5.str(), q_n_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Restart reading                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidImpedanceBc::read_restart(
     Core::IO::DiscretizationReader& reader, const int condnum)
@@ -571,8 +560,6 @@ void FLD::Utils::FluidImpedanceBc::read_restart(
   {
     w_krelerror_ = 0.0;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -664,7 +664,7 @@ void Arteries::ArtNetExplicitTimeInt::output_restart(bool CoupledTo3D, int step)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Arteries::ArtNetExplicitTimeInt::output(
-    bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams)
+    const bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams)
 {
   int step = 0;
   int upres = 0;

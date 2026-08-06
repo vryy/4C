@@ -72,6 +72,10 @@ namespace Adapter
     /// Output current state of simulation
     void output() override;
 
+    void write_output();
+
+    void write_restart();
+
     /// Read resatart data
     double read_restart(int step  ///< step number to restart from
         ) override;

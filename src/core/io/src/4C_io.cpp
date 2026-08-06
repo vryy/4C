@@ -642,14 +642,16 @@ void Core::IO::DiscretizationWriter::write_multi_vector(
       const herr_t make_status =
           H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 1, &size, data);
       if (make_status < 0)
-        FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status={}", make_status);
+        FOUR_C_THROW(
+            "Failed to create dataset in HDF-resultfile. status={}, name={}", make_status, name);
     }
     else
     {
       const herr_t make_status =
           H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 0, &size, data);
       if (make_status < 0)
-        FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status={}", make_status);
+        FOUR_C_THROW(
+            "Failed to create dataset in HDF-resultfile. status={}, name={}", make_status, name);
     }
 
     std::string idname;
