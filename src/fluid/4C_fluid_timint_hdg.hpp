@@ -12,6 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fluid_timint_genalpha.hpp"
+#include "4C_io_discretization_visualization_writer_mesh.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -119,6 +120,9 @@ namespace FLD
      */
     void reset(int numsteps = 1, int iter = -1) override;
 
+    //! collects all data that should be written to vtk-based output
+    void collect_runtime_output_data();
+
     /*!
     \brief update configuration and output to file/screen
 
@@ -197,6 +201,8 @@ namespace FLD
     ///< Keep track of whether we do the first assembly of a time step because we reconstruct the
     ///< local HDG solution as part of assembly
     bool first_assembly_;
+
+    std::unique_ptr<Core::IO::DiscretizationVisualizationWriterMesh> visualization_writer_{nullptr};
 
   };  // class TimIntHDG
 

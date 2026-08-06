@@ -23,26 +23,29 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- |  Constructor (public)                              kronbichler 05/14 |
  *----------------------------------------------------------------------*/
 FLD::TimIntHDG::TimIntHDG(const std::shared_ptr<Core::FE::Discretization>& actdis,
     const std::shared_ptr<Core::LinAlg::Solver>& solver,
     const std::shared_ptr<Teuchos::ParameterList>& params,
-    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntGenAlpha(actdis, solver, params, output, alefluid),
       timealgoset_(FLUID::timeint_afgenalpha),
       first_assembly_(false)
 {
+  auto use_all_elements = [](const Core::Elements::Element* element) { return true; };
+  visualization_writer_ = std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(actdis,
+      Core::IO::visualization_parameters_factory(
+          Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+          *Global::Problem::instance()->output_control_file(), time_),
+      use_all_elements, "fluid-hdg");
 }
 
-
 /*----------------------------------------------------------------------*
- |  initialize algorithm                              kronbichler 05/14 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntHDG::init()
 {
-  Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
+  auto* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   int elementndof = hdgdis->num_my_row_elements() > 0
@@ -458,8 +461,8 @@ namespace
 {
   // internal helper function for output
   void get_node_vectors_hdg(Core::FE::Discretization& dis,
-      const std::shared_ptr<Core::LinAlg::Vector<double>>& interiorValues,
-      const std::shared_ptr<Core::LinAlg::Vector<double>>& traceValues, const int ndim,
+      const Core::LinAlg::Vector<double>& interiorValues,
+      const Core::LinAlg::Vector<double>& traceValues, const int ndim,
       std::shared_ptr<Core::LinAlg::MultiVector<double>>& velocity,
       std::shared_ptr<Core::LinAlg::Vector<double>>& pressure,
       std::shared_ptr<Core::LinAlg::MultiVector<double>>& tracevel,
@@ -477,8 +480,8 @@ namespace
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
     params.set<FLD::Action>("action", FLD::interpolate_hdg_to_node);
-    dis.set_state(1, "intvelnp", *interiorValues);
-    dis.set_state(0, "velnp", *traceValues);
+    dis.set_state(1, "intvelnp", interiorValues);
+    dis.set_state(0, "velnp", traceValues);
     std::vector<int> dummy;
     Core::LinAlg::SerialDenseMatrix dummyMat;
     Core::LinAlg::SerialDenseVector dummyVec;
@@ -509,12 +512,12 @@ namespace
       }
       const int eleIndex = dis.element_row_map()->lid(ele->id());
       if (eleIndex >= 0)
-        (*cellPres).get_values()[eleIndex] += interpolVec((2 * ndim + 1) * ele->num_node());
+        cellPres->get_values()[eleIndex] += interpolVec((2 * ndim + 1) * ele->num_node());
     }
 
     for (int i = 0; i < pressure->local_length(); ++i)
     {
-      (*pressure).get_values()[i] /= touchCount[i];
+      pressure->get_values()[i] /= touchCount[i];
       for (int d = 0; d < ndim; ++d) velocity->get_vector(d).get_values()[i] /= touchCount[i];
       for (int d = 0; d < ndim; ++d) tracevel->get_vector(d).get_values()[i] /= touchCount[i];
     }
@@ -522,44 +525,52 @@ namespace
   }
 }  // namespace
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::TimIntHDG::collect_runtime_output_data()
+{
+  std::shared_ptr<Core::LinAlg::Vector<double>> cellPres;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> traceVel;
 
+  const int velocity_dofs_per_node = params_->get<int>("number of velocity degrees of freedom");
+  get_node_vectors_hdg(*discret_, *intvelnp_, *velnp_, velocity_dofs_per_node,
+      interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres);
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *interpolatedPressure_, Core::IO::OutputEntity::node, {"pressure_hdg"});
+
+  const std::vector<std::optional<std::string>> context_velnp(velocity_dofs_per_node, "velnp_hdg");
+  visualization_writer_->append_result_data_vector_with_context(
+      *interpolatedVelocity_, Core::IO::OutputEntity::node, context_velnp);
+
+  const std::vector<std::optional<std::string>> context_tracevel(
+      velocity_dofs_per_node, "tracevel_hdg");
+  visualization_writer_->append_result_data_vector_with_context(
+      *traceVel, Core::IO::OutputEntity::node, context_tracevel);
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *cellPres, Core::IO::OutputEntity::element, {"pressure_avg"});
+
+  // write domain decomposition for visualization (only once!)
+  if (step_ == upres_ or step_ == 0) visualization_writer_->append_element_owner("Owner");
+}
 
 /*----------------------------------------------------------------------*
- | output of solution vector to binio                  kronbichler 05/14|
  *----------------------------------------------------------------------*/
 void FLD::TimIntHDG::output()
 {
   // output of solution, currently only small subset of functionality
   if (step_ % upres_ == 0)
   {
-    // step number and time
-    output_->new_step(step_, time_);
+    visualization_writer_->reset();
 
-    std::shared_ptr<Core::LinAlg::Vector<double>> cellPres;
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> traceVel;
-    get_node_vectors_hdg(*discret_, intvelnp_, velnp_,
-        params_->get<int>("number of velocity degrees of freedom"), interpolatedVelocity_,
-        interpolatedPressure_, traceVel, cellPres);
-    output_->write_multi_vector("velnp_hdg", *interpolatedVelocity_, Core::IO::nodevector);
-    output_->write_vector("pressure_hdg", interpolatedPressure_, Core::IO::nodevector);
-    output_->write_multi_vector("tracevel_hdg", *traceVel, Core::IO::nodevector);
-    output_->write_vector("pressure_avg", cellPres, Core::IO::elementvector);
+    collect_runtime_output_data();
 
-    if (step_ == upres_ or step_ == 0) output_->write_element_data(true);
-
-    if (uprestart_ != 0 && step_ % uprestart_ == 0)  // add restart data
-    {
-      // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-      // output_->write_vector("accnp",intaccnp_);
-      // output_->write_vector("accn", intaccn_);
-      // output_->write_vector("veln", intveln_);
-      // output_->write_vector("velnm",intvelnm_);
-    }
+    visualization_writer_->write_to_disk(time_, step_);
   }
 }
 
 /*----------------------------------------------------------------------*
- | calculate intermediate solution                              bk 04/15|
  *----------------------------------------------------------------------*/
 void FLD::TimIntHDG::calc_intermediate_solution()
 {
