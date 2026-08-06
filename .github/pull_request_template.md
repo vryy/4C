@@ -22,3 +22,14 @@ If applicable, let us know how this pull request is related to any other open is
 Some suggestion for keywords:
 Closes (will automatically close mentioned issue if merged), Blocks, Related to
 -->
+
+## Disclosure of AI assistance
+<!--
+If AI tools were used in this contribution, we strongly recommend disclosing their use. This may include:
+
+* A brief description of how AI contributed (e.g., code generation, refactoring, documentation, testing)
+* The AI agent(s) and/or tool(s) used
+* Any notable successes, limitations, or lessons learned
+
+Any AI-assisted code must be reviewed, understood, and validated by the contributing author, who takes full responsibility for the contribution.
+-->
