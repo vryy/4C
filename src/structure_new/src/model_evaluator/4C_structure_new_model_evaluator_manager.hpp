@@ -113,7 +113,7 @@ namespace Solid
     //! @name General evaluate routines
     //!@{
 
-    bool initialize_inertia_and_damping(const Core::LinAlg::Vector<double>& x);
+    bool initialize_inertia_and_damping();
 
     bool apply_initial_force(
         const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f);

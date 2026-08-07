@@ -100,6 +100,27 @@ void Solid::Integrator::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void Solid::Integrator::remap_after_redistribution()
+{
+  check_init();
+
+  remap_vectors_and_helpers();
+
+  auto& structure_model =
+      dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Solid::model_structure));
+  structure_model.remap_after_redistribution();
+  // remap gproblem_map_ptr_
+  global_state().setup_block_information(structure_model, Solid::model_structure);
+  // reset blockextractor_
+  global_state().setup_multi_map_extractor();
+  // reset tech map extractors
+  global_state().setup_element_technology_map_extractors();
+
+  monitor_dbc_ptr_->remap_reaction_maps();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void Solid::Integrator::set_initial_displacement(
     const Solid::InitialDisp init, const int startfuncno)
 {
@@ -198,7 +219,7 @@ void Solid::Integrator::compute_mass_matrix_and_init_acc()
   eval_data().set_total_time(gstate_ptr_->get_time_n());
 
   // initialize the mass matrix and the Rayleigh damping matrix (optional)
-  if (not model_eval().initialize_inertia_and_damping(*disnp_ptr))
+  if (not model_eval().initialize_inertia_and_damping())
     FOUR_C_THROW("initialize_inertia_and_damping failed!");
 
   /* If we are restarting the simulation, we do not have to calculate a

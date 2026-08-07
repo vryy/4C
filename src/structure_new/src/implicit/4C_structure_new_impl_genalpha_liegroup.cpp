@@ -45,6 +45,16 @@ void Solid::IMPLICIT::GenAlphaLieGroup::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void Solid::IMPLICIT::GenAlphaLieGroup::remap_vectors_and_helpers()
+{
+  GenAlpha::remap_vectors_and_helpers();
+
+  accn_mod_ =
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void Solid::IMPLICIT::GenAlphaLieGroup::post_setup()
 {
   check_init_setup();

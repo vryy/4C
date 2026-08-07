@@ -24,8 +24,12 @@ namespace Core::FE
 
 namespace Core::LinAlg
 {
+  class Graph;
   class Map;
-}
+  class SparseMatrix;
+  template <typename T>
+  class Vector;
+}  // namespace Core::LinAlg
 
 namespace Core::Rebalance
 {
@@ -59,7 +63,6 @@ namespace Core::Rebalance
     int min_ele_per_proc = 0;
   };
 
-
   /**
    * Additional parameters that govern the rebalancing process.
    */
@@ -69,6 +72,12 @@ namespace Core::Rebalance
      * How to partition then mesh among processes.
      */
     MeshPartitioningParameters mesh_partitioning_parameters;
+
+    /**
+     * Multiplier applied to the graph edge weights constructed from the global average element
+     * evaluation time during eval-time-based repartitioning.
+     */
+    double edge_weight_multiplier = 1.0;
 
     /**
      * Geometric search parameters for certain partitioning methods.
@@ -84,9 +93,12 @@ namespace Core::Rebalance
    * row_elements. This function will compute a new distribution of the elements and nodes of the
    * discretization according to the rebalancing parameters specified in @p parameters.
    * This is a collective call over all ranks in @p comm.
+   * Uses per-element evaluate() times if @p use_eval_time_weights
+   * This is used for dynamic rebalance.
    */
   void rebalance_discretization(Core::FE::Discretization& discretization,
-      const Core::LinAlg::Map& row_elements, const RebalanceParameters& parameters, MPI_Comm comm);
+      const Core::LinAlg::Map& row_elements, const RebalanceParameters& parameters, MPI_Comm comm,
+      bool use_eval_time_weights = false);
 }  // namespace Core::Rebalance
 
 FOUR_C_NAMESPACE_CLOSE

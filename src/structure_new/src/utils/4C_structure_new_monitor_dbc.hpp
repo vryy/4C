@@ -68,6 +68,10 @@ namespace Solid
         Core::FE::Discretization& discret, Solid::TimeInt::BaseDataGlobalState& gstate,
         Solid::Dbc& dbc);
 
+    /// Rebuild the reaction-force maps after a redistribution and fill_completes the
+    /// discretization. Used in dynamic rebalance
+    void remap_reaction_maps();
+
     /// setup new class members
     void setup();
 
@@ -92,6 +96,8 @@ namespace Solid
     void get_tagged_condition(std::vector<const Core::Conditions::Condition*>& tagged_conds,
         const std::string& cond_name, const std::string& tag_name,
         const Core::FE::Discretization& discret) const;
+
+    void rebuild_reaction_maps(const std::vector<const Core::Conditions::Condition*>& rconds);
 
     void create_reaction_maps(const Core::FE::Discretization& discret,
         const Core::Conditions::Condition& rcond,
