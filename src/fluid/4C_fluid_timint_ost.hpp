@@ -152,11 +152,7 @@ namespace FLD
     */
     void apply_external_forces(std::shared_ptr<Core::LinAlg::MultiVector<double>> fext) override;
 
-    /*!
-    \output of external forces for restart
-
-    */
-    void output_external_forces() override;
+    void write_restart_external_forces() override;
 
     /*!
     \brief read restart data

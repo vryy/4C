@@ -251,12 +251,11 @@ void FLD::TimIntOneStepTheta::apply_external_forces(
 
 
 /*----------------------------------------------------------------------*
- | output of external forces for restart                     ghamm 12/14|
  *----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::output_external_forces()
+void FLD::TimIntOneStepTheta::write_restart_external_forces()
 {
   // call base class
-  FLD::FluidImplicitTimeInt::output_external_forces();
+  FLD::FluidImplicitTimeInt::write_restart_external_forces();
 
   if (external_loadsn_ != nullptr)
   {

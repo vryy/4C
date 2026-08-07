@@ -3489,7 +3489,7 @@ void FLD::FluidImplicitTimeInt::write_restart()
   // flow rate, flow volume and impedance in case of flow-dependent pressure bc
   if (nonlinearbc_) output_nonlinear_bc();
 
-  output_external_forces();
+  write_restart_external_forces();
 
   // write mesh in each restart step --- the elements are required since
   // they contain history variables (the time dependent subscales)
@@ -3610,7 +3610,7 @@ void FLD::FluidImplicitTimeInt::output_to_gmsh(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::output_external_forces()
+void FLD::FluidImplicitTimeInt::write_restart_external_forces()
 {
   if (external_loads_ != nullptr)
   {

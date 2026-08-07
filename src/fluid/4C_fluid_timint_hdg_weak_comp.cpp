@@ -25,7 +25,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                  laspina 08/19 |
  *----------------------------------------------------------------------*/
 FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const std::shared_ptr<Core::FE::Discretization>& actdis,
     const std::shared_ptr<Core::LinAlg::Solver>& solver,
@@ -36,11 +35,16 @@ FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const std::shared_ptr<Core::FE::Discre
       timealgoset_(FLUID::timeint_afgenalpha),
       first_assembly_(false)
 {
+  auto use_all_elements = [](const Core::Elements::Element*) { return true; };
+  visualization_writer_hdg_weak_comp_ =
+      std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(actdis,
+          Core::IO::visualization_parameters_factory(
+              Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+              *Global::Problem::instance()->output_control_file(), time_),
+          use_all_elements, "fluid-hdg-weak-comp");
 }
 
-
 /*----------------------------------------------------------------------*
- |  initialize algorithm                                  laspina 08/19 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntHDGWeakComp::init()
 {
@@ -649,13 +653,13 @@ namespace
 {
   // internal helper function for output
   void get_node_vectors_hdg_weak_comp(Core::FE::Discretization& dis,
-      const std::shared_ptr<Core::LinAlg::Vector<double>>& interiorValues,
-      const std::shared_ptr<Core::LinAlg::Vector<double>>& traceValues, const int ndim,
+      const Core::LinAlg::Vector<double>& interiorValues,
+      const Core::LinAlg::Vector<double>& traceValues, const unsigned int ndim,
       std::shared_ptr<Core::LinAlg::MultiVector<double>>& mixedvar,
       std::shared_ptr<Core::LinAlg::Vector<double>>& density,
       std::shared_ptr<Core::LinAlg::Vector<double>>& traceden)
   {
-    const int msd = ndim * (ndim + 1.0) / 2.0;
+    const int msd = static_cast<int>(ndim * (ndim + 1u) / 2u);
 
     // create dofsets for mixed variable, density and momentum at nodes
     if (density.get() == nullptr || density->global_length() != dis.num_global_nodes())
@@ -668,8 +672,8 @@ namespace
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
     params.set<FLD::Action>("action", FLD::interpolate_hdg_to_node);
-    dis.set_state(1, "intvelnp", *interiorValues);
-    dis.set_state(0, "velnp", *traceValues);
+    dis.set_state(1, "intvelnp", interiorValues);
+    dis.set_state(0, "velnp", traceValues);
     std::vector<int> dummy;
     Core::LinAlg::SerialDenseMatrix dummyMat;
     Core::LinAlg::SerialDenseVector dummyVec;
@@ -689,94 +693,112 @@ namespace
       // sum values on nodes into vectors and record the touch count (build average of values)
       for (int i = 0; i < ele->num_node(); ++i)
       {
-        Core::Nodes::Node* node = ele->nodes()[i];
+        const Core::Nodes::Node* node = ele->nodes()[i];
         const int localIndex = dis.node_row_map()->lid(node->id());
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
         for (int m = 0; m < msd; ++m)
           mixedvar->get_vector(m).get_values()[localIndex] += interpolVec(i + m * ele->num_node());
-        (*density).get_values()[localIndex] += interpolVec(i + msd * ele->num_node());
-        (*traceden).get_values()[localIndex] += interpolVec(i + (msd + 1 + ndim) * ele->num_node());
+        density->get_values()[localIndex] += interpolVec(i + msd * ele->num_node());
+        traceden->get_values()[localIndex] += interpolVec(i + (msd + 1 + ndim) * ele->num_node());
       }
     }
 
     for (int i = 0; i < density->local_length(); ++i)
     {
       for (int m = 0; m < msd; ++m) mixedvar->get_vector(m).get_values()[i] /= touchCount[i];
-      (*density).get_values()[i] /= touchCount[i];
-      (*traceden).get_values()[i] /= touchCount[i];
+      density->get_values()[i] /= touchCount[i];
+      traceden->get_values()[i] /= touchCount[i];
     }
     dis.clear_state();
   }
 }  // namespace
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::TimIntHDGWeakComp::collect_runtime_output_data()
+{
+  // get number of spatial dimensions
+  const unsigned int nsd = params_->get<int>("number of velocity degrees of freedom");
+  const auto msd = nsd * (nsd + 1u) / 2u;
+
+  // initialize trace variables
+  std::shared_ptr<Core::LinAlg::Vector<double>> traceDen;
+
+  // get node vectors
+  get_node_vectors_hdg_weak_comp(
+      *discret_, *intvelnp_, *velnp_, nsd, interpolatedMixedVar_, interpolatedDensity_, traceDen);
+
+  // get weakly compressible material
+  const int id = Global::Problem::instance()->materials()->first_id_by_type(
+      Core::Materials::m_fluid_weakly_compressible);
+  const Core::Mat::PAR::Parameter* mat =
+      Global::Problem::instance()->materials()->parameter_by_id(id);
+  const auto* actmat = static_cast<const Mat::PAR::WeaklyCompressibleFluid*>(mat);
+
+  // evaluate derived variables
+  const auto interpolatedPressure =
+      std::make_shared<Core::LinAlg::Vector<double>>(interpolatedDensity_->get_map());
+  for (int i = 0; i < interpolatedDensity_->local_length(); ++i)
+  {
+    interpolatedPressure->get_values()[i] =
+        actmat->refpressure_ +
+        1.0 / actmat->comprcoeff_ *
+            (interpolatedDensity_->local_values_as_span()[i] - actmat->refdensity_);
+  }
+
+  // write solution variables
+  {
+    const std::vector<std::optional<std::string>> context(msd, "Mixedvar");
+    visualization_writer_hdg_weak_comp_->append_result_data_vector_with_context(
+        *interpolatedMixedVar_, Core::IO::OutputEntity::node, context);
+
+    visualization_writer_hdg_weak_comp_->append_result_data_vector_with_context(
+        *interpolatedDensity_, Core::IO::OutputEntity::node, {"Density"});
+
+    visualization_writer_hdg_weak_comp_->append_result_data_vector_with_context(
+        *traceDen, Core::IO::OutputEntity::node, {"Trace_density"});
+  }
+
+  // write derived variables
+  visualization_writer_hdg_weak_comp_->append_result_data_vector_with_context(
+      *interpolatedPressure, Core::IO::OutputEntity::node, {"Pressure"});
+
+  // write ALE variables
+  if (alefluid_)
+  {
+    Core::LinAlg::MultiVector<double> ale_displacement(*discret_->node_row_map(), nsd);
+    for (int i = 0; i < interpolatedDensity_->local_length(); ++i)
+    {
+      for (unsigned int d = 0; d < nsd; ++d)
+        ale_displacement.get_vector(d).get_values()[i] =
+            dispnp_->local_values_as_span()[(i * nsd) + d];
+    }
+
+    const std::vector<std::optional<std::string>> context(nsd, "ale_displacement");
+    visualization_writer_hdg_weak_comp_->append_result_data_vector_with_context(
+        ale_displacement, Core::IO::OutputEntity::node, context);
+  }
+
+  if (step_ == upres_ or step_ == 0)
+  {
+    visualization_writer_hdg_weak_comp_->append_element_owner("Owner");
+  }
+}
 
 /*----------------------------------------------------------------------*
- | output of solution vector to binio                      laspina 08/19|
  *----------------------------------------------------------------------*/
 void FLD::TimIntHDGWeakComp::output()
 {
   // output of solution, currently only small subset of functionality
   if (step_ % upres_ == 0)
   {
-    // step number and time
-    output_->new_step(step_, time_);
+    visualization_writer_hdg_weak_comp_->reset();
 
-    // get number of spatial dimensions
-    const unsigned int nsd = params_->get<int>("number of velocity degrees of freedom");
+    collect_runtime_output_data();
 
-    // initialize trace variables
-    std::shared_ptr<Core::LinAlg::Vector<double>> traceDen;
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> traceMom;
-
-    // get node vectors
-    get_node_vectors_hdg_weak_comp(
-        *discret_, intvelnp_, velnp_, nsd, interpolatedMixedVar_, interpolatedDensity_, traceDen);
-
-    // get weakly compressible material
-    int id = Global::Problem::instance()->materials()->first_id_by_type(
-        Core::Materials::m_fluid_weakly_compressible);
-    const Core::Mat::PAR::Parameter* mat =
-        Global::Problem::instance()->materials()->parameter_by_id(id);
-    const Mat::PAR::WeaklyCompressibleFluid* actmat =
-        static_cast<const Mat::PAR::WeaklyCompressibleFluid*>(mat);
-
-    // evaluate derived variables
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> interpolatedVelocity;
-    std::shared_ptr<Core::LinAlg::Vector<double>> interpolatedPressure;
-    interpolatedPressure =
-        std::make_shared<Core::LinAlg::Vector<double>>(interpolatedDensity_->get_map());
-    for (int i = 0; i < interpolatedDensity_->local_length(); ++i)
-    {
-      (*interpolatedPressure).get_values()[i] =
-          actmat->refpressure_ +
-          1.0 / actmat->comprcoeff_ *
-              (interpolatedDensity_->local_values_as_span()[i] - actmat->refdensity_);
-    }
-
-    // write solution variables
-    output_->write_multi_vector("Mixedvar", *interpolatedMixedVar_, Core::IO::nodevector);
-    output_->write_vector("Density", interpolatedDensity_, Core::IO::nodevector);
-    output_->write_vector("Trace_density", traceDen, Core::IO::nodevector);
-
-    // write derived variables
-    output_->write_vector("Pressure", interpolatedPressure, Core::IO::nodevector);
-
-    // write ALE variables
-    if (alefluid_)
-    {
-      Core::LinAlg::MultiVector<double> AleDisplacement(*discret_->node_row_map(), nsd);
-      for (int i = 0; i < interpolatedDensity_->local_length(); ++i)
-        for (unsigned int d = 0; d < nsd; ++d)
-          AleDisplacement.get_vector(d).get_values()[i] =
-              dispnp_->local_values_as_span()[(i * nsd) + d];
-
-      output_->write_multi_vector("Ale_displacement", AleDisplacement, Core::IO::nodevector);
-    }
-
-    if (step_ == upres_ or step_ == 0) output_->write_element_data(true);
+    visualization_writer_hdg_weak_comp_->write_to_disk(time_, step_);
   }
 }
-
 FOUR_C_NAMESPACE_CLOSE
