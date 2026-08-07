@@ -97,11 +97,6 @@ namespace Core::IO::Internal
         data.coordinate_system_directions[Core::Nodes::CoordinateSystemDirection::Tangential] =
             parser.read<std::array<double, 3>>();
       }
-      else if (next == "RAD")
-      {
-        data.coordinate_system_directions[Core::Nodes::CoordinateSystemDirection::Radial] =
-            parser.read<std::array<double, 3>>();
-      }
       else if (next == "HELIX")
       {
         data.angles[Core::Nodes::AngleType::Helix] = parser.read<double>();
@@ -120,12 +115,10 @@ namespace Core::IO::Internal
         Core::Nodes::CoordinateSystemDirection::Circular);
     const bool has_tangential = data.coordinate_system_directions.contains(
         Core::Nodes::CoordinateSystemDirection::Tangential);
-    const bool has_radial =
-        data.coordinate_system_directions.contains(Core::Nodes::CoordinateSystemDirection::Radial);
     const bool has_helix = data.angles.contains(Core::Nodes::AngleType::Helix);
     const bool has_transverse = data.angles.contains(Core::Nodes::AngleType::Transverse);
     const bool has_cardiac_directions =
-        has_circular || has_tangential || has_radial || has_helix || has_transverse;
+        has_circular || has_tangential || has_helix || has_transverse;
 
     if (!data.fibers.empty() && has_cardiac_directions)
     {
@@ -136,9 +129,7 @@ namespace Core::IO::Internal
 
     if (has_cardiac_directions && !(has_circular && has_tangential && has_helix && has_transverse))
     {
-      FOUR_C_THROW(
-          "Cardiac fiber directions in FNODE require all of CIR, TAN, HELIX, and TRANS. RAD is "
-          "optional.");
+      FOUR_C_THROW("Cardiac fiber directions in FNODE require all of CIR, TAN, HELIX, and TRANS.");
     }
 
     return data;

@@ -12,7 +12,6 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <algorithm>
-#include <iostream>
 
 FOUR_C_NAMESPACE_OPEN
 namespace
@@ -73,8 +72,6 @@ Discret::Elements::Fibers Discret::Elements::read_fibers(
 
     fibers.element_fibers.emplace_back(tensor);
   }
-  std::cout << "Number of fibers: " << fibers.element_fibers.size() << std::endl;
-
   return fibers;
 }
 

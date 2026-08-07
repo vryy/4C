@@ -62,7 +62,7 @@ namespace
     EXPECT_TRUE(data.coordinate_system_directions.empty());
   }
 
-  TEST(MeshReaderFiberNodeTest, AcceptsCardiacFiberDirectionsWithoutOptionalRadialDirection)
+  TEST(MeshReaderFiberNodeTest, AcceptsCardiacFiberDirections)
   {
     Core::IO::ValueParser parser("CIR 1.0 0.0 0.0 TAN 0.0 1.0 0.0 HELIX 0.0 TRANS 0.0");
 
