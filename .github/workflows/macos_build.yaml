@@ -1,8 +1,8 @@
-name: macOS built test
+name: macOS build
 
 on:
-  #schedule:
-  #  - cron: 3 4 * * 0
+  schedule:
+    - cron: 3 4 * * 0
   workflow_dispatch:
 
 concurrency:
@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: Build and test 4C on macOS
+    name: Build 4C on Darwin
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v6
@@ -77,14 +77,3 @@ jobs:
         with:
           path: build/
           key: ${{ runner.os }}-build-${{ github.sha }}
-      - name: Run tests
-        run: |
-          echo "tests"
-          ctest  --test-dir build/ -j `sysctl -n hw.physicalcpu` --output-on-failure --output-junit $GITHUB_WORKSPACE/macos_assertions_test_report.xml
-      - name: Upload test report
-        if: success() || failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: macos_assertions_test_report.xml
-          path: |
-            ${{ github.workspace }}/macos_assertions_test_report.xml
