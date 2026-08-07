@@ -66,6 +66,11 @@ All node coordinates must be given with three coordinates, even if the problem i
    - "CP <ID> COORD <coord-x> <coord-y> <coord-z> <weight>"
    - "FNODE <ID> COORD <coord-x> <coord-y> <coord-z> [FIBER1|FIBER2|FIBER3|CIR|TAN|RAD|HELIX|TRANS] <further parameters>"
 
+For ``FNODE``, explicit fiber directions must be numbered consecutively starting with ``FIBER1``.
+They cannot be combined with cardiac fiber directions. Cardiac fiber directions require ``CIR``,
+``TAN``, ``HELIX``, and ``TRANS``; ``RAD`` is optional. All nodes of an element must provide the
+same set of parameters, either explicit or cardiac fiber directions. Their direction
+vectors and angle values may vary between nodes.
 
 .. _geometrysets:
 
@@ -177,4 +182,3 @@ while the parameter :math:`\sigma` is defined by the parameter ``RADIUSDISTRIBUT
     PARTICLE DYNAMIC/DEM:
       INITIAL_RADIUS: RadiusFromParticleInput|NormalRadiusDistribution|LogNormalRadiusDistribution
       RADIUSDISTRIBUTION_SIGMA: <variation>   # variation sigma for a radius distribution
-
