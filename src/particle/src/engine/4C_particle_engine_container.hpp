@@ -205,6 +205,12 @@ namespace Particle
      */
     inline const double* try_get_ptr_to_state(ParticleState state, int index) const
     {
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (index < 0 or index > (particlestored_ - 1))
+        FOUR_C_THROW(
+            "can not return pointer to state of particle as index {} out of bounds!", index);
+#endif
+
       if (storedstates_.contains(state)) return get_ptr_to_state(state, index);
 
       return nullptr;
@@ -245,6 +251,12 @@ namespace Particle
      */
     inline double* try_get_ptr_to_state_writable(ParticleState state, int index)
     {
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (index < 0 or index > (particlestored_ - 1))
+        FOUR_C_THROW(
+            "can not return pointer to state of particle as index {} out of bounds!", index);
+#endif
+
       if (storedstates_.contains(state)) return get_ptr_to_state_writable(state, index);
 
       return nullptr;

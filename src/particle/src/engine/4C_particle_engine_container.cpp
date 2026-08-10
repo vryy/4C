@@ -223,6 +223,7 @@ void Particle::ParticleContainer::remove_particle(int index)
   for (const auto& state : storedstates_)
   {
     // get pointers to particle state
+    // note - this is the same underlying array, so using same access pattern
     double* state_ptr_index = get_ptr_to_state_writable(state, index);
     double* state_ptr_last = get_ptr_to_state_writable(state, last_index);
 
