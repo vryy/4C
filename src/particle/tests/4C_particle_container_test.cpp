@@ -356,13 +356,25 @@ namespace
 
       const double* currmass = container_->try_get_ptr_to_state(Particle::Mass, index);
       EXPECT_NEAR(currmass[0], mass[0], 1e-14);
+
+      {
+        double* newmass = container_->try_get_ptr_to_state_writable(Particle::Mass, index);
+        newmass[0] = newmass[0] * 3.14;
+      }
+      {
+        const double* currmass = container_->try_get_ptr_to_state(Particle::Mass, index);
+        EXPECT_NEAR(currmass[0], mass[0] * 3.14, 1e-14);
+      }
     }
   }
 
   TEST_F(ParticleContainerTest, TryGetPtrToStateNotStored)
   {
-    const double* currpos = container_->try_get_ptr_to_state(Particle::Acceleration, 0);
-    EXPECT_EQ(currpos, nullptr);
+    const double* acc = container_->try_get_ptr_to_state(Particle::Acceleration, 0);
+    EXPECT_EQ(acc, nullptr);
+
+    double* angacc = container_->try_get_ptr_to_state_writable(Particle::AngularAcceleration, 0);
+    EXPECT_EQ(angacc, nullptr);
   }
 
   TEST_F(ParticleContainerTest, GetPtrToGlobalID)
