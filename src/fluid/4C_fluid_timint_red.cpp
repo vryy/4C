@@ -11,6 +11,7 @@
 #include "4C_fem_condition_locsys.hpp"
 #include "4C_fluid_coupling_red_models.hpp"
 #include "4C_fluid_meshtying.hpp"
+#include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fluid_volumetric_surfaceFlow_condition.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
@@ -314,22 +315,10 @@ void FLD::TimIntRedModels::setup_meshtying()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::write_output() const
-{
-  vol_surf_flow_bc_->output(*output_);
-  traction_vel_comp_adder_bc_->output(*output_);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::write_restart() const
 {
-  const bool solution_is_written = upres_ > 0 && step_ % upres_ == 0;
-  if (!solution_is_written)
-  {
-    vol_surf_flow_bc_->output(*output_);
-    traction_vel_comp_adder_bc_->output(*output_);
-  }
+  vol_surf_flow_bc_->write_restart(*output_);
+  traction_vel_comp_adder_bc_->write_restart(*output_);
 
   // Check if one-dimensional artery network problem exist
   if (ART_timeInt_ != nullptr)
@@ -348,11 +337,7 @@ void FLD::TimIntRedModels::write_restart() const
 void FLD::TimIntRedModels::output()
 {
   FluidImplicitTimeInt::output();
-  // write solution
-  if (upres_ > 0 && step_ % upres_ == 0)
-  {
-    write_output();
-  }
+
   // write restart
   if (uprestart_ > 0 && step_ % uprestart_ == 0)
   {
@@ -360,10 +345,9 @@ void FLD::TimIntRedModels::output()
   }
 
   output_reduced_d();
-}  // TimIntRedModels::Output
+}
 
 /*----------------------------------------------------------------------*
- | read some additional data in restart                         bk 12/13|
  *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::insert_volumetric_surface_flow_cond_vector(
     std::shared_ptr<Core::LinAlg::Vector<double>> vel,

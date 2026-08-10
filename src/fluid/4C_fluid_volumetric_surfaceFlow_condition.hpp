@@ -13,8 +13,6 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fluid_ele_action.hpp"
-#include "4C_fluid_utils.hpp"
-#include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_io.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -71,9 +69,9 @@ namespace FLD
 
 
       /*!
-      \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
+      \brief Wrapper for FluidVolumetricSurfaceFlowBc::write_restart
       */
-      void output(Core::IO::DiscretizationWriter& output) const;
+      void write_restart(Core::IO::DiscretizationWriter& output) const;
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart
@@ -129,9 +127,9 @@ namespace FLD
 
 
       /*!
-      \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
+      \brief Wrapper for FluidVolumetricSurfaceFlowBc::write_restart
       */
-      void output(Core::IO::DiscretizationWriter& output) const;
+      void write_restart(Core::IO::DiscretizationWriter& output) const;
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart
@@ -305,16 +303,16 @@ namespace FLD
       double area(double& density, double& viscosity, std::string ds_condname, int condid);
 
       /*!
-      \brief output
+      \brief write restart information
       */
-      void output(
-          Core::IO::DiscretizationWriter& output, std::string ds_condname, int condnum) const;
+      void write_restart(Core::IO::DiscretizationWriter& output, const std::string& ds_condname,
+          int condnum) const;
 
       /*!
       \brief Read restart
       */
       void read_restart(
-          Core::IO::DiscretizationReader& reader, std::string ds_condname, int condnum);
+          Core::IO::DiscretizationReader& reader, const std::string& ds_condname, int condnum);
 
       /*!
       \brief Bessel function of orders 0 and 1
