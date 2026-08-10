@@ -1304,21 +1304,24 @@ void Particle::ParticleEngine::check_particles_at_boundaries(
       if (not binning_->binstrategy_->have_periodic_boundary_conditions_applied()) continue;
 
       // check for periodic boundary in each spatial directions
-      for (int dim = 0; dim < 3; ++dim)
       {
-        if (binning_->binstrategy_->have_periodic_boundary_conditions_applied_in_spatial_direction(
-                dim))
-        {
-          // binning domain length in current spatial direction
-          double* currpos = container->get_ptr_to_state_writable(Position, ownedindex);
-          double binningdomainlength =
-              binning_->binstrategy_->length_of_binning_domain_in_a_spatial_direction(dim);
+        double* currpos = container->get_ptr_to_state_writable(Position, ownedindex);
 
-          // shift position by periodic length
-          if (currpos[dim] < boundingbox(dim, 0))
-            currpos[dim] += binningdomainlength;
-          else if (currpos[dim] > boundingbox(dim, 1))
-            currpos[dim] -= binningdomainlength;
+        for (int dim = 0; dim < 3; ++dim)
+        {
+          if (binning_->binstrategy_
+                  ->have_periodic_boundary_conditions_applied_in_spatial_direction(dim))
+          {
+            // binning domain length in current spatial direction
+            double binningdomainlength =
+                binning_->binstrategy_->length_of_binning_domain_in_a_spatial_direction(dim);
+
+            // shift position by periodic length
+            if (currpos[dim] < boundingbox(dim, 0))
+              currpos[dim] += binningdomainlength;
+            else if (currpos[dim] > boundingbox(dim, 1))
+              currpos[dim] -= binningdomainlength;
+          }
         }
       }
     }
