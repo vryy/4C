@@ -12,6 +12,7 @@
 
 #include "4C_comm_utils.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_utils_scalar_interpolation.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -1079,7 +1080,6 @@ namespace Mat
       double step;
     };
 
-
     //! namespace containing utilities dedicated to the Adaptive Estimate Interpolation (AEI)
     //! algorithm, presented in Ana, Schmidt, Wall: An Adaptive Strategy for Initial Estimates in
     //! the Local Newton-Raphson Integration of (Visco)plasticity Models, Preprint
@@ -1240,6 +1240,146 @@ namespace Mat
 
         //! re-estimation parameters
         ReestimationParams reestimation;
+      };
+
+      //! Interpolator of elastic deformation gradients between two predictor states: between the
+      //! elastic predictor and the preliminary plastic predictor (during plastic predictor
+      //! construction), or between the elastic predictor and the plastic predictor (estimate
+      //! interpolation / reestimation). The elastic predictor itself never changes after calling
+      //! \ref PredictorInterpolator::construct_prelim_plastic_pred(); only the second predictor
+      //! state evolves, switching from the preliminary plastic predictor to the final plastic
+      //! predictor when
+      //! \ref PredictorInterpolator::update_plastic_predictor_after_construction_algo() is called.
+      class PredictorInterpolator
+      {
+       public:
+        /*!
+         * @brief Constructs a preliminary plastic predictor given the elastic predictor and the
+         * specified AEI settings.
+         *
+         * @note This function also decomposes \p elastic_defgrad_elastic_pred and updates its
+         * components stored here as internal variables.
+         *
+         *
+         * @param[in] elastic_defgrad_elastic_pred elastic deformation gradient within the elastic
+         * predictor: \f$ \boldsymbol{F}_{\mathrm{e},n+1}^{(\mathrm{E})} = \boldsymbol{F}_{n+1}
+         * \boldsymbol{F}_{\mathrm{p},n}^{-1} \f$
+         * @param[in] elastic_predictor_zero_component_threshold threshold for setting components of
+         * \p elastic_defgrad_elastic_pred to 0.0 (in order to avoid
+         * numerical rotations)
+         * @param[in] plastic_predictor_construction_params parameters for plastic predictor
+         * construction
+         */
+        void construct_prelim_plastic_pred(
+            const Core::LinAlg::Matrix<3, 3>& elastic_defgrad_elastic_pred,
+            double elastic_predictor_zero_component_threshold,
+            const PlasticPredictorConstructionParams& plastic_predictor_construction_params);
+
+        /*!
+         * @brief Interpolates an elastic deformation gradient based on the stored predictor
+         * quantities from the predictor extrema involved (elastic and preliminary plastic
+         * predictors / elastic and plastic predictors depending on the algorithmic component
+         * calling this function).
+         *
+         *
+         * @param[in] interp_loc location used for interpolation; either \f$ \tau \f$ (plastic
+         * predictor construction) or \f$ \xi \f$ (estimate interpolation / reestimation)
+         */
+        [[nodiscard]] Core::LinAlg::Matrix<3, 3> interpolate_elastic_defgrad(
+            double interp_loc) const;
+
+        /*!
+         * @brief After the plastic predictor construction algorithm has succeeded in finding the
+         * construction parameter \f$\tau \f$ associated with the plastic predictor, this function
+         * updates the determined plastic predictor (more specifically: all class variables
+         * currently associated with the preliminary plastic predictor are updated to the values of
+         * the determined plastic predictor).
+         *
+         *
+         * @param[in] plastic_pred_loc location \f$ \tau \f$ determined in the plastic
+         * predictor construction
+         */
+        void update_plastic_predictor_after_construction_algo(double plastic_pred_loc);
+
+       private:
+        /*!
+         * @brief Interpolates eigenvalues and rotational contributions based on the stored
+         * predictor quantities from the predictor extrema involved (elastic and preliminary plastic
+         * predictors / elastic and plastic predictors depending on the algorithmic component
+         * calling this function).
+         *
+         *
+         * @param[in] interp_loc location used for interpolation; either \f$ \tau \f$ (plastic
+         * predictor construction) or \f$ \xi \f$ (estimate interpolation / reestimation)
+         * @param[out] interp_rel_rot_quat interpolated relative elastic rotation quaternion
+         * @param[out] interp_eigenval interpolated elastic eigenvalues (stored in descending order)
+         * @param[out] interp_rel_eigenvect_rot_quat interpolated relative elastic eigenvector
+         * quaternion
+         */
+        void interpolate_elastic_defgrad_contributions(double interp_loc,
+            Core::LinAlg::Matrix<4, 1>& interp_rel_rot_quat,
+            Core::LinAlg::Matrix<3, 3>& interp_eigenval,
+            Core::LinAlg::Matrix<4, 1>& interp_rel_eigenvect_rot_quat) const;
+
+        //! elastic predictor: elastic eigenvalue tensor \f$
+        //! \boldsymbol{\Lambda}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{E})}}
+        //! \f$
+        Core::LinAlg::Matrix<3, 3> eigenval_elast_pred_;
+        //! (preliminary) plastic predictor: elastic eigenvalue tensor \f$
+        //! \boldsymbol{\Lambda}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{P})}} \f$
+        Core::LinAlg::Matrix<3, 3> eigenval_plast_pred_;
+        //! elastic predictor: elastic stretch eigenvector tensor \f$
+        //! \boldsymbol{Q}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{E})}} \f$
+        Core::LinAlg::Matrix<3, 3> eigenvect_rot_elast_pred_;
+        //! (preliminary) plastic predictor: relative elastic eigenvector quaternion \f$
+        //! \boldsymbol{q}_{\boldsymbol{Q}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{P})}}, \mathrm{rel}}
+        //! \f$ associated with \f$
+        //! \boldsymbol{Q}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{P})}, \mathrm{rel}} =
+        //! \boldsymbol{Q}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{E})}}^T
+        //! \boldsymbol{Q}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{P})}}
+        //! \f$
+        Core::LinAlg::Matrix<4, 1> rel_eigenvect_rot_plast_pred_;
+        //! elastic predictor: elastic rotation tensor \f$
+        //! \boldsymbol{R}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{E})}} \f$
+        Core::LinAlg::Matrix<3, 3> rot_elast_pred_;
+        //! (preliminary) plastic predictor: relative elastic rotation quaternion \f$
+        //! \boldsymbol{r}_{\boldsymbol{R}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{P})}, \mathrm{rel}}}
+        //! \f$ associated with \f$ \boldsymbol{R}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{P})},
+        //! \mathrm{rel}} =
+        //! \boldsymbol{R}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{E})}}^T
+        //! \boldsymbol{R}_{\boldsymbol{F}_{\text{e}}^{(\mathrm{P})}}\f$
+        Core::LinAlg::Matrix<4, 1> rel_rot_plast_pred_;
+      };
+
+      //! Container for interpolation points / bounds used in the
+      //! Adaptive Estimate Interpolation (AEI) scheme.
+      struct InterpolationPointContainer
+      {
+       public:
+        /*!
+         * @brief Constructor setting the starting point based on the given parameters.
+         *
+         * @param[in] estimate_interpolation_params parameters for estimate interpolation between
+         * predictors
+         */
+        explicit InterpolationPointContainer(
+            const EstimateInterpolationParams& estimate_interpolation_params);
+
+        //! reset interpolation interval and set the current interpolation point to its saved
+        //! starting point
+        void reset_bounds_and_current_interp_point();
+
+        //! current interpolation point \f$ \xi \f$
+        double current_interp_point;
+
+        //! lower interpolation bound \f$ \xi_{\text{E}} \f$
+        double lower_interp_bound;
+
+        //! upper interpolation bound \f$ \xi_{\text{P}} \f$
+        double upper_interp_bound;
+
+        //! starting point for interpolation \f$ \hat{\xi} \f$
+        double starting_point;
       };
     }  // namespace AdaptiveEstimateInterpolation
   }  // namespace InelasticDefgradTransvIsotropElastViscoplastUtils
