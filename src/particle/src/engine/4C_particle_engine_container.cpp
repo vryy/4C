@@ -249,15 +249,8 @@ const double* Particle::ParticleContainer::get_ptr_to_state(ParticleState state,
 
 double* Particle::ParticleContainer::get_ptr_to_state_writable(ParticleState state, int index)
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not storedstates_.contains(state))
-    FOUR_C_THROW("particle state '{}' not stored in container!", enum_to_state_name(state));
-
-  if (index < 0 or index > (particlestored_ - 1))
-    FOUR_C_THROW("can not return pointer to state of particle as index {} out of bounds!", index);
-#endif
-
-  return &((states_[state])[index * statedim_[state]]);
+  return const_cast<double*>(
+      const_cast<const ParticleContainer&>(*this).get_ptr_to_state(state, index));
 };
 
 double Particle::ParticleContainer::get_min_value_of_state(ParticleState state) const
