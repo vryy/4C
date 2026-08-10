@@ -320,7 +320,9 @@ namespace Particle
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (stateA == stateB)
-        FOUR_C_THROW("adding scaled particle state '{}' to itself!", enum_to_state_name(stateA));
+        FOUR_C_THROW(
+            "adding scaled particle state '{}' to itself is not allowed. Use scale_state instead!",
+            enum_to_state_name(stateA));
 
       if (not storedstates_.contains(stateA))
         FOUR_C_THROW("particle state '{}' not stored in container!", enum_to_state_name(stateA));
