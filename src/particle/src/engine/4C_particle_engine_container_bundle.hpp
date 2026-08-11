@@ -73,10 +73,8 @@ namespace Particle
      */
     inline ParticleContainer* get_specific_container(ParticleType type, ParticleStatus status) const
     {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (not storedtypes_.contains(type))
-        FOUR_C_THROW("container for particle type '{}' not stored!", enum_to_type_name(type));
-#endif
+      FOUR_C_ASSERT(storedtypes_.contains(type), "container for particle type '{}' not stored!",
+          enum_to_type_name(type));
 
       return (containers_[type])[status].get();
     };
@@ -95,10 +93,8 @@ namespace Particle
     inline void scale_state_specific_container(
         double fac, ParticleState state, ParticleType type) const
     {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (not storedtypes_.contains(type))
-        FOUR_C_THROW("container for particle type '{}' not stored!", enum_to_type_name(type));
-#endif
+      FOUR_C_ASSERT(storedtypes_.contains(type), "container for particle type '{}' not stored!",
+          enum_to_type_name(type));
 
       ((containers_[type])[Owned])->scale_state(fac, state);
     };
@@ -117,10 +113,8 @@ namespace Particle
     inline void update_state_specific_container(double facA, ParticleState stateA, double facB,
         ParticleState stateB, ParticleType type) const
     {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (not storedtypes_.contains(type))
-        FOUR_C_THROW("container for particle type '{}' not stored!", enum_to_type_name(type));
-#endif
+      FOUR_C_ASSERT(storedtypes_.contains(type), "container for particle type '{}' not stored!",
+          enum_to_type_name(type));
 
       ((containers_[type])[Owned])->update_state(facA, stateA, facB, stateB);
     };
@@ -136,10 +130,8 @@ namespace Particle
     inline void set_state_specific_container(
         std::vector<double> val, ParticleState state, ParticleType type) const
     {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (not storedtypes_.contains(type))
-        FOUR_C_THROW("container for particle type '{}' not stored!", enum_to_type_name(type));
-#endif
+      FOUR_C_ASSERT(storedtypes_.contains(type), "container for particle type '{}' not stored!",
+          enum_to_type_name(type));
 
       ((containers_[type])[Owned])->set_state(val, state);
     };
@@ -153,10 +145,8 @@ namespace Particle
      */
     inline void clear_state_specific_container(ParticleState state, ParticleType type) const
     {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (not storedtypes_.contains(type))
-        FOUR_C_THROW("container for particle type '{}' not stored!", enum_to_type_name(type));
-#endif
+      FOUR_C_ASSERT(storedtypes_.contains(type), "container for particle type '{}' not stored!",
+          enum_to_type_name(type));
 
       ((containers_[type])[Owned])->clear_state(state);
     };
