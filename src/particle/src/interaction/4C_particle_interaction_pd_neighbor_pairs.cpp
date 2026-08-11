@@ -188,7 +188,7 @@ void Particle::PDNeighborPairs::evaluate_particle_pairs()
     const double* rad_j = container_j->get_ptr_to_state(Particle::State::Radius, particle_j);
 
     if (absdist < (1.0e-10 * rad_i[0]) or absdist < (1.0e-10 * rad_j[0]))
-      FOUR_C_THROW("absolute distance %f between particles close to zero!", absdist);
+      FOUR_C_THROW("absolute distance {} between particles close to zero!", absdist);
 #endif
 
     // gap calculation based on initial spacing
