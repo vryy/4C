@@ -73,12 +73,9 @@ void Particle::ParticleContainer::decrease_container_size()
   // set size of particle container (at least one)
   containersize_ = (newsize > 0) ? newsize : 1;
 
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (particlestored_ > containersize_)
-    FOUR_C_THROW(
-        "decreasing size of container not possible: particles stored {} > new container size {}!",
-        particlestored_, containersize_);
-#endif
+  FOUR_C_ASSERT(particlestored_ <= containersize_,
+      "decreasing size of container not possible: particles stored {} > new container size {}!",
+      particlestored_, containersize_);
 
   // resize vector of global ids
   globalids_.resize(containersize_);
@@ -141,10 +138,8 @@ void Particle::ParticleContainer::add_particle(
 void Particle::ParticleContainer::replace_particle(
     int index, int globalid, const ParticleStates& states)
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (index < 0 or index > (particlestored_ - 1))
-    FOUR_C_THROW("can not replace particle as index {} out of bounds!", index);
-#endif
+  FOUR_C_ASSERT(index >= 0 and index < particlestored_,
+      "can not replace particle as index {} out of bounds!", index);
 
   // replace global id in container
   if (globalid >= 0) globalids_[index] = globalid;
@@ -160,11 +155,9 @@ void Particle::ParticleContainer::replace_particle(
     // state handed over
     else
     {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (static_cast<int>(states[state].size()) != statedim_[state])
-        FOUR_C_THROW("can not replace particle: dimensions of state '{}' do not match!",
-            enum_to_state_name(state));
-#endif
+      FOUR_C_ASSERT(static_cast<int>(states[state].size()) == statedim_[state],
+          "can not replace particle: dimensions of state '{}' do not match!",
+          enum_to_state_name(state));
 
       // get pointer to particle state
       double* state_ptr = get_ptr_to_state_writable(state, index);
@@ -178,10 +171,8 @@ void Particle::ParticleContainer::replace_particle(
 void Particle::ParticleContainer::get_particle(
     int index, int& globalid, ParticleStates& states) const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (index < 0 or index > (particlestored_ - 1))
-    FOUR_C_THROW("can not return particle as index {} out of bounds!", index);
-#endif
+  FOUR_C_ASSERT(index >= 0 and index < particlestored_,
+      "can not return particle as index {} out of bounds!", index);
 
   // get global id from container
   globalid = globalids_[index];
@@ -202,10 +193,8 @@ void Particle::ParticleContainer::get_particle(
 
 void Particle::ParticleContainer::remove_particle(int index)
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (index < 0 or index > (particlestored_ - 1))
-    FOUR_C_THROW("can not remove particle as index {} out of bounds!", index);
-#endif
+  FOUR_C_ASSERT(index >= 0 and index < particlestored_,
+      "can not remove particle as index {} out of bounds!", index);
 
   // index of last particle
   auto last_index = particlestored_ - 1;
@@ -236,13 +225,11 @@ void Particle::ParticleContainer::remove_particle(int index)
 
 const double* Particle::ParticleContainer::get_ptr_to_state(ParticleState state, int index) const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not storedstates_.contains(state))
-    FOUR_C_THROW("particle state '{}' not stored in container!", enum_to_state_name(state));
+  FOUR_C_ASSERT(storedstates_.contains(state), "particle state '{}' not stored in container!",
+      enum_to_state_name(state));
 
-  if (index < 0 or index > (particlestored_ - 1))
-    FOUR_C_THROW("can not return pointer to state of particle as index {} out of bounds!", index);
-#endif
+  FOUR_C_ASSERT(index >= 0 and index < particlestored_,
+      "can not return pointer to state of particle as index {} out of bounds!", index);
 
   return &((states_[state])[index * statedim_[state]]);
 };
@@ -255,10 +242,8 @@ double* Particle::ParticleContainer::get_ptr_to_state_writable(ParticleState sta
 
 double Particle::ParticleContainer::get_min_value_of_state(ParticleState state) const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not storedstates_.contains(state))
-    FOUR_C_THROW("particle state '{}' not stored in container!", enum_to_state_name(state));
-#endif
+  FOUR_C_ASSERT(storedstates_.contains(state), "particle state '{}' not stored in container!",
+      enum_to_state_name(state));
 
   if (particlestored_ <= 0) return 0.0;
 
@@ -272,10 +257,8 @@ double Particle::ParticleContainer::get_min_value_of_state(ParticleState state) 
 
 double Particle::ParticleContainer::get_max_value_of_state(ParticleState state) const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not storedstates_.contains(state))
-    FOUR_C_THROW("particle state '{}' not stored in container!", enum_to_state_name(state));
-#endif
+  FOUR_C_ASSERT(storedstates_.contains(state), "particle state '{}' not stored in container!",
+      enum_to_state_name(state));
 
   if (particlestored_ <= 0) return 0.0;
 
