@@ -87,7 +87,7 @@ namespace Particle
      *
      * \param[in] particlestatestotypes particle types and corresponding particle states
      */
-    void setup(const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes);
+    void setup(const std::map<Particle::Type, std::set<Particle::State>>& particlestatestotypes);
 
     /*!
      * \brief write restart of particle engine
@@ -399,7 +399,7 @@ namespace Particle
 
     int get_number_of_particles() const override;
 
-    int get_number_of_particles_of_specific_type(const ParticleType type) const override;
+    int get_number_of_particles_of_specific_type(const Particle::Type type) const override;
 
     /*!
      * \brief write binning discretization output
@@ -442,7 +442,7 @@ namespace Particle
      * \param[in] particlestatestotypes particle types and corresponding particle states
      */
     void setup_particle_container_bundle(
-        const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes) const;
+        const std::map<Particle::Type, std::set<Particle::State>>& particlestatestotypes) const;
 
     /*!
      * \brief setup data storage
@@ -451,7 +451,7 @@ namespace Particle
      * \param[in] particlestatestotypes particle types and corresponding particle states
      */
     void setup_data_storage(
-        const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes);
+        const std::map<Particle::Type, std::set<Particle::State>>& particlestatestotypes);
 
     /*!
      * \brief init particle runtime vtp writer
@@ -605,7 +605,7 @@ namespace Particle
      * \param[in]  states      particle states to send
      * \param[out] sdata       send buffers indexed by target processor rank
      */
-    void pack_states_and_append_to_send_buffers(ParticleType type,
+    void pack_states_and_append_to_send_buffers(Particle::Type type,
         const std::vector<std::pair<int, int>>& targets, const ParticleStates& states,
         std::map<int, std::vector<char>>& sdata) const;
 
@@ -644,7 +644,7 @@ namespace Particle
      * \param[in] directghosting direct ghosting information
      */
     void communicate_direct_ghosting_map(
-        const std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>&
+        const std::map<int, std::map<Particle::Type, std::map<int, std::pair<int, int>>>>&
             directghosting);
 
     /*!
@@ -665,7 +665,8 @@ namespace Particle
      */
     void insert_ghosted_particles(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert,
-        std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>& directghosting);
+        std::map<int, std::map<Particle::Type, std::map<int, std::pair<int, int>>>>&
+            directghosting);
 
     /*!
      * \brief remove particles from containers

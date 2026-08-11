@@ -20,7 +20,7 @@ Particle::ParticleContainerBundle::ParticleContainerBundle()
 }
 
 void Particle::ParticleContainerBundle::setup(
-    const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes)
+    const std::map<Particle::Type, std::set<Particle::State>>& particlestatestotypes)
 {
   std::shared_ptr<ParticleContainer> container;
 
@@ -34,7 +34,7 @@ void Particle::ParticleContainerBundle::setup(
   for (const auto& typeIt : particlestatestotypes)
   {
     // get particle type
-    ParticleType type = typeIt.first;
+    Particle::Type type = typeIt.first;
 
     // insert particle type into set of stored containers
     storedtypes_.insert(type);
@@ -43,7 +43,7 @@ void Particle::ParticleContainerBundle::setup(
     (containers_[static_cast<int>(type)]).resize(2);
 
     // set of particle state enums of current particle type (equal for owned and ghosted particles)
-    const std::set<ParticleState>& stateset = typeIt.second;
+    const std::set<Particle::State>& stateset = typeIt.second;
 
     // initial size of particle container
     int initialsize = 1;

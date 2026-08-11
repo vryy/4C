@@ -168,7 +168,7 @@ void Particle::ParticleInteractionSPH::setup(
 void Particle::ParticleInteractionSPH::check_open_boundaries() const
 {
   // types of particles to check
-  const std::unordered_map<Particle::ParticleType, std::string> types_to_check{
+  const std::unordered_map<Particle::Type, std::string> types_to_check{
       {{Particle::Type::DirichletPhase, "Dirichlet"}, {Particle::Type::NeumannPhase, "Neumann"}}};
 
   // get all available boundary ids

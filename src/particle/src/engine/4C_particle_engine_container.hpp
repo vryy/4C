@@ -44,7 +44,7 @@ namespace Particle
      * \param[in] containersize size of particle container
      * \param[in] stateset      set of particle states to be stored
      */
-    void setup(int containersize, const std::set<ParticleState>& stateset);
+    void setup(int containersize, const std::set<Particle::State>& stateset);
 
     //! \name manipulate container size
     //! @{
@@ -155,7 +155,7 @@ namespace Particle
      *
      * \return dimension of particle state
      */
-    inline int get_state_dim(ParticleState state)
+    inline int get_state_dim(Particle::State state)
     {
       FOUR_C_ASSERT(storedstates_.contains(state), "particle state '{}' not stored in container!",
           enum_to_state_name(state));
@@ -181,7 +181,7 @@ namespace Particle
      *
      * \return pointer with read-only access to particle state
      */
-    const double* get_ptr_to_state(ParticleState state, int index) const;
+    const double* get_ptr_to_state(Particle::State state, int index) const;
 
     /*!
      * \brief conditionally get read-only pointer to state of a particle at index
@@ -199,7 +199,7 @@ namespace Particle
      *
      * \return pointer with read-only access to particle state or nullptr
      */
-    inline const double* try_get_ptr_to_state(ParticleState state, int index) const
+    inline const double* try_get_ptr_to_state(Particle::State state, int index) const
     {
       FOUR_C_ASSERT(index >= 0 and index < particlestored_,
           "can not return pointer to state of particle as index {} out of bounds!", index);
@@ -224,7 +224,7 @@ namespace Particle
      *
      * \return pointer with writable access to particle state
      */
-    double* get_ptr_to_state_writable(ParticleState state, int index);
+    double* get_ptr_to_state_writable(Particle::State state, int index);
 
     /*!
      * \brief conditionally get writable pointer to state of a particle at index
@@ -242,7 +242,7 @@ namespace Particle
      *
      * \return pointer with writable access to particle state or nullptr
      */
-    inline double* try_get_ptr_to_state_writable(ParticleState state, int index)
+    inline double* try_get_ptr_to_state_writable(Particle::State state, int index)
     {
       FOUR_C_ASSERT(index >= 0 and index < particlestored_,
           "can not return pointer to state of particle as index {} out of bounds!", index);
@@ -280,7 +280,7 @@ namespace Particle
      * \param[in] fac   scale factor
      * \param[in] state particle state
      */
-    inline void scale_state(double fac, ParticleState state)
+    inline void scale_state(double fac, Particle::State state)
     {
       FOUR_C_ASSERT(storedstates_.contains(state), "particle state '{}' not stored in container!",
           enum_to_state_name(state));
@@ -302,7 +302,8 @@ namespace Particle
      * \param[in] facB   second scale factor
      * \param[in] stateB second particle state
      */
-    inline void update_state(double facA, ParticleState stateA, double facB, ParticleState stateB)
+    inline void update_state(
+        double facA, Particle::State stateA, double facB, Particle::State stateB)
     {
       FOUR_C_ASSERT(stateA != stateB,
           "adding scaled particle state '{}' to itself is not allowed. Use "
@@ -334,7 +335,7 @@ namespace Particle
      * \param[in] val   particle state
      * \param[in] state particle state
      */
-    inline void set_state(std::vector<double> val, ParticleState state)
+    inline void set_state(std::vector<double> val, Particle::State state)
     {
       FOUR_C_ASSERT(storedstates_.contains(state), "particle state '{}' not stored in container!",
           enum_to_state_name(state));
@@ -357,7 +358,7 @@ namespace Particle
      *
      * \param[in] state particle state
      */
-    inline void clear_state(ParticleState state)
+    inline void clear_state(Particle::State state)
     {
       FOUR_C_ASSERT(storedstates_.contains(state), "particle state '{}' not stored in container!",
           enum_to_state_name(state));
@@ -378,7 +379,7 @@ namespace Particle
      *
      * \return stored particle states
      */
-    inline const std::set<ParticleState>& get_stored_states() const { return storedstates_; };
+    inline const std::set<Particle::State>& get_stored_states() const { return storedstates_; };
 
     /*!
      * \brief get flag indicating stored state
@@ -390,7 +391,7 @@ namespace Particle
      *
      * \return flag indicating stored state
      */
-    inline bool have_stored_state(ParticleState state) const
+    inline bool have_stored_state(Particle::State state) const
     {
       return storedstates_.contains(state);
     };
@@ -419,7 +420,7 @@ namespace Particle
      *
      * \return minimum stored value of state in container
      */
-    double get_min_value_of_state(ParticleState state) const;
+    double get_min_value_of_state(Particle::State state) const;
 
     /*!
      * \brief get maximum stored value of state in container
@@ -429,7 +430,7 @@ namespace Particle
      *
      * \return maximum stored value of state in container
      */
-    double get_max_value_of_state(ParticleState state) const;
+    double get_max_value_of_state(Particle::State state) const;
 
    private:
     //! size of particles container
@@ -439,7 +440,7 @@ namespace Particle
     int particlestored_;
 
     //! set of stored particle states
-    std::set<ParticleState> storedstates_;
+    std::set<Particle::State> storedstates_;
 
     //! size of vector for states
     int statesvectorsize_;

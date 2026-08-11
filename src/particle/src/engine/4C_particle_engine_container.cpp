@@ -20,7 +20,8 @@ Particle::ParticleContainer::ParticleContainer()
   // empty constructor
 }
 
-void Particle::ParticleContainer::setup(int containersize, const std::set<ParticleState>& stateset)
+void Particle::ParticleContainer::setup(
+    int containersize, const std::set<Particle::State>& stateset)
 {
   // set size of particle container (at least one)
   containersize_ = (containersize > 0) ? containersize : 1;
@@ -237,7 +238,7 @@ void Particle::ParticleContainer::remove_particle(int index)
   --particlestored_;
 }
 
-const double* Particle::ParticleContainer::get_ptr_to_state(ParticleState state, int index) const
+const double* Particle::ParticleContainer::get_ptr_to_state(Particle::State state, int index) const
 {
   FOUR_C_ASSERT(storedstates_.contains(state), "particle state '{}' not stored in container!",
       enum_to_state_name(state));
@@ -250,13 +251,13 @@ const double* Particle::ParticleContainer::get_ptr_to_state(ParticleState state,
   return &((states_[state_idx])[index * statedim_[state_idx]]);
 };
 
-double* Particle::ParticleContainer::get_ptr_to_state_writable(ParticleState state, int index)
+double* Particle::ParticleContainer::get_ptr_to_state_writable(Particle::State state, int index)
 {
   return const_cast<double*>(
       const_cast<const ParticleContainer&>(*this).get_ptr_to_state(state, index));
 };
 
-double Particle::ParticleContainer::get_min_value_of_state(ParticleState state) const
+double Particle::ParticleContainer::get_min_value_of_state(Particle::State state) const
 {
   FOUR_C_ASSERT(storedstates_.contains(state), "particle state '{}' not stored in container!",
       enum_to_state_name(state));
@@ -272,7 +273,7 @@ double Particle::ParticleContainer::get_min_value_of_state(ParticleState state) 
   return min;
 }
 
-double Particle::ParticleContainer::get_max_value_of_state(ParticleState state) const
+double Particle::ParticleContainer::get_max_value_of_state(Particle::State state) const
 {
   FOUR_C_ASSERT(storedstates_.contains(state), "particle state '{}' not stored in container!",
       enum_to_state_name(state));

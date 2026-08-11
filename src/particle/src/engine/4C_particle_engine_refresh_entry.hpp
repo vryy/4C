@@ -44,7 +44,7 @@ namespace Particle
   struct ParticleRefreshEntry
   {
     //! particle type
-    ParticleType type;
+    Particle::Type type;
 
     //! local index of the particle in the container of ghosted particles on the target processor
     int ghostedindex;
@@ -65,7 +65,7 @@ namespace Particle
      * \param[in]  prepacked_states pre-packed particle states
      * \param[out] sendbuffer       send buffer of the target processor to append to
      */
-    static void pack(ParticleType type, int ghostedindex,
+    static void pack(Particle::Type type, int ghostedindex,
         const Core::Communication::PackBuffer& prepacked_states, std::vector<char>& sendbuffer);
 
     /*!

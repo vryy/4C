@@ -63,7 +63,7 @@ void Particle::read_particles(Core::IO::InputFile& input, const std::string& sec
         std::vector<double> state;
 
         // optional particle parameters
-        const std::unordered_map<std::string, Particle::ParticleState> additional_states = {
+        const std::unordered_map<std::string, Particle::State> additional_states = {
             {"RAD", Particle::State::Radius}, {"RIGIDCOLOR", Particle::State::RigidBodyColor},
             {"PDBODYID", Particle::State::PDBodyId},
             {"DIRICHLET_FUNCT", Particle::State::DirichletFunctionId},

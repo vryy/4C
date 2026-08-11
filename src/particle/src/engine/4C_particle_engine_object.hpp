@@ -93,7 +93,7 @@ namespace Particle
      * \param[in] index    index of particle in container
      *                     optional: set to -1 if omnitted
      */
-    ParticleObject(ParticleType type, int globalid, const ParticleStates& states, int bingid = -1,
+    ParticleObject(Particle::Type type, int globalid, const ParticleStates& states, int bingid = -1,
         int index = -1);
 
     int unique_par_object_id() const override
@@ -127,7 +127,7 @@ namespace Particle
      *
      * \return particle type
      */
-    inline ParticleType return_particle_type() const { return type_; };
+    inline Particle::Type return_particle_type() const { return type_; };
 
     /*!
      * \brief get global id of particle
@@ -165,7 +165,7 @@ namespace Particle
 
    private:
     //! particle type
-    ParticleType type_;
+    Particle::Type type_;
 
     //! global id of particle
     int globalid_;

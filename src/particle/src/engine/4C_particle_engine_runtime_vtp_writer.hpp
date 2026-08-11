@@ -110,7 +110,7 @@ namespace Particle
      *       about defining all particle states for the output via a list in the input file.
      *
      */
-    std::set<ParticleState> blackliststates_;
+    std::set<Particle::State> blackliststates_;
   };
 
 }  // namespace Particle

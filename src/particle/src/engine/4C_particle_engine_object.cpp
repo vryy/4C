@@ -25,13 +25,13 @@ Core::Communication::ParObject* Particle::ParticleObjectType::create(
 }
 
 Particle::ParticleObject::ParticleObject()
-    : type_(ParticleType::Phase1), globalid_(0), bingid_(-1), index_(-1)
+    : type_(Particle::Type::Phase1), globalid_(0), bingid_(-1), index_(-1)
 {
   // empty constructor
 }
 
 Particle::ParticleObject::ParticleObject(
-    ParticleType type, int globalid, const ParticleStates& states, int bingid, int index)
+    Particle::Type type, int globalid, const ParticleStates& states, int bingid, int index)
     : type_(type), globalid_(globalid), states_(states), bingid_(bingid), index_(index)
 {
   // empty constructor

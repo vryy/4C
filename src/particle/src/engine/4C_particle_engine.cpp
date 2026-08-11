@@ -60,7 +60,7 @@ Particle::ParticleEngine::ParticleEngine(MPI_Comm comm, const Teuchos::Parameter
 Particle::ParticleEngine::~ParticleEngine() = default;
 
 void Particle::ParticleEngine::setup(
-    const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes)
+    const std::map<Particle::Type, std::set<Particle::State>>& particlestatestotypes)
 {
   // setup binning strategy
   setup_binning_strategy();
@@ -201,7 +201,7 @@ void Particle::ParticleEngine::erase_particles_outside_bounding_box(
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // get type of particles
-    ParticleType type = particlestocheck[i]->return_particle_type();
+    Particle::Type type = particlestocheck[i]->return_particle_type();
 
     // get container of owned particles of current particle type
     ParticleContainer* container =
@@ -334,7 +334,7 @@ void Particle::ParticleEngine::ghost_particles()
   std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(
       Core::Communication::num_mpi_ranks(comm_));
   std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
-  std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>> directghosting;
+  std::map<int, std::map<Particle::Type, std::map<int, std::pair<int, int>>>> directghosting;
 
   // clear all containers of ghosted particles
   particlecontainerbundle_->clear_all_containers_of_specific_status(Status::Ghosted);
@@ -496,7 +496,7 @@ void Particle::ParticleEngine::build_particle_to_particle_neighbors()
     for (const auto& particleIt : particlestobins_[collidofbin])
     {
       // get type of particle
-      ParticleType type = particleIt.first;
+      Particle::Type type = particleIt.first;
 
       // get local index of owned particle
       const int ownedindex = particleIt.second;
@@ -521,14 +521,14 @@ void Particle::ParticleEngine::build_particle_to_particle_neighbors()
         if (particlestobins_[collidofneighboringbin].empty()) continue;
 
         // get status of neighboring particles
-        ParticleStatus neighborstatus =
+        Particle::Status neighborstatus =
             (binning_->binrowmap_->lid(gidofneighborbin) < 0) ? Status::Ghosted : Status::Owned;
 
         // iterate over particles in current neighboring bin
         for (const auto& neighborParticleIt : particlestobins_[collidofneighboringbin])
         {
           // get type of neighboring particle
-          ParticleType neighbortype = neighborParticleIt.first;
+          Particle::Type neighbortype = neighborParticleIt.first;
 
           // get local index of neighboring particle
           const int neighborindex = neighborParticleIt.second;
@@ -764,14 +764,14 @@ void Particle::ParticleEngine::get_particles_within_radius(const double* positio
     if (particlestobins_[collidofneighboringbin].empty()) continue;
 
     // get status of neighboring particles
-    ParticleStatus neighborstatus =
+    Particle::Status neighborstatus =
         (binning_->binrowmap_->lid(gidofneighborbin) < 0) ? Status::Ghosted : Status::Owned;
 
     // iterate over particles in current neighboring bin
     for (const auto& neighborParticleIt : particlestobins_[collidofneighboringbin])
     {
       // get type of neighboring particle
-      ParticleType neighbortype = neighborParticleIt.first;
+      Particle::Type neighbortype = neighborParticleIt.first;
 
       // get local index of neighboring particle
       const int neighborindex = neighborParticleIt.second;
@@ -882,7 +882,7 @@ int Particle::ParticleEngine::get_number_of_particles() const
 }
 
 int Particle::ParticleEngine::get_number_of_particles_of_specific_type(
-    const ParticleType type) const
+    const Particle::Type type) const
 {
   if (not particlecontainerbundle_->get_particle_types().contains(type)) return 0;
 
@@ -1011,14 +1011,14 @@ void Particle::ParticleEngine::setup_bin_ghosting()
 }
 
 void Particle::ParticleEngine::setup_particle_container_bundle(
-    const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes) const
+    const std::map<Particle::Type, std::set<Particle::State>>& particlestatestotypes) const
 {
   // setup particle container bundle
   particlecontainerbundle_->setup(particlestatestotypes);
 }
 
 void Particle::ParticleEngine::setup_data_storage(
-    const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes)
+    const std::map<Particle::Type, std::set<Particle::State>>& particlestatestotypes)
 {
   // determine size of vectors indexed by particle types
   typevectorsize_ = static_cast<int>((--particlestatestotypes.end())->first) + 1;
@@ -1053,7 +1053,7 @@ void Particle::ParticleEngine::setup_type_weights()
   typeweights_.resize(typevectorsize_);
 
   // init map relating particle types to dynamic load balance factor
-  std::map<ParticleType, double> typetodynloadbal;
+  std::map<Particle::Type, double> typetodynloadbal;
 
   // read parameters relating particle types to values
   ParticleUtils::read_params_types_related_to_values(
@@ -1279,7 +1279,7 @@ void Particle::ParticleEngine::check_particles_at_boundaries(
     for (const auto& particleIt : particlestobins_[collidofbin])
     {
       // get type of particle
-      ParticleType type = particleIt.first;
+      Particle::Type type = particleIt.first;
 
       // get local index of owned particle
       const int ownedindex = particleIt.second;
@@ -1373,7 +1373,7 @@ void Particle::ParticleEngine::determine_particles_to_be_distributed(
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // get type of particles
-    ParticleType type = particlestodistribute[i]->return_particle_type();
+    Particle::Type type = particlestodistribute[i]->return_particle_type();
 
     // get container of owned particles of current particle type
     ParticleContainer* container =
@@ -1418,7 +1418,7 @@ void Particle::ParticleEngine::determine_particles_to_be_distributed(
   for (int i = 0; i < numparticles; ++i)
   {
     // get type of particle
-    ParticleType type = particlestodistribute[i]->return_particle_type();
+    Particle::Type type = particlestodistribute[i]->return_particle_type();
 
     // get owner of particle
     int ownerofparticle = pidlist[i];
@@ -1486,7 +1486,7 @@ void Particle::ParticleEngine::determine_particles_to_be_transferred(
     for (const auto& particleIt : particlestobins_[collidofbin])
     {
       // get type of particle
-      ParticleType type = particleIt.first;
+      Particle::Type type = particleIt.first;
 
       // get local index of owned particle
       const int ownedindex = particleIt.second;
@@ -1561,7 +1561,7 @@ void Particle::ParticleEngine::determine_particles_to_be_ghosted(
     for (const auto& particleIt : particlestobins_[collidofbin])
     {
       // get type of particle
-      ParticleType type = particleIt.first;
+      Particle::Type type = particleIt.first;
 
       // get local index of owned particle
       const int ownedindex = particleIt.second;
@@ -1619,7 +1619,7 @@ std::map<int, std::vector<char>> Particle::ParticleEngine::pack_particles_to_be_
   return sdata;
 }
 
-void Particle::ParticleEngine::pack_states_and_append_to_send_buffers(ParticleType type,
+void Particle::ParticleEngine::pack_states_and_append_to_send_buffers(Particle::Type type,
     const std::vector<std::pair<int, int>>& targets, const ParticleStates& states,
     std::map<int, std::vector<char>>& sdata) const
 {
@@ -1645,7 +1645,7 @@ Particle::ParticleEngine::pack_specific_states_of_particles_to_be_refreshed(
   for (const auto& typeIt : particlestatestotypes)
   {
     // get type of particles
-    ParticleType type = typeIt.first;
+    Particle::Type type = typeIt.first;
 
     // check for particles of current type to be sent
     if (directghostingtargets_[static_cast<int>(type)].empty()) continue;
@@ -1758,7 +1758,8 @@ void Particle::ParticleEngine::communicate_refreshed_particles(
 }
 
 void Particle::ParticleEngine::communicate_direct_ghosting_map(
-    const std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>& directghosting)
+    const std::map<int, std::map<Particle::Type, std::map<int, std::pair<int, int>>>>&
+        directghosting)
 {
   // iterate over particle types
   for (const auto& type : particlecontainerbundle_->get_particle_types())
@@ -1788,7 +1789,7 @@ void Particle::ParticleEngine::communicate_direct_ghosting_map(
       ParticleUtils::immediate_recv_blocking_send(comm_, sdata);
 
   // init receiving map
-  std::map<ParticleType, std::map<int, std::pair<int, int>>> receiveddirectghosting;
+  std::map<Particle::Type, std::map<int, std::pair<int, int>>> receiveddirectghosting;
 
   // unpack and store received data
   for (const auto& [msgsource, rmsg] : rdata)
@@ -1804,7 +1805,7 @@ void Particle::ParticleEngine::communicate_direct_ghosting_map(
       for (const auto& typeIt : receiveddirectghosting)
       {
         // get type of particles
-        ParticleType type = typeIt.first;
+        Particle::Type type = typeIt.first;
 
         // iterate over this processors local indices of owned particles
         for (const auto& indexIt : typeIt.second)
@@ -1867,7 +1868,7 @@ void Particle::ParticleEngine::insert_owned_particles(
         const std::vector<double>& pos = states[static_cast<int>(State::Position)];
 
         // get type of particles
-        ParticleType type = particleobject->return_particle_type();
+        Particle::Type type = particleobject->return_particle_type();
 
         // get container of owned particles of current particle type
         ParticleContainer* container =
@@ -1901,7 +1902,7 @@ void Particle::ParticleEngine::insert_owned_particles(
 
 void Particle::ParticleEngine::insert_ghosted_particles(
     std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert,
-    std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>& directghosting)
+    std::map<int, std::map<Particle::Type, std::map<int, std::pair<int, int>>>>& directghosting)
 {
   // iterate over particle types
   for (const auto& type : particlecontainerbundle_->get_particle_types())

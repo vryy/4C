@@ -243,7 +243,7 @@ namespace Particle
      *
      * \return number of particles on this processors
      */
-    virtual int get_number_of_particles_of_specific_type(const ParticleType type) const = 0;
+    virtual int get_number_of_particles_of_specific_type(const Particle::Type type) const = 0;
   };
 
 }  // namespace Particle

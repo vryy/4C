@@ -747,13 +747,13 @@ double Particle::ParticleAlgorithm::get_max_particle_position_increment()
   // Struct to collect additional debug information to throw a more informative error message
   struct DebugOutput
   {
-    std::map<ParticleType, std::size_t>
+    std::map<Particle::Type, std::size_t>
         violating_particles_per_type;  //! Map of particle type to number of particles violating the
                                        //! condition (maxpositionincrement < minimum_bin_size)
     int lid_of_max_position_increment;  //! local id of the particle with the maximum position
                                         //! increment
-    ParticleType particle_type_of_max_position_increment;  //! the particle type of the particle
-                                                           //! with the maximum position increment
+    Particle::Type particle_type_of_max_position_increment;  //! the particle type of the particle
+                                                             //! with the maximum position increment
   };
 
   const double minimum_bin_size = particleengine_->min_bin_size();

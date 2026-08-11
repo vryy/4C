@@ -95,7 +95,7 @@ namespace
 
       for (std::size_t j = 0; j < state_reference.size(); ++j)
         EXPECT_NEAR(state_reference[j], state[j], 1e-14)
-            << "state '" << Particle::enum_to_state_name(static_cast<Particle::ParticleState>(i))
+            << "state '" << Particle::enum_to_state_name(static_cast<Particle::State>(i))
             << "' j = " << j;
     }
   }
