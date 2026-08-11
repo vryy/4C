@@ -171,11 +171,13 @@ void Particle::DEMAdhesion::evaluate_particle_adhesion()
     // get pointer to particle states
     const double* vel_i = container_i->get_ptr_to_state(Particle::Velocity, particle_i);
     const double* rad_i = container_i->get_ptr_to_state(Particle::Radius, particle_i);
-    double* force_i = container_i->get_ptr_to_state(Particle::Force, particle_i);
+    double* force_i = container_i->get_ptr_to_state_writable(Particle::Force, particle_i);
 
     const double* vel_j = container_j->get_ptr_to_state(Particle::Velocity, particle_j);
     const double* rad_j = container_j->get_ptr_to_state(Particle::Radius, particle_j);
-    double* force_j = container_j->get_ptr_to_state(Particle::Force, particle_j);
+    double* force_j = nullptr;
+    if (status_j == Particle::Owned)
+      force_j = container_j->get_ptr_to_state_writable(Particle::Force, particle_j);
 
     // relative velocity in contact point c between particle i and j (neglecting angular velocity)
     double vel_rel[3];
@@ -227,7 +229,7 @@ void Particle::DEMAdhesion::evaluate_particle_adhesion()
 
     // add adhesion force contribution
     ParticleUtils::vec_add_scale(force_i, adhesionhistory_ij.adhesion_force_, particlepair.e_ji_);
-    if (status_j == Particle::Owned)
+    if (force_j)
       ParticleUtils::vec_add_scale(
           force_j, -adhesionhistory_ij.adhesion_force_, particlepair.e_ji_);
   }
@@ -291,7 +293,7 @@ void Particle::DEMAdhesion::evaluate_particle_wall_adhesion()
     const double* vel_i = container_i->get_ptr_to_state(Particle::Velocity, particle_i);
     const double* rad_i = container_i->get_ptr_to_state(Particle::Radius, particle_i);
     const double* mass_i = container_i->get_ptr_to_state(Particle::Mass, particle_i);
-    double* force_i = container_i->get_ptr_to_state(Particle::Force, particle_i);
+    double* force_i = container_i->get_ptr_to_state_writable(Particle::Force, particle_i);
 
     // get pointer to column wall element
     Core::Elements::Element* ele = particlewallpair.ele_;

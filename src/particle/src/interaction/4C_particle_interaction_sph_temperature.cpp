@@ -247,7 +247,8 @@ void Particle::SPHTemperature::energy_equation() const
                                : &(basematerial_i->initDensity_);
 
     const double* temp_i = container_i->get_ptr_to_state(Particle::Temperature, particle_i);
-    double* tempdot_i = container_i->cond_get_ptr_to_state(Particle::TemperatureDot, particle_i);
+    double* tempdot_i =
+        container_i->try_get_ptr_to_state_writable(Particle::TemperatureDot, particle_i);
 
     const double* mass_j = container_j->get_ptr_to_state(Particle::Mass, particle_j);
 
@@ -256,7 +257,9 @@ void Particle::SPHTemperature::energy_equation() const
                                : &(basematerial_j->initDensity_);
 
     const double* temp_j = container_j->get_ptr_to_state(Particle::Temperature, particle_j);
-    double* tempdot_j = container_j->cond_get_ptr_to_state(Particle::TemperatureDot, particle_j);
+    double* tempdot_j = nullptr;
+    if (status_j == Particle::Owned)
+      tempdot_j = container_j->try_get_ptr_to_state_writable(Particle::TemperatureDot, particle_j);
 
     // thermal conductivities
     const double& k_i = thermomaterial_i->thermalConductivity_;
@@ -272,7 +275,7 @@ void Particle::SPHTemperature::energy_equation() const
           mass_j[0] * fac * particlepair.dWdrij_ * thermomaterial_i->invThermalCapacity_;
 
     // sum contribution of neighboring particle i
-    if (tempdot_j and status_j == Particle::Owned)
+    if (tempdot_j)
       tempdot_j[0] -=
           mass_i[0] * fac * particlepair.dWdrji_ * thermomaterial_j->invThermalCapacity_;
   }
@@ -329,7 +332,7 @@ void Particle::SPHTemperature::temperature_gradient() const
 
     const double* temp_i = container_i->get_ptr_to_state(Particle::Temperature, particle_i);
     double* tempgrad_i =
-        container_i->cond_get_ptr_to_state(Particle::temperature_gradient, particle_i);
+        container_i->try_get_ptr_to_state_writable(Particle::temperature_gradient, particle_i);
 
     const double* mass_j = container_j->get_ptr_to_state(Particle::Mass, particle_j);
 
@@ -338,8 +341,10 @@ void Particle::SPHTemperature::temperature_gradient() const
                                : &(basematerial_j->initDensity_);
 
     const double* temp_j = container_j->get_ptr_to_state(Particle::Temperature, particle_j);
-    double* tempgrad_j =
-        container_j->cond_get_ptr_to_state(Particle::temperature_gradient, particle_j);
+    double* tempgrad_j = nullptr;
+    if (status_j == Particle::Owned)
+      tempgrad_j =
+          container_j->try_get_ptr_to_state_writable(Particle::temperature_gradient, particle_j);
 
     const double temp_ji = temp_j[0] - temp_i[0];
 
@@ -349,7 +354,7 @@ void Particle::SPHTemperature::temperature_gradient() const
           tempgrad_i, (mass_j[0] / dens_j[0]) * temp_ji * particlepair.dWdrij_, particlepair.e_ij_);
 
     // sum contribution of neighboring particle i
-    if (tempgrad_j and status_j == Particle::Owned)
+    if (tempgrad_j)
       ParticleUtils::vec_add_scale(
           tempgrad_j, (mass_i[0] / dens_i[0]) * temp_ji * particlepair.dWdrji_, particlepair.e_ij_);
   }

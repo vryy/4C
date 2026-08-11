@@ -297,10 +297,19 @@ namespace
 
       const double* currmass = container_->get_ptr_to_state(Particle::Mass, index);
       EXPECT_NEAR(currmass[0], mass[0], 1e-14);
+
+      {
+        double* newmass = container_->get_ptr_to_state_writable(Particle::Mass, index);
+        newmass[0] = newmass[0] * 3.14;
+      }
+      {
+        const double* currmass = container_->get_ptr_to_state(Particle::Mass, index);
+        EXPECT_NEAR(currmass[0], mass[0] * 3.14, 1e-14);
+      }
     }
   }
 
-  TEST_F(ParticleContainerTest, CondGetPtrToState)
+  TEST_F(ParticleContainerTest, TryGetPtrToState)
   {
     std::array<double, 3> pos = {0.0};
     std::array<double, 3> vel = {0.0};
@@ -339,21 +348,33 @@ namespace
         mass[0] = 0.5;
       }
 
-      double* currpos = container_->cond_get_ptr_to_state(Particle::Position, index);
+      const double* currpos = container_->try_get_ptr_to_state(Particle::Position, index);
       FOUR_C_EXPECT_ITERABLE_NEAR(currpos, pos.begin(), 3, 1.0e-14);
 
-      double* currvel = container_->cond_get_ptr_to_state(Particle::Velocity, index);
+      const double* currvel = container_->try_get_ptr_to_state(Particle::Velocity, index);
       FOUR_C_EXPECT_ITERABLE_NEAR(currvel, vel.begin(), 3, 1.0e-14);
 
-      double* currmass = container_->cond_get_ptr_to_state(Particle::Mass, index);
+      const double* currmass = container_->try_get_ptr_to_state(Particle::Mass, index);
       EXPECT_NEAR(currmass[0], mass[0], 1e-14);
+
+      {
+        double* newmass = container_->try_get_ptr_to_state_writable(Particle::Mass, index);
+        newmass[0] = newmass[0] * 3.14;
+      }
+      {
+        const double* currmass = container_->try_get_ptr_to_state(Particle::Mass, index);
+        EXPECT_NEAR(currmass[0], mass[0] * 3.14, 1e-14);
+      }
     }
   }
 
-  TEST_F(ParticleContainerTest, CondGetPtrToStateNotStored)
+  TEST_F(ParticleContainerTest, TryGetPtrToStateNotStored)
   {
-    double* currpos = container_->cond_get_ptr_to_state(Particle::Acceleration, 0);
-    EXPECT_EQ(currpos, nullptr);
+    const double* acc = container_->try_get_ptr_to_state(Particle::Acceleration, 0);
+    EXPECT_EQ(acc, nullptr);
+
+    double* angacc = container_->try_get_ptr_to_state_writable(Particle::AngularAcceleration, 0);
+    EXPECT_EQ(angacc, nullptr);
   }
 
   TEST_F(ParticleContainerTest, GetPtrToGlobalID)
