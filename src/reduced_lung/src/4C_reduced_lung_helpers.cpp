@@ -281,7 +281,7 @@ namespace ReducedLung
       // read_vtu_file() already asserts that the mesh has points and non-empty cell blocks.
       for (const auto& coordinate : lung_mesh.mesh.points()) node_coordinates.push_back(coordinate);
 
-      // Element ids are handed out consecutively across all cell blocks in ascending block id
+      // Element ids are handed out consecutively across all cell blocks in mesh.cell_blocks()
       // order. This matches the numbering that Core::IO::MeshInput::read_value_from_cell_data()
       // uses, so that cell data of the mesh can be indexed by the global element id.
       for (const auto& cell_block : lung_mesh.mesh.cell_blocks())
@@ -291,11 +291,12 @@ namespace ReducedLung
           FOUR_C_THROW(
               "The reduced lung tree only supports line2 cells, but cell block {} of mesh file "
               "'{}' has cell type '{}'.",
-              cell_block.id(), geometry.file.string(),
+              cell_block.label(), geometry.file.string(),
               Core::FE::cell_type_to_string(cell_block.cell_type()));
         }
 
-        lung_mesh.blocks.ids.push_back(static_cast<int>(cell_block.id()));
+        // group_id is already unique among accepted cell blocks with cell_type==line2.
+        lung_mesh.blocks.ids.push_back(static_cast<int>(cell_block.group_id()));
         lung_mesh.blocks.sizes.push_back(static_cast<int>(cell_block.size()));
 
         for (const auto& cell : cell_block.cells())
