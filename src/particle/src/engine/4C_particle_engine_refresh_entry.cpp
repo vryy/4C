@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-void Particle::ParticleRefreshEntry::pack(ParticleType type, int ghostedindex,
+void Particle::ParticleRefreshEntry::pack(Particle::Type type, int ghostedindex,
     const Core::Communication::PackBuffer& prepacked_states, std::vector<char>& sendbuffer)
 {
   // pack type and ghosted index header
@@ -33,9 +33,10 @@ Particle::ParticleRefreshEntry Particle::ParticleRefreshEntry::unpack(
   ParticleRefreshEntry entry;
 
   // unpack particle type
-  int type_int;
-  extract_from_pack(buffer, type_int);
-  entry.type = static_cast<ParticleType>(type_int);
+  int type_idx;
+
+  extract_from_pack(buffer, type_idx);
+  entry.type = static_cast<Particle::Type>(type_idx);
 
   // unpack ghosted index
   extract_from_pack(buffer, entry.ghostedindex);

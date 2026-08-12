@@ -52,7 +52,7 @@ namespace Particle
      *
      * \param[in] particlestatestotypes particle types and corresponding states
      */
-    void setup(const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes);
+    void setup(const std::map<Particle::Type, std::set<Particle::State>>& particlestatestotypes);
 
     /*!
      * \brief get particle types of stored containers
@@ -60,7 +60,7 @@ namespace Particle
      *
      * \return reference to particle types of stored containers
      */
-    inline const std::set<ParticleType>& get_particle_types() const { return storedtypes_; };
+    inline const std::set<Particle::Type>& get_particle_types() const { return storedtypes_; };
 
     /*!
      * \brief get specific particle container
@@ -71,12 +71,13 @@ namespace Particle
      *
      * @return pointer to particle container
      */
-    inline ParticleContainer* get_specific_container(ParticleType type, ParticleStatus status) const
+    inline ParticleContainer* get_specific_container(
+        Particle::Type type, Particle::Status status) const
     {
       FOUR_C_ASSERT(storedtypes_.contains(type), "container for particle type '{}' not stored!",
           enum_to_type_name(type));
 
-      return (containers_[type])[status].get();
+      return (containers_[static_cast<int>(type)])[static_cast<int>(status)].get();
     };
 
     //! \name manipulate particle states of owned particles of specific type
@@ -91,12 +92,13 @@ namespace Particle
      * \param[in] type  particle type
      */
     inline void scale_state_specific_container(
-        double fac, ParticleState state, ParticleType type) const
+        double fac, Particle::State state, Particle::Type type) const
     {
       FOUR_C_ASSERT(storedtypes_.contains(type), "container for particle type '{}' not stored!",
           enum_to_type_name(type));
 
-      ((containers_[type])[Owned])->scale_state(fac, state);
+      ((containers_[static_cast<int>(type)])[static_cast<int>(Status::Owned)])
+          ->scale_state(fac, state);
     };
 
     /*!
@@ -110,13 +112,14 @@ namespace Particle
      * \param[in] stateB second particle state
      * \param[in] type   particle type
      */
-    inline void update_state_specific_container(double facA, ParticleState stateA, double facB,
-        ParticleState stateB, ParticleType type) const
+    inline void update_state_specific_container(double facA, Particle::State stateA, double facB,
+        Particle::State stateB, Particle::Type type) const
     {
       FOUR_C_ASSERT(storedtypes_.contains(type), "container for particle type '{}' not stored!",
           enum_to_type_name(type));
 
-      ((containers_[type])[Owned])->update_state(facA, stateA, facB, stateB);
+      ((containers_[static_cast<int>(type)])[static_cast<int>(Status::Owned)])
+          ->update_state(facA, stateA, facB, stateB);
     };
 
     /*!
@@ -128,12 +131,13 @@ namespace Particle
      * \param[in] type  particle type
      */
     inline void set_state_specific_container(
-        std::vector<double> val, ParticleState state, ParticleType type) const
+        std::vector<double> val, Particle::State state, Particle::Type type) const
     {
       FOUR_C_ASSERT(storedtypes_.contains(type), "container for particle type '{}' not stored!",
           enum_to_type_name(type));
 
-      ((containers_[type])[Owned])->set_state(val, state);
+      ((containers_[static_cast<int>(type)])[static_cast<int>(Status::Owned)])
+          ->set_state(val, state);
     };
 
     /*!
@@ -143,12 +147,12 @@ namespace Particle
      * \param[in] state particle state
      * \param[in] type  particle type
      */
-    inline void clear_state_specific_container(ParticleState state, ParticleType type) const
+    inline void clear_state_specific_container(Particle::State state, Particle::Type type) const
     {
       FOUR_C_ASSERT(storedtypes_.contains(type), "container for particle type '{}' not stored!",
           enum_to_type_name(type));
 
-      ((containers_[type])[Owned])->clear_state(state);
+      ((containers_[static_cast<int>(type)])[static_cast<int>(Status::Owned)])->clear_state(state);
     };
 
     //! @}
@@ -163,9 +167,11 @@ namespace Particle
      * \param[in] fac   scale factor
      * \param[in] state particle state
      */
-    inline void scale_state_all_containers(double fac, ParticleState state) const
+    inline void scale_state_all_containers(double fac, Particle::State state) const
     {
-      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->scale_state(fac, state);
+      for (const auto& type : storedtypes_)
+        ((containers_[static_cast<int>(type)])[static_cast<int>(Status::Owned)])
+            ->scale_state(fac, state);
     };
 
     /*!
@@ -179,10 +185,11 @@ namespace Particle
      * \param[in] stateB second particle state
      */
     inline void update_state_all_containers(
-        double facA, ParticleState stateA, double facB, ParticleState stateB) const
+        double facA, Particle::State stateA, double facB, Particle::State stateB) const
     {
       for (const auto& type : storedtypes_)
-        ((containers_[type])[Owned])->update_state(facA, stateA, facB, stateB);
+        ((containers_[static_cast<int>(type)])[static_cast<int>(Status::Owned)])
+            ->update_state(facA, stateA, facB, stateB);
     };
 
     /*!
@@ -192,9 +199,11 @@ namespace Particle
      * \param[in] val   particle state value
      * \param[in] state particle state
      */
-    inline void set_state_all_containers(std::vector<double> val, ParticleState state) const
+    inline void set_state_all_containers(std::vector<double> val, Particle::State state) const
     {
-      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->set_state(val, state);
+      for (const auto& type : storedtypes_)
+        ((containers_[static_cast<int>(type)])[static_cast<int>(Status::Owned)])
+            ->set_state(val, state);
     };
 
     /*!
@@ -203,9 +212,11 @@ namespace Particle
      *
      * \param[in] state particle state
      */
-    inline void clear_state_all_containers(ParticleState state) const
+    inline void clear_state_all_containers(Particle::State state) const
     {
-      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->clear_state(state);
+      for (const auto& type : storedtypes_)
+        ((containers_[static_cast<int>(type)])[static_cast<int>(Status::Owned)])
+            ->clear_state(state);
     };
 
     //! @}
@@ -220,10 +231,11 @@ namespace Particle
      * \param[in] status particle status
      */
     inline void check_and_decrease_size_all_containers_of_specific_status(
-        ParticleStatus status) const
+        Particle::Status status) const
     {
       for (const auto& type : storedtypes_)
-        ((containers_[type])[status])->check_and_decrease_container_size();
+        ((containers_[static_cast<int>(type)])[static_cast<int>(status)])
+            ->check_and_decrease_container_size();
     }
 
     /*!
@@ -232,9 +244,10 @@ namespace Particle
      *
      * \param[in] status particle status
      */
-    inline void clear_all_containers_of_specific_status(ParticleStatus status) const
+    inline void clear_all_containers_of_specific_status(Particle::Status status) const
     {
-      for (const auto& type : storedtypes_) ((containers_[type])[status])->clear_container();
+      for (const auto& type : storedtypes_)
+        ((containers_[static_cast<int>(type)])[static_cast<int>(status)])->clear_container();
     };
 
     //! @}
@@ -263,7 +276,7 @@ namespace Particle
 
    private:
     //! set of particle types of stored containers
-    std::set<ParticleType> storedtypes_;
+    std::set<Particle::Type> storedtypes_;
 
     //! collection of particle containers indexed by particle type enum and particle status enum
     TypeStatusContainers containers_;
