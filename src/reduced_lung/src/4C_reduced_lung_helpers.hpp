@@ -210,13 +210,13 @@ namespace ReducedLung
   /*!
    * @brief The cell blocks of the lung mesh.
    *
-   * Element ids are handed out consecutively across the cell blocks in ascending block id order,
+   * Element ids are handed out consecutively across the cell blocks in mesh.cell_blocks() order,
    * so every block covers a contiguous range of global element ids. This information is small and
    * replicated on all ranks, unlike the mesh itself.
    */
   struct LungMeshBlocks
   {
-    //! Ids of the cell blocks, in ascending order.
+    //! Ids of the cell blocks, in mesh.cell_blocks() iteration order.
     std::vector<int> ids;
     //! Number of elements in each cell block.
     std::vector<int> sizes;
