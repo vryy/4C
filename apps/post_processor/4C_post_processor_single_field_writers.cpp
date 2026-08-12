@@ -167,28 +167,10 @@ void MortarFilter::write_all_results(PostField* field)
 /*----------------------------------------------------------------------*/
 void FluidFilter::write_all_results(PostField* field)
 {
-  writer_->write_result("averaged_pressure", "averaged_pressure", dofbased, 1);
-  writer_->write_result(
-      "averaged_velnp", "averaged_velocity", dofbased, field->problem()->num_dim());
-  writer_->write_result(
-      "averaged_scanp", "averaged_scalar_field", dofbased, 1, field->problem()->num_dim());
-  writer_->write_result("filteredvel", "filteredvel", dofbased, field->problem()->num_dim());
-  writer_->write_result("fsvelaf", "fsvel", dofbased, field->problem()->num_dim());
   writer_->write_result("velnp", "velocity", dofbased, field->problem()->num_dim());
   writer_->write_result("pressure", "pressure", dofbased, 1);
-  writer_->write_result("scalar_field", "scalar_field", dofbased, 1);
-  writer_->write_result("residual", "residual", dofbased, field->problem()->num_dim());
   writer_->write_result("dispnp", "ale_displacement", dofbased, field->problem()->num_dim());
   writer_->write_result("idispnfull", "ale_idisp", dofbased, field->problem()->num_dim());
-  writer_->write_result("traction", "traction", dofbased, field->problem()->num_dim());
-  writer_->write_result("wss", "wss", dofbased, field->problem()->num_dim());
-  writer_->write_result("wss_mean", "wss_mean", dofbased, field->problem()->num_dim());
-
-  // for xwall
-  writer_->write_result("xwall_enrvelnp", "xwall_enrvelnp", dofbased, field->problem()->num_dim());
-  writer_->write_result("xwall_tauw", "xwall_tauw", nodebased, 1);
-  //  writer_->WriteResult("radii", "radii", nodebased, 1);
-  writer_->write_result("par_vel", "par_vel", dofbased, field->problem()->num_dim());
 
   // additional forces due to lung fsi (volume constraint)
   writer_->write_result("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());
@@ -208,10 +190,6 @@ void FluidFilter::write_all_results(PostField* field)
 
   // Lagrange multiplier at the interface in monolithic fsi
   writer_->write_result("fsilambda", "fsilambda", dofbased, field->problem()->num_dim());
-
-  // additional output for biofilm problems
-  writer_->write_result(
-      "fld_growth_displ", "fld_growth_displ", dofbased, field->problem()->num_dim());
 
   // additional output for XFluid level-set boundaries: write combined level-set field created from
   // all level-set coupling objects

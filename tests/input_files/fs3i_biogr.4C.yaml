@@ -1,5 +1,8 @@
 TITLE:
   - "Test for checking biofilm growth algorithm"
+IO/RUNTIME VTK OUTPUT/FLUID:
+  OUTPUT_FLUID: true
+  VELOCITY: true
 ALE DYNAMIC:
   TIMESTEP: 10
   MAXTIME: 10000
