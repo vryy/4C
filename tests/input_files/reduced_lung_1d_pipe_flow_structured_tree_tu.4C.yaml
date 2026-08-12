@@ -1,0 +1,97 @@
+TITLE:
+  - "Continuous tube with structured tree terminal unit."
+  - "Flow bc at tube inlet."
+  - "Test structured tree impedance values and coupling to 1D vessel."
+reduced_lung:
+  general:
+    final_time: 0.05
+    steps: 50
+    result_every: 51
+    fluid_properties:
+      density_rho: 1.06
+      viscosity_mu: 0.0488
+    geometry_parameters:
+      reference_area_A0:
+        constant: 0.1256637061
+      thickness_th:
+        constant: 0.2171701685
+    material_parameters:
+      Poisson_ratio_nue: 0.5
+      Young_E:
+        constant: 1e6
+    boundary_conditions:
+      function_ID: 1
+      input: flow
+      pulse_width: 0.3
+      cycle_period: 1
+      output: terminal_unit
+      condition_outflow: 0
+    terminal_units:
+      terminal_unit_type:
+        constant: StructuredTree
+      structured_tree_model:
+        exponent_xi:
+          constant: 2.76
+        asymmetry_ratio_gamma:
+          constant: 0.41
+        termination_radius_r_min:
+          constant: 0.007
+        length_coefficient:
+          constant: 50
+        length_exponent:
+          constant: 1
+        peripheral_resistance_R_peri:
+          constant: 0
+        stiffness_function_id:
+          constant: 2
+PROBLEM TYPE:
+  PROBLEMTYPE: "Reduced_Lung_1D_Pipe_Flow"
+SOLVER 1:
+  SOLVER: "UMFPACK"
+  NAME: "Arterial_Network_Solver"
+FUNCT1:
+  - SYMBOLIC_FUNCTION_OF_TIME: '190 * (1 - cos(2*pi*t/0.3))'
+FUNCT2:
+  - VARFUNCTION: '2e7 *exp(-22.53*r)+8.65e5'
+
+NODE COORDS:
+  - NODE 1 COORD 0.00 0.00 0.00
+  - NODE 2 COORD 100.0 0.00 0.00
+ARTERY ELEMENTS:
+  - 1 ART LINE2 1 2 MAT 1 GP 5 TYPE LinExp DIAM 24.0
+MATERIALS:
+  - MAT: 1
+    MAT_CNST_ART:
+      VISCOSITY: 0.04
+      DENS: 0.001
+      YOUNG: 400000
+      NUE: 0.5
+      TH: 1.63
+      PEXT1: 0
+      PEXT2: 0
+RESULT DESCRIPTION:
+  - ARTNET:
+      DIS: "artery"
+      NODE: 2
+      QUANTITY: "impedance"
+      VALUE: 20304.3544003904
+      TOLERANCE: 1e-4
+  - ARTNET:
+      DIS: "artery"
+      NODE: 2
+      QUANTITY: "impedance_f_min"
+      VALUE: 31.41592653589
+      TOLERANCE: 1e-4
+  - ARTNET:
+      DIS: "artery"
+      NODE: 1
+      QUANTITY: "flow"
+      VALUE: 66.893541799
+      TOLERANCE: 1e-4
+  - ARTNET:
+      DIS: "artery"
+      NODE: 2
+      QUANTITY: "flow"
+      VALUE: -12.318433350418
+      TOLERANCE: 1e-4
+

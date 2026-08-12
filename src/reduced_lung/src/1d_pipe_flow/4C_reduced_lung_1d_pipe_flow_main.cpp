@@ -25,6 +25,7 @@
 #include "4C_mat_vplast_law.hpp"
 #include "4C_reduced_lung_1d_pipe_flow_input.hpp"
 #include "4C_reduced_lung_1d_pipe_flow_resulttest.hpp"
+#include "4C_reduced_lung_1d_pipe_flow_structured_tree.hpp"
 #include "4C_reduced_lung_1d_pipe_flow_terminal_unit.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -33,6 +34,7 @@
 #include <boost/graph/subgraph.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include <algorithm>
 #include <functional>
 
 FOUR_C_NAMESPACE_OPEN
@@ -538,15 +540,22 @@ namespace ReducedLung1dPipeFlow
                normals_evaluation.get_values()[normals_evaluation.get_map().lid(
                    junction_info.node_ids.front())] == 1)
       {
+        // Find the element ID for the terminal node to access element-level properties
+        const int terminal_node_id = junction_info.node_ids.front();
+        const auto* terminal_node = discretization->g_node(terminal_node_id);
+        const int element_id = terminal_node->adjacent_elements()[0].global_id();
+        const double root_radius =
+            std::sqrt(input.geometry.reference_area_A0.at(element_id) / std::numbers::pi);
+
         // Create terminal units
         ReducedLung1DPipe::TerminalUnit::TerminalUnitModel tu_model =
             ReducedLung1DPipe::TerminalUnit::create_terminal_unit_model(
-                input, junction_info.node_ids.front(), junction_info.node_owners.front());
+                input, terminal_node_id, root_radius, junction_info.node_owners.front());
 
         // create map to access terminal units
         global_tu_id_to_index[tu_model.data.global_node_id] = all_terminal_units.size();
         // add to vector
-        all_terminal_units.push_back(tu_model);
+        all_terminal_units.push_back(std::move(tu_model));
       }
     }
     // Now we have a list of all_junctions that are relevant on a rank. This means every rank know
@@ -1193,7 +1202,8 @@ namespace ReducedLung1dPipeFlow
     // Result tests
     auto sol_ptr = std::make_shared<const Core::LinAlg::Vector<double>>(solution);
     std::shared_ptr<Core::Utils::ResultTest> resulttest =
-        std::make_shared<ReducedLung1dPipeFlow::ResultTest>(discretization, sol_ptr);
+        std::make_shared<ReducedLung1dPipeFlow::ResultTest>(discretization, sol_ptr,
+            std::move(all_terminal_units), std::move(global_tu_id_to_index));
     context.add_field_test(resulttest);
     context.test_all(discretization->get_comm());
   }

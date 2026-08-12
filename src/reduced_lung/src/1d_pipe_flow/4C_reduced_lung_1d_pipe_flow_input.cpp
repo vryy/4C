@@ -253,6 +253,52 @@ Core::IO::InputSpec ReducedLung1dPipeFlow::valid_parameters()
                                   .required = false,
                                   .store =
                                       in_struct(&Parameters::TerminalUnits::windkessel_model)}),
+                          group<Parameters::TerminalUnits::StructuredTreeModel>(
+                              "structured_tree_model",
+                              {
+                                  input_field<double>("exponent_xi",
+                                      {.description =
+                                              "Power-law exponent in $r_p^{\\xi} = r_{d1}^{\\xi} + "
+                                              "r_{d2}^{\\xi}$ (Olufsen: 2.76).",
+                                          .store = in_struct(&Parameters::TerminalUnits::
+                                                  StructuredTreeModel::exponent_xi)}),
+                                  input_field<double>("asymmetry_ratio_gamma",
+                                      {.description = "$\\gamma = (r_{small} / r_{large})^2$ "
+                                                      "(Olufsen: 0.41).",
+                                          .store = in_struct(&Parameters::TerminalUnits::
+                                                  StructuredTreeModel::asymmetry_ratio_gamma)}),
+                                  input_field<double>("termination_radius_r_min",
+                                      {.description = "Minimum radius where the structured tree "
+                                                      "terminates.",
+                                          .store = in_struct(&Parameters::TerminalUnits::
+                                                  StructuredTreeModel::termination_radius_r_min)}),
+                                  input_field<double>("peripheral_resistance_R_peri",
+                                      {.description = "Peripheral resistance at the terminal "
+                                                      "arterioles.",
+                                          .store = in_struct(
+                                              &Parameters::TerminalUnits::StructuredTreeModel::
+                                                  peripheral_resistance_R_peri)}),
+                                  input_field<int>("stiffness_function_id",
+                                      {.description = "FUNCT ID defining the arterial stiffness "
+                                                      "$\\frac{Eh}{r}$ must be a VARFUNCTION with "
+                                                      "variable $r$.",
+                                          .store = in_struct(&Parameters::TerminalUnits::
+                                                  StructuredTreeModel::stiffness_function_id)}),
+                                  input_field<double>("length_coefficient",
+                                      {.description = "$k_l$ in $l = k_l \\cdot r^{k_{exp}}$.",
+                                          .store = in_struct(&Parameters::TerminalUnits::
+                                                  StructuredTreeModel::length_coefficient)}),
+                                  input_field<double>("length_exponent",
+                                      {.description = "$k_{exp}$ in $l = k_l \\cdot r^{k_{exp}}$.",
+                                          .store = in_struct(&Parameters::TerminalUnits::
+                                                  StructuredTreeModel::length_exponent)}),
+                              },
+                              {.description =
+                                      "Structured tree outflow model (Olufsen et al., doi: "
+                                      "10.1152/ajpheart.1999.276.1.H257) for terminal units.",
+                                  .required = false,
+                                  .store = in_struct(
+                                      &Parameters::TerminalUnits::structured_tree_model)}),
                       },
                       {.description = "Terminal units.",
                           .required = false,

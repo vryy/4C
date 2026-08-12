@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_reduced_lung_1d_pipe_flow_input.hpp"
+#include "4C_reduced_lung_1d_pipe_flow_structured_tree.hpp"
 
 #include <variant>
 
@@ -127,7 +128,8 @@ namespace ReducedLung1DPipe
     /**
      * @brief Variant type for terminal unit models.
      */
-    using TerminalUnitModelVariant = std::variant<RheologicalElasticityModel, WindkesselModel>;
+    using TerminalUnitModelVariant =
+        std::variant<RheologicalElasticityModel, WindkesselModel, StructuredTreeTerminalUnit>;
 
     /**
      * @brief Encapsulates a terminal unit model.
@@ -182,8 +184,8 @@ namespace ReducedLung1DPipe
           double density_rho, double characteristic_W_outgoing);
     };
 
-    TerminalUnitModel create_terminal_unit_model(
-        const ReducedLung1dPipeFlow::Parameters& params, int global_id, int node_owner);
+    TerminalUnitModel create_terminal_unit_model(const ReducedLung1dPipeFlow::Parameters& params,
+        int global_id, double root_radius, int node_owner);
 
     /**
      * Evaluates the linear elastic pressure if ElasticityModel == LinearElasticity.

@@ -289,6 +289,16 @@ namespace ReducedLung1DPipe
         return std::make_pair(residual, jacobian);
       }
 
+      // Handle Structured Tree model
+      auto* structured_tree = std::get_if<StructuredTreeTerminalUnit>(&model);
+      if (structured_tree)
+      {
+        double residual = evaluate_structured_tree_residual(
+            area_A, flow_Q, reference_area_A0, beta, Pext, *structured_tree);
+        double jacobian = evaluate_structured_tree_jacobian(area_A, dQdA, beta, *structured_tree);
+        return std::make_pair(residual, jacobian);
+      }
+
       // Handle RheologicalElasticityModels
       auto* rheol_elastic = std::get_if<RheologicalElasticityModel>(&model);
       if (!rheol_elastic)
@@ -367,6 +377,14 @@ namespace ReducedLung1DPipe
         return;
       }
 
+      // Handle Structured Tree model
+      auto* structured_tree = std::get_if<StructuredTreeTerminalUnit>(&model);
+      if (structured_tree)
+      {
+        update_structured_tree_data(*structured_tree, flow_Q);
+        return;
+      }
+
       // Handle RheologicalElasticityModels
       auto* rheol_elastic = std::get_if<RheologicalElasticityModel>(&model);
       if (rheol_elastic)
@@ -393,8 +411,8 @@ namespace ReducedLung1DPipe
       }
     }
 
-    TerminalUnitModel create_terminal_unit_model(
-        const ReducedLung1dPipeFlow::Parameters& params, int global_id, int node_owner)
+    TerminalUnitModel create_terminal_unit_model(const ReducedLung1dPipeFlow::Parameters& params,
+        int global_id, double root_radius, int node_owner)
     {
       TerminalUnitModel terminal_unit_model;
       // TerminalUnitData
@@ -425,6 +443,20 @@ namespace ReducedLung1DPipe
         rheol_elastic.elasticity_model =
             create_elasticity_model(tu_params.elasticity_model, global_id);
         terminal_unit_model.model = rheol_elastic;
+      }
+      else if (tu_type ==
+               ReducedLung1dPipeFlow::Parameters::TerminalUnits::TerminalUnitType::StructuredTree)
+      {
+        // Create structured-tree model
+        // Time step size
+        const double dt = params.final_time / params.n_steps;
+        // read in cycle_period or final_time if no cycle_period is defined
+        const double period = params.boundary_conditions.cycle_period.value_or(params.final_time);
+
+        StructuredTreeTerminalUnit st =
+            create_structured_tree_model(tu_params.structured_tree_model, global_id, root_radius,
+                params.fluid.density_rho, params.fluid.viscosity_mu, dt, period);
+        terminal_unit_model.model = st;
       }
       else
       {
