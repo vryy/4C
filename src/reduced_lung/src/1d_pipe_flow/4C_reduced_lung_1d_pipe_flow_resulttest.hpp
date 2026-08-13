@@ -11,9 +11,12 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_vector.hpp"
+#include "4C_reduced_lung_1d_pipe_flow_terminal_unit.hpp"
 #include "4C_utils_result_test.hpp"
 
 #include <memory>
+#include <unordered_map>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,7 +32,9 @@ namespace ReducedLung1dPipeFlow
   {
    public:
     ResultTest(std::shared_ptr<Core::FE::Discretization> dis,
-        std::shared_ptr<const Core::LinAlg::Vector<double>> sol);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> sol,
+        std::vector<ReducedLung1DPipe::TerminalUnit::TerminalUnitModel> terminal_units,
+        std::unordered_map<int, std::size_t> tu_index_map);
 
     void test_node(
         const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
@@ -37,6 +42,8 @@ namespace ReducedLung1dPipeFlow
    private:
     std::shared_ptr<Core::FE::Discretization> dis_;
     std::shared_ptr<const Core::LinAlg::Vector<double>> sol_;
+    std::vector<ReducedLung1DPipe::TerminalUnit::TerminalUnitModel> terminal_units_;
+    std::unordered_map<int, std::size_t> tu_index_map_;
   };
 }  // namespace ReducedLung1dPipeFlow
 

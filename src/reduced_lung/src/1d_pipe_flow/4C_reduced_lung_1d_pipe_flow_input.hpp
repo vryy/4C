@@ -63,7 +63,8 @@ namespace ReducedLung1dPipeFlow
       enum class TerminalUnitType : std::uint8_t
       {
         RheologicalElasticity,  ///< Existing rheological + elasticity models
-        Windkessel              ///< 3-element Windkessel (RCR) model
+        Windkessel,             ///< 3-element Windkessel (RCR) model
+        StructuredTree  ///< Structured tree outflow (Olufsen doi: 10.1152/ajpheart.1999.276.1.H257)
       };
 
       Core::IO::InputField<TerminalUnitType> terminal_unit_type;
@@ -129,6 +130,17 @@ namespace ReducedLung1dPipeFlow
         Core::IO::InputField<double> distal_resistance_R_d;    ///< Distal resistance
         Core::IO::InputField<double> pressure_peripheral;      ///< Peripheral pressure
       } windkessel_model;
+
+      struct StructuredTreeModel
+      {
+        Core::IO::InputField<double> exponent_xi;               /// radius relation
+        Core::IO::InputField<double> asymmetry_ratio_gamma;     /// asymmetry relation
+        Core::IO::InputField<double> termination_radius_r_min;  /// Minimum r where tree terminates
+        Core::IO::InputField<double> peripheral_resistance_R_peri;  /// R at term. arterioles
+        Core::IO::InputField<int> stiffness_function_id;            /// FUNCT ID for Eh_over_r(r)
+        Core::IO::InputField<double> length_coefficient;  /// Coefficient for length-radius relation
+        Core::IO::InputField<double> length_exponent;     /// Exponent for length-radius relation
+      } structured_tree_model;
     } terminal_units;
   };
   Core::IO::InputSpec valid_parameters();
