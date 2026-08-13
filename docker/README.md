@@ -1,7 +1,12 @@
 # Docker
 
 This folder contains Dockerfiles for different configurations. The `Dockerfile` in the folder `dependencies` is the Dockerfile to
-build the project with the current dependencies. Other configurations reside in different subfolders.
+build the project with the current dependencies. Other configurations reside in different subfolders. The other configurations are:
+- oldest supported: dependencies image with the oldest supported dependencies (currently only Trilinos).
+- prebuilt 4C: docker image with ready-to-use 4C executable
+- minimal prebuilt 4C: prebuilt 4C docker image with everything removed not need to execute 4C
+- trilinos develop: dependencies image with Trilinos develop installation. Currently not working due to Epetra removal.
+- kokkos parallel: dependencies image with Trilinos installation with Kokkos OpenMP and Cuda.
 
 ## Build docker images locally
 
@@ -16,7 +21,7 @@ docker build --tag 4c-dependencies --file docker/dependencies/Dockerfile .
 ## How to update the docker images for the Github Actions
 
 1. Make your changes to the Dockerfile or dependencies
-2. Compute the sha1 of the docker and dependencies folder.
+2. Compute the sha1 of the docker and dependencies folder. Make sure that no unwanted files are in these folders.
 
 ```bash
 cd <project_root>
