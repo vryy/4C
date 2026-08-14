@@ -74,6 +74,8 @@ jobs:
           OMP_DYNAMIC: "FALSE"
 
   kokkoscuda_build:
+    # Temporarily disabled while fixing ccache; see #2183.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies-trilinos-kokkosparallel:0bcb6660
@@ -111,4 +113,6 @@ jobs:
       - name: Check for successful builds and tests
         uses: re-actors/alls-green@release/v1
         with:
+          # Temporarily disabled while fixing ccache; see #2183.
+          allowed-skips: kokkoscuda_build
           jobs: ${{ toJSON(needs) }}
