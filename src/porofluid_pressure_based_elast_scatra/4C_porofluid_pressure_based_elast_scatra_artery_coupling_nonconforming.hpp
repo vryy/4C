@@ -13,6 +13,7 @@
 #include "4C_art_net_input.hpp"
 #include "4C_linalg_fevector.hpp"
 #include "4C_porofluid_pressure_based_elast_scatra_artery_coupling_base.hpp"
+#include "4C_porofluid_pressure_based_elast_scatra_artery_coupling_pair.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -27,9 +28,6 @@ namespace Core::LinAlg
 }
 namespace PoroPressureBased
 {
-  // forward declaration
-  class PorofluidElastScatraArteryCouplingPairBase;
-
   //! Non-conforming coupling between artery network and porofluid-elasticity-scatra algorithm
   class PorofluidElastScatraArteryCouplingNonConformingAlgorithm
       : public PorofluidElastScatraArteryCouplingBaseAlgorithm
@@ -103,7 +101,7 @@ namespace PoroPressureBased
     double threshold_delete_free_hanging_elements_;
 
     //! interacting pairs of artery and continuous-discretization elements
-    std::vector<std::shared_ptr<PorofluidElastScatraArteryCouplingPairBase>> coupled_ele_pairs_;
+    std::vector<std::unique_ptr<PorofluidElastScatraArteryCouplingPairBase>> coupled_ele_pairs_;
 
     //! vector with 1D coupling nodes for node-to-point coupling
     std::vector<int> coupling_nodes_for_node_to_point_;
@@ -179,7 +177,7 @@ namespace PoroPressureBased
 
     //! return appropriate internal implementation class
     //! (acts as a simple factory to create single pairs)
-    static std::shared_ptr<PorofluidElastScatraArteryCouplingPairBase>
+    static std::unique_ptr<PorofluidElastScatraArteryCouplingPairBase>
     create_new_artery_coupling_pair(
         const std::vector<Core::Elements::Element const*>& elements, int spatial_dimension);
 

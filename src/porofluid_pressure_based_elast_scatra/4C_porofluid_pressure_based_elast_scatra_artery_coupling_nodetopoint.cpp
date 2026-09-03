@@ -73,7 +73,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNodeToPointAlgorithm::
   // delete the inactive pairs
   coupled_ele_pairs_.erase(
       std::remove_if(coupled_ele_pairs_.begin(), coupled_ele_pairs_.end(),
-          [](const std::shared_ptr<PorofluidElastScatraArteryCouplingPairBase>& coupling_pair)
+          [](const std::unique_ptr<PorofluidElastScatraArteryCouplingPairBase>& coupling_pair)
           { return not coupling_pair->is_active(); }),
       coupled_ele_pairs_.end());
 

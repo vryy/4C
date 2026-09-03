@@ -263,7 +263,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
       if (coupled_elements[1]->owner() == my_mpi_rank_)
       {
         // construct, init and setup coupling pairs
-        const std::shared_ptr<PorofluidElastScatraArteryCouplingPairBase> current_pair =
+        std::unique_ptr<PorofluidElastScatraArteryCouplingPairBase> current_pair =
             create_new_artery_coupling_pair(
                 coupled_elements, artery_coupling_deps().spatial_dimension);
         current_pair->init(coupled_elements, coupling_params_, porofluid_coupling_params,
@@ -272,7 +272,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
             artery_coupling_deps().function_of_anything_by_id, my_mpi_rank_);
 
         // add to the list of current contact pairs
-        coupled_ele_pairs_[coupled_ele_pair_idx] = current_pair;
+        coupled_ele_pairs_[coupled_ele_pair_idx] = std::move(current_pair);
         coupled_ele_pair_idx++;
       }
     }
@@ -358,7 +358,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
           if (coupled_elements[1]->owner() != my_mpi_rank_) continue;
 
           // construct, init and setup coupling pair
-          const std::shared_ptr<PorofluidElastScatraArteryCouplingPairBase> current_pair =
+          std::unique_ptr<PorofluidElastScatraArteryCouplingPairBase> current_pair =
               create_new_artery_coupling_pair(
                   coupled_elements, artery_coupling_deps().spatial_dimension);
           current_pair->init(coupled_elements, coupling_params_, porofluid_coupling_params,
@@ -366,7 +366,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
               condition_name_, penalty, coupling_element_type, eta_ntp,
               artery_coupling_deps().function_of_anything_by_id, my_mpi_rank_);
           // add to the list of current coupling pairs
-          coupled_ele_pairs_.push_back(current_pair);
+          coupled_ele_pairs_.push_back(std::move(current_pair));
         }
       }
     }
@@ -672,7 +672,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<PoroPressureBased::PorofluidElastScatraArteryCouplingPairBase> PoroPressureBased::
+std::unique_ptr<PoroPressureBased::PorofluidElastScatraArteryCouplingPairBase> PoroPressureBased::
     PorofluidElastScatraArteryCouplingNonConformingAlgorithm::create_new_artery_coupling_pair(
         const std::vector<Core::Elements::Element const*>& elements, const int spatial_dimension)
 {
@@ -689,13 +689,13 @@ std::shared_ptr<PoroPressureBased::PorofluidElastScatraArteryCouplingPairBase> P
           switch (spatial_dimension)
           {
             case 1:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::quad4, 1>>();
             case 2:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::quad4, 2>>();
             case 3:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::quad4, 3>>();
             default:
               FOUR_C_THROW("Unsupported dimension {}.", spatial_dimension);
@@ -706,13 +706,13 @@ std::shared_ptr<PoroPressureBased::PorofluidElastScatraArteryCouplingPairBase> P
           switch (spatial_dimension)
           {
             case 1:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::hex8, 1>>();
             case 2:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::hex8, 2>>();
             case 3:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::hex8, 3>>();
             default:
               FOUR_C_THROW("Unsupported dimension {}.", spatial_dimension);
@@ -723,13 +723,13 @@ std::shared_ptr<PoroPressureBased::PorofluidElastScatraArteryCouplingPairBase> P
           switch (spatial_dimension)
           {
             case 1:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet4, 1>>();
             case 2:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet4, 2>>();
             case 3:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet4, 3>>();
             default:
               FOUR_C_THROW("Unsupported dimension {}.", spatial_dimension);
@@ -740,13 +740,13 @@ std::shared_ptr<PoroPressureBased::PorofluidElastScatraArteryCouplingPairBase> P
           switch (spatial_dimension)
           {
             case 1:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet10, 1>>();
             case 2:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet10, 2>>();
             case 3:
-              return std::make_shared<PorofluidElastScatraArteryCouplingPair<
+              return std::make_unique<PorofluidElastScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet10, 3>>();
             default:
               FOUR_C_THROW("Unsupported dimension {}.", spatial_dimension);

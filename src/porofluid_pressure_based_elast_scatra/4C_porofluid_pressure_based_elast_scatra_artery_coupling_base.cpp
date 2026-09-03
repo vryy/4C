@@ -32,9 +32,13 @@ PoroPressureBased::PorofluidElastScatraArteryCouplingBaseAlgorithm::
       artery_coupling_deps_(std::move(artery_coupling_deps)),
       comm_(artery_dis->get_comm())
 {
-  // safety check
+  // safety checks
   if (artery_dis_->num_global_nodes() == 0)
     FOUR_C_THROW("artery discretization does not seem to have any nodes");
+
+  FOUR_C_ASSERT_ALWAYS(
+      Core::Communication::same_mpi_comm(artery_dis->get_comm(), homogenized_dis->get_comm()),
+      "Artery and homogenized discretization have to use the same communicator!");
 
   // get the actual coupled DOFs
   // 1) 1D artery discretization
