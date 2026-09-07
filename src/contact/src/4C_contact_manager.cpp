@@ -1350,29 +1350,29 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   // *********************************************************************
 
   // evaluate contact tractions
-  get_strategy().compute_contact_stresses();
+  get_strategy().compute_contact_tractions();
 
   // export to problem dof row map
   std::shared_ptr<Core::LinAlg::Map> problemdofs = get_strategy().problem_dofs();
 
   // normal direction
-  std::shared_ptr<const Core::LinAlg::Vector<double>> normalstresses =
-      get_strategy().contact_normal_stress();
-  std::shared_ptr<Core::LinAlg::Vector<double>> normalstressesexp =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> normal_traction =
+      get_strategy().contact_normal_traction();
+  std::shared_ptr<Core::LinAlg::Vector<double>> normal_traction_exported =
       std::make_shared<Core::LinAlg::Vector<double>>(*problemdofs);
-  Core::LinAlg::export_to(*normalstresses, *normalstressesexp);
+  Core::LinAlg::export_to(*normal_traction, *normal_traction_exported);
 
   // tangential plane
-  std::shared_ptr<const Core::LinAlg::Vector<double>> tangentialstresses =
-      get_strategy().contact_tangential_stress();
-  std::shared_ptr<Core::LinAlg::Vector<double>> tangentialstressesexp =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> tangential_traction =
+      get_strategy().contact_tangential_traction();
+  std::shared_ptr<Core::LinAlg::Vector<double>> tangential_traction_exported =
       std::make_shared<Core::LinAlg::Vector<double>>(*problemdofs);
-  Core::LinAlg::export_to(*tangentialstresses, *tangentialstressesexp);
+  Core::LinAlg::export_to(*tangential_traction, *tangential_traction_exported);
 
   // write to output
   // contact tractions in normal and tangential direction
-  output.write_vector("norcontactstress", normalstressesexp);
-  output.write_vector("tancontactstress", tangentialstressesexp);
+  output.write_vector("normal_contact_traction", normal_traction_exported);
+  output.write_vector("tangential_contact_traction", tangential_traction_exported);
 
   if (get_strategy().contact_normal_force() != nullptr)
   {
@@ -1443,7 +1443,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
 void CONTACT::Manager::postprocess_quantities_per_interface(
     std::shared_ptr<Teuchos::ParameterList> outputParams)
 {
-  get_strategy().compute_contact_stresses();
+  get_strategy().compute_contact_tractions();
   get_strategy().postprocess_quantities_per_interface(outputParams);
 }
 

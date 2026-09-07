@@ -114,7 +114,8 @@ namespace CONTACT
         bool forcedrestart) const override {
       /* nothing stored in nitsche strategy that would need to be written */
     };
-    void compute_contact_stresses() final { /* nothing stress output in nitsche strategy yet */ };
+    void compute_contact_tractions()
+        final { /* No traction output for Nitsche strategy implemented yet */ };
     virtual void reconnect_parent_elements();
     void set_state(
         const Mortar::StateType& statename, const Core::LinAlg::Vector<double>& vec) override;

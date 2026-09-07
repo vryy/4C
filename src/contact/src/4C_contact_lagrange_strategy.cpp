@@ -1393,25 +1393,21 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
 /*----------------------------------------------------------------------*
  |  pp stresses                                              farah 11/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::compute_contact_stresses()
+void CONTACT::LagrangeStrategy::compute_contact_tractions()
 {
   static int step = 0;
   // call abstract function
-  CONTACT::AbstractStrategy::compute_contact_stresses();
+  CONTACT::AbstractStrategy::compute_contact_tractions();
+  Core::LinAlg::Vector<double>& normal_traction = *(data().normal_traction_ptr());
+  Core::LinAlg::Vector<double>& tangential_traction = *(data().tangential_traction_ptr());
 
   // further scaling for nonsmooth contact
   if (nonSmoothContact_)
   {
     forcenormal_ = std::make_shared<Core::LinAlg::Vector<double>>(source_dof_row_map(true));
-    d_matrix()->multiply(true, *stressnormal_, *forcenormal_);
+    d_matrix()->multiply(true, normal_traction, *forcenormal_);
     forcetangential_ = std::make_shared<Core::LinAlg::Vector<double>>(source_dof_row_map(true));
-    d_matrix()->multiply(true, *stresstangential_, *forcetangential_);
-
-    Core::LinAlg::Vector<double> forcenormal(source_dof_row_map(true));
-    d_matrix()->multiply(true, *stressnormal_, forcenormal);
-
-    Core::LinAlg::Vector<double> forcetangential(source_dof_row_map(true));
-    d_matrix()->multiply(true, *stresstangential_, forcetangential);
+    d_matrix()->multiply(true, tangential_traction, *forcetangential_);
 
     // add penalty force normal
     if (fLTLn_ != nullptr)
@@ -1419,7 +1415,6 @@ void CONTACT::LagrangeStrategy::compute_contact_stresses()
       Core::LinAlg::Vector<double> dummy(source_dof_row_map(true));
       Core::LinAlg::export_to(*fLTLn_, dummy);
       forcenormal_->update(1.0, dummy, 1.0);
-      forcenormal.update(1.0, dummy, 1.0);
     }
 
     // add penalty force tangential
@@ -1428,8 +1423,12 @@ void CONTACT::LagrangeStrategy::compute_contact_stresses()
       Core::LinAlg::Vector<double> dummy(source_dof_row_map(true));
       Core::LinAlg::export_to(*fLTLt_, dummy);
       forcetangential_->update(1.0, dummy, 1.0);
-      forcetangential.update(1.0, dummy, 1.0);
     }
+
+    // initialize tractions obtained by scaling the obtained forces with the "d-scale" parameter;
+    // the scaling happens subsequently by looping over the interfaces
+    Core::LinAlg::Vector<double> force_over_dscale_normal = *forcenormal_;
+    Core::LinAlg::Vector<double> force_over_dscale_tangential = *forcetangential_;
 
     // loop over all interfaces
     for (int i = 0; i < (int)interface_.size(); ++i)
@@ -1446,7 +1445,7 @@ void CONTACT::LagrangeStrategy::compute_contact_stresses()
 
         for (int dof = 0; dof < n_dim(); ++dof)
         {
-          locindex[dof] = (forcenormal.get_map()).lid(cnode->dofs()[dof]);
+          locindex[dof] = (force_over_dscale_normal.get_map()).lid(cnode->dofs()[dof]);
 
           if (cnode->mo_data().get_dscale() < 1e-8 and cnode->active())
           {
@@ -1458,13 +1457,16 @@ void CONTACT::LagrangeStrategy::compute_contact_stresses()
             continue;
           }
 
-          (forcenormal).get_values()[locindex[dof]] /= cnode->mo_data().get_dscale();
-          (forcetangential).get_values()[locindex[dof]] /= cnode->mo_data().get_dscale();
+          (force_over_dscale_normal).get_values()[locindex[dof]] /= cnode->mo_data().get_dscale();
+          (force_over_dscale_tangential).get_values()[locindex[dof]] /=
+              cnode->mo_data().get_dscale();
         }
       }
     }
-    stresstangential_->update(1.0, forcetangential, 0.0);
-    stressnormal_->update(1.0, forcenormal, 0.0);
+
+    // update the normal and tangential tractions to the scaled forces
+    normal_traction.update(1.0, force_over_dscale_normal, 0.0);
+    tangential_traction.update(1.0, force_over_dscale_tangential, 0.0);
 
     // temporary output:
     double tangforce = 0.0;

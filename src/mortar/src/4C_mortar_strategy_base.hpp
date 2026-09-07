@@ -252,9 +252,10 @@ namespace Mortar
         std::shared_ptr<Core::LinAlg::Map>& InnerDofMap,
         std::shared_ptr<Core::LinAlg::Map>& ActiveDofMap) const = 0;
     virtual double constraint_norm() const = 0;
-    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> contact_normal_stress() const = 0;
-    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> contact_tangential_stress()
-        const = 0;
+    [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>>
+    contact_normal_traction() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>>
+    contact_tangential_traction() const = 0;
     virtual std::shared_ptr<const Core::LinAlg::Vector<double>> contact_normal_force() const = 0;
     virtual std::shared_ptr<const Core::LinAlg::Vector<double>> contact_tangential_force()
         const = 0;
@@ -296,7 +297,7 @@ namespace Mortar
         const std::shared_ptr<const Core::LinAlg::Vector<double>>& dis) = 0;
     virtual int number_of_active_nodes() const = 0;
     virtual int number_of_slip_nodes() const = 0;
-    virtual void compute_contact_stresses() = 0;
+    virtual void compute_contact_tractions() = 0;
 
     /*!
     \brief Write results for visualization separately for each meshtying/contact interface
