@@ -8,3 +8,4 @@ It contains the following Python packages:
 - `four_c_development`: Tools required for development
 - `four_c_documentation`: Tools and scripts for the documentation
 - `four_c_metadata`: Tools related to input files and its metadata
+- `four_c_precommit`: Tools for precommit hook checking
