@@ -106,7 +106,7 @@ repos:
       - id: check-venv-up-to-date
         name: Python virtual environment is up to date
         language: system
-        entry: ./utilities/code_checks/check_venv
+        entry: ./utilities/code_checks/unix/check_venv
         always_run: true
         pass_filenames: false
         fail_fast: true
@@ -180,13 +180,13 @@ repos:
         name: Non-ASCII characters
         language: system
         types_or: [c++, c, python, cmake, shell]
-        entry: ./utilities/code_checks/check_non_ascii_chars
+        entry: ./utilities/code_checks/unix/check_non_ascii_chars
 
       - id: check-commit-msg
         name: Check commit message
         description: "Check for valid commit message"
         language: system
-        entry: ./utilities/code_checks/commit-msg
+        entry: ./utilities/code_checks/unix/commit-msg
         stages: [commit-msg]
 
       - id: check-python-files
