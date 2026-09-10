@@ -170,6 +170,10 @@ namespace
   double calculate_equiv_stress_starting_point(
       const AEI::InputEquivStressStartingPoint& input_equiv_stress_starting_point)
   {
+    const double& sigma_n = input_equiv_stress_starting_point.equiv_stress_solution;
+    const double& sigma_E_n = input_equiv_stress_starting_point.equiv_stress_elast_pred;
+    const double& sigma_P_n = input_equiv_stress_starting_point.equiv_stress_plast_pred;
+
     // set to elastic predictor if the stress of the elastic predictor is numerically 0.0 ->
     // this is theoretically
     // possible for viscoplastic laws without yield surfaces, which may exhibit plastic flow
@@ -178,24 +182,17 @@ namespace
     // Same goes for the case where the elastic predictor and the plastic predictor are
     // associated with effectively the same stress value (e.g., during stress relaxation) -> set
     // starting point as elastic predictor in these particular cases
-    if (input_equiv_stress_starting_point.equiv_stress_elast_pred <= 1.0e-12 ||
-        std::abs(input_equiv_stress_starting_point.equiv_stress_plast_pred -
-                 input_equiv_stress_starting_point.equiv_stress_elast_pred) /
-                input_equiv_stress_starting_point.equiv_stress_elast_pred <
-            1.0e-8)
+    const double denom_scale = std::max({1.0, std::abs(sigma_E_n), std::abs(sigma_P_n)});
+    if (std::abs(sigma_P_n - sigma_E_n) <= 1.0e-8 * denom_scale)
     {
       return ELASTIC_PREDICTOR_LOCATION;
     }
 
-
     // compute starting point based on the equivalent stress: we clamp between the elastic and
     // plastic predictors because in some special cases such as stress relaxation, the starting
     // point may be slightly out of this interval (machine precision)
-    return std::clamp((input_equiv_stress_starting_point.equiv_stress_solution -
-                          input_equiv_stress_starting_point.equiv_stress_elast_pred) /
-                          (input_equiv_stress_starting_point.equiv_stress_plast_pred -
-                              input_equiv_stress_starting_point.equiv_stress_elast_pred),
-        ELASTIC_PREDICTOR_LOCATION, PLASTIC_PREDICTOR_LOCATION);
+    return std::clamp((sigma_n - sigma_E_n) / (sigma_P_n - sigma_E_n), ELASTIC_PREDICTOR_LOCATION,
+        PLASTIC_PREDICTOR_LOCATION);
   }
 
 }  // namespace
@@ -696,6 +693,14 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager:
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager::
+    set_solution_vector(const Core::LinAlg::Matrix<10, 1>& sol)
+{
+  sol_.update(1.0, sol, 0.0);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 bool Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonManager::
     is_local_newton_converged() const
 {
@@ -1025,25 +1030,17 @@ void AEI::AEIManager::reset_and_construct_prelim_plastic_pred(
  *--------------------------------------------------------------------*/
 void AEI::AEIManager::pack(Core::Communication::PackBuffer& data) const
 {
-  // pack number of Gauss points
-  Core::Communication::add_to_pack(data, interpolation_point_containers_.size());
-
   // pack starting points
   for (const auto& interp_point_container : interpolation_point_containers_)
   {
     Core::Communication::add_to_pack(data, interp_point_container.starting_point);
   }
-  Core::Communication::add_to_pack(data, resize_called_);
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void AEI::AEIManager::unpack(Core::Communication::UnpackBuffer& buffer)
+void AEI::AEIManager::unpack(Core::Communication::UnpackBuffer& buffer, const unsigned int num_gp)
 {
-  // unpack number of Gauss points
-  std::size_t num_gp;
-  Core::Communication::extract_from_pack(buffer, num_gp);
-
   // create interpolation point containers and predictor interpolators according to the number of
   // Gauss points; for the interpolation point containers, also extract the respective starting
   // point from the buffer
@@ -1054,8 +1051,10 @@ void AEI::AEIManager::unpack(Core::Communication::UnpackBuffer& buffer)
   {
     Core::Communication::extract_from_pack(
         buffer, interpolation_point_containers_[gp].starting_point);
+    if (params_.estimate_interpolation.starting_point_type == StartingPointType::constant)
+      set_user_starting_point(gp);
   }
-  Core::Communication::extract_from_pack(buffer, resize_called_);
+  resize_called_ = true;
 }
 
 /*--------------------------------------------------------------------*
@@ -1078,9 +1077,9 @@ Core::LinAlg::Matrix<3, 3> AEI::AEIManager::interpolate_inverse_inelastic_defgra
 Core::LinAlg::Matrix<3, 3> AEI::AEIManager::get_inverse_inelastic_defgrad_plastic_pred(
     const unsigned int gp, const Core::LinAlg::Matrix<3, 3>& inv_defgrad) const
 {
-  // the plastic predictor lies at the location 1.0
+  // interpolate at plastic predictor location
   Core::LinAlg::Matrix<3, 3> interp_elastic_defgrad =
-      predictor_interpolators_[gp].interpolate_elastic_defgrad(1.0);
+      predictor_interpolators_[gp].interpolate_elastic_defgrad(PLASTIC_PREDICTOR_LOCATION);
 
   Core::LinAlg::Matrix<3, 3> inv_inelastic_defgrad{Core::LinAlg::Initialization::zero};
   inv_inelastic_defgrad.multiply(1.0, inv_defgrad, interp_elastic_defgrad);
@@ -1102,7 +1101,7 @@ void AEI::AEIManager::update_plastic_predictor_after_construction_algo(const uns
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void AEI::AEIManager::adapt_interpolation_interval(
+void AEI::AEIManager::shift_interpolation_interval(
     const unsigned int gp, const InterpolationIntervalShift& interval_shift)
 {
   switch (interval_shift)
@@ -1132,12 +1131,12 @@ void AEI::AEIManager::adapt_interpolation_interval(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void AEI::AEIManager::set_current_interp_point(
-    const unsigned int gp, const CurrentInterpPointPreset preset)
+    const unsigned int gp, const CurrentInterpPointTarget preset)
 {
   FOUR_C_ASSERT(gp < interpolation_point_containers_.size(), "GP index out of range");
   switch (preset)
   {
-    case CurrentInterpPointPreset::plastic_pred_construct_update:
+    case CurrentInterpPointTarget::plastic_pred_construct_update:
     {
       interpolation_point_containers_[gp].current_interp_point =
           interpolation_point_containers_[gp].lower_interp_bound +
@@ -1146,7 +1145,7 @@ void AEI::AEIManager::set_current_interp_point(
                   interpolation_point_containers_[gp].lower_interp_bound);
       return;
     }
-    case CurrentInterpPointPreset::estimate_interpolation_update:
+    case CurrentInterpPointTarget::estimate_interpolation_update:
     {
       interpolation_point_containers_[gp].current_interp_point =
           interpolation_point_containers_[gp].lower_interp_bound +
@@ -1155,35 +1154,23 @@ void AEI::AEIManager::set_current_interp_point(
                   interpolation_point_containers_[gp].lower_interp_bound);
       return;
     }
-    case CurrentInterpPointPreset::lower_interp_bound:
-    {
-      interpolation_point_containers_[gp].current_interp_point =
-          interpolation_point_containers_[gp].lower_interp_bound;
-      return;
-    }
-    case CurrentInterpPointPreset::upper_interp_bound:
-    {
-      interpolation_point_containers_[gp].current_interp_point =
-          interpolation_point_containers_[gp].upper_interp_bound;
-      return;
-    }
-    case CurrentInterpPointPreset::elastic_predictor:
+    case CurrentInterpPointTarget::elastic_predictor:
     {
       interpolation_point_containers_[gp].current_interp_point = ELASTIC_PREDICTOR_LOCATION;
       return;
     }
-    case CurrentInterpPointPreset::plastic_predictor:
+    case CurrentInterpPointTarget::plastic_predictor:
     {
       interpolation_point_containers_[gp].current_interp_point = PLASTIC_PREDICTOR_LOCATION;
       return;
     }
-    case CurrentInterpPointPreset::starting_point:
+    case CurrentInterpPointTarget::starting_point:
     {
       interpolation_point_containers_[gp].current_interp_point =
           interpolation_point_containers_[gp].starting_point;
       return;
     }
-    case CurrentInterpPointPreset::intermediate_point:
+    case CurrentInterpPointTarget::intermediate_point:
     {
       interpolation_point_containers_[gp].current_interp_point =
           interpolation_point_containers_[gp].lower_interp_bound +

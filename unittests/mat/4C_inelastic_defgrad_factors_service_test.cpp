@@ -845,12 +845,12 @@ namespace
 
     // construct preliminary plastic predictor, and verify endpoints
     aei_manager.reset_and_construct_prelim_plastic_pred(gp, local_integration_input);
-    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointPreset::elastic_predictor);
+    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointTarget::elastic_predictor);
     FOUR_C_EXPECT_NEAR(
         aei_manager.interpolate_inverse_inelastic_defgrad(gp, local_integration_input.inv_defgrad),
         last_inv_inelastic_defgrad, 1.0e-15);
 
-    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointPreset::plastic_predictor);
+    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointTarget::plastic_predictor);
     Core::LinAlg::Matrix<3, 3> elastic_defgrad_plastic_pred{Core::LinAlg::Initialization::zero};
     elastic_defgrad_plastic_pred(0, 0) = elastic_defgrad_plastic_pred(1, 1) =
         elastic_defgrad_plastic_pred(2, 2) = std::pow(defgrad.determinant(), 1.0 / 3.0);
@@ -872,17 +872,17 @@ namespace
     // predictor (here: exactly in the middle based on the set interval scanning parameter: 0.5),
     // and repeat the checks
     aei_manager.set_current_interp_point(gp,
-        AEI::CurrentInterpPointPreset::
+        AEI::CurrentInterpPointTarget::
             plastic_pred_construct_update);  // right in the middle of the elastic predictor and the
                                              // preliminary plastic predictor
     aei_manager.update_plastic_predictor_after_construction_algo(gp);
 
-    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointPreset::elastic_predictor);
+    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointTarget::elastic_predictor);
     FOUR_C_EXPECT_NEAR(
         aei_manager.interpolate_inverse_inelastic_defgrad(gp, local_integration_input.inv_defgrad),
         last_inv_inelastic_defgrad, 1.0e-15);
 
-    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointPreset::plastic_predictor);
+    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointTarget::plastic_predictor);
     elastic_defgrad_plastic_pred.clear();
     elastic_defgrad_plastic_pred(0, 0) = 1.5874010519681996;
     elastic_defgrad_plastic_pred(1, 1) = 1.122462048309373;
@@ -908,7 +908,7 @@ namespace
     // parameter internally, based on the current interpolation bounds (here: \f$ \tau =  0.5 \f$,
     // pristine bounds \f$ \tau_{\text{E}} = 0.0 \f$ and \f$ \tau_{\text{P}} = 1.0 \f$)
     aei_manager.set_current_interp_point(
-        gp, AEI::CurrentInterpPointPreset::plastic_pred_construct_update);
+        gp, AEI::CurrentInterpPointTarget::plastic_pred_construct_update);
     interp_elastic_defgrad_ref(0, 0) = 1.7817974362806785;
     interp_elastic_defgrad_ref(1, 1) = 1.0594630943592953;
     interp_elastic_defgrad_ref(2, 2) = 1.0594630943592953;
@@ -924,7 +924,7 @@ namespace
     // internally, based on the current interpolation bounds (here: \f$ \xi =  0.5 \f$, pristine
     // bounds \f$ \xi_{\text{E}} = 0.0 \f$ and \f$ \xi_{\text{P}} = 1.0 \f$)
     aei_manager.set_current_interp_point(
-        gp, AEI::CurrentInterpPointPreset::estimate_interpolation_update);
+        gp, AEI::CurrentInterpPointTarget::estimate_interpolation_update);
     interp_elastic_defgrad_ref(0, 0) = 1.7817974362806785;
     interp_elastic_defgrad_ref(1, 1) = 1.0594630943592953;
     interp_elastic_defgrad_ref(2, 2) = 1.0594630943592953;
@@ -937,7 +937,7 @@ namespace
 
     // user-set starting point (here: \f$ \xi = 0.1 \f$)
     aei_manager.set_user_starting_point(gp);
-    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointPreset::starting_point);
+    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointTarget::starting_point);
     interp_elastic_defgrad_ref(0, 0) = 1.9543199368684918;
     interp_elastic_defgrad_ref(1, 1) = 1.0116194403019225;
     interp_elastic_defgrad_ref(2, 2) = 1.0116194403019225;
@@ -951,7 +951,7 @@ namespace
     // intermediate point between the lower bound (here \f$ \xi_{\text{E}} = 0.0 \f$), and the
     // current interpolation point (here \f$ \xi = 0.1 \f$) because of the user-set starting
     // point --> here: \f$ \xi_{\text{I}} = 0.05 \f$
-    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointPreset::intermediate_point);
+    aei_manager.set_current_interp_point(gp, AEI::CurrentInterpPointTarget::intermediate_point);
     interp_elastic_defgrad_ref(0, 0) = 1.9770280407057923;
     interp_elastic_defgrad_ref(1, 1) = 1.0057929410678534;
     interp_elastic_defgrad_ref(2, 2) = 1.0057929410678534;
@@ -967,10 +967,10 @@ namespace
     // interpolation point, i.e., \f$ \xi_{\text{E}} =
     // \xi_{\text{I}} = 0.05 \f$; and redo the estimate interpolation update, \f$ \xi = 0.5 \left(
     // 0.05 + 1.0 \right) = 0.525 \f$
-    aei_manager.adapt_interpolation_interval(
+    aei_manager.shift_interpolation_interval(
         gp, AEI::InterpolationIntervalShift::towards_plastic_pred);
     aei_manager.set_current_interp_point(
-        gp, AEI::CurrentInterpPointPreset::estimate_interpolation_update);
+        gp, AEI::CurrentInterpPointTarget::estimate_interpolation_update);
     interp_elastic_defgrad_ref(0, 0) = 1.7715350382047212;
     interp_elastic_defgrad_ref(1, 1) = 1.0625273666151527;
     interp_elastic_defgrad_ref(2, 2) = 1.0625273666151527;
@@ -984,10 +984,10 @@ namespace
     // we now shift towards the elastic predictor, i.e., set the upper bound as the current
     // interpolation point: $\xi_{\text{P}} = 0.525$ and redo the estimate interpolation update, \f$
     // \xi = 0.5 \left( 0.05 + 0.525 \right) = 0.2875 \f$
-    aei_manager.adapt_interpolation_interval(
+    aei_manager.shift_interpolation_interval(
         gp, AEI::InterpolationIntervalShift::towards_elastic_pred);
     aei_manager.set_current_interp_point(
-        gp, AEI::CurrentInterpPointPreset::estimate_interpolation_update);
+        gp, AEI::CurrentInterpPointTarget::estimate_interpolation_update);
     interp_elastic_defgrad_ref(0, 0) = 1.8714631830798973;
     interp_elastic_defgrad_ref(1, 1) = 1.033771021567608;
     interp_elastic_defgrad_ref(2, 2) = 1.033771021567608;

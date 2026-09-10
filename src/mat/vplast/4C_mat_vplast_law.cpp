@@ -16,6 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace ViscoplastUtils = Mat::InelasticDefgradTransvIsotropElastViscoplastUtils;
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
@@ -67,6 +68,77 @@ std::shared_ptr<Mat::Viscoplastic::Law> Mat::Viscoplastic::Law::factory(int matn
     default:
       FOUR_C_THROW("cannot deal with type {}", curmat->type());
   }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+std::optional<double> Mat::Viscoplastic::Law::integrate_plastic_strain(
+    const InputIntegratePlasticStrain& input_integrate_plastic_strain)
+{
+  // auxiliaries
+  ViscoplastUtils::PlasticStrainRateDerivs plastic_strain_rate_derivs;
+
+  // set initial estimate as the previous plastic strain
+  double plastic_strain = input_integrate_plastic_strain.last_plastic_strain;
+
+  // initialize iteration counter
+  unsigned int iter = 0;
+
+  // initialize quantities involved in the hardening integration with dummy values
+  double plastic_strain_rate = 1.0e10;
+  double deriv_plastic_strain_rate = 1.0e10;
+  double residual = 1.0e10;
+  double jacobian = 1.0e10;
+
+  // initialize evaluation error status
+  ViscoplastUtils::ErrorType err_status{ViscoplastUtils::ErrorType::no_errors};
+
+  // Newton-Raphson loop for hardening integration
+  while (iter < input_integrate_plastic_strain.max_iter)
+  {
+    // increment iterations
+    ++iter;
+
+    // compute plastic strain rate from the viscoplasticity law
+    plastic_strain_rate = evaluate_plastic_strain_rate(input_integrate_plastic_strain.equiv_stress,
+        plastic_strain, input_integrate_plastic_strain.step, err_status, false);
+    // return directly when encountering error -> this will be handled by the estimate
+    // interpolation procedure
+    if (err_status != ViscoplastUtils::ErrorType::no_errors) return std::nullopt;
+
+    // compute residual
+    residual = plastic_strain - input_integrate_plastic_strain.last_plastic_strain -
+               input_integrate_plastic_strain.step * plastic_strain_rate;
+
+    // return solution if converged
+    if (std::abs(residual) <= input_integrate_plastic_strain.residual_tolerance)
+    {
+      return plastic_strain;
+    }
+
+    // compute derivative of the plastic strain rate w.r.t. plastic
+    // strain
+    plastic_strain_rate_derivs =
+        evaluate_derivatives_of_plastic_strain_rate(input_integrate_plastic_strain.equiv_stress,
+            plastic_strain, input_integrate_plastic_strain.step, err_status, false);
+    deriv_plastic_strain_rate = plastic_strain_rate_derivs.deriv_plastic_strain;
+
+    // return directly when encountering overflow error -> this will be handled by the estimate
+    // interpolation directly
+    if (err_status != ViscoplastUtils::ErrorType::no_errors) return std::nullopt;
+
+    // compute jacobian and verify that it is non-zero
+    jacobian = 1.0 - input_integrate_plastic_strain.step * deriv_plastic_strain_rate;
+    if (std::abs(jacobian) <= 1.0e-12)
+    {
+      return std::nullopt;
+    }
+
+    // update solution
+    plastic_strain -= residual / jacobian;
+  }
+
+  return std::nullopt;
 }
 
 FOUR_C_NAMESPACE_CLOSE

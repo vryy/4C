@@ -10,7 +10,10 @@ TITLE:
   - "- time integration of internal variables using logarithmic substepping, as shown in:"
   - "Ana: Continuum Modeling and Calibration of Viscoplasticity in the Context"
   - "of the Lithium Anode in Solid-State Batteries"
-  - "(Master's Thesis, Institute for Computational Mechanics, TU Munich, 2024)"
+  - "(Master's Thesis, Institute for Computational Mechanics, TU Munich, 2024)."
+  - "The Adaptive Estimate Interpolation algorithm presented in Ana, Schmidt, Wall: An Adaptive Strategy
+    for Initial Estimates in the Local Newton-Raphson Integration of (Visco)plasticity Models is not used
+    in this test."
 PROBLEM TYPE:
   PROBLEMTYPE: "Structure"
 IO:
@@ -21,15 +24,14 @@ IO/RUNTIME VTK OUTPUT/STRUCTURE:
   DISPLACEMENT: true
   STRESS_STRAIN: true
 IO/RUNTIME VTK OUTPUT:
-  INTERVAL_STEPS: 1
+  INTERVAL_STEPS: 100
 STRUCTURAL DYNAMIC:
   DYNAMICTYPE: "Statics"
-  RESTARTEVERY: 30
-  TIMESTEP: 1e-06
+  RESTARTEVERY: 100
+  TIMESTEP: 1e-03
   NUMSTEP: 100000000
-  MAXTIME: 0.0001
+  MAXTIME: 1.0
   TOLDISP: 1e-08
-  NEGLECTINERTIA: true
   LINEAR_SOLVER: 1
 SOLVER 1:
   SOLVER: "UMFPACK"
@@ -64,6 +66,8 @@ MATERIALS:
         MAX_PLASTIC_STRAIN_INCR: 10686474581524.463
         REGISTER_PLASTIC_STRAIN_DERIV_INCR_OVERFLOW: false
         MAX_PLASTIC_STRAIN_DERIV_INCR: 10686474581524.463
+      ADAPTIVE_ESTIMATE_INTERPOLATION:
+        USE_ADAPTIVE_ESTIMATE_INTERPOLATION: false
   - MAT: 4
     MAT_ViscoplasticLawReformulatedJohnsonCook:
       STRAIN_RATE_PREFAC: 1
@@ -85,62 +89,56 @@ MATERIALS:
     ELAST_StructuralTensor:
       STRATEGY: "Standard"
 FUNCT1:
-  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "a"
-  - VARIABLE: 0
-    NAME: "a"
-    TYPE: "multifunction"
-    NUMPOINTS: 2
-    TIMES: [0, 1.6e+16]
-    DESCRIPTION: ["(exp(1.0e2*t)-1.0)"]
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "(exp(1.0*t)-1.0)"
 RESULT DESCRIPTION:
   - STRUCTURE:
       DIS: "structure"
       NODE: 4
       QUANTITY: "dispy"
-      VALUE: -0.003966194599572764
-      TOLERANCE: 4e-11
+      VALUE: -3.92635981300662407e-01
+      TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 5
       QUANTITY: "dispx"
-      VALUE: -0.0039661945995734475
-      TOLERANCE: 4e-11
+      VALUE: -3.92635981300662074e-01
+      TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispx"
-      VALUE: -0.0039661945995732185
+      VALUE: -3.92635981300657355e-01
       TOLERANCE: 4e-11
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispy"
-      VALUE: -0.0039661945995739184
-      TOLERANCE: 4e-11
+      VALUE: -3.92635981300656967e-01
+      TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispz"
-      VALUE: 0.010050167084167949
+      VALUE: 1.71828182845904687e+00
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 6
       QUANTITY: "dispx"
-      VALUE: -0.003966194599575029
-      TOLERANCE: 4e-11
+      VALUE: -3.92635981300652415e-01
+      TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 4
       QUANTITY: "stress_zz"
-      VALUE: 978.4575843807388
-      TOLERANCE: 0.00098
+      VALUE: 1.31014840571644027e+03
+      TOLERANCE: 1.0e-5
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "stress_zz"
-      VALUE: 978.4575843813795
-      TOLERANCE: 0.00098
+      VALUE: 1.31014840572584649e+03
+      TOLERANCE: 1.0e-5
 DESIGN POINT DIRICH CONDITIONS:
   - E: 1
     NUMDOF: 3

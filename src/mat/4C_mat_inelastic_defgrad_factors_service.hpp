@@ -977,6 +977,14 @@ namespace Mat
        */
       void increment_solution_vector(const Core::LinAlg::Matrix<10, 1>& delta_sol);
 
+      /*!
+       * @brief Set the solution vector \f$ \boldsymbol{s}^{(l)} \f$
+       *
+       *
+       * @param[in] sol solution vector \f$ \boldsymbol{s}^{(l)}\f$
+       */
+      void set_solution_vector(const Core::LinAlg::Matrix<10, 1>& sol);
+
       /// getter for the solution vector
       [[nodiscard]] Core::LinAlg::Matrix<10, 1> sol() const { return sol_; }
 
@@ -1244,9 +1252,9 @@ namespace Mat
 
       //! struct: input for the interpolation point determination based on the equivalent
       //! stress of the previous solution between both predictors (I_HIST method from paper:
-      //! $\hat{\xi}_{n+1} = \text{min}[1, \text{max}(\frac{\overline{\sigma}_n -
+      //! \f$\hat{\xi}_{n+1} = \text{min}[1, \text{max}(\frac{\overline{\sigma}_n -
       //! \overline{\sigma}_n^{\text{E}}}{\overline{\sigma}_{n}^{\text{P}} -
-      //! \overline{\sigma}_{n}^{\text{E}}},0)]$)
+      //! \overline{\sigma}_{n}^{\text{E}}},0)]\f$)
       struct InputEquivStressStartingPoint
       {
         //! equivalent stress of the solution: \f$ \overline{\sigma}_{n} \f$
@@ -1410,7 +1418,7 @@ namespace Mat
 
       /// Types of interpolation points / bounds which can be used to set the current interpolation
       /// point
-      enum class CurrentInterpPointPreset : std::uint8_t
+      enum class CurrentInterpPointTarget : std::uint8_t
       {
         plastic_pred_construct_update,  ///< update current interpolation point between the lower
                                         ///< and upper bound for the plastic predictor
@@ -1426,17 +1434,15 @@ namespace Mat
                                         ///< \xi \gets \xi_{\text{E}} + s \, \left(
                                         ///< \xi_{\text{P}} - \xi_{\text{E}}
                                         ///< \right) \f$)
-        lower_interp_bound,  ///< shift towards elastic predictor (\f$ \xi \gets \xi_{\text{E}} \f$)
-        upper_interp_bound,  ///< shift towards plastic predictor (\f$ \xi \gets \xi_{\text{P}} \f$)
-        elastic_predictor,   ///< elastic predictor (\f$ \xi \gets 0.0 \f$)
-        plastic_predictor,   ///< plastic predictor (\f$ \xi \gets 1.0 \f$)
-        starting_point,      ///< starting point (\f$ \xi \gets \hat{\xi} \f$)
-        intermediate_point   ///<  intermediate point between lower bound and current interpolation
-                             ///<  point:
-                             ///< (\f$
-                             ///< \xi \gets \xi_{\text{E}} + s \, \left(
-                             ///< \xi - \xi_{\text{E}}
-                             ///< \right) \f$)
+        elastic_predictor,              ///< elastic predictor (\f$ \xi \gets 0.0 \f$)
+        plastic_predictor,              ///< plastic predictor (\f$ \xi \gets 1.0 \f$)
+        starting_point,                 ///< starting point (\f$ \xi \gets \hat{\xi} \f$)
+        intermediate_point  ///<  intermediate point between lower bound and current interpolation
+                            ///<  point:
+                            ///< (\f$
+                            ///< \xi \gets \xi_{\text{E}} + s \, \left(
+                            ///< \xi - \xi_{\text{E}}
+                            ///< \right) \f$)
       };
 
       //! class: manager for the Adaptive Estimate Interpolation (AEI) algorithm across all Gauss
@@ -1520,8 +1526,13 @@ namespace Mat
         //! pack method
         void pack(Core::Communication::PackBuffer& data) const;
 
-        //! unpack method
-        void unpack(Core::Communication::UnpackBuffer& buffer);
+        /*!
+         * @brief Unpack method
+         *
+         * @param[in] buffer Buffer to use for unpacking
+         * @param[in] num_gp Number of Gauss points
+         */
+        void unpack(Core::Communication::UnpackBuffer& buffer, unsigned int num_gp);
 
         /*!
          * @brief Interpolate the inverse inelastic deformation gradient required by the
@@ -1539,8 +1550,8 @@ namespace Mat
             unsigned int gp, const Core::LinAlg::Matrix<3, 3>& inv_defgrad) const;
 
         /*!
-         * Retrieves the inverse inelastic deformation gradient associated with the plastic
-         * predictor, via interpolation using \f$ \xi = 1.0 \f$, at the specified Gauss point
+         * @brief Retrieves the inverse inelastic deformation gradient associated with the plastic
+         * predictor via interpolation at the specified Gauss point
          *
          * @param[in] gp Gauss point index
          * @param[in] inv_defgrad inverse deformation gradient
@@ -1563,7 +1574,7 @@ namespace Mat
          * @param[in] gp Gauss point
          * @param[in] interval_shift interval shift direction
          */
-        void adapt_interpolation_interval(
+        void shift_interpolation_interval(
             unsigned int gp, const InterpolationIntervalShift& interval_shift);
 
         //! get current interpolation point at a specified Gauss point
@@ -1574,7 +1585,7 @@ namespace Mat
         }
 
         //! set current interpolation point at the specified Gauss point using a given preset
-        void set_current_interp_point(unsigned int gp, CurrentInterpPointPreset preset);
+        void set_current_interp_point(unsigned int gp, CurrentInterpPointTarget preset);
 
         //! get lower interpolation bound at the specified Gauss point
         [[nodiscard]] double lower_interp_bound(unsigned int gp) const

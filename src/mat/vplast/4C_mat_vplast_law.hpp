@@ -22,6 +22,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include <memory>
+#include <optional>
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -237,6 +238,40 @@ namespace Mat
       {
         return false;
       }
+
+      //! struct containing information required for integrating the plastic strain according
+      //! to its evolution equation / flow rule
+      struct InputIntegratePlasticStrain
+      {
+        //! fixed equivalent stress \f$ \overline{\sigma}_{n+1} \f$
+        double equiv_stress;
+
+        //! plastic strain at the previous time instant \f$ \varepsilon_{\text{p},n} \f$
+        double last_plastic_strain;
+
+        //! integration timestep / substep \f$ \Delta t \f$ / \f$ \Delta \tilde{t} \f$
+        double step;
+
+        //! Newton-Raphson residual tolerance used for integration
+        double residual_tolerance;
+
+        //! maximum number of Newton-Raphson iterations used for integration
+        unsigned int max_iter;
+      };
+
+      /*!
+       * @brief Integrates the equivalent plastic strain for a fixed equivalent stress based on its
+       * evolution equation / flow rule
+       *
+       * @note Relevant for the plastic strain update / "interpolation" within the Adaptive Estimate
+       * Interpolation procedures
+       *
+       * @param[in] input_integrate_plastic_strain struct containing variables required for this
+       * integration (particularly the fixed equivalent stress)
+       * @return Integrated plastic strain if the integration was successful; nullopt if not
+       */
+      [[nodiscard]] std::optional<double> integrate_plastic_strain(
+          const InputIntegratePlasticStrain& input_integrate_plastic_strain);
 
      protected:
       /// Gauss point index
