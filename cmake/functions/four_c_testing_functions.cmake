@@ -444,15 +444,17 @@ function(four_c_test)
 endfunction()
 
 ##
-# Define a restart test that restarts from a previous test
+# Define a restart test that restarts from a previous test.
 #
 # required parameters:
 #   BASED_ON:                name of the base test that created the restart files
 #   RESTART_STEP:            number of the restart step to restart from or last_possible
 #   SAME_FILE or TEST_FILE:  either SAME_FILE to indicate that the restart should be done from the same input file
-#                            as the base test, or TEST_FILE to indicate that a different input file should be used for the restart
+#                            as the base test, or TEST_FILE to indicate that a different input file should be used for the restart.
+#                            Note that in the case of SAME_FILE, the restart output is also saved within the same directory as the base test; in the case of TEST_FILE, a new test directory is created (except when RESTARTFROM_PATHTYPE is same_directory_implicit!).
 #
 # optional parameters:
+#   RESTARTFROM_PATHTYPE     <absolute|relative|relative_from_parent|same_directory|same_directory_implicit>. Defaults to absolute if not specified.
 #   NP:                      number of processors the test should use. Fallback to 1 if not specified.
 #   TIMEOUT:                 manually defined duration for test timeout; defaults to global timeout if not specified
 #   OMP_THREADS:             number of OpenMP threads per processor the test should use; defaults to no OpenMP if not specified
@@ -466,6 +468,7 @@ function(__four_c_test_restart)
   set(oneValueArgs
       BASED_ON
       TEST_FILE
+      RESTARTFROM_PATHTYPE
       NP
       RESTART_STEP
       TIMEOUT
@@ -481,6 +484,25 @@ function(__four_c_test_restart)
     "${multiValueArgs}"
     ${ARGN}
     )
+
+  # List of allowed values for RESTARTFROM_PATHTYPE
+  set(allowed_restartfrom_pathtypes
+      absolute
+      relative
+      relative_from_parent
+      same_directory
+      same_directory_implicit
+      )
+  if(NOT DEFINED _parsed_RESTARTFROM_PATHTYPE)
+    set(_parsed_RESTARTFROM_PATHTYPE "absolute")
+  endif()
+  if(NOT _parsed_RESTARTFROM_PATHTYPE IN_LIST allowed_restartfrom_pathtypes)
+    list(JOIN allowed_restartfrom_pathtypes "', '" _allowed_restartfrom_pathtypes_joined)
+    message(
+      FATAL_ERROR
+        "__four_c_test_restart: RESTARTFROM_PATHTYPE must be one of '${_allowed_restartfrom_pathtypes_joined}'"
+      )
+  endif()
 
   # validate input arguments
   if(DEFINED _parsed_UNPARSED_ARGUMENTS)
@@ -507,42 +529,91 @@ function(__four_c_test_restart)
     message(FATAL_ERROR "You must specify either SAME_FILE or TEST_FILE")
   endif()
 
-  # In case we reuse the same file as the base test, get the input file from there
-  if(_parsed_SAME_FILE)
-    # Get or initialize restart counter for this base test
-    get_property(_restart_count GLOBAL PROPERTY ${_parsed_BASED_ON}_RESTART_COUNT)
-    if(NOT DEFINED _restart_count OR _restart_count STREQUAL "")
-      set(_restart_count 0)
-    endif()
-
+  # Increment or initialize restart counter for this base test
+  get_property(_restart_count GLOBAL PROPERTY ${_parsed_BASED_ON}_RESTART_COUNT)
+  if(NOT DEFINED _restart_count OR _restart_count STREQUAL "")
+    set(_restart_count 1)
+  else()
     # Increment counter
     math(EXPR _restart_count "${_restart_count} + 1")
-    set_property(GLOBAL PROPERTY ${_parsed_BASED_ON}_RESTART_COUNT ${_restart_count})
+  endif()
+  set_property(GLOBAL PROPERTY ${_parsed_BASED_ON}_RESTART_COUNT ${_restart_count})
 
-    set(name_of_test "${_parsed_BASED_ON}-restart_${_parsed_RESTART_STEP}-p${_parsed_NP}")
+  # In case we reuse the same file as the base test, get the input file from there, and also use the same output directory.
+  # We differentiate in the following between base_directory, which contains the output files from the BASED_ON simulation, and test_directory, where this restart test will run.
+  if(_parsed_SAME_FILE)
+    set(name_of_test
+        "${_parsed_BASED_ON}-restart_${_parsed_RESTART_STEP}-p${_parsed_NP}-count${_restart_count}"
+        )
     get_test_property(${_parsed_BASED_ON} _internal_INPUT_FILE test_file_full_path)
     get_test_property(${_parsed_BASED_ON} _internal_OUTPUT_DIR test_directory)
-    set(restart_arguments "--restart=${_parsed_RESTART_STEP}")
+    set(base_directory ${test_directory})
   else()
     # Restart from a different testfile
     set(name_of_test
-        "${_parsed_BASED_ON}-restart_${_parsed_RESTART_STEP}-with_${_parsed_TEST_FILE}-p${_parsed_NP}"
+        "${_parsed_BASED_ON}-restart_${_parsed_RESTART_STEP}-with_${_parsed_TEST_FILE}-p${_parsed_NP}-count${_restart_count}"
         )
     set(test_file_full_path "${PROJECT_SOURCE_DIR}/tests/input_files/${_parsed_TEST_FILE}")
     set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_test})
     get_test_property(${_parsed_BASED_ON} _internal_OUTPUT_DIR base_directory)
-    set(restart_arguments "--restartfrom=${base_directory}/xxx --restart=${_parsed_RESTART_STEP}")
 
     if(NOT EXISTS ${test_file_full_path})
       message(FATAL_ERROR "Test source file ${test_file_full_path} does not exist")
     endif()
   endif()
 
-  # Basic test command
-  set(test_command
-      "mkdir -p ${test_directory} \
-                && ${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${test_file_full_path} ${test_directory}/xxx ${restart_arguments}"
+  # set root directory and required relative paths
+  set(root_directory "${PROJECT_BINARY_DIR}/framework_test_output")
+  file(RELATIVE_PATH relative_path_from_test_to_base_dir "${test_directory}" "${base_directory}")
+  if(relative_path_from_test_to_base_dir STREQUAL "")
+    set(relative_path_from_test_to_base_dir ".")
+  endif()
+  file(RELATIVE_PATH relative_path_from_root_to_base_dir "${root_directory}" "${base_directory}")
+  if(relative_path_from_root_to_base_dir STREQUAL "")
+    message(
+      FATAL_ERROR
+        "The root directory ${root_directory} of the tests is the same as the base directory ${base_directory} of ${_parsed_BASED_ON}"
       )
+  endif()
+
+  if(_parsed_RESTARTFROM_PATHTYPE STREQUAL "absolute")
+    set(test_command
+        "mkdir -p ${test_directory} \
+      && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
+      ${test_file_full_path} ${test_directory}/xxx --restartfrom=${base_directory}/xxx --restart=${_parsed_RESTART_STEP}"
+        )
+
+  elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "relative"
+         )# change into the test directory, then restart from the relative path
+    set(test_command
+        "mkdir -p ${test_directory} && cd ${test_directory} && echo changing pwd to: && pwd \
+      && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
+      ${test_file_full_path} ${test_directory}/xxx --restartfrom=${relative_path_from_test_to_base_dir}/xxx --restart=${_parsed_RESTART_STEP}"
+        )
+  elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "relative_from_parent"
+         )# change into the root directory, then restart from there
+    set(test_command
+        "mkdir -p ${test_directory} && cd ${root_directory} && echo changing pwd to: && pwd \
+      && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
+      ${test_file_full_path} ${test_directory}/xxx --restartfrom=${relative_path_from_root_to_base_dir}/xxx --restart=${_parsed_RESTART_STEP}"
+        )
+  elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "same_directory")
+    # restart from base directory, output is still written in test directory
+    set(test_command
+        "mkdir -p ${test_directory} && cd ${base_directory} && echo staying in: && pwd \
+      && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
+      ${test_file_full_path} ${test_directory}/xxx --restartfrom=xxx --restart=${_parsed_RESTART_STEP}"
+        )
+  elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "same_directory_implicit")
+    # restart from base directory and write output in the same directory while not specifying restartfrom path.
+    # Note: Output is written in base directory now. Hence it is convenient to set the test directory to base directory for the rest of the test.
+    set(test_directory ${base_directory})
+    set(test_command
+        "cd ${base_directory} && echo staying in: && pwd \
+      && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
+      ${test_file_full_path} xxx --restart=${_parsed_RESTART_STEP}"
+        )
+  endif()
 
   # Possibly enhanced with OpenMP
   set(total_procs ${_parsed_NP})
@@ -605,7 +676,7 @@ function(__four_c_test_restart)
   # If ASSERT_RESTART_STEP is specified, verify the restart step in the control file
   if(DEFINED _parsed_ASSERT_RESTART_STEP)
     # Determine control file name based on restart type
-    if(_parsed_SAME_FILE)
+    if(_parsed_SAME_FILE OR _parsed_RESTARTFROM_PATHTYPE STREQUAL "same_directory_implicit")
       set(control_file "${test_directory}/xxx-${_restart_count}.control")
     else()
       set(control_file "${test_directory}/xxx.control")
@@ -1193,28 +1264,27 @@ endfunction()
 #
 # required parameters:
 #   BASED_ON:                      Reference to previous test for which the comparison is run
-#   BASED_ON_PVD:                  Name of the .pvd file in the output directory of the previous test that references the .vtk files to compare
-#   PVD_REFERENCE or COMPARE_WITH: Either PVD_REFERENCE, i.e., the name of the .pvd file in tests/input_files that references the .vtk files to compare against, or COMPARE_WITH: similarly references a previous test to take as a reference for comparison
-#   COMPARE_WITH_PVD:              Name of the .pvd file in the output directory of the reference comparison test if COMPARE_WITH is used
+#   PVD_RESULT_FILE:               Name of the .pvd file in the output directory of the previous test that references the .vtk files to compare
+#   PVD_REFERENCE_FILE:            Name of the .pvd reference file: if REFERENCE_TEST is specified, this file is in the output directory of that reference test; otherwise, the path of this reference file is in tests/input_files
 #   TOLERANCE:                     Difference the values may have
 #
 # optional parameters:
-#   TIME_STEPS:                   Timesteps to compare
-#   TIMEOUT:                      Manually defined duration for test timeout; defaults to global timeout if not specified
-#   LABELS:                       Add labels to the test
-#   REQUIRED_DEPENDENCIES:        Any required external dependencies. The test will be skipped if the dependencies are not met.
-#                                 Either a dependency, e.g. "Trilinos", or a dependency with a version constraint, e.g. "Trilinos>=2025.2".
-#                                 The supported version constraint operators are: >=, <=, >, <, ==
-#                                 If multiple dependencies are provided, all must be met for the test to run.
-#                                 Note that the version is the _internal_ version that 4C assigns to the dependency.
+#   REFERENCE_TEST:                Optional: Name of the fixture to be used as reference
+#   TIME_STEPS:                    Timesteps to compare
+#   TIMEOUT:                       Manually defined duration for test timeout; defaults to global timeout if not specified
+#   LABELS:                        Add labels to the test
+#   REQUIRED_DEPENDENCIES:         Any required external dependencies. The test will be skipped if the dependencies are not met.
+#                                  Either a dependency, e.g. "Trilinos", or a dependency with a version constraint, e.g. "Trilinos>=2025.2".
+#                                  The supported version constraint operators are: >=, <=, >, <, ==
+#                                  If multiple dependencies are provided, all must be met for the test to run.
+#                                  Note that the version is the _internal_ version that 4C assigns to the dependency.
 function(__four_c_test_vtk)
   set(options "")
   set(oneValueArgs
       BASED_ON
-      BASED_ON_PVD
-      PVD_REFERENCE
-      COMPARE_WITH
-      COMPARE_WITH_PVD
+      PVD_RESULT_FILE
+      PVD_REFERENCE_FILE
+      REFERENCE_TEST
       TOLERANCE
       TIMEOUT
       )
@@ -1232,29 +1302,13 @@ function(__four_c_test_vtk)
     message(FATAL_ERROR "There are unparsed arguments: ${_parsed_UNPARSED_ARGUMENTS}!")
   endif()
 
-  assert_required_arguments(_parsed BASED_ON BASED_ON_PVD TOLERANCE)
-
-  # validate comparison argument: PVD_REFERENCE / COMPARE_WITH
-  if(NOT DEFINED _parsed_PVD_REFERENCE AND NOT DEFINED _parsed_COMPARE_WITH)
-    message(
-      FATAL_ERROR
-        "Either compare against a set reference pvd file (PVD_REFERENCE), or against another test (COMPARE_WITH)."
-      )
-  endif()
-
-  if(DEFINED _parsed_PVD_REFERENCE AND DEFINED _parsed_COMPARE_WITH)
-    message(FATAL_ERROR "PVD_REFERENCE and COMPARE_WITH are mutually exclusive!")
-  endif()
-
-  if(DEFINED _parsed_COMPARE_WITH AND NOT DEFINED _parsed_COMPARE_WITH_PVD)
-    message(
-      FATAL_ERROR "If COMPARE_WITH is used, you also need to define the pvd to use from that test"
-      )
-  endif()
-
-  if(DEFINED _parsed_PVD_REFERENCE AND DEFINED _parsed_COMPARE_WITH_PVD)
-    message(FATAL_ERROR "If PVD_REFERENCE is used, you should not provide COMPARE_WITH_PVD")
-  endif()
+  assert_required_arguments(
+    _parsed
+    BASED_ON
+    PVD_RESULT_FILE
+    PVD_REFERENCE_FILE
+    TOLERANCE
+    )
 
   # get test directory of base test
   get_test_property(${_parsed_BASED_ON} _internal_OUTPUT_DIR test_directory)
@@ -1266,22 +1320,22 @@ function(__four_c_test_vtk)
 
   # determine comparison target
   set(additional_fixtures "${_parsed_BASED_ON}")
-  if(DEFINED _parsed_COMPARE_WITH)
-    get_test_property(${_parsed_COMPARE_WITH} _internal_OUTPUT_DIR reference_test_directory)
-    set(reference_pvd "${reference_test_directory}/${_parsed_COMPARE_WITH_PVD}")
-    list(APPEND additional_fixtures "${_parsed_COMPARE_WITH}")
+  if(DEFINED _parsed_REFERENCE_TEST)
+    get_test_property(${_parsed_REFERENCE_TEST} _internal_OUTPUT_DIR reference_test_directory)
+    set(reference_pvd "${reference_test_directory}/${_parsed_PVD_REFERENCE_FILE}")
+    list(APPEND additional_fixtures "${_parsed_REFERENCE_TEST}")
     set(name_of_test
-        "${_parsed_BASED_ON}-vtk-${_parsed_BASED_ON_PVD}-compare-with-${_parsed_COMPARE_WITH}-${_parsed_COMPARE_WITH_PVD}"
+        "${_parsed_BASED_ON}-vtk-${_parsed_PVD_RESULT_FILE}-compare-with-${_parsed_REFERENCE_TEST}-${_parsed_PVD_REFERENCE_FILE}"
         )
   else()
-    set(reference_pvd "${PROJECT_SOURCE_DIR}/tests/input_files/${_parsed_PVD_REFERENCE}")
+    set(reference_pvd "${PROJECT_SOURCE_DIR}/tests/input_files/${_parsed_PVD_REFERENCE_FILE}")
     set(name_of_test
-        "${_parsed_BASED_ON}-vtk-${_parsed_BASED_ON_PVD}-pvd-reference-${_parsed_PVD_REFERENCE}"
+        "${_parsed_BASED_ON}-vtk-${_parsed_PVD_RESULT_FILE}-compare-with-existing-pvd-${_parsed_PVD_REFERENCE_FILE}"
         )
   endif()
 
   set(test_command
-      "vtk-compare ${test_directory}/${_parsed_BASED_ON_PVD} ${reference_pvd} ${_parsed_TOLERANCE} --points_in_time ${merged_timesteps_to_compare}"
+      "vtk-compare ${test_directory}/${_parsed_PVD_RESULT_FILE} ${reference_pvd} ${_parsed_TOLERANCE} --points_in_time ${merged_timesteps_to_compare}"
       )
 
   # Ensure that Python is listed as required dependency
