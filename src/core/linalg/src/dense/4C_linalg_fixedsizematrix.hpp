@@ -1437,6 +1437,7 @@ namespace Core::LinAlg
     }
 
     // specialization for double using LAPACK
+    FOUR_C_API(FOUR_C_CORE)
     double determinant_large_matrix(unsigned int i, unsigned int j, const double* mat);
 
     template <class ValueType, unsigned int i, unsigned int j>

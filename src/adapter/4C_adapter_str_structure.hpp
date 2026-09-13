@@ -239,11 +239,7 @@ namespace Adapter
     virtual std::shared_ptr<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() = 0;
 
     /// do we have this model
-    virtual bool have_model(Solid::ModelType model)
-    {
-      FOUR_C_THROW("new time integration only");
-      return false;
-    }
+    virtual bool have_model(Solid::ModelType model) { FOUR_C_THROW("new time integration only"); }
 
     /// return model evaluator
     virtual Solid::ModelEvaluator::Generic& model_evaluator(Solid::ModelType mtype) = 0;

@@ -173,9 +173,11 @@ namespace Core::LinAlg
       static constexpr std::size_t compressed_size =
           get_index_reorder_to_symmetric_tensor<n...>().size();
 
-      template <TensorBoundCheck bound_check>
-      static constexpr std::size_t flatten_index(decltype(n)... i)
+      template <TensorBoundCheck bound_check, typename... Indices>
+      static constexpr std::size_t flatten_index(Indices... i)
       {
+        static_assert(
+            sizeof...(Indices) == sizeof...(n), "Number of indices must match tensor order");
         constexpr std::array index_reorder = get_index_reorder_from_symmetric_tensor<n...>();
         return index_reorder[get_flat_index<OrderType::column_major, bound_check, n...>(i...)];
       }

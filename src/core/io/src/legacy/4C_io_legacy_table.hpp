@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 */
 /*----------------------------------------------------------------------*/
-void init_map(MAP* map);
+FOUR_C_API(FOUR_C_CORE) void init_map(MAP* map);
 
 
 /*----------------------------------------------------------------------*/
@@ -33,68 +33,69 @@ void init_map(MAP* map);
 
 */
 /*----------------------------------------------------------------------*/
-void destroy_map(MAP* map);
+FOUR_C_API(FOUR_C_CORE) void destroy_map(MAP* map);
 
 
 /* Find the first symbol with the given key. Use this if you have to
  * travel all symbols with that key. */
-SYMBOL* map_find_symbol(MAP* map, const char* key);
+FOUR_C_API(FOUR_C_CORE) SYMBOL* map_find_symbol(MAP* map, const char* key);
 
 
 /* Find the last symbols value. The value has to be of the given
  * type. Returns false on failure. */
-int map_find_string(MAP* map, const char* key, const char** string);
-int map_find_int(MAP* map, const char* key, int* integer);
-int map_find_real(MAP* map, const char* key, double* real);
-int map_find_map(MAP* map, const char* key, MAP** dir);
+FOUR_C_API(FOUR_C_CORE) int map_find_string(MAP* map, const char* key, const char** string);
+FOUR_C_API(FOUR_C_CORE) int map_find_int(MAP* map, const char* key, int* integer);
+FOUR_C_API(FOUR_C_CORE) int map_find_real(MAP* map, const char* key, double* real);
+FOUR_C_API(FOUR_C_CORE) int map_find_map(MAP* map, const char* key, MAP** dir);
 
 
 /* Find the last symbols value. The value has to be of the given
  * type. Calls FOUR_C_THROW on failure. */
-const char* map_read_string(MAP* map, const char* key);
-int map_read_int(MAP* map, const char* key);
-double map_read_real(MAP* map, const char* key);
-MAP* map_read_map(MAP* map, const char* key);
+FOUR_C_API(FOUR_C_CORE) const char* map_read_string(MAP* map, const char* key);
+FOUR_C_API(FOUR_C_CORE) int map_read_int(MAP* map, const char* key);
+FOUR_C_API(FOUR_C_CORE) double map_read_real(MAP* map, const char* key);
+FOUR_C_API(FOUR_C_CORE) MAP* map_read_map(MAP* map, const char* key);
 
 
 /* Tell whether there is a symbol with given key and value. Only the
  * last symbol with that key is checked. */
-int map_has_string(MAP* map, const char* key, const char* value);
-int map_has_int(MAP* map, const char* key, const int value);
-int map_has_real(MAP* map, const char* key, const double value);
-int map_has_map(MAP* map, const char* key);
+FOUR_C_API(FOUR_C_CORE) int map_has_string(MAP* map, const char* key, const char* value);
+FOUR_C_API(FOUR_C_CORE) int map_has_int(MAP* map, const char* key, const int value);
+FOUR_C_API(FOUR_C_CORE) int map_has_real(MAP* map, const char* key, const double value);
+FOUR_C_API(FOUR_C_CORE) int map_has_map(MAP* map, const char* key);
 
 
 /* Tell the number of symbols under this key. */
-int map_symbol_count(MAP* map, const char* key);
+FOUR_C_API(FOUR_C_CORE) int map_symbol_count(MAP* map, const char* key);
 
 
 /* Take a symbol chain out of the map. Leave the symbol alive. */
-void map_disconnect_symbols(MAP* map, const char* key);
+FOUR_C_API(FOUR_C_CORE) void map_disconnect_symbols(MAP* map, const char* key);
 
 
 /* Prepend the symbol chain to one under the given key. */
+FOUR_C_API(FOUR_C_CORE)
 void map_prepend_symbols(MAP* map, const char* key, SYMBOL* symbol, int count);
 
 
 /* Tell whether this symbol has the given type. */
-int symbol_is_map(const SYMBOL* symbol);
+FOUR_C_API(FOUR_C_CORE) int symbol_is_map(const SYMBOL* symbol);
 
 
 /* Extract the value of this symbol. Returns false on failure. */
-int symbol_get_string(const SYMBOL* symbol, const char** string);
-int symbol_get_int(const SYMBOL* symbol, int* integer);
-int symbol_get_real(const SYMBOL* symbol, double* real);
-int symbol_get_real_as_float(const SYMBOL* symbol, float* real);
-int symbol_get_map(const SYMBOL* symbol, MAP** map);
+FOUR_C_API(FOUR_C_CORE) int symbol_get_string(const SYMBOL* symbol, const char** string);
+FOUR_C_API(FOUR_C_CORE) int symbol_get_int(const SYMBOL* symbol, int* integer);
+FOUR_C_API(FOUR_C_CORE) int symbol_get_real(const SYMBOL* symbol, double* real);
+FOUR_C_API(FOUR_C_CORE) int symbol_get_real_as_float(const SYMBOL* symbol, float* real);
+FOUR_C_API(FOUR_C_CORE) int symbol_get_map(const SYMBOL* symbol, MAP** map);
 
 
 /* Extract the value of this symbol. Call FOUR_C_THROW on failure. */
-MAP* symbol_map(const SYMBOL* symbol);
+FOUR_C_API(FOUR_C_CORE) MAP* symbol_map(const SYMBOL* symbol);
 
 
 /* Read the control file given by name. Put its contents into the map. */
-void parse_control_file(MAP* map, const char* filename, MPI_Comm comm);
+FOUR_C_API(FOUR_C_CORE) void parse_control_file(MAP* map, const char* filename, MPI_Comm comm);
 
 FOUR_C_NAMESPACE_CLOSE
 

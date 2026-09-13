@@ -40,9 +40,7 @@ namespace Cut
     - its position to the cut surface
     - the dof set number of all element nodes
    */
-
-
-  class VolumeCell
+  class FOUR_C_API(FOUR_C_CORE) VolumeCell
   {
    public:
     VolumeCell(const plain_facet_set& facets,

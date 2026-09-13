@@ -67,12 +67,18 @@ namespace Core::LinAlg
     template <std::array integer_pairs, typename IndexSequence>
     struct SymmetricIntegerPairSequenceHelper;
 
+    template <auto arr, std::size_t i>
+    inline constexpr auto integer_pair_first_v = arr[i].first;
+
+    template <auto arr, std::size_t i>
+    inline constexpr auto integer_pair_second_v = arr[i].second;
+
     template <std::array integer_pairs, std::size_t... i>
     struct SymmetricIntegerPairSequenceHelper<integer_pairs,
         std::integer_sequence<std::size_t, i...>>
     {
-      using type =
-          IntegerPairSequence<IntegerPair<integer_pairs[i].first, integer_pairs[i].second>...>;
+      using type = IntegerPairSequence<IntegerPair<integer_pair_first_v<integer_pairs, i>,
+          integer_pair_second_v<integer_pairs, i>>...>;
     };
 
     template <std::size_t size>

@@ -14,7 +14,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class VolumeCell;
@@ -156,7 +155,7 @@ namespace Cut
     Furthermore, nodes have some idea how many dofsets are required. This is
     optional information that can be used by the xfem code.
    */
-  class Node
+  class FOUR_C_API(FOUR_C_CORE) Node
   {
    public:
     /// constructor

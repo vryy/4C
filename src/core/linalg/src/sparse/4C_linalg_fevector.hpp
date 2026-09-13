@@ -29,7 +29,7 @@ namespace Core::LinAlg
 
   // Sparse FEVector which wrappes the Epetra_FEVector
   template <typename T>
-  class FEVector
+  class FOUR_C_API(FOUR_C_CORE) FEVector
   {
     static_assert(std::is_same_v<T, double>, "Only double is supported for now");
 
@@ -46,7 +46,6 @@ namespace Core::LinAlg
     FEVector& operator=(const FEVector& other);
 
     ~FEVector() = default;
-
 
     //! Element access function
     double& operator[](int index) { return *(*vector_)[index]; }
@@ -79,7 +78,6 @@ namespace Core::LinAlg
 
     const Epetra_Vector* operator()(int i) const { return (*vector_)(i); }
 
-
     //! Computes dot product of each corresponding pair of vectors.
     void dot(const Epetra_MultiVector& A, double* Result) const;
 
@@ -97,7 +95,6 @@ namespace Core::LinAlg
     //! + ScalarB*B.
     void update(double ScalarA, const Epetra_MultiVector& A, double ScalarB,
         const Epetra_MultiVector& B, double ScalarThis);
-
 
     ///
 
@@ -284,7 +281,6 @@ namespace Core::LinAlg
       ASSERT_EPETRA_CALL(vector_->SumIntoMyValue(MyRow, FEVectorIndex, ScalarValue));
     }
 
-
     /**
      * View a given Epetra_FEVector object under our own FEVector wrapper.
      */
@@ -292,7 +288,6 @@ namespace Core::LinAlg
 
     [[nodiscard]] static std::unique_ptr<const FEVector<T>> create_view(
         const Epetra_FEVector& view);
-
 
    private:
     FEVector() = default;
@@ -317,9 +312,6 @@ namespace Core::LinAlg
 
 }  // namespace Core::LinAlg
 
-
-
 FOUR_C_NAMESPACE_CLOSE
-
 
 #endif

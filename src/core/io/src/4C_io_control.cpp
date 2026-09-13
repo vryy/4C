@@ -15,8 +15,13 @@
 #include "4C_io_yaml.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#ifdef _WIN32
+#include <lmcons.h>
+#include <windows.h>
+#else
 #include <pwd.h>
 #include <unistd.h>
+#endif
 
 #include <array>
 #include <ctime>
@@ -152,16 +157,31 @@ void Core::IO::ControlFileWriter::write_metadata_header()
   if (!pimpl_) return;
 
   time_t time_value = std::time(nullptr);
-  auto local_time = std::localtime(&time_value);
+  std::tm local_time_buf{};
+#ifdef _WIN32
+  localtime_s(&local_time_buf, &time_value);
+#else
+  localtime_r(&time_value, &local_time_buf);
+#endif
+  std::tm* local_time = &local_time_buf;
   std::ostringstream time_format_stream;
   time_format_stream << std::put_time(local_time, "%d-%m-%Y %H-%M-%S");
 
   std::array<char, 256> hostname;
-  passwd* user_entry = getpwuid(getuid());
   gethostname(hostname.data(), 256);
 
+#ifdef _WIN32
+  char win_username[UNLEN + 1];
+  DWORD win_username_len = UNLEN + 1;
+  GetUserNameA(win_username, &win_username_len);
+  std::string user_name(win_username);
+#else
+  passwd* user_entry = getpwuid(getuid());
+  std::string user_name = user_entry ? user_entry->pw_name : "unknown";
+#endif
+
   start_group("metadata")
-      .write("created_by", user_entry->pw_name)
+      .write("created_by", user_name)
       .write("host", hostname.data())
       .write("time", time_format_stream.str())
       .write("sha", VersionControl::git_hash)
@@ -337,7 +357,7 @@ std::string Core::IO::OutputControl::file_name_only_prefix() const
 std::string Core::IO::OutputControl::directory_name() const
 {
   std::filesystem::path path(filename_);
-  return path.parent_path();
+  return path.parent_path().string();
 }
 
 static std::string read_file(const std::string& filename, MPI_Comm comm)

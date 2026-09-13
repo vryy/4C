@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
  * \brief main control routine for particle simulations
  *
  */
-void particle_drt();
+FOUR_C_API(FOUR_C_CORE) void particle_drt();
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

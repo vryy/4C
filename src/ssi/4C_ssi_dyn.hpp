@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 //! global control routine for Structure - Scatra -Interaction problem.
-void ssi_drt();
+FOUR_C_API(FOUR_C_CORE) void ssi_drt();
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -74,7 +74,7 @@ namespace Core::Utils
      * scope.
      *
      */
-    static void initialize();
+    static FOUR_C_API(FOUR_C_CORE) void initialize();
 
     /**
      * @brief Destroy all singletons that are managed by a SingletonOwner.
@@ -86,7 +86,7 @@ namespace Core::Utils
      *
      * @note Prefer to use the ScopeGuard class which calls this function at the end of scope.
      */
-    static void finalize();
+    static FOUR_C_API(FOUR_C_CORE) void finalize();
 
    private:
     SingletonOwnerRegistry() = default;

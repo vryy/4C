@@ -126,7 +126,7 @@ namespace Core::IO
   /**
    * Initialize a ryml tree which throws YamlExceptions on parse errors.
    */
-  [[nodiscard]] ryml::Tree init_yaml_tree_with_exceptions();
+  [[nodiscard]] FOUR_C_API(FOUR_C_CORE) ryml::Tree init_yaml_tree_with_exceptions();
 
   void emit_value_as_yaml(YamlNodeRef node, const int& value);
 

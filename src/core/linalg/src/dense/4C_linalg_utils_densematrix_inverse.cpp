@@ -21,8 +21,7 @@ void Core::LinAlg::symmetric_inverse(Core::LinAlg::SerialDenseMatrix& A, const i
   if (A.numRows() != dim) FOUR_C_THROW("Dimension supplied does not match matrix");
 
   double* a = A.values();
-  char uplo[5];
-  strcpy(uplo, "L ");
+  char uplo = 'L';
   std::vector<int> ipiv(dim);
   int lwork = 10 * dim;
   std::vector<double> work(lwork);
@@ -30,10 +29,10 @@ void Core::LinAlg::symmetric_inverse(Core::LinAlg::SerialDenseMatrix& A, const i
   int n = dim;
   int m = dim;
 
-  dsytrf(uplo, &m, a, &n, ipiv.data(), work.data(), &lwork, &info);
+  dsytrf(&uplo, &m, a, &n, ipiv.data(), work.data(), &lwork, &info);
   if (info) FOUR_C_THROW("dsytrf returned info={}", info);
 
-  dsytri(uplo, &m, a, &n, ipiv.data(), work.data(), &info);
+  dsytri(&uplo, &m, a, &n, ipiv.data(), work.data(), &info);
   if (info) FOUR_C_THROW("dsytri returned info={}", info);
 
   for (int i = 0; i < dim; ++i)

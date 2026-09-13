@@ -38,7 +38,7 @@ namespace Cut
    * in the base class. In this way we can circumvent an explicit knowledge
    * about the discretization type, problem dimension etc., while using the
    * different methods.                               note by hiermeier 08/16 */
-  class Element
+  class FOUR_C_API(FOUR_C_CORE) Element
   {
    public:
     /// \brief create an element with the given type
@@ -986,7 +986,7 @@ namespace Cut
   };  // class ConcreteElement
 
   /*--------------------------------------------------------------------------*/
-  class ElementFactory
+  class FOUR_C_API(FOUR_C_CORE) ElementFactory
   {
    public:
     /// constructor

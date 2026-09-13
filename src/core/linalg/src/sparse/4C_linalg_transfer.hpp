@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
-  class Import
+  class FOUR_C_API(FOUR_C_CORE) Import
   {
    public:
     Import(const Map& target_map, const Map& source_map);
@@ -34,7 +34,8 @@ namespace Core::LinAlg
     Map source_map_;
     Map target_map_;
   };
-  class Export
+
+  class FOUR_C_API(FOUR_C_CORE) Export
   {
    public:
     Export(const Map& target_map, const Map& source_map);

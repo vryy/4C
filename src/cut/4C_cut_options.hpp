@@ -15,13 +15,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   /*!
    \brief Options defined to configure the cutting behavior
    */
-  class Options
+  class FOUR_C_API(FOUR_C_CORE) Options
   {
    public:
     Options(NodalDofSetStrategy nodal_dofset_strategy = NDS_Strategy_full, bool positions = true,

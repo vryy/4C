@@ -17,7 +17,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class Mesh;
@@ -27,7 +26,7 @@ namespace Cut
   /*--------------------------------------------------------------------------*/
   /*! \brief Linear edge between two nodes. The edge nodes are always cut points.
    *  There can be further cut points on the edge. */
-  class Edge
+  class FOUR_C_API(FOUR_C_CORE) Edge
   {
    public:
     /** \brief Create a new concrete edge object

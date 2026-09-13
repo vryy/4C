@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 //! Main routine to run (in)stationary heat conduction
-void thermo_dyn_drt();
+FOUR_C_API(FOUR_C_CORE) void thermo_dyn_drt();
 
 FOUR_C_NAMESPACE_CLOSE
 

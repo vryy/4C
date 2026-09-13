@@ -33,6 +33,7 @@ namespace Core::LinAlg
    routine for postprocessing only (in that
    case FOUR_C_THROW is replaced with a warning)
    */
+  FOUR_C_API(FOUR_C_CORE)
   void symmetric_eigen_values(Core::LinAlg::SerialDenseMatrix& A,
       Core::LinAlg::SerialDenseVector& L, const bool postproc = false);
 
@@ -46,6 +47,7 @@ namespace Core::LinAlg
    routine for postprocessing only (in that
    case FOUR_C_THROW is replaced with a warning)
    */
+  FOUR_C_API(FOUR_C_CORE)
   void symmetric_eigen_problem(Core::LinAlg::SerialDenseMatrix& A,
       Core::LinAlg::SerialDenseVector& L, const bool postproc = false);
 
@@ -60,6 +62,7 @@ namespace Core::LinAlg
    routine for postprocessing only (in that
    case FOUR_C_THROW is replaced with a warning)
    */
+  FOUR_C_API(FOUR_C_CORE)
   void symmetric_eigen(Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L,
       bool eval_eigenvectors, bool postproc = false);
 
@@ -70,6 +73,7 @@ namespace Core::LinAlg
    \param A (in):    A Matrix
    \param B (in):    B Matrix
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::vector<std::complex<double>> generalized_eigen(
       Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseMatrix& B);
 
@@ -80,6 +84,7 @@ namespace Core::LinAlg
    \param A (in):    A Matrix
    \param B (in):    B Matrix
    */
+  FOUR_C_API(FOUR_C_CORE)
   double generalized_eigen_max_real_eigenvalue(
       Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseMatrix& B);
 

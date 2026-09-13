@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 //! global control routine for fluid-porous-structure-interaction problem.
-void fpsi_drt();
+FOUR_C_API(FOUR_C_CORE) void fpsi_drt();
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

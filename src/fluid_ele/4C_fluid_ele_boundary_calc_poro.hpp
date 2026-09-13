@@ -402,7 +402,13 @@ namespace Discret
       */
       bool compute_nodal_porosity(Discret::Elements::FluidBoundary* ele,
           const std::vector<double>& mydispnp,
-          Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity) override;
+          Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity) override
+      {
+        for (int inode = 0; inode < Base::bdrynen_; inode++)
+          eporosity(inode) = mydispnp[nsd_ + (inode * Base::numdofpernode_)];
+
+        return true;
+      }
 
       /*!
       \brief compute the porosity at nodes
@@ -418,7 +424,12 @@ namespace Discret
           Discret::Elements::FluidBoundary* ele,
           const Core::LinAlg::Matrix<Base::bdrynen_, 1>& funct,
           const Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
-          double& porosity, double& dphi_dp, double& dphi_dJ, bool save) override;
+          double& porosity, double& dphi_dp, double& dphi_dJ, bool save) override
+      {
+        porosity = eporosity.dot(Base::funct_);
+        dphi_dp = 0.0;
+        dphi_dJ = 0.0;
+      }
     };
 
   }  // namespace Elements

@@ -14,7 +14,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class Mesh;
@@ -23,7 +22,7 @@ namespace Cut
 
   /*! \class Integration Cell
       \brief Base class for integration cells */
-  class IntegrationCell
+  class FOUR_C_API(FOUR_C_CORE) IntegrationCell
   {
    public:
     IntegrationCell(Point::PointPosition position, const Core::LinAlg::SerialDenseMatrix& xyz,

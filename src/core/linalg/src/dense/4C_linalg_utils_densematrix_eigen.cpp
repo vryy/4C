@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 void Core::LinAlg::symmetric_eigen_values(
     Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L, const bool postproc)
 {
-  Core::LinAlg::symmetric_eigen(A, L, 'N', postproc);
+  Core::LinAlg::symmetric_eigen(A, L, false, postproc);
 }
 
 /*----------------------------------------------------------------------*
@@ -30,7 +30,7 @@ void Core::LinAlg::symmetric_eigen_values(
 void Core::LinAlg::symmetric_eigen_problem(
     Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L, const bool postproc)
 {
-  Core::LinAlg::symmetric_eigen(A, L, 'V', postproc);
+  Core::LinAlg::symmetric_eigen(A, L, true, postproc);
 }
 
 /*----------------------------------------------------------------------*

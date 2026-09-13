@@ -45,7 +45,7 @@ namespace Core::FE
 
 namespace Core::Elements
 {
-  class ElementType : public Core::Communication::ParObjectType
+  class FOUR_C_API(FOUR_C_CORE) ElementType : public Core::Communication::ParObjectType
   {
    protected:
     // only derived classes might create an instance

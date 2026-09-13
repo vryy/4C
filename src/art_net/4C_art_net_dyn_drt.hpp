@@ -21,10 +21,9 @@ namespace Adapter
   class ArtNet;
 }
 
-void dyn_art_net_drt();
+FOUR_C_API(FOUR_C_CORE) void dyn_art_net_drt();
 
 std::shared_ptr<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D);
-
 
 FOUR_C_NAMESPACE_CLOSE
 

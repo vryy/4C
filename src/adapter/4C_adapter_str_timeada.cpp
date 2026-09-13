@@ -80,7 +80,7 @@ void Adapter::StructureTimeAda::setup_time_ada()
   timeinitial_ = 0.0;
   timefinal_ = sdynparams.get<double>("MAXTIME");
   if (timefinal_ <= timeinitial_) FOUR_C_THROW("MAXTIME is not positive. It is invalid.");
-  timedirect_ = 1.0;
+  timedirect_ = 1;
   timestepinitial_ = 0;
   timestepfinal_ = sdynparams.get<int>("NUMSTEP");
   stepsizeinitial_ = sdynparams.get<double>("TIMESTEP");
@@ -136,7 +136,7 @@ void Adapter::StructureTimeAda::setup_time_ada()
     time_ = timeinitial_;
 
     // update variables which depend on initial time and step
-    timedirect_ = timefinal_ > timeinitial_ ? 1.0 : -1.0;
+    timedirect_ = timefinal_ > timeinitial_ ? 1 : -1;
     outsystime_ = timeinitial_ + outsysperiod_;
     outstrtime_ = timeinitial_ + outstrperiod_;
     outenetime_ = timeinitial_ + outeneperiod_;
@@ -180,7 +180,7 @@ void Adapter::StructureTimeAda::integrate()
     // time step size adapting loop
     adaptstep_ = 0;
     bool accepted = false;
-    double stpsiznew;
+    double stpsiznew = 0.0;
     while ((not accepted) and (adaptstep_ < adaptstepmax_))
     {
       // modify step-size #stepsize_ according to output period

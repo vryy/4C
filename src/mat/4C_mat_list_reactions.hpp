@@ -140,7 +140,11 @@ namespace Mat
     int reac_id(const unsigned index) const;
 
     /// Return quick accessible material parameter data
+#ifdef _MSC_VER
+    Mat::PAR::MatList* parameter() const override { return paramsreac_; }
+#else
     Mat::PAR::MatListReactions* parameter() const override { return paramsreac_; }
+#endif
 
     /// advanced reaction terms
     double calc_rea_body_force_term(const int k, const std::vector<double>& phinp,

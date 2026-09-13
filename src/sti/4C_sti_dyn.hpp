@@ -13,6 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 //! entry point for simulations of scalar-thermo interaction problems
+FOUR_C_API(FOUR_C_CORE)
 void sti_dyn(const int& restartstep  //! time step for restart
 );
 

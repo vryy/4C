@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /* entry point for the solution of thermo-structure-interaction problems */
-void tsi_dyn_drt();
+FOUR_C_API(FOUR_C_CORE) void tsi_dyn_drt();
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE
