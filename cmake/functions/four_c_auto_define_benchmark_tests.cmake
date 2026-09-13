@@ -13,6 +13,8 @@ function(_set_up_benchmark_test_target _module_under_test _target)
     ${PROJECT_SOURCE_DIR}/tests/benchmark_tests/4C_benchmark_tests_main.cpp ${_parsed_SOURCE}
     )
 
+  target_compile_definitions(${_target} PRIVATE FOUR_C_CORE=IMPORT)
+
   # Store benchmark test executables directly inside the tests/ directory
   set_target_properties(${_target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/tests)
 

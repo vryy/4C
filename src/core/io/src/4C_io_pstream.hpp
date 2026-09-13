@@ -53,7 +53,7 @@ namespace Core::IO
    *        o selecting an output level
    *
    */
-  class Pstream
+  class FOUR_C_API(FOUR_C_CORE) Pstream
   {
    public:
     /// This empty constructor is called when the global object is instantiated.
@@ -214,7 +214,7 @@ namespace Core::IO
   Pstream& flush(Pstream& out);
 
   /// this is the Core::IO::cout that everyone can refer to
-  extern Pstream cout;
+  extern FOUR_C_API(FOUR_C_CORE) Pstream cout;
 
 
   /*====================================================================*/

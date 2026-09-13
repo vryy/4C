@@ -66,12 +66,11 @@ namespace Core::Communication
   concept IsCommunicatable =
       IsNativeMpiType<T> || std::is_enum_v<T> || (Packable<T> && Unpackable<T>);
 
-
   /**
    * Helper function during migration away from Epetra_Comm. Returns the MPI communicator from an
    * Epetra_Comm object.
    */
-  MPI_Comm unpack_epetra_comm(const Epetra_Comm& comm);
+  FOUR_C_API(FOUR_C_CORE) MPI_Comm unpack_epetra_comm(const Epetra_Comm& comm);
 
   /**
    * Helper function during migration away from Epetra_Comm. Returns the MPI_Comm @p comm wrapped in
@@ -89,12 +88,12 @@ namespace Core::Communication
   /**
    * Get the MPI rank of the calling process in the communicator @p comm.
    */
-  int my_mpi_rank(MPI_Comm comm);
+  FOUR_C_API(FOUR_C_CORE) int my_mpi_rank(MPI_Comm comm);
 
   /**
    * Get the total number of MPI ranks in the communicator @p comm.
    */
-  int num_mpi_ranks(MPI_Comm comm);
+  FOUR_C_API(FOUR_C_CORE) int num_mpi_ranks(MPI_Comm comm);
 
   /**
    * Wait until all ranks in the communicator @p comm have reached this point.
@@ -102,7 +101,7 @@ namespace Core::Communication
    * @note You should rarely need to call this function. All MPI communication functions perform any
    * necessary synchronization automatically.
    */
-  void barrier(MPI_Comm comm);
+  FOUR_C_API(FOUR_C_CORE) void barrier(MPI_Comm comm);
 
   /**
    * Broadcast the value @p value from the MPI rank @p root to all other ranks in the communicator

@@ -48,6 +48,7 @@ Global::Problem::Problem()
   contactconstitutivelaws_ = std::make_shared<CONTACT::CONSTITUTIVELAW::Bundle>();
 }
 
+Global::Problem::~Problem() = default;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -16,7 +16,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 Core::Utils::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
 
 void Core::Utils::ResultTest::test_element(
@@ -49,7 +48,6 @@ void Core::Utils::ResultTest::test_special(const Core::IO::InputParameterContain
 {
   test_special(container, nerr, test_count);
 }
-
 
 int Core::Utils::ResultTest::compare_values(
     double actresult, std::string type, const Core::IO::InputParameterContainer& container)
@@ -123,15 +121,12 @@ bool Core::Utils::ResultTest::match(const Core::IO::InputParameterContainer& con
   return container.has_group(myname_);
 }
 
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::Utils::ResultTestManager::add_field_test(std::shared_ptr<ResultTest> test)
 {
   fieldtest_.push_back(test);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
