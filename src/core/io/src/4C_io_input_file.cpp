@@ -324,7 +324,11 @@ namespace Core::IO
 
   InputFile::InputFile(const std::vector<InputSpec>& valid_sections,
       std::vector<std::string> legacy_section_names, MPI_Comm comm)
+#ifdef _MSC_VER
+      : pimpl_(new Internal::InputFileImpl(comm))
+#else
       : pimpl_(std::make_unique<Internal::InputFileImpl>(comm))
+#endif
   {
     std::map<std::string, InputSpec> section_map;
     for (auto&& spec : valid_sections)
@@ -374,7 +378,11 @@ namespace Core::IO
 
   // Note: defaulted in implementation file to allow for use of incomplete type in PIMPL
   // unique_ptr.
+#ifdef _MSC_VER
+  InputFile::~InputFile() { delete pimpl_; }
+#else
   InputFile::~InputFile() = default;
+#endif
 
 
   /*----------------------------------------------------------------------*/

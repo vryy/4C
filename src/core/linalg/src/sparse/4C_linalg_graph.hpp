@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinAlg
 {
 
-  class Graph
+  class FOUR_C_API(FOUR_C_CORE) Graph
   {
    public:
     //! Type of the underlying graph object

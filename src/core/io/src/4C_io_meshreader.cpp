@@ -813,8 +813,12 @@ void Core::IO::MeshReader::read_and_partition()
     }
     else if (available_section[section_name + " GEOMETRY"])
     {
+#ifdef _MSC_VER
+      mesh_readers_.emplace_back(new Internal::MeshReader(*dis, section_name + " GEOMETRY"));
+#else
       mesh_readers_.emplace_back(
           std::make_unique<Internal::MeshReader>(*dis, section_name + " GEOMETRY"));
+#endif
     }
   }
 
@@ -905,7 +909,19 @@ void Core::IO::MeshReader::read_and_partition()
 }
 
 // Default destructor in implementation to enable unique_ptr in header.
+#ifdef _MSC_VER
+Core::IO::MeshReader::~MeshReader()
+{
+  for (auto*& p : mesh_readers_)
+  {
+    delete p;
+    p = nullptr;
+  }
+  mesh_readers_.clear();
+}
+#else
 Core::IO::MeshReader::~MeshReader() = default;
+#endif
 
 MPI_Comm Core::IO::MeshReader::get_comm() const { return comm_; }
 

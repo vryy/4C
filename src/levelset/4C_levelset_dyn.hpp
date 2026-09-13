@@ -13,6 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*! entry point for the solution of level-set problems */
+FOUR_C_API(FOUR_C_CORE)
 void levelset_dyn(int restart /* do we have to perform a restart?  */
 );
 

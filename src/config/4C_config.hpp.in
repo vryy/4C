@@ -26,9 +26,59 @@
 #define FOUR_C_NAMESPACE_OPEN namespace FourC {
 #define FOUR_C_NAMESPACE_CLOSE }
 
-// GCC/Clang attribute to hide symbols from the public ABI of a shared library. This is used
-// to mark symbols with hidden visibility to prevent their export from shared objects.
-#define FOUR_C_HIDDEN __attribute__((visibility("hidden")))
+#define FOUR_C_API_NONE
+
+#cmakedefine FOUR_C_VERIFY_INTERFACE_HEADER_SETS
+
+#ifdef FOUR_C_VERIFY_INTERFACE_HEADER_SETS
+#define FOUR_C_CORE NONE
+#endif
+
+#ifndef FOUR_C_CORE
+#error "FOUR_C_CORE is not yet defined. It should have value NONE|IMPORT|EXPORT."
+#endif
+
+#cmakedefine FOUR_C_BUILD_SHARED_LIBS
+
+#if defined(FOUR_C_BUILD_SHARED_LIBS)
+
+    #cmakedefine HAVE_VISIBILITY_ATTRIBUTE
+
+    #if defined(HAVE_VISIBILITY_ATTRIBUTE)
+
+        // GCC/Clang attribute to hide symbols from the public ABI of a shared library. This is used
+        // to mark symbols with hidden visibility to prevent their export from shared objects.
+        #define FOUR_C_HIDDEN __attribute__((visibility("hidden")))
+
+        #define FOUR_C_API_IMPORT __attribute__((visibility("default")))
+        #define FOUR_C_API_EXPORT __attribute__((visibility("default")))
+
+    #elif defined(_WIN32)
+        #if defined(__MINGW32__) || defined(__MINGW64__)
+            #define FOUR_C_HIDDEN __attribute__((visibility("hidden")))
+            #define FOUR_C_API_IMPORT __attribute__((visibility("default")))
+            #define FOUR_C_API_EXPORT __attribute__((visibility("default")))
+        #else
+            #define FOUR_C_HIDDEN
+            #define FOUR_C_API_IMPORT __declspec(dllimport)
+            #define FOUR_C_API_EXPORT __declspec(dllexport)
+        #endif
+    #else
+        #define FOUR_C_HIDDEN
+        #define FOUR_C_API_IMPORT
+        #define FOUR_C_API_EXPORT
+    #endif
+
+#else
+
+    #define FOUR_C_HIDDEN
+    #define FOUR_C_API_IMPORT
+    #define FOUR_C_API_EXPORT
+
+#endif
+
+#define FOUR_C_APPEND_MACRO(base, suffix) base##suffix
+#define FOUR_C_API(MACRO) FOUR_C_APPEND_MACRO(FOUR_C_API_, MACRO)
 
 /// Dependencies
 /// The following flags are set when configuring the project with CMake.

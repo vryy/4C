@@ -319,8 +319,6 @@ namespace FLD
         std::cout << std::endl;
       }
     }
-
-    return;
   }
 
 
@@ -360,8 +358,6 @@ namespace FLD
         }
       }
     }
-
-    return;
   }
 
   /*----------------------------------------------------------------------
@@ -693,8 +689,6 @@ namespace FLD
         std::cout << "\n\n";
       }
     }
-
-    return;
   }
 
 
@@ -710,32 +704,9 @@ namespace FLD
     // sampling takes place only in the sampling period
     if (step >= samstart_ && step <= samstop_ && flow_ != no_special_flow)
     {
-      double tcpu = Teuchos::Time::wallTime();
-
-      //--------------------------------------------------
-      // calculate means, fluctuations etc of velocity,
-      // pressure, boundary forces etc.
-      switch (flow_)
-      {
-        default:
-        {
-          FOUR_C_THROW("called wrong DoTimeSample() for this kind of special flow");
-          break;
-        }
-      }
-
-      if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
-      {
-        std::cout << "                      taking time sample (";
-        printf("%10.4E", Teuchos::Time::wallTime() - tcpu);
-        std::cout << ")\n";
-      }
-
+      FOUR_C_THROW("called wrong DoTimeSample() for this kind of special flow");
     }  // end step in sampling period
-
-    return;
   }
-
 
   /*----------------------------------------------------------------------
 
@@ -746,7 +717,6 @@ namespace FLD
       std::shared_ptr<Core::LinAlg::Vector<double>> velnp)
   {
     myvelnp_ = velnp;
-    return;
   }
 
   /*----------------------------------------------------------------------
@@ -955,7 +925,6 @@ namespace FLD
     return;
   }  // DoOutput
 
-
   /*----------------------------------------------------------------------
 
   Provide access to scalar transport field
@@ -1018,8 +987,6 @@ namespace FLD
       statistics_hit_->store_scatra_discret(scatradis_);
 
     withscatra_ = true;
-
-    return;
   }
 
 
