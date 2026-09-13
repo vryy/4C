@@ -13,8 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 //! global control routine for Poro + ScaTra problem.
-void poro_scatra_drt();
-
+FOUR_C_API(FOUR_C_CORE) void poro_scatra_drt();
 
 FOUR_C_NAMESPACE_CLOSE
 

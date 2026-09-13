@@ -20,7 +20,7 @@ namespace Core::LinAlg
   /*!
    * \brief A wrapper around Teuchos::SerialDenseMatrix
    */
-  class SerialDenseMatrix
+  class FOUR_C_API(FOUR_C_CORE) SerialDenseMatrix
   {
    public:
     using ordinalType = int;

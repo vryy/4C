@@ -13,6 +13,7 @@
 #include "4C_utils_symbolic_expression.fwd.hpp"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -53,7 +54,7 @@ namespace Core::Utils
     virtual bool contain_time(const double t) = 0;
 
     /// return the name of the variable
-    std::string name() { return name_; }
+    const std::string& name() const { return name_; }
 
    private:
     /// name of the variable

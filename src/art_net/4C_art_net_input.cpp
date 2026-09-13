@@ -11,8 +11,8 @@
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_io_input_spec_builders.hpp"
-FOUR_C_NAMESPACE_OPEN
 
+FOUR_C_NAMESPACE_OPEN
 
 Core::IO::InputSpec ArtDyn::valid_parameters()
 {

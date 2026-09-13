@@ -14,9 +14,9 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace MultiScale
 {
-  // std::endless loop for supporting procs in multi scale problems
-  void np_support_drt();
 
+  // std::endless loop for supporting procs in multi scale problems
+  FOUR_C_API(FOUR_C_CORE) void np_support_drt();
 
 }  // namespace MultiScale
 

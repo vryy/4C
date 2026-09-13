@@ -593,18 +593,14 @@ namespace Discret
           unsigned int slave_numdof>
       double SlaveElementRepresentation<distype, slave_distype, slave_numdof>::eval_element_volume()
       {
-        switch (Core::FE::dim<slave_distype>)
+        if constexpr (Core::FE::dim<slave_distype> == 3)
         {
-          case 3:
-          {
-            return XFEM::Utils::eval_element_volume<slave_distype>(slave_xyze_);
-            break;
-          }
-          default:
-          {
-            FOUR_C_THROW("Element volume for non 3D element type?");
-            return 0.0;
-          }
+          return XFEM::Utils::eval_element_volume<slave_distype>(slave_xyze_);
+        }
+        else
+        {
+          FOUR_C_THROW("Element volume for non 3D element type?");
+          return 0.0;
         }
       }
 

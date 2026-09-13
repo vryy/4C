@@ -11,3 +11,4 @@ set(OBJS_CREATERTD
 add_executable(create_rtd EXCLUDE_FROM_ALL ${OBJS_CREATERTD})
 set_target_properties(create_rtd PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 target_link_libraries(create_rtd PRIVATE four_c_private_compile_interface core_objs)
+target_compile_definitions(create_rtd PRIVATE FOUR_C_CORE=IMPORT)

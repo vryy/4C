@@ -14,12 +14,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Core::LinAlg
 {
   class SerialDenseMatrix;
 }
-
 
 namespace Cut
 {
@@ -31,7 +29,7 @@ namespace Cut
   /*!
   \brief Interface class for the level set cut.
   */
-  class LevelSetIntersection : public virtual ParentIntersection
+  class FOUR_C_API(FOUR_C_CORE) LevelSetIntersection : public virtual ParentIntersection
   {
     using my = ParentIntersection;
 

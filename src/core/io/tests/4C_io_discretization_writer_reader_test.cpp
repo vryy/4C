@@ -104,7 +104,8 @@ namespace
     const fs::path test_directory =
         fs::path(FOUR_C_IO_TEST_TMP_DIR) / "io_discretization_writer_reader";
     /// control file name (without suffixes)
-    const std::string filename_ = (test_directory / "test-discretization-writing-reading").string();
+    const std::string filename_ =
+        (test_directory / "test-discretization-writing-reading").generic_string();
     /// output control containing control file and write logic
     std::shared_ptr<Core::IO::OutputControl> output_control_;
   };

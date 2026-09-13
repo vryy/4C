@@ -52,7 +52,7 @@ namespace Core::IO
    * ranks, except for the legacy sections (see the constructor). Legacy sections need to be
    * consumed on rank 0 with the help of in_section_rank_0_only().
    */
-  class InputFile
+  class FOUR_C_API(FOUR_C_CORE) InputFile
   {
    public:
     //! Name of the special section that can contain arbitrary data.
@@ -123,7 +123,6 @@ namespace Core::IO
     InputFile(const std::vector<InputSpec>& valid_sections,
         std::vector<std::string> legacy_section_names, MPI_Comm comm);
 
-
     /**
      * Destructor.
      */
@@ -162,7 +161,6 @@ namespace Core::IO
      * is unknown or was not read from any file, an empty path is returned.
      */
     [[nodiscard]] std::filesystem::path file_for_section(const std::string& section_name) const;
-
 
     /**
      * Returns the lines in a section on rank 0 and returns an empty range on all other ranks. This
@@ -209,7 +207,12 @@ namespace Core::IO
     void write_as_yaml(std::ostream& out, const std::filesystem::path& file_name = {}) const;
 
    private:
+#ifdef _MSC_VER
+    // use raw pointer to avoid ABI compatibility problem with Windows DLL
+    Internal::InputFileImpl* pimpl_;
+#else
     std::unique_ptr<Internal::InputFileImpl> pimpl_;
+#endif
   };
 }  // namespace Core::IO
 
