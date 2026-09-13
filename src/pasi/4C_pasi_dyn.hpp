@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
  * \brief control routine for particle structure interaction
  *
  */
-void pasi_dyn();
+FOUR_C_API(FOUR_C_CORE) void pasi_dyn();
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

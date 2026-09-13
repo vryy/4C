@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void fs3i_dyn();
+FOUR_C_API(FOUR_C_CORE) void fs3i_dyn();
 
 FOUR_C_NAMESPACE_CLOSE
 
