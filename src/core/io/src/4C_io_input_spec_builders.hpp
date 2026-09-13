@@ -599,6 +599,7 @@ namespace Core::IO
 
     //! Validate if possible. Returns false only if validation was attempted and failed.
     template <typename T>
+      requires(!ProxyTypeConcept<T>)
     [[nodiscard]] bool validate_helper(
         const T& val, const std::optional<InputSpecBuilders::Validators::Validator<T>>& validator)
     {
@@ -2559,7 +2560,6 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::parameter(
 
     FOUR_C_THROW("{}", validation_error_stream.str());
   }
-
 
   return IO::Internal::make_spec(Internal::ParameterSpec<T>{.name = name, .data = internal_data},
       {

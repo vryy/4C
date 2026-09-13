@@ -12,11 +12,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*! entry point for the solution of porofluid-elasticity problems with scalar transport */
+FOUR_C_API(FOUR_C_CORE)
 void porofluid_pressure_based_elast_scatra_dyn(int restart /* do we have to perform a restart?  */
 );
-
 
 FOUR_C_NAMESPACE_CLOSE
 

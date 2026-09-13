@@ -220,7 +220,8 @@ void CONTACT::MtAbstractStrategy::setup(bool redistributed)
   if (shapefcn == Mortar::shape_dual &&
       (n_dim() == 3 || (n_dim() == 2 && lagmultquad == Mortar::lagmult_lin)))
     for (int i = 0; i < (int)interface_.size(); ++i)
-      dualquadsourcetrafo_ += (interface_[i]->quadsource() && !(interface_[i]->is_nurbs()));
+      dualquadsourcetrafo_ =
+          dualquadsourcetrafo_ || (interface_[i]->quadsource() && !(interface_[i]->is_nurbs()));
 
   //----------------------------------------------------------------------
   // COMPUTE TRAFO MATRIX AND ITS INVERSE
@@ -392,7 +393,8 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
   // is only possible via a proper basis transformation.
   //**********************************************************************
   bool quadratic = false;
-  for (int i = 0; i < (int)interface_.size(); ++i) quadratic += interface_[i]->quadsource();
+  for (int i = 0; i < (int)interface_.size(); ++i)
+    quadratic = quadratic || interface_[i]->quadsource();
   if (quadratic) FOUR_C_THROW("restrict_meshtying_zone only implemented for first-order elements");
 
   auto shapefcn = Teuchos::getIntegralValue<Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");

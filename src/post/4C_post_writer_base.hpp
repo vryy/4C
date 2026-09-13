@@ -41,7 +41,7 @@ struct SpecialFieldInterface
 
 
 //! Base class for various output writers that use generic interfaces (Ensight, VTU)
-class PostWriterBase
+class FOUR_C_API(FOUR_C_CORE) PostWriterBase
 {
  public:
   //! constructor. initializes the writer to a certain field

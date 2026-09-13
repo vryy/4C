@@ -640,8 +640,6 @@ void Core::LinAlg::SparseMatrix::fe_assemble(const Core::LinAlg::SerialDenseMatr
   // not used here, therefore check only for ">" rather than "!="
   if (lrowdim > Aele.numRows() || lcoldim > Aele.numCols()) FOUR_C_THROW("Mismatch in dimensions");
 
-  std::dynamic_pointer_cast<Epetra_FECrsMatrix>(sysmat_);
-
   // loop rows of local matrix
   for (int lrow = 0; lrow < lrowdim; ++lrow)
   {
