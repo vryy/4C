@@ -22,7 +22,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class Side;
@@ -82,7 +81,7 @@ namespace Cut
   /** \brief Base class to calculate the intersection of an edge with a side.
    *
    *  */
-  class IntersectionBase
+  class FOUR_C_API(FOUR_C_CORE) IntersectionBase
   {
    public:
     static std::shared_ptr<IntersectionBase> create(
@@ -1298,7 +1297,7 @@ namespace Cut
   /** \brief Create a intersection object
    *
    *  */
-  class IntersectionFactory
+  class FOUR_C_API(FOUR_C_CORE) IntersectionFactory
   {
    public:
     IntersectionFactory() {};
