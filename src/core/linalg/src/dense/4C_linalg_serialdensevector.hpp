@@ -27,7 +27,7 @@ namespace Core::LinAlg
    *
    * Access to the underlying Trilinos object is explicit via base().
    */
-  class SerialDenseVector
+  class FOUR_C_API(FOUR_C_CORE) SerialDenseVector
   {
    public:
     using ordinalType = int;

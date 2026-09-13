@@ -8,9 +8,9 @@
 #include "4C_utils_string.hpp"
 
 #include <algorithm>
+#include <iterator>
 
 FOUR_C_NAMESPACE_OPEN
-
 
 namespace Core::Utils
 {

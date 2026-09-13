@@ -40,7 +40,7 @@ namespace Core::CLN
   /// Wrapper around CLN long floating point type, that gives better conversion operators,
   /// maintains precision across instances, caches converted double values and
   /// supports running in a custom memory manager
-  class ClnWrapper
+  class FOUR_C_API(FOUR_C_CORE) ClnWrapper
   {
    public:
     ClnWrapper(const cln::cl_F& a) : value_(a) {}

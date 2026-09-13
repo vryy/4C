@@ -19,7 +19,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class Element;
@@ -31,7 +30,7 @@ namespace Cut
   \brief A class to construct Gaussian rule for volumecell by direct application of divergence
   theorem. This generate only the integration points on the facets.
   */
-  class DirectDivergence
+  class FOUR_C_API(FOUR_C_CORE) DirectDivergence
   {
    public:
     DirectDivergence(

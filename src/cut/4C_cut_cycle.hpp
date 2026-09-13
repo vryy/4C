@@ -12,9 +12,7 @@
 
 #include "4C_cut_utils.hpp"
 
-
 FOUR_C_NAMESPACE_OPEN
-
 
 namespace Cut
 {
@@ -28,7 +26,7 @@ namespace Cut
   \brief Contains closed cycle of points. A utility class for facet creation from this cycle of
   points
    */
-  class Cycle
+  class FOUR_C_API(FOUR_C_CORE) Cycle
   {
    public:
     Cycle() {}
@@ -116,7 +114,6 @@ namespace Cut
   };
 
 }  // namespace Cut
-
 
 FOUR_C_NAMESPACE_CLOSE
 
