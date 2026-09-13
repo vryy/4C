@@ -294,7 +294,7 @@ namespace Core::IO
 
           constexpr bool is_specially_supported_for_output =
               std::ranges::any_of(Internal::vtk_celltype_special_mapping_for_output,
-                  [](const auto& pair) { return celltype == pair.first; });
+                  [celltype](const auto& pair) { return celltype == pair.first; });
 
           if constexpr (is_specially_supported_for_output)
           {

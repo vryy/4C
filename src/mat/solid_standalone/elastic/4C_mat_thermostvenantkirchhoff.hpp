@@ -22,7 +22,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Mat
 {
   namespace PAR
@@ -76,7 +75,7 @@ namespace Mat
 
   /*----------------------------------------------------------------------*/
   //! Wrapper for St.-Venant-Kirchhoff material with temperature term
-  class ThermoStVenantKirchhoff : public Trait::ThermoSolid
+  class FOUR_C_API(FOUR_C_CORE) ThermoStVenantKirchhoff : public Trait::ThermoSolid
   {
    public:
     //! construct empty material object
@@ -227,7 +226,6 @@ namespace Mat
 
   };  // ThermoStVenantKirchhoff
 }  // namespace Mat
-
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

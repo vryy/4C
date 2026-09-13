@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 namespace Particle
 {
-  class DEMContactNormalBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactNormalBase
   {
    public:
     //! constructor
@@ -71,7 +71,7 @@ namespace Particle
     double k_normal_crit_;
   };
 
-  class DEMContactNormalLinearSpring : public DEMContactNormalBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactNormalLinearSpring : public DEMContactNormalBase
   {
    public:
     //! constructor
@@ -88,7 +88,8 @@ namespace Particle
     void normal_potential_energy(const double& gap, double& normalpotentialenergy) const override;
   };
 
-  class DEMContactNormalLinearSpringDamp : public DEMContactNormalLinearSpring
+  class FOUR_C_API(FOUR_C_CORE) DEMContactNormalLinearSpringDamp
+      : public DEMContactNormalLinearSpring
   {
    public:
     //! constructor
@@ -112,7 +113,7 @@ namespace Particle
     double d_normal_fac_;
   };
 
-  class DEMContactNormalNonlinearBase : public DEMContactNormalBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactNormalNonlinearBase : public DEMContactNormalBase
   {
    public:
     //! constructor
@@ -130,7 +131,7 @@ namespace Particle
     void normal_potential_energy(const double& gap, double& normalpotentialenergy) const override;
   };
 
-  class DEMContactNormalHertz : public DEMContactNormalNonlinearBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactNormalHertz : public DEMContactNormalNonlinearBase
   {
    public:
     //! constructor
@@ -141,7 +142,8 @@ namespace Particle
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 
-  class DEMContactNormalNonlinearDampBase : public DEMContactNormalNonlinearBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactNormalNonlinearDampBase
+      : public DEMContactNormalNonlinearBase
   {
    public:
     //! constructor
@@ -157,7 +159,8 @@ namespace Particle
     const double d_normal_;
   };
 
-  class DEMContactNormalLeeHerrmann : public DEMContactNormalNonlinearDampBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactNormalLeeHerrmann
+      : public DEMContactNormalNonlinearDampBase
   {
    public:
     //! constructor
@@ -168,7 +171,8 @@ namespace Particle
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 
-  class DEMContactNormalKuwabaraKono : public DEMContactNormalNonlinearDampBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactNormalKuwabaraKono
+      : public DEMContactNormalNonlinearDampBase
   {
    public:
     //! constructor
@@ -179,7 +183,7 @@ namespace Particle
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 
-  class DEMContactNormalTsuji : public DEMContactNormalNonlinearDampBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactNormalTsuji : public DEMContactNormalNonlinearDampBase
   {
    public:
     //! constructor

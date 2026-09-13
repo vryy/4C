@@ -88,7 +88,7 @@ namespace Discret
     Finite Element Analysis of Solids and Structures", Volume 2
 
     */
-    class Beam3r : public Beam3Base
+    class FOUR_C_API(FOUR_C_CORE) Beam3r : public Beam3Base
     {
      public:
       //! purposes of numerical integration

@@ -228,7 +228,7 @@ namespace
     std::array eigenvalues{0.24218351254540577, 1.3154000057163198};
 
     Core::LinAlg::SerialDenseVector L(2);
-    Core::LinAlg::symmetric_eigen(A, L, 'N', false);
+    Core::LinAlg::symmetric_eigen(A, L, false, false);
 
     assert_eigen_values(L, eigenvalues);
   }
@@ -245,7 +245,7 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix eigenvectors(A);
     Core::LinAlg::SerialDenseVector L(2);
-    Core::LinAlg::symmetric_eigen(eigenvectors, L, 'V', false);
+    Core::LinAlg::symmetric_eigen(eigenvectors, L, true, false);
 
     assert_eigen_problem(A, L, eigenvectors, eigenvalues);
   }
@@ -374,7 +374,7 @@ namespace
     std::array eigenvalues{0.01628207201103285, 0.2515293645924337, 2.0639621389680487};
 
     Core::LinAlg::SerialDenseVector L(3);
-    Core::LinAlg::symmetric_eigen(A, L, 'N', false);
+    Core::LinAlg::symmetric_eigen(A, L, false, false);
 
     assert_eigen_values(L, eigenvalues);
   }
@@ -396,7 +396,7 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix V(A);
     Core::LinAlg::SerialDenseVector L(3);
-    Core::LinAlg::symmetric_eigen(V, L, 'V', false);
+    Core::LinAlg::symmetric_eigen(V, L, true, false);
 
     assert_eigen_problem(A, L, V, eigenvalues);
   }
@@ -569,7 +569,7 @@ namespace
         0.00023212100268553735, 0.06219024553961773, 0.11100584442852221, 5.443458239275074};
 
     Core::LinAlg::SerialDenseVector L(4);
-    Core::LinAlg::symmetric_eigen(A, L, 'N', false);
+    Core::LinAlg::symmetric_eigen(A, L, false, false);
 
     assert_eigen_values(L, eigenvalues);
   }
@@ -599,7 +599,7 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix V(A);
     Core::LinAlg::SerialDenseVector L(4);
-    Core::LinAlg::symmetric_eigen(V, L, 'V', false);
+    Core::LinAlg::symmetric_eigen(V, L, true, false);
 
     assert_eigen_problem(A, L, V, eigenvalues);
   }

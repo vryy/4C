@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 //! global control routine for elastohydrodynamic lubrication problem (lubrication structure
 //! interaction).
-void ehl_dyn();
+FOUR_C_API(FOUR_C_CORE) void ehl_dyn();
 
 FOUR_C_NAMESPACE_CLOSE
 

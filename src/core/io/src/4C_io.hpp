@@ -66,7 +66,7 @@ namespace Core::IO
   /*!
     \brief base class of 4C restart
    */
-  class DiscretizationReader
+  class FOUR_C_API(FOUR_C_CORE) DiscretizationReader
   {
    public:
     /// construct reader for a given discretization to read a particular time step
@@ -216,7 +216,7 @@ namespace Core::IO
     processor local files. The first process additionally maintains the
     (plain text) control file that glues all result files together.
   */
-  class DiscretizationWriter
+  class FOUR_C_API(FOUR_C_CORE) DiscretizationWriter
   {
    public:
     /*!
@@ -233,7 +233,6 @@ namespace Core::IO
     DiscretizationWriter operator=(const DiscretizationWriter& other) = delete;
     DiscretizationWriter(DiscretizationWriter&& other) = delete;
     DiscretizationWriter operator=(DiscretizationWriter&& other) = delete;
-
 
     /// cleanup, close hdf5 files
     ~DiscretizationWriter();

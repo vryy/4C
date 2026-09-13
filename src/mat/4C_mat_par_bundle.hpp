@@ -41,8 +41,7 @@ namespace Mat
     /// among different Global::Problem. (The variable #materialreadfromproblem_ is redundant
     /// in the material bundles of all non-0th Global::Problem instances.)
     ///
-
-    class Bundle
+    class FOUR_C_API(FOUR_C_CORE) Bundle
     {
      public:
       /**
@@ -105,7 +104,6 @@ namespace Mat
   }  // namespace PAR
 
 }  // namespace Mat
-
 
 FOUR_C_NAMESPACE_CLOSE
 

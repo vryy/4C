@@ -32,7 +32,7 @@ namespace Core::LinAlg
    *
    * This class defines the interface for projectors that can be applied to linear systems.
    */
-  class LinearSystemProjector
+  class FOUR_C_API(FOUR_C_CORE) LinearSystemProjector
   {
    public:
     virtual ~LinearSystemProjector() = default;

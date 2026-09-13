@@ -26,7 +26,7 @@ namespace CONTACT
      * the contact pressure
      *
      */
-    class PowerConstitutiveLawParams : public Parameter
+    class FOUR_C_API(FOUR_C_CORE) PowerConstitutiveLawParams : public Parameter
     {
      public:
       /** \brief standard constructor
@@ -57,7 +57,7 @@ namespace CONTACT
      * contact pressure
      *
      */
-    class PowerConstitutiveLaw : public ConstitutiveLaw
+    class FOUR_C_API(FOUR_C_CORE) PowerConstitutiveLaw : public ConstitutiveLaw
     {
      public:
       /// construct the constitutive law object given a set of parameters

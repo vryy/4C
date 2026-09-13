@@ -32,7 +32,6 @@ namespace Core::LinAlg
       Core::LinAlg::Matrix<dim, 1, Valtype>& x     ///< (out)   : solution vector
   );
 
-
   /*!
     \brief computes a Gaussian elimination for a linear system of equations after infnorm scaling
 
@@ -44,8 +43,6 @@ namespace Core::LinAlg
       Core::LinAlg::Matrix<dim, 1>& b,                                ///< (in)    : right-hand-side
       Core::LinAlg::Matrix<dim, 1>& x                                 ///< (out)   : solution vector
   );
-
-
 }  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE

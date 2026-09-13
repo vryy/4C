@@ -85,7 +85,6 @@ namespace Core::Rebalance
     Core::GeometricSearch::GeometricSearchParams geometric_search_parameters;
   };
 
-
   /**
    * @brief Rebalance a discretization.
    *
@@ -99,6 +98,7 @@ namespace Core::Rebalance
   void rebalance_discretization(Core::FE::Discretization& discretization,
       const Core::LinAlg::Map& row_elements, const RebalanceParameters& parameters, MPI_Comm comm,
       bool use_eval_time_weights = false);
+
 }  // namespace Core::Rebalance
 
 FOUR_C_NAMESPACE_CLOSE

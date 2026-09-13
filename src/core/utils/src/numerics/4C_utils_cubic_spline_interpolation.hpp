@@ -35,7 +35,7 @@ namespace Core::Utils
    * intersection of two segments. Furthermore, so-called natural boundary conditions, i.e. the
    * second derivatives at the two boundaries are set to zero, are applied.
    */
-  class CubicSplineInterpolation
+  class FOUR_C_API(FOUR_C_CORE) CubicSplineInterpolation
   {
    public:
     /*!

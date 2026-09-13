@@ -40,7 +40,7 @@ namespace CONTACT
    the contact-specific stuff for 3d mortar coupling.
 
    */
-  class Integrator
+  class FOUR_C_API(FOUR_C_CORE) Integrator
   {
    public:
     /*!

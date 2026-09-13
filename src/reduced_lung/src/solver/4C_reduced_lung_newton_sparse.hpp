@@ -59,7 +59,7 @@ namespace ReducedLung
    * this solver also runs in MPI-parallel.
    * Provides a simple interface: construct once, then call solve(time, dt) in each timestep.
    */
-  class NewtonSparse final : public NonlinearSolver
+  class FOUR_C_API(FOUR_C_CORE) NewtonSparse final : public NonlinearSolver
   {
    public:
     /**
@@ -120,6 +120,7 @@ namespace ReducedLung
    * @param dynamics Reduced-lung dynamics parameters.
    * @return Teuchos parameter list configured for NOX::Nln::Adapter.
    */
+  FOUR_C_API(FOUR_C_CORE)
   Teuchos::ParameterList create_nox_parameter_list(const ReducedLungParameters::Dynamics& dynamics);
 }  // namespace ReducedLung
 

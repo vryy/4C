@@ -70,7 +70,7 @@ namespace Mat
     static FourierType instance_;
   };
 
-  class Fourier : public ThermoMaterial
+  class FOUR_C_API(FOUR_C_CORE) Fourier : public ThermoMaterial
   {
    public:
     Fourier();

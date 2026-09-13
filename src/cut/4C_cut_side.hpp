@@ -19,7 +19,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class Facet;
@@ -38,7 +37,7 @@ namespace Cut
   /*! \brief Base class for dealing sides in cut algorithm
    *
    *  The maximal allowed dimension of sides is 2! */
-  class Side
+  class FOUR_C_API(FOUR_C_CORE) Side
   {
    public:
     /** create a new level set side
@@ -384,7 +383,6 @@ namespace Cut
     // (parallel)
     virtual bool find_parallel_intersection(
         Mesh& mesh, Element* element, Side& side, const PointSet& cut, point_line_set& new_lines);
-
 
     // create parallel cut surface between two sides
     virtual bool create_parallel_cut_surface(Mesh& mesh, Element* element, Side& other,

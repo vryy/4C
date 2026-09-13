@@ -46,7 +46,7 @@ namespace Mortar
    before the Node itself.
 
    */
-  class NodeDataContainer
+  class FOUR_C_API(FOUR_C_CORE) NodeDataContainer
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -304,7 +304,7 @@ namespace Mortar
    This class represents a finite element node capable of mortar coupling.
 
    */
-  class Node : public Core::Nodes::Node
+  class FOUR_C_API(FOUR_C_CORE) Node : public Core::Nodes::Node
   {
    public:
     //! @name Enums and Friends

@@ -45,6 +45,7 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in] B           Dense matrix (3 x 3) as 2nd order tensor B
    * @param[in] scalar_this  Scalar to multiply with C before adding A x B
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_elasticity_tensor_product(Core::LinAlg::Matrix<6, 6>& C, const double scalar_AB,
       const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B,
       const double scalar_this);
@@ -69,6 +70,7 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in] B           Dense matrix (3 x 3) as 2nd order tensor B
    * @param[in] scalar_this  Scalar to multiply with C before adding (A x B + B x A)
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_symmetric_elasticity_tensor_product(Core::LinAlg::Matrix<6, 6>& C,
       const double scalar_AB, const Core::LinAlg::Matrix<3, 3>& A,
       const Core::LinAlg::Matrix<3, 3>& B, const double scalar_this);
@@ -94,11 +96,10 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in] B           Dense matrix (3 x 3) as 2nd order tensor B
    * @param[in] scalar_this  Scalar to multiply with C before adding A o B
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_kronecker_tensor_product(Core::LinAlg::Matrix<6, 6>& C, const double scalar_AB,
       const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B,
       const double scalar_this);
-
-
 
   /*!
    * @brief Add 'Holzapfel product' contribution to constitutive tensor using Voigt notation
@@ -193,6 +194,7 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in] B     2nd order tensor \f[B_{gh}\f]
    * @param[in] fac   Scalar factor
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_symmetric_holzapfel_product(Core::LinAlg::Matrix<6, 6>& X,
       const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B, const double fac);
 
@@ -238,7 +240,6 @@ namespace Core::LinAlg::FourTensorOperations
   void add_right_non_symmetric_holzapfel_product(Core::LinAlg::Matrix<6, 9, T>& out,
       Core::LinAlg::Matrix<3, 3, T> const& A, Core::LinAlg::Matrix<3, 3, T> const& B, T const fac);
 
-
   /*!
    * @brief Add right non-symmetric Holzapfel product, where the symmetric part is stored
    * strain-like to a 4th order tensor in matrix notation
@@ -262,7 +263,6 @@ namespace Core::LinAlg::FourTensorOperations
   void add_right_non_symmetric_holzapfel_product_strain_like(Core::LinAlg::Matrix<6, 9, T>& out,
       Core::LinAlg::Matrix<3, 3, T> const& A, Core::LinAlg::Matrix<3, 3, T> const& B, T const fac);
 
-
   /*!
    * @brief Add left non-symmetric Holzapfel product to a 4th order tensor in matrix notation
    *
@@ -281,6 +281,7 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in] B           2nd order tensor \f[B_{GH}\f]
    * @param[in] fac         Scalar factor
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_left_non_symmetric_holzapfel_product(Core::LinAlg::Matrix<9, 6>& out,
       Core::LinAlg::Matrix<3, 3> const& A, Core::LinAlg::Matrix<3, 3> const& B, double const fac);
 
@@ -300,6 +301,7 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in] B           2nd order tensor \f[B_{CD}\f]
    * @param[in,out] out     4th order tensor \f[\text{out}_{EFGH}\f]
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_adbc_tensor_product(const double fac, const Core::LinAlg::Matrix<3, 3>& A,
       const Core::LinAlg::Matrix<3, 3>& B, Core::LinAlg::Matrix<9, 9>& out);
 
@@ -319,6 +321,7 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in] B           2nd order tensor \f[B_{CD}\f]
    * @param[in,out] out     4th order tensor \f[\text{out}_{EFGH}\f]
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_non_symmetric_product(double const& fac, Core::LinAlg::Matrix<3, 3> const& A,
       Core::LinAlg::Matrix<3, 3> const& B, Core::LinAlg::Matrix<9, 9>& out);
 
@@ -386,6 +389,7 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in]     matrix_A             2nd order tensor \f$A^{ij}\f$
    * @param[in]     matrix_B             2nd order tensor \f$B^{kl}\f$
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_dyadic_product_matrix_matrix(Core::LinAlg::FourTensor<3>& four_tensor_result,
       const Core::LinAlg::Matrix<3, 3>& matrix_A, const Core::LinAlg::Matrix<3, 3>& matrix_B);
 
@@ -397,6 +401,7 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in]     matrix_B             2nd order tensor \f$B^{kl}\f$
    * @param[in]     scale               scaling factor
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_dyadic_product_matrix_matrix(Core::LinAlg::FourTensor<3>& four_tensor_result,
       const double scale, const Core::LinAlg::Matrix<3, 3>& matrix_A,
       const Core::LinAlg::Matrix<3, 3>& matrix_B);
@@ -409,6 +414,7 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in]     matrix          2nd order tensor \f$A_{ij}\f$
    * @param[in]     four_tensor      4th order tensor \f$B^{ijkl}\f$
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_contraction_matrix_four_tensor(Core::LinAlg::Matrix<3, 3>& matrix_result,
       const Core::LinAlg::Matrix<3, 3>& matrix, const Core::LinAlg::FourTensor<3>& four_tensor);
 
@@ -421,12 +427,12 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in]     four_tensor      4th order tensor \f$B^{kl}\f$
    * @param[in]     matrix          2nd order tensor \f$A_{ijkl}\f$
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_contraction_matrix_four_tensor(Core::LinAlg::Matrix<3, 3>& matrix_result,
       const double scale, const Core::LinAlg::FourTensor<3>& four_tensor,
       const Core::LinAlg::Matrix<3, 3>& matrix);
 
 }  // namespace Core::LinAlg::FourTensorOperations
-
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -115,7 +115,7 @@ namespace Mat
      *  \note The given reference contains many typos, such that almost all
      *  equations (beside the strain energy function) were derived independently.
      */
-    class CoupTransverselyIsotropic : public Summand
+    class FOUR_C_API(FOUR_C_CORE) CoupTransverselyIsotropic : public Summand
     {
       using my_params = Mat::Elastic::PAR::CoupTransverselyIsotropic;
 

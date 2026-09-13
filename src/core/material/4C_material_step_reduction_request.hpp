@@ -35,7 +35,7 @@ namespace Core::Mat::StepReduction
    * @param detailed_reason Optionally, a longer diagnostic error message that is printed instead of
    * \p reason in case the time-step request is invalid. If not given, \p reason is used.
    */
-  [[noreturn]] void request_or_throw_error(
+  [[noreturn]] FOUR_C_API(FOUR_C_CORE) void request_or_throw_error(
       const std::string& reason, const std::optional<std::string>& detailed_reason = std::nullopt);
 
   /*!
@@ -67,6 +67,7 @@ namespace Core::Mat::StepReduction
    * @param comm Communicator over which rank-local requests are synchronized.
    * @param evaluation Evaluation function that may call rank-local material code.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void run_and_synchronize_requests(MPI_Comm comm, const std::function<void()>& evaluation);
 
   /*!
@@ -87,7 +88,7 @@ namespace Core::Mat::StepReduction
    * @param operation Algorithmic operation in which synchronized requests should be detected.
    * @return \c true if step reduction was requested, otherwise \c false.
    */
-  [[nodiscard]] bool run_and_detect_synchronized_request(
+  [[nodiscard]] FOUR_C_API(FOUR_C_CORE) bool run_and_detect_synchronized_request(
       bool enable_requests, const std::function<void()>& operation);
 
 }  // namespace Core::Mat::StepReduction

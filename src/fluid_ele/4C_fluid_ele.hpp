@@ -71,7 +71,7 @@ namespace Discret
     /*!
     \brief A C++ wrapper for the fluid element
     */
-    class Fluid : public Core::Elements::Element
+    class FOUR_C_API(FOUR_C_CORE) Fluid : public Core::Elements::Element
     {
      public:
       /*!

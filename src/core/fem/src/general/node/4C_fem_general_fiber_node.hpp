@@ -53,7 +53,7 @@ namespace Core::Nodes
   \brief Node with additional fiber information
 
   */
-  class FiberNode : public Core::Nodes::Node
+  class FOUR_C_API(FOUR_C_CORE) FiberNode : public Core::Nodes::Node
   {
    public:
     //! @name Enums and Friends

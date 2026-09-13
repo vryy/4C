@@ -72,7 +72,7 @@ namespace ReducedLung
    *
    * The time integration only interacts with the selected solver through this interface.
    */
-  class NonlinearSolver
+  class FOUR_C_API(FOUR_C_CORE) NonlinearSolver
   {
    public:
     virtual ~NonlinearSolver() = default;

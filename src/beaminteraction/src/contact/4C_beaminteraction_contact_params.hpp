@@ -27,7 +27,7 @@ namespace BeamInteraction
 
   /*!
    *  */
-  class BeamContactParams
+  class FOUR_C_API(FOUR_C_CORE) BeamContactParams
   {
    public:
     //! constructor

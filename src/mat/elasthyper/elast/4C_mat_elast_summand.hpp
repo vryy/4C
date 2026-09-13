@@ -63,7 +63,7 @@ namespace Mat
      * and the case of anisotropy", European Journal of Mechanics 2007
      * </ul>
      */
-    class Summand : public Core::Communication::ParObject
+    class FOUR_C_API(FOUR_C_CORE) Summand : public Core::Communication::ParObject
     {
      public:
       /// standard constructor

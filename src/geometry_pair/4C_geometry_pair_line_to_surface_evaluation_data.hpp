@@ -30,7 +30,7 @@ namespace GeometryPair
   /**
    * \brief Class to manage input parameters and evaluation data for line to surface interactions.
    */
-  class LineToSurfaceEvaluationData : public LineTo3DEvaluationData
+  class FOUR_C_API(FOUR_C_CORE) LineToSurfaceEvaluationData : public LineTo3DEvaluationData
   {
    public:
     /**

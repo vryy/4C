@@ -40,7 +40,7 @@ namespace Core::FE
     derived from the node class and are hence managed by the original discretisation
 
     */
-    class NurbsDiscretization : public Core::FE::Discretization
+    class FOUR_C_API(FOUR_C_CORE) NurbsDiscretization : public Core::FE::Discretization
     {
      public:
       /*!

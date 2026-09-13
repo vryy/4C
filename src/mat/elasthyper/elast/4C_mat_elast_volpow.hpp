@@ -28,7 +28,7 @@ namespace Mat
        *  <h3>Input line</h3>
        *  MAT 1 ELAST_VolPow A 100 EXPON 5
        */
-      class VolPow : public Core::Mat::PAR::Parameter
+      class FOUR_C_API(FOUR_C_CORE) VolPow : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
@@ -72,7 +72,7 @@ namespace Mat
      * The resultant pressure depends on the prefactor and pressure.
      * Should be combined with non-stiff volumetric law (eg. Ogden).
      */
-    class VolPow : public Summand
+    class FOUR_C_API(FOUR_C_CORE) VolPow : public Summand
     {
      public:
       /// constructor with given material parameters

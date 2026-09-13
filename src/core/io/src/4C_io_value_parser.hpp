@@ -57,7 +57,7 @@ namespace Core::IO
    * the format matches. Note that the whole class works on string_views, so the original data must
    * outlive the parser.
    */
-  class ValueParser
+  class FOUR_C_API(FOUR_C_CORE) ValueParser
   {
    public:
     /**
@@ -67,7 +67,7 @@ namespace Core::IO
      * if the backtrack() function is called. When the scope is destroyed, the backtrack point is
      * removed.
      */
-    class [[nodiscard]] BacktrackScope
+    class [[nodiscard]] FOUR_C_API(FOUR_C_CORE) BacktrackScope
     {
      public:
       explicit BacktrackScope(ValueParser& parser);
@@ -137,7 +137,6 @@ namespace Core::IO
       size_info_ = nullptr;
       return val;
     }
-
 
     template <typename T>
       requires(dynamic_rank<T>() > 0)

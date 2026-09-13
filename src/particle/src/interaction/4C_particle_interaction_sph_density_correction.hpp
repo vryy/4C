@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 namespace Particle
 {
-  class SPHDensityCorrectionBase
+  class FOUR_C_API(FOUR_C_CORE) SPHDensityCorrectionBase
   {
    public:
     //! constructor
@@ -42,7 +42,7 @@ namespace Particle
         const double* dens_bc, double* dens) const = 0;
   };
 
-  class SPHDensityCorrectionInterior : public SPHDensityCorrectionBase
+  class FOUR_C_API(FOUR_C_CORE) SPHDensityCorrectionInterior : public SPHDensityCorrectionBase
   {
    public:
     //! constructor
@@ -56,7 +56,7 @@ namespace Particle
         const double* dens_bc, double* dens) const override;
   };
 
-  class SPHDensityCorrectionNormalized : public SPHDensityCorrectionBase
+  class FOUR_C_API(FOUR_C_CORE) SPHDensityCorrectionNormalized : public SPHDensityCorrectionBase
   {
    public:
     //! constructor
@@ -70,7 +70,7 @@ namespace Particle
         const double* dens_bc, double* dens) const override;
   };
 
-  class SPHDensityCorrectionRandles : public SPHDensityCorrectionBase
+  class FOUR_C_API(FOUR_C_CORE) SPHDensityCorrectionRandles : public SPHDensityCorrectionBase
   {
    public:
     //! constructor

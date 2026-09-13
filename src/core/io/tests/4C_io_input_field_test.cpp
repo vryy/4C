@@ -31,7 +31,8 @@ namespace
   TEST(InputField, ReadJsonScalarInputField)
   {
     const std::string input_field_file =
-        TESTING::get_support_file_path("test_files/input_field/stiffness_input_field.json");
+        TESTING::get_support_file_path("test_files/input_field/stiffness_input_field.json")
+            .generic_string();
     std::unordered_map<int, double> stiffness_map;
     read_value_from_yaml(input_field_file, "stiffness", stiffness_map);
     std::unordered_map<int, double> expected_stiffness_map = {
@@ -42,7 +43,8 @@ namespace
   TEST(InputField, ReadSpecScalarInputField)
   {
     const std::string input_field_file =
-        TESTING::get_support_file_path("test_files/input_field/stiffness_input_field.json");
+        TESTING::get_support_file_path("test_files/input_field/stiffness_input_field.json")
+            .generic_string();
     auto spec = input_field<double>("stiffness", {.description = "A stiffness field"});
 
     {
@@ -79,7 +81,8 @@ namespace
   TEST(InputField, ReadJsonVectorInputField)
   {
     const std::string input_field_file =
-        TESTING::get_support_file_path("test_files/input_field/conductivity_input_field.json");
+        TESTING::get_support_file_path("test_files/input_field/conductivity_input_field.json")
+            .generic_string();
     std::unordered_map<int, std::vector<double>> conductivity_map;
     read_value_from_yaml(input_field_file, "CONDUCT", conductivity_map);
     std::unordered_map<int, std::vector<double>> expected_conductivity_map = {
@@ -90,7 +93,8 @@ namespace
   TEST(InputField, ReadSpecVectorInputField)
   {
     const std::string input_field_file =
-        TESTING::get_support_file_path("test_files/input_field/conductivity_input_field.json");
+        TESTING::get_support_file_path("test_files/input_field/conductivity_input_field.json")
+            .generic_string();
     auto spec =
         input_field<std::vector<double>>("CONDUCT", {.description = "A conductivity field"});
 
@@ -160,7 +164,8 @@ namespace
       ryml::Tree tree = init_yaml_tree_with_exceptions();
       ryml::NodeRef root = tree.rootref();
       const std::string input_field_file =
-          TESTING::get_support_file_path("test_files/input_field/stiffness_input_field.json");
+          TESTING::get_support_file_path("test_files/input_field/stiffness_input_field.json")
+              .generic_string();
       ryml::parse_in_arena(
           ("data:\n  stiffness:\n    from_file: " + input_field_file).c_str(), root);
 

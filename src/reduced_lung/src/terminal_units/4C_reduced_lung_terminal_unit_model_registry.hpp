@@ -66,6 +66,7 @@ namespace ReducedLung::TerminalUnits::ModelRegistry
    * @param elasticity_model_type Selected elasticity model type.
    * @param recruitment_model_type Selected recruitment model type.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_terminal_unit_with_model_selection(TerminalUnitContainer& terminal_units,
       int global_element_id, int local_element_id, const ReducedLungParameters& parameters,
       RheologicalModelType rheological_model_type, ElasticityModelType elasticity_model_type,

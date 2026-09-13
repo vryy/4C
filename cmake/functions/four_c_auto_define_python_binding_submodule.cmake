@@ -69,6 +69,9 @@ function(four_c_auto_define_python_binding_submodule)
     # Link all dependencies of the respective 4C module to this python binding submodule
     target_link_libraries(${_target}_objs PRIVATE ${_bindings_for_module}_module)
 
+    # The submodule consumes 4C, hence it must import the core library
+    target_compile_definitions(${_target}_objs PRIVATE FOUR_C_CORE=IMPORT)
+
     # Add the current submodule object file to the main python bindings target
     target_link_libraries(${FOUR_C_PYTHON_BINDINGS_PROJECT_NAME} PRIVATE ${_target}_objs)
 

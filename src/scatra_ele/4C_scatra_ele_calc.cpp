@@ -983,7 +983,7 @@ double Discret::Elements::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_d
   if (use2ndderiv_)
   {
     // get global second derivatives
-    Core::FE::gder2<distype, nen_, probdim>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
+    Core::FE::gder2d<distype, nen_, probdim>(xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
     derxy2_.clear();

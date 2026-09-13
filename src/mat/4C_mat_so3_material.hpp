@@ -45,7 +45,7 @@ namespace Mat
     const Core::LinAlg::Tensor<double, dim>* ref_coords;
   };
 
-  class So3Material : public Core::Mat::Material
+  class FOUR_C_API(FOUR_C_CORE) So3Material : public Core::Mat::Material
   {
    public:
     int unique_par_object_id() const override = 0;

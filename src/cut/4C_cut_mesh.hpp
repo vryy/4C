@@ -60,8 +60,6 @@ namespace Cut
   class Wedge6IntegrationCell;
   class Pyramid5IntegrationCell;
 
-
-
   /*!
   \brief All the geometrical entities (mesh, volume, cut surface, nodes etc.) are contained in
   this.
@@ -72,7 +70,7 @@ namespace Cut
     Mesh does the memory management for the whole thing. Therefore, all
     creation of cut library objects is done via the mesh.
    */
-  class Mesh
+  class FOUR_C_API(FOUR_C_CORE) Mesh
   {
    public:
     /// constructor
@@ -674,7 +672,6 @@ namespace Cut
 
 
 }  // namespace Cut
-
 
 FOUR_C_NAMESPACE_CLOSE
 

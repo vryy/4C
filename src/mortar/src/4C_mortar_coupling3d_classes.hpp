@@ -126,7 +126,7 @@ namespace Mortar
 
   */
 
-  class IntCell
+  class FOUR_C_API(FOUR_C_CORE) IntCell
   {
    public:
     IntCell(Core::LinAlg::Matrix<3, 3>& coords, double* auxn, const Core::FE::CellType& shape,

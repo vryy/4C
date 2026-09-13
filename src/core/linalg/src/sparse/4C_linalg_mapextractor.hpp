@@ -39,7 +39,7 @@ namespace Core::LinAlg
     has to be performed by the user.
 
    */
-  class MultiMapExtractor
+  class FOUR_C_API(FOUR_C_CORE) MultiMapExtractor
   {
    public:
     /**
@@ -240,7 +240,7 @@ namespace Core::LinAlg
   where other has index 0 and cond has index 1.
 
   */
-  class MapExtractor : public MultiMapExtractor
+  class FOUR_C_API(FOUR_C_CORE) MapExtractor : public MultiMapExtractor
   {
    public:
     /**

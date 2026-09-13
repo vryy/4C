@@ -17,8 +17,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-
 namespace Cut
 {
   class Point;
@@ -34,7 +32,7 @@ namespace Cut
   //--------------------------------------------------------------------------//
   // the ElementHandle base class
   //--------------------------------------------------------------------------//
-  class ElementHandle
+  class FOUR_C_API(FOUR_C_CORE) ElementHandle
   {
    public:
     virtual ~ElementHandle() = default;

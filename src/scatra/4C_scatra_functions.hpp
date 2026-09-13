@@ -22,7 +22,6 @@ namespace Core::Utils
   class FunctionManager;
 }
 
-
 namespace ScaTra
 {
   /**
@@ -94,7 +93,7 @@ namespace ScaTra
   /**
    * Functions for a cylindrical magnet of finite length with longitudinal magnetization
    */
-  class CylinderMagnetFunction : public Core::Utils::FunctionOfSpaceTime
+  class FOUR_C_API(FOUR_C_CORE) CylinderMagnetFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     explicit CylinderMagnetFunction(const CylinderMagnetParameters& parameters);

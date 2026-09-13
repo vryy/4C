@@ -7,6 +7,8 @@
 
 #include "4C_utils_symbolic_expression.hpp"
 
+#include <numbers>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Utils::SymbolicExpressionDetails
@@ -478,7 +480,7 @@ namespace Core::Utils::SymbolicExpressionDetails
       auto token = previous();
       if (token.text == "pi")
       {
-        return create_node(NodeType::number, {.number = M_PI});
+        return create_node(NodeType::number, {.number = std::numbers::pi});
       }
       else
       {

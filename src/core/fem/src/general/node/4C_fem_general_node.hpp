@@ -57,7 +57,7 @@ namespace Core::Nodes
   implement
 
   */
-  class Node : public Core::Communication::ParObject
+  class FOUR_C_API(FOUR_C_CORE) Node : public Core::Communication::ParObject
   {
    public:
     //! @name Enums and Friends

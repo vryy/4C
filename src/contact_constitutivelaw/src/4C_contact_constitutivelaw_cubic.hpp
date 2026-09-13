@@ -27,7 +27,7 @@ namespace CONTACT
      *
      * This law has the coefficients \f$ Ax^3+Bx^2+Cx+D \f$
      */
-    class CubicConstitutiveLawParams : public Parameter
+    class FOUR_C_API(FOUR_C_CORE) CubicConstitutiveLawParams : public Parameter
     {
      public:
       /// standard constructor
@@ -55,7 +55,7 @@ namespace CONTACT
      * to the contact pressure
      *
      */
-    class CubicConstitutiveLaw : public ConstitutiveLaw
+    class FOUR_C_API(FOUR_C_CORE) CubicConstitutiveLaw : public ConstitutiveLaw
     {
      public:
       /// construct the ConstitutiveLaw object given a set of parameters

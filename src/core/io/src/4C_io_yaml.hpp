@@ -53,7 +53,6 @@ namespace Core::IO
       {
       }
 
-
      public:
       /**
        * When traversing the yaml tree, we frequently need to process child nodes of the wrapped
@@ -119,24 +118,25 @@ namespace Core::IO
   class YamlException : public Core::Exception
   {
    public:
-    explicit YamlException(const std::string& message);
+    explicit FOUR_C_API(FOUR_C_CORE) YamlException(const std::string& message);
   };
 
 
   /**
    * Initialize a ryml tree which throws YamlExceptions on parse errors.
    */
-  [[nodiscard]] ryml::Tree init_yaml_tree_with_exceptions();
+  [[nodiscard]] FOUR_C_API(FOUR_C_CORE) ryml::Tree init_yaml_tree_with_exceptions();
 
-  void emit_value_as_yaml(YamlNodeRef node, const int& value);
+  FOUR_C_API(FOUR_C_CORE) void emit_value_as_yaml(YamlNodeRef node, const int& value);
 
-  void emit_value_as_yaml(YamlNodeRef node, const double& value);
+  FOUR_C_API(FOUR_C_CORE) void emit_value_as_yaml(YamlNodeRef node, const double& value);
 
-  void emit_value_as_yaml(YamlNodeRef node, const std::string& value);
-  void emit_value_as_yaml(YamlNodeRef node, const std::string_view& value);
+  FOUR_C_API(FOUR_C_CORE) void emit_value_as_yaml(YamlNodeRef node, const std::string& value);
+  FOUR_C_API(FOUR_C_CORE) void emit_value_as_yaml(YamlNodeRef node, const std::string_view& value);
 
-  void emit_value_as_yaml(YamlNodeRef node, const bool& value);
+  FOUR_C_API(FOUR_C_CORE) void emit_value_as_yaml(YamlNodeRef node, const bool& value);
 
+  FOUR_C_API(FOUR_C_CORE)
   void emit_value_as_yaml(YamlNodeRef node, const std::filesystem::path& value);
 
   template <typename T>
@@ -216,7 +216,8 @@ namespace Core::IO
       return node.node.deserialize(&value) ? YamlReadStatus::success : YamlReadStatus::wrong_type;
     }
 
-    [[nodiscard]] YamlReadStatus read_value_from_yaml(ConstYamlNodeRef node, double& value);
+    [[nodiscard]] FOUR_C_API(FOUR_C_CORE) YamlReadStatus
+        read_value_from_yaml(ConstYamlNodeRef node, double& value);
 
     /**
      * Reading a bool currently supports the following options:
@@ -226,7 +227,8 @@ namespace Core::IO
      *
      * All of them are case-insensitive.
      */
-    [[nodiscard]] YamlReadStatus read_value_from_yaml(ConstYamlNodeRef node, bool& value);
+    [[nodiscard]] FOUR_C_API(FOUR_C_CORE) YamlReadStatus
+        read_value_from_yaml(ConstYamlNodeRef node, bool& value);
 
     template <typename T>
       requires(std::is_enum_v<T>)
@@ -290,8 +292,8 @@ namespace Core::IO
       return status;
     }
 
-    [[nodiscard]] YamlReadStatus read_value_from_yaml(
-        ConstYamlNodeRef node, std::filesystem::path& value);
+    [[nodiscard]] FOUR_C_API(FOUR_C_CORE) YamlReadStatus
+        read_value_from_yaml(ConstYamlNodeRef node, std::filesystem::path& value);
 
     template <typename U>
     [[nodiscard]] YamlReadStatus read_value_from_yaml(

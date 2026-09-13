@@ -65,7 +65,7 @@ namespace Discret
      * @brief A Kirchhoff-Love shell element based on Kiendl, Josef & Bletzinger, Kai-Uwe & Linhard,
      * J. & Wuechner, Roland. (2009). Isogeometric shell analysis with Kirchhoff-Love elements.
      */
-    class KirchhoffLoveShellNurbs : public Core::Elements::Element
+    class FOUR_C_API(FOUR_C_CORE) KirchhoffLoveShellNurbs : public Core::Elements::Element
     {
      public:
       /**

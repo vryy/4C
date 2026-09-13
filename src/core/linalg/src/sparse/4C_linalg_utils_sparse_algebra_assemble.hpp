@@ -45,6 +45,7 @@ namespace Core::LinAlg
    \param lmrowowner (in) : vector with owner procs of row gids
    \param lmcol (in)      : vector with column gids
    */
+  FOUR_C_API(FOUR_C_CORE)
   void assemble(Core::LinAlg::SparseMatrix& A, const Core::LinAlg::SerialDenseMatrix& Aele,
       const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
       const std::vector<int>& lmcol);
@@ -62,6 +63,7 @@ namespace Core::LinAlg
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
+  FOUR_C_API(FOUR_C_CORE)
   void assemble(Core::LinAlg::Vector<double>& V, const Core::LinAlg::SerialDenseVector& Vele,
       const std::vector<int>& lm, const std::vector<int>& lmowner);
 
@@ -79,6 +81,7 @@ namespace Core::LinAlg
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
+  FOUR_C_API(FOUR_C_CORE)
   void assemble(Core::LinAlg::MultiVector<double>& V, const int n,
       const Core::LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
       const std::vector<int>& lmowner);
@@ -101,6 +104,7 @@ namespace Core::LinAlg
    *  \param source        (in) : source vector
    *
    *  */
+  FOUR_C_API(FOUR_C_CORE)
   void assemble_my_vector(double scalar_target, Core::LinAlg::Vector<double>& target,
       double scalar_source, const Core::LinAlg::Vector<double>& source);
 
@@ -144,6 +148,7 @@ namespace Core::LinAlg
    \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
    and 0.0 everywhere else
      */
+  FOUR_C_API(FOUR_C_CORE)
   void apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Core::LinAlg::Vector<double>& x,
       Core::LinAlg::Vector<double>& b, const Core::LinAlg::Vector<double>& dbcval,
       const Core::LinAlg::Vector<double>& dbctoggle);
@@ -165,6 +170,7 @@ namespace Core::LinAlg
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Core::LinAlg::Vector<double>& x,
       Core::LinAlg::Vector<double>& b, const Core::LinAlg::Vector<double>& dbcval,
       const Core::LinAlg::Map& dbcmap);
@@ -192,6 +198,7 @@ namespace Core::LinAlg
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void apply_dirichlet_to_system(Core::LinAlg::SparseMatrix& A, Core::LinAlg::Vector<double>& x,
       Core::LinAlg::Vector<double>& b, const Core::LinAlg::SparseMatrix& trafo,
       const Core::LinAlg::Vector<double>& dbcval, const Core::LinAlg::Map& dbcmap);
@@ -206,6 +213,7 @@ namespace Core::LinAlg
    \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
    and 0.0 everywhere else
    */
+  FOUR_C_API(FOUR_C_CORE)
   void apply_dirichlet_to_system(Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& b,
       const Core::LinAlg::Vector<double>& dbcval, const Core::LinAlg::Vector<double>& dbctoggle);
 
@@ -226,6 +234,7 @@ namespace Core::LinAlg
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void apply_dirichlet_to_system(Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& b,
       const Core::LinAlg::Vector<double>& dbcval, const Core::LinAlg::Map& dbcmap);
 
@@ -246,6 +255,7 @@ namespace Core::LinAlg
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void apply_dirichlet_to_system(Core::LinAlg::Vector<double>& b,
       const Core::LinAlg::Vector<double>& dbcval, const Core::LinAlg::Map& dbcmap);
 
@@ -262,6 +272,7 @@ namespace Core::LinAlg
    \return MapExtractor object which stores the Dirichlet condition and remaining (other) DOF map
 
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::MapExtractor> convert_dirichlet_toggle_vector_to_maps(
       const Core::LinAlg::Vector<double>& dbctoggle);
 
@@ -274,10 +285,10 @@ namespace Core::LinAlg
                               If it is only one block/matrix, this boolean should be TRUE.
    \param trafo (in) : shared pointer to an optional trafo matrix (see LocSys).
   */
+  FOUR_C_API(FOUR_C_CORE)
   bool is_dirichlet_boundary_condition_already_applied(const Core::LinAlg::SparseMatrix& A,
       const Core::LinAlg::Map& dbcmap, bool diagonalblock,
       const std::shared_ptr<const Core::LinAlg::SparseMatrix>& trafo);
-
 
   /*! \brief Return TRUE if all Dirichlet boundary conditions have been applied
    to this sparse operator
@@ -289,6 +300,7 @@ namespace Core::LinAlg
    \param trafo (in) : shared pointer to an optional trafo matrix (see LocSys).
 
    */
+  FOUR_C_API(FOUR_C_CORE)
   bool is_dirichlet_boundary_condition_already_applied(const Core::LinAlg::SparseOperator& A,
       const Core::LinAlg::Map& dbcmap, bool diagonalblock,
       const std::shared_ptr<const Core::LinAlg::SparseMatrix>& trafo);
@@ -314,6 +326,7 @@ namespace Core::LinAlg
    *          matrix such that the corresponding row contains exactly one non-zero entry. If a
    *          different enforcement strategy is used, this detection method may not be valid.
    */
+  FOUR_C_API(FOUR_C_CORE)
   bool has_dirichlet_boundary_condition(const Core::LinAlg::SparseMatrix& A);
 
 }  // namespace Core::LinAlg

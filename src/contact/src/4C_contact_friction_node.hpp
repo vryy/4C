@@ -376,7 +376,7 @@ namespace CONTACT
    This class represents a finite element node capable of frictional contact.
 
    */
-  class FriNode : public Node
+  class FOUR_C_API(FOUR_C_CORE) FriNode : public Node
   {
    public:
     //! @name Enums and Friends

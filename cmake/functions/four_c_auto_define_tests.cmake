@@ -51,6 +51,10 @@ function(_set_up_unit_test_target _module_under_test _target)
   target_link_libraries(${_target} PRIVATE four_c_private_compile_interface)
   target_link_libraries(${_target} PRIVATE gtest gmock)
   target_link_libraries(${_target} PRIVATE unittests_common)
+  get_target_property(GTEST_TYPE gtest TYPE)
+  if(GTEST_TYPE STREQUAL "SHARED_LIBRARY")
+    target_compile_definitions(${_target} PRIVATE GTEST_LINKED_AS_SHARED_LIBRARY=1)
+  endif()
 
   target_link_libraries(${_target} PRIVATE ${_module_under_test}_module)
 
@@ -187,8 +191,9 @@ function(four_c_auto_define_tests)
           )
       target_compile_definitions(
         ${_current_test_name}
-        PRIVATE -DFOUR_C_TEST_SUPPORT_FILE_DIR="${FOUR_C_TEST_SUPPORT_FILE_DIR}"
+        PRIVATE FOUR_C_TEST_SUPPORT_FILE_DIR="${FOUR_C_TEST_SUPPORT_FILE_DIR}"
         )
+      target_compile_definitions(${_current_test_name} PRIVATE FOUR_C_CORE=IMPORT)
     endif()
 
     target_sources(${_current_test_name} PRIVATE ${_source})

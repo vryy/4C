@@ -315,7 +315,9 @@ double Discret::Elements::SolidPoroPressureVelocityBased<dim>::get_normal_cauchy
     const Core::LinAlg::Tensor<double, 3>& xi, const Core::LinAlg::Tensor<double, 3>& n,
     const Core::LinAlg::Tensor<double, 3>& dir,
     SolidPoroCauchyNDirLinearizations<3>& linearizations)
+#ifndef _MSC_VER
   requires(dim == 3)
+#endif
 {
   double cauchy_stress_n_dir = std::visit(
       [&]<typename Interface>(Interface& solid) -> double
@@ -353,7 +355,7 @@ double Discret::Elements::SolidPoroPressureVelocityBased<dim>::get_normal_cauchy
             linearizations.solid.d_cauchyndir_ddir || linearizations.solid.d_cauchyndir_dxi)
         {
           linearizations.d_cauchyndir_dp->reshape(Core::FE::num_nodes(celltype), 1);
-          for (unsigned node = 0; node < Core::FE::num_nodes(celltype); ++node)
+          for (int node = 0; node < Core::FE::num_nodes(celltype); ++node)
           {
             if (linearizations.d_cauchyndir_dp)
               (*linearizations.d_cauchyndir_dp)(node, 0) =

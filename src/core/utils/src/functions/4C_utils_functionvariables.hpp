@@ -13,6 +13,7 @@
 #include "4C_utils_symbolic_expression.fwd.hpp"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -34,7 +35,7 @@ namespace Core::Utils
   };
 
   /// class that defines the main properties of a time dependent variable
-  class FunctionVariable
+  class FOUR_C_API(FOUR_C_CORE) FunctionVariable
   {
    public:
     /// Base constructor taking the @p name of the FunctionVariable.
@@ -53,7 +54,7 @@ namespace Core::Utils
     virtual bool contain_time(const double t) = 0;
 
     /// return the name of the variable
-    std::string name() { return name_; }
+    const std::string& name() const { return name_; }
 
    private:
     /// name of the variable
@@ -62,7 +63,7 @@ namespace Core::Utils
 
 
   /// variable based on a parsed expression
-  class ParsedFunctionVariable : public FunctionVariable
+  class FOUR_C_API(FOUR_C_CORE) ParsedFunctionVariable : public FunctionVariable
   {
    public:
     ParsedFunctionVariable(std::string name, const std::string& buf);
@@ -83,7 +84,7 @@ namespace Core::Utils
 
 
   /// variable based on a linear interpolation
-  class LinearInterpolationVariable : public FunctionVariable
+  class FOUR_C_API(FOUR_C_CORE) LinearInterpolationVariable : public FunctionVariable
   {
    public:
     LinearInterpolationVariable(std::string name, std::vector<double> times,
@@ -121,7 +122,7 @@ namespace Core::Utils
 
 
   /// variable based on a set of parsed expressions
-  class MultiFunctionVariable : public FunctionVariable
+  class FOUR_C_API(FOUR_C_CORE) MultiFunctionVariable : public FunctionVariable
   {
    public:
     MultiFunctionVariable(std::string name, std::vector<double> times,
@@ -143,7 +144,6 @@ namespace Core::Utils
     /// vector of parsed functions
     std::vector<std::shared_ptr<Core::Utils::SymbolicExpression<double, "t">>> timefunction_;
 
-
     /// flag for periodic repetition
     const bool periodic_;
 
@@ -156,7 +156,7 @@ namespace Core::Utils
 
 
   /// variable based on a Fourier interpolation
-  class FourierInterpolationVariable : public FunctionVariable
+  class FOUR_C_API(FOUR_C_CORE) FourierInterpolationVariable : public FunctionVariable
   {
    public:
     FourierInterpolationVariable(std::string name, std::vector<double> times,
@@ -200,7 +200,7 @@ namespace Core::Utils
    * first piece that contains the given time will be used for evaluation, even if multiple pieces
    * would be able to evaluate the time.
    */
-  class PiecewiseVariable : public FunctionVariable
+  class FOUR_C_API(FOUR_C_CORE) PiecewiseVariable : public FunctionVariable
   {
    public:
     //! Create a PiecewiseVariable from the given @p pieces.

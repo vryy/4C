@@ -18,6 +18,10 @@ Mixture::PAR::RemodelFiberMaterial<T>::RemodelFiberMaterial(
 {
 }
 
-template class Mixture::PAR::RemodelFiberMaterial<double>;
-template class Mixture::PAR::RemodelFiberMaterial<Sacado::Fad::DFad<double>>;
+template class FOUR_C_API(FOUR_C_CORE) Mixture::PAR::RemodelFiberMaterial<double>;
+template class FOUR_C_API(
+    FOUR_C_CORE) Mixture::PAR::RemodelFiberMaterial<Sacado::Fad::DFad<double>>;
+template class FOUR_C_API(FOUR_C_CORE) Mixture::RemodelFiberMaterial<double>;
+template class FOUR_C_API(FOUR_C_CORE) Mixture::RemodelFiberMaterial<Sacado::Fad::DFad<double>>;
+
 FOUR_C_NAMESPACE_CLOSE

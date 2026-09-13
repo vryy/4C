@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void dyn_ale_drt();
+FOUR_C_API(FOUR_C_CORE) void dyn_ale_drt();
 
 FOUR_C_NAMESPACE_CLOSE
 

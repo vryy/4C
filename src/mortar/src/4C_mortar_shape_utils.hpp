@@ -135,7 +135,7 @@ namespace Mortar
       {
         Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
         if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
-        bound += mymrtrnode->is_on_bound();
+        bound = bound || mymrtrnode->is_on_bound();
       }
 
       switch (ele.shape())
@@ -444,7 +444,7 @@ namespace Mortar
       {
         Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
         if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
-        bound += mymrtrnode->is_on_bound();
+        bound = bound || mymrtrnode->is_on_bound();
       }
 
       // all nodes are interior: use unmodified shape functions

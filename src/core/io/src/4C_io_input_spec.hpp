@@ -70,7 +70,7 @@ namespace Core::IO
    * helper functions in the InputSpecBuilders namespace. See the function
    * InputSpecBuilders::entry() for more information on how to create InputSpecs.
    */
-  class InputSpec
+  class FOUR_C_API(FOUR_C_CORE) InputSpec
   {
    public:
     InputSpec() = default;

@@ -58,7 +58,7 @@ namespace Core::FE
   // for enriched elements (e.g. xwall), num_node may be larger than the number of element nodes
   // for all other elements, num_node==numnode
   template <Core::FE::CellType distype, int num_node, int prob_dim>
-  void gder2(const Core::LinAlg::Matrix<prob_dim, prob_dim>& xjm,
+  void gder2d(const Core::LinAlg::Matrix<prob_dim, prob_dim>& xjm,
       const Core::LinAlg::Matrix<prob_dim, num_node>& derxy,
       const Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<distype>::numderiv2, num_node>&
           deriv2,
@@ -143,9 +143,8 @@ namespace Core::FE
       const Core::LinAlg::Matrix<Core::FE::dim<distype>, num_node>& xyze,
       Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<distype>::numderiv2, num_node>& derxy2)
   {
-    gder2<distype, num_node, Core::FE::dim<distype>>(xjm, derxy, deriv2, xyze, derxy2);
+    gder2d<distype, num_node, Core::FE::dim<distype>>(xjm, derxy, deriv2, xyze, derxy2);
   }
-
 
 }  // namespace Core::FE
 

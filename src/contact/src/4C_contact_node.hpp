@@ -44,7 +44,7 @@ namespace CONTACT
    before the Node itself.
 
    */
-  class NodeDataContainer
+  class FOUR_C_API(FOUR_C_CORE) NodeDataContainer
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -708,7 +708,7 @@ namespace CONTACT
    This class represents a finite element node capable of contact.
 
    */
-  class Node : public Mortar::Node
+  class FOUR_C_API(FOUR_C_CORE) Node : public Mortar::Node
   {
    public:
     //! @name Enums and Friends

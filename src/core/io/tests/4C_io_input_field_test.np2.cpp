@@ -40,7 +40,8 @@ namespace
   {
     Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
     const std::string input_field_file =
-        TESTING::get_support_file_path("test_files/input_field/conductivity_input_field.json");
+        TESTING::get_support_file_path("test_files/input_field/conductivity_input_field.json")
+            .generic_string();
     auto spec =
         input_field<std::vector<double>>("CONDUCT", {.description = "A conductivity field"});
 

@@ -36,7 +36,6 @@ namespace Core::Communication
         std::integral_constant<bool, !std::is_convertible<T, int>::value && std::is_enum<T>::value>;
   }
 
-
   /*!
    * \brief Add stuff to the PackBuffer.
    *
@@ -286,6 +285,7 @@ namespace Core::Communication
    * \param[in,out] data char string stuff shall be added to
    * \param[in] stuff Core::LinAlg::SerialDenseMatrix that get's added to stuff
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_to_pack(PackBuffer& data, const Core::LinAlg::SerialDenseMatrix& stuff);
 
   /*!
@@ -295,6 +295,7 @@ namespace Core::Communication
    * \param[in,out] data char string stuff shall be added to
    * \param[in] stuff Core::LinAlg::SerialDenseVector that get's added to stuff
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_to_pack(PackBuffer& data, const Core::LinAlg::SerialDenseVector& stuff);
 
   /*!
@@ -319,7 +320,7 @@ namespace Core::Communication
    * \param[in,out] data char string stuff shall be added to
    * \param[in] stuff string that get's added to stuff
    */
-  void add_to_pack(PackBuffer& data, const std::string& stuff);
+  FOUR_C_API(FOUR_C_CORE) void add_to_pack(PackBuffer& data, const std::string& stuff);
 
   /**
    * Template to forward to the implementation on UnpackBuffer.
@@ -623,6 +624,7 @@ namespace Core::Communication
    * \param[in,out] buffer the buffer to unpack from
    * \param[out] stuff Core::LinAlg::SerialDenseMatrix to extract from data
    */
+  FOUR_C_API(FOUR_C_CORE)
   void extract_from_pack(UnpackBuffer& buffer, Core::LinAlg::SerialDenseMatrix& stuff);
 
   /*!
@@ -634,6 +636,7 @@ namespace Core::Communication
    * \param[in,out] buffer the buffer to unpack from
    * \param[out] stuff Core::LinAlg::SerialDenseVector to extract from data
    */
+  FOUR_C_API(FOUR_C_CORE)
   void extract_from_pack(UnpackBuffer& buffer, Core::LinAlg::SerialDenseVector& stuff);
 
   /*!
@@ -664,7 +667,7 @@ namespace Core::Communication
    * \param[in,out] buffer the buffer to unpack from
    * \param[out] stuff string to extract from data
    */
-  void extract_from_pack(UnpackBuffer& buffer, std::string& stuff);
+  FOUR_C_API(FOUR_C_CORE) void extract_from_pack(UnpackBuffer& buffer, std::string& stuff);
 
   /*!
    *  \brief Extract the type id at a given @p position from a @p data vector, assert if the
@@ -676,6 +679,7 @@ namespace Core::Communication
    * \param[in] data Data vector where type id is extracted from
    * \param[in] desired_type_id Id of the desired type
    */
+  FOUR_C_API(FOUR_C_CORE)
   int extract_and_assert_id(UnpackBuffer& buffer, const int desired_type_id);
 
   /**

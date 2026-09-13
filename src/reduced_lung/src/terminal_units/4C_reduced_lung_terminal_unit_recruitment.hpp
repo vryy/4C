@@ -155,7 +155,7 @@ namespace ReducedLung::TerminalUnits::Recruitment
    *
    * Blocks without a recruitment law report their constant input value.
    */
-  [[nodiscard]] double reference_volume_n(
+  [[nodiscard]] FOUR_C_API(FOUR_C_CORE) double reference_volume_n(
       const RecruitmentModel& recruitment_model, size_t element_index);
 
   /**
@@ -169,6 +169,7 @@ namespace ReducedLung::TerminalUnits::Recruitment
    * step, exactly as the end-of-timestep routine will advance it. Blocks without a recruitment law
    * report their constant reference volume.
    */
+  FOUR_C_API(FOUR_C_CORE)
   InternalStateUpdater make_internal_state_updater(const RecruitmentModel& recruitment_model);
 
   /**
@@ -177,6 +178,7 @@ namespace ReducedLung::TerminalUnits::Recruitment
    * The returned callback advances reference volume and hysteresis branch of all elements in one
    * model block by one time step. Blocks without a recruitment law have no state to advance.
    */
+  FOUR_C_API(FOUR_C_CORE)
   EndOfTimestepRoutine make_end_of_timestep_routine(RecruitmentModel& recruitment_model);
 
   /**
@@ -185,6 +187,7 @@ namespace ReducedLung::TerminalUnits::Recruitment
    * @p v0 is the reference volume at simulation start: the constant reference volume without a
    * recruitment law, the initial reference volume state with one.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void append_model_parameters(RecruitmentModel& recruitment_model, int global_element_id,
       double v0,
       const ReducedLungParameters::LungTree::TerminalUnits::RecruitmentModel& parameters);
@@ -194,6 +197,7 @@ namespace ReducedLung::TerminalUnits::Recruitment
    *
    * Blocks without a recruitment law contribute no output fields.
    */
+  FOUR_C_API(FOUR_C_CORE)
   OutputEvaluator make_output_evaluator(const RecruitmentModel& recruitment_model);
 }  // namespace ReducedLung::TerminalUnits::Recruitment
 

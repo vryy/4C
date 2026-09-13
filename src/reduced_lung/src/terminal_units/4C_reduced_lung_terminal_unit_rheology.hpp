@@ -100,12 +100,14 @@ namespace ReducedLung::TerminalUnits::Rheology
   /**
    * @brief Build residual evaluator callback for the concrete rheology variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   ResidualEvaluator make_residual_evaluator(
       RheologicalModel& rheological_model, Elasticity::ElasticPressureEvaluator pressure_evaluator);
 
   /**
    * @brief Build Jacobian evaluator callback for the concrete rheology variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   JacobianEvaluator make_jacobian_evaluator(RheologicalModel& rheological_model,
       Elasticity::ElasticPressurePartialsEvaluator elastic_pressure_partials_evaluator);
 
@@ -115,6 +117,7 @@ namespace ReducedLung::TerminalUnits::Rheology
    * The callback appends the terminal-unit p1, p2, and q entries once so dynamic assembly can
    * replace their values without changing the row pattern.
    */
+  FOUR_C_API(FOUR_C_CORE)
   StaticTreeLinearizationEvaluator make_static_tree_linearization_evaluator(
       RheologicalModel& rheological_model);
 
@@ -124,27 +127,32 @@ namespace ReducedLung::TerminalUnits::Rheology
    * The callback combines elastic-pressure partials, recruitment derivatives, and rheology terms
    * before writing p1, p2, and q coefficients through TreeLinearSolver.
    */
+  FOUR_C_API(FOUR_C_CORE)
   TreeLinearizationEvaluator make_tree_linearization_evaluator(RheologicalModel& rheological_model,
       Elasticity::ElasticPressurePartialsEvaluator elastic_pressure_partials_evaluator);
 
   /**
    * @brief Build internal-state updater callback for the concrete rheology variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   InternalStateUpdater make_internal_state_updater(RheologicalModel& rheological_model);
 
   /**
    * @brief Build end-of-timestep callback for the concrete rheology variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   EndOfTimestepRoutine make_end_of_timestep_routine(RheologicalModel& rheological_model);
 
   /**
    * @brief Build output evaluator callback for the concrete rheology variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   OutputEvaluator make_output_evaluator(RheologicalModel& rheological_model);
 
   /**
    * @brief Append element parameters and initialize internal vectors for a concrete rheology model.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void append_model_parameters(RheologicalModel& rheological_model, int global_element_id,
       const ReducedLungParameters::LungTree::TerminalUnits::RheologicalModel& parameters);
 }  // namespace ReducedLung::TerminalUnits::Rheology

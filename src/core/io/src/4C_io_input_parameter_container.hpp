@@ -39,7 +39,7 @@ namespace Core::IO
    * This class is a core part of the input mechanism, as it contains the parsed data from the input
    * file and grants access to it.
    */
-  class InputParameterContainer
+  class FOUR_C_API(FOUR_C_CORE) InputParameterContainer
   {
    public:
     /**

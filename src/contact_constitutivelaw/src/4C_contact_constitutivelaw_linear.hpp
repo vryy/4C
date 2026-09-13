@@ -26,7 +26,7 @@ namespace CONTACT
      * the contact pressure
      *
      */
-    class LinearConstitutiveLawParams : public Parameter
+    class FOUR_C_API(FOUR_C_CORE) LinearConstitutiveLawParams : public Parameter
     {
      public:
       /** \brief standard constructor
@@ -57,7 +57,7 @@ namespace CONTACT
     /** \brief implements a linear contact constitutive law \f$ Ax+B \f$ relating the gap to the
      * contact pressure
      */
-    class LinearConstitutiveLaw : public ConstitutiveLaw
+    class FOUR_C_API(FOUR_C_CORE) LinearConstitutiveLaw : public ConstitutiveLaw
     {
      public:
       /// construct the constitutive law object given a set of parameters

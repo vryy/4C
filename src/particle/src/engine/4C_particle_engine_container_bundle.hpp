@@ -39,8 +39,7 @@ namespace Particle
    * container for owned particles and a container for ghosted particles is initialized.
    *
    */
-
-  class ParticleContainerBundle final
+  class FOUR_C_API(FOUR_C_CORE) ParticleContainerBundle final
   {
    public:
     //! constructor

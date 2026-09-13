@@ -649,7 +649,7 @@ namespace Core::FE
   parameter space, we get the real volume of 0.1666..., NOT the unit volume of 1.0. Integration
   over the hex rules gives an volume of 8.0.
   */
-  struct IntegrationPoints3D
+  struct FOUR_C_API(FOUR_C_CORE) IntegrationPoints3D
   {
     /// constructor
     explicit IntegrationPoints3D(const GaussRule3D intrule  ///< 3d rule
@@ -685,7 +685,7 @@ namespace Core::FE
   parameter space, we get the real area of 0.5, NOT the unit area of 1.0. Integration over the
   quad rules gives an area of 4.0.
   */
-  struct IntegrationPoints2D
+  struct FOUR_C_API(FOUR_C_CORE) IntegrationPoints2D
   {
     /// constructor
     explicit IntegrationPoints2D(const GaussRule2D intrule  ///< 2d rule
@@ -719,7 +719,7 @@ namespace Core::FE
   are stored.
 
       */
-  struct IntegrationPoints1D
+  struct FOUR_C_API(FOUR_C_CORE) IntegrationPoints1D
   {
     /// constructor
     explicit IntegrationPoints1D(const GaussRule1D intrule  ///< 1d rule

@@ -118,7 +118,6 @@ namespace Core::LinAlg
                       ///< Higham: Functions of Matrices, Chapter 11: Matrix Logarithm, Eq. 11.18
   };
 
-
   /*!
    * @name Computes the (principal) matrix logarithm of a given real
    * matrix using a specified computation method
@@ -187,6 +186,7 @@ namespace Core::LinAlg
    * @return first derivative of input matrix exponential w.r.t. input matrix, specified in Voigt
    * notation
    */
+  FOUR_C_API(FOUR_C_CORE)
   Matrix<9, 9> matrix_3x3_exp_1st_deriv(const Matrix<3, 3>& input, MatrixFunctErrorType& err_status,
       GenMatrixExpFirstDerivCalcMethod calc_method = GenMatrixExpFirstDerivCalcMethod::automatic);
 
@@ -222,6 +222,7 @@ namespace Core::LinAlg
 
   /*! @brief Basic usage for methods not based on the Pade approximation
    */
+  FOUR_C_API(FOUR_C_CORE)
   Matrix<9, 9> matrix_3x3_log_1st_deriv(const Matrix<3, 3>& input, MatrixFunctErrorType& err_status,
       GenMatrixLogFirstDerivCalcMethod calc_method = GenMatrixLogFirstDerivCalcMethod::automatic);
 
@@ -235,6 +236,7 @@ namespace Core::LinAlg
    *
    * @param[in] pade_order Pade approximation order
    */
+  FOUR_C_API(FOUR_C_CORE)
   Matrix<9, 9> matrix_3x3_log_1st_deriv(const Matrix<3, 3>& input, MatrixFunctErrorType& err_status,
       const unsigned int pade_order,
       GenMatrixLogFirstDerivCalcMethod calc_method =
@@ -268,6 +270,7 @@ namespace Core::LinAlg
    * @return derivative of input matrix exponential w.r.t. input matrix, specified in Voigt
    * stress-stress form
    */
+  FOUR_C_API(FOUR_C_CORE)
   Matrix<6, 6> sym_matrix_3x3_exp_1st_deriv(const Matrix<3, 3>& input,
       MatrixFunctErrorType& err_status,
       SymMatrixExpFirstDerivCalcMethod calc_method = SymMatrixExpFirstDerivCalcMethod::automatic);
@@ -287,6 +290,7 @@ namespace Core::LinAlg
    * @param[out] ddexp_mat second derivative of exponential w.r.t. matrix
    * notation
    */
+  FOUR_C_API(FOUR_C_CORE)
   void sym_matrix_3x3_exp_2nd_deriv_voigt(const Core::LinAlg::Matrix<3, 3>& input,
       Core::LinAlg::Matrix<3, 3>& exp, Core::LinAlg::Matrix<6, 6>& dexp_mat,
       Core::LinAlg::Matrix<6, 6>* ddexp_mat, MatrixFunctErrorType& err_status);

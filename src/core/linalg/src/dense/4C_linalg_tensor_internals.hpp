@@ -81,6 +81,9 @@ namespace Core::LinAlg
     using value_type = Number;
     using shape_type = std::integer_sequence<std::size_t, n...>;
 
+    template <std::size_t>
+    using index_type = std::size_t;
+
     static constexpr bool is_compressed = (n * ...) != Compression::compressed_size;
 
 
@@ -95,12 +98,7 @@ namespace Core::LinAlg
                       std::is_same_v<std::remove_volatile_t<value_type>, value_type>,
         "TensorView must have a non-volatile value_type");
     static_assert(sizeof...(n) > 0, "Tensor must have at least rank one");
-    static_assert(
-        []() constexpr
-        {
-          std::array shape = {n...};
-          return std::ranges::all_of(shape, [](auto dim) { return dim > 0; });
-        }(),
+    static_assert([]() constexpr { return ((n > 0) && ...); }(),
         "The extents of all axes must be larger than zero");
 
     // Container is either a std::array for an owning tensor or a std::span for a view
@@ -251,7 +249,7 @@ namespace Core::LinAlg
      * @param i
      * @return Number&
      */
-    [[nodiscard]] constexpr Number& operator()(decltype(n)... i);
+    [[nodiscard]] constexpr Number& operator()(index_type<n>... i);
 
     /*!
      * @brief Indexing operator to access individual values of the tensor in readonly mode
@@ -260,7 +258,7 @@ namespace Core::LinAlg
      * @param i
      * @return Number&
      */
-    [[nodiscard]] constexpr const Number& operator()(decltype(n)... i) const;
+    [[nodiscard]] constexpr const Number& operator()(index_type<n>... i) const;
 
     /*!
      * @brief Indexing operator to access individual values of the tensor (with bound checks)
@@ -268,7 +266,7 @@ namespace Core::LinAlg
      * @param i
      * @return Number&
      */
-    [[nodiscard]] Number& at(decltype(n)... i);
+    [[nodiscard]] Number& at(index_type<n>... i);
 
     /*!
      * @brief Indexing operator to access individual values of the tensor in readonly mode
@@ -277,7 +275,7 @@ namespace Core::LinAlg
      * @param i
      * @return Number&
      */
-    [[nodiscard]] const Number& at(decltype(n)... i) const;
+    [[nodiscard]] const Number& at(index_type<n>... i) const;
 
     [[nodiscard]] static constexpr std::size_t rank() { return rank_; }
     [[nodiscard]] static constexpr std::size_t size() { return size_; }
@@ -411,26 +409,27 @@ namespace Core::LinAlg
 
   template <typename Number, TensorStorageType storage_type, typename Compression, std::size_t... n>
   constexpr Number& TensorInternal<Number, storage_type, Compression, n...>::operator()(
-      decltype(n)... i)
+      index_type<n>... i)
   {
     return data_[Compression::template flatten_index<Internal::TensorBoundCheck::no_check>(i...)];
   }
 
   template <typename Number, TensorStorageType storage_type, typename Compression, std::size_t... n>
   constexpr const Number& TensorInternal<Number, storage_type, Compression, n...>::operator()(
-      decltype(n)... i) const
+      index_type<n>... i) const
   {
     return data_[Compression::template flatten_index<Internal::TensorBoundCheck::no_check>(i...)];
   }
 
   template <typename Number, TensorStorageType storage_type, typename Compression, std::size_t... n>
-  Number& TensorInternal<Number, storage_type, Compression, n...>::at(decltype(n)... i)
+  Number& TensorInternal<Number, storage_type, Compression, n...>::at(index_type<n>... i)
   {
     return data_[Compression::template flatten_index<Internal::TensorBoundCheck::check>(i...)];
   }
 
   template <typename Number, TensorStorageType storage_type, typename Compression, std::size_t... n>
-  const Number& TensorInternal<Number, storage_type, Compression, n...>::at(decltype(n)... i) const
+  const Number& TensorInternal<Number, storage_type, Compression, n...>::at(
+      index_type<n>... i) const
   {
     return data_[Compression::template flatten_index<Internal::TensorBoundCheck::check>(i...)];
   }

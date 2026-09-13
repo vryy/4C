@@ -36,6 +36,13 @@ Core::IO::RestartManager::RestartManager()
 {
   // setup signal handler
   signal_ = -1;
+#if defined(_WIN32)
+  // Windows does not support SIGUSR1/SIGUSR2 or sigaction.
+  // Use SIGBREAK (Ctrl+Break) as the nearest available substitute.
+  // Note: the handler signature differs - no siginfo_t on Windows.
+  if (signal(SIGBREAK, [](int /*sig*/) { /* restart_signal_handler logic here */ }) == SIG_ERR)
+    FOUR_C_THROW("signal handler for SIGBREAK could not be registered");
+#else
   struct sigaction the_action;
   the_action.sa_sigaction = restart_signal_handler;
   sigemptyset(&the_action.sa_mask);
@@ -45,6 +52,7 @@ Core::IO::RestartManager::RestartManager()
     FOUR_C_THROW("signal handler for action SIGUSR1 could not be registered");
   if (sigaction(SIGUSR2, &the_action, nullptr))
     FOUR_C_THROW("signal handler for action SIGUSR2 could not be registered");
+#endif
 }
 
 /// set the time interval to enforce restart writing
@@ -90,11 +98,18 @@ bool Core::IO::RestartManager::restart(const int step, MPI_Comm comm)
   return false;
 }
 
+#ifndef _WIN32
 void Core::IO::RestartManager::restart_signal_handler(
     int signal_number, siginfo_t* signal_information, void* ignored)
 {
   signal_ = signal_information->si_signo;
 }
+#else
+void Core::IO::RestartManager::restart_signal_handler(int signal_number)
+{
+  signal_ = signal_number;
+}
+#endif
 
 volatile int Core::IO::RestartManager::signal_;
 
