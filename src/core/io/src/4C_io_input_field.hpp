@@ -535,6 +535,14 @@ namespace Core::IO
         }
       }
 
+#ifdef _MSC_VER
+      template <typename V>
+      static MapType& extract_point_map(V& data)
+      {
+        return std::get<2>(data).map;
+      }
+#endif
+
       StorageType data_;
 
       //! Reference to the input field registry, if this GeneralizedInputField is a field reference.
@@ -670,12 +678,23 @@ namespace Core::IO
       return *this;
     }
 
-
     template <typename T, typename Interpolation>
     void GeneralizedInputField<T, Interpolation>::redistribute(const Core::LinAlg::Map& target_map)
     {
       auto& map = [&]() -> MapType&
       {
+#ifdef _MSC_VER
+        // Use index-based access to bypass duplicate type checks
+        if (data_.index() == 1)
+        {
+          return std::get<1>(data_);
+        }
+
+        if constexpr (requires_interpolation)
+        {
+          if (data_.index() == 2) return extract_point_map(data_);
+        }
+#else
         if (std::holds_alternative<MapType>(data_))
         {
           return std::get<MapType>(data_);
@@ -688,6 +707,7 @@ namespace Core::IO
             return std::get<PointMapType>(data_).map;
           }
         }
+#endif
         FOUR_C_THROW("Internal error: We expect that this input field internally holds a map!");
       }();
 

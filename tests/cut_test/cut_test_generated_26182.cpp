@@ -25,6 +25,10 @@
 
 #include "cut_test_utils.hpp"
 
+#if defined(_MSC_VER)
+using uint = unsigned int;
+#endif
+
 void test_generated_26182()
 {
   Cut::MeshIntersection intersection;

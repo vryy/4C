@@ -214,7 +214,8 @@ void VtkWriterBase::set_and_create_vtk_working_directory(
     FOUR_C_THROW("VtkWriterBase: name for VTK working directory must not be empty!");
 
   working_directory_full_path_ =
-      std::filesystem::path(path_existing_working_directory) / name_vtk_subdirectory_to_be_created;
+      (std::filesystem::path(path_existing_working_directory) / name_vtk_subdirectory_to_be_created)
+          .string();
 
   std::filesystem::create_directories(working_directory_full_path_);
 

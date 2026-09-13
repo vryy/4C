@@ -19,6 +19,7 @@
 #include "4C_linalg_vector.hpp"
 
 #include <memory>
+#include <string>
 
 FOUR_C_NAMESPACE_OPEN
 

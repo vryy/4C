@@ -63,7 +63,7 @@ namespace Core::Conditions
    * The discretization class is therefore a friend of the Condition and has access to
    * the protected methods dealing with the discretization of this condition.
    */
-  class Condition
+  class FOUR_C_API(FOUR_C_CORE) Condition
   {
    public:
     //! @name Enums and Friends

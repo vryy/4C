@@ -140,7 +140,7 @@ Core::IO::MeshInput::RawMesh<3> Core::IO::Exodus::read_exodus_file(
     FOUR_C_THROW("File {} does not exist.", exodus_file.string());
 
   int exo_handle =
-      ex_open(exodus_file.c_str(), EX_READ, &CPU_word_size, &IO_word_size, &exoversion);
+      ex_open(exodus_file.string().c_str(), EX_READ, &CPU_word_size, &IO_word_size, &exoversion);
   if (exo_handle <= 0) FOUR_C_THROW("Error while opening EXODUS II file {}.", exodus_file.string());
 
   // read database parameters

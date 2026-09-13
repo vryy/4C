@@ -72,7 +72,7 @@ namespace Core::LinAlg
     reasons!) please add them to the SparseMatrix.
 
    */
-  class SparseMatrix : public SparseOperator
+  class FOUR_C_API(FOUR_C_CORE) SparseMatrix : public SparseOperator
   {
    public:
     /*!

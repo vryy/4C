@@ -8,7 +8,6 @@
 #ifndef FOUR_C_COMM_UTILS_HPP
 #define FOUR_C_COMM_UTILS_HPP
 
-
 #include "4C_config.hpp"
 
 #include "4C_comm_mpi_utils.hpp"
@@ -53,7 +52,7 @@ namespace Core::Communication
   };
 
   //! create a local and a global communicator for the problem
-  Communicators create_comm(const CommConfig& config);
+  FOUR_C_API(FOUR_C_CORE) Communicators create_comm(const CommConfig& config);
 
   /*! \brief debug routine to compare vectors from different parallel 4C runs
    *
@@ -77,6 +76,7 @@ namespace Core::Communication
    * \param tol           (in): comparison tolerance for infinity norm
    * \return boolean to indicate if compared vectors are identical
    */
+  FOUR_C_API(FOUR_C_CORE)
   bool are_distributed_vectors_identical(const Communicators& communicators,
       const Core::LinAlg::MultiVector<double>& vec, const char* name, double tol = 1.0e-14);
 
@@ -102,6 +102,7 @@ namespace Core::Communication
    * \param tol           (in): comparison tolerance for infinity norm
    * \return boolean to indicate if compared vectors are identical
    */
+  FOUR_C_API(FOUR_C_CORE)
   bool are_distributed_sparse_matrices_identical(const Communicators& communicators,
       const Core::LinAlg::SparseMatrix& matrix, const char* name, double tol = 1.0e-14);
 
@@ -112,11 +113,10 @@ namespace Core::Communication
     return std::make_shared<Teuchos::MpiComm<Datatype>>(comm);
   }
 
-
   /**
    * A class to gather various MPI_Comm objects.
    */
-  class Communicators
+  class FOUR_C_API(FOUR_C_CORE) Communicators
   {
    public:
     Communicators(int groupId, int ngroup, std::map<int, int> lpidgpid, MPI_Comm lcomm,
@@ -181,7 +181,6 @@ namespace Core::Communication
     /// nested parallelism type
     NestedParallelismType np_type_;
   };
-
 
 }  // namespace Core::Communication
 

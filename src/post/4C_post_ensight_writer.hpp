@@ -68,7 +68,7 @@ const int subhex18map[4][8] = {{0, 4, 8, 7, 9, 13, 17, 16}, {4, 1, 5, 8, 13, 10,
 
 
 //! basis class for the Ensight filter
-class EnsightWriter : public PostWriterBase
+class FOUR_C_API(FOUR_C_CORE) EnsightWriter : public PostWriterBase
 {
  public:
   using NumElePerDisType = std::map<Core::FE::CellType, int>;

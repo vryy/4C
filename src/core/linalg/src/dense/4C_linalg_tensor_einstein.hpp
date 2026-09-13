@@ -80,15 +80,17 @@ namespace Core::LinAlg
         decltype(make_integer_sequence_helper<typename decltype(arr)::value_type, arr.size(), arr>(
             std::make_index_sequence<arr.size()>()));
 
-
     template <std::array einstein_indices, typename Sequence>
     struct ConstExprMultiForMakerHelper;
+
+    template <auto arr, std::size_t i>
+    inline constexpr std::size_t einstein_index_size_v = arr[i].size;
 
     template <std::array einstein_indices, std::size_t... i>
     struct ConstExprMultiForMakerHelper<einstein_indices, std::integer_sequence<std::size_t, i...>>
     {
       using type = ConstExprMultiFor<std::integer_sequence<std::size_t>,
-          std::make_index_sequence<einstein_indices[i].size>...>;
+          std::make_index_sequence<einstein_index_size_v<einstein_indices, i>>...>;
     };
 
     template <std::array einstein_indices>

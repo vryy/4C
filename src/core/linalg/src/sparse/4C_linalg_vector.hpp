@@ -30,7 +30,7 @@ namespace Core::LinAlg
 
   // Sparse Vector which will replace the Epetra_Vector
   template <typename T>
-  class Vector
+  class FOUR_C_API(FOUR_C_CORE) Vector
   {
     static_assert(std::is_same_v<T, double>, "Only double is supported for now");
 

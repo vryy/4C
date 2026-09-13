@@ -13,12 +13,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*! entry point for the solution of electrochemistry problems */
+FOUR_C_API(FOUR_C_CORE)
 void scatra_cardiac_monodomain_dyn(int restart /* do we have to perform a restart?  */
 );
 
 /*! prints the 4C cardiac monodomain-module logo on the screen */
 void printheartlogo();
-
 
 FOUR_C_NAMESPACE_CLOSE
 

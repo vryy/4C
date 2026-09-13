@@ -23,11 +23,11 @@ namespace Global
  * \param problem  global problem providing parameters, discretizations and solvers
  * \param restart  restart step (0 if no restart is performed)
  */
+FOUR_C_API(FOUR_C_CORE)
 void elch_dyn(Global::Problem& problem, int restart);
 
 /*! prints the 4C electrochemistry-module logo on the screen */
 void printlogo();
-
 
 FOUR_C_NAMESPACE_CLOSE
 
