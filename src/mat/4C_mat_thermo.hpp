@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
 {
-  class ThermoMaterial : public Core::Mat::Material, public Trait::Thermo
+  class FOUR_C_API(FOUR_C_CORE) ThermoMaterial : public Core::Mat::Material, public Trait::Thermo
   {
   };
 }  // namespace Mat

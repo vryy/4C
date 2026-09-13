@@ -35,6 +35,7 @@ namespace Core::LinAlg
    * \param source (in) : source vector values are taken from
    * \param target (out): target vector values will be inserted in
    */
+  FOUR_C_API(FOUR_C_CORE)
   void export_to(
       const Core::LinAlg::MultiVector<double>& source, Core::LinAlg::MultiVector<double>& target);
 
@@ -51,6 +52,7 @@ namespace Core::LinAlg
    \param source (in) : source vector values are taken from
    \param target (out): target vector values will be inserted in
    */
+  FOUR_C_API(FOUR_C_CORE)
   void export_to(const Core::LinAlg::Vector<int>& source, Core::LinAlg::Vector<int>& target);
 
   /*! \brief Extract a partial Core::LinAlg::Vector<double> from a given source vector
@@ -64,6 +66,7 @@ namespace Core::LinAlg
    *  \return the extracted partial Core::LinAlg::Vector<double> as RCP
    *
    *  */
+  FOUR_C_API(FOUR_C_CORE)
   std::unique_ptr<Core::LinAlg::Vector<double>> extract_my_vector(
       const Core::LinAlg::Vector<double>& source, const Core::LinAlg::Map& target_map);
 
@@ -74,6 +77,7 @@ namespace Core::LinAlg
    *  \param target (out): this target vector is going to be filled
    *
    *  */
+  FOUR_C_API(FOUR_C_CORE)
   void extract_my_vector(
       const Core::LinAlg::Vector<double>& source, Core::LinAlg::Vector<double>& target);
 
@@ -84,6 +88,7 @@ namespace Core::LinAlg
    *
    *  \return Returned the filtered sparse matrix.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::unique_ptr<Core::LinAlg::SparseMatrix> threshold_matrix(
       const Core::LinAlg::SparseMatrix& A, const double threshold);
 
@@ -100,6 +105,7 @@ namespace Core::LinAlg
    *
    *  \return Returned the filtered sparse matrix graph.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::Graph> threshold_matrix_graph(
       const Core::LinAlg::SparseMatrix& A, const double threshold);
 
@@ -110,6 +116,7 @@ namespace Core::LinAlg
    *
    *  \return Returned the enriched graph G(A^(power))
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::Graph> enrich_matrix_graph(const SparseMatrix& A, int power);
 
   /*!
@@ -133,6 +140,7 @@ namespace Core::LinAlg
    * \param A21          : on exit matrix block A21
    * \param A22          : on exit matrix block A22
    */
+  FOUR_C_API(FOUR_C_CORE)
   bool split_matrix2x2(std::shared_ptr<Core::LinAlg::SparseMatrix> A,
       std::shared_ptr<Core::LinAlg::Map>& A11rowmap, std::shared_ptr<Core::LinAlg::Map>& A22rowmap,
       std::shared_ptr<Core::LinAlg::Map>& A11domainmap,
@@ -146,6 +154,7 @@ namespace Core::LinAlg
    *
    *   Used by split interface method, does not call Complete() on output matrix.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void split_matrix2x2(
       const Core::LinAlg::SparseMatrix& ASparse, Core::LinAlg::BlockSparseMatrixBase& ABlock);
 
@@ -153,6 +162,7 @@ namespace Core::LinAlg
    *
    *   Used by split interface method, does not call Complete() on output matrix.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void split_matrixmxn(
       const Core::LinAlg::SparseMatrix& ASparse, Core::LinAlg::BlockSparseMatrixBase& ABlock);
 
@@ -200,6 +210,7 @@ namespace Core::LinAlg
    *  returns -1. In this case you should use replace_diagonal_values(), instead.
    *
    *  */
+  FOUR_C_API(FOUR_C_CORE)
   int insert_my_row_diagonal_into_unfilled_matrix(
       Core::LinAlg::SparseMatrix& mat, const Core::LinAlg::Vector<double>& diag);
 
@@ -213,6 +224,7 @@ namespace Core::LinAlg
    * \param[in] Agiven    : on entry submap that is given and part of Amap
    * \return the remainder map of Amap that is not overlapping with Agiven
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::Map> split_map(
       const Core::LinAlg::Map& Amap, const Core::LinAlg::Map& Agiven);
 
@@ -228,6 +240,7 @@ namespace Core::LinAlg
    * map is overlapping (default = true, overlap allowed)
    * \return the (sorted) merged map of input maps map1 and map2
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::Map> merge_map(
       const Core::LinAlg::Map& map1, const Core::LinAlg::Map& map2, bool overlap = true);
 
@@ -240,6 +253,7 @@ namespace Core::LinAlg
    * \param map2         : second map
    * \return the (sorted) intersection map of input maps map1 and map2
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::Map> intersect_map(
       const Core::LinAlg::Map& map1, const Core::LinAlg::Map& map2);
 
@@ -258,6 +272,7 @@ namespace Core::LinAlg
    * (default = true, overlap allowed)
    * \return the (sorted) merged map of input maps map1 and map2
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::Map> merge_map(const std::shared_ptr<const Core::LinAlg::Map>& map1,
       const std::shared_ptr<const Core::LinAlg::Map>& map2, bool overlap = true);
 
@@ -271,6 +286,7 @@ namespace Core::LinAlg
    * \param x2map   : map of second vector to be extracted
    * \param x2      : second vector to be extracted
    */
+  FOUR_C_API(FOUR_C_CORE)
   bool split_vector(const Core::LinAlg::Map& xmap, const Core::LinAlg::Vector<double>& x,
       std::shared_ptr<Core::LinAlg::Map>& x1map, std::shared_ptr<Core::LinAlg::Vector<double>>& x1,
       std::shared_ptr<Core::LinAlg::Map>& x2map, std::shared_ptr<Core::LinAlg::Vector<double>>& x2);
@@ -285,6 +301,7 @@ namespace Core::LinAlg
    * \param x2map   : map of second vector to be extracted
    * \param x2      : second vector to be extracted
    */
+  FOUR_C_API(FOUR_C_CORE)
   bool split_vector(const Core::LinAlg::Map& xmap, const Core::LinAlg::Vector<double>& x,
       std::shared_ptr<const Core::LinAlg::Map>& x1map,
       std::shared_ptr<Core::LinAlg::Vector<double>>& x1,
@@ -301,6 +318,7 @@ namespace Core::LinAlg
    *  \param(in) multi_vector: A Core::LinAlg::MultiVector<double> to write data to.
    *  \param(in) block_size:   Block size of the Core::LinAlg::MultiVector<double>.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void std_vector_to_multi_vector(const std::vector<double>& std_vector,
       Core::LinAlg::MultiVector<double>& multi_vector, const int block_size);
 
@@ -314,6 +332,7 @@ namespace Core::LinAlg
    * \param sparsemat (out): SparseMatrix to be filled with a MultiVector
    *
    */
+  FOUR_C_API(FOUR_C_CORE)
   void multi_vector_to_linalg_sparse_matrix(const Core::LinAlg::MultiVector<double>& multivect,
       const Core::LinAlg::Map& rangemap, const Core::LinAlg::Map& domainmap,
       Core::LinAlg::SparseMatrix& sparsemat);
@@ -328,6 +347,7 @@ namespace Core::LinAlg
    *  \param(in) std_vector:   A std::vector<double> to read data to.
    *  \param(in) block_size:   Block size of the Core::LinAlg::MultiVector<double>.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void multi_vector_to_std_vector(const Core::LinAlg::MultiVector<double>& multi_vector,
       std::vector<double>& std_vector, const int block_size);
 
@@ -342,6 +362,7 @@ namespace Core::LinAlg
    *
    * \returns A Core::LinAlg::SparseMatrix with the rowmap given by newrowmap
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_row_transform(
       const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap);
 
@@ -356,6 +377,7 @@ namespace Core::LinAlg
    *
    *  \returns A Core::LinAlg::SparseMatrix with the domainmap given by newdomainmap
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_col_transform(
       const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newdomainmap);
 
@@ -372,6 +394,7 @@ namespace Core::LinAlg
    * \returns A Core::LinAlg::SparseMatrix with the rowmap given by newrowmap and domainmap
    * given by newdomainmap
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_row_col_transform(
       const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap,
       const Core::LinAlg::Map& newdomainmap);
@@ -379,6 +402,7 @@ namespace Core::LinAlg
   /*! \brief Parallel redistribution of a sparse matrix
    *  Helper method for the MatrixTransform() methods above.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::SparseMatrix> redistribute(const Core::LinAlg::SparseMatrix& src,
       const Core::LinAlg::Map& permrowmap, const Core::LinAlg::Map& permdomainmap);
 
@@ -395,6 +419,7 @@ namespace Core::LinAlg
    *
    * \post Output matrix will be fill_complete()
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_row_transform_gids(
       const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap);
 
@@ -413,9 +438,9 @@ namespace Core::LinAlg
    *
    * \post Output matrix will be fill_complete()
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_col_transform_gids(
       const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newdomainmap);
-
 
   /*!
    * \brief Transform the row and column maps of a matrix (only GIDs)
@@ -433,6 +458,7 @@ namespace Core::LinAlg
    *
    * \post Output matrix will be fill_complete()
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_row_col_transform_gids(
       const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap,
       const Core::LinAlg::Map& newdomainmap);

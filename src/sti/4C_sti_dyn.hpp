@@ -23,7 +23,7 @@ namespace Global
  * \param problem      global problem providing parameters, discretizations and solvers
  * \param restartstep  time step for restart (0 if no restart is performed)
  */
-void sti_dyn(Global::Problem& problem, const int& restartstep);
+FOUR_C_API(FOUR_C_CORE) void sti_dyn(Global::Problem& problem, const int& restartstep);
 
 FOUR_C_NAMESPACE_CLOSE
 

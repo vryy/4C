@@ -39,6 +39,7 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in] X           Dense matrix (3 x 3)
    * @param[in] scalar_this  Scalar to multiply with C before adding dX^2/dX
    */
+  FOUR_C_API(FOUR_C_CORE)
   void add_derivative_of_squared_tensor(Core::LinAlg::Matrix<6, 6>& C, double scalar_squared_dx,
       Core::LinAlg::Matrix<3, 3> X, double scalar_this);
 
@@ -61,12 +62,12 @@ namespace Core::LinAlg::FourTensorOperations
    * @param[in] invABinvA  2nd order tensor product invA*B*invA
    * @return  4th order tensor derivative of invA*B*invA w.r.t. A
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> derivative_of_inva_b_inva_product(
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& invA,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& invABinvA);
 
 }  // namespace Core::LinAlg::FourTensorOperations
-
 
 FOUR_C_NAMESPACE_CLOSE
 

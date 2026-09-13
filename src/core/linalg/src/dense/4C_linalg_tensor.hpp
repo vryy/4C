@@ -41,19 +41,20 @@ namespace Core::LinAlg
   concept SquareTensor =
       Rank2TensorConcept<Tensor> && Tensor::template extent<0>() == Tensor::template extent<1>();
 
-
   template <std::size_t... n>
   struct NoCompression
   {
     static constexpr std::size_t compressed_size = (n * ...);
 
-    template <Internal::TensorBoundCheck bound_check>
-    static constexpr std::size_t flatten_index(decltype(n)... i)
+    template <Internal::TensorBoundCheck bound_check, typename... Indices>
+    static constexpr std::size_t flatten_index(Indices... i)
     {
+      static_assert(sizeof...(Indices) == sizeof...(n), "Index count must match tensor rank.");
       return Internal::get_flat_index<Internal::OrderType::column_major, bound_check, n...>(i...);
     }
     // flatten index
   };
+
   /*!
    * @brief An owning, dense tensor of arbitrary rank
    *
@@ -196,7 +197,11 @@ namespace Core::LinAlg
           auto new_index = get_new_index(old_index);
 
           index_mapping[i] = std::apply(
-              get_flat_index<OrderType::column_major, TensorBoundCheck::no_check, shape...>,
+              [](auto... args)
+              {
+                return get_flat_index<OrderType::column_major, TensorBoundCheck::no_check,
+                    shape...>(args...);
+              },
               new_index);
         }
 

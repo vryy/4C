@@ -217,7 +217,7 @@ std::string Mat::MicroMaterialGP::new_result_file_path(const std::string& newpre
 
   // create path from string to extract only filename prefix
   const std::filesystem::path path(newprefix);
-  const std::string newfileprefix = path.filename().string();
+  const std::string newfileprefix = path.filename().generic_string();
 
   const size_t posn = newfileprefix.rfind('-');
   if (posn != std::string::npos)
@@ -231,8 +231,8 @@ std::string Mat::MicroMaterialGP::new_result_file_path(const std::string& newpre
     const std::filesystem::path recombined_path = parent_path / filen_name;
 
     std::ostringstream s;
-    s << recombined_path.string() << "_microdis" << microdisnum_ << "_el" << ele_id_ << "_gp" << gp_
-      << "-" << number;
+    s << recombined_path.generic_string() << "_microdis" << microdisnum_ << "_el" << ele_id_
+      << "_gp" << gp_ << "-" << number;
     newfilename = s.str();
   }
   else

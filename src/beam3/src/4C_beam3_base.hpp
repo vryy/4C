@@ -65,7 +65,7 @@ namespace Discret
   namespace Elements
   {
     //! base class for all beam elements
-    class Beam3Base : public Core::Elements::Element
+    class FOUR_C_API(FOUR_C_CORE) Beam3Base : public Core::Elements::Element
     {
      public:
       /*!

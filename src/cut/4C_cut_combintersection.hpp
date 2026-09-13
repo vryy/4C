@@ -16,12 +16,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Core::LinAlg
 {
   class SerialDenseMatrix;
 }
-
 
 namespace Cut
 {
@@ -33,7 +31,8 @@ namespace Cut
   /*!
   \brief Interface class for the level set cut.
   */
-  class CombIntersection : public LevelSetIntersection, public MeshIntersection
+  class FOUR_C_API(FOUR_C_CORE) CombIntersection : public LevelSetIntersection,
+                                                   public MeshIntersection
   {
    public:
     /// constructor for LevelSetIntersection class

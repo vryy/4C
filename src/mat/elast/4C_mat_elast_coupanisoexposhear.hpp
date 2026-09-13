@@ -24,8 +24,9 @@ namespace Mat
     /*!
      * \brief Container class for communication with the base material
      */
-    class CoupAnisoExpoShearAnisotropyExtension : public BaseAnisotropyExtension,
-                                                  public CoupAnisoExpoBaseInterface
+    class FOUR_C_API(FOUR_C_CORE) CoupAnisoExpoShearAnisotropyExtension
+        : public BaseAnisotropyExtension,
+          public CoupAnisoExpoBaseInterface
     {
      public:
       /*!
@@ -125,7 +126,7 @@ namespace Mat
      * \[\psi = \frac{a_{fs}}{2b_{fs}} \left[ \exp( b_{fs} (I_{8fs} - \boldsymbol{f} \cdot
      * \boldsymbol{s})^2 ) - 1 \right]\]
      */
-    class CoupAnisoExpoShear : public Mat::Elastic::CoupAnisoExpoBase
+    class FOUR_C_API(FOUR_C_CORE) CoupAnisoExpoShear : public Mat::Elastic::CoupAnisoExpoBase
     {
      public:
       /// constructor with given material parameters

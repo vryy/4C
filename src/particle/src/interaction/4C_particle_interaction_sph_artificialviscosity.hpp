@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 namespace Particle
 {
-  class SPHArtificialViscosity final
+  class FOUR_C_API(FOUR_C_CORE) SPHArtificialViscosity final
   {
    public:
     //! constructor

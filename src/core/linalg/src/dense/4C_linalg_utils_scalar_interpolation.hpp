@@ -12,6 +12,7 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 
+#include <optional>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -92,7 +93,6 @@ namespace Core::LinAlg
       const Core::LinAlg::Matrix<loc_dim, 1>& interp_loc,
       const ScalarInterpolationWeightingFunction weight_func,
       const ScalarInterpolationParams& interp_params);
-
 
   /**
    * @class ScalarInterpolator

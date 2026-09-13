@@ -445,45 +445,46 @@ Cut::CutFloatType Cut::PositionFactory::use_dist_floattype(Cut::CutFloatType flo
 Cut::CutFloatType Cut::PositionFactory::general_pos_floattype_ = floattype_none;
 Cut::CutFloatType Cut::PositionFactory::general_dist_floattype_ = floattype_none;
 
-template std::shared_ptr<Cut::Position> Cut::Position::create<2>(
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<2>(
     const Element& element, const Core::LinAlg::Matrix<2, 1>& xyz, Cut::CutFloatType floattype);
-template std::shared_ptr<Cut::Position> Cut::Position::create<3>(
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<3>(
     const Element& element, const Core::LinAlg::Matrix<3, 1>& xyz, Cut::CutFloatType floattype);
 
-template std::shared_ptr<Cut::Position> Cut::Position::create<3, 3, 3>(
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<3, 3, 3>(
     const Core::LinAlg::Matrix<3, 3>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template std::shared_ptr<Cut::Position> Cut::Position::create<3, 6, 3>(
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<3, 6, 3>(
     const Core::LinAlg::Matrix<3, 6>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template std::shared_ptr<Cut::Position> Cut::Position::create<3, 4, 3>(
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<3, 4, 3>(
     const Core::LinAlg::Matrix<3, 4>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template std::shared_ptr<Cut::Position> Cut::Position::create<3, 8, 3>(
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<3, 8, 3>(
     const Core::LinAlg::Matrix<3, 8>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template std::shared_ptr<Cut::Position> Cut::Position::create<3, 9, 3>(
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<3, 9, 3>(
     const Core::LinAlg::Matrix<3, 9>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template std::shared_ptr<Cut::Position> Cut::Position::create<3, 2, 3>(
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<3, 2, 3>(
     const Core::LinAlg::Matrix<3, 2>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template std::shared_ptr<Cut::Position> Cut::Position::create<2, 2, 2>(
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<2, 2, 2>(
     const Core::LinAlg::Matrix<2, 2>& xyze, const Core::LinAlg::Matrix<2, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
 
-template std::shared_ptr<Cut::Position> Cut::Position::create<3>(
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<3>(
     const Core::LinAlg::SerialDenseMatrix& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
-template std::shared_ptr<Cut::Position> Cut::Position::create<2>(
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<2>(
     const Core::LinAlg::SerialDenseMatrix& xyze, const Core::LinAlg::Matrix<2, 1>& xyz,
     const Core::FE::CellType& distype, Cut::CutFloatType floattype);
 
-
-template std::shared_ptr<Cut::Position> Cut::Position::create<3>(const std::vector<Node*> nodes,
-    const Core::LinAlg::Matrix<3, 1>& xyz, Core::FE::CellType distype, Cut::CutFloatType floattype);
-template std::shared_ptr<Cut::Position> Cut::Position::create<2>(const std::vector<Node*> nodes,
-    const Core::LinAlg::Matrix<2, 1>& xyz, Core::FE::CellType distype, Cut::CutFloatType floattype);
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<3>(
+    const std::vector<Node*> nodes, const Core::LinAlg::Matrix<3, 1>& xyz,
+    Core::FE::CellType distype, Cut::CutFloatType floattype);
+template FOUR_C_API(FOUR_C_CORE) std::shared_ptr<Cut::Position> Cut::Position::create<2>(
+    const std::vector<Node*> nodes, const Core::LinAlg::Matrix<2, 1>& xyz,
+    Core::FE::CellType distype, Cut::CutFloatType floattype);
 
 /* --- ComputeEmbeddedPosition --- */
 // embedded element types

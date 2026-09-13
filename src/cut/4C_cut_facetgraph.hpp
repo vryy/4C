@@ -32,7 +32,7 @@ namespace Cut
    *  geometrical information. Therefore, cuts that cannot be decided on pure
    *  topological ground will not work properly. This is one of the many
    *  shortcomings of this library. */
-  class FacetGraph
+  class FOUR_C_API(FOUR_C_CORE) FacetGraph
   {
    public:
     /// create the FacetGraph object for the given element dimension

@@ -55,7 +55,7 @@ namespace Core::Communication
     means to create its ParObject.
 
    */
-  class ParObjectType
+  class FOUR_C_API(FOUR_C_CORE) ParObjectType
   {
     friend class ParObjectFactory;
 

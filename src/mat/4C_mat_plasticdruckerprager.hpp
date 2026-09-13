@@ -82,7 +82,7 @@ namespace Mat
     static PlasticDruckerPragerType instance_;
   };
 
-  class PlasticDruckerPrager : public So3Material
+  class FOUR_C_API(FOUR_C_CORE) PlasticDruckerPrager : public So3Material
   {
    public:
     PlasticDruckerPrager();

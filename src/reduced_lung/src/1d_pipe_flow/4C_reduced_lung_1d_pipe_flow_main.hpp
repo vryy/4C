@@ -151,8 +151,7 @@ namespace ReducedLung1dPipeFlow
    * A / par t) + (par (A * u) / par x) = 0 (II) : (par u / par t) + 1/rho (par p / par x) +
    * viscosity * u / A = 0
    */
-  void main();
-
+  FOUR_C_API(FOUR_C_CORE) void main();
 
 }  // namespace ReducedLung1dPipeFlow
 

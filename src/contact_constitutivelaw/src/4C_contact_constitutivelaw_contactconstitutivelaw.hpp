@@ -29,7 +29,7 @@ namespace CONTACT
      * \brief The ConstitutiveLaw class provides a framework in order to relate the contact gap to
      * the contact pressure using information like micro roughness for contact problems.
      */
-    class ConstitutiveLaw
+    class FOUR_C_API(FOUR_C_CORE) ConstitutiveLaw
     {
      public:
       /// Return quick accessible Contact Constitutive Law parameter data

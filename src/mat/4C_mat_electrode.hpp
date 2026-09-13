@@ -37,7 +37,7 @@ namespace Mat
     };
 
     //! parameters for electrode material
-    class Electrode : public ElchSingleMat
+    class FOUR_C_API(FOUR_C_CORE) Electrode : public ElchSingleMat
     {
      public:
       //! constructor
@@ -105,7 +105,7 @@ namespace Mat
 
   /*----------------------------------------------------------------------*/
   //! wrapper for electrode material
-  class Electrode : public ElchSingleMat
+  class FOUR_C_API(FOUR_C_CORE) Electrode : public ElchSingleMat
   {
    public:
     //! construct empty electrode material

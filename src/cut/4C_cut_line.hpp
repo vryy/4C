@@ -14,14 +14,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   /*!
   \begin Line between two points. These lines result from cuts and there are no cut points on a
   line.
    */
-  class Line
+  class FOUR_C_API(FOUR_C_CORE) Line
   {
    public:
     Line(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element);

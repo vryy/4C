@@ -196,11 +196,8 @@ namespace Core::LinAlg
     using type = MultiVector<double>;
   };
 
-
-
 }  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
-
 
 #endif

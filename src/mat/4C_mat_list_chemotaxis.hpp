@@ -135,7 +135,11 @@ namespace Mat
     int pair_id(const unsigned index) const;
 
     /// Return quick accessible material parameter data
+#ifdef _MSC_VER
+    Mat::PAR::MatList* parameter() const override { return paramschemo_; }
+#else
     Mat::PAR::MatListChemotaxis* parameter() const override { return paramschemo_; }
+#endif
 
    protected:
     /// setup of material map

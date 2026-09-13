@@ -25,7 +25,7 @@ namespace GeometryPair
   /**
    * \brief Class to manage inout parameters and evaluation data for line to 3D interactions.
    */
-  class LineTo3DEvaluationData : public GeometryEvaluationDataBase
+  class FOUR_C_API(FOUR_C_CORE) LineTo3DEvaluationData : public GeometryEvaluationDataBase
   {
    public:
     /**

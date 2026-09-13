@@ -12,11 +12,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*! entry point for the solution of Lubrication problems */
+FOUR_C_API(FOUR_C_CORE)
 void lubrication_dyn(int restart /* do we have to perform a restart?  */
 );
-
 
 FOUR_C_NAMESPACE_CLOSE
 

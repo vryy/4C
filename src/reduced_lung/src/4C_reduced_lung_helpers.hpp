@@ -91,6 +91,7 @@ namespace ReducedLung
    * NewtonSparse. NewtonTree disables these callbacks because it assembles structured
    * coefficients.
    */
+  FOUR_C_API(FOUR_C_CORE)
   NonlinearSolverAssemblyPipeline create_default_nonlinear_solver_assembly_pipeline(
       Airways::AirwayContainer& airways, TerminalUnits::TerminalUnitContainer& terminal_units,
       Junctions::ConnectionData& connections, Junctions::BifurcationData& bifurcations,
@@ -142,6 +143,7 @@ namespace ReducedLung
    *   indexed by 0-based element id.
    * @param rebalance_parameters Parameters for mesh rebalancing/partitioning.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void build_discretization_from_nodes_and_elements(Core::FE::Discretization& discretization,
       std::span<const std::array<double, 3>> node_coordinates,
       std::span<const std::array<int, 2>> element_nodes,
@@ -162,6 +164,7 @@ namespace ReducedLung
    *
    * @return The mesh that was read together with its cell block layout.
    */
+  FOUR_C_API(FOUR_C_CORE)
   LungMesh build_discretization_from_mesh(Core::FE::Discretization& discretization,
       const ReducedLungParameters::Geometry& geometry,
       const Core::Rebalance::RebalanceParameters& rebalance_parameters);
@@ -179,6 +182,7 @@ namespace ReducedLung
    * @param discretization The reduced lung discretization.
    * @param mesh The lung mesh. Only rank 0 holds actual data.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void resolve_mesh_data_fields(
       Core::FE::Discretization& discretization, const Core::IO::MeshInput::Mesh<3>& mesh);
 
@@ -190,6 +194,7 @@ namespace ReducedLung
    *
    * @return The element type of every element, indexed by global element id.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::vector<ReducedLungParameters::LungTree::ElementType> create_element_types(
       const LungMeshBlocks& blocks, const ReducedLungParameters::LungTree& lung_tree);
 
@@ -198,6 +203,7 @@ namespace ReducedLung
    *
    * Populates model containers and the local element->dof-count map used for global dof numbering.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void create_local_element_models(const Core::FE::Discretization& discretization,
       const ReducedLungParameters& parameters,
       std::span<const ReducedLungParameters::LungTree::ElementType> element_types,
@@ -212,24 +218,28 @@ namespace ReducedLung
    * @param global_dof_per_ele Output global map global element id -> number of dofs.
    * @param first_global_dof_of_ele Output global map global element id -> first global dof id.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void create_global_dof_maps(const std::map<int, int>& local_dof_per_ele, const MPI_Comm& comm,
       std::map<int, int>& global_dof_per_ele, std::map<int, int>& first_global_dof_of_ele);
 
   /**
    * @brief Assign global dof ids to airway and terminal-unit model data.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void assign_global_dof_ids_to_models(const std::map<int, int>& first_global_dof_of_ele,
       Airways::AirwayContainer& airways, TerminalUnits::TerminalUnitContainer& terminal_units);
 
   /**
    * @brief Build global map node id -> adjacent global element ids.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::map<int, std::vector<int>> create_global_ele_ids_per_node(
       const Core::FE::Discretization& discretization, const MPI_Comm& comm);
 
   /**
    * @brief Print globally reduced counts of instantiated reduced-lung entities.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void print_instantiated_object_counts(const MPI_Comm& comm, int n_airways, int n_terminal_units,
       int n_connections, int n_bifurcations, int n_boundary_conditions);
 
@@ -255,6 +265,7 @@ namespace ReducedLung
    * @param boundary_conditions Boundary condition container with locally owned conditions.
    * @return map with locally owned rows.
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::Map create_row_map(const MPI_Comm& comm, const Airways::AirwayContainer& airways,
       const TerminalUnits::TerminalUnitContainer& terminal_units,
       const Junctions::ConnectionData& connections, const Junctions::BifurcationData& bifurcations,
@@ -278,6 +289,7 @@ namespace ReducedLung
    * @param boundary_conditions Boundary condition container with locally owned conditions.
    * @return map with distribution of column indices for the system matrix.
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::Map create_column_map(const MPI_Comm& comm, const Airways::AirwayContainer& airways,
       const TerminalUnits::TerminalUnitContainer& terminal_units,
       const std::map<int, int>& global_dof_per_ele,
@@ -285,6 +297,7 @@ namespace ReducedLung
       const Junctions::ConnectionData& connections, const Junctions::BifurcationData& bifurcations,
       const BoundaryConditions::BoundaryConditionContainer& boundary_conditions);
 
+  FOUR_C_API(FOUR_C_CORE)
   void collect_runtime_output_data(
       Core::IO::DiscretizationVisualizationWriterMesh& visualization_writer,
       const Airways::AirwayContainer& airways,

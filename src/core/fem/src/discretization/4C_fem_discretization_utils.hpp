@@ -40,7 +40,6 @@ namespace Core::FE
   class DiscretizationFaces;
   class Dbc;
 
-
   /*!
    * \brief Extract nodal coordinate vector of a discretization based on a nodal rowmap
    *
@@ -49,6 +48,7 @@ namespace Core::FE
    * @return Vector containing the coordinates of all nodes which are present in the given
    * noderowmap
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::MultiVector<double>> extract_node_coordinates(
       const Core::FE::Discretization& discretization);
 
@@ -57,6 +57,7 @@ namespace Core::FE
    *
    * The map has to be a submap of the overall full node rowmap of this discretization.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::MultiVector<double>> extract_node_coordinates(
       const Core::FE::Discretization& discretization, const Core::LinAlg::Map& node_row_map);
 
@@ -68,9 +69,9 @@ namespace Core::FE
    * discretization.
    * @note Eliminated nodes (e.g., when using periodic boundary conditions) are skipped.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::unique_ptr<Core::LinAlg::MultiVector<double>> extract_retained_node_coordinates(
       const Core::FE::Discretization& discretization, const Core::LinAlg::Map& node_row_map);
-
 
   /** \brief Evaluate the elements of the given discretization and fill the
    *         system matrix and vector
@@ -87,16 +88,17 @@ namespace Core::FE
    *  \param col_ele_map  (in)  : column element map, which can be a subset of the
    *                              discretization column map ( optional )
    */
+  FOUR_C_API(FOUR_C_CORE)
   void evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
       const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,
       const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
       const Core::LinAlg::Map* col_ele_map = nullptr);
 
-
   /** \brief Evaluate Dirichlet boundary conditions
    *
    *  non-member functions to call the dbc public routines
    */
+  FOUR_C_API(FOUR_C_CORE)
   void evaluate_dirichlet(const Core::FE::Discretization& discret,
       const Teuchos::ParameterList& params,
       const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
@@ -132,10 +134,10 @@ namespace Core::FE
   prescribing an initial pressure in a 3D fluid dynamics simulation, where locids would have to
   contain only the local pressure DOF id, namely {3}.
   */
+  FOUR_C_API(FOUR_C_CORE)
   void evaluate_initial_field(const Core::Utils::FunctionManager& function_manager,
       const Core::FE::Discretization& discret, const std::string& fieldstring,
       Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids);
-
 
   /*!
   \brief Evaluate a specified initial field (scalar or vector field)
@@ -143,6 +145,7 @@ namespace Core::FE
   This is the actual evaluation method.
 
   */
+  FOUR_C_API(FOUR_C_CORE)
   void do_initial_field(const Core::Utils::FunctionManager& function_manager,
       const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
       Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids);
@@ -151,11 +154,12 @@ namespace Core::FE
    *
    *  The Dbc object is build in dependency of the given discretization.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<const Dbc> build_dbc(const Core::FE::Discretization* discret_ptr);
 
   /** \brief Default Dirchilet boundary condition evaluation class
    */
-  class Dbc
+  class FOUR_C_API(FOUR_C_CORE) Dbc
   {
    protected:
     enum DbcSet
@@ -420,7 +424,6 @@ namespace Core::FE
 
   };  // class Dbc
 }  // namespace Core::FE
-
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -96,6 +96,8 @@ double Core::Utils::FastPolynomialFunction::evaluate_derivative(
 }
 
 
+Core::Utils::CubicSplineFromCSV::~CubicSplineFromCSV() = default;
+
 Core::Utils::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
 {
   auto vector_of_csv_columns = Core::IO::read_csv_as_columns(2, csv_file);
@@ -104,12 +106,10 @@ Core::Utils::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
       Core::Utils::CubicSplineInterpolation(vector_of_csv_columns[0], vector_of_csv_columns[1]));
 }
 
-
 double Core::Utils::CubicSplineFromCSV::evaluate(const double scalar) const
 {
   return cubic_spline_->evaluate(scalar);
 }
-
 
 double Core::Utils::CubicSplineFromCSV::evaluate_derivative(
     const double scalar, const int deriv_order) const

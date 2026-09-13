@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 namespace Particle
 {
-  class SPHEquationOfStateBase
+  class FOUR_C_API(FOUR_C_CORE) SPHEquationOfStateBase
   {
    public:
     //! constructor
@@ -42,7 +42,7 @@ namespace Particle
         const double& density, const double& mass, const double& density0) const = 0;
   };
 
-  class SPHEquationOfStateGenTait final : public SPHEquationOfStateBase
+  class FOUR_C_API(FOUR_C_CORE) SPHEquationOfStateGenTait : public SPHEquationOfStateBase
   {
    public:
     //! constructor
@@ -70,7 +70,7 @@ namespace Particle
     const double exponent_;
   };
 
-  class SPHEquationOfStateIdealGas final : public SPHEquationOfStateBase
+  class FOUR_C_API(FOUR_C_CORE) SPHEquationOfStateIdealGas final : public SPHEquationOfStateBase
   {
    public:
     //! constructor

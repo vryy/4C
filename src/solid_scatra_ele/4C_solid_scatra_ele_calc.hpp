@@ -23,12 +23,11 @@ namespace Mat
 {
   class So3Material;
 }  // namespace Mat
+
 namespace Solid::Elements
 {
   class ParamsInterface;
 }  // namespace Solid::Elements
-
-
 
 namespace Discret::Elements
 {

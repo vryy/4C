@@ -36,7 +36,7 @@ namespace Core::Communication
   implementing your own mpi stuff.
 
   */
-  class Exporter
+  class FOUR_C_API(FOUR_C_CORE) Exporter
   {
     class ExporterHelper;
 
@@ -84,7 +84,6 @@ namespace Core::Communication
     inline const Core::LinAlg::Map& target_map() const { return tomap_; }
 
     //@}
-
 
     /*!
      * \name Communication methods according to send and receive plans

@@ -27,7 +27,7 @@ namespace Mat
   namespace PAR
   {
     /// material parameters for orthotropic St. Venant--Kirchhoff
-    class StVenantKirchhoffOrthotropic : public Core::Mat::PAR::Parameter
+    class FOUR_C_API(FOUR_C_CORE) StVenantKirchhoffOrthotropic : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
@@ -70,7 +70,7 @@ namespace Mat
    * The behavior of the material is governed by 9 independent parameters, 3 Young's moduli,
    * 3 shear moduli and 3 Poisson ratios.
    */
-  class StVenantKirchhoffOrthotropic : public So3Material
+  class FOUR_C_API(FOUR_C_CORE) StVenantKirchhoffOrthotropic : public So3Material
   {
    public:
     /// construct empty material object
@@ -130,7 +130,6 @@ namespace Mat
     {
       return Core::LinAlg::ddot(cmat, glstrain);
     }
-
 
     /**
      * @brief Build the stiffness tensor used for stress linearization of an orthotropic
@@ -218,7 +217,6 @@ namespace Mat
 
       return cmat;
     }
-
 
    private:
     /// my material parameters

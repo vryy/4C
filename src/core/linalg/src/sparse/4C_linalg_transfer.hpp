@@ -15,11 +15,12 @@
 
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
-  class Import
+  class FOUR_C_API(FOUR_C_CORE) Import
   {
    public:
     Import(const Map& target_map, const Map& source_map);
@@ -28,13 +29,13 @@ namespace Core::LinAlg
     const Map& source_map() const;
     const Map& target_map() const;
 
-
    private:
     Utils::OwnerOrView<Epetra_Import> import_;
     Map source_map_;
     Map target_map_;
   };
-  class Export
+
+  class FOUR_C_API(FOUR_C_CORE) Export
   {
    public:
     Export(const Map& source_map, const Map& target_map);
@@ -49,4 +50,5 @@ namespace Core::LinAlg
 }  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
+
 #endif

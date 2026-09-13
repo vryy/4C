@@ -25,7 +25,7 @@ namespace Mat
   // forward declaration
   class Anisotropy;
 
-  class BaseAnisotropyExtension
+  class FOUR_C_API(FOUR_C_CORE) BaseAnisotropyExtension
   {
     // Anisotropy calls the private notification methods on_global_element_data_initialized
     // and on_global_gp_data_initialized.

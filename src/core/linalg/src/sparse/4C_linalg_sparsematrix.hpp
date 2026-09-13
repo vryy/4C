@@ -71,7 +71,7 @@ namespace Core::LinAlg
     reasons!) please add them to the SparseMatrix.
 
    */
-  class SparseMatrix : public SparseOperator
+  class FOUR_C_API(FOUR_C_CORE) SparseMatrix : public SparseOperator
   {
    public:
     /*!
@@ -677,8 +677,6 @@ namespace Core::LinAlg
   std::shared_ptr<Core::LinAlg::SparseMatrix> cast_to_sparse_matrix_and_check_success(
       std::shared_ptr<Core::LinAlg::SparseOperator> input_matrix);
 }  // namespace Core::LinAlg
-
-
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -22,7 +22,7 @@ namespace Mat
   /*!
    * @brief Pure abstract class that defines the interface of a fiber holder
    */
-  class FiberProvider
+  class FOUR_C_API(FOUR_C_CORE) FiberProvider
   {
    public:
     virtual ~FiberProvider() = default;

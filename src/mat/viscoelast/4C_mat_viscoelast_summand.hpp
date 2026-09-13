@@ -42,7 +42,7 @@ namespace Mat::ViscoElast
    * factory() and then asks them to declare formulation flags and provide model-specific
    * coefficients or scalar parameters.
    */
-  class Summand : public Core::Communication::ParObject
+  class FOUR_C_API(FOUR_C_CORE) Summand : public Core::Communication::ParObject
   {
    public:
     Summand() = default;

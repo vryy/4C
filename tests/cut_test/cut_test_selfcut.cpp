@@ -20,6 +20,10 @@
 
 #include "cut_test_utils.hpp"
 
+#if defined(_MSC_VER)
+using uint = unsigned int;
+#endif
+
 void test_hex8quad4selfcut20()
 {
   Cut::MeshIntersection intersection;

@@ -119,7 +119,7 @@ namespace Core::Communication
   update this documentation.
 
    */
-  class ParObject
+  class FOUR_C_API(FOUR_C_CORE) ParObject
   {
    public:
     /*!
@@ -131,7 +131,6 @@ namespace Core::Communication
      * \brief Destructor
      */
     virtual ~ParObject() = default;
-
 
     //! @name Pure virtual packing and unpacking
 

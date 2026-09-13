@@ -159,7 +159,7 @@ namespace Core::Elements
   and other connectivity information.
 
   */
-  class Element : public Core::Communication::ParObject
+  class FOUR_C_API(FOUR_C_CORE) Element : public Core::Communication::ParObject
   {
    public:
     template <typename>
@@ -1216,7 +1216,7 @@ might become invalid after a redistribution of the discretization.
 
   */
 
-  class FaceElement : public Element
+  class FOUR_C_API(FOUR_C_CORE) FaceElement : public Element
   {
    public:
     /*!

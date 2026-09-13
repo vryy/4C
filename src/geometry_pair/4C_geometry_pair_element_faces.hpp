@@ -34,8 +34,6 @@ namespace GeometryPair
   enum class SurfaceNormals;
 }
 
-
-
 namespace GeometryPair
 {
   /**
@@ -56,7 +54,7 @@ namespace GeometryPair
   /**
    * \brief Base, non templated class for an object that represents a surface element.
    */
-  class FaceElement
+  class FOUR_C_API(FOUR_C_CORE) FaceElement
   {
     friend GeometryPairLineToSurfacePatchTest;
 

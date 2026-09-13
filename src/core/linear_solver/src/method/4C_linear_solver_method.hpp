@@ -101,7 +101,7 @@ namespace Core::LinearSolver
   }
 
   /// linear solver type base class
-  class SolverTypeBase
+  class FOUR_C_API(FOUR_C_CORE) SolverTypeBase
   {
    public:
     //! Destructor

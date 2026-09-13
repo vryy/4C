@@ -21,7 +21,7 @@ namespace Solid::Predict::PythonWrapperUtils
 {
 
   //! Convenience struct for encapsulating the mesh information in one place.
-  struct FOUR_C_HIDDEN PythonMesh
+  struct FOUR_C_API(HIDDEN) PythonMesh
   {
     pybind11::array_t<int> node_ids;
     pybind11::array_t<double> coordinates;
@@ -34,7 +34,7 @@ namespace Solid::Predict::PythonWrapperUtils
    * \brief Convenience struct for encapsulating a lightweight mesh and some additional information
    * in one place.
    */
-  struct FOUR_C_HIDDEN PythonContext
+  struct FOUR_C_API(HIDDEN) PythonContext
   {
     std::string input_file;
     unsigned int problem_dim;
@@ -47,7 +47,7 @@ namespace Solid::Predict::PythonWrapperUtils
    * \brief Convenience struct for encapsulating the global state vectors and some additional
    * information in one place.
    */
-  struct FOUR_C_HIDDEN PythonState
+  struct FOUR_C_API(HIDDEN) PythonState
   {
     int step;
     double time;
@@ -70,7 +70,6 @@ namespace Solid::Predict::PythonWrapperUtils
   pybind11::module_ ensure_python_wrapper_module();
 
 }  // namespace Solid::Predict::PythonWrapperUtils
-
 
 FOUR_C_NAMESPACE_CLOSE
 

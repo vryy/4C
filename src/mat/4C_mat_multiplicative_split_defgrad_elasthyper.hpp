@@ -27,7 +27,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 // forward declaration
 namespace Mat
 {
@@ -48,7 +47,8 @@ namespace Mat
       temperature
     };
 
-    class MultiplicativeSplitDefgradElastHyper : public Core::Mat::PAR::Parameter
+    class FOUR_C_API(FOUR_C_CORE) MultiplicativeSplitDefgradElastHyper
+        : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
@@ -189,7 +189,7 @@ namespace Mat
     that are needed to set up the system to be solved are evaluated in the derived classes
     of the interface class 'InelasticDefgradFactors'.
 */
-  class MultiplicativeSplitDefgradElastHyper : public Trait::ThermoSolid
+  class FOUR_C_API(FOUR_C_CORE) MultiplicativeSplitDefgradElastHyper : public Trait::ThermoSolid
   {
    public:
     /// construct empty material object

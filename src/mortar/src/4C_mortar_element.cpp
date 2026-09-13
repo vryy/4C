@@ -20,7 +20,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
+#ifdef _MSC_VER
+#define __PRETTY_FUNCTION__ __FUNCSIG__
+#endif
 
 Mortar::ElementType Mortar::ElementType::instance_;
 

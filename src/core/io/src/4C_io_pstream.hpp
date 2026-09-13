@@ -53,7 +53,7 @@ namespace Core::IO
    *        o selecting an output level
    *
    */
-  class Pstream
+  class FOUR_C_API(FOUR_C_CORE) Pstream
   {
    public:
     /// This empty constructor is called when the global object is instantiated.
@@ -208,13 +208,13 @@ namespace Core::IO
   };  // class Pstream
 
   /// Imitate the std::endl behavior w/out the flush
-  Pstream& endl(Pstream& out);
+  FOUR_C_API(FOUR_C_CORE) Pstream& endl(Pstream& out);
 
   /// Imitate the std::flush behavior
-  Pstream& flush(Pstream& out);
+  FOUR_C_API(FOUR_C_CORE) Pstream& flush(Pstream& out);
 
   /// this is the Core::IO::cout that everyone can refer to
-  extern Pstream cout;
+  extern FOUR_C_API(FOUR_C_CORE) Pstream cout;
 
 
   /*====================================================================*/
@@ -223,7 +223,7 @@ namespace Core::IO
    *        Everything is then streamed to Pstream.
    *
    */
-  class Level
+  class FOUR_C_API(FOUR_C_CORE) Level
   {
    public:
     Level(Pstream* pstream) : pstream_(pstream), level_(undef) {}
@@ -258,10 +258,10 @@ namespace Core::IO
   };
 
   /// Imitate the std::endl behavior w/out the flush
-  Level& endl(Level& out);
+  FOUR_C_API(FOUR_C_CORE) Level& endl(Level& out);
 
   /// Imitate the std::flush behavior
-  Level& flush(Level& out);
+  FOUR_C_API(FOUR_C_CORE) Level& flush(Level& out);
 
   /*====================================================================*/
   /// Handle streaming to Pstream objects
@@ -279,10 +279,10 @@ namespace Core::IO
   }
 
   /// Handle special manipulators (currently only Core::IO::endl) that are streamed to Pstream
-  Pstream& operator<<(Pstream& out, Pstream& (*pf)(Pstream&));
+  FOUR_C_API(FOUR_C_CORE) Pstream& operator<<(Pstream& out, Pstream& (*pf)(Pstream&));
 
   /// Handle special manipulators (currently only Core::IO::endl) that are streamed to Level
-  Level& operator<<(Level& out, Level& (*pf)(Level&));
+  FOUR_C_API(FOUR_C_CORE) Level& operator<<(Level& out, Level& (*pf)(Level&));
 
 }  // namespace Core::IO
 

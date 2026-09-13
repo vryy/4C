@@ -272,6 +272,6 @@ std::unique_ptr<const Core::LinAlg::MultiVector<T>> Core::LinAlg::MultiVector<T>
 }
 
 // explicit instantiation
-template class Core::LinAlg::MultiVector<double>;
+template class FOUR_C_API(FOUR_C_CORE) Core::LinAlg::MultiVector<double>;
 
 FOUR_C_NAMESPACE_CLOSE

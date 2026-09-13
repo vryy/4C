@@ -844,7 +844,6 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
     // ------------------------------------------------------------------------
     // create the desired interface object
     // ------------------------------------------------------------------------
-    const auto& non_owning_discret = Core::Utils::shared_ptr_from_ref(discret());
 
     std::shared_ptr<CONTACT::Interface> newinterface = create_interface(groupid1, get_comm(),
         n_dim(), icparams, isself[0], nullptr, contactconstitutivelaw_id.value_or(-1));

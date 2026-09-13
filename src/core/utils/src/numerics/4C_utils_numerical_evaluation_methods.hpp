@@ -46,6 +46,7 @@ namespace Core::Utils
    * @param[in]     maxiter Maximal number of iterations
    * @return        c Midpoint c where f(c) is zero
    */
+  FOUR_C_API(FOUR_C_CORE)
   double bisection(const std::function<double(double)>& func, const double a_init,
       const double b_init, const double tol, const int maxiter);
 
@@ -57,6 +58,7 @@ namespace Core::Utils
    * @param[in]     x Point x where f(x) and derivatives should be evaluated
    * @param[in]     delta_x Step size x_{i+1}-x_i
    */
+  FOUR_C_API(FOUR_C_CORE)
   ValuesFunctAndFunctDerivs evaluate_function_and_derivatives_central_differences(
       const std::function<double(double)>& func, const double x, const double delta_x);
 
@@ -68,6 +70,7 @@ namespace Core::Utils
    * @param[in]     delta_x Step size x_{i+1}-x_i
    * @param[out]    dfdx First derivative of f at x_i
    */
+  FOUR_C_API(FOUR_C_CORE)
   double first_derivative_central_differences(
       const double f_i_minus_1, const double f_i_plus_1, const double delta_x);
 
@@ -80,9 +83,9 @@ namespace Core::Utils
    * @param[in]     delta_x Step size x_{i+1}-x_i
    * @param[out]    ddfddx Second derivative of f at x_i
    */
+  FOUR_C_API(FOUR_C_CORE)
   double second_derivative_central_differences(
       const double f_i_minus_1, const double f_i, const double f_i_plus_1, const double delta_x);
-
 
   /// Status for the computation of the general, signed log-sum-exp operation \f$ \log(y) =
   /// \log\left[\sum_{i=1}^{N} p_i \exp( x_i )\right] \f$
@@ -115,10 +118,12 @@ namespace Core::Utils
   /// finite doubles; the calling procedure must ensure this requirement. Precision will be lost for
   /// extremely high magnitude inputs. Also, the prefactors are not allowed to be under machine
   /// precision in the current implementation.
+  FOUR_C_API(FOUR_C_CORE)
   SignedLogSumExpResult signed_log_sum_exp(
       std::span<const double> log_values, std::span<const double> prefactors);
 
   /// \overload Convenience function with initializer lists
+  FOUR_C_API(FOUR_C_CORE)
   SignedLogSumExpResult signed_log_sum_exp(
       std::initializer_list<double> log_values, std::initializer_list<double> prefactors);
 

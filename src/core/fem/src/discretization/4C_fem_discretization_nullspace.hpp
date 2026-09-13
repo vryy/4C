@@ -33,6 +33,7 @@ namespace Core::FE
   \param solveparams (in, out): List of parameters
   \param recompute (in)  : force method to recompute the nullspace
   */
+  FOUR_C_API(FOUR_C_CORE)
   void compute_null_space_if_necessary(const Discretization& discretization,
       Teuchos::ParameterList& solveparams, bool recompute = false);
 
@@ -46,6 +47,7 @@ namespace Core::FE
      \param dimns (in): nullspace dimension
      \param map (in): nullspace map
       */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::MultiVector<double>> compute_null_space(
       const Core::FE::Discretization& dis, const int dimns, const Core::LinAlg::Map& dofmap);
 }  // namespace Core::FE

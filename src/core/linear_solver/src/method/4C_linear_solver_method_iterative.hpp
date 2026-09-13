@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinearSolver
 {
   //! krylov subspace linear solvers with right-side preconditioning
-  class IterativeSolver : public SolverTypeBase
+  class FOUR_C_API(FOUR_C_CORE) IterativeSolver : public SolverTypeBase
   {
    public:
     //! Constructor

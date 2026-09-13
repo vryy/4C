@@ -16,7 +16,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class Options;
@@ -29,7 +28,7 @@ namespace Cut
   // possible choices of choosing a reference plane in such a way that all integration points are
   // ensured to be within the background element
 
-  class DirectDivergenceGlobalRefplane
+  class FOUR_C_API(FOUR_C_CORE) DirectDivergenceGlobalRefplane
   {
    public:
     DirectDivergenceGlobalRefplane(Element* elem, VolumeCell* vc, Options& options)

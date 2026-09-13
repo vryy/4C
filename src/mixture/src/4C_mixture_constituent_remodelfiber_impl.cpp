@@ -378,6 +378,7 @@ double Mixture::MixtureConstituentRemodelFiberImpl::evaluate_deposition_stretch(
       ->function_by_id<Core::Utils::FunctionOfTime>(params_->deposition_stretch_timefunc_num_)
       .evaluate(time);
 }
+
 void Mixture::MixtureConstituentRemodelFiberImpl::update_homeostatic_values(
     const Teuchos::ParameterList& params, const double total_time, const int eleGID)
 {
@@ -395,4 +396,5 @@ double Mixture::MixtureConstituentRemodelFiberImpl::evaluate_lambdaf(
 {
   return std::sqrt(Core::LinAlg::ddot(C, structural_tensors_[gp]));
 }
+
 FOUR_C_NAMESPACE_CLOSE

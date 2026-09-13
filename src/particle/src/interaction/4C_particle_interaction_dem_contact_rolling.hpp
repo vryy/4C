@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 namespace Particle
 {
-  class DEMContactRollingBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactRollingBase
   {
    public:
     //! constructor
@@ -74,7 +74,7 @@ namespace Particle
     double d_rolling_fac_;
   };
 
-  class DEMContactRollingViscous : public DEMContactRollingBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactRollingViscous : public DEMContactRollingBase
   {
    public:
     //! constructor
@@ -109,7 +109,7 @@ namespace Particle
     const double v_max_;
   };
 
-  class DEMContactRollingCoulomb : public DEMContactRollingBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactRollingCoulomb : public DEMContactRollingBase
   {
    public:
     //! constructor

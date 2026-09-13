@@ -26,8 +26,9 @@ namespace Mat
     /*!
      * \brief Container class for communication with the base material
      */
-    class CoupAnisoExpoAnisotropyExtension : public DefaultAnisotropyExtension<1>,
-                                             public CoupAnisoExpoBaseInterface
+    class FOUR_C_API(FOUR_C_CORE) CoupAnisoExpoAnisotropyExtension
+        : public DefaultAnisotropyExtension<1>,
+          public CoupAnisoExpoBaseInterface
     {
      public:
       /*!

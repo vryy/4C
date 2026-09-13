@@ -27,6 +27,7 @@ namespace Core::Geo
    * @return indices of the points on the hull, consecutive along the hull (empty if the hull
    * degenerates to a line or a point)
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::vector<int> convex_hull_2d(std::span<const std::array<double, 2>> points);
 }  // namespace Core::Geo
 

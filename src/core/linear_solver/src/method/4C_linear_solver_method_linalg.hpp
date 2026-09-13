@@ -68,7 +68,7 @@ namespace Core::LinAlg
   /*!
   \brief A general solver interface
   */
-  class Solver
+  class FOUR_C_API(FOUR_C_CORE) Solver
   {
    public:
     /*!

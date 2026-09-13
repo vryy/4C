@@ -17,6 +17,7 @@ namespace FourC::Core::Utils
 {
   class FunctionOfTime;
 }
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
@@ -24,7 +25,7 @@ namespace Mat
   namespace PAR
   {
     //! parameters for abstract battery material
-    class ElchSingleMat : public Core::Mat::PAR::Parameter
+    class FOUR_C_API(FOUR_C_CORE) ElchSingleMat : public Core::Mat::PAR::Parameter
     {
      public:
       //! constructor
@@ -106,7 +107,7 @@ namespace Mat
 
   /*----------------------------------------------------------------------*/
   //! wrapper for abstract battery material
-  class ElchSingleMat : public Core::Mat::Material
+  class FOUR_C_API(FOUR_C_CORE) ElchSingleMat : public Core::Mat::Material
   {
    public:
     ElchSingleMat() = default;
@@ -159,6 +160,7 @@ namespace Mat
     Mat::PAR::ElchSingleMat* params_{nullptr};
   };
 }  // namespace Mat
+
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

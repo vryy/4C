@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::FE
 {
   /// base class of gauss point collection
-  class GaussPoints
+  class FOUR_C_API(FOUR_C_CORE) GaussPoints
   {
    public:
     virtual ~GaussPoints() = default;
@@ -43,7 +43,7 @@ namespace Core::FE
   };
 
   /// specific collected gauss points for xfem usage
-  class CollectedGaussPoints : public GaussPoints
+  class FOUR_C_API(FOUR_C_CORE) CollectedGaussPoints : public GaussPoints
   {
    public:
     CollectedGaussPoints(int size = 0) { gp_.reserve(size); }
@@ -105,7 +105,7 @@ namespace Core::FE
   /// This is meant to be an inverted collection, where the first set of gauss
   /// points integrates a whole element and all following sets subtract from
   /// the element.
-  class GaussPointsComposite : public GaussPoints
+  class FOUR_C_API(FOUR_C_CORE) GaussPointsComposite : public GaussPoints
   {
    public:
     explicit GaussPointsComposite(int size) { gp_.reserve(size); }
@@ -192,7 +192,7 @@ namespace Core::FE
   std::shared_ptr<GaussPoints> create_gauss_points_default(Core::FE::CellType distype);
 
   /// gauss integration interface
-  class GaussIntegration
+  class FOUR_C_API(FOUR_C_CORE) GaussIntegration
   {
    public:
     /// Very simple internal gauss point iterator.

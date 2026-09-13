@@ -153,11 +153,11 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
-      std::shared_ptr<Core::Elements::FaceElement> faceele =
+      std::shared_ptr<Core::Elements::FaceElement> faceele1 =
           std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
-          faceele->parent_target_element()->id(), faceele->face_target_number());
+          faceele1->parent_target_element()->id(), faceele1->face_target_number());
 
       // store nurbs specific data to node
       cele->zero_sized() = zero_size;
@@ -221,11 +221,11 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
-      std::shared_ptr<Core::Elements::FaceElement> faceele =
+      std::shared_ptr<Core::Elements::FaceElement> faceele1 =
           std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
-          faceele->parent_target_element()->id(), faceele->face_target_number());
+          faceele1->parent_target_element()->id(), faceele1->face_target_number());
 
       // store nurbs specific data to node
       cele->zero_sized() = zero_size;

@@ -29,7 +29,7 @@ namespace Core::Utils
    * \f$ t \f$ and return the component \f$ y_i \f$ or its first derivative.
 
    */
-  class FunctionOfTime
+  class FOUR_C_API(FOUR_C_CORE) FunctionOfTime
   {
    public:
     /**
@@ -55,7 +55,7 @@ namespace Core::Utils
    * This class supports functions of type \f$ f( t, a_1(t), ..., a_k(t)) \f$, where
    *  \f$ a_1(t), ..., a_k(t) \f$ are time-dependent FunctionVariable objects.
    */
-  class SymbolicFunctionOfTime : public FunctionOfTime
+  class FOUR_C_API(FOUR_C_CORE) SymbolicFunctionOfTime : public FunctionOfTime
   {
    public:
     /**
@@ -73,7 +73,6 @@ namespace Core::Utils
    private:
     //! vector of parsed expressions
     std::vector<std::shared_ptr<Core::Utils::SymbolicExpression<double>>> expr_;
-
 
     //! vector of the function variables and all their definitions
     std::vector<std::shared_ptr<FunctionVariable>> variables_;

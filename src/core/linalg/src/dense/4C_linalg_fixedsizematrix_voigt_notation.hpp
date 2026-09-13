@@ -219,7 +219,6 @@ namespace Core::LinAlg::Voigt
     }
   };
 
-
   /// convert non-symmetric 2-tensor to 9x1 vector
   ///          A_00 A_01 A_02
   /// Matrix   A_10 A_11 A_12  is converted to the vector below:
@@ -227,6 +226,7 @@ namespace Core::LinAlg::Voigt
   ///
   /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = A_01; V_4 = A_12; V_5 = A_02; V_6 = A_10;
   /// V_7 = A_21; V_8 = A_20
+  FOUR_C_API(FOUR_C_CORE)
   void matrix_3x3_to_9x1(Core::LinAlg::Matrix<3, 3> const& in, Core::LinAlg::Matrix<9, 1>& out);
 
   /// convert 9x1 vector to non-symmetric 2-tensor
@@ -239,6 +239,7 @@ namespace Core::LinAlg::Voigt
   ///          A_00 A_01 A_02
   /// Matrix   A_10 A_11 A_12
   ///          A_20 A_21 A_22
+  FOUR_C_API(FOUR_C_CORE)
   void matrix_9x1_to_3x3(Core::LinAlg::Matrix<9, 1> const& in, Core::LinAlg::Matrix<3, 3>& out);
 
   /*!
@@ -331,6 +332,7 @@ namespace Core::LinAlg::Voigt
    * \brief Identity matrix in stress/strain-like Voigt notation
    * @param id (out) : 2nd order identity tensor in stress/strain-like Voigt notation
    */
+  FOUR_C_API(FOUR_C_CORE)
   inline void identity_matrix(Core::LinAlg::Matrix<6, 1>& id)
   {
     id.clear();
@@ -358,6 +360,7 @@ namespace Core::LinAlg::Voigt
    * @param[in]  scalar_col  scalar factor applied to columns 4, 5, 6 of the Voigt matrix
    * @returns modified 6x6 Voigt matrix
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::Matrix<6, 6> modify_voigt_representation(
       const Core::LinAlg::Matrix<6, 6>& input, const double scalar_row, const double scalar_col);
 
@@ -446,7 +449,6 @@ namespace Core::LinAlg::Voigt
   //! @}
 
 }  // namespace Core::LinAlg::Voigt
-
 
 FOUR_C_NAMESPACE_CLOSE
 

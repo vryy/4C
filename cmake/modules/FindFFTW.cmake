@@ -11,7 +11,7 @@
 
 find_path(FFTW_INCLUDE_DIR fftw3.h)
 
-find_library(FFTW_LIBRARY fftw3)
+find_library(FFTW_LIBRARY NAMES fftw3 fftw3-3)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(FFTW DEFAULT_MSG FFTW_LIBRARY FFTW_INCLUDE_DIR)

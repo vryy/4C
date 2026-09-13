@@ -29,7 +29,7 @@ namespace Core::IO
   /**
    * Wrap functionality related to writing control files.
    */
-  class ControlFileWriter
+  class FOUR_C_API(FOUR_C_CORE) ControlFileWriter
   {
    public:
     /**
@@ -89,7 +89,7 @@ namespace Core::IO
   };
 
   /// control class to manage a control file for output
-  class OutputControl
+  class FOUR_C_API(FOUR_C_CORE) OutputControl
   {
    public:
     /*!
@@ -257,7 +257,7 @@ namespace Core::IO
   /**
    * Manages reading from a control file.
    */
-  class InputControl
+  class FOUR_C_API(FOUR_C_CORE) InputControl
   {
    public:
     explicit InputControl(const std::string& filename, const bool serial = false);

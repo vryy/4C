@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Cut
 {
   /// cut parameters
-  Core::IO::InputSpec valid_parameters();
+  FOUR_C_API(FOUR_C_CORE) Core::IO::InputSpec valid_parameters();
 
 }  // namespace Cut
 

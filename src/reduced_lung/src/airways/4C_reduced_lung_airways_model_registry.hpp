@@ -55,6 +55,7 @@ namespace ReducedLung::Airways::ModelRegistry
    *
    * @return Number of state equations for the selected model pair.
    */
+  FOUR_C_API(FOUR_C_CORE)
   int add_airway_with_model_selection(AirwayContainer& airways, int global_element_id,
       int local_element_id, double ref_length, const ReducedLungParameters& parameters,
       FlowModelType flow_model_type, WallModelType wall_model_type);

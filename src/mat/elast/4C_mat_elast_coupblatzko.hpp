@@ -27,7 +27,7 @@ namespace Mat
        * <h3>Input line</h3>
        * MAT 1 ELAST_CoupBlatzKo MUE 1.044E7 NUE 0.3 F 0.5
        */
-      class CoupBlatzKo : public Core::Mat::PAR::Parameter
+      class FOUR_C_API(FOUR_C_CORE) CoupBlatzKo : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
@@ -57,6 +57,7 @@ namespace Mat
       };  // class CoupBlatzKo
 
     }  // namespace PAR
+
     /*!
      * @brief Coupled Blatz and Ko material according to [1].
      *
@@ -75,7 +76,7 @@ namespace Mat
      *
      * [1] Holzapfel, G.A. "Nonlinear Solid Mechanics", 2000, p.247
      */
-    class CoupBlatzKo : public Summand
+    class FOUR_C_API(FOUR_C_CORE) CoupBlatzKo : public Summand
     {
      public:
       /// constructor with given material parameters

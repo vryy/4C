@@ -885,7 +885,7 @@ namespace Mat
 
     //! class for managing the Local Newton loop, containing the utilized parameters and iteration
     //! data
-    class LocalNewtonManager
+    class FOUR_C_API(FOUR_C_CORE) LocalNewtonManager
     {
      public:
       LocalNewtonManager() = delete;
@@ -1035,7 +1035,7 @@ namespace Mat
 
     //! helper struct containing relevant input for the local time integration via the Local
     //! Newton-Raphson scheme
-    struct LocalIntegrationInput
+    struct FOUR_C_API(FOUR_C_CORE) LocalIntegrationInput
     {
       //! configuration struct to be used for the construction of the integration input
       struct Config
@@ -1275,7 +1275,7 @@ namespace Mat
       //! state evolves, switching from the preliminary plastic predictor to the final plastic
       //! predictor when
       //! \ref PredictorInterpolator::update_plastic_predictor_after_construction_algo() is called.
-      class PredictorInterpolator
+      class FOUR_C_API(FOUR_C_CORE) PredictorInterpolator
       {
        public:
         /*!
@@ -1378,7 +1378,7 @@ namespace Mat
 
       //! Container for interpolation points / bounds used in the
       //! Adaptive Estimate Interpolation (AEI) scheme.
-      struct InterpolationPointContainer
+      struct FOUR_C_API(FOUR_C_CORE) InterpolationPointContainer
       {
        public:
         /*!
@@ -1447,7 +1447,7 @@ namespace Mat
 
       //! class: manager for the Adaptive Estimate Interpolation (AEI) algorithm across all Gauss
       //! points
-      class AEIManager
+      class FOUR_C_API(FOUR_C_CORE) AEIManager
       {
        public:
         AEIManager() = delete;
@@ -1667,7 +1667,6 @@ namespace Mat
   }  // namespace InelasticDefgradTransvIsotropElastViscoplastUtils
 
 }  // namespace Mat
-
 
 FOUR_C_NAMESPACE_CLOSE
 

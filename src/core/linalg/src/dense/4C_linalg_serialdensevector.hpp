@@ -27,7 +27,7 @@ namespace Core::LinAlg
    *
    * Access to the underlying Trilinos object is explicit via base().
    */
-  class SerialDenseVector
+  class FOUR_C_API(FOUR_C_CORE) SerialDenseVector
   {
    public:
     using ordinalType = int;
@@ -148,10 +148,11 @@ namespace Core::LinAlg
 
     Computes \p b = \p alpha * \p a + \p beta * \p b.
     */
+  FOUR_C_API(FOUR_C_CORE)
   void update(double alpha, const SerialDenseVector& a, double beta, SerialDenseVector& b);
 
   //! Euclidean vector norm.
-  double norm2(const SerialDenseVector& v);
+  FOUR_C_API(FOUR_C_CORE) double norm2(const SerialDenseVector& v);
 
   //@}
 
@@ -169,7 +170,6 @@ namespace Core::LinAlg
     return out;
   }
 }  // namespace Core::LinAlg
-
 
 FOUR_C_NAMESPACE_CLOSE
 

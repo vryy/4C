@@ -236,7 +236,7 @@ namespace BeamInteraction
         int const numnodes, int const numnodesperele)
     {
       // from: nodesperfil = nodesperele + ( numele - 1 ) * ( nodesperele - 1 )
-      return ((numnodes - numnodesperele) / (numnodesperele - 1.0)) + 1.0;
+      return static_cast<int>((numnodes - numnodesperele) / (numnodesperele - 1.0)) + 1;
     }
 
     /*----------------------------------------------------------------------*

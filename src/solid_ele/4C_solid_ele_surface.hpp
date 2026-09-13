@@ -55,7 +55,7 @@ namespace Discret::Elements
   common types of loads currently demanded in 4C
 
   */
-  class SolidSurface : public Core::Elements::FaceElement
+  class FOUR_C_API(FOUR_C_CORE) SolidSurface : public Core::Elements::FaceElement
   {
    public:
     //! @name Friends

@@ -17,9 +17,9 @@ namespace Global
   class Problem;
 }  // namespace Global
 
-void fluid_ale_drt(Global::Problem& problem);
-void fluid_xfem_drt(Global::Problem& problem);
-void fluid_fluid_fsi_drt();
+FOUR_C_API(FOUR_C_CORE) void fluid_ale_drt(Global::Problem& problem);
+FOUR_C_API(FOUR_C_CORE) void fluid_xfem_drt(Global::Problem& problem);
+FOUR_C_API(FOUR_C_CORE) void fluid_fluid_fsi_drt();
 
 /*! \brief Entry routine to all ALE-based FSI algorithms
  *
@@ -30,11 +30,11 @@ void fluid_fluid_fsi_drt();
  *  We establish this ordering by calling fill_complete() on the three
  *  discretizations in the order (1) structure (2) fluid (3) ALE.
  */
-void fsi_ale_drt(Global::Problem& problem);
-void xfsi_drt(Global::Problem& problem);
-void xfpsi_drt(Global::Problem& problem);
+FOUR_C_API(FOUR_C_CORE) void fsi_ale_drt(Global::Problem& problem);
+FOUR_C_API(FOUR_C_CORE) void xfsi_drt(Global::Problem& problem);
+FOUR_C_API(FOUR_C_CORE) void xfpsi_drt(Global::Problem& problem);
 
-void fsi_immersed_drt(Global::Problem& problem);
+FOUR_C_API(FOUR_C_CORE) void fsi_immersed_drt(Global::Problem& problem);
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -59,7 +59,7 @@ namespace ReducedLung
    * Newton corrections are recovered top-down. Coefficients are assembled directly into
    * solver-owned structured storage.
    */
-  class TreeLinearSolver
+  class FOUR_C_API(FOUR_C_CORE) TreeLinearSolver
   {
    public:
     /**
@@ -246,7 +246,7 @@ namespace ReducedLung
    * every TreeCoefficientSlots captured by its kernels, must be used with a single
    * TreeLinearSolver and always with the same (row, dof) pairs.
    */
-  class TreeCoefficientSlots
+  class FOUR_C_API(FOUR_C_CORE) TreeCoefficientSlots
   {
    public:
     /**

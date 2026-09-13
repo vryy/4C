@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
 {
-  class MonolithicSolidScalarMaterial
+  class FOUR_C_API(FOUR_C_CORE) MonolithicSolidScalarMaterial
   {
    public:
     virtual ~MonolithicSolidScalarMaterial() = default;

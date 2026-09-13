@@ -52,7 +52,7 @@ namespace ReducedLung
    * residual or on exceeding the maximum number of nonlinear iterations; the increment tolerance is
    * not used.
    */
-  class NewtonTree final : public NonlinearSolver
+  class FOUR_C_API(FOUR_C_CORE) NewtonTree final : public NonlinearSolver
   {
    public:
     /**

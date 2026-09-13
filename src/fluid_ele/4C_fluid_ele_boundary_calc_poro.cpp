@@ -4814,30 +4814,6 @@ Discret::Elements::FluidEleBoundaryCalcPoroP1<distype>::instance(
   return singleton_owner.instance(action);
 }
 
-
-template <Core::FE::CellType distype>
-bool Discret::Elements::FluidEleBoundaryCalcPoroP1<distype>::compute_nodal_porosity(
-    Discret::Elements::FluidBoundary* ele, const std::vector<double>& mydispnp,
-    Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity)
-{
-  for (int inode = 0; inode < Base::bdrynen_; inode++)
-    eporosity(inode) = mydispnp[nsd_ + (inode * Base::numdofpernode_)];
-
-  return true;
-}
-
-template <Core::FE::CellType distype>
-void Discret::Elements::FluidEleBoundaryCalcPoroP1<distype>::compute_porosity_at_gp(
-    Teuchos::ParameterList& params, Discret::Elements::FluidBoundary* ele,
-    const Core::LinAlg::Matrix<Base::bdrynen_, 1>& funct,
-    const Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
-    double& porosity, double& dphi_dp, double& dphi_dJ, bool save)
-{
-  porosity = eporosity.dot(Base::funct_);
-  dphi_dp = 0.0;
-  dphi_dJ = 0.0;
-}
-
 template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad4>;
 template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad8>;
 template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad9>;
