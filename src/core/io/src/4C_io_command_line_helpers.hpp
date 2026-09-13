@@ -14,8 +14,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-
 /**
  * \brief Structure to hold legacy CLI option names.
  */
@@ -24,6 +22,7 @@ struct LegacyCliOptions
   std::vector<std::string> single_dash_legacy_names;
   std::vector<std::string> nodash_legacy_names;
 };
+
 /**
  * \brief Adapt legacy command line arguments.
  * This function converts legacy single-dash options (e.g. "-ngroup=2") into
@@ -38,10 +37,9 @@ struct LegacyCliOptions
  *          collected/combined (e.g. {"restart", "restartfrom"}).
  * \return Sanitized vector of arguments.
  */
+FOUR_C_API(FOUR_C_CORE)
 std::vector<std::string> adapt_legacy_cli_arguments(
     const std::vector<std::string>& args, LegacyCliOptions& legacy_options);
-
-
 
 FOUR_C_NAMESPACE_CLOSE
 

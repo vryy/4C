@@ -15,6 +15,15 @@ set(RYML_INSTALL
     ON
     CACHE BOOL "Turn on ryml install" FORCE
     )
+if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  if(MSVC_VERSION)
+    add_compile_definitions(C4_MSVC=1 _MSC_VER=${MSVC_VERSION})
+  endif()
+  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT MATCHES "MSVC") # for Clang-cl
+    add_compile_options(/clang:-Wno-nan-infinity-disabled)
+    add_compile_options(/clang:-Wno-c++20-extensions)
+  endif()
+endif()
 fetchcontent_makeavailable(ryml)
 set(FOUR_C_RYML_ROOT "${CMAKE_INSTALL_PREFIX}")
 

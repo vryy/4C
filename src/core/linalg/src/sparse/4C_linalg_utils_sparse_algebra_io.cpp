@@ -261,7 +261,7 @@ Core::LinAlg::MultiVector<double> Core::LinAlg::read_matrix_market_file_as_multi
   Epetra_MultiVector* multi_vector_raw = nullptr;
 
   ASSERT_EPETRA_CALL(EpetraExt::MatrixMarketFileToMultiVector(
-      filename.c_str(), rank0_map.get_epetra_block_map(), multi_vector_raw));
+      filename.string().c_str(), rank0_map.get_epetra_block_map(), multi_vector_raw));
   FOUR_C_ASSERT_ALWAYS(multi_vector_raw != nullptr, "Failed to read matrix market file {}.",
       filename.relative_path().string());
 

@@ -110,10 +110,13 @@ namespace Global
    * object does not keep track of gauss point material values, all that is known here are the
    * definitions from the input file.
    */
-  class Problem
+  class FOUR_C_API(FOUR_C_CORE) Problem
   {
    public:
     /// @name Instances
+
+    /// Destructor
+    ~Problem();
 
     /// Disallow copying this class.
     Problem(const Problem&) = delete;
