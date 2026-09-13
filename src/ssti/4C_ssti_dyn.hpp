@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 //! global control routine for Structure - Scatra - Thermo - Interaction problem.
-void ssti_drt();
+FOUR_C_API(FOUR_C_CORE) void ssti_drt();
 
 FOUR_C_NAMESPACE_CLOSE
 

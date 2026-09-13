@@ -1540,7 +1540,7 @@ namespace Cut::Kernel
       Core::LinAlg::Matrix<prob_dim, 1, Core::CLN::ClnWrapper> cln_glob_calc;
       Core::LinAlg::Matrix<Core::FE::num_nodes(element_type), 1, Core::CLN::ClnWrapper> shapeFunct;
       Core::FE::shape_function<element_type>(cln_loc_calc, shapeFunct);
-      for (unsigned int inode = 0; inode < Core::FE::num_nodes(element_type); ++inode)
+      for (int inode = 0; inode < Core::FE::num_nodes(element_type); ++inode)
       {
         for (unsigned int isd = 0; isd < prob_dim; ++isd)
         {
@@ -4072,7 +4072,7 @@ namespace Cut::Kernel
           cln_loc_calc.data(), true);
       Core::FE::shape_function<side_type>(cln_loc_calc_side, sideFunct);
 
-      for (unsigned int inode = 0; inode < Core::FE::num_nodes(side_type); ++inode)
+      for (int inode = 0; inode < Core::FE::num_nodes(side_type); ++inode)
       {
         for (unsigned int isd = 0; isd < (dim_edge + dim_side); ++isd)
         {
@@ -4087,7 +4087,7 @@ namespace Cut::Kernel
           cln_loc_calc.data() + Core::FE::dim<side_type>, true);
 
       Core::FE::shape_function<edge_type>(cln_loc_calc_edge, edgeFunct);
-      for (unsigned int inode = 0; inode < Core::FE::num_nodes(edge_type); ++inode)
+      for (int inode = 0; inode < Core::FE::num_nodes(edge_type); ++inode)
       {
         for (unsigned int isd = 0; isd < (dim_edge + dim_side); ++isd)
         {

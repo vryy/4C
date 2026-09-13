@@ -44,9 +44,14 @@ namespace Core::IO
     /// \param comm [in] : get access to involved procs
     bool restart(const int step, MPI_Comm comm);
 
+#ifndef _WIN32
     /// the signal handler that gets passed to the kernel and listens for SIGUSR1 and SIGUSR2
     static void restart_signal_handler(
         int signal_number, siginfo_t* signal_information, void* ignored);
+#else
+    /// the signal handler that gets passed to the kernel and listens for SIGUSR1 and SIGUSR2
+    static void restart_signal_handler(int signal_number);
+#endif
 
    private:
     /// @name wall time parameters

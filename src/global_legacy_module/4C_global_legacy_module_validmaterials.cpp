@@ -32,7 +32,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::valid_materials()

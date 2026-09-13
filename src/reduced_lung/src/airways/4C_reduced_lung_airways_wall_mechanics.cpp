@@ -11,6 +11,7 @@
 
 #include <array>
 #include <cmath>
+#include <numbers>
 #include <type_traits>
 #include <vector>
 
@@ -162,8 +163,8 @@ namespace ReducedLung::Airways::WallMechanics
     return std::visit(
         [&flow_model](auto& wall_model_data) -> ResidualEvaluator
         {
-          using WallModelType = std::decay_t<decltype(wall_model_data)>;
-          if constexpr (std::is_same_v<WallModelType, RigidWall>)
+          using LocalWallModelType = std::decay_t<decltype(wall_model_data)>;
+          if constexpr (std::is_same_v<LocalWallModelType, RigidWall>)
           {
             auto resistance_evaluator =
                 FlowResistance::make_flow_resistance_evaluator_rigid(flow_model);
@@ -179,7 +180,7 @@ namespace ReducedLung::Airways::WallMechanics
                   target_vector, airway_data, locally_relevant_dofs, resistance, inertia, dt);
             };
           }
-          else if constexpr (std::is_same_v<WallModelType, KelvinVoigtWall>)
+          else if constexpr (std::is_same_v<LocalWallModelType, KelvinVoigtWall>)
           {
             auto resistance_evaluator =
                 FlowResistance::make_flow_resistance_evaluator_kelvin_voigt(flow_model);
@@ -208,8 +209,8 @@ namespace ReducedLung::Airways::WallMechanics
     return std::visit(
         [&flow_model](auto& wall_model_data) -> JacobianEvaluator
         {
-          using WallModelType = std::decay_t<decltype(wall_model_data)>;
-          if constexpr (std::is_same_v<WallModelType, RigidWall>)
+          using LocalWallModelType = std::decay_t<decltype(wall_model_data)>;
+          if constexpr (std::is_same_v<LocalWallModelType, RigidWall>)
           {
             auto resistance_derivative_evaluator =
                 FlowResistance::make_flow_resistance_derivative_evaluator_rigid(flow_model);
@@ -230,7 +231,7 @@ namespace ReducedLung::Airways::WallMechanics
                   target, airway_data, resistance_derivative, inertia_derivative, dt);
             };
           }
-          else if constexpr (std::is_same_v<WallModelType, KelvinVoigtWall>)
+          else if constexpr (std::is_same_v<LocalWallModelType, KelvinVoigtWall>)
           {
             auto resistance_derivative_evaluator =
                 FlowResistance::make_flow_resistance_derivative_evaluator_kelvin_voigt(
@@ -271,15 +272,15 @@ namespace ReducedLung::Airways::WallMechanics
     return std::visit(
         [flow_state_updater](auto& wall_model_data) -> InternalStateUpdater
         {
-          using WallModelType = std::decay_t<decltype(wall_model_data)>;
+          using LocalWallModelType = std::decay_t<decltype(wall_model_data)>;
 
-          if constexpr (std::is_same_v<WallModelType, RigidWall>)
+          if constexpr (std::is_same_v<LocalWallModelType, RigidWall>)
           {
             return [flow_state_updater](AirwayData& data,
                        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double /*dt*/)
             { flow_state_updater(data, locally_relevant_dofs); };
           }
-          else if constexpr (std::is_same_v<WallModelType, KelvinVoigtWall>)
+          else if constexpr (std::is_same_v<LocalWallModelType, KelvinVoigtWall>)
           {
             return [flow_state_updater, &wall_model_data](AirwayData& data,
                        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt)
@@ -292,14 +293,15 @@ namespace ReducedLung::Airways::WallMechanics
                     dt / data.ref_length[i] *
                         (locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]] -
                             locally_relevant_dofs.local_values_as_span()[data.lid_q2[i]]);
-                wall_model_data.beta_w[i] = std::sqrt(M_PI) * wall_model_data.wall_thickness[i] *
+                wall_model_data.beta_w[i] = std::sqrt(std::numbers::pi) *
+                                            wall_model_data.wall_thickness[i] *
                                             wall_model_data.wall_elasticity[i] /
                                             ((1 - wall_model_data.wall_poisson_ratio[i] *
                                                       wall_model_data.wall_poisson_ratio[i]) *
                                                 data.ref_area[i]);
                 wall_model_data.gamma_w[i] =
                     wall_model_data.beta_w[i] * wall_model_data.viscous_time_constant[i] *
-                    std::tan(wall_model_data.viscous_phase_shift[i]) / (4.0 * M_PI);
+                    std::tan(wall_model_data.viscous_phase_shift[i]) / (4.0 * std::numbers::pi);
                 wall_model_data.compliance_C[i] = 2 * std::sqrt(wall_model_data.area[i]) *
                                                   data.ref_length[i] / wall_model_data.beta_w[i];
                 wall_model_data.viscous_resistance_Rvisc[i] =
@@ -351,12 +353,12 @@ namespace ReducedLung::Airways::WallMechanics
     return std::visit(
         [](auto& wall_model_data) -> EndOfTimestepRoutine
         {
-          using WallModelType = std::decay_t<decltype(wall_model_data)>;
-          if constexpr (std::is_same_v<WallModelType, RigidWall>)
+          using LocalWallModelType = std::decay_t<decltype(wall_model_data)>;
+          if constexpr (std::is_same_v<LocalWallModelType, RigidWall>)
           {
             return [](AirwayData&, const Core::LinAlg::Vector<double>&, double) {};
           }
-          else if constexpr (std::is_same_v<WallModelType, KelvinVoigtWall>)
+          else if constexpr (std::is_same_v<LocalWallModelType, KelvinVoigtWall>)
           {
             return [&wall_model_data](AirwayData& data,
                        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt)

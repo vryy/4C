@@ -61,6 +61,14 @@ set(BUILD_SHARED_LIBS
       FORCE
     )
 
+set(FOUR_C_VERIFY_INTERFACE_HEADER_SETS
+    ${CMAKE_VERIFY_INTERFACE_HEADER_SETS}
+    CACHE
+      BOOL
+      "Build in verify header mode. Forces to be in sync with CMAKE_VERIFY_INTERFACE_HEADER_SETS."
+      FORCE
+    )
+
 four_c_process_global_option(
   FOUR_C_ENABLE_DEVELOPER_MODE
   DESCRIPTION
@@ -69,18 +77,45 @@ four_c_process_global_option(
   OFF
   )
 
-# Enable all warnings that are supported by the compiler
-enable_compiler_flag_if_supported("-Wall")
-enable_compiler_flag_if_supported("-Wextra")
-enable_compiler_flag_if_supported("-Wvla")
+if(MSVC)
+  #if (NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang"
+  #  AND NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT MATCHES "MSVC")
+  # Enables the C++ standard-compliant preprocessor in MSVC
+  #enable_compiler_flag_if_supported("/Zc:preprocessor")
+  #endif()
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    enable_compiler_flag_if_supported("/Zc:preprocessor")
+  endif()
 
-# Disable unused parameter detection since there would be too many hits to fix
-enable_compiler_flag_if_supported("-Wno-unused-parameter")
-# Disable overloaded virtual function detection. This requires a lot of architectural changes to fix.
-enable_compiler_flag_if_supported("-Wno-overloaded-virtual")
+  # Enable high warning level (closest equivalent to -Wall -Wextra)
+  enable_compiler_flag_if_supported("/W4")
 
-# Export symbols (necessary for stacktraces)
-enable_linker_flag_if_supported("-rdynamic")
+  # Disable unused parameter warning (MSVC C4100)
+  enable_compiler_flag_if_supported("/wd4100")
+
+  # Disable overloaded virtual function warning (MSVC C4263 / C4264)
+  enable_compiler_flag_if_supported("/wd4263")
+  enable_compiler_flag_if_supported("/wd4264")
+
+  # Note: Variable Length Arrays (-Wvla) are not supported by MSVC's C compiler,
+  # and in C++ they are non-standard, so no flag is needed.
+
+  # Note: -rdynamic is a Linux-specific linker flag. On Windows/MSVC,
+  # visual studio exports symbols via CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS or module definition files.
+else()
+  # Enable all warnings that are supported by the compiler
+  enable_compiler_flag_if_supported("-Wall")
+  enable_compiler_flag_if_supported("-Wextra")
+  enable_compiler_flag_if_supported("-Wvla")
+
+  # Disable unused parameter detection since there would be too many hits to fix
+  enable_compiler_flag_if_supported("-Wno-unused-parameter")
+  # Disable overloaded virtual function detection. This requires a lot of architectural changes to fix.
+  enable_compiler_flag_if_supported("-Wno-overloaded-virtual")
+
+  # Export symbols (necessary for stacktraces)
+  enable_linker_flag_if_supported("-rdynamic")
+endif()
 
 # Enable position-independent code. This flag is necessary to build shared libraries. Since our internal targets are not
 # real libraries but object libraries, this property needs to be set explicitly.
@@ -92,6 +127,7 @@ if(FOUR_C_BUILD_SHARED_LIBS)
 endif()
 
 # Special flags for GCC
+message(STATUS "CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   # Disable maybe uninitialized detection since this can give false positives that are hard to circumvent.
   # Our address sanitizer checks will also find such errors, although only later.
@@ -106,7 +142,11 @@ four_c_process_global_option(
   OFF
   )
 if(FOUR_C_ENABLE_WARNINGS_AS_ERRORS)
-  enable_compiler_flag_if_supported("-Werror")
+  if(MSVC)
+    enable_compiler_flag_if_supported("/WX")
+  else()
+    enable_compiler_flag_if_supported("-Werror")
+  endif()
 endif()
 
 four_c_process_global_option(
@@ -207,7 +247,11 @@ if(FOUR_C_ENABLE_FE_TRAPPING)
       )
   endif()
 else()
-  enable_compiler_flag_if_supported("-fno-trapping-math")
+  if(MSVC)
+    enable_compiler_flag_if_supported("/fp:fast")
+  else()
+    enable_compiler_flag_if_supported("-fno-trapping-math")
+  endif()
 endif()
 
 four_c_process_global_option(
@@ -275,25 +319,39 @@ if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES DEBUG)
       "ON"
       CACHE BOOL "Forced ON due to build type DEBUG" FORCE
       )
-  target_compile_options(four_c_private_compile_interface INTERFACE "-O0")
-  target_link_options(four_c_private_compile_interface INTERFACE "-O0")
+  if(MSVC)
+    target_compile_options(four_c_private_compile_interface INTERFACE "/Od" "/Zi")
+    target_link_options(four_c_private_compile_interface INTERFACE "/DEBUG")
+  else()
+    target_compile_options(four_c_private_compile_interface INTERFACE "-O0")
+    target_link_options(four_c_private_compile_interface INTERFACE "-O0")
 
-  target_compile_options(four_c_private_compile_interface INTERFACE "-g")
+    target_compile_options(four_c_private_compile_interface INTERFACE "-g")
+  endif()
 endif()
 
 if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES RELEASE)
-  target_compile_options(four_c_private_compile_interface INTERFACE "-O3")
-  target_link_options(four_c_private_compile_interface INTERFACE "-O3")
+  if(MSVC)
+    target_compile_options(four_c_private_compile_interface INTERFACE "/O2" "/Ob2" "/Zi")
+  else()
+    target_compile_options(four_c_private_compile_interface INTERFACE "-O3")
+    target_link_options(four_c_private_compile_interface INTERFACE "-O3")
 
-  enable_compiler_flag_if_supported("-funroll-loops")
+    enable_compiler_flag_if_supported("-funroll-loops")
+  endif()
 endif()
 
 if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES RELWITHDEBINFO)
-  target_compile_options(four_c_private_compile_interface INTERFACE "-O3")
-  target_link_options(four_c_private_compile_interface INTERFACE "-O3")
+  if(MSVC)
+    target_compile_options(four_c_private_compile_interface INTERFACE "/O2" "/Ob2" "/Zi")
+    target_link_options(four_c_private_compile_interface INTERFACE "/DEBUG" "/LTCG")
+  else()
+    target_compile_options(four_c_private_compile_interface INTERFACE "-O3")
+    target_link_options(four_c_private_compile_interface INTERFACE "-O3")
 
-  target_compile_options(four_c_private_compile_interface INTERFACE "-g")
-  enable_compiler_flag_if_supported("-funroll-loops")
+    target_compile_options(four_c_private_compile_interface INTERFACE "-g")
+    enable_compiler_flag_if_supported("-funroll-loops")
+  endif()
 endif()
 
 # Evaluate this option now to get the correct output in case it is forced ON in DEBUG mode.
