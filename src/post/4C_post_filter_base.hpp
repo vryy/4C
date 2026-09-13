@@ -35,7 +35,7 @@ enum ResultType
 
 
 //! Base class for various field writers
-class PostFilterBase
+class FOUR_C_API(FOUR_C_CORE) PostFilterBase
 {
  public:
   /*

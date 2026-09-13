@@ -2406,7 +2406,7 @@ Cut::Node* Cut::Mesh::get_node(const plain_int_set& nids, const double* xyz, dou
   {
     return &*i->second;
   }
-  int nid = -shadow_nodes_.size() - 1;
+  int nid = -static_cast<int>(shadow_nodes_.size() + 1);
   if (nodes_.find(nid) != nodes_.end())
   {
     FOUR_C_THROW("shadow node already exists");
@@ -2577,7 +2577,7 @@ Cut::Side* Cut::Mesh::get_side(int sid, const plain_int_set& nids, const std::ve
   // facets_.push_back( Teuchos::rcp( f ) );
   sides_[nids] = std::shared_ptr<Side>(Cut::Side::create(side_topology.key, sid, nodes, edges));
 
-  int seid = -shadow_sides_.size() - 1;
+  int seid = -static_cast<int>(shadow_sides_.size() + 1);
   /* Remark: the seid of a shadow node is not unique over processors, consequently
    * numbered with negative integers on each proc */
   shadow_sides_[seid] = sides_[nids].get();
@@ -2714,7 +2714,7 @@ Cut::Element* Cut::Mesh::get_element<1>(
   }
   else
   {
-    int seid = -shadow_elements_.size() - 1;
+    int seid = -static_cast<int>(shadow_elements_.size() + 1);
     /* Remark: the seid of a shadow node is not unique over processors,
      * consequently numbered with negative integers on each proc */
     shadow_elements_[seid] = Cut::Element::create(top_data.key, eid, sides, nodes, active);
@@ -2784,7 +2784,7 @@ Cut::Element* Cut::Mesh::get_element<2>(
   }
   else
   {
-    int seid = -shadow_elements_.size() - 1;
+    int seid = -static_cast<int>(shadow_elements_.size() + 1);
     // Remark: the seid of a shadow node is not unique over processors, consequently numbered with
     // negative integers on each proc
     shadow_elements_[seid] = Cut::Element::create(top_data.key, eid, side, nodes, active);
@@ -2857,7 +2857,7 @@ Cut::Element* Cut::Mesh::get_element<3>(
   }
   else
   {
-    int seid = -shadow_elements_.size() - 1;
+    int seid = -static_cast<int>(shadow_elements_.size() + 1);
     // Remark: the seid of a shadow node is not unique over processors, consequently numbered with
     // negative integers on each proc
     shadow_elements_[seid] = Cut::Element::create(top_data.key, eid, sides, nodes, active);

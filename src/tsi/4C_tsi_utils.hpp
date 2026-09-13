@@ -17,6 +17,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 FOUR_C_NAMESPACE_OPEN
 

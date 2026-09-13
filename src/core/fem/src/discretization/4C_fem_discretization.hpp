@@ -435,7 +435,7 @@ namespace Core::FE
   The \ref Core::FE::Discretization class supports the ostream& operator <<
 
   */
-  class Discretization
+  class FOUR_C_API(FOUR_C_CORE) Discretization
   {
    public:
     /**

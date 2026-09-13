@@ -13,6 +13,7 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <array>
 #include <map>
 #include <memory>
 #include <vector>

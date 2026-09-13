@@ -377,8 +377,7 @@ namespace Core::FE
     constexpr std::array all_names =
         Internal::celltype_sequence_to_string_array<all_celltypes>::value;
 
-    const auto* found_position =
-        std::find(std::begin(all_names), std::end(all_names), celltype_str);
+    const auto found_position = std::find(std::begin(all_names), std::end(all_names), celltype_str);
 
     if (found_position == std::end(all_names))
     {

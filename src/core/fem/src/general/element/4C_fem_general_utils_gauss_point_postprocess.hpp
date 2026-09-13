@@ -29,6 +29,7 @@ namespace Core::FE
    * \param global_count Add a 1 to all nodes belonging to this element
    * \param ele element
    */
+  FOUR_C_API(FOUR_C_CORE)
   void assemble_nodal_element_count(
       Core::LinAlg::Vector<int>& global_count, const Core::Elements::Element& ele);
 
@@ -40,6 +41,7 @@ namespace Core::FE
    * \param gp_data (numgp x size) matrix of the Gauss point data
    * \param ele element
    */
+  FOUR_C_API(FOUR_C_CORE)
   void assemble_gauss_point_values(
       std::vector<std::shared_ptr<Core::LinAlg::MultiVector<double>>>& global_data,
       const Core::LinAlg::SerialDenseMatrix& gp_data, const Core::Elements::Element& ele);
@@ -56,6 +58,7 @@ namespace Core::FE
    * @param dis (in) : Reference to the discretization
    * @param nodal_data (out) : Assembled data
    */
+  FOUR_C_API(FOUR_C_CORE)
   void extrapolate_gauss_point_quantity_to_nodes(Core::Elements::Element& ele,
       const Core::LinAlg::SerialDenseMatrix& data, const Core::FE::Discretization& dis,
       Core::LinAlg::MultiVector<double>& nodal_data);
@@ -68,6 +71,7 @@ namespace Core::FE
    * @param data (in) : Gauss point data in a Matrix (numgp x numdim of vector)
    * @param element_data (out) : Assembled data
    */
+  FOUR_C_API(FOUR_C_CORE)
   void evaluate_gauss_point_quantity_at_element_center(Core::Elements::Element& ele,
       const Core::LinAlg::SerialDenseMatrix& data, Core::LinAlg::MultiVector<double>& element_data);
 

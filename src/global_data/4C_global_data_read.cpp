@@ -1099,7 +1099,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
 
         if (micro_inputfile_name[0] != '/')
         {
-          micro_inputfile_name = input_path / micro_inputfile_name;
+          micro_inputfile_name = (input_path / micro_inputfile_name).string();
         }
 
         // broadcast micro input file name

@@ -3881,7 +3881,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element
   {
     Mortar::Node* mymrtrnode = dynamic_cast<Mortar::Node*>(mynodes[k]);
     if (!mymrtrnode) FOUR_C_THROW("Null pointer!");
-    bound += mymrtrnode->is_on_bound();
+    bound = bound || mymrtrnode->is_on_bound();
   }
 
   // decide whether displacement shape fct. modification has to be considered or not
@@ -4562,7 +4562,7 @@ void CONTACT::Integrator::integrate_d(Mortar::Element& source_elem, MPI_Comm com
   {
     Mortar::Node* mymrtrnode = dynamic_cast<Mortar::Node*>(mynodes[k]);
     if (!mymrtrnode) FOUR_C_THROW("Null pointer!");
-    bound += mymrtrnode->is_on_bound();
+    bound = bound || mymrtrnode->is_on_bound();
   }
 
   // prepare directional derivative of dual shape functions
@@ -4808,7 +4808,7 @@ void CONTACT::Integrator::integrate_kappa_penalty(Mortar::Element& source_elem, 
   {
     Mortar::Node* mymrtrnode = dynamic_cast<Mortar::Node*>(mynodes[k]);
     if (!mymrtrnode) FOUR_C_THROW("Null pointer!");
-    bound += mymrtrnode->is_on_bound();
+    bound = bound || mymrtrnode->is_on_bound();
   }
 
   //**********************************************************************

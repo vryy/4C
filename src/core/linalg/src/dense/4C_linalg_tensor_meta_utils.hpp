@@ -37,6 +37,12 @@ namespace Core::LinAlg::Internal
     column_major
   };
 
+  template <typename... Indices>
+  constexpr std::array<std::size_t, sizeof...(Indices)> to_array(Indices... i)
+  {
+    return {static_cast<std::size_t>(i)...};
+  }
+
   template <OrderType order_type, std::size_t... n>
   consteval std::array<std::size_t, sizeof...(n)> get_index_offset()
   {
@@ -59,12 +65,15 @@ namespace Core::LinAlg::Internal
     return index_offset;
   }
 
-  template <std::size_t... n>
-  void check_bounds(decltype(n)... i)
+  template <std::size_t... n, typename... Indices>
+  void check_bounds(Indices... i)
   {
+    static_assert(
+        sizeof...(Indices) == sizeof...(n), "number of indices must match number of dimensions");
+
     constexpr std::array<std::size_t, sizeof...(n)> shape = {n...};
 
-    std::array<std::size_t, sizeof...(n)> index = {i...};
+    std::array<std::size_t, sizeof...(n)> index = to_array(i...);
 
     auto join = [](const auto& array) -> std::string
     {
@@ -84,9 +93,13 @@ namespace Core::LinAlg::Internal
         join(shape));
   }
 
-  template <OrderType order_type, TensorBoundCheck bound_check, std::size_t... n>
-  constexpr std::size_t get_flat_index(decltype(n)... i)
+  template <OrderType order_type, TensorBoundCheck bound_check, std::size_t... n,
+      typename... Indices>
+  constexpr std::size_t get_flat_index(Indices... i)
   {
+    static_assert(
+        sizeof...(Indices) == sizeof...(n), "number of indices must match number of dimensions");
+
     if constexpr (bound_check == TensorBoundCheck::check) check_bounds<n...>(i...);
     if constexpr (bound_check == TensorBoundCheck::check_with_assertions)
     {
@@ -98,7 +111,7 @@ namespace Core::LinAlg::Internal
     constexpr std::array<std::size_t, sizeof...(n)> index_offset =
         get_index_offset<order_type, n...>();
 
-    std::array<std::size_t, sizeof...(n)> index = {i...};
+    std::array<std::size_t, sizeof...(n)> index = to_array(i...);
 
     return std::inner_product(index.begin(), index.end(), index_offset.begin(), std::size_t(0));
   }
@@ -198,7 +211,12 @@ namespace Core::LinAlg::Internal
         [&](const auto& index)
         {
           order_type_mapping[i] = std::apply(
-              get_flat_index<OrderType::column_major, TensorBoundCheck::no_check, n...>, index);
+              [](auto... indices) -> std::size_t
+              {
+                return get_flat_index<OrderType::column_major, TensorBoundCheck::no_check, n...>(
+                    indices...);
+              },
+              index);
 
           ++i;
         },

@@ -20,11 +20,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-void dyn_red_airways_drt();
+FOUR_C_API(FOUR_C_CORE) void dyn_red_airways_drt();
 
 std::shared_ptr<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D);
-
 
 FOUR_C_NAMESPACE_CLOSE
 

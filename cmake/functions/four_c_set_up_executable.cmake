@@ -10,4 +10,5 @@
 function(four_c_set_up_executable target)
   target_link_libraries(${target} PRIVATE ${FOUR_C_LIBRARY_NAME})
   target_link_libraries(${target} PRIVATE four_c_private_compile_interface)
+  target_compile_definitions(${target} PRIVATE FOUR_C_CORE=IMPORT)
 endfunction()

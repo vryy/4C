@@ -8,8 +8,6 @@
 #ifndef FOUR_C_MAT_LIST_CHEMOREAC_HPP
 #define FOUR_C_MAT_LIST_CHEMOREAC_HPP
 
-
-
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
@@ -39,7 +37,7 @@ namespace Mat
 
       /// @name material parameters
 
-    };  // class MatListReactions
+    };  // class MatListChemoReac
 
   }  // namespace PAR
 
@@ -121,7 +119,16 @@ namespace Mat
     }
 
     /// Return quick accessible material parameter data
+#ifdef _MSC_VER
+    /// Due to a bug in Microsoft compiler:
+    ///   https://developercommunity.visualstudio.com/t/Compiler-Error-C2250---Unable-to-resolve/10109726
+    /// The covariant return type of Mat::PAR::MatListChemoReac cannot be resolved. Hence a fallback
+    /// to Mat::PAR::MatList is necessary. User is expected to cast at the call site to obtain
+    /// correct type.
+    Mat::PAR::MatList* parameter() const override { return paramsreachemo_; }
+#else
     Mat::PAR::MatListChemoReac* parameter() const override { return paramsreachemo_; }
+#endif
 
    private:
     /// setup of material map
@@ -135,7 +142,6 @@ namespace Mat
   };
 
 }  // namespace Mat
-
 
 FOUR_C_NAMESPACE_CLOSE
 

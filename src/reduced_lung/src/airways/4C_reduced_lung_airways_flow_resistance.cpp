@@ -71,8 +71,9 @@ namespace ReducedLung::Airways::FlowResistance
         {
           dk_dq1 =
               model.turbulence_factor_gamma[i] *
-              std::sqrt(data.air_properties.density /
-                        (M_PI * data.air_properties.dynamic_viscosity * data.ref_length[i])) *
+              std::sqrt(
+                  data.air_properties.density /
+                  (std::numbers::pi * data.air_properties.dynamic_viscosity * data.ref_length[i])) *
               1 / std::sqrt(std::abs(locally_relevant_dofs.local_values_as_span()[data.lid_q1[i]]));
         }
         else
@@ -97,8 +98,8 @@ namespace ReducedLung::Airways::FlowResistance
       std::vector<double> resistance_derivative_q2(data.number_of_elements());
       for (size_t i = 0; i < data.number_of_elements(); i++)
       {
-        double dRp_da = -16 * M_PI * data.air_properties.dynamic_viscosity * data.ref_length[i] /
-                        (area[i] * area[i] * area[i]);
+        double dRp_da = -16 * std::numbers::pi * data.air_properties.dynamic_viscosity *
+                        data.ref_length[i] / (area[i] * area[i] * area[i]);
         double da_dq1 = dt / data.ref_length[i];
         double da_dq2 = -dt / data.ref_length[i];
         resistance_derivative_q1[i] =
@@ -125,23 +126,23 @@ namespace ReducedLung::Airways::FlowResistance
       std::vector<double> resistance_derivative_q2(data.number_of_elements());
       for (size_t i = 0; i < data.number_of_elements(); i++)
       {
-        double dRp_da = -16 * M_PI * data.air_properties.dynamic_viscosity * data.ref_length[i] /
-                        (area[i] * area[i] * area[i]);
+        double dRp_da = -16 * std::numbers::pi * data.air_properties.dynamic_viscosity *
+                        data.ref_length[i] / (area[i] * area[i] * area[i]);
         double da_dq1 = dt / data.ref_length[i];
         double da_dq2 = -dt / data.ref_length[i];
         double dk_dq1;
         if (model.k_turb[i] > 1.0)
         {
-          dk_dq1 =
-              model.turbulence_factor_gamma[i] *
-              std::sqrt(data.air_properties.density /
-                        (2 * M_PI * data.air_properties.dynamic_viscosity * data.ref_length[i])) *
-              (dofs.local_values_as_span()[data.lid_q1[i]] +
-                  dofs.local_values_as_span()[data.lid_q2[i]]) /
-              (std::abs(dofs.local_values_as_span()[data.lid_q1[i]] +
-                        dofs.local_values_as_span()[data.lid_q2[i]]) *
-                  std::sqrt(std::abs(dofs.local_values_as_span()[data.lid_q1[i]] +
-                                     dofs.local_values_as_span()[data.lid_q2[i]])));
+          dk_dq1 = model.turbulence_factor_gamma[i] *
+                   std::sqrt(data.air_properties.density /
+                             (2 * std::numbers::pi * data.air_properties.dynamic_viscosity *
+                                 data.ref_length[i])) *
+                   (dofs.local_values_as_span()[data.lid_q1[i]] +
+                       dofs.local_values_as_span()[data.lid_q2[i]]) /
+                   (std::abs(dofs.local_values_as_span()[data.lid_q1[i]] +
+                             dofs.local_values_as_span()[data.lid_q2[i]]) *
+                       std::sqrt(std::abs(dofs.local_values_as_span()[data.lid_q1[i]] +
+                                          dofs.local_values_as_span()[data.lid_q2[i]])));
         }
         else
         {
@@ -421,7 +422,8 @@ namespace ReducedLung::Airways::FlowResistance
                 model.k_turb[i] =
                     model.turbulence_factor_gamma[i] *
                     std::sqrt((4 * data.air_properties.density) /
-                              (M_PI * data.air_properties.dynamic_viscosity * data.ref_length[i]) *
+                              (std::numbers::pi * data.air_properties.dynamic_viscosity *
+                                  data.ref_length[i]) *
                               q_characteristic);
                 if (model.k_turb[i] < 1.0) model.k_turb[i] = 1.0;
               }

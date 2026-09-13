@@ -17,7 +17,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class Node;
@@ -29,7 +28,7 @@ namespace Cut
 
   /*! \brief Construction of boundingbox over the considered geometrical element
    *  for fast overlap detection */
-  class BoundingBox
+  class FOUR_C_API(FOUR_C_CORE) BoundingBox
   {
    public:
     /// @name Different Create methods

@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
-  class Map
+  class FOUR_C_API(FOUR_C_CORE) Map
   {
    public:
     /**

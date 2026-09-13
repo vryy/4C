@@ -187,8 +187,9 @@ function(four_c_auto_define_tests)
           )
       target_compile_definitions(
         ${_current_test_name}
-        PRIVATE -DFOUR_C_TEST_SUPPORT_FILE_DIR="${FOUR_C_TEST_SUPPORT_FILE_DIR}"
+        PRIVATE FOUR_C_TEST_SUPPORT_FILE_DIR="${FOUR_C_TEST_SUPPORT_FILE_DIR}"
         )
+      target_compile_definitions(${_current_test_name} PRIVATE FOUR_C_CORE=IMPORT)
     endif()
 
     target_sources(${_current_test_name} PRIVATE ${_source})

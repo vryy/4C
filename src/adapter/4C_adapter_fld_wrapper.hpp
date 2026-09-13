@@ -225,21 +225,15 @@ namespace Adapter
         const double presrestol, const double presinctol) override
     {
       FOUR_C_THROW("not implemented!");
-      return false;
     }
     void iter_update(const std::shared_ptr<const Core::LinAlg::Vector<double>> increment) override
     {
       FOUR_C_THROW("not implemented!");
-      return;
     }
     void update() override { return fluid_->update(); }
     void statistics_and_output() override { return fluid_->statistics_and_output(); }
     void output() override { return fluid_->output(); }
-    void statistics_output() override
-    {
-      FOUR_C_THROW("not implemented!");
-      return;
-    }
+    void statistics_output() override { FOUR_C_THROW("not implemented!"); }
     const std::shared_ptr<Core::IO::DiscretizationWriter>& disc_writer() override
     {
       return fluid_->disc_writer();
@@ -257,7 +251,6 @@ namespace Adapter
         std::shared_ptr<const Core::LinAlg::Vector<double>> readaccn) override
     {
       FOUR_C_THROW("not implemented!");
-      return;
     }
     double time() const override { return fluid_->time(); }
     int step() const override { return fluid_->step(); }
@@ -319,15 +312,10 @@ namespace Adapter
 
     //@}
 
-    double eval_time() const override
-    {
-      FOUR_C_THROW("not implemented!");
-      return 0.0;
-    }
+    double eval_time() const override { FOUR_C_THROW("not implemented!"); }
     void redistribute(const std::shared_ptr<Core::LinAlg::Graph> nodegraph) override
     {
       FOUR_C_THROW("not implemented!");
-      return;
     }
     void solve() override { return fluid_->solve(); }
     std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
@@ -372,15 +360,11 @@ namespace Adapter
     std::shared_ptr<FLD::Utils::MapExtractor> const& interface() const override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      static std::shared_ptr<FLD::Utils::MapExtractor> ret = nullptr;
-      return ret;
     }
 
     std::shared_ptr<FLD::Utils::MapExtractor> const& fpsi_interface() const override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      static std::shared_ptr<FLD::Utils::MapExtractor> ret = nullptr;
-      return ret;
     }
     FLUID::TimeIntegrationScheme tim_int_scheme() const override
     {
