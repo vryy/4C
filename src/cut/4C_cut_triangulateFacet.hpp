@@ -17,7 +17,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class Point;
@@ -26,7 +25,7 @@ namespace Cut
   /*!
   \brief A class to split a facet into tri and quad cells
    */
-  class TriangulateFacet
+  class FOUR_C_API(FOUR_C_CORE) TriangulateFacet
   {
    public:
     /*!

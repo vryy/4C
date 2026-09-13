@@ -15,7 +15,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class BoundingBox;
@@ -25,7 +24,7 @@ namespace Cut
   /** \brief Base class of all \e Position objects
    *
    *  */
-  class Position
+  class FOUR_C_API(FOUR_C_CORE) Position
   {
    public:
     /** \brief Status of the position computation.
@@ -92,6 +91,7 @@ namespace Cut
     template <unsigned rdim>
     static std::shared_ptr<Position> create(const Element& element,
         const Core::LinAlg::Matrix<rdim, 1>& xyz, CutFloatType floattype = floattype_double);
+
     /** \brief build variant #3
      *
      *  \param xyze    (in) : Global nodal positions of the element.
@@ -520,7 +520,7 @@ namespace Cut
   /** \class Position factory
    *
    *  */
-  class PositionFactory
+  class FOUR_C_API(FOUR_C_CORE) PositionFactory
   {
    public:
     /// constructor

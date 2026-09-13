@@ -21,7 +21,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   namespace Impl
@@ -39,7 +38,7 @@ namespace Cut
   /*!
    * A point knows its position with respect to the cut interface.
    */
-  class Point
+  class FOUR_C_API(FOUR_C_CORE) Point
   {
    public:
     enum PointPosition
