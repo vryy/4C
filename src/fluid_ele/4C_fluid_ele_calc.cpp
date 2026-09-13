@@ -3334,8 +3334,12 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
         const double CI = 4.0 / mk;
         const double CII = 2.0 / mk;
 
-        // in contrast to the original definition, we neglect the influence of
-        // the subscale velocity on velnormaf
+// in contrast to the original definition, we neglect the influence of
+// the subscale velocity on velnormaf
+#ifdef _MSC_VER
+        if (std::abs(h_p) < std::numeric_limits<double>::epsilon())
+          FOUR_C_THROW("h_p = %.6e is closed to zero. The results might be inaccurate.", h_p);
+#endif
         tau_(0) = 1.0 / (CI * visceff_ / (h_p * h_p) + CII * vel_normaf / h_p);
 
         tau_(1) = tau_(0);

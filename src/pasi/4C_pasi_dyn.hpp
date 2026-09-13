@@ -22,7 +22,7 @@ namespace Global
  *
  * \param problem  global problem providing parameters, discretizations and solvers
  */
-void pasi_dyn(Global::Problem& problem);
+FOUR_C_API(FOUR_C_CORE) void pasi_dyn(Global::Problem& problem);
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

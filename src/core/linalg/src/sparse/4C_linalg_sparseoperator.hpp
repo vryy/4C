@@ -70,7 +70,7 @@ namespace Core::LinAlg
     is BlockSparseMatrix, a block matrix build from a list of SparseMatrix.
 
    */
-  class SparseOperator
+  class FOUR_C_API(FOUR_C_CORE) SparseOperator
   {
    public:
     virtual ~SparseOperator() = default;

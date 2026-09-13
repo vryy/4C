@@ -19,7 +19,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class Facet;
@@ -33,7 +32,7 @@ namespace Cut
   /*! \brief Base class for boundary cells. Boundary cells are used to represent
    *  the cut surface. Each volume cell has its own boundary cells
    *  at any cut surface with outward normals. */
-  class BoundaryCell
+  class FOUR_C_API(FOUR_C_CORE) BoundaryCell
   {
    public:
     /// constructor

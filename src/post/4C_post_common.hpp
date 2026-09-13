@@ -31,11 +31,11 @@ FOUR_C_NAMESPACE_OPEN
 
 class PostField;
 
-
 namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
+
 /*!
   \brief Foundation class of the filter
 
@@ -43,7 +43,7 @@ namespace Core::FE
   filter environment including MPI in a parallel setting. Some global variables are handled here as
   well.
 */
-class PostProblem
+class FOUR_C_API(FOUR_C_CORE) PostProblem
 {
  public:
   //@{ \name Constructors and destructors
@@ -249,7 +249,7 @@ class PostProblem
   specific output operations can be done by the elements themselves.
 
 */
-class PostField
+class FOUR_C_API(FOUR_C_CORE) PostField
 {
  public:
   // @{ \name Constructors and destructors
@@ -328,7 +328,7 @@ class PostField
   Most filters will loop all time steps from the control file.
 
 */
-class PostResult
+class FOUR_C_API(FOUR_C_CORE) PostResult
 {
  public:
   //@{ \name Constructors and destructors

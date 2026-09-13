@@ -59,7 +59,7 @@ namespace Core::IO
    * A class that reads a mesh from an input file and fills the given discretization objects with
    * the mesh data.
    */
-  class MeshReader
+  class FOUR_C_API(FOUR_C_CORE) MeshReader
   {
    public:
     /**
@@ -128,7 +128,12 @@ namespace Core::IO
     MPI_Comm comm_;
 
     /// Internal mesh readers.
+#ifdef _MSC_VER
+    // use raw pointer to avoid ABI compatibility problem with Windows DLL
+    std::vector<Internal::MeshReader*> mesh_readers_;
+#else
     std::vector<std::unique_ptr<Internal::MeshReader>> mesh_readers_;
+#endif
 
     /// The input file to read the mesh from.
     const Core::IO::InputFile& input_;

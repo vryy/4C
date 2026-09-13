@@ -37,7 +37,7 @@ namespace Core::Utils
    * An instance of this class is available after reading the input file. The specific ways how to
    * parse Functions from input data are attached within the various modules.
    */
-  class FunctionManager
+  class FOUR_C_API(FOUR_C_CORE) FunctionManager
   {
    public:
     /**

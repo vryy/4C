@@ -24,7 +24,7 @@ namespace Core
   {
     class ExceptionImplementation;
 
-    [[noreturn]] void throw_error(
+    [[noreturn]] FOUR_C_API(FOUR_C_CORE) void throw_error(
         const std::source_location& loc, const std::string& formatted_message);
 
     template <typename... Args>
@@ -58,7 +58,7 @@ namespace Core
     /**
      * Return a message that describes what happened.
      */
-    [[nodiscard]] const char* what() const noexcept override;
+    [[nodiscard]] FOUR_C_API(FOUR_C_CORE) const char* what() const noexcept override;
 
     /**
      * Return a message that describes what happened and includes a stack trace.
@@ -66,7 +66,7 @@ namespace Core
      * @note Calling this function can be a lot more expensive than the what() function because the
      * stacktrace needs to be symbolized.
      */
-    [[nodiscard]] std::string what_with_stacktrace() const noexcept;
+    [[nodiscard]] FOUR_C_API(FOUR_C_CORE) std::string what_with_stacktrace() const noexcept;
 
    private:
     /**
@@ -142,7 +142,7 @@ namespace Core
 /**
  * This macro would assert that @p test is true, but only if FOUR_C_ENABLE_ASSERTIONS is set.
  */
-#define FOUR_C_ASSERT(test, args...)  \
+#define FOUR_C_ASSERT(test, ...)      \
   do                                  \
   {                                   \
     /* Assertions are not enabled. */ \

@@ -8,12 +8,12 @@
 #ifndef FOUR_C_UTILS_RESULT_TEST_HPP
 #define FOUR_C_UTILS_RESULT_TEST_HPP
 
-
 #include "4C_config.hpp"
 
 #include <mpi.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -122,15 +122,17 @@ namespace Core::Utils
   {
    public:
     /// add field specific result test object
-    void add_field_test(std::shared_ptr<ResultTest> test);
+    FOUR_C_API(FOUR_C_CORE) void add_field_test(std::shared_ptr<ResultTest> test);
 
     /// do all tests of all fields including appropriate output
-    void test_all(MPI_Comm comm);
+    FOUR_C_API(FOUR_C_CORE) void test_all(MPI_Comm comm);
 
     /// Store the parsed @p results.
+    FOUR_C_API(FOUR_C_CORE)
     void set_parsed_lines(std::vector<Core::IO::InputParameterContainer> results);
 
     /// Store the node set
+    FOUR_C_API(FOUR_C_CORE)
     void set_node_set(const std::vector<std::vector<std::vector<int>>>& nodeset);
 
     /// Get the node set (design topology)

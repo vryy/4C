@@ -17,7 +17,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   namespace ColoredGraph
@@ -65,7 +64,7 @@ namespace Cut
     };
 
     /// facet-line graph
-    class Graph
+    class FOUR_C_API(FOUR_C_CORE) Graph
     {
      public:
       using const_iterator = std::map<int, plain_int_set>::const_iterator;

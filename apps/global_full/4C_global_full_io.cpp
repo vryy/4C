@@ -67,7 +67,7 @@ void setup_global_problem(Core::IO::InputFile& input_file, const CommandlineArgu
   setup_parallel_output(arguments, communicators);
 
   // create control file for output and read restart data if required
-  problem->open_control_file(communicators.local_comm(), arguments.input_file_name,
+  problem->open_control_file(communicators.local_comm(), arguments.input_file_name.string(),
       arguments.output_file_identifier, arguments.restart_file_identifier);
 
   // input of materials

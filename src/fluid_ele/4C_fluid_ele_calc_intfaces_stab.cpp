@@ -1752,7 +1752,6 @@ double Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     nderxy2_.clear();
   }
 
-
   return fac;
 }
 

@@ -34,7 +34,7 @@ namespace Cut
   \brief Interface class for the general mesh cut. This class contains shared functionality
   between level set intersection and mesh intersection routines.
   */
-  class ParentIntersection
+  class FOUR_C_API(FOUR_C_CORE) ParentIntersection
   {
    public:
     /*!

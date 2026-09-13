@@ -18,8 +18,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-
 namespace Arteries
 {
   namespace Utils

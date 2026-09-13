@@ -11,7 +11,11 @@
 
 find_path(QHULL_INCLUDE_DIR libqhull/libqhull.h)
 
-find_library(QHULL_LIBRARY NAMES qhull)
+if(QHULL_USE_STATIC_LIBS)
+  find_library(QHULL_LIBRARY NAMES qhullstatic qhullstatic_d)
+else()
+  find_library(QHULL_LIBRARY NAMES qhull qhull_d)
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Qhull DEFAULT_MSG QHULL_LIBRARY QHULL_INCLUDE_DIR)

@@ -16,7 +16,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class BoundaryCell;
@@ -28,7 +27,7 @@ namespace Cut
   /*!
   \brief Class to handle surfaces of arbitrary shape, defined by its points corner points
    */
-  class Facet
+  class FOUR_C_API(FOUR_C_CORE) Facet
   {
    public:
     Facet(Mesh& mesh, const std::vector<Point*>& points, Side* side, bool cutsurface);

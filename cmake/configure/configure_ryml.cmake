@@ -6,6 +6,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 message(STATUS "Fetch content for ryml")
+set(C4_LIBRARY_TYPE
+    "STATIC"
+    CACHE STRING "" FORCE
+    )
 fetchcontent_declare(
   ryml
   GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
@@ -15,7 +19,17 @@ set(RYML_INSTALL
     ON
     CACHE BOOL "Turn on ryml install" FORCE
     )
+if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  if(MSVC_VERSION)
+    add_compile_definitions(C4_MSVC=1 _MSC_VER=${MSVC_VERSION})
+  endif()
+  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT MATCHES "MSVC") # for Clang-cl
+    add_compile_options(/clang:-Wno-nan-infinity-disabled)
+    add_compile_options(/clang:-Wno-c++20-extensions)
+  endif()
+endif()
 fetchcontent_makeavailable(ryml)
+set_target_properties(ryml c4core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set(FOUR_C_RYML_ROOT "${CMAKE_INSTALL_PREFIX}")
 
 four_c_add_external_dependency(four_c_all_enabled_external_dependencies ryml::ryml)
