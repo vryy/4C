@@ -23,6 +23,9 @@ namespace NOX
       class Controller
       {
        public:
+        //! destructor
+        virtual ~Controller() = default;
+
         //! @name Access functionality
         //@{
         //! get the number of line search iterations
