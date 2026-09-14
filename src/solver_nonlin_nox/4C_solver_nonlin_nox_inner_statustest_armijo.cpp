@@ -7,9 +7,7 @@
 
 #include "4C_solver_nonlin_nox_inner_statustest_armijo.hpp"  // class definition
 
-#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_linesearch_controller.hpp"
-#include "4C_utils_exceptions.hpp"
 
 #include <NOX_Abstract_Group.H>
 #include <NOX_MeritFunction_Generic.H>
@@ -39,7 +37,7 @@ NOX::Nln::Inner::StatusTest::Armijo::Armijo(
 bool NOX::Nln::Inner::StatusTest::Armijo::setup(
     const NOX::Nln::LineSearch::Controller& ls_controller, const ::NOX::Abstract::Group& grp)
 {
-  const ::NOX::MeritFunction::Generic& mrtFct = ls_controller.get_merit_function();
+  const auto& mrtFct = ls_controller.get_merit_function();
 
   // get the reference merit function value
   fref_ = mrtFct.computef(grp);
@@ -101,7 +99,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::che
   // fail anyway.
   else if (status_ != status_no_descent_direction)
   {
-    const ::NOX::MeritFunction::Generic& mrtFct = ls_controller.get_merit_function();
+    const auto& mrtFct = ls_controller.get_merit_function();
 
     fcurr_ = mrtFct.computef(grp);
 

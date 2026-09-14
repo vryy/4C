@@ -58,7 +58,6 @@ namespace NOX
           bool setup(const NOX::Nln::LineSearch::Controller& ls_controller,
               const ::NOX::Abstract::Group& grp);
 
-         protected:
           //! Status
           NOX::Nln::Inner::StatusTest::StatusType status_;
 

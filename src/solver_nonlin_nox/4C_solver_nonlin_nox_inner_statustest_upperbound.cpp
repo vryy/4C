@@ -7,13 +7,10 @@
 
 #include "4C_solver_nonlin_nox_inner_statustest_upperbound.hpp"
 
-#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_linesearch_controller.hpp"
-#include "4C_utils_exceptions.hpp"
 
 #include <NOX_Abstract_Vector.H>
-#include <NOX_Solver_Generic.H>
 #include <NOX_Utils.H>
 
 FOUR_C_NAMESPACE_OPEN
@@ -123,17 +120,6 @@ std::ostream& NOX::Nln::Inner::StatusTest::UpperBound::print(std::ostream& strea
          << " (reduction factor = " << ::NOX::Utils::sciformat(reduction_fac_, 3) << ")\n";
 
   return stream;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::Nln::Inner::StatusTest::UpperBound::throw_error(
-    const std::string& functionName, const std::string& errorMsg) const
-{
-  std::ostringstream msg;
-  msg << "ERROR - NOX::Nln::Inner::StatusTest::UpperBound::" << functionName << " - " << errorMsg
-      << std::endl;
-  FOUR_C_THROW("{}", msg.str());
 }
 
 FOUR_C_NAMESPACE_CLOSE

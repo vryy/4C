@@ -56,10 +56,6 @@ namespace NOX
           double get_search_direction_length(const NOX::Nln::LineSearch::Controller& ls_controller,
               const ::NOX::Abstract::Group& grp) const;
 
-         private:
-          void throw_error(const std::string& functionName, const std::string& errorMsg) const;
-
-         protected:
           //! Status
           NOX::Nln::Inner::StatusTest::StatusType status_;
 
