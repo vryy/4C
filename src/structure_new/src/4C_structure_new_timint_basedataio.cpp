@@ -10,8 +10,6 @@
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
-#include "4C_solver_nonlin_nox_linesearch_generic.hpp"
-#include "4C_solver_nonlin_nox_linesearch_prepostoperator.hpp"
 #include "4C_structure_new_timint_basedataio_monitor_dbc.hpp"
 #include "4C_structure_new_timint_basedataio_runtime_vtk_output.hpp"
 #include "4C_structure_new_timint_basedataio_runtime_vtp_output.hpp"

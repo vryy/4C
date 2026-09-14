@@ -13,8 +13,9 @@
 #include "4C_solver_nonlin_nox_floating_point_exception.hpp"
 #include "4C_solver_nonlin_nox_forward_decl.hpp"
 #include "4C_solver_nonlin_nox_inner_statustest_generic.hpp"
-#include "4C_solver_nonlin_nox_linesearch_generic.hpp"  // base class
+#include "4C_solver_nonlin_nox_linesearch_controller.hpp"
 
+#include <NOX_LineSearch_Generic.H>
 #include <NOX_StatusTest_Generic.H>
 
 FOUR_C_NAMESPACE_OPEN
@@ -32,8 +33,44 @@ namespace NOX
     }  // namespace Inner
     namespace LineSearch
     {
-      class Backtrack : public Generic
+      // forward declaration
+      class PrePostOperator;
+
+      class Backtrack : public ::NOX::LineSearch::Generic
       {
+       private:
+        class Controller : public NOX::Nln::LineSearch::Controller
+        {
+         public:
+          //! Constructor
+          Controller(NOX::Nln::LineSearch::Backtrack& backtrack_solver);
+
+          //! @name Access functionality
+          //@{
+          //! get the number of line search iterations
+          int get_num_iterations() const override;
+
+          //! get the merit function
+          const ::NOX::MeritFunction::Generic& get_merit_function() const override;
+
+          //! get the current search direction
+          const ::NOX::Abstract::Vector& get_search_direction() const override;
+
+          //! get current step length
+          double get_step_length() const override;
+
+          //!@}
+
+          //! @name Mutator functionality
+          //! @{
+          //! set current step length
+          void set_step_length(double step) override;
+          //! @}
+
+         private:
+          NOX::Nln::LineSearch::Backtrack& backtrack_solver_;
+        };
+
        public:
         //! Constructor
         Backtrack(const Teuchos::RCP<::NOX::GlobalData>& gd,
@@ -41,46 +78,20 @@ namespace NOX
             const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> innerTests,
             Teuchos::ParameterList& params);
 
-        /// hard reset
-        bool reset(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
-
-        /// weak reset
-        void reset();
-
         bool compute(::NOX::Abstract::Group& newgrp, double& step,
             const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s) override;
-
-        NOX::Nln::Inner::StatusTest::StatusType check_inner_status(
-            const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
-            ::NOX::StatusTest::CheckType checkType) const override;
-
-        //! @name Access functionality
-        //@{
-        //! get the number of line search iterations
-        int get_num_iterations() const override;
-
-        //! get the merit function
-        const ::NOX::MeritFunction::Generic& get_merit_function() const override;
-
-        //! get the current search direction
-        const ::NOX::Abstract::Vector& get_search_direction() const override;
-
-        //! get current step length
-        double get_step_length() const override;
-
-        //!@}
-
-        //! @name Mutator functionality
-        //! @{
-        //! set current step length
-        void set_step_length(double step) override;
-        //! @}
 
        protected:
         //! print inner status test results
         void print_update(std::ostream& os) const;
 
        private:
+        /// hard reset
+        bool reset(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+
+        /// weak reset
+        void reset();
+
         //! throw NOX error
         void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
@@ -121,6 +132,12 @@ namespace NOX
 
         //! line search stopping tests
         Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> inner_tests_ptr_;
+
+        //! Pre and post operator for modifying the step length
+        Teuchos::RCP<PrePostOperator> pre_post_operator_ptr_;
+
+        //! Controller class for accessing and modifying the backtrack solver's state
+        NOX::Nln::LineSearch::Backtrack::Controller controller_;
       };
     }  // namespace LineSearch
   }  // namespace Nln
