@@ -1,0 +1,14 @@
+name: Windows build test
+
+on:
+  schedule:
+    # GitHub Actions cron runs in UTC only
+    # Example: 04:03 Berlin (UTC+1/UTC+2) converted to UTC
+    - cron: '3 2 * * 0'
+  workflow_dispatch:
+
+jobs:
+  placeholder:
+    runs-on: windows-latest
+    steps:
+      - run: echo "Workflow registered"
