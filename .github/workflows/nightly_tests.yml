@@ -545,14 +545,23 @@ jobs:
           apt-get install -y git-lfs
       - uses: actions/checkout@v7
         with:
-          # for performance tests, we need to checkout the large meshes
-          lfs: true
+          # for performance tests, we need the large meshes, but we fetch them via a
+          # cache below instead of downloading them from LFS on every nightly run
+          lfs: false
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - name: Setup developer environment for testing
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
+      - name: Cache LFS meshes
+        id: lfs-cache
+        uses: actions/cache@v6
+        with:
+          path: .git/lfs
+          key: lfs-meshes-${{ hashFiles('tests/performance_tests/meshes/full/**') }}
+      - name: Pull LFS meshes
+        run: git lfs pull
       - uses: ./.github/actions/download_directory
         with:
           name: clang18_performance_tests_build
