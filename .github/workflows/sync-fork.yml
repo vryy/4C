@@ -1,0 +1,42 @@
+name: Sync fork with upstream
+
+on:
+  schedule:
+    # Run every 3 days
+    - cron: "0 0 */3 * *"
+
+  # Allows you to run it manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REBASE_TOKEN }}
+          fetch-depth: 0
+
+      - name: Sync fork
+        env:
+          GH_TOKEN: ${{ secrets.REBASE_TOKEN }}
+        run: |
+          # Configure Git user for commits
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Determine upstream repository URL (replace OWNER/REPO with the parent repository)
+          git remote add upstream https://github.com/4C-multiphysics/4C.git
+          git fetch upstream main
+
+          # Rebase local main onto upstream/main
+          git checkout main
+          git rebase upstream/main
+
+          # Force-push the rebased history back to the fork
+          git push origin main --force-with-lease
