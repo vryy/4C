@@ -1,0 +1,68 @@
+name: Rebase open PRs
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.REBASE_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch main
+        run: git fetch origin main
+
+      - name: Rebase open PRs
+        env:
+          GH_TOKEN: ${{ secrets.REBASE_TOKEN }}
+        run: |
+          gh pr list \
+            --repo "${{ github.repository }}" \
+            --state open \
+            --base main \
+            --json number,headRefName,headRepository,isDraft \
+            --jq '.[] |
+              select(.headRepository != null) |
+              select(.headRepository.nameWithOwner == "${{ github.repository }}") |
+              [.number, .headRefName, .isDraft] | @tsv' |
+          while IFS=$'\t' read -r PR_NUMBER BRANCH IS_DRAFT; do
+
+            echo "========================================"
+            echo "Processing PR #$PR_NUMBER ($BRANCH)"
+            echo "========================================"
+
+            git fetch origin "$BRANCH"
+
+            # Check whether the branch already contains the latest main.
+            if git merge-base --is-ancestor origin/main "origin/$BRANCH"; then
+              echo "PR #$PR_NUMBER is already up to date. Skipping."
+              continue
+            fi
+
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+
+            if git rebase origin/main; then
+              git push --force-with-lease origin "$BRANCH"
+              echo "PR #$PR_NUMBER rebased successfully."
+            else
+              echo "::warning::Could not rebase PR #$PR_NUMBER due to conflicts."
+              git rebase --abort
+            fi
+
+          done
