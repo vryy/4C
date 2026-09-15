@@ -2,13 +2,20 @@ name: Windows build test
 
 on:
   schedule:
-    # GitHub Actions cron runs in UTC only
-    # Example: 04:03 Berlin (UTC+1/UTC+2) converted to UTC
-    - cron: '3 2 * * 0'
+    - cron: 3 4 * * 0
+      timezone: "Europe/Berlin"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  placeholder:
+  build:
+    name: Build 4C on Windows
     runs-on: windows-latest
+    outputs:
+      msvc-version-hash: ${{ steps.msvc-version.outputs.hash }}
+
     steps:
       - run: echo "Workflow registered"
