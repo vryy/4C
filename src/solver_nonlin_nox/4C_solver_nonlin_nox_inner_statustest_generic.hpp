@@ -20,15 +20,14 @@ namespace NOX
 {
   namespace Nln
   {
+    namespace LineSearch
+    {
+      class Controller;
+    }  // namespace LineSearch
     namespace Inner
     {
       namespace StatusTest
       {
-        namespace Interface
-        {
-          class Required;
-        }  // namespace Interface
-
         enum StatusType : int
         {
           //! Unevaluated
@@ -69,9 +68,6 @@ namespace NOX
         class Generic
         {
          public:
-          //! constructor
-          Generic() {};
-
           //! destructor
           virtual ~Generic() = default;
 
@@ -80,12 +76,12 @@ namespace NOX
            *  The test can (and should, if possible) be skipped if
            *  checkType is NOX::StatusType::None.  If the test is skipped, then
            *  the status should be set to ::NOX::StatusTest::Unevaluated. */
-          virtual StatusType check_status(const Interface::Required& interface,
-              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+          [[nodiscard]] virtual StatusType check_status(
+              NOX::Nln::LineSearch::Controller& ls_controller, const ::NOX::Abstract::Group& grp,
               ::NOX::StatusTest::CheckType checkType) = 0;
 
           //! Return the result of the most recent inner checkStatus call
-          virtual StatusType get_status() const = 0;
+          [[nodiscard]] virtual StatusType get_status() const = 0;
 
           //! Output formatted description of inner stopping test to output stream.
           virtual std::ostream& print(std::ostream& stream, int indent = 0) const = 0;
