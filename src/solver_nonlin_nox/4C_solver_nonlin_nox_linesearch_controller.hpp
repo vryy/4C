@@ -20,6 +20,18 @@ namespace NOX
   {
     namespace LineSearch
     {
+
+      /**
+       * \brief Abstract interface giving line search algorithms access to and control over
+       * the current search direction and step length during a nonlinear solver iteration.
+       *
+       * The inner tests need access to the current search direction and step length,
+       * and may modify the step length as part of the line search procedure. Instead of extending
+       * the interface of ::NOX::LineSearch::Generic, this Controller class provides a dedicated
+       * interface for such access and control. Any class that implements ::NOX::LineSearch::Generic
+       * provides its own instantiation of this interface if these operations are needed, i.e. if
+       * interaction with the inner tests is implied.
+       */
       class Controller
       {
        public:

@@ -48,16 +48,16 @@ namespace NOX
           //! @name Access functionality
           //@{
           //! get the number of line search iterations
-          int get_num_iterations() const override;
+          [[nodiscard]] int get_num_iterations() const override;
 
           //! get the merit function
-          const ::NOX::MeritFunction::Generic& get_merit_function() const override;
+          [[nodiscard]] const ::NOX::MeritFunction::Generic& get_merit_function() const override;
 
           //! get the current search direction
-          const ::NOX::Abstract::Vector& get_search_direction() const override;
+          [[nodiscard]] const ::NOX::Abstract::Vector& get_search_direction() const override;
 
           //! get current step length
-          double get_step_length() const override;
+          [[nodiscard]] double get_step_length() const override;
 
           //!@}
 
