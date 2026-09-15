@@ -46,15 +46,16 @@ if errorlevel 1 (
 
 rem apply patch
 
-mv parmetis-%VERSION% parmetis-%VERSION%-orig
+ren parmetis-%VERSION% parmetis-%VERSION%-orig
 
 cd parmetis-%VERSION%-orig
 
-git apply -p2 ..\fixes.patch
+set "GIT_DIR=none"
+git apply --no-index -p2 -v ..\fixes.patch
 
 cd ..
 
-mv parmetis-%VERSION%-orig parmetis-%VERSION%
+ren parmetis-%VERSION%-orig parmetis-%VERSION%
 
 rem compiling
 
@@ -81,7 +82,7 @@ ninja clean
 
 del CMakeCache.txt
 
-%CMAKE_COMMAND% ^
+cmake ^
   -G "Ninja" ^
   -D CMAKE_BUILD_TYPE:STRING="Release" ^
   -D CMAKE_INSTALL_PREFIX="%INSTALL_DIR%" ^

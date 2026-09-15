@@ -8,8 +8,10 @@
 # Exit the script at the first failure
 $ErrorActionPreference = 'Stop'
 
-set "DEP_DIR=%USERPROFILE%\opt"
+$env:DEP_DIR = "$env:USERPROFILE\opt"
 
-cd dependencies/windows/parmetis
+$curDir = $PWD.Path
 
-.\install.bat %DEP_DIR%\parmetis
+cd $curDir/dependencies/windows/parmetis
+
+.\install.bat "$env:DEP_DIR\parmetis"
