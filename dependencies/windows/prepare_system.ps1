@@ -15,3 +15,4 @@ $PSVersionTable.OS
 $env:PROCESSOR_ARCHITECTURE
 
 ./dependencies/windows/msmpi/install.ps1
+./dependencies/windows/intel/install.ps1
