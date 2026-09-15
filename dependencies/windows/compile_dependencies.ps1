@@ -7,3 +7,9 @@
 
 # Exit the script at the first failure
 $ErrorActionPreference = 'Stop'
+
+set "DEP_DIR=%USERPROFILE%\opt"
+
+cd dependencies/windows/parmetis
+
+.\install.bat %DEP_DIR%\parmetis

@@ -9,6 +9,7 @@
 $ErrorActionPreference = 'Stop'
 
 cmake --version
+ninja --version
 cl.exe
 $PSVersionTable.OS
 $env:PROCESSOR_ARCHITECTURE
