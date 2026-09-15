@@ -39,7 +39,10 @@ namespace Mixture
 
     [[nodiscard]] Number evaluate_true_mass_production_rate(Number delta_sig) const
     {
-      return k_sig_ * delta_sig + enable_basal_mass_production_ / decay_time_;
+      if (enable_basal_mass_production_)
+        return k_sig_ * delta_sig + 1.0 / decay_time_;
+      else
+        return k_sig_ * delta_sig;
     }
 
     [[nodiscard]] Number evaluate_true_mass_removal_rate(Number delta_sig) const

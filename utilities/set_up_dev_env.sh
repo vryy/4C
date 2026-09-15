@@ -46,7 +46,7 @@ pip install wheel
 pip install -e utilities/four_c_python[development]
 
 # Additionally store the hash of the ingredients for the virtual environment.
-./utilities/code_checks/check_venv --update
+./utilities/code_checks/unix/check_venv --update
 
 # We used to copy the `commit-msg` hook to `.git/hooks/` manually, but now we use pre-commit to manage it.
 # Thus remove the old hook if it exists.
@@ -55,4 +55,5 @@ if [ -f ".git/hooks/commit-msg" ]; then
 fi
 
 # Install the pre-commit hooks.
+cp .pre-commit-config.unix.yaml .pre-commit-config.yaml
 pre-commit install

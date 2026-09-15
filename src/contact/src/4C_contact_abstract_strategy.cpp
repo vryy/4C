@@ -715,7 +715,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
   if ((shapefcn == Mortar::shape_dual || shapefcn == Mortar::shape_petrovgalerkin) &&
       (n_dim() == 3 || (n_dim() == 2 && lagmultquad == Mortar::lagmult_lin)))
     for (int i = 0; i < (int)interfaces().size(); ++i)
-      dualquadsourcetrafo_ += interfaces()[i]->quadsource();
+      dualquadsourcetrafo_ = dualquadsourcetrafo_ || interfaces()[i]->quadsource();
 
   //----------------------------------------------------------------------
   // IF SO, COMPUTE TRAFO MATRIX AND ITS INVERSE
