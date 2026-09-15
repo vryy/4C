@@ -11,6 +11,12 @@
 set(MPI_CXX_SKIP_MPICXX ON)
 find_package(MPI REQUIRED)
 
+if(WIN32 AND MPIEXEC_EXECUTABLE)
+  set(MPIEXEC_EXECUTABLE
+      "\"${MPIEXEC_EXECUTABLE}\""
+      CACHE FILEPATH "Path to mpiexec" FORCE
+      )
+endif()
 target_link_libraries(four_c_all_enabled_external_dependencies INTERFACE MPI::MPI_CXX)
 
 # Check if MPI works: Ubuntu 20.04 has a broken MPI installation. Try to patch it

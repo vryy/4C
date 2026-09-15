@@ -66,6 +66,13 @@ set(FOUR_C_PYTHON_VENV_BUILD
     PARENT_SCOPE
     )
 
+find_program(
+  FOUR_C_VENV_PYTHON
+  NAMES python python3 python.exe
+  PATHS "${FOUR_C_PYTHON_VENV_BUILD}/Scripts" "${FOUR_C_PYTHON_VENV_BUILD}/bin"
+  NO_DEFAULT_PATH
+  )
+
 _execute_process(
   PROCESS_COMMAND
   ${Python_EXECUTABLE}
@@ -75,7 +82,9 @@ _execute_process(
   )
 _execute_process(
   PROCESS_COMMAND
-  ${FOUR_C_PYTHON_VENV_BUILD}/bin/pip
+  "${FOUR_C_VENV_PYTHON}"
+  -m
+  pip
   install
   -e
   ${PROJECT_SOURCE_DIR}/utilities/four_c_python[build]
