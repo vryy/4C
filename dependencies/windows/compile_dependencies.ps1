@@ -7,10 +7,3 @@
 
 # Exit the script at the first failure
 $ErrorActionPreference = 'Stop'
-
-cmake --version
-cl.exe
-$PSVersionTable.OS
-$env:PROCESSOR_ARCHITECTURE
-
-./dependencies/windows/msmpi/install.ps1
