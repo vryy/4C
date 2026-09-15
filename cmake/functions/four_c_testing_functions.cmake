@@ -282,11 +282,34 @@ function(_add_test_with_options)
     set(skip_message "The test ${_parsed_NAME_OF_TEST} is marked to be skipped")
   endif()
 
+  if(WIN32)
+    # Look specifically for Git Bash / MSYS2 bash, NOT WSL
+    find_program(
+      GIT_BASH_EXECUTABLE
+      NAMES bash
+      PATHS "C:/Program Files/Git/bin"
+            "C:/Program Files/Git/usr/bin"
+            "C:/Program Files (x86)/Git/bin"
+            "C:/msys64/usr/bin"
+      NO_DEFAULT_PATH
+      )
+
+    if(GIT_BASH_EXECUTABLE)
+      set(TEST_SHELL "${GIT_BASH_EXECUTABLE}")
+    else()
+      # Fallback to standard search if Git is in a custom path
+      find_program(TEST_SHELL bash)
+    endif()
+  else()
+    set(TEST_SHELL "bash")
+  endif()
+  # message(STATUS "TEST_SHELL: ${TEST_SHELL}")
+
   if(NOT skip_message STREQUAL "")
     # The dummy test needs to report a arbitrary error code that ctest interprets as "skipped".
     set(dummy_command "echo \"${skip_message}\"; exit 42")
     # Add a dummy test that just prints the skip message instead of the real test
-    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND bash -c "${dummy_command}")
+    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND ${TEST_SHELL} -c "${dummy_command}")
     set_tests_properties(${_parsed_NAME_OF_TEST} PROPERTIES SKIP_RETURN_CODE 42)
     message(VERBOSE "Skipping test ${_parsed_NAME_OF_TEST}: ${skip_message}")
 
@@ -294,7 +317,7 @@ function(_add_test_with_options)
     require_fixtures(${_parsed_NAME_OF_TEST} "${_parsed_ADDITIONAL_FIXTURES}")
   else()
     # Add the real test
-    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND bash -c "${_parsed_TEST_COMMAND}")
+    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND ${TEST_SHELL} -c "${_parsed_TEST_COMMAND}")
 
     require_fixtures(
       ${_parsed_NAME_OF_TEST} "${_parsed_ADDITIONAL_FIXTURES};${_parsed_CLEANUP_FIXTURES}"
@@ -1015,10 +1038,11 @@ endfunction()
 #                                 The supported version constraint operators are: >=, <=, >, <, ==
 #                                 If multiple dependencies are provided, all must be met for the test to run.
 #                                 Note that the version is the _internal_ version that 4C assigns to the dependency.
+#   EXCLUDE_PLATFORM:             Mark to not run the test on specific platform.
 function(four_c_test_nested_parallelism)
   set(options "")
   set(oneValueArgs TEST_FILE1 TEST_FILE2 RESTART_STEP TIMEOUT)
-  set(multiValueArgs LABELS REQUIRED_DEPENDENCIES)
+  set(multiValueArgs LABELS REQUIRED_DEPENDENCIES EXCLUDE_PLATFORM)
   cmake_parse_arguments(
     _parsed
     "${options}"
@@ -1053,6 +1077,12 @@ function(four_c_test_nested_parallelism)
       "mkdir -p ${test_directory} &&  ${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np 3 $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> --ngroup=2 --glayout=1,2 --nptype=separateInputFiles ${test_file_full_path1} ${test_directory}/xxx ${test_file_full_path2} ${test_directory}/xxxAdditional"
       )
 
+  # check if the platform is matched
+  set(skip_var FALSE)
+  if(CMAKE_SYSTEM_NAME IN_LIST _parsed_EXCLUDE_PLATFORM)
+    set(skip_var TRUE)
+  endif()
+
   _add_test_with_options(
     NAME_OF_TEST
     ${name_of_test}
@@ -1062,6 +1092,8 @@ function(four_c_test_nested_parallelism)
     3
     TIMEOUT
     "${_parsed_TIMEOUT}"
+    SKIP
+    "${skip_var}"
     LABELS
     "${_parsed_LABELS}"
     INPUT_FILE
@@ -1087,6 +1119,8 @@ function(four_c_test_nested_parallelism)
       3
       TIMEOUT
       "${_parsed_TIMEOUT}"
+      SKIP
+      "${skip_var}"
       LABELS
       "${_parsed_LABELS}"
       INPUT_FILE

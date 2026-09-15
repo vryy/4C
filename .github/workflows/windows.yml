@@ -2,13 +2,235 @@ name: Windows build test
 
 on:
   schedule:
-    # GitHub Actions cron runs in UTC only
-    # Example: 04:03 Berlin (UTC+1/UTC+2) converted to UTC
-    - cron: '3 2 * * 0'
+    - cron: 3 4 * * 0
+      timezone: "Europe/Berlin"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  placeholder:
+  build:
+    name: Build 4C on Windows
     runs-on: windows-latest
+    outputs:
+      msvc-version-hash: ${{ steps.msvc-version.outputs.hash }}
+
     steps:
-      - run: echo "Workflow registered"
+      - uses: actions/checkout@v7
+      - name: Set up MSVC
+
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Setup Intel Fortran
+        uses: fortran-lang/setup-fortran@v1
+        id: setup-fortran
+        with:
+          compiler: intel
+          version: "2026.1"
+
+      - name: Verify Intel Fortran
+        id: intel-version
+        shell: pwsh
+        run: |
+          $verInfo = (& ifx --version 2>&1 | Out-String).Trim()
+          Write-Host "$verInfo"
+          Write-Host "FC=$env:FC"
+          Write-Host "CC=$env:CC"
+          Write-Host "CXX=$env:CXX"
+          $stream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($verInfo))
+          $hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).Hash.ToLower()
+          "hash=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ runner.os }}-ccache
+          max-size: 4500M
+
+      - name: System preparation
+        shell: pwsh
+        run: |
+          ./dependencies/windows/prepare_system.ps1
+
+      - name: Get MSVC version
+        id: msvc-version
+        shell: pwsh
+        run: |
+          $version = (cl 2>&1 | Select-String "Compiler Version.*for" | Select-Object -First 1).Line
+          Write-Host "MSVC: $version"
+
+          $hash = [System.BitConverter]::ToString(
+            [System.Security.Cryptography.SHA256]::HashData(
+              [System.Text.Encoding]::UTF8.GetBytes($version)
+            )
+          ).Replace("-", "").ToLower()
+
+          "hash=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: Restore dependencies cache
+        id: cache-deps
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/opt
+          key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
+            './dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{
+            steps.intel-version.outputs.hash }}
+
+      - name: Compile and install the dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          Write-Host "Install the dependencies"
+          ./dependencies/windows/compile_dependencies.ps1
+
+      - name: Save dependencies cache
+        if: success() && steps.cache-deps.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/opt
+          key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
+            './dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{
+            steps.intel-version.outputs.hash }}
+
+      - name: Restore build cache
+        id: cache-build
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/build
+          key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{
+            steps.intel-version.outputs.hash }}
+
+      - name: Build 4C
+        if: steps.cache-build.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          Get-Location
+          cmake -B ~/build --fresh --preset=cl-release
+          cmake --build ~/build --target full
+
+      - name: Save build cache
+        if: success() && steps.cache-build.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/build
+          key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{
+            steps.intel-version.outputs.hash }}
+
+  test:
+    name: Test 4C on Windows
+    needs: build
+    runs-on: windows-latest
+    outputs:
+      msvc-version-hash: ${{ steps.msvc-version.outputs.hash }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Setup Intel Fortran
+        uses: fortran-lang/setup-fortran@v1
+        id: setup-fortran
+        with:
+          compiler: intel
+          version: "2026.1"
+
+      - name: Verify Intel Fortran
+        id: intel-version
+        shell: pwsh
+        run: |
+          $verInfo = (& ifx --version 2>&1 | Out-String).Trim()
+          Write-Host "$verInfo"
+          Write-Host "FC=$env:FC"
+          Write-Host "CC=$env:CC"
+          Write-Host "CXX=$env:CXX"
+          $stream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($verInfo))
+          $hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).Hash.ToLower()
+          "hash=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: System preparation
+        shell: pwsh
+        run: |
+          ./dependencies/windows/prepare_system.ps1
+
+      - name: Get MSVC version
+        id: msvc-version
+        shell: pwsh
+        run: |
+          $version = (cl 2>&1 | Select-String "Compiler Version.*for" | Select-Object -First 1).Line
+          Write-Host "MSVC: $version"
+
+          $hash = [System.BitConverter]::ToString(
+            [System.Security.Cryptography.SHA256]::HashData(
+              [System.Text.Encoding]::UTF8.GetBytes($version)
+            )
+          ).Replace("-", "").ToLower()
+
+          "hash=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: Check if the compiler differs from the build job
+        if: steps.msvc-version.outputs.hash != needs.build.outputs.msvc-version-hash
+        shell: pwsh
+        run: |
+          @"
+          ### Changed MSVC version!
+
+          The test job aborted because the MSVC compiler version changed
+          after the build job completed.
+
+          The compiler used by the test job is different from the one
+          used to build 4C.
+
+          This should rarely happen. A re-run of the workflow should
+          solve this problem.
+          "@ >> $env:GITHUB_STEP_SUMMARY
+
+          exit 1
+
+      - name: Restore dependencies cache
+        id: cache-deps
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/opt
+          key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
+            'dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{
+            steps.intel-version.outputs.hash }}
+
+      - name: Restore build cache
+        id: cache-build
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/build
+          key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{
+            steps.intel-version.outputs.hash }}
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          Write-Host "Running tests"
+
+          $jobs = 1
+
+          # 1. Instruct MS-MPI to print exact rank exit codes and internal errors
+          $env:MSMPI_VERBOSE = "2"
+
+          # 2. Prevent Windows from suppressing crash details
+          $env:MSMPI_DUMP_CORE = "1"
+
+          ctest `
+            --test-dir ~/build `
+            --build-config Release `
+            -j $jobs `
+            --output-on-failure `
+            --output-junit "$env:GITHUB_WORKSPACE/windows_assertions_test_report.xml"
+
+      - name: Upload test report
+        if: success() || failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows_assertions_test_report.xml
+          path: |
+            ${{ github.workspace }}/windows_assertions_test_report.xml
