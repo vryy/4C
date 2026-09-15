@@ -1,0 +1,75 @@
+{
+  "version": 5,
+  "configurePresets": [
+    {
+      "name": ".cl_base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "",
+        "CMAKE_LIBRARY_PATH": "",
+        "CMAKE_INSTALL_PREFIX": "$env{USERPROFILE}/opt/4C",
+        "CMAKE_CXX_FLAGS": "-Wno-deprecated-declarations",
+        "FOUR_C_ENABLE_WARNINGS_AS_ERRORS": "ON",
+        "FOUR_C_ENABLE_FE_TRAPPING": "OFF",
+        "FOUR_C_ENABLE_METADATA_GENERATION": "OFF",
+        "FOUR_C_BUILD_SHARED_LIBS": "ON",
+        "FOUR_C_ENABLE_LINKER_DETECTION": "OFF",
+        "FOUR_C_WITH_MPI": "ON",
+        "FOUR_C_WITH_GOOGLETEST": "OFF",
+        "FOUR_C_WITH_GOOGLE_BENCHMARK": "OFF",
+        "FOUR_C_ENABLE_DOXYGEN": "OFF",
+        "FOUR_C_ENABLE_DOCUMENTATION": "OFF",
+        "FOUR_C_DOXYGEN_USE_LOCAL_MATHJAX": "OFF",
+        "FOUR_C_TRILINOS_ROOT": "$env{USERPROFILE}/opt/trilinos",
+        "FOUR_C_BOOST_ROOT": "$env{USERPROFILE}/opt/boost",
+        "FOUR_C_QHULL_ROOT": "$env{USERPROFILE}/opt/qhull",
+        "FOUR_C_HDF5_ROOT": "$env{USERPROFILE}/opt/hdf5",
+        "HDF5_USE_STATIC_LIBRARIES": "ON",
+        "FOUR_C_CLN_ROOT": "$env{USERPROFILE}/opt/cln",
+        "FOUR_C_FFTW_ROOT": "$env{USERPROFILE}/opt/fftw",
+        "FOUR_C_WITH_ARBORX": "OFF",
+        "FOUR_C_WITH_BACKTRACE": "OFF",
+        "FOUR_C_WITH_MIRCO": "OFF",
+        "FOUR_C_WITH_DEAL_II": "OFF",
+        "FOUR_C_WITH_PYBIND11": "OFF",
+        "FOUR_C_WITH_VTK": "OFF",
+        "FOUR_C_WITH_GMSH": "OFF",
+        "FOUR_C_WITH_RYML": "ON",
+        "FOUR_C_WITH_FFTW": "ON",
+        "FOUR_C_WITH_PYTHON": "OFF",
+        "FOUR_C_ENABLE_PYTHON_BINDINGS": "OFF",
+        "FOUR_C_ZLIB_ROOT": "$env{USERPROFILE}/opt/zlib",
+        "ZLIB_ROOT": "$env{USERPROFILE}/opt/zlib",
+        "ZLIB_USE_STATIC_LIBS": "ON"
+      }
+    },
+    {
+      "name": "cl-release",
+      "displayName": "Release build for Microsoft Compiler",
+      "description": "Build release version for a Windows system.",
+      "inherits": [
+        ".cl_base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_FLAGS": "/std:c++20 /MP /EHsc /bigobj /wd4101 /wd4146 /wd4244 /wd4245 /wd4250 /wd4251 /wd4267 /wd4373 /wd4456 /wd4457 /wd4458 /wd4589 /wd4661 /wd4701 /wd4702 /wd4703 /wd4834 /wd4996 /wd5272",
+        "CMAKE_SHARED_LINKER_FLAGS": "/FORCE:MULTIPLE",
+        "CMAKE_EXE_LINKER_FLAGS": "/FORCE:MULTIPLE"
+      }
+    },
+    {
+      "name": "cl-debug",
+      "displayName": "Debug build for Microsoft Compiler",
+      "description": "Build debug version for a Windows system.",
+      "inherits": [
+        "cl-release"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ]
+}

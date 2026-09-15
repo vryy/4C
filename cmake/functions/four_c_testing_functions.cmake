@@ -282,11 +282,34 @@ function(_add_test_with_options)
     set(skip_message "The test ${_parsed_NAME_OF_TEST} is marked to be skipped")
   endif()
 
+  if(WIN32)
+    # Look specifically for Git Bash / MSYS2 bash, NOT WSL
+    find_program(
+      GIT_BASH_EXECUTABLE
+      NAMES bash
+      PATHS "C:/Program Files/Git/bin"
+            "C:/Program Files/Git/usr/bin"
+            "C:/Program Files (x86)/Git/bin"
+            "C:/msys64/usr/bin"
+      NO_DEFAULT_PATH
+      )
+
+    if(GIT_BASH_EXECUTABLE)
+      set(TEST_SHELL "${GIT_BASH_EXECUTABLE}")
+    else()
+      # Fallback to standard search if Git is in a custom path
+      find_program(TEST_SHELL bash)
+    endif()
+  else()
+    set(TEST_SHELL "bash")
+  endif()
+  # message(STATUS "TEST_SHELL: ${TEST_SHELL}")
+
   if(NOT skip_message STREQUAL "")
     # The dummy test needs to report a arbitrary error code that ctest interprets as "skipped".
     set(dummy_command "echo \"${skip_message}\"; exit 42")
     # Add a dummy test that just prints the skip message instead of the real test
-    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND bash -c "${dummy_command}")
+    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND ${TEST_SHELL} -c "${dummy_command}")
     set_tests_properties(${_parsed_NAME_OF_TEST} PROPERTIES SKIP_RETURN_CODE 42)
     message(VERBOSE "Skipping test ${_parsed_NAME_OF_TEST}: ${skip_message}")
 
@@ -294,7 +317,7 @@ function(_add_test_with_options)
     require_fixtures(${_parsed_NAME_OF_TEST} "${_parsed_ADDITIONAL_FIXTURES}")
   else()
     # Add the real test
-    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND bash -c "${_parsed_TEST_COMMAND}")
+    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND ${TEST_SHELL} -c "${_parsed_TEST_COMMAND}")
 
     require_fixtures(
       ${_parsed_NAME_OF_TEST} "${_parsed_ADDITIONAL_FIXTURES};${_parsed_CLEANUP_FIXTURES}"
