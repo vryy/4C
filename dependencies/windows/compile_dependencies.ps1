@@ -16,9 +16,9 @@ $curDir = $PWD.Path
 
 # .\install.bat "$env:DEP_DIR\parmetis"
 
-# cd $curDir/dependencies/windows/lapack
+cd $curDir/dependencies/windows/lapack
 
-# .\install.bat "$env:DEP_DIR\lapack"
+.\install.bat "$env:DEP_DIR\lapack"
 
 
 
@@ -35,3 +35,7 @@ cd $curDir/dependencies/windows/hdf5
 cd $curDir/dependencies/windows/netcdf
 
 .\install.bat "$env:DEP_DIR\netcdf"
+
+cd $curDir/dependencies/windows/suitesparse
+
+.\install.bat "$env:DEP_DIR\suitesparse"

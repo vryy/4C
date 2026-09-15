@@ -12,12 +12,12 @@ set "INSTALL_DIR=%~1"
 
 rem Number of procs for building (default 4 if not already set)
 if "%NPROCS%"=="" set "NPROCS=4"
-set "VERSION=3.12.1"
-set "CHECKSUM=2ca6407a001a474d4d4d35f3a61550156050c48016d949f0da0529c0aa052422"
+set "VERSION=7.14.0"
+set "CHECKSUM=c552c4b4bb7d0978796e57263a73295bca0c6b41ad137b45b4f264cfe9300fcb"
 set "ARCHIVE=v%VERSION%.tar.gz"
 
-rem Download lapack
-curl -s -L -o "%ARCHIVE%" "https://github.com/Reference-LAPACK/lapack/archive/refs/tags/%ARCHIVE%"
+rem Download suitesparse
+curl -s -L -o "%ARCHIVE%" "https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/%ARCHIVE%"
 if errorlevel 1 (
     echo Failed to download %ARCHIVE%
     exit /b 1
@@ -46,11 +46,11 @@ if errorlevel 1 (
 
 rem compiling
 
-set "LAPACK_HOME=%~dp0lapack-%VERSION%"
+set "SUITESPARSE_HOME=%~dp0SuiteSparse-%VERSION%"
 
-mkdir "lapack-%VERSION%-build"
+mkdir "suitesparse-%VERSION%-build"
 
-cd "lapack-%VERSION%-build"
+cd "suitesparse-%VERSION%-build"
 
 cmake ^
   -G "Ninja" ^
@@ -58,19 +58,22 @@ cmake ^
   -D CMAKE_INSTALL_PREFIX="%INSTALL_DIR%" ^
   -D CMAKE_C_COMPILER="cl.exe" ^
   -D CMAKE_CXX_COMPILER="cl.exe" ^
-  -D CMAKE_Fortran_COMPILER="ifx.exe" ^
-  -D CMAKE_Fortran_FLAGS="/names:lowercase /assume:underscore" ^
-  -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF ^
-  -D CMAKE_COLOR_MAKEFILE:BOOL=ON ^
+  -D CMAKE_SHARED_LINKER_FLAGS="/FORCE:MULTIPLE" ^
+  -D CMAKE_EXE_LINKER_FLAGS="/FORCE:MULTIPLE" ^
   -D BUILD_SHARED_LIBS:BOOL=OFF ^
-  -D CBLAS:BOOL=OFF ^
-  -D LAPACKE:BOOL=OFF ^
-  -D BUILD_SINGLE:BOOL=ON ^
-  -D BUILD_DOUBLE:BOOL=ON ^
-  -D BUILD_COMPLEX:BOOL=ON ^
-  -D BUILD_COMPLEX16:BOOL=ON ^
-  -D BUILD_DEPRECATED:BOOL=ON ^
-  %LAPACK_HOME%
+  -D BUILD_STATIC_LIBS:BOOL=ON ^
+  -D SUITESPARSE_USE_OPENMP:BOOL=ON ^
+  -D SUITESPARSE_USE_FORTRAN:BOOL=ON ^
+  -D BLAS_LIBRARIES="%USERPROFILE%/opt/lapack/lib/libblas.lib" ^
+  -D BLA_STATIC:BOOL=ON ^
+  -D BLA_VENDOR="Generic" ^
+  -D LAPACK_LIBRARIES="%USERPROFILE%/opt/lapack/lib/liblapack.lib" ^
+  -D SUITESPARSE_ENABLE_PROJECTS="suitesparse_config;amd;colamd;cholmod;umfpack" ^
+  -D SUITESPARSE_DEMOS:BOOL=ON ^
+  -D BUILD_TESTING:BOOL=ON ^
+  -D SUITESPARSE_USE_FORTRAN:BOOL=OFF ^
+  -D SUITESPARSE_C_TO_FORTRAN="(name,NAME) name##_" ^
+  %SUITESPARSE_HOME%
 
 ninja install -j%NPROCS%
 
@@ -79,8 +82,8 @@ rem
 cd ..
 
 rem Clean up downloaded and extracted artifacts
-del /f /q *.tar.gz 2>nul
-for /d %%D in (lapack*) do rmdir /s /q "%%D"
+del /f /q suitesparse*.tar.gz 2>nul
+for /d %%D in (suitesparse*) do rmdir /s /q "%%D"
 
 if !ERRORLEVEL! neq 0 (
     echo ERROR: install.bat failed with exit code !ERRORLEVEL!
