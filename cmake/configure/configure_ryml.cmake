@@ -5,6 +5,11 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+set(C4_LIBRARY_TYPE
+    "STATIC"
+    CACHE STRING "" FORCE
+    )
+
 message(STATUS "Fetch content for ryml")
 set(C4_LIBRARY_TYPE
     "STATIC"
