@@ -21,12 +21,6 @@ cd $curDir/dependencies/windows/lapack
 
 .\install.bat "$env:DEP_DIR\lapack"
 
-cd $curDir/dependencies/windows/suitesparse
-
-.\install.bat "$env:DEP_DIR\suitesparse"
-
-exit 1
-
 # cd $curDir/dependencies/windows/boost
 
 # .\install.bat "$env:DEP_DIR\boost"
@@ -46,6 +40,14 @@ cd $curDir/dependencies/windows/hdf5
 cd $curDir/dependencies/windows/netcdf
 
 .\install.bat "$env:DEP_DIR\netcdf"
+
+cd $curDir/dependencies/windows/qhull
+
+.\install.bat "$env:DEP_DIR\qhull"
+
+cd $curDir/dependencies/windows/fftw
+
+.\install.bat "$env:DEP_DIR\fftw"
 
 cd $curDir/dependencies/windows/suitesparse
 
