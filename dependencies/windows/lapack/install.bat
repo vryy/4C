@@ -47,6 +47,8 @@ if errorlevel 1 (
 rem compiling
 
 set "LAPACK_HOME=%~dp0lapack-%VERSION%"
+echo "LAPACK_HOME: " %LAPACK_HOME%
+echo "INSTALL_DIR: " %INSTALL_DIR%
 
 mkdir "lapack-%VERSION%-build"
 

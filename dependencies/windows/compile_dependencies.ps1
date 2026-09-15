@@ -34,26 +34,26 @@ Run .\install.bat "$env:DEP_DIR\lapack"
 
 # Run .\install.bat "$env:DEP_DIR\cln"
 
-cd $curDir/dependencies/windows/zlib
+# cd $curDir/dependencies/windows/zlib
 
-Run .\install.bat "$env:DEP_DIR\zlib"
+# Run .\install.bat "$env:DEP_DIR\zlib"
 
-cd $curDir/dependencies/windows/hdf5
+# cd $curDir/dependencies/windows/hdf5
 
-Run .\install.bat "$env:DEP_DIR\hdf5"
+# Run .\install.bat "$env:DEP_DIR\hdf5"
 
-cd $curDir/dependencies/windows/netcdf
+# cd $curDir/dependencies/windows/netcdf
 
-Run .\install.bat "$env:DEP_DIR\netcdf"
+# Run .\install.bat "$env:DEP_DIR\netcdf"
 
-cd $curDir/dependencies/windows/suitesparse
+# cd $curDir/dependencies/windows/suitesparse
 
-Run .\install.bat "$env:DEP_DIR\suitesparse"
+# Run .\install.bat "$env:DEP_DIR\suitesparse"
 
-cd $curDir/dependencies/windows/superlu_dist
+# cd $curDir/dependencies/windows/superlu_dist
 
-Run .\install.bat "$env:DEP_DIR\superlu_dist"
+# Run .\install.bat "$env:DEP_DIR\superlu_dist"
 
-cd $curDir/dependencies/windows/trilinos
+# cd $curDir/dependencies/windows/trilinos
 
-Run .\install.bat "$env:DEP_DIR\trilinos"
+# Run .\install.bat "$env:DEP_DIR\trilinos"
