@@ -109,9 +109,9 @@ rem Clean up downloaded and extracted artifacts
 del /f /q parmetis*.tar.gz 2>nul
 for /d %%D in (parmetis*) do rmdir /s /q "%%D"
 
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: install.bat failed with exit code %ERRORLEVEL%
-    exit /b %ERRORLEVEL%
+if !ERRORLEVEL! neq 0 (
+    echo ERROR: install.bat failed with exit code !ERRORLEVEL!
+    exit /b !ERRORLEVEL!
 )
 
 endlocal

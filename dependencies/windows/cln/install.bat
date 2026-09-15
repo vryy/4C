@@ -34,18 +34,18 @@ cmake ^
   -D CLN_USE_GMP:BOOL=OFF ^
   %CLN_HOME%
 
-@REM  ninja install -j%NPROCS%
+ninja install -j%NPROCS%
 
 rem
 
 cd ..
 
-@REM  rem Clean up downloaded and extracted artifacts
-@REM  for /d %%D in (cln*) do rmdir /s /q "%%D"
+rem Clean up downloaded and extracted artifacts
+for /d %%D in (cln*) do rmdir /s /q "%%D"
 
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: install.bat failed with exit code %ERRORLEVEL%
-    exit /b %ERRORLEVEL%
+if !ERRORLEVEL! neq 0 (
+    echo ERROR: install.bat failed with exit code !ERRORLEVEL!
+    exit /b !ERRORLEVEL!
 )
 
 endlocal

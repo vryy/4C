@@ -63,7 +63,7 @@ jobs:
         with:
           path: ${{ env.USERPROFILE }}/opt
           key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
-            './dependencies/windows/**/install.ps1') }}-msvc-${{ steps.msvc-version.outputs.hash }}
+            './dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}
 
       - name: Compile and install the dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
@@ -78,7 +78,7 @@ jobs:
         with:
           path: ${{ env.USERPROFILE }}/opt
           key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
-            './dependencies/windows/**/install.ps1') }}-msvc-${{ steps.msvc-version.outputs.hash }}
+            './dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}
 
     # - name: Restore build cache
     #   id: cache-build
@@ -158,7 +158,7 @@ jobs:
 #       with:
 #         path: ${{ env.USERPROFILE }}/opt
 #         key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
-#           'dependencies/windows/**/install.ps1') }}-msvc-${{ steps.msvc-version.outputs.hash }}
+#           'dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}
 
 #     - name: Restore build cache
 #       id: cache-build
