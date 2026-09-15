@@ -5,6 +5,12 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+# helper function to run and return on error
+function Run($cmd, $args) {
+    & $cmd $args
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
 # Exit the script at the first failure
 $ErrorActionPreference = 'Stop'
 
@@ -14,36 +20,40 @@ $curDir = $PWD.Path
 
 cd $curDir/dependencies/windows/parmetis
 
-.\install.bat "$env:DEP_DIR\parmetis"
+Run .\install.bat "$env:DEP_DIR\parmetis"
 
 cd $curDir/dependencies/windows/lapack
 
-.\install.bat "$env:DEP_DIR\lapack"
+Run .\install.bat "$env:DEP_DIR\lapack"
 
+# cd $curDir/dependencies/windows/boost
 
+# Run .\install.bat "$env:DEP_DIR\boost"
 
+# cd $curDir/dependencies/windows/cln
 
+# Run .\install.bat "$env:DEP_DIR\cln"
 
 cd $curDir/dependencies/windows/zlib
 
-.\install.bat "$env:DEP_DIR\zlib"
+Run .\install.bat "$env:DEP_DIR\zlib"
 
 cd $curDir/dependencies/windows/hdf5
 
-.\install.bat "$env:DEP_DIR\hdf5"
+Run .\install.bat "$env:DEP_DIR\hdf5"
 
 cd $curDir/dependencies/windows/netcdf
 
-.\install.bat "$env:DEP_DIR\netcdf"
+Run .\install.bat "$env:DEP_DIR\netcdf"
 
 cd $curDir/dependencies/windows/suitesparse
 
-.\install.bat "$env:DEP_DIR\suitesparse"
+Run .\install.bat "$env:DEP_DIR\suitesparse"
 
 cd $curDir/dependencies/windows/superlu_dist
 
-.\install.bat "$env:DEP_DIR\superlu_dist"
+Run .\install.bat "$env:DEP_DIR\superlu_dist"
 
 cd $curDir/dependencies/windows/trilinos
 
-.\install.bat "$env:DEP_DIR\trilinos"
+Run .\install.bat "$env:DEP_DIR\trilinos"
