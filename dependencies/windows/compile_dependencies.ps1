@@ -31,3 +31,7 @@ cd $curDir/dependencies/windows/zlib
 cd $curDir/dependencies/windows/hdf5
 
 .\install.bat "$env:DEP_DIR\hdf5"
+
+cd $curDir/dependencies/windows/netcdf
+
+.\install.bat "$env:DEP_DIR\netcdf"

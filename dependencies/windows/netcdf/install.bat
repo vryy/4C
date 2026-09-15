@@ -12,12 +12,12 @@ set "INSTALL_DIR=%~1"
 
 rem Number of procs for building (default 4 if not already set)
 if "%NPROCS%"=="" set "NPROCS=4"
-set "VERSION=2.2.0"
-set "CHECKSUM=5b8d75125ae7b4fef55d3b39e8d3dbfd238cdf63b6518afd67fa69ac80f06542"
-set "ARCHIVE=%VERSION%.tar.gz"
+set "VERSION=4.10.1"
+set "CHECKSUM=33c27231c478c3b35da7c7758fbdd02da1fe407abcb16ddfe195f69d164f930d"
+set "ARCHIVE=v%VERSION%.tar.gz"
 
-rem Download hdf5
-curl -s -L -o "%ARCHIVE%" "https://github.com/HDFGroup/hdf5/archive/refs/tags/%ARCHIVE%"
+rem Download netcdf
+curl -s -L -o "%ARCHIVE%" "https://github.com/Unidata/netcdf-c/archive/refs/tags/%ARCHIVE%"
 if errorlevel 1 (
     echo Failed to download %ARCHIVE%
     exit /b 1
@@ -46,29 +46,34 @@ if errorlevel 1 (
 
 rem compiling
 
-set "HDF5_HOME=%~dp0hdf5-%VERSION%"
+set "NETCDF_HOME=%~dp0netcdf-c-%VERSION%"
 
-mkdir "hdf5-%VERSION%-build"
+rem Do not use the Zlib find module of netcdf
+if exist %NETCDF_HOME%\cmake\modules\FindZLIB.cmake del %NETCDF_HOME%\cmake\modules\FindZLIB.cmake
 
-cd "hdf5-%VERSION%-build"
+mkdir "netcdf-c-%VERSION%-build"
+
+cd "netcdf-c-%VERSION%-build"
 
 cmake ^
   -G "Ninja" ^
   -D CMAKE_BUILD_TYPE:STRING="Release" ^
   -D CMAKE_INSTALL_PREFIX="%INSTALL_DIR%" ^
-  -D CMAKE_C_COMPILER="cl.exe" ^
-  -D CMAKE_CXX_COMPILER="cl.exe" ^
+  -D CMAKE_CXX_FLAGS:STRING="%CMAKE_CXX_FLAGS% -D_WIN32 /EHsc /MP" ^
+  -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF ^
+  -D CMAKE_COLOR_MAKEFILE:BOOL=ON ^
   -D BUILD_SHARED_LIBS:BOOL=OFF ^
-  -D BUILD_STATIC_LIBS:BOOL=ON ^
-  -D HDF5_BUILD_CPP_LIB:BOOL=ON ^
-  -D HDF5_BUILD_HL_LIB:BOOL=ON ^
-  -D HDF5_BUILD_TOOLS:BOOL=ON ^
-  -D HDF5_BUILD_UTILS:BOOL=ON ^
-  -D HDF5_DEFAULT_API_VERSION="v200" ^
-  -D HDF5_ENABLE_ZLIB_SUPPORT:BOOL=ON ^
-  -D HDF5_USE_ZLIB_STATIC:BOOL=ON ^
-  -D ZLIB_ROOT="%USERPROFILE%\opt\zlib" ^
-  %HDF5_HOME%
+  ^
+  -D NETCDF_ENABLE_HDF5=ON ^
+  -D HDF5_DIR="%USERPROFILE%/opt/hdf5/cmake" ^
+  -D HDF5_USE_STATIC_LIBRARIES=ON ^
+  -D ZLIB_ROOT="%USERPROFILE%/opt/zlib" ^
+  -D ZLIB_USE_STATIC_LIBS=ON ^
+  -D NETCDF_ENABLE_DAP=OFF ^
+  -D NETCDF_ENABLE_DAP2=OFF ^
+  -D NETCDF_ENABLE_DAP4=OFF ^
+  -D NETCDF_BUILD_UTILITIES=OFF ^
+  %NETCDF_HOME%
 
 ninja install -j%NPROCS%
 
@@ -77,8 +82,8 @@ rem
 cd ..
 
 rem Clean up downloaded and extracted artifacts
-del /f /q *.tar.gz 2>nul
-for /d %%D in (hdf5*) do rmdir /s /q "%%D"
+del /f /q netcdf*.tar.gz 2>nul
+for /d %%D in (netcdf*) do rmdir /s /q "%%D"
 
 if !ERRORLEVEL! neq 0 (
     echo ERROR: install.bat failed with exit code !ERRORLEVEL!

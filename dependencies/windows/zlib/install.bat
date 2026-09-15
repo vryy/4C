@@ -46,11 +46,11 @@ if errorlevel 1 (
 
 rem compiling
 
+set "ZLIB_HOME=%~dp0zlib-%VERSION%
+
 mkdir "zlib-%VERSION%-build"
 
 cd "zlib-%VERSION%-build"
-
-set "ZLIB_HOME=%~dp0zlib-%VERSION%"
 
 cmake ^
   -G "Ninja" ^
