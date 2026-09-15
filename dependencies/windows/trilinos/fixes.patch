@@ -1,0 +1,285 @@
+diff --git a/packages/intrepid2/src/Discretization/Basis/Intrepid2_DerivedBasis_HVOL_QUAD.hpp b/packages/intrepid2/src/Discretization/Basis/Intrepid2_DerivedBasis_HVOL_QUAD.hpp
+index b99bafb6c9a..c72d0dfc586 100644
+--- a/packages/intrepid2/src/Discretization/Basis/Intrepid2_DerivedBasis_HVOL_QUAD.hpp
++++ b/packages/intrepid2/src/Discretization/Basis/Intrepid2_DerivedBasis_HVOL_QUAD.hpp
+@@ -18,6 +18,10 @@
+ #ifndef Intrepid2_DerivedBasis_HVOL_QUAD_h
+ #define Intrepid2_DerivedBasis_HVOL_QUAD_h
+ 
++#ifdef _MSC_VER
++#define NOMINMAX
++#endif
++
+ #include "Intrepid2_TensorBasis.hpp"
+ #include "Intrepid2_LegendreBasis_HVOL_LINE.hpp"
+ 
+@@ -114,11 +118,11 @@ namespace Intrepid2
+      
+         \return Pointer to the new Basis object.
+      */
+-    virtual BasisPtr<typename Kokkos::HostSpace::device_type, typename BasisBase::OutputValueType, typename BasisBase::PointValueType>
+-    getHostBasis() const override {
+-      using HostBasisType  = Basis_Derived_HVOL_QUAD<typename HVOL_LINE::HostBasis>;
+-      return Teuchos::rcp( new HostBasisType(polyOrder_x_, polyOrder_y_, pointType_) );
+-    }
++    //virtual BasisPtr<typename Kokkos::HostSpace::device_type, typename BasisBase::OutputValueType, typename BasisBase::PointValueType>
++    //getHostBasis() const override {
++    //  using HostBasisType  = Basis_Derived_HVOL_QUAD<typename HVOL_LINE::HostBasis>;
++    //  return Teuchos::rcp( new HostBasisType(polyOrder_x_, polyOrder_y_, pointType_) );
++    //}
+   };
+ } // end namespace Intrepid2
+ 
+diff --git a/packages/muelu/src/Graph/MatrixTransformation/MueLu_DroppingCommon.hpp b/packages/muelu/src/Graph/MatrixTransformation/MueLu_DroppingCommon.hpp
+index b65b2302432..6f302d72906 100644
+--- a/packages/muelu/src/Graph/MatrixTransformation/MueLu_DroppingCommon.hpp
++++ b/packages/muelu/src/Graph/MatrixTransformation/MueLu_DroppingCommon.hpp
+@@ -590,7 +590,7 @@ KOKKOS_INLINE_FUNCTION void serialHeapSort(view_type& v, comparator_type compara
+     size_t root = start;
+     while (2 * root + 1 < end) {
+       size_t child = 2 * root + 1;
+-      if ((child + 1 < end) and (comparator(v(child), v(child + 1))))
++      if ((child + 1 < end) && (comparator(v(child), v(child + 1))))
+         ++child;
+ 
+       if (comparator(v(root), v(child))) {
+diff --git a/packages/muelu/src/Operators/MueLu_RefMaxwell_def.hpp b/packages/muelu/src/Operators/MueLu_RefMaxwell_def.hpp
+index 2ade4c1c128..5d9cd6f781e 100644
+--- a/packages/muelu/src/Operators/MueLu_RefMaxwell_def.hpp
++++ b/packages/muelu/src/Operators/MueLu_RefMaxwell_def.hpp
+@@ -1164,7 +1164,7 @@ void RefMaxwell<Scalar, LocalOrdinal, GlobalOrdinal, Node>::build22Matrix(const
+     }
+   }
+ 
+-  if (not A22_.is_null() and not disable_addon_22_ and spaceNumber_ > 1) {
++  if (!A22_.is_null() && !disable_addon_22_ && spaceNumber_ > 1) {
+     const Scalar one = Teuchos::ScalarTraits<Scalar>::one();
+ 
+     RCP<Matrix> addon22 = buildAddon(spaceNumber_ - 1);
+diff --git a/packages/tpetra/core/src/Tpetra_BlockCrsMatrix_def.hpp b/packages/tpetra/core/src/Tpetra_BlockCrsMatrix_def.hpp
+index 0a2ad8dd78a..9c06b92a056 100644
+--- a/packages/tpetra/core/src/Tpetra_BlockCrsMatrix_def.hpp
++++ b/packages/tpetra/core/src/Tpetra_BlockCrsMatrix_def.hpp
+@@ -2383,11 +2383,11 @@ void BlockCrsMatrix<Scalar, LO, GO, Node>::
+                            const LO* const lidsRaw     = const_cast<const LO*>(lidsOut.data());
+                            const Scalar* const valsRaw = reinterpret_cast<const Scalar*>(const_cast<const impl_scalar_type*>(valsOut.data()));
+                            if (combineMode == ADD) {
+-                             numCombd = this->sumIntoLocalValues(lclRow, lidsRaw, valsRaw, numEnt);
++                             numCombd = sumIntoLocalValues(lclRow, lidsRaw, valsRaw, numEnt);
+                            } else if (combineMode == INSERT || combineMode == REPLACE) {
+-                             numCombd = this->replaceLocalValues(lclRow, lidsRaw, valsRaw, numEnt);
++                             numCombd = replaceLocalValues(lclRow, lidsRaw, valsRaw, numEnt);
+                            } else if (combineMode == ABSMAX) {
+-                             numCombd = this->absMaxLocalValues(lclRow, lidsRaw, valsRaw, numEnt);
++                             numCombd = absMaxLocalValues(lclRow, lidsRaw, valsRaw, numEnt);
+                            }
+ 
+                            if (static_cast<LO>(numEnt) != numCombd) {
+diff --git a/packages/tpetra/core/src/Tpetra_CrsGraph_def.hpp b/packages/tpetra/core/src/Tpetra_CrsGraph_def.hpp
+index cb0fe481e04..eff35e0218d 100644
+--- a/packages/tpetra/core/src/Tpetra_CrsGraph_def.hpp
++++ b/packages/tpetra/core/src/Tpetra_CrsGraph_def.hpp
+@@ -5360,7 +5360,7 @@ void CrsGraph<LocalOrdinal, GlobalOrdinal, Node>::
+           Kokkos::atomic_add(&errCountView(), ONE);
+           numPacketsPerLID_raw[i] = 0;
+         } else {
+-          const size_t numEnt     = this->getNumEntriesInGlobalRow(gblRow);
++          const size_t numEnt     = getNumEntriesInGlobalRow(gblRow);
+           numPacketsPerLID_raw[i] = numEnt;
+           curTotalNumPackets += numEnt;
+         }
+@@ -5404,7 +5404,7 @@ void CrsGraph<LocalOrdinal, GlobalOrdinal, Node>::
+                           const size_t curOffset = exportsOffset;
+                           const GO gblRow        = rowMap.getGlobalElement(exportLIDs_raw[i]);
+                           const RowInfo rowInfo =
+-                              this->getRowInfoFromGlobalRowIndex(gblRow);
++                              getRowInfoFromGlobalRowIndex(gblRow);
+ 
+                           using TDO = Tpetra::Details::OrdinalTraits<size_t>;
+                           if (rowInfo.localRow == TDO::invalid()) {
+@@ -5429,7 +5429,7 @@ void CrsGraph<LocalOrdinal, GlobalOrdinal, Node>::
+                             Kokkos::atomic_add(&errCountView(), ONE);
+                           } else {
+                             const LO numEnt = static_cast<LO>(rowInfo.numEntries);
+-                            if (this->isLocallyIndexed()) {
++                            if (isLocallyIndexed()) {
+                               auto lclColInds = getLocalIndsViewHost(rowInfo);
+                               if (final) {
+                                 for (LO k = 0; k < numEnt; ++k) {
+@@ -5442,7 +5442,7 @@ void CrsGraph<LocalOrdinal, GlobalOrdinal, Node>::
+                                 }  // for each entry in the row
+                               }    // final pass?
+                               exportsOffset = curOffset + numEnt;
+-                            } else if (this->isGloballyIndexed()) {
++                            } else if (isGloballyIndexed()) {
+                               auto gblColInds = getGlobalIndsViewHost(rowInfo);
+                               if (final) {
+                                 for (LO k = 0; k < numEnt; ++k) {
+@@ -5629,7 +5629,7 @@ void CrsGraph<LocalOrdinal, GlobalOrdinal, Node>::
+                             return;
+                           }
+ 
+-                          const RowInfo rowInfo = this->getRowInfoFromGlobalRowIndex(gblRow);
++                          const RowInfo rowInfo = getRowInfoFromGlobalRowIndex(gblRow);
+                           if (rowInfo.localRow == Details::OrdinalTraits<size_t>::invalid()) {
+                             if (verbose) {
+                               std::ostringstream os;
+@@ -5657,7 +5657,7 @@ void CrsGraph<LocalOrdinal, GlobalOrdinal, Node>::
+                           }
+ 
+                           const LO numEnt = static_cast<LO>(rowInfo.numEntries);
+-                          if (this->isLocallyIndexed()) {
++                          if (isLocallyIndexed()) {
+                             auto lclColInds = getLocalIndsViewHost(rowInfo);
+                             if (final) {
+                               for (LO k = 0; k < numEnt; ++k) {
+@@ -5670,7 +5670,7 @@ void CrsGraph<LocalOrdinal, GlobalOrdinal, Node>::
+                               }  // for each entry in the row
+                             }    // final pass?
+                             exportsOffset = curOffset + numEnt;
+-                          } else if (this->isGloballyIndexed()) {
++                          } else if (isGloballyIndexed()) {
+                             auto gblColInds = getGlobalIndsViewHost(rowInfo);
+                             if (final) {
+                               for (LO k = 0; k < numEnt; ++k) {
+diff --git a/packages/tpetra/core/src/Tpetra_CrsSingletonFilter_LinearProblem_def.hpp b/packages/tpetra/core/src/Tpetra_CrsSingletonFilter_LinearProblem_def.hpp
+index ac7038ab42d..ac7521c11a9 100644
+--- a/packages/tpetra/core/src/Tpetra_CrsSingletonFilter_LinearProblem_def.hpp
++++ b/packages/tpetra/core/src/Tpetra_CrsSingletonFilter_LinearProblem_def.hpp
+@@ -965,8 +965,6 @@ void CrsSingletonFilter_LinearProblem<Scalar, LocalOrdinal, GlobalOrdinal, Node>
+   TEUCHOS_TEST_FOR_EXCEPTION_CLASS_FUNC(Problem->getLHS() == Teuchos::null,
+                                         std::runtime_error, "Need a LHS.");
+ 
+-  Scalar zero = Teuchos::ScalarTraits<Scalar>::zero();
+-
+   // Generate reduced row and column maps
+   if (SingletonsDetected()) {
+     ReducedMatrixRowMap_ = GenerateReducedMap(FullMatrixRowMap(), RowMapColors_, 0);
+@@ -1059,7 +1057,7 @@ void CrsSingletonFilter_LinearProblem<Scalar, LocalOrdinal, GlobalOrdinal, Node>
+           GetRow(i, NumEntries, Values, localIndices);  // Get current row
+           if (NumEntries == 1) {
+             Scalar pivot = Values[0];
+-            TEUCHOS_TEST_FOR_EXCEPTION_CLASS_FUNC(pivot == zero, std::runtime_error,
++            TEUCHOS_TEST_FOR_EXCEPTION_CLASS_FUNC(pivot == 0.0, std::runtime_error,
+                                                   "Encountered zero row, unable to continue.");  // Should improve this comparison to zero.
+             LocalOrdinal indX = localIndices[0];
+             for (LocalOrdinal j = 0; j < NumVectors; j++) {
+@@ -1072,7 +1070,7 @@ void CrsSingletonFilter_LinearProblem<Scalar, LocalOrdinal, GlobalOrdinal, Node>
+             for (size_t j = 0; j < NumEntries; j++) {
+               if (localIndices[j] == targetCol) {
+                 Scalar pivot = Values[j];
+-                TEUCHOS_TEST_FOR_EXCEPTION_CLASS_FUNC(pivot == zero, std::runtime_error,
++                TEUCHOS_TEST_FOR_EXCEPTION_CLASS_FUNC(pivot == 0.0, std::runtime_error,
+                                                       "Encountered zero column, unable to continue.");  // Should improve this comparison to zero.
+                 ColSingletonPivotLIDs_[ColSingletonCounter] = j;
+                 ColSingletonPivots_[ColSingletonCounter]    = pivot;
+@@ -1260,8 +1258,6 @@ void CrsSingletonFilter_LinearProblem<Scalar, LocalOrdinal, GlobalOrdinal, Node>
+   TEUCHOS_TEST_FOR_EXCEPTION_CLASS_FUNC(Problem->getLHS() == Teuchos::null,
+                                         std::runtime_error, "Need a LHS.");
+ 
+-  Scalar zero = Teuchos::ScalarTraits<Scalar>::zero();
+-
+   if (SingletonsDetected()) {
+     // Create pointer to Full RHS, LHS
+     Teuchos::RCP<multivector_type> FullRHS = FullProblem()->getRHS();
+@@ -1307,7 +1303,7 @@ void CrsSingletonFilter_LinearProblem<Scalar, LocalOrdinal, GlobalOrdinal, Node>
+           GetRow(i, NumEntries, Values, localIndices);  // Get current row
+           if (NumEntries == 1) {
+             Scalar pivot = Values[0];
+-            TEUCHOS_TEST_FOR_EXCEPTION_CLASS_FUNC(pivot == zero, std::runtime_error,
++            TEUCHOS_TEST_FOR_EXCEPTION_CLASS_FUNC(pivot == 0.0, std::runtime_error,
+                                                   "Encountered zero row, unable to continue.");  // Should improve this comparison to zero.
+             LocalOrdinal indX = localIndices[0];
+             for (LocalOrdinal j = 0; j < NumVectors; j++) {
+@@ -1319,7 +1315,7 @@ void CrsSingletonFilter_LinearProblem<Scalar, LocalOrdinal, GlobalOrdinal, Node>
+             LocalOrdinal j = ColSingletonPivotLIDs_[ColSingletonCounter];
+ 
+             Scalar pivot = Values[j];
+-            TEUCHOS_TEST_FOR_EXCEPTION_CLASS_FUNC(pivot == zero, std::runtime_error,
++            TEUCHOS_TEST_FOR_EXCEPTION_CLASS_FUNC(pivot == 0.0, std::runtime_error,
+                                                   "Encountered zero column, unable to continue.");  // Should improve this comparison to zero.
+             ColSingletonPivots_[ColSingletonCounter] = pivot;
+             ColSingletonCounter++;
+diff --git a/packages/tpetra/core/src/Tpetra_LinearProblem_def.hpp b/packages/tpetra/core/src/Tpetra_LinearProblem_def.hpp
+index 7bf5a984fef..4235a6a5c6c 100644
+--- a/packages/tpetra/core/src/Tpetra_LinearProblem_def.hpp
++++ b/packages/tpetra/core/src/Tpetra_LinearProblem_def.hpp
+@@ -126,7 +126,7 @@ bool LinearProblem<Scalar, LocalOrdinal, GlobalOrdinal, Node>::
+     this->checkInput();
+     src->checkInput();
+ 
+-    return ((this->A_->getDomainMap() == src->getMatrix()->getDomainMap()) and
++    return ((this->A_->getDomainMap() == src->getMatrix()->getDomainMap()) &&
+             (this->A_->getRangeMap() == src->getMatrix()->getRangeMap()));
+   }
+ }
+diff --git a/packages/xpetra/src/BlockedCrsMatrix/Xpetra_BlockedCrsMatrix_def.hpp b/packages/xpetra/src/BlockedCrsMatrix/Xpetra_BlockedCrsMatrix_def.hpp
+index 7f7ec177162..b1ee74971f8 100644
+--- a/packages/xpetra/src/BlockedCrsMatrix/Xpetra_BlockedCrsMatrix_def.hpp
++++ b/packages/xpetra/src/BlockedCrsMatrix/Xpetra_BlockedCrsMatrix_def.hpp
+@@ -1255,7 +1255,7 @@ template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+ #if KOKKOS_VERSION >= 40799
+ typename Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>::local_matrix_type::host_mirror_type BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>::getLocalMatrixHost() const {
+ #else
+-typename Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>::local_matrix_type::HostMirror BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>::getLocalMatrixHost() const {
++typename Xpetra::BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>::local_matrix_type::HostMirror BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>::getLocalMatrixHost() const {
+ #endif
+   if (Rows() == 1 && Cols() == 1) {
+     return getMatrix(0, 0)->getLocalMatrixHost();
+diff --git a/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybrid2GL.hpp b/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybrid2GL.hpp
+index 08ddd3725ae..3870eac1dc7 100644
+--- a/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybrid2GL.hpp
++++ b/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybrid2GL.hpp
+@@ -46,6 +46,23 @@
+ 
+ namespace Zoltan2{
+ 
++#ifdef _WIN32
++inline int gettimeofday(struct timeval* tp, void* tzp) {
++    // Note: timezone is generally unused (NULL)
++    (void)tzp;
++    if (tp) {
++        FILETIME ft;
++        GetSystemTimeAsFileTime(&ft);
++        // Convert 100-nanosecond intervals (since Jan 1, 1601) to microseconds (since Jan 1, 1970)
++        unsigned long long intervals = ((unsigned long long)ft.dwHighDateTime << 32) | ft.dwLowDateTime;
++        intervals -= 116444736000000000ULL; // Difference between 1601 and 1970
++        tp->tv_sec = (long)(intervals / 10000000ULL);
++        tp->tv_usec = (long)((intervals % 10000000ULL) / 10ULL);
++    }
++    return 0;
++}
++#endif
++
+ template <typename Adapter>
+ class AlgTwoGhostLayer : public Algorithm<Adapter> {
+ 
+diff --git a/packages/zoltan2/core/src/input/Zoltan2_TpetraRowGraphAdapter.hpp b/packages/zoltan2/core/src/input/Zoltan2_TpetraRowGraphAdapter.hpp
+index 1b33eb07809..6bd5cea305c 100644
+--- a/packages/zoltan2/core/src/input/Zoltan2_TpetraRowGraphAdapter.hpp
++++ b/packages/zoltan2/core/src/input/Zoltan2_TpetraRowGraphAdapter.hpp
+@@ -21,6 +21,9 @@
+ #include <Zoltan2_PartitioningHelpers.hpp>
+ #include <Zoltan2_StridedData.hpp>
+ #include <string>
++#ifdef _MSC_VER
++#include <ciso646>
++#endif
+ 
+ namespace Zoltan2 {
+ 
+diff --git a/packages/zoltan2/core/src/models/Zoltan2_CoordinateModel.hpp b/packages/zoltan2/core/src/models/Zoltan2_CoordinateModel.hpp
+index 0e544fcf7ea..e0ce913730a 100644
+--- a/packages/zoltan2/core/src/models/Zoltan2_CoordinateModel.hpp
++++ b/packages/zoltan2/core/src/models/Zoltan2_CoordinateModel.hpp
+@@ -15,6 +15,10 @@
+ #ifndef _ZOLTAN2_COORDINATEMODEL_HPP_
+ #define _ZOLTAN2_COORDINATEMODEL_HPP_
+ 
++#ifdef _MSC_VER
++#include <ciso646>
++#endif
++
+ #include <Zoltan2_Model.hpp>
+ #include <Zoltan2_MeshAdapter.hpp>
+ #include <Zoltan2_MatrixAdapter.hpp>
