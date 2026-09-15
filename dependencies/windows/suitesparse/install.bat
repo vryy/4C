@@ -15,6 +15,8 @@ if "%NPROCS%"=="" set "NPROCS=4"
 set "VERSION=7.14.0"
 set "CHECKSUM=c552c4b4bb7d0978796e57263a73295bca0c6b41ad137b45b4f264cfe9300fcb"
 set "ARCHIVE=v%VERSION%.tar.gz"
+set "USER_DIR=%USERPROFILE:\=\\%"
+set "LIB_DIR=%USER_DIR%\\temp"
 
 rem Download suitesparse
 curl -s -L -o "%ARCHIVE%" "https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/%ARCHIVE%"
@@ -64,10 +66,10 @@ cmake ^
   -D BUILD_STATIC_LIBS:BOOL=ON ^
   -D SUITESPARSE_USE_OPENMP:BOOL=ON ^
   -D SUITESPARSE_USE_FORTRAN:BOOL=ON ^
-  -D BLAS_LIBRARIES="%USERPROFILE%/opt/lapack/lib/libblas.lib" ^
+  -D BLAS_LIBRARIES="%LIB_DIR%\\lapack\\lib\\libblas.lib" ^
   -D BLA_STATIC:BOOL=ON ^
   -D BLA_VENDOR="Generic" ^
-  -D LAPACK_LIBRARIES="%USERPROFILE%/opt/lapack/lib/liblapack.lib" ^
+  -D LAPACK_LIBRARIES="%LIB_DIR%\\lapack\\lib\\liblapack.lib" ^
   -D SUITESPARSE_ENABLE_PROJECTS="suitesparse_config;amd;colamd;cholmod;umfpack" ^
   -D SUITESPARSE_DEMOS:BOOL=ON ^
   -D BUILD_TESTING:BOOL=ON ^
@@ -84,6 +86,14 @@ cd ..
 rem Clean up downloaded and extracted artifacts
 del /f /q suitesparse*.tar.gz 2>nul
 for /d %%D in (suitesparse*) do rmdir /s /q "%%D"
+
+rem rename the installed file (from*_static.lib to *.lib)
+
+cd %INSTALL_DIR%\lib
+for %%F in (*_static.lib) do (
+    set "filename=%%~nF"
+    ren "%%F" "!filename:~0,-7!.lib"
+)
 
 if !ERRORLEVEL! neq 0 (
     echo ERROR: install.bat failed with exit code !ERRORLEVEL!

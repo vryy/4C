@@ -12,9 +12,9 @@ $env:DEP_DIR = "$env:USERPROFILE\opt"
 
 $curDir = $PWD.Path
 
-# cd $curDir/dependencies/windows/parmetis
+cd $curDir/dependencies/windows/parmetis
 
-# .\install.bat "$env:DEP_DIR\parmetis"
+.\install.bat "$env:DEP_DIR\parmetis"
 
 cd $curDir/dependencies/windows/lapack
 
@@ -43,3 +43,7 @@ cd $curDir/dependencies/windows/suitesparse
 cd $curDir/dependencies/windows/superlu_dist
 
 .\install.bat "$env:DEP_DIR\superlu_dist"
+
+cd $curDir/dependencies/windows/trilinos
+
+.\install.bat "$env:DEP_DIR\trilinos"
