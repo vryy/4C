@@ -16,7 +16,7 @@ set "VERSION=7.14.0"
 set "CHECKSUM=c552c4b4bb7d0978796e57263a73295bca0c6b41ad137b45b4f264cfe9300fcb"
 set "ARCHIVE=v%VERSION%.tar.gz"
 set "USER_DIR=%USERPROFILE:\=\\%"
-set "LIB_DIR=%USER_DIR%\\temp"
+set "LIB_DIR=%USER_DIR%\\opt"
 
 rem Download suitesparse
 curl -s -L -o "%ARCHIVE%" "https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/%ARCHIVE%"
