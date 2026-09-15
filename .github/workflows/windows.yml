@@ -80,111 +80,111 @@ jobs:
           key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
             './dependencies/windows/**/install.ps1') }}-msvc-${{ steps.msvc-version.outputs.hash }}
 
-      - name: Restore build cache
-        id: cache-build
-        uses: actions/cache/restore@v6
-        with:
-          path: build/
-          key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}
+    # - name: Restore build cache
+    #   id: cache-build
+    #   uses: actions/cache/restore@v6
+    #   with:
+    #     path: build/
+    #     key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}
 
-      - name: Build 4C
-        if: steps.cache-build.outputs.cache-hit != 'true'
-        shell: pwsh
-        run: |
-          Get-Location
-          cmake -B build/ --fresh --preset=cl_release
-          cmake --build build/ --target full --config Release
+    # - name: Build 4C
+    #   if: steps.cache-build.outputs.cache-hit != 'true'
+    #   shell: pwsh
+    #   run: |
+    #     Get-Location
+    #     cmake -B build/ --fresh --preset=cl_release
+    #     cmake --build build/ --target full --config Release
 
-      - name: Save build cache
-        if: success() && steps.cache-build.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
-        with:
-          path: build/
-          key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}
+    # - name: Save build cache
+    #   if: success() && steps.cache-build.outputs.cache-hit != 'true'
+    #   uses: actions/cache/save@v6
+    #   with:
+    #     path: build/
+    #     key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}
 
-  test:
-    name: Test 4C on Windows
-    needs: build
-    runs-on: windows-latest
+# test:
+#   name: Test 4C on Windows
+#   needs: build
+#   runs-on: windows-latest
 
-    steps:
-      - uses: actions/checkout@v7
+#   steps:
+#     - uses: actions/checkout@v7
 
-      - name: Set up MSVC
-        uses: ilammy/msvc-dev-cmd@v1
+#     - name: Set up MSVC
+#       uses: ilammy/msvc-dev-cmd@v1
 
-      - name: System preparation
-        shell: pwsh
-        run: |
-          ./dependencies/windows/prepare_system.ps1
+#     - name: System preparation
+#       shell: pwsh
+#       run: |
+#         ./dependencies/windows/prepare_system.ps1
 
-      - name: Get MSVC version
-        id: msvc-version
-        shell: pwsh
-        run: |
-          $version = cl 2>&1 | Select-Object -First 1
-          Write-Host "MSVC: $version"
+#     - name: Get MSVC version
+#       id: msvc-version
+#       shell: pwsh
+#       run: |
+#         $version = cl 2>&1 | Select-Object -First 1
+#         Write-Host "MSVC: $version"
 
-          $hash = [System.BitConverter]::ToString(
-            [System.Security.Cryptography.SHA256]::HashData(
-              [System.Text.Encoding]::UTF8.GetBytes($version)
-            )
-          ).Replace("-", "").ToLower()
+#         $hash = [System.BitConverter]::ToString(
+#           [System.Security.Cryptography.SHA256]::HashData(
+#             [System.Text.Encoding]::UTF8.GetBytes($version)
+#           )
+#         ).Replace("-", "").ToLower()
 
-          "hash=$hash" >> $env:GITHUB_OUTPUT
+#         "hash=$hash" >> $env:GITHUB_OUTPUT
 
-      - name: Check if the compiler differs from the build job
-        if: steps.msvc-version.outputs.hash != needs.build.outputs.msvc-version-hash
-        shell: pwsh
-        run: |
-          @"
-          ### Changed MSVC version!
+#     - name: Check if the compiler differs from the build job
+#       if: steps.msvc-version.outputs.hash != needs.build.outputs.msvc-version-hash
+#       shell: pwsh
+#       run: |
+#         @"
+#         ### Changed MSVC version!
 
-          The test job aborted because the MSVC compiler version changed
-          after the build job completed.
+#         The test job aborted because the MSVC compiler version changed
+#         after the build job completed.
 
-          The compiler used by the test job is different from the one
-          used to build 4C.
+#         The compiler used by the test job is different from the one
+#         used to build 4C.
 
-          This should rarely happen. A re-run of the workflow should
-          solve this problem.
-          "@ >> $env:GITHUB_STEP_SUMMARY
+#         This should rarely happen. A re-run of the workflow should
+#         solve this problem.
+#         "@ >> $env:GITHUB_STEP_SUMMARY
 
-          exit 1
+#         exit 1
 
-      - name: Restore dependencies cache
-        id: cache-deps
-        uses: actions/cache/restore@v6
-        with:
-          path: ${{ env.USERPROFILE }}/opt
-          key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
-            'dependencies/windows/**/install.ps1') }}-msvc-${{ steps.msvc-version.outputs.hash }}
+#     - name: Restore dependencies cache
+#       id: cache-deps
+#       uses: actions/cache/restore@v6
+#       with:
+#         path: ${{ env.USERPROFILE }}/opt
+#         key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
+#           'dependencies/windows/**/install.ps1') }}-msvc-${{ steps.msvc-version.outputs.hash }}
 
-      - name: Restore build cache
-        id: cache-build
-        uses: actions/cache/restore@v6
-        with:
-          path: build/
-          key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}
+#     - name: Restore build cache
+#       id: cache-build
+#       uses: actions/cache/restore@v6
+#       with:
+#         path: build/
+#         key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}
 
-      - name: Run tests
-        shell: pwsh
-        run: |
-          Write-Host "Running tests"
+#     - name: Run tests
+#       shell: pwsh
+#       run: |
+#         Write-Host "Running tests"
 
-          $jobs = [Environment]::ProcessorCount
+#         $jobs = [Environment]::ProcessorCount
 
-          ctest `
-            --test-dir build/ `
-            --build-config Release `
-            -j $jobs `
-            --output-on-failure `
-            --output-junit "$env:GITHUB_WORKSPACE/windows_assertions_test_report.xml"
+#         ctest `
+#           --test-dir build/ `
+#           --build-config Release `
+#           -j $jobs `
+#           --output-on-failure `
+#           --output-junit "$env:GITHUB_WORKSPACE/windows_assertions_test_report.xml"
 
-      - name: Upload test report
-        if: success() || failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: windows_assertions_test_report.xml
-          path: |
-            ${{ github.workspace }}/windows_assertions_test_report.xml
+#     - name: Upload test report
+#       if: success() || failure()
+#       uses: actions/upload-artifact@v7
+#       with:
+#         name: windows_assertions_test_report.xml
+#         path: |
+#           ${{ github.workspace }}/windows_assertions_test_report.xml

@@ -15,3 +15,7 @@ $curDir = $PWD.Path
 cd $curDir/dependencies/windows/parmetis
 
 .\install.bat "$env:DEP_DIR\parmetis"
+
+cd $curDir/dependencies/windows/lapack
+
+.\install.bat "$env:DEP_DIR\lapack"
