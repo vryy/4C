@@ -104,11 +104,15 @@ for /d %%D in (suitesparse*) do rmdir /s /q "%%D"
 
 rem rename the installed file (from*_static.lib to *.lib)
 
-cd %INSTALL_DIR%\lib
+echo "INSTALL_DIR: %INSTALL_DIR%"
+cd "%INSTALL_DIR%\lib"
+dir
+echo "Renaming files"
 for %%F in (*_static.lib) do (
     set "filename=%%~nF"
     ren "%%F" "!filename:~0,-7!.lib"
 )
+dir
 
 if !ERRORLEVEL! neq 0 (
     echo ERROR: install.bat failed with exit code !ERRORLEVEL!

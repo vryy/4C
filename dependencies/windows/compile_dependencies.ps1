@@ -21,6 +21,12 @@ cd $curDir/dependencies/windows/lapack
 
 .\install.bat "$env:DEP_DIR\lapack"
 
+cd $curDir/dependencies/windows/suitesparse
+
+.\install.bat "$env:DEP_DIR\suitesparse"
+
+exit 1
+
 # cd $curDir/dependencies/windows/boost
 
 # .\install.bat "$env:DEP_DIR\boost"
