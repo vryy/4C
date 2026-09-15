@@ -54,6 +54,11 @@ mkdir "suitesparse-%VERSION%-build"
 
 cd "suitesparse-%VERSION%-build"
 
+dir "%LIB_DIR%\\lapack\\lib\\libblas.lib"
+dir "%LIB_DIR%\\lapack\\lib\\liblapack.lib"
+dir "C:/Users/runneradmin/opt/lapack/lib/libblas.lib"
+dir "C:/Users/runneradmin/opt/lapack/lib/liblapack.lib"
+
 cmake ^
   -G "Ninja" ^
   -D CMAKE_BUILD_TYPE:STRING="Release" ^
