@@ -30,12 +30,15 @@ jobs:
           version: "2026.1"
 
       - name: Verify Intel Fortran
+        id: intel-version
         shell: pwsh
         run: |
           ifx --version
           Write-Host "FC=$env:FC"
           Write-Host "CC=$env:CC"
           Write-Host "CXX=$env:CXX"
+          VERSION=$("${{ steps.setup-fortran.outputs.fc }}" --version | head -n 1)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: System preparation
         shell: pwsh
@@ -63,7 +66,8 @@ jobs:
         with:
           path: ${{ env.USERPROFILE }}/opt
           key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
-            './dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}
+            './dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{
+            steps.intel-version.outputs.hash }}
 
       - name: Compile and install the dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
@@ -78,14 +82,15 @@ jobs:
         with:
           path: ${{ env.USERPROFILE }}/opt
           key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
-            './dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}
+            './dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{
+            steps.intel-version.outputs.hash }}
 
     # - name: Restore build cache
     #   id: cache-build
     #   uses: actions/cache/restore@v6
     #   with:
     #     path: build/
-    #     key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}
+    #     key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{ steps.intel-version.outputs.hash }}
 
     # - name: Build 4C
     #   if: steps.cache-build.outputs.cache-hit != 'true'
@@ -100,18 +105,36 @@ jobs:
     #   uses: actions/cache/save@v6
     #   with:
     #     path: build/
-    #     key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}
+    #     key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{ steps.intel-version.outputs.hash }}
 
-# test:
-#   name: Test 4C on Windows
-#   needs: build
-#   runs-on: windows-latest
+    # test:
+    #   name: Test 4C on Windows
+    #   needs: build
+    #   runs-on: windows-latest
 
-#   steps:
-#     - uses: actions/checkout@v7
+    #   steps:
+    #     - uses: actions/checkout@v7
 
-#     - name: Set up MSVC
-#       uses: ilammy/msvc-dev-cmd@v1
+    #     - name: Set up MSVC
+    #       uses: ilammy/msvc-dev-cmd@v1
+
+    # - name: Setup Intel Fortran
+    #   uses: fortran-lang/setup-fortran@v1
+    #   id: setup-fortran
+    #   with:
+    #     compiler: intel
+    #     version: "2026.1"
+
+    # - name: Verify Intel Fortran
+    #   id: intel-version
+    #   shell: pwsh
+    #   run: |
+    #     ifx --version
+    #     Write-Host "FC=$env:FC"
+    #     Write-Host "CC=$env:CC"
+    #     Write-Host "CXX=$env:CXX"
+    #     VERSION=$("${{ steps.setup-fortran.outputs.fc }}" --version | head -n 1)
+    #     echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
 #     - name: System preparation
 #       shell: pwsh
@@ -158,14 +181,14 @@ jobs:
 #       with:
 #         path: ${{ env.USERPROFILE }}/opt
 #         key: ${{ runner.os }}-deps-${{ hashFiles('./dependencies/windows/compile_dependencies.ps1',
-#           'dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}
+#           'dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{ steps.intel-version.outputs.hash }}
 
 #     - name: Restore build cache
 #       id: cache-build
 #       uses: actions/cache/restore@v6
 #       with:
 #         path: build/
-#         key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}
+#         key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{ steps.intel-version.outputs.hash }}
 
 #     - name: Run tests
 #       shell: pwsh
