@@ -33,12 +33,15 @@ jobs:
         id: intel-version
         shell: pwsh
         run: |
-          ifx --version
+          $verInfo = (& ifx --version 2>&1 | Out-String).Trim()
+          Write-Host "$verInfo"
           Write-Host "FC=$env:FC"
           Write-Host "CC=$env:CC"
           Write-Host "CXX=$env:CXX"
-          $ver = (& "${{ steps.setup-fortran.outputs.fc }}" --version | Select-Object -First 1)
-          "version=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          $stream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($verInfo))
+          $hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).Hash.ToLower()
+          Write-Host "hash=$hash"
+          "version_hash=$hash" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
       - name: System preparation
         shell: pwsh
