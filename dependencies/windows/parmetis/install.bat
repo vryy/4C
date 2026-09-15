@@ -59,13 +59,13 @@ ren parmetis-%VERSION%-orig parmetis-%VERSION%
 
 rem compiling
 
-mkdir "parmetis-%VERSION%-build"
-
-cd "parmetis-%VERSION%-build"
-
 set "PARMETIS_HOME=%~dp0parmetis-%VERSION%"
 
 set "METIS_HOME=%PARMETIS_HOME%\metis"
+
+mkdir "parmetis-%VERSION%-build"
+
+cd "parmetis-%VERSION%-build"
 
 cmake ^
   -G "Ninja" ^
