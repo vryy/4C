@@ -37,8 +37,8 @@ jobs:
           Write-Host "FC=$env:FC"
           Write-Host "CC=$env:CC"
           Write-Host "CXX=$env:CXX"
-          VERSION=$("${{ steps.setup-fortran.outputs.fc }}" --version | head -n 1)
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          $ver = (& "${{ steps.setup-fortran.outputs.fc }}" --version | Select-Object -First 1)
+          "version=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
       - name: System preparation
         shell: pwsh
@@ -85,56 +85,56 @@ jobs:
             './dependencies/windows/**/install.*') }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{
             steps.intel-version.outputs.hash }}
 
-    # - name: Restore build cache
-    #   id: cache-build
-    #   uses: actions/cache/restore@v6
-    #   with:
-    #     path: build/
-    #     key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{ steps.intel-version.outputs.hash }}
+        # - name: Restore build cache
+        #   id: cache-build
+        #   uses: actions/cache/restore@v6
+        #   with:
+        #     path: build/
+        #     key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{ steps.intel-version.outputs.hash }}
 
-    # - name: Build 4C
-    #   if: steps.cache-build.outputs.cache-hit != 'true'
-    #   shell: pwsh
-    #   run: |
-    #     Get-Location
-    #     cmake -B build/ --fresh --preset=cl_release
-    #     cmake --build build/ --target full --config Release
+        # - name: Build 4C
+        #   if: steps.cache-build.outputs.cache-hit != 'true'
+        #   shell: pwsh
+        #   run: |
+        #     Get-Location
+        #     cmake -B build/ --fresh --preset=cl_release
+        #     cmake --build build/ --target full --config Release
 
-    # - name: Save build cache
-    #   if: success() && steps.cache-build.outputs.cache-hit != 'true'
-    #   uses: actions/cache/save@v6
-    #   with:
-    #     path: build/
-    #     key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{ steps.intel-version.outputs.hash }}
+        # - name: Save build cache
+        #   if: success() && steps.cache-build.outputs.cache-hit != 'true'
+        #   uses: actions/cache/save@v6
+        #   with:
+        #     path: build/
+        #     key: ${{ runner.os }}-build-${{ github.sha }}-msvc-${{ steps.msvc-version.outputs.hash }}-intel-${{ steps.intel-version.outputs.hash }}
 
-    # test:
-    #   name: Test 4C on Windows
-    #   needs: build
-    #   runs-on: windows-latest
+        # test:
+        #   name: Test 4C on Windows
+        #   needs: build
+        #   runs-on: windows-latest
 
-    #   steps:
-    #     - uses: actions/checkout@v7
+        #   steps:
+        #     - uses: actions/checkout@v7
 
-    #     - name: Set up MSVC
-    #       uses: ilammy/msvc-dev-cmd@v1
+        #     - name: Set up MSVC
+        #       uses: ilammy/msvc-dev-cmd@v1
 
-    # - name: Setup Intel Fortran
-    #   uses: fortran-lang/setup-fortran@v1
-    #   id: setup-fortran
-    #   with:
-    #     compiler: intel
-    #     version: "2026.1"
+        # - name: Setup Intel Fortran
+        #   uses: fortran-lang/setup-fortran@v1
+        #   id: setup-fortran
+        #   with:
+        #     compiler: intel
+        #     version: "2026.1"
 
-    # - name: Verify Intel Fortran
-    #   id: intel-version
-    #   shell: pwsh
-    #   run: |
-    #     ifx --version
-    #     Write-Host "FC=$env:FC"
-    #     Write-Host "CC=$env:CC"
-    #     Write-Host "CXX=$env:CXX"
-    #     VERSION=$("${{ steps.setup-fortran.outputs.fc }}" --version | head -n 1)
-    #     echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+        # - name: Verify Intel Fortran
+        #   id: intel-version
+        #   shell: pwsh
+        #   run: |
+        # ifx --version
+        # Write-Host "FC=$env:FC"
+        # Write-Host "CC=$env:CC"
+        # Write-Host "CXX=$env:CXX"
+        # $ver = (& "${{ steps.setup-fortran.outputs.fc }}" --version | Select-Object -First 1)
+        #   "version=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
 #     - name: System preparation
 #       shell: pwsh
