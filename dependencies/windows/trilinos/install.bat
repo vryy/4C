@@ -19,6 +19,7 @@ set "LIB_DIR=%USER_DIR%\\opt"
 echo %LIB_DIR%
 
 rem clone the repository
+cd /d %USER_DIR%
 git clone https://github.com/trilinos/Trilinos.git
 cd Trilinos
 git checkout %VERSION%
