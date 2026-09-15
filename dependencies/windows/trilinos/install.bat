@@ -28,11 +28,7 @@ rem compiling
 
 cd ..
 
-echo "here"
-dir
-
-set "TRILINOS_HOME=%~dp0Trilinos"
-echo "TRILINOS_HOME: %TRILINOS_HOME%"
+set "TRILINOS_HOME=%USER_DIR%\Trilinos"
 
 mkdir "trilinos-build"
 
