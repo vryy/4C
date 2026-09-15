@@ -39,3 +39,7 @@ cd $curDir/dependencies/windows/netcdf
 cd $curDir/dependencies/windows/suitesparse
 
 .\install.bat "$env:DEP_DIR\suitesparse"
+
+cd $curDir/dependencies/windows/superlu_dist
+
+.\install.bat "$env:DEP_DIR\superlu_dist"
