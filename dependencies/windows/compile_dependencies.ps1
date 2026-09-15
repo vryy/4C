@@ -19,3 +19,7 @@ cd $curDir/dependencies/windows/parmetis
 cd $curDir/dependencies/windows/lapack
 
 .\install.bat "$env:DEP_DIR\lapack"
+
+cd $curDir/dependencies/windows/boost
+
+.\install.bat "$env:DEP_DIR\boost"

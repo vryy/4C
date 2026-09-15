@@ -12,12 +12,12 @@ set "INSTALL_DIR=%~1"
 
 rem Number of procs for building (default 4 if not already set)
 if "%NPROCS%"=="" set "NPROCS=4"
-set "VERSION=3.12.1"
-set "CHECKSUM=2ca6407a001a474d4d4d35f3a61550156050c48016d949f0da0529c0aa052422"
-set "ARCHIVE=v%VERSION%.tar.gz"
+set "VERSION=1_92_0"
+set "CHECKSUM=c4a3b310ddd2472416e091067166b0713be97c63f38c212c484ada022fd296ce"
+set "ARCHIVE=boost_%VERSION%.tar.gz"
 
-rem Download lapack
-curl -s -L -o "%ARCHIVE%" "https://github.com/Reference-LAPACK/lapack/archive/refs/tags/%ARCHIVE%"
+rem Download boost
+curl -s -L -o "%ARCHIVE%" "https://archives.boost.io/release/1.92.0/source/%ARCHIVE%"
 if errorlevel 1 (
     echo Failed to download %ARCHIVE%
     exit /b 1
@@ -46,41 +46,19 @@ if errorlevel 1 (
 
 rem compiling
 
-mkdir "lapack-%VERSION%-build"
+cd "boost_%VERSION%"
 
-cd "lapack-%VERSION%-build"
+call .\bootstrap.bat
 
-set "LAPACK_HOME=%~dp0lapack-%VERSION%"
-
-cmake ^
-  -G "Ninja" ^
-  -D CMAKE_BUILD_TYPE:STRING="Release" ^
-  -D CMAKE_INSTALL_PREFIX="%INSTALL_DIR%" ^
-  -D CMAKE_C_COMPILER="cl.exe" ^
-  -D CMAKE_CXX_COMPILER="cl.exe" ^
-  -D CMAKE_Fortran_COMPILER="ifx.exe" ^
-  -D CMAKE_Fortran_FLAGS="/names:lowercase /assume:underscore" ^
-  -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF ^
-  -D CMAKE_COLOR_MAKEFILE:BOOL=ON ^
-  -D BUILD_SHARED_LIBS:BOOL=OFF ^
-  -D CBLAS:BOOL=OFF ^
-  -D LAPACKE:BOOL=OFF ^
-  -D BUILD_SINGLE:BOOL=ON ^
-  -D BUILD_DOUBLE:BOOL=ON ^
-  -D BUILD_COMPLEX:BOOL=ON ^
-  -D BUILD_COMPLEX16:BOOL=ON ^
-  -D BUILD_DEPRECATED:BOOL=ON ^
-  %LAPACK_HOME%
-
-ninja install -j%NPROCS%
+.\b2.exe install -j%NPROCS% CC=cl.exe CXX=cl.exe --prefix="%INSTALL_DIR%" toolset=msvc variant=release address-model=64 threading=multi
 
 rem
 
 cd ..
 
 rem Clean up downloaded and extracted artifacts
-del /f /q lapack*.tar.gz 2>nul
-for /d %%D in (lapack*) do rmdir /s /q "%%D"
+del /f /q boost*.tar.gz 2>nul
+for /d %%D in (boost*) do rmdir /s /q "%%D"
 
 if %ERRORLEVEL% neq 0 (
     echo ERROR: install.bat failed with exit code %ERRORLEVEL%
