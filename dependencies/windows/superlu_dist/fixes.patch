@@ -1,0 +1,26 @@
+diff --git a/superlu_dist-6.4.0-orig/SRC/memory.c b/superlu_dist-6.4.0/SRC/memory.c
+index 6fdaae6..d9442b8 100644
+--- a/superlu_dist-6.4.0-orig/SRC/memory.c
++++ b/superlu_dist-6.4.0/SRC/memory.c
+@@ -122,7 +122,7 @@ void superlu_free_dist(void *addr)
+ #else  /* The production mode. */
+ 
+ //#if  0 
+-#if (__STDC_VERSION__ >= 201112L)
++#if (__STDC_VERSION__ >= 201112L) && !defined(_MSC_VER)
+ 
+ void * superlu_malloc_dist(size_t size) {void* ptr;int alignment=1<<12;if(size>1<<19){alignment=1<<21;}posix_memalign( (void**)&(ptr), alignment, size );return(ptr);}
+ void   superlu_free_dist(void * ptr)    {free(ptr);}
+diff --git a/superlu_dist-6.4.0-orig/SRC/util.c b/superlu_dist-6.4.0/SRC/util.c
+index b5e1c5f..757cb05 100644
+--- a/superlu_dist-6.4.0-orig/SRC/util.c
++++ b/superlu_dist-6.4.0/SRC/util.c
+@@ -22,7 +22,7 @@ at the top-level directory.
+  */
+ 
+ #include <math.h>
+-#include <unistd.h>
++//#include <unistd.h>
+ #include "superlu_ddefs.h"
+ 
+ /*! \brief Deallocate the structure pointing to the actual storage of the matrix. */

@@ -25,6 +25,37 @@ function(require_fixtures name_of_test name_of_required_tests)
   set_tests_properties(${name_of_test} PROPERTIES FIXTURES_REQUIRED "${name_of_required_tests}")
 endfunction()
 
+# get the shell to execute testing
+function(get_test_shell out_var)
+  if(WIN32)
+    # Look specifically for Git Bash / MSYS2 bash, NOT WSL
+    find_program(
+      GIT_BASH_EXECUTABLE
+      NAMES bash
+      PATHS "C:/Program Files/Git/bin"
+            "C:/Program Files/Git/usr/bin"
+            "C:/Program Files (x86)/Git/bin"
+            "C:/msys64/usr/bin"
+      NO_DEFAULT_PATH
+      )
+
+    if(GIT_BASH_EXECUTABLE)
+      set(found_shell "${GIT_BASH_EXECUTABLE}")
+    else()
+      # Fallback to standard search if Git is in a custom path
+      find_program(found_shell bash)
+    endif()
+  else()
+    set(found_shell "bash")
+  endif()
+
+  # Propagate the result to the caller's scope
+  set(${out_var}
+      "${found_shell}"
+      PARENT_SCOPE
+      )
+endfunction()
+
 function(set_environment name_of_test)
   if(FOUR_C_WITH_PYTHON)
     # Add Python virtual environment
@@ -286,11 +317,15 @@ function(_add_test_with_options)
     set(skip_message "The test ${_parsed_NAME_OF_TEST} is marked to be skipped")
   endif()
 
+  # get the shell
+  get_test_shell(TEST_SHELL)
+  # message(STATUS "TEST_SHELL: ${TEST_SHELL}")
+
   if(NOT skip_message STREQUAL "")
     # The dummy test needs to report a arbitrary error code that ctest interprets as "skipped".
     set(dummy_command "echo \"${skip_message}\"; exit 42")
     # Add a dummy test that just prints the skip message instead of the real test
-    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND bash -c "${dummy_command}")
+    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND ${TEST_SHELL} -c "${dummy_command}")
     set_tests_properties(${_parsed_NAME_OF_TEST} PROPERTIES SKIP_RETURN_CODE 42)
     message(VERBOSE "Skipping test ${_parsed_NAME_OF_TEST}: ${skip_message}")
 
@@ -298,7 +333,10 @@ function(_add_test_with_options)
     require_fixtures(${_parsed_NAME_OF_TEST} "${_parsed_ADDITIONAL_FIXTURES}")
   else()
     # Add the real test
-    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND bash -c "${_parsed_TEST_COMMAND}")
+    set(test_command
+        "trap '_ec=\$?; [ -n \"\$FOUR_C_CLEANUP_OUTPUT_DIR\" ] && rm -rf \"\$FOUR_C_CLEANUP_OUTPUT_DIR\"; exit \$_ec' EXIT; ${_parsed_TEST_COMMAND}"
+        )
+    add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND ${TEST_SHELL} -c "${test_command}")
 
     require_fixtures(
       ${_parsed_NAME_OF_TEST} "${_parsed_ADDITIONAL_FIXTURES};${_parsed_CLEANUP_FIXTURES}"
@@ -976,8 +1014,15 @@ function(four_c_test_add_csv_header_check)
     set(skip_var TRUE)
   endif()
 
+  find_program(
+    CHECK_CSV_HEADERS
+    NAMES check-csv-headers check-csv-headers.exe
+    PATHS "${FOUR_C_PYTHON_VENV_BUILD}/Scripts" "${FOUR_C_PYTHON_VENV_BUILD}/bin"
+    NO_DEFAULT_PATH
+    )
+
   set(csv_header_check_command
-      "${FOUR_C_PYTHON_VENV_BUILD}/bin/check-csv-headers ${test_directory}/${_parsed_RESULT_FILE}"
+      "${CHECK_CSV_HEADERS} ${test_directory}/${_parsed_RESULT_FILE}"
       )
   foreach(header IN LISTS _parsed_HEADERS)
     string(APPEND csv_header_check_command " \"${header}\"")
@@ -1016,10 +1061,11 @@ endfunction()
 #                                 The supported version constraint operators are: >=, <=, >, <, ==
 #                                 If multiple dependencies are provided, all must be met for the test to run.
 #                                 Note that the version is the _internal_ version that 4C assigns to the dependency.
+#   EXCLUDE_PLATFORM:             Mark to not run the test on specific platform.
 function(four_c_test_nested_parallelism)
   set(options "")
   set(oneValueArgs TEST_FILE1 TEST_FILE2 RESTART_STEP TIMEOUT)
-  set(multiValueArgs LABELS REQUIRED_DEPENDENCIES)
+  set(multiValueArgs LABELS REQUIRED_DEPENDENCIES EXCLUDE_PLATFORM)
   cmake_parse_arguments(
     _parsed
     "${options}"
@@ -1054,6 +1100,12 @@ function(four_c_test_nested_parallelism)
       "mkdir -p ${test_directory} &&  ${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np 3 $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> --ngroup=2 --glayout=1,2 --nptype=separateInputFiles ${test_file_full_path1} ${test_directory}/xxx ${test_file_full_path2} ${test_directory}/xxxAdditional"
       )
 
+  # check if the platform is matched
+  set(skip_var FALSE)
+  if(CMAKE_SYSTEM_NAME IN_LIST _parsed_EXCLUDE_PLATFORM)
+    set(skip_var TRUE)
+  endif()
+
   _add_test_with_options(
     NAME_OF_TEST
     ${name_of_test}
@@ -1063,6 +1115,8 @@ function(four_c_test_nested_parallelism)
     3
     TIMEOUT
     "${_parsed_TIMEOUT}"
+    SKIP
+    "${skip_var}"
     LABELS
     "${_parsed_LABELS}"
     INPUT_FILE
@@ -1088,6 +1142,8 @@ function(four_c_test_nested_parallelism)
       3
       TIMEOUT
       "${_parsed_TIMEOUT}"
+      SKIP
+      "${skip_var}"
       LABELS
       "${_parsed_LABELS}"
       INPUT_FILE
@@ -1397,8 +1453,15 @@ function(__four_c_test_vtk)
         )
   endif()
 
+  find_program(
+    VTK_COMPARE
+    NAMES vtk-compare vtk-compare.exe
+    PATHS "${FOUR_C_PYTHON_VENV_BUILD}/Scripts" "${FOUR_C_PYTHON_VENV_BUILD}/bin"
+    NO_DEFAULT_PATH
+    )
+
   set(test_command
-      "vtk-compare ${test_directory}/${_parsed_PVD_RESULT_FILE} ${reference_pvd} --tolerance_data ${_parsed_TOLERANCE_DATA} --tolerance_time ${_parsed_TOLERANCE_TIME} --points_in_time ${merged_timesteps_to_compare}"
+      "${VTK_COMPARE} ${test_directory}/${_parsed_PVD_RESULT_FILE} ${reference_pvd} --tolerance_data ${_parsed_TOLERANCE_DATA} --tolerance_time ${_parsed_TOLERANCE_TIME} --points_in_time ${merged_timesteps_to_compare}"
       )
 
   # Ensure that Python is listed as required dependency
@@ -1541,14 +1604,49 @@ function(__four_c_test_timings)
     )
 endfunction()
 
+###------------------------------------------------------------------ Compare VTK
+# Marking tests to be clean up in advanced
+function(four_c_mark_cleanup_safe_tests)
+  get_property(all_tests GLOBAL PROPERTY CTEST_TESTS)
+
+  # Collect all OUTPUT_DIRs that are used as base_directory by any restart test
+  set(used_as_base "")
+  foreach(test IN LISTS all_tests)
+    # Get the fixtures this test requires (i.e. its BASED_ON dependencies)
+    get_test_property(${test} FIXTURES_REQUIRED required_fixtures)
+    if(NOT required_fixtures STREQUAL "NOTFOUND")
+      foreach(fixture IN LISTS required_fixtures)
+        # Get the OUTPUT_DIR of the dependency
+        get_test_property(${fixture} _internal_OUTPUT_DIR dep_output_dir)
+        if(NOT dep_output_dir STREQUAL "NOTFOUND")
+          list(APPEND used_as_base "${dep_output_dir}")
+        endif()
+      endforeach()
+    endif()
+  endforeach()
+
+  # For each test, if its OUTPUT_DIR is not used by any other test as input, mark it safe to clean
+  foreach(test IN LISTS all_tests)
+    get_test_property(${test} _internal_OUTPUT_DIR output_dir)
+    if(NOT output_dir STREQUAL "NOTFOUND")
+      if(NOT "${output_dir}" IN_LIST used_as_base)
+        set_tests_properties(
+          ${test} PROPERTIES ENVIRONMENT "FOUR_C_CLEANUP_OUTPUT_DIR=${output_dir}"
+          )
+      endif()
+    endif()
+  endforeach()
+endfunction()
+
 ###------------------------------------------------------------------ Final cleanup
 # remove any output files from our tests
 # autogenerated core files (generated by kernel)
 function(four_c_test_cleanup)
+  get_test_shell(TEST_SHELL)
   add_test(
     NAME test_cleanup
     COMMAND
-      sh -c
+      ${TEST_SHELL} -c
       "if [ -f *_CUTFAIL.pos ]; then mkdir -p ../cut-debug ; cp *_CUTFAIL.pos ../cut-debug/ ; fi ; rm -fr xxx* framework_test_output* core.* tutorials*"
     )
   set_processors(test_cleanup 1)
