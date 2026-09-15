@@ -16,10 +16,12 @@ cd $curDir/dependencies/windows/parmetis
 
 .\install.bat "$env:DEP_DIR\parmetis"
 
-cd $curDir/dependencies/windows/lapack
 
-.\install.bat "$env:DEP_DIR\lapack"
 
 cd $curDir/dependencies/windows/boost
 
 .\install.bat "$env:DEP_DIR\boost"
+
+cd $curDir/dependencies/windows/cln
+
+.\install.bat "$env:DEP_DIR\cln"
