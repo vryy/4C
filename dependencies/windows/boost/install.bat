@@ -48,9 +48,11 @@ rem compiling
 
 cd "boost_%VERSION%"
 
+set "CC=cl.exe"
+set "CXX=cl.exe"
 call .\bootstrap.bat
 
-.\b2.exe install -j%NPROCS% CC=cl.exe CXX=cl.exe --prefix="%INSTALL_DIR%" toolset=msvc variant=release address-model=64 threading=multi
+.\b2.exe install -j%NPROCS% --prefix="%INSTALL_DIR%" toolset=msvc variant=release address-model=64 threading=multi
 
 rem
 
