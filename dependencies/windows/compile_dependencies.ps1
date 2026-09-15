@@ -45,9 +45,7 @@ cd $curDir/dependencies/windows/qhull
 
 .\install.bat "$env:DEP_DIR\qhull"
 
-cd $curDir/dependencies/windows/fftw
 
-.\install.bat "$env:DEP_DIR\fftw"
 
 cd $curDir/dependencies/windows/suitesparse
 
