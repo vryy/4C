@@ -20,15 +20,27 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set up MSVC
-
         uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Setup Intel Fortran
+        uses: fortran-lang/setup-fortran@v1
+        id: setup-fortran
+        with:
+          compiler: intel
+          version: "2026.1"
+
+      - name: Verify Intel Fortran
+        shell: pwsh
+        run: |
+          ifx --version
+          Write-Host "FC=$env:FC"
+          Write-Host "CC=$env:CC"
+          Write-Host "CXX=$env:CXX"
 
       - name: System preparation
         shell: pwsh
         run: |
           ./dependencies/windows/prepare_system.ps1
-          ./dependencies/windows/msmpi/install.ps1
-          ./dependencies/windows/intel/install.ps1
 
       - name: Get MSVC version
         id: msvc-version
