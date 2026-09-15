@@ -7,13 +7,10 @@
 
 #include "4C_solver_nonlin_nox_inner_statustest_upperbound.hpp"
 
-#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
-#include "4C_solver_nonlin_nox_linesearch_generic.hpp"
-#include "4C_utils_exceptions.hpp"
+#include "4C_solver_nonlin_nox_linesearch_controller.hpp"
 
 #include <NOX_Abstract_Vector.H>
-#include <NOX_Solver_Generic.H>
 #include <NOX_Utils.H>
 
 FOUR_C_NAMESPACE_OPEN
@@ -36,38 +33,25 @@ NOX::Nln::Inner::StatusTest::UpperBound::UpperBound(const double& upperboundval,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::Nln::Inner::StatusTest::UpperBound::get_search_direction_length(
-    const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
-    const ::NOX::Abstract::Group& grp) const
+    const NOX::Nln::LineSearch::Controller& ls_controller, const ::NOX::Abstract::Group& grp) const
 {
   const NOX::Nln::Group& nln_grp = dynamic_cast<const NOX::Nln::Group&>(grp);
 
-  return nln_grp.get_trial_update_norm(linesearch.get_search_direction(), normtype_, qtype_);
+  return nln_grp.get_trial_update_norm(ls_controller.get_search_direction(), normtype_, qtype_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound::check_status(
-    const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
-    const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
+    NOX::Nln::LineSearch::Controller& ls_controller, const ::NOX::Abstract::Group& grp,
+    ::NOX::StatusTest::CheckType checkType)
 {
-  /* check if it is a line search object: upper bound for Newton step size only
-   * makes sense as inner status test for line search solvers */
-  const NOX::Nln::LineSearch::Generic* linesearch =
-      dynamic_cast<const NOX::Nln::LineSearch::Generic*>(&interface);
-  if (linesearch == nullptr)
-  {
-    std::ostringstream msg;
-    msg << "Dynamic cast to NOX::Nln::LineSearch::Generic failed!\n\n"
-        << "The UpperBound rule status test supports only Line Search problems!";
-    throw_error("check_status", msg.str());
-  }
-
   /* we reduce the step length according to the upper bound criterion in the first
    * line search (i.e. inner) iteration and do nothing in all following iterations */
-  if (interface.get_num_iterations() == 0)
+  if (ls_controller.get_num_iterations() == 0)
   {
-    const double dir_length = get_search_direction_length(*linesearch, solver, grp);
-    double steplength = linesearch->get_step_length();
+    const double dir_length = get_search_direction_length(ls_controller, grp);
+    double steplength = ls_controller.get_step_length();
 
     // compute specified norm
     stepmaxval_ = steplength * dir_length;
@@ -81,9 +65,6 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound:
      * several unnecessary evaluations of rhs (computeF calls). */
     if (status_ == status_step_too_long)
     {
-      NOX::Nln::LineSearch::Generic* linesearch_mutable =
-          const_cast<NOX::Nln::LineSearch::Generic*>(linesearch);
-
       /* the following is equivalent to dividing the step successively by two until
        * criterion is met. note: upperboundval_!=0 is checked in
        * NOX::Nln::Inner::StatusTest::Factory::build_upper_bound_test */
@@ -91,7 +72,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound:
           std::pow(0.5, std::ceil(std::log(stepmaxval_ / upperboundval_) / std::log(2)));
 
       steplength *= reduction_fac_;
-      linesearch_mutable->set_step_length(steplength);
+      ls_controller.set_step_length(steplength);
 
       // adapt the stepmaxval_ variable accordingly to get correct output from print()
       stepmaxval_ *= reduction_fac_;
@@ -139,17 +120,6 @@ std::ostream& NOX::Nln::Inner::StatusTest::UpperBound::print(std::ostream& strea
          << " (reduction factor = " << ::NOX::Utils::sciformat(reduction_fac_, 3) << ")\n";
 
   return stream;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::Nln::Inner::StatusTest::UpperBound::throw_error(
-    const std::string& functionName, const std::string& errorMsg) const
-{
-  std::ostringstream msg;
-  msg << "ERROR - NOX::Nln::Inner::StatusTest::UpperBound::" << functionName << " - " << errorMsg
-      << std::endl;
-  FOUR_C_THROW("{}", msg.str());
 }
 
 FOUR_C_NAMESPACE_CLOSE

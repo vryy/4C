@@ -7,9 +7,7 @@
 
 #include "4C_solver_nonlin_nox_inner_statustest_armijo.hpp"  // class definition
 
-#include "4C_linalg_vector.hpp"
-#include "4C_solver_nonlin_nox_linesearch_generic.hpp"
-#include "4C_utils_exceptions.hpp"
+#include "4C_solver_nonlin_nox_linesearch_controller.hpp"
 
 #include <NOX_Abstract_Group.H>
 #include <NOX_MeritFunction_Generic.H>
@@ -37,15 +35,15 @@ NOX::Nln::Inner::StatusTest::Armijo::Armijo(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::Nln::Inner::StatusTest::Armijo::setup(
-    const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Abstract::Group& grp)
+    const NOX::Nln::LineSearch::Controller& ls_controller, const ::NOX::Abstract::Group& grp)
 {
-  const ::NOX::MeritFunction::Generic& mrtFct = linesearch.get_merit_function();
+  const auto& mrtFct = ls_controller.get_merit_function();
 
   // get the reference merit function value
   fref_ = mrtFct.computef(grp);
 
   // get the slope once (doesn't change during the inner iteration)
-  slope_ = mrtFct.computeSlope(linesearch.get_search_direction(), grp);
+  slope_ = mrtFct.computeSlope(ls_controller.get_search_direction(), grp);
 
   // return false if the search direction is no descent direction
   if (slope_ >= 0.0) return false;
@@ -77,28 +75,16 @@ bool NOX::Nln::Inner::StatusTest::Armijo::setup(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::check_status(
-    const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
-    const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
+    NOX::Nln::LineSearch::Controller& ls_controller, const ::NOX::Abstract::Group& grp,
+    ::NOX::StatusTest::CheckType checkType)
 {
-  // check if it is a line search object
-  // Amrijo rule plays only a role as inner status test for line search solvers
-  const NOX::Nln::LineSearch::Generic* linesearch =
-      dynamic_cast<const NOX::Nln::LineSearch::Generic*>(&interface);
-  if (linesearch == nullptr)
-  {
-    std::ostringstream msg;
-    msg << "Dynamic cast to NOX::Nln::LineSearch::Generic failed!\n\n"
-        << "The Armijo rule status test supports only Line Search problems!";
-    throw_error("check_status", msg.str());
-  }
-
   // setup for the current line search loop
-  if (interface.get_num_iterations() == 0)
+  if (ls_controller.get_num_iterations() == 0)
   {
     // If the search direction is no descent direction,
     // this function detects it and returns the corresponding
     // status.
-    if (setup(*linesearch, grp))
+    if (setup(ls_controller, grp))
       status_ = status_unevaluated;
     else
       status_ = status_no_descent_direction;
@@ -113,11 +99,11 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::che
   // fail anyway.
   else if (status_ != status_no_descent_direction)
   {
-    const ::NOX::MeritFunction::Generic& mrtFct = linesearch->get_merit_function();
+    const auto& mrtFct = ls_controller.get_merit_function();
 
     fcurr_ = mrtFct.computef(grp);
 
-    step_ = linesearch->get_step_length();
+    step_ = ls_controller.get_step_length();
 
     // check the Armijo rule
     status_ = (fcurr_ < fref_ + c_1_ * step_ * slope_) ? status_converged : status_step_too_long;
@@ -159,17 +145,6 @@ std::ostream& NOX::Nln::Inner::StatusTest::Armijo::print(std::ostream& stream, i
   stream << ")\n";
 
   return stream;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::Nln::Inner::StatusTest::Armijo::throw_error(
-    const std::string& functionName, const std::string& errorMsg) const
-{
-  std::ostringstream msg;
-  msg << "ERROR - NOX::Nln::Inner::StatusTest::Armijo::" << functionName << " - " << errorMsg
-      << std::endl;
-  FOUR_C_THROW("{}", msg.str());
 }
 
 FOUR_C_NAMESPACE_CLOSE

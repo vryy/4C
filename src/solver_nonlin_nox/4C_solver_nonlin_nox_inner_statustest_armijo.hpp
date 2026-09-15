@@ -25,7 +25,7 @@ namespace NOX
   {
     namespace LineSearch
     {
-      class Generic;
+      class Controller;
     }  // namespace LineSearch
     namespace Inner
     {
@@ -44,8 +44,8 @@ namespace NOX
             checkType is NOX::StatusType::None. If the test is skipped, then
             the status should be set to ::NOX::StatusTest::Unevaluated.
           */
-          NOX::Nln::Inner::StatusTest::StatusType check_status(const Interface::Required& interface,
-              const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
+          NOX::Nln::Inner::StatusTest::StatusType check_status(
+              NOX::Nln::LineSearch::Controller& ls_controller, const ::NOX::Abstract::Group& grp,
               ::NOX::StatusTest::CheckType checkType) override;
 
           //! Return the result of the most recent checkStatus call
@@ -55,13 +55,9 @@ namespace NOX
           std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
          protected:
-          bool setup(
-              const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Abstract::Group& grp);
+          bool setup(const NOX::Nln::LineSearch::Controller& ls_controller,
+              const ::NOX::Abstract::Group& grp);
 
-         private:
-          void throw_error(const std::string& functionName, const std::string& errorMsg) const;
-
-         protected:
           //! Status
           NOX::Nln::Inner::StatusTest::StatusType status_;
 
