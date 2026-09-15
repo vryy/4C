@@ -20,9 +20,9 @@ set "LIB_DIR=%USER_DIR%\\temp"
 
 rem Download suitesparse
 curl -s -L -o "%ARCHIVE%" "https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/%ARCHIVE%"
-if errorlevel 1 (
+if !ERRORLEVEL! neq 0 (
     echo Failed to download %ARCHIVE%
-    exit /b 1
+    exit /b !ERRORLEVEL!
 )
 
 rem Verify checksum using certutil
@@ -41,9 +41,9 @@ if /i "%FILE_HASH%"=="%CHECKSUM%" (
 )
 
 tar -xzf "%ARCHIVE%"
-if errorlevel 1 (
+if !ERRORLEVEL! neq 0 (
     echo Failed to extract archive
-    exit /b 1
+    exit /b !ERRORLEVEL!
 )
 
 rem compiling
@@ -77,7 +77,17 @@ cmake ^
   -D SUITESPARSE_C_TO_FORTRAN="(name,NAME) name##_" ^
   %SUITESPARSE_HOME%
 
+if !ERRORLEVEL! neq 0 (
+    echo ERROR: installing suitesparse failed at configuration
+    exit /b !ERRORLEVEL!
+)
+
 ninja install -j%NPROCS%
+
+if !ERRORLEVEL! neq 0 (
+    echo ERROR: installing suitesparse failed at compilation
+    exit /b !ERRORLEVEL!
+)
 
 rem
 

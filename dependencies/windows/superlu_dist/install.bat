@@ -18,9 +18,9 @@ set "ARCHIVE=v%VERSION%.tar.gz"
 
 rem Download superlu_dist
 curl -s -L -o "%ARCHIVE%" "https://github.com/xiaoyeli/superlu_dist/archive/refs/tags/%ARCHIVE%"
-if errorlevel 1 (
+if !ERRORLEVEL! neq 0 (
     echo Failed to download %ARCHIVE%
-    exit /b 1
+    exit /b !ERRORLEVEL!
 )
 
 rem Verify checksum using certutil
@@ -39,9 +39,9 @@ if /i "%FILE_HASH%"=="%CHECKSUM%" (
 )
 
 tar -xzf "%ARCHIVE%"
-if errorlevel 1 (
+if !ERRORLEVEL! neq 0 (
     echo Failed to extract archive
-    exit /b 1
+    exit /b !ERRORLEVEL!
 )
 
 rem apply patch
@@ -68,7 +68,7 @@ cd "superlu_dist-%VERSION%-build"
 cmake ^
   -G "Ninja" ^
   -D CMAKE_POLICY_VERSION_MINIMUM="3.5" ^
-  -D CMAKE_BUILD_TYPE:STRING="Debug" ^
+  -D CMAKE_BUILD_TYPE:STRING="Release" ^
   -D CMAKE_INSTALL_PREFIX="%INSTALL_DIR%" ^
   -D CMAKE_C_COMPILER="cl.exe" ^
   -D CMAKE_CXX_COMPILER="cl.exe" ^
@@ -86,7 +86,17 @@ cmake ^
   -D TPL_PARMETIS_LIBRARIES="%USERPROFILE%\opt\parmetis\lib\parmetis.lib;%USERPROFILE%\opt\parmetis\lib\metis.lib" ^
   %SUPERLU_HOME%
 
+if !ERRORLEVEL! neq 0 (
+    echo ERROR: installing superlu_dist failed at configuration
+    exit /b !ERRORLEVEL!
+)
+
 ninja install -j%NPROCS%
+
+if !ERRORLEVEL! neq 0 (
+    echo ERROR: installing superlu_dist failed at compilation
+    exit /b !ERRORLEVEL!
+)
 
 rem
 
@@ -95,10 +105,5 @@ cd ..
 rem Clean up downloaded and extracted artifacts
 del /f /q *.tar.gz 2>nul
 for /d %%D in (superlu_dist*) do rmdir /s /q "%%D"
-
-if !ERRORLEVEL! neq 0 (
-    echo ERROR: install.bat failed with exit code !ERRORLEVEL!
-    exit /b !ERRORLEVEL!
-)
 
 endlocal
