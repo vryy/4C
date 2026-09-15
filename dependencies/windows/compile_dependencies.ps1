@@ -13,47 +13,49 @@ $env:DEP_DIR = "$env:USERPROFILE\opt"
 
 $curDir = $PWD.Path
 
-cd $curDir/dependencies/windows/parmetis
+# cd $curDir/dependencies/windows/parmetis
 
-.\install.bat "$env:DEP_DIR\parmetis"
+# .\install.bat "$env:DEP_DIR\parmetis"
 
-cd $curDir/dependencies/windows/lapack
+# cd $curDir/dependencies/windows/lapack
 
-.\install.bat "$env:DEP_DIR\lapack"
+# .\install.bat "$env:DEP_DIR\lapack"
 
-# cd $curDir/dependencies/windows/boost
+# # cd $curDir/dependencies/windows/boost
 
-# .\install.bat "$env:DEP_DIR\boost"
+# # .\install.bat "$env:DEP_DIR\boost"
 
-# cd $curDir/dependencies/windows/cln
+# # cd $curDir/dependencies/windows/cln
 
-# .\install.bat "$env:DEP_DIR\cln"
+# # .\install.bat "$env:DEP_DIR\cln"
 
-cd $curDir/dependencies/windows/zlib
+# cd $curDir/dependencies/windows/zlib
 
-.\install.bat "$env:DEP_DIR\zlib"
+# .\install.bat "$env:DEP_DIR\zlib"
 
-cd $curDir/dependencies/windows/hdf5
+# cd $curDir/dependencies/windows/hdf5
 
-.\install.bat "$env:DEP_DIR\hdf5"
+# .\install.bat "$env:DEP_DIR\hdf5"
 
-cd $curDir/dependencies/windows/netcdf
+# cd $curDir/dependencies/windows/netcdf
 
-.\install.bat "$env:DEP_DIR\netcdf"
+# .\install.bat "$env:DEP_DIR\netcdf"
 
-cd $curDir/dependencies/windows/qhull
+# cd $curDir/dependencies/windows/qhull
 
-.\install.bat "$env:DEP_DIR\qhull"
+# .\install.bat "$env:DEP_DIR\qhull"
 
+# # cd $curDir/dependencies/windows/fftw
 
+# # .\install.bat "$env:DEP_DIR\fftw"
 
-cd $curDir/dependencies/windows/suitesparse
+# cd $curDir/dependencies/windows/suitesparse
 
-.\install.bat "$env:DEP_DIR\suitesparse"
+# .\install.bat "$env:DEP_DIR\suitesparse"
 
-cd $curDir/dependencies/windows/superlu_dist
+# cd $curDir/dependencies/windows/superlu_dist
 
-.\install.bat "$env:DEP_DIR\superlu_dist"
+# .\install.bat "$env:DEP_DIR\superlu_dist"
 
 cd $curDir/dependencies/windows/trilinos
 
