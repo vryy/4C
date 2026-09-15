@@ -26,9 +26,7 @@ Write-Host "Downloading Intel oneAPI Toolkit $Version..."
 Write-Host "URL: $Url"
 Write-Host "Destination: $Installer"
 
-Invoke-WebRequest `
-    -Uri $Url `
-    -OutFile $Installer
+Invoke-WebRequest $Url -OutFile $Installer
 
 if (!(Test-Path $Installer)) {
     throw "Intel oneAPI installer was not downloaded."

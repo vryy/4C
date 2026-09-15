@@ -27,6 +27,8 @@ jobs:
         shell: pwsh
         run: |
           ./dependencies/windows/prepare_system.ps1
+          ./dependencies/windows/msmpi/install.ps1
+          ./dependencies/windows/intel/install.ps1
 
       - name: Get MSVC version
         id: msvc-version
