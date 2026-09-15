@@ -1,0 +1,87 @@
+diff --git a/parmetis-4.0.3-orig/CMakeLists.txt b/parmetis-4.0.3/CMakeLists.txt
+index ca945dd..2b27850 100644
+--- a/parmetis-4.0.3-orig/CMakeLists.txt
++++ b/parmetis-4.0.3/CMakeLists.txt
+@@ -6,7 +6,7 @@ set(METIS_PATH METIS CACHE PATH "path to METIS")
+ 
+ # Symlink ./metis to wherever metis is. This allows files to be
+ # included from metis/libmetis/.
+-execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${METIS_PATH} metis)
++# execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${METIS_PATH} metis)
+ 
+ # Search for MPI.
+ # GK commented this out as it seems to be creating problems
+@@ -31,9 +31,10 @@ include_directories(include)
+ include_directories(${MPI_INCLUDE_PATH})
+ include_directories(${GKLIB_PATH})
+ include_directories(${METIS_PATH}/include)
++link_directories(${METIS_PATH}/lib)
+ 
+ # List of directories that cmake will look for CMakeLists.txt
+-add_subdirectory(${METIS_PATH}/libmetis ${CMAKE_BINARY_DIR}/libmetis)
++# add_subdirectory(${METIS_PATH}/libmetis ${CMAKE_BINARY_DIR}/libmetis)
+ add_subdirectory(include)
+ add_subdirectory(libparmetis)
+ add_subdirectory(programs)
+diff --git a/parmetis-4.0.3-orig/metis/CMakeLists.txt b/parmetis-4.0.3/metis/CMakeLists.txt
+index 186a320..b63889b 100644
+--- a/parmetis-4.0.3-orig/metis/CMakeLists.txt
++++ b/parmetis-4.0.3/metis/CMakeLists.txt
+@@ -4,11 +4,11 @@ project(METIS)
+ set(GKLIB_PATH "GKlib" CACHE PATH "path to GKlib")
+ set(SHARED FALSE CACHE BOOL "build a shared library")
+ 
+-if(MSVC)
+-  set(METIS_INSTALL FALSE)
+-else()
+-  set(METIS_INSTALL TRUE)
+-endif()
++# if(MSVC)
++#   set(METIS_INSTALL FALSE)
++# else()
++#   set(METIS_INSTALL TRUE)
++# endif()
+ 
+ # Configure libmetis library.
+ if(SHARED)
+diff --git a/parmetis-4.0.3-orig/metis/GKlib/gk_arch.h b/parmetis-4.0.3/metis/GKlib/gk_arch.h
+index 2cb80cc..a14fd2c 100644
+--- a/parmetis-4.0.3-orig/metis/GKlib/gk_arch.h
++++ b/parmetis-4.0.3/metis/GKlib/gk_arch.h
+@@ -10,6 +10,13 @@
+ #ifndef _GK_ARCH_H_
+ #define _GK_ARCH_H_
+ 
++#ifdef _MSC_VER
++  #define _USE_MATH_DEFINES
++  #include <math.h>
++  #include <float.h>
++  #include <limits.h>
++#endif
++
+ /*************************************************************************
+ * Architecture-specific differences in header files
+ **************************************************************************/
+@@ -31,9 +38,19 @@
+ #endif
+ 
+ 
+-#ifdef __MSC__ 
+-  #include "ms_stdint.h"
+-  #include "ms_inttypes.h"
++#ifdef __MSC__
++  #if defined(_MSC_VER) && (_MSC_VER >= 1600)
++    #include <stdint.h>
++  #else
++    #include "ms_stdint.h"
++  #endif
++
++  #if defined(_MSC_VER) && (_MSC_VER >= 1800)
++    #include <inttypes.h>
++  #else
++    #include "ms_inttypes.h"
++  #endif
++
+   #include "ms_stat.h"
+ #else
+ #ifndef SUNOS

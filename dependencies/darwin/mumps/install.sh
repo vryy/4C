@@ -26,6 +26,8 @@ if [ $CHECKSUM = `sha256sum ${PREFIX}${VERSION}.tar.gz | awk '{print $1}'` ]
 then
   echo "Checksum matches"
 else
+  echo $CHECKSUM
+  echo `sha256sum ${PREFIX}${VERSION}.tar.gz | awk '{print $1}'`
   echo "Checksum does not match"
   exit 1
 fi
