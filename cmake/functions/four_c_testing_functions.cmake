@@ -195,6 +195,20 @@ function(check_test_exists result name)
   endif()
 endfunction()
 
+# Verify whether a (unique) global property has already been registered; otherwise, register it with a given value
+function(_register_unique_global_property global_property value error_message)
+  get_property(
+    _already_registered GLOBAL
+    PROPERTY "${global_property}"
+    SET
+    )
+  if(_already_registered)
+    message(FATAL_ERROR "${error_message}")
+  else()
+    set_property(GLOBAL PROPERTY "${global_property}" "${value}")
+  endif()
+endfunction()
+
 # Internal helper that adds a test to the 4C test suite. Do not call this directly.
 function(_add_test_with_options)
   set(options "")
@@ -451,10 +465,18 @@ endfunction()
 #   RESTART_STEP:            number of the restart step to restart from or last_possible
 #   SAME_FILE or TEST_FILE:  either SAME_FILE to indicate that the restart should be done from the same input file
 #                            as the base test, or TEST_FILE to indicate that a different input file should be used for the restart.
-#                            Note that in the case of SAME_FILE, the restart output is also saved within the same directory as the base test; in the case of TEST_FILE, a new test directory is created (except when RESTARTFROM_PATHTYPE is same_directory_implicit!).
+#                            Note that in the case of SAME_FILE, the restart output is also saved within the same directory as the base test;
+#                            in the case of TEST_FILE, a new test directory is created (except when RESTARTFROM_PATH_TYPE is same_directory_implicit!).
 #
 # optional parameters:
-#   RESTARTFROM_PATHTYPE     <absolute|relative|relative_from_parent|same_directory|same_directory_implicit>. Defaults to absolute if not specified.
+#   RESTART_OUTPUT_PREFIX    prefix for the restart output files within the output directory. Defaults to "xxx".
+#                            Cannot be specified if the --restartfrom type is "same_directory_implicit".
+#                            Note that we try to keep the restart output prefixes unambiguous - multiple SAME_FILE restarts require
+#                            to define specific restart output prefixes. For TEST_FILE, it's fine if the name of the test differs
+#                            (this sets the output directory, see implementation below), even if the restart output prefix is the same for all such restart tests.
+#                            To keep restart output prefixes completely unambiguous, we don't allow for more than one restart test
+#                            using --restartfrom=same_directory_implicit (also holds for multiple SAME_FILE / TEST_FILE restart tests using this --restartfrom #                            option).
+#   RESTARTFROM_PATH_TYPE     <absolute|relative|relative_from_parent|same_directory|same_directory_implicit>. Defaults to absolute if not specified.
 #   NP:                      number of processors the test should use. Fallback to 1 if not specified.
 #   TIMEOUT:                 manually defined duration for test timeout; defaults to global timeout if not specified
 #   OMP_THREADS:             number of OpenMP threads per processor the test should use; defaults to no OpenMP if not specified
@@ -468,7 +490,8 @@ function(__four_c_test_restart)
   set(oneValueArgs
       BASED_ON
       TEST_FILE
-      RESTARTFROM_PATHTYPE
+      RESTARTFROM_PATH_TYPE
+      RESTART_OUTPUT_PREFIX
       NP
       RESTART_STEP
       TIMEOUT
@@ -485,7 +508,7 @@ function(__four_c_test_restart)
     ${ARGN}
     )
 
-  # List of allowed values for RESTARTFROM_PATHTYPE
+  # List of allowed values for RESTARTFROM_PATH_TYPE
   set(allowed_restartfrom_pathtypes
       absolute
       relative
@@ -493,14 +516,25 @@ function(__four_c_test_restart)
       same_directory
       same_directory_implicit
       )
-  if(NOT DEFINED _parsed_RESTARTFROM_PATHTYPE)
-    set(_parsed_RESTARTFROM_PATHTYPE "absolute")
+  if(NOT DEFINED _parsed_RESTARTFROM_PATH_TYPE)
+    set(_parsed_RESTARTFROM_PATH_TYPE "absolute")
   endif()
-  if(NOT _parsed_RESTARTFROM_PATHTYPE IN_LIST allowed_restartfrom_pathtypes)
+  if(DEFINED _parsed_RESTART_OUTPUT_PREFIX
+     AND _parsed_RESTARTFROM_PATH_TYPE STREQUAL "same_directory_implicit"
+     )
+    message(
+      FATAL_ERROR
+        "You cannot set the restart output prefix if the --restartfrom type is same_directory_implicit"
+      )
+  endif()
+  if(NOT DEFINED _parsed_RESTART_OUTPUT_PREFIX)
+    set(_parsed_RESTART_OUTPUT_PREFIX "xxx")
+  endif()
+  if(NOT _parsed_RESTARTFROM_PATH_TYPE IN_LIST allowed_restartfrom_pathtypes)
     list(JOIN allowed_restartfrom_pathtypes "', '" _allowed_restartfrom_pathtypes_joined)
     message(
       FATAL_ERROR
-        "__four_c_test_restart: RESTARTFROM_PATHTYPE must be one of '${_allowed_restartfrom_pathtypes_joined}'"
+        "__four_c_test_restart: RESTARTFROM_PATH_TYPE must be one of '${_allowed_restartfrom_pathtypes_joined}'"
       )
   endif()
 
@@ -522,37 +556,57 @@ function(__four_c_test_restart)
     set(_parsed_OMP_THREADS 0)
   endif()
 
-  if(parsed_SAME_FILE AND DEFINED _parsed_TEST_FILE)
+  if(_parsed_SAME_FILE AND DEFINED _parsed_TEST_FILE)
     message(FATAL_ERROR "You cannot specify both SAME_FILE and TEST_FILE")
   endif()
   if(NOT _parsed_SAME_FILE AND NOT DEFINED _parsed_TEST_FILE)
     message(FATAL_ERROR "You must specify either SAME_FILE or TEST_FILE")
   endif()
 
-  # Increment or initialize restart counter for this base test
-  get_property(_restart_count GLOBAL PROPERTY ${_parsed_BASED_ON}_RESTART_COUNT)
-  if(NOT DEFINED _restart_count OR _restart_count STREQUAL "")
-    set(_restart_count 1)
-  else()
-    # Increment counter
-    math(EXPR _restart_count "${_restart_count} + 1")
-  endif()
-  set_property(GLOBAL PROPERTY ${_parsed_BASED_ON}_RESTART_COUNT ${_restart_count})
-
   # In case we reuse the same file as the base test, get the input file from there, and also use the same output directory.
-  # We differentiate in the following between base_directory, which contains the output files from the BASED_ON simulation, and test_directory, where this restart test will run.
+  # We differentiate in the following between base_directory, which contains the output files from the BASED_ON simulation, and test_directory, where
+  # this restart test will run.
   if(_parsed_SAME_FILE)
     set(name_of_test
-        "${_parsed_BASED_ON}-restart_${_parsed_RESTART_STEP}-p${_parsed_NP}-count${_restart_count}"
+        "${_parsed_BASED_ON}-restart_${_parsed_RESTART_STEP}-p${_parsed_NP}-${_parsed_RESTART_OUTPUT_PREFIX}"
         )
+    # ensure that this restart output prefix has not already been registered; since this test will run in the same simulation directory as BASED_ON,
+    # we specifically check the restart output prefix (we want to avoid repeating restart output prefixes in the same simulation directory)
+    _register_unique_global_property(
+      "_restart_output_prefix_${_parsed_RESTART_OUTPUT_PREFIX}_for_${_parsed_BASED_ON}"
+      1
+      "You have to define another restart output prefix, since ${_parsed_RESTART_OUTPUT_PREFIX} already exists for ${_parsed_BASED_ON}"
+      )
+
     get_test_property(${_parsed_BASED_ON} _internal_INPUT_FILE test_file_full_path)
     get_test_property(${_parsed_BASED_ON} _internal_OUTPUT_DIR test_directory)
     set(base_directory ${test_directory})
   else()
     # Restart from a different testfile
     set(name_of_test
-        "${_parsed_BASED_ON}-restart_${_parsed_RESTART_STEP}-with_${_parsed_TEST_FILE}-p${_parsed_NP}-count${_restart_count}"
+        "${_parsed_BASED_ON}-restart_${_parsed_RESTART_STEP}-with_${_parsed_TEST_FILE}-p${_parsed_NP}-${_parsed_RESTART_OUTPUT_PREFIX}"
         )
+    # ensure that this restart output prefix has not already been registered
+    if(_parsed_RESTARTFROM_PATH_TYPE STREQUAL "same_directory_implicit")
+      # For implicit same-directory restarts: check if restart output files using the default prefix (xxx) have already been written;
+      # should not be the case if this test is to be run
+      _register_unique_global_property(
+        "_restart_output_prefix_${_parsed_RESTART_OUTPUT_PREFIX}_for_${_parsed_BASED_ON}"
+        1
+        "You try to run a same_directory_implicit restart using TEST_FILE when there is already a SAME_FILE restart with default restart output prefix for ${_parsed_BASED_ON}! This is not supported since it leads to ambiguous restart output prefixes xxx-<count> which may be subject to race conditions!"
+        )
+    else()
+      # Else: check whether this test exists (the restart simulations run in directories specified with the test name
+      # - hence, it's fine if they have the same restart output prefix as long as they do not run in the same directory,
+      # i.e., as long as they don't have the same test name)
+      check_test_exists(_restart_test_file_exists ${name_of_test})
+      if(_restart_test_file_exists)
+        message(
+          FATAL_ERROR
+            "You have to define another restart output prefix, since ${name_of_test} already exists for ${_parsed_BASED_ON}."
+          )
+      endif()
+    endif()
     set(test_file_full_path "${PROJECT_SOURCE_DIR}/tests/input_files/${_parsed_TEST_FILE}")
     set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_test})
     get_test_property(${_parsed_BASED_ON} _internal_OUTPUT_DIR base_directory)
@@ -576,42 +630,42 @@ function(__four_c_test_restart)
       )
   endif()
 
-  if(_parsed_RESTARTFROM_PATHTYPE STREQUAL "absolute")
+  if(_parsed_RESTARTFROM_PATH_TYPE STREQUAL "absolute")
     set(test_command
         "mkdir -p ${test_directory} \
       && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
-      ${test_file_full_path} ${test_directory}/xxx --restartfrom=${base_directory}/xxx --restart=${_parsed_RESTART_STEP}"
+      ${test_file_full_path} ${test_directory}/${_parsed_RESTART_OUTPUT_PREFIX} --restartfrom=${base_directory}/xxx --restart=${_parsed_RESTART_STEP}"
         )
 
-  elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "relative"
+  elseif(_parsed_RESTARTFROM_PATH_TYPE STREQUAL "relative"
          )# change into the test directory, then restart from the relative path
     set(test_command
         "mkdir -p ${test_directory} && cd ${test_directory} && echo changing pwd to: && pwd \
       && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
-      ${test_file_full_path} ${test_directory}/xxx --restartfrom=${relative_path_from_test_to_base_dir}/xxx --restart=${_parsed_RESTART_STEP}"
+      ${test_file_full_path} ${test_directory}/${_parsed_RESTART_OUTPUT_PREFIX} --restartfrom=${relative_path_from_test_to_base_dir}/xxx --restart=${_parsed_RESTART_STEP}"
         )
-  elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "relative_from_parent"
+  elseif(_parsed_RESTARTFROM_PATH_TYPE STREQUAL "relative_from_parent"
          )# change into the root directory, then restart from there
     set(test_command
         "mkdir -p ${test_directory} && cd ${root_directory} && echo changing pwd to: && pwd \
       && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
-      ${test_file_full_path} ${test_directory}/xxx --restartfrom=${relative_path_from_root_to_base_dir}/xxx --restart=${_parsed_RESTART_STEP}"
+      ${test_file_full_path} ${test_directory}/${_parsed_RESTART_OUTPUT_PREFIX} --restartfrom=${relative_path_from_root_to_base_dir}/xxx --restart=${_parsed_RESTART_STEP}"
         )
-  elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "same_directory")
+  elseif(_parsed_RESTARTFROM_PATH_TYPE STREQUAL "same_directory")
     # restart from base directory, output is still written in test directory
     set(test_command
         "mkdir -p ${test_directory} && cd ${base_directory} && echo staying in: && pwd \
       && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
-      ${test_file_full_path} ${test_directory}/xxx --restartfrom=xxx --restart=${_parsed_RESTART_STEP}"
+      ${test_file_full_path} ${test_directory}/${_parsed_RESTART_OUTPUT_PREFIX} --restartfrom=xxx --restart=${_parsed_RESTART_STEP}"
         )
-  elseif(_parsed_RESTARTFROM_PATHTYPE STREQUAL "same_directory_implicit")
+  elseif(_parsed_RESTARTFROM_PATH_TYPE STREQUAL "same_directory_implicit")
     # restart from base directory and write output in the same directory while not specifying restartfrom path.
     # Note: Output is written in base directory now. Hence it is convenient to set the test directory to base directory for the rest of the test.
     set(test_directory ${base_directory})
     set(test_command
         "cd ${base_directory} && echo staying in: && pwd \
       && ${extra_env}${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> \
-      ${test_file_full_path} xxx --restart=${_parsed_RESTART_STEP}"
+      ${test_file_full_path} ${_parsed_RESTART_OUTPUT_PREFIX} --restart=${_parsed_RESTART_STEP}"
         )
   endif()
 
@@ -676,10 +730,12 @@ function(__four_c_test_restart)
   # If ASSERT_RESTART_STEP is specified, verify the restart step in the control file
   if(DEFINED _parsed_ASSERT_RESTART_STEP)
     # Determine control file name based on restart type
-    if(_parsed_SAME_FILE OR _parsed_RESTARTFROM_PATHTYPE STREQUAL "same_directory_implicit")
-      set(control_file "${test_directory}/xxx-${_restart_count}.control")
+    if(_parsed_RESTARTFROM_PATH_TYPE STREQUAL "same_directory_implicit"
+       OR (_parsed_SAME_FILE AND _parsed_RESTART_OUTPUT_PREFIX STREQUAL "xxx")
+       )
+      set(control_file "${test_directory}/xxx-1.control")
     else()
-      set(control_file "${test_directory}/xxx.control")
+      set(control_file "${test_directory}/${_parsed_RESTART_OUTPUT_PREFIX}.control")
     endif()
 
     set(name_of_restart_check "${name_of_test}-check_restart_step")
