@@ -54,11 +54,6 @@ mkdir "suitesparse-%VERSION%-build"
 
 cd "suitesparse-%VERSION%-build"
 
-dir "%LIB_DIR%\\lapack\\lib\\libblas.lib"
-dir "%LIB_DIR%\\lapack\\lib\\liblapack.lib"
-dir "C:/Users/runneradmin/opt/lapack/lib/libblas.lib"
-dir "C:/Users/runneradmin/opt/lapack/lib/liblapack.lib"
-
 cmake ^
   -G "Ninja" ^
   -D CMAKE_BUILD_TYPE:STRING="Release" ^
@@ -104,15 +99,11 @@ for /d %%D in (suitesparse*) do rmdir /s /q "%%D"
 
 rem rename the installed file (from*_static.lib to *.lib)
 
-echo "INSTALL_DIR: %INSTALL_DIR%"
-cd "%INSTALL_DIR%\lib"
-dir
-echo "Renaming files"
+cd /d "%INSTALL_DIR%\lib"
 for %%F in (*_static.lib) do (
     set "filename=%%~nF"
     ren "%%F" "!filename:~0,-7!.lib"
 )
-dir
 
 if !ERRORLEVEL! neq 0 (
     echo ERROR: install.bat failed with exit code !ERRORLEVEL!
