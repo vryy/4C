@@ -1887,7 +1887,7 @@ void CONTACT::AbstractStrategy::update(std::shared_ptr<const Core::LinAlg::Vecto
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::reset_step_state(
-    const std::shared_ptr<const Core::LinAlg::Vector<double>>& dis)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_n)
 {
   if (zold_ != nullptr)
   {
@@ -1933,13 +1933,12 @@ void CONTACT::AbstractStrategy::reset_step_state(
     for (int j = 0; j < interface->source_col_nodes()->num_my_elements(); ++j)
     {
       const int gid = interface->source_col_nodes()->gid(j);
-      Core::Nodes::Node* node = interface->discret().g_node(gid);
-      if (node == nullptr)
+      auto* cnode = dynamic_cast<CONTACT::Node*>(interface->discret().g_node(gid));
+      if (cnode == nullptr)
       {
-        FOUR_C_THROW("Cannot find node with gid {}", gid);
+        FOUR_C_THROW("Cannot find contact node with gid {}", gid);
       }
 
-      auto* cnode = dynamic_cast<CONTACT::Node*>(node);
       cnode->active() = cnode->data().active_old();
 
       if (friction_)
@@ -1983,15 +1982,20 @@ void CONTACT::AbstractStrategy::reset_step_state(
     store_dm("current");
   }
 
-  if (dis != nullptr)
+  if (displacement_n != nullptr)
   {
-    set_state(Mortar::state_new_displacement, *dis);
-    set_state(Mortar::state_old_displacement, *dis);
+    set_state(Mortar::state_new_displacement, *displacement_n);
+    set_state(Mortar::state_old_displacement, *displacement_n);
+  }
+  else
+  {
+    FOUR_C_THROW("The last accepted displacement state must not be a nullptr.");
   }
 
   reset_active_set();
 
-  const bool restored_contact = (gactivenodes_ != nullptr && gactivenodes_->num_global_elements());
+  const bool restored_contact =
+      (gactivenodes_ != nullptr && gactivenodes_->num_global_elements() > 0);
   isincontact_ = restored_contact;
   wasincontact_ = restored_contact;
   wasincontactlts_ = restored_contact;

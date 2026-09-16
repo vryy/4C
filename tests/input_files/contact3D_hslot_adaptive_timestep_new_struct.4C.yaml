@@ -19,14 +19,13 @@ STRUCTURAL DYNAMIC:
   INT_STRATEGY: "Standard"
   DYNAMICTYPE: "Statics"
   TIMESTEP: 0.1
-  NUMSTEP: 10
-  MAXTIME: 1
+  NUMSTEP: 5
+  MAXTIME: 0.5
   TOLDISP: 0.0001
   TOLRES: 0.0001
   LINEAR_SOLVER: 1
   MAXITER: 15
   DIVERCONT: "adapt_step"
-  MAXDIVCONREFINEMENTLEVEL: 4
 MATERIALS:
   - MAT: 2
     MAT_Struct_StVenantKirchhoff:
@@ -660,17 +659,35 @@ DSURF-NODE TOPOLOGY:
   - "NODE 224 DSURFACE 8"
 RESULT DESCRIPTION:
   - STRUCTURE:
+      DIS: "structure"
+      NODE: 106
+      QUANTITY: "dispx"
+      VALUE: 0.0000280721608690624879
+      TOLERANCE: 1e-08
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 106
+      QUANTITY: "dispy"
+      VALUE: 0.0252325700896112795
+      TOLERANCE: 1e-08
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 106
+      QUANTITY: "dispz"
+      VALUE: 0.0000319335815980573601
+      TOLERANCE: 1e-08
+  - STRUCTURE:
       SPECIAL: true
       QUANTITY: "total_num_steps"
-      VALUE: 15
+      VALUE: 9
       TOLERANCE: 1e-20
   - STRUCTURE:
       SPECIAL: true
       QUANTITY: "total_time"
-      VALUE: 1.0
+      VALUE: 0.5
       TOLERANCE: 1e-12
   - STRUCTURE:
       SPECIAL: true
       QUANTITY: "time_step_size"
-      VALUE: 0.1
+      VALUE: 0.05
       TOLERANCE: 1e-12

@@ -836,9 +836,10 @@ namespace CONTACT
 
     /*! \brief Reset contact state after a failed trial time step
 
-     \param dis (in): last accepted displacement state
+     \param displacement_n (in): last accepted displacement state
      */
-    virtual void reset_step_state(const std::shared_ptr<const Core::LinAlg::Vector<double>>& dis);
+    virtual void reset_step_state(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_n);
 
     /*! \brief Perform a write restart
 
