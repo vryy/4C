@@ -40,8 +40,7 @@ jobs:
           Write-Host "CXX=$env:CXX"
           $stream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($verInfo))
           $hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).Hash.ToLower()
-          Write-Host "hash=$hash"
-          "version_hash=$hash" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "hash=$hash" >> $env:GITHUB_OUTPUT
 
       - name: System preparation
         shell: pwsh
