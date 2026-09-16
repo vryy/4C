@@ -21,13 +21,13 @@ cd $curDir/dependencies/windows/lapack
 
 .\install.bat "$env:DEP_DIR\lapack"
 
-# cd $curDir/dependencies/windows/boost
+cd $curDir/dependencies/windows/boost
 
-# .\install.bat "$env:DEP_DIR\boost"
+.\install.bat "$env:DEP_DIR\boost"
 
-# cd $curDir/dependencies/windows/cln
+cd $curDir/dependencies/windows/cln
 
-# .\install.bat "$env:DEP_DIR\cln"
+.\install.bat "$env:DEP_DIR\cln"
 
 cd $curDir/dependencies/windows/zlib
 
