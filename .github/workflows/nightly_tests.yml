@@ -556,6 +556,8 @@ jobs:
           labels: "github_actions,type: bug report"
 
   clang18_performance_tests_build:
+    # skip on forks to avoid wasted compute and LFS bandwidth usage
+    if: github.repository == '4C-multiphysics/4C'
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:eeb1c043
@@ -587,6 +589,8 @@ jobs:
 
   clang18_performance_tests_test:
     needs: clang18_performance_tests_build
+    # skip on forks to reduce LFS bandwidth usage
+    if: github.repository == '4C-multiphysics/4C'
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:eeb1c043
