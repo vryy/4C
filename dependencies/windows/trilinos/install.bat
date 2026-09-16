@@ -23,6 +23,7 @@ cd /d %USER_DIR%
 git clone https://github.com/trilinos/Trilinos.git
 cd Trilinos
 git checkout %VERSION%
+git apply %~dp0fixes.patch
 
 rem compiling
 
