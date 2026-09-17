@@ -314,14 +314,16 @@ endif()
 # Side note: we use the same flag for a few legacy C sources, which we compile as C++ anyway.
 ##
 
+# using /Z7 instead of /Zi because /Zi prevents ccache to work correctly
+set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
+
 if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES DEBUG)
   set(FOUR_C_ENABLE_ASSERTIONS
       "ON"
       CACHE BOOL "Forced ON due to build type DEBUG" FORCE
       )
   if(MSVC)
-    # using /Z7 instead of /Zi because /Zi prevents ccache to work correctly
-    target_compile_options(four_c_private_compile_interface INTERFACE "/Od" "/Z7")
+    target_compile_options(four_c_private_compile_interface INTERFACE "/Od")
     target_link_options(four_c_private_compile_interface INTERFACE "/DEBUG")
   else()
     target_compile_options(four_c_private_compile_interface INTERFACE "-O0")
@@ -333,7 +335,7 @@ endif()
 
 if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES RELEASE)
   if(MSVC)
-    target_compile_options(four_c_private_compile_interface INTERFACE "/O2" "/Ob2" "/Z7")
+    target_compile_options(four_c_private_compile_interface INTERFACE "/O2" "/Ob2")
   else()
     target_compile_options(four_c_private_compile_interface INTERFACE "-O3")
     target_link_options(four_c_private_compile_interface INTERFACE "-O3")
@@ -344,7 +346,7 @@ endif()
 
 if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES RELWITHDEBINFO)
   if(MSVC)
-    target_compile_options(four_c_private_compile_interface INTERFACE "/O2" "/Ob2" "/Z7")
+    target_compile_options(four_c_private_compile_interface INTERFACE "/O2" "/Ob1")
     target_link_options(four_c_private_compile_interface INTERFACE "/DEBUG" "/LTCG")
   else()
     target_compile_options(four_c_private_compile_interface INTERFACE "-O3")
