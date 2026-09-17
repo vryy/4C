@@ -45,7 +45,7 @@ Please provide meaningful commit messages.
 
 ### 5. Submit a pull request
 Once you submitted your pull request, checks will run automatically to verify that your changes do not break existing functionality. We will review your changes before it can be merged into the `main` branch.
-We desire a clean commit history. This may require rebasing the commits before merging.
+We desire a clean and meaningful commit history. This may require reorganizing the commits into logical, self-contained changes with descriptive commit messages before merging. To preserve these commits in the Git history, we only allow merging using merge commits.
 
 ## Documentation
 In 4C, we have two types of documentation. The general [4C documentation](https://4c-multiphysics.github.io/4C/documentation/) generated with [Sphinx](https://www.sphinx-doc.org/en/master/#) and the [4C source code documentation](https://4c-multiphysics.github.io/4C/doxygen/) generated with [Doxygen](https://doxygen.nl/index.html). We welcome any improvements to our documentation. More information can be found [here](doc/README.md).
