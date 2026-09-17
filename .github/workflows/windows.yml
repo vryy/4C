@@ -19,8 +19,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-      - name: Set up MSVC
 
+      - name: Set up MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Setup Intel Fortran
@@ -42,6 +42,12 @@ jobs:
           $stream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($verInfo))
           $hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).Hash.ToLower()
           "hash=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ runner.os }}-ccache
+          max-size: 2000M
 
       - name: System preparation
         shell: pwsh
