@@ -452,9 +452,11 @@ Core::IO::InputSpec ReducedLung::valid_parameters()
       one_of({
           group("normalized_linear_exponential",
               {
-                  parameter<double>("pressure_offset",
+                  input_field<double>("pressure_offset",
                       {.description = "Pleural pressure at the residual volume, where the linear "
-                                      "and the exponential term both vanish."}),
+                                      "and the exponential term both vanish. May vary spatially, "
+                                      "e.g. to model a gravity-dependent pleural pressure "
+                                      "gradient."}),
                   parameter<double>(
                       "linear_coefficient", {.description = "Factor of the linear term."}),
                   parameter<double>("exponential_coefficient",
@@ -493,7 +495,8 @@ Core::IO::InputSpec ReducedLung::valid_parameters()
                   .total_lung_capacity = entry.get<double>("total_lung_capacity"),
                   .normalized_linear_exponential =
                       VolumeDependentPleuralPressureDefinition::NormalizedLinearExponential{
-                          .pressure_offset = curve.get<double>("pressure_offset"),
+                          .pressure_offset =
+                              curve.get<Core::IO::InputField<double>>("pressure_offset"),
                           .linear_coefficient = curve.get<double>("linear_coefficient"),
                           .exponential_coefficient = curve.get<double>("exponential_coefficient"),
                           .exponential_rate = curve.get<double>("exponential_rate")}});

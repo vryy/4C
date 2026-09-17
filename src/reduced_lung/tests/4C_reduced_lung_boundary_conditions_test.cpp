@@ -59,11 +59,11 @@ namespace
         .coupling = PleuralPressureDefinition::Coupling::Frozen,
         .residual_volume = residual_volume,
         .total_lung_capacity = total_lung_capacity,
-        .normalized_linear_exponential =
-            PleuralPressureDefinition::NormalizedLinearExponential{.pressure_offset = 0.5,
-                .linear_coefficient = 2.0,
-                .exponential_coefficient = 0.25,
-                .exponential_rate = 0.1}};
+        .normalized_linear_exponential = PleuralPressureDefinition::NormalizedLinearExponential{
+            .pressure_offset = Core::IO::InputField<double>(0.5),
+            .linear_coefficient = 2.0,
+            .exponential_coefficient = 0.25,
+            .exponential_rate = 0.1}};
   }
 
   BcInput make_single_pleural_bc_parameters(
@@ -441,6 +441,62 @@ namespace
     ASSERT_TRUE(std::holds_alternative<VolumeDependentPleuralPressure>(model.value_model));
     EXPECT_DOUBLE_EQ(
         rhs.local_values_as_span()[model.data.local_equation_id[0]], 10.0 - expected_pressure);
+  }
+
+  TEST(BoundaryConditionsTests, ResidualAssemblyVolumeDependentPleuralPressureVariesPerElement)
+  {
+    skip_if_parallel();
+
+    // Node 0 is attached to element 0, node 2 to element 1 (see make_fixture()), so a
+    // pressure_offset that differs by global_element_id must prescribe a different pleural
+    // pressure at each of the two nodes, even though both share the same definition.
+    auto fixture = make_fixture();
+    auto definition = make_pleural_pressure_definition(1);
+    // InputField maps constructed directly (like from_file) take 1-based indices and convert
+    // them to the 0-based global_element_id internally, so element 0 is key 1 and element 1 is
+    // key 2.
+    definition.normalized_linear_exponential.pressure_offset =
+        Core::IO::InputField<double>(std::unordered_map<int, double>{{1, 0.5}, {2, 1.5}});
+    fixture.bc_nodes = {{1, {0, 2}}};
+    fixture.parameters.boundary_conditions.pressure.clear();
+    fixture.parameters.boundary_conditions.flow.clear();
+    fixture.parameters.boundary_conditions.volume_dependent_pleural_pressure = {definition};
+
+    Core::Utils::FunctionManager function_manager;
+    auto boundary_conditions = create_boundary_conditions_from_fixture(fixture, function_manager);
+
+    int n_local_equations = 0;
+    assign_local_equation_ids(boundary_conditions, n_local_equations);
+
+    std::array<int, 2> global_dofs{0, 4};
+    Core::LinAlg::Map col_map(-1, global_dofs.size(), global_dofs.data(), 0, MPI_COMM_WORLD);
+    assign_local_dof_ids(col_map, boundary_conditions);
+    create_evaluators(boundary_conditions);
+
+    Core::LinAlg::Map row_map(-1, n_local_equations, 0, MPI_COMM_WORLD);
+    Core::LinAlg::Vector<double> rhs(row_map, true);
+    Core::LinAlg::Vector<double> locally_relevant_dofs(col_map, true);
+    locally_relevant_dofs.get_values()[0] = 10.0;
+    locally_relevant_dofs.get_values()[1] = 20.0;
+
+    const double total_terminal_unit_volume = 3.0;
+    boundary_conditions.total_terminal_unit_volume = total_terminal_unit_volume;
+    update_residual_vector(rhs, boundary_conditions, locally_relevant_dofs, 0.0);
+
+    const double xi = (total_terminal_unit_volume - 1.0) / (5.0 - 1.0);
+    const auto expected_pressure = [&](double offset)
+    { return offset + 2.0 * xi + 0.25 * (std::exp(0.1 * xi) - 1.0); };
+
+    ASSERT_EQ(boundary_conditions.models.size(), 1u);
+    const auto& model = boundary_conditions.models.front();
+    ASSERT_EQ(model.data.size(), 2u);
+    for (size_t i = 0; i < model.data.size(); ++i)
+    {
+      const double offset = model.data.global_element_id[i] == 0 ? 0.5 : 1.5;
+      const double dof_value = model.data.node_id[i] == 0 ? 10.0 : 20.0;
+      EXPECT_DOUBLE_EQ(rhs.local_values_as_span()[model.data.local_equation_id[i]],
+          dof_value - expected_pressure(offset));
+    }
   }
 
   TEST(BoundaryConditionsTests, PleuralPressureGroupsPerDefinition)
