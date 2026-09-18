@@ -55,7 +55,7 @@ function(_set_up_benchmark_test_target _module_under_test _target)
   set_tests_properties(${_target} PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=1")
   set_tests_properties(${_target} PROPERTIES LABELS "benchmark_tests")
 
-  require_fixture(${_target} "collect_benchmark_test_results")
+  require_fixtures(${_target} "collect_benchmark_test_results")
 
   add_dependencies(benchmarktests ${_target})
 endfunction()
