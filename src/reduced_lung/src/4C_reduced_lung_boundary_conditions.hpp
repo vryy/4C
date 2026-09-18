@@ -154,8 +154,10 @@ namespace ReducedLung
     /**
      * @brief Boundary condition model containing a homogeneous set of equations.
      *
-     * All equations of one model evaluate to the same value, so a model holds the entries of
-     * exactly one input definition.
+     * A model holds the entries of exactly one input definition. Every entry evaluates
+     * to the same value model, but the value it prescribes may differ per entry, e.g. when the
+     * volume-dependent pleural pressure's offset varies spatially over the boundary nodes of the
+     * definition.
      */
     struct BoundaryConditionModel
     {
