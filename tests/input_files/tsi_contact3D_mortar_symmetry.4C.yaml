@@ -1,0 +1,258 @@
+TITLE:
+  - "TSI contact conduction with symmetry constraints."
+  - "This test consists of two HEX8 elements coming into contact in z direction."
+  - "Two adjacent faces of the elements perpendicular to the contact normal are constrained in x and y
+    direction, respectively."
+  - "This is modelled by one mortar symmetry line and two symmetry points at the slave side."
+
+PROBLEM TYPE:
+  PROBLEMTYPE: "Thermo_Structure_Interaction"
+
+IO/RUNTIME VTK OUTPUT:
+  INTERVAL_STEPS: 1
+IO/RUNTIME VTK OUTPUT/STRUCTURE:
+  OUTPUT_STRUCTURE: true
+  DISPLACEMENT: true
+THERMAL DYNAMIC/RUNTIME VTK OUTPUT:
+  OUTPUT_THERMO: true
+  TEMPERATURE: true
+
+STRUCTURAL DYNAMIC:
+  DYNAMICTYPE: "Statics"
+  TOLDISP: 1e-10
+  TOLRES: 1e-10
+  LINEAR_SOLVER: 1
+
+THERMAL DYNAMIC:
+  DYNAMICTYPE: "Statics"
+  LINEAR_SOLVER: 1
+
+TSI DYNAMIC:
+  NUMSTEP: 2
+  MAXTIME: 1
+  TIMESTEP: 0.5
+
+TSI DYNAMIC/MONOLITHIC:
+  CONVTOL: 1e-10
+  TOLINC: 1e-10
+  LINEAR_SOLVER: 1
+  MERGE_TSI_BLOCK_MATRIX: true
+
+CONTACT DYNAMIC:
+  STRATEGY: "Lagrange"
+  SYSTEM: "Condensed"
+  LINEAR_SOLVER: 1
+  CONSTRAINT_DIRECTIONS: xyz
+
+MORTAR COUPLING/PARALLEL REDISTRIBUTION:
+  PARALLEL_REDIST: "None"
+
+TSI CONTACT:
+  HEATTRANSSLAVE: 10
+  HEATTRANSMASTER: 10
+
+SOLVER 1:
+  SOLVER: "UMFPACK"
+
+MATERIALS:
+  - MAT: 1
+    MAT_Struct_ThermoStVenantK:
+      YOUNGNUM: 1
+      YOUNG: [4000]
+      NUE: 0.3
+      DENS: 0
+      THEXPANS: 0
+      INITTEMP: 20
+  - MAT: 2
+    MAT_Fourier:
+      CAPA: 0
+      CONDUCT:
+        constant: [52]
+
+CLONING MATERIAL MAP:
+  - SRC_FIELD: "structure"
+    SRC_MAT: 1
+    TAR_FIELD: "thermo"
+    TAR_MAT: 2
+
+FUNCT1:
+  # linear ramp shared by all Dirichlet conditions.
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "t"
+
+DESIGN SURF DIRICH CONDITIONS:
+  - E: 1 # non-contact side of element 1
+    NUMDOF: 3
+    ONOFF: [0, 0, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [0, 0, 0]
+  - E: 2 # non-contact side of element 2
+    NUMDOF: 3
+    ONOFF: [0, 0, 1]
+    VAL: [0, 0, -0.02]
+    FUNCT: [0, 0, 1]
+  - E: 5 # yz plane at x=0 of both elements, constrained in x direction
+    NUMDOF: 3
+    ONOFF: [1, 0, 0]
+    VAL: [0, 0, 0]
+    FUNCT: [0, 0, 0]
+  - E: 6 # xz plane at y=0 of both elements, constrained in y direction
+    NUMDOF: 3
+    ONOFF: [0, 1, 0]
+    VAL: [0, 0, 0]
+    FUNCT: [0, 0, 0]
+
+DESIGN SURF THERMO DIRICH CONDITIONS:
+  - E: 1
+    NUMDOF: 1
+    ONOFF: [1]
+    VAL: [0]
+    FUNCT: [0]
+  - E: 2
+    NUMDOF: 1
+    ONOFF: [1]
+    VAL: [20]
+    FUNCT: [1]
+
+DESIGN SURF MORTAR CONTACT CONDITIONS 3D:
+  - E: 3 # contact side of element 1
+    InterfaceID: 1
+    Side: "Master"
+  - E: 4 # contact side of element 2
+    InterfaceID: 1
+    Side: "Slave"
+
+DESIGN LINE MORTAR SYMMETRY CONDITIONS 3D:
+  - E: 1 # line on the slave side that is constrained in x direction (part of surface 5)
+    ONOFF: [1, 0, 0]
+
+DESIGN POINT MORTAR SYMMETRY CONDITIONS 2D/3D:
+  - E: 1 # point on the slave side that is constrained in x and y direction (part of surface 5 and 6)
+    ONOFF: [1, 1, 0]
+  - E: 2 # point on the slave side that is constrained in y direction (part of surface 6)
+    ONOFF: [0, 1, 0]
+
+DNODE-NODE TOPOLOGY:
+  - "NODE 9 DNODE 1"
+  - "NODE 10 DNODE 2"
+
+DLINE-NODE TOPOLOGY:
+  - "NODE 9 DLINE 1"
+  - "NODE 12 DLINE 1"
+
+DSURF-NODE TOPOLOGY:
+  - "NODE 1 DSURFACE 1"
+  - "NODE 2 DSURFACE 1"
+  - "NODE 3 DSURFACE 1"
+  - "NODE 4 DSURFACE 1"
+  - "NODE 13 DSURFACE 2"
+  - "NODE 14 DSURFACE 2"
+  - "NODE 15 DSURFACE 2"
+  - "NODE 16 DSURFACE 2"
+  - "NODE 5 DSURFACE 3"
+  - "NODE 6 DSURFACE 3"
+  - "NODE 7 DSURFACE 3"
+  - "NODE 8 DSURFACE 3"
+  - "NODE 9 DSURFACE 4"
+  - "NODE 10 DSURFACE 4"
+  - "NODE 11 DSURFACE 4"
+  - "NODE 12 DSURFACE 4"
+  - "NODE 1 DSURFACE 5"
+  - "NODE 4 DSURFACE 5"
+  - "NODE 5 DSURFACE 5"
+  - "NODE 8 DSURFACE 5"
+  - "NODE 9 DSURFACE 5"
+  - "NODE 12 DSURFACE 5"
+  - "NODE 13 DSURFACE 5"
+  - "NODE 16 DSURFACE 5"
+  - "NODE 1 DSURFACE 6"
+  - "NODE 2 DSURFACE 6"
+  - "NODE 5 DSURFACE 6"
+  - "NODE 6 DSURFACE 6"
+  - "NODE 9 DSURFACE 6"
+  - "NODE 10 DSURFACE 6"
+  - "NODE 13 DSURFACE 6"
+  - "NODE 14 DSURFACE 6"
+
+NODE COORDS:
+  - "NODE 1 COORD 0 0 0"
+  - "NODE 2 COORD 1 0 0"
+  - "NODE 3 COORD 1 1 0"
+  - "NODE 4 COORD 0 1 0"
+  - "NODE 5 COORD 0 0 1"
+  - "NODE 6 COORD 1 0 1"
+  - "NODE 7 COORD 1 1 1"
+  - "NODE 8 COORD 0 1 1"
+  - "NODE 9 COORD 0 0 1"
+  - "NODE 10 COORD 1 0 1"
+  - "NODE 11 COORD 1 1 1"
+  - "NODE 12 COORD 0 1 1"
+  - "NODE 13 COORD 0 0 2"
+  - "NODE 14 COORD 1 0 2"
+  - "NODE 15 COORD 1 1 2"
+  - "NODE 16 COORD 0 1 2"
+
+STRUCTURE ELEMENTS:
+  - "1 SOLIDSCATRA HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear TYPE Undefined"
+  - "2 SOLIDSCATRA HEX8 9 10 11 12 13 14 15 16 MAT 1 KINEM nonlinear TYPE Undefined"
+
+RESULT DESCRIPTION:
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 7
+      QUANTITY: "dispx"
+      VALUE: 2.98055813659709682e-03
+      TOLERANCE: 1e-9
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 7
+      QUANTITY: "dispy"
+      VALUE: 2.98055813659709682e-03
+      TOLERANCE: 1e-9
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 5
+      QUANTITY: "dispz"
+      VALUE: -0.01
+      TOLERANCE: 1e-9
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 5
+      QUANTITY: "temp"
+      VALUE: 8.813270381221965
+      TOLERANCE: 1e-9
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 9
+      QUANTITY: "dispz"
+      VALUE: -0.01
+      TOLERANCE: 1e-9
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 9
+      QUANTITY: "temp"
+      VALUE: 11.186729618778035
+      TOLERANCE: 1e-9
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 9
+      QUANTITY: "dispx"
+      VALUE: 0
+      TOLERANCE: 1e-12
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 9
+      QUANTITY: "dispy"
+      VALUE: 0
+      TOLERANCE: 1e-12
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 12
+      QUANTITY: "dispx"
+      VALUE: 0
+      TOLERANCE: 1e-12
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 10
+      QUANTITY: "dispy"
+      VALUE: 0
+      TOLERANCE: 1e-12

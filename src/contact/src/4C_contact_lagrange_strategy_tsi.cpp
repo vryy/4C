@@ -670,7 +670,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   // need diagonal block kss with explicitdirichtlet_=true
   // to be able to apply dirichlet values for contact symmetry condition
   Core::LinAlg::SparseMatrix tmpkss(
-      *gdisprowmap_, 100, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+      *gdisprowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
   sysmat->assign(0, 0, Core::LinAlg::DataAccess::Copy, tmpkss);
 
   // get references to the blocks (just for convenience)
