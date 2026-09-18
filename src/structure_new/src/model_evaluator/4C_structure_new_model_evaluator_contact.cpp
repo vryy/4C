@@ -450,7 +450,7 @@ void Solid::ModelEvaluator::Contact::run_post_compute_x(const Core::LinAlg::Vect
 void Solid::ModelEvaluator::Contact::determine_stress_strain()
 {
   // evaluate contact tractions
-  strategy().compute_contact_stresses();
+  strategy().compute_contact_tractions();
 
   if (strategy().weighted_wear())
   {
@@ -531,26 +531,28 @@ void Solid::ModelEvaluator::Contact::runtime_output_step_state() const
   auto problemdofs = strategy().problem_dofs();
 
   // normal direction
-  auto normalstresses = strategy().contact_normal_stress();
-  auto normalstressesexp = Core::LinAlg::Vector<double>(*problemdofs, true);
-  Core::LinAlg::export_to(*normalstresses, normalstressesexp);
+  auto normal_traction = strategy().contact_normal_traction();
+  auto normal_traction_exported = Core::LinAlg::Vector<double>(*problemdofs, true);
+  Core::LinAlg::export_to(*normal_traction, normal_traction_exported);
 
   // tangential plane
-  auto tangentialstresses = strategy().contact_tangential_stress();
-  auto tangentialstressesexp = Core::LinAlg::Vector<double>(*problemdofs, true);
-  Core::LinAlg::export_to(*tangentialstresses, tangentialstressesexp);
+  auto tangential_traction = strategy().contact_tangential_traction();
+  auto tangential_traction_exported = Core::LinAlg::Vector<double>(*problemdofs, true);
+  Core::LinAlg::export_to(*tangential_traction, tangential_traction_exported);
 
   // write to output
   // contact tractions in normal and tangential direction
   {
-    std::vector<std::optional<std::string>> context(global_state().get_dim(), "norcontactstress");
+    std::vector<std::optional<std::string>> context(
+        global_state().get_dim(), "normal_contact_traction");
     contact_vtu_writer_ptr_->append_result_data_vector_with_context(
-        normalstressesexp, Core::IO::OutputEntity::dof, context);
+        normal_traction_exported, Core::IO::OutputEntity::dof, context);
   }
   {
-    std::vector<std::optional<std::string>> context(global_state().get_dim(), "tancontactstress");
+    std::vector<std::optional<std::string>> context(
+        global_state().get_dim(), "tangential_contact_traction");
     contact_vtu_writer_ptr_->append_result_data_vector_with_context(
-        tangentialstressesexp, Core::IO::OutputEntity::dof, context);
+        tangential_traction_exported, Core::IO::OutputEntity::dof, context);
   }
 
   if (auto gaps = strategy().contact_wgap(); gaps != nullptr)

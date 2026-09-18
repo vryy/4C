@@ -501,10 +501,12 @@ namespace CONTACT
       return data().m_matrix_ptr();
     }
 
-    //! Return vector of normal contact stresses \f$t_{n+1}\f$
-    std::shared_ptr<const Core::LinAlg::Vector<double>> contact_normal_stress() const override
+    //! Return vector of normal contact tractions \f$ \boldsymbol{t}_{\text{n}, n+1} \f$ at \f
+    //! $t_{n+1} \f$
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> contact_normal_traction()
+        const override
     {
-      return data().stress_normal_ptr();
+      return data().normal_traction_ptr();
     }
 
     //! Return weighted gap
@@ -513,10 +515,12 @@ namespace CONTACT
       return data().w_gap_ptr();
     }
 
-    //! Return vector of tangential contact stresses \f$t_{n+1}\f$
-    std::shared_ptr<const Core::LinAlg::Vector<double>> contact_tangential_stress() const override
+    //! Return vector of tangential contact tractions \f$ \boldsymbol{t}_{\tau,n+1} \f$ at \f$
+    //! t_{n+1} \f$
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> contact_tangential_traction()
+        const override
     {
-      return data().stress_tangential_ptr();
+      return data().tangential_traction_ptr();
     }
 
     //! Return vector of normal contact stresses \f$t_{n+1}\f$
@@ -807,12 +811,9 @@ namespace CONTACT
      */
     void store_nodal_quantities(Mortar::StrategyBase::QuantityType type) override;
 
-    /*! \brief Evaluate contact stresses in normal direction and tangential plane
-
-     This is called at the end of each time or load step. It calculates
-     the stress vector in normal direction and the stress vector in the
-     tangential plane. */
-    void compute_contact_stresses() override;
+    /*! \brief Evaluate the contact tractions in the normal direction and the plane tangential to
+     it. This is called at the end of each time or load step. */
+    void compute_contact_tractions() override;
 
     /*! \brief Get dirichlet B.C. status and store into Nodes
 
@@ -1610,27 +1611,15 @@ namespace CONTACT
     //! Vector of Lagrange multipliers from last Uzawa step
     std::shared_ptr<Core::LinAlg::Vector<double>>& zuzawa_;
 
-    /*! \brief Vector of normal contact forces at \f$t_{n+1}\f$
+    /*! \brief Vector of normal contact forces \f$ \boldsymbol{D}_{n+1}^T
+     * \boldsymbol{t}_{\text{n},n+1} + \text{ penalty contributions ...} \f$ at \f$t_{n+1}\f$
      *
-     * \todo What's the difference to #forcenormal_? Update documentation!
-     */
-    std::shared_ptr<Core::LinAlg::Vector<double>>& stressnormal_;
-
-    /*! \brief Vector of tangential contact forces at \f$t_{n+1}\f$
-     *
-     * \todo What's the difference to #forcetangential_? Update documentation!
-     */
-    std::shared_ptr<Core::LinAlg::Vector<double>>& stresstangential_;
-
-    /*! \brief Vector of normal contact forces at \f$t_{n+1}\f$
-     *
-     * \todo What's the difference to #stressnormal_? Update documentation!
      */
     std::shared_ptr<Core::LinAlg::Vector<double>>& forcenormal_;
 
-    /*! \brief Vector of tangential contact forces at \f$t_{n+1}\f$
+    /*! \brief Vector of tangential contact forces \f$ \boldsymbol{D}_{n+1}^T
+     * \boldsymbol{t}_{\tau,n+1} + \text{ penalty contributions ...} \f$ at \f$t_{n+1}\f$
      *
-     * \todo What's the difference to #stresstangential_? Update documentation!
      */
     std::shared_ptr<Core::LinAlg::Vector<double>>& forcetangential_;
 

@@ -430,11 +430,13 @@ namespace CONTACT
     bool is_in_contact() const override { return true; }
     bool was_in_contact() const override { return true; }
     bool was_in_contact_last_time_step() const override { return true; }
-    std::shared_ptr<const Core::LinAlg::Vector<double>> contact_normal_stress() const override
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> contact_normal_traction()
+        const override
     {
       return nullptr;
     }
-    std::shared_ptr<const Core::LinAlg::Vector<double>> contact_tangential_stress() const override
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> contact_tangential_traction()
+        const override
     {
       return nullptr;
     }
@@ -459,7 +461,7 @@ namespace CONTACT
     void inttime_init() override { inttime_ = 0.0; };
     int number_of_active_nodes() const override { return 0; }
     int number_of_slip_nodes() const override { return 0; }
-    void compute_contact_stresses() final {};
+    void compute_contact_tractions() final {};
     void aug_forces(Core::LinAlg::Vector<double>& augfs_lm, Core::LinAlg::Vector<double>& augfs_g,
         Core::LinAlg::Vector<double>& augfm_lm, Core::LinAlg::Vector<double>& augfm_g) {};
     bool redistribute_contact(std::shared_ptr<const Core::LinAlg::Vector<double>> dis,

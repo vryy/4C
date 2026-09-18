@@ -296,7 +296,7 @@ namespace CONTACT
 
     /*! \brief This is a postprocessing functionality for nonsmooth contact
      */
-    void compute_contact_stresses() final;
+    void compute_contact_tractions() final;
 
     /*!
     \brief Recovery method

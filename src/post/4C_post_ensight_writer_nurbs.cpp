@@ -1869,7 +1869,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
       }
       //---------------------------------------------------
       // contact - specific output:
-      else if (name == "norcontactstress" || name == "tancontactstress" ||
+      else if (name == "normal_contact_traction" || name == "tangential_contact_traction" ||
                name == "interfacetraction" || name == "slaveforces" || name == "masterforces" ||
                name == "norslaveforce" || name == "tanslaveforce" || name == "normasterforce" ||
                name == "tanmasterforce" || name == "wear" || name == "norslaveforcelm" ||
@@ -2080,7 +2080,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
     }
     //---------------------------------------------------
     // contact - specific output:
-    else if (name == "norcontactstress" || name == "tancontactstress" ||
+    else if (name == "normal_contact_traction" || name == "tangential_contact_traction" ||
              name == "interfacetraction" || name == "slaveforces" || name == "masterforces" ||
              name == "norslaveforce" || name == "tanslaveforce" || name == "normasterforce" ||
              name == "tanmasterforce" || name == "wear" || name == "norslaveforcelm" ||

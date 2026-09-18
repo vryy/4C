@@ -89,8 +89,6 @@ CONTACT::AbstractStrategy::AbstractStrategy(
       zold_(data_ptr->old_lm_ptr()),
       zincr_(data_ptr->lm_incr_ptr()),
       zuzawa_(data_ptr->lm_uzawa_ptr()),
-      stressnormal_(data_ptr->stress_normal_ptr()),
-      stresstangential_(data_ptr->stress_tangential_ptr()),
       forcenormal_(data_ptr->force_normal_ptr()),
       forcetangential_(data_ptr->force_tangential_ptr()),
       step_(data_ptr->step_np()),
@@ -693,9 +691,11 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
           *mold_, *source_dof_row_map_ptr(true), *gtdofrowmap_);
   }
 
-  // output contact stress vectors
-  stressnormal_ = std::make_shared<Core::LinAlg::Vector<double>>(source_dof_row_map(true));
-  stresstangential_ = std::make_shared<Core::LinAlg::Vector<double>>(source_dof_row_map(true));
+  // output contact traction vectors
+  data_ptr_->normal_traction_ptr() =
+      std::make_shared<Core::LinAlg::Vector<double>>(source_dof_row_map(true));
+  data_ptr_->tangential_traction_ptr() =
+      std::make_shared<Core::LinAlg::Vector<double>>(source_dof_row_map(true));
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SOURCE DISPLACEMENT DOFS
@@ -1681,13 +1681,15 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Qua
 }
 
 /*----------------------------------------------------------------------*
- |  Output vector of normal/tang. contact stresses        gitterle 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::compute_contact_stresses()
+void CONTACT::AbstractStrategy::compute_contact_tractions()
 {
   // reset contact stress class variables
-  stressnormal_ = std::make_shared<Core::LinAlg::Vector<double>>(source_dof_row_map(true));
-  stresstangential_ = std::make_shared<Core::LinAlg::Vector<double>>(source_dof_row_map(true));
+  auto& normal_traction = data().normal_traction_ptr();
+  auto& tangential_traction = data().tangential_traction_ptr();
+  normal_traction = std::make_shared<Core::LinAlg::Vector<double>>(source_dof_row_map(true));
+  tangential_traction = std::make_shared<Core::LinAlg::Vector<double>>(source_dof_row_map(true));
+
 
   // loop over all interfaces
   for (int i = 0; i < (int)interfaces().size(); ++i)
@@ -1729,15 +1731,15 @@ void CONTACT::AbstractStrategy::compute_contact_stresses()
       // normal stress components
       for (int dof = 0; dof < n_dim(); ++dof)
       {
-        locindex[dof] = (stressnormal_->get_map()).lid(cnode->dofs()[dof]);
-        (*stressnormal_).get_values()[locindex[dof]] = -lmn * nn[dof];
+        locindex[dof] = (normal_traction->get_map()).lid(cnode->dofs()[dof]);
+        (*normal_traction).get_values()[locindex[dof]] = -lmn * nn[dof];
       }
 
       // tangential stress components
       for (int dof = 0; dof < n_dim(); ++dof)
       {
-        locindex[dof] = (stresstangential_->get_map()).lid(cnode->dofs()[dof]);
-        (*stresstangential_).get_values()[locindex[dof]] = -lmt1 * nt1[dof] - lmt2 * nt2[dof];
+        locindex[dof] = (tangential_traction->get_map()).lid(cnode->dofs()[dof]);
+        (*tangential_traction).get_values()[locindex[dof]] = -lmt1 * nt1[dof] - lmt2 * nt2[dof];
       }
     }
   }
@@ -3056,13 +3058,13 @@ void CONTACT::AbstractStrategy::postprocess_quantities_per_interface(
         "target forces", fctarget);
   }
 
-  // Postprocess contact stresses
+  // Postprocess contact tractions
   {
     // Append data to parameter list
     outputParams->set<std::shared_ptr<const Core::LinAlg::Vector<double>>>(
-        "norcontactstress", stressnormal_);
+        "normal_contact_traction", data().normal_traction_ptr());
     outputParams->set<std::shared_ptr<const Core::LinAlg::Vector<double>>>(
-        "tancontactstress", stresstangential_);
+        "tangential_contact_traction", data().tangential_traction_ptr());
   }
 
   for (auto& interface : interfaces()) interface->postprocess_quantities(*outputParams);
