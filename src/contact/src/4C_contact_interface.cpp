@@ -7672,30 +7672,34 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     writer->write_vector("interfacetraction", iLagMult, Core::IO::VectorType::dofvector);
   }
 
-  // Write normal contact stress
+  // Write normal contact traction
   {
     // Get values from parameter list and export to interface dof_row_map
-    std::shared_ptr<const Core::LinAlg::Vector<double>> normalStresses =
-        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("norcontactstress");
-    std::shared_ptr<Core::LinAlg::Vector<double>> iNormalStresses =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> normal_traction =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>(
+            "normal_contact_traction");
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_normal_traction =
         std::make_shared<Core::LinAlg::Vector<double>>(*idiscret_->dof_row_map());
-    Core::LinAlg::export_to(*normalStresses, *iNormalStresses);
+    Core::LinAlg::export_to(*normal_traction, *i_normal_traction);
 
-    // Write this interface's normal contact stress field
-    writer->write_vector("norcontactstress", iNormalStresses, Core::IO::VectorType::dofvector);
+    // Write this interface's normal contact traction field
+    writer->write_vector(
+        "normal_contact_traction", i_normal_traction, Core::IO::VectorType::dofvector);
   }
 
-  // Write tangential contact stress
+  // Write tangential contact traction
   {
     // Get values from parameter list and export to interface dof_row_map
-    std::shared_ptr<const Core::LinAlg::Vector<double>> tangentialStresses =
-        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("tancontactstress");
-    std::shared_ptr<Core::LinAlg::Vector<double>> iTangentialStresses =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> tangential_traction =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>(
+            "tangential_contact_traction");
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_tangential_traction =
         std::make_shared<Core::LinAlg::Vector<double>>(*idiscret_->dof_row_map());
-    Core::LinAlg::export_to(*tangentialStresses, *iTangentialStresses);
+    Core::LinAlg::export_to(*tangential_traction, *i_tangential_traction);
 
-    // Write this interface's normal contact stress field
-    writer->write_vector("tancontactstress", iTangentialStresses, Core::IO::VectorType::dofvector);
+    // Write this interface's tangential contact traction field
+    writer->write_vector(
+        "tangential_contact_traction", i_tangential_traction, Core::IO::VectorType::dofvector);
   }
 
   // Write nodal forces of source side

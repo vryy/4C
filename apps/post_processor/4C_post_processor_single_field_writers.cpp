@@ -33,9 +33,9 @@ void StructureFilter::write_all_results(PostField* field)
   writer_->write_result("activeset", "activeset", nodebased, 1);
   writer_->write_result("contactowner", "contactowner", nodebased, 1);
   writer_->write_result(
-      "norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());
-  writer_->write_result(
-      "tancontactstress", "tancontactstress", dofbased, field->problem()->num_dim());
+      "normal_contact_traction", "normal_contact_traction", dofbased, field->problem()->num_dim());
+  writer_->write_result("tangential_contact_traction", "tangential_contact_traction", dofbased,
+      field->problem()->num_dim());
   writer_->write_result(
       "interfacetraction", "interfacetraction", dofbased, field->problem()->num_dim());
   writer_->write_result("slaveforces", "slaveforces", dofbased, field->problem()->num_dim());
@@ -143,9 +143,9 @@ void MortarFilter::write_all_results(PostField* field)
   writer_->write_result("displacement", "displacement", dofbased, field->problem()->num_dim());
 
   writer_->write_result(
-      "norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());
-  writer_->write_result(
-      "tancontactstress", "tancontactstress", dofbased, field->problem()->num_dim());
+      "normal_contact_traction", "normal_contact_traction", dofbased, field->problem()->num_dim());
+  writer_->write_result("tangential_contact_traction", "tangential_contact_traction", dofbased,
+      field->problem()->num_dim());
 
   writer_->write_result(
       "interfacetraction", "interfacetraction", dofbased, field->problem()->num_dim());

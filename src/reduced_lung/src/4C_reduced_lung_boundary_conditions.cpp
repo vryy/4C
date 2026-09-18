@@ -52,40 +52,46 @@ namespace ReducedLung
       }
 
       /**
-       * Constrain the boundary dof of every entry of @p model to @p bc_value.
+       * Constrain the boundary dof of every entry of @p model to the value @p bc_value_at
+       * returns for that entry's index.
        */
+      template <typename ValueAt>
       void apply_dirichlet_residual(const BoundaryConditionModel& model,
           Core::LinAlg::Vector<double>& rhs, const Core::LinAlg::Vector<double>& dofs,
-          double bc_value)
+          const ValueAt& bc_value_at)
       {
         for (size_t i = 0; i < model.data.size(); ++i)
         {
           const int local_dof_id = model.data.local_dof_id[i];
-          const double res = dofs.local_values_as_span()[local_dof_id] - bc_value;
+          const double res = dofs.local_values_as_span()[local_dof_id] - bc_value_at(i);
           rhs.replace_local_value(model.data.local_equation_id[i], res);
         }
       }
 
       /**
        * Pleural pressure over the normalized terminal unit volume
-       * xi = (V - residual_volume) / (total_lung_capacity - residual_volume).
+       * xi = (V - residual_volume) / (total_lung_capacity - residual_volume), with the
+       * pressure_offset looked up for @p global_element_id, which allows it to vary spatially.
        */
       [[nodiscard]] double evaluate_volume_dependent_pleural_pressure(
-          const VolumeDependentPleuralPressure& pleural_pressure, double total_terminal_unit_volume)
+          const VolumeDependentPleuralPressure& pleural_pressure, double total_terminal_unit_volume,
+          int global_element_id)
       {
         const auto& curve = pleural_pressure.normalized_linear_exponential;
         const double xi = (total_terminal_unit_volume - pleural_pressure.residual_volume) /
                           (pleural_pressure.total_lung_capacity - pleural_pressure.residual_volume);
-        return curve.pressure_offset + curve.linear_coefficient * xi +
+        const double pressure_offset =
+            curve.pressure_offset.at(global_element_id, "pressure_offset");
+        return pressure_offset + curve.linear_coefficient * xi +
                curve.exponential_coefficient * (std::exp(curve.exponential_rate * xi) - 1.0);
       }
 
       /**
-       * The value a boundary condition prescribes in the state of @p assembly_context. One
-       * overload per alternative of ValueModel.
+       * The value a boundary condition prescribes in the state of @p assembly_context for the
+       * entry attached to @p global_element_id. One overload per alternative of ValueModel.
        */
-      [[nodiscard]] double prescribed_value(
-          const TimeFunction& time_function, const AssemblyContext& assembly_context)
+      [[nodiscard]] double prescribed_value(const TimeFunction& time_function,
+          const AssemblyContext& assembly_context, int /*global_element_id*/)
       {
         FOUR_C_ASSERT(time_function.function != nullptr,
             "Implementation error: function {} of a boundary condition was not resolved.",
@@ -94,7 +100,7 @@ namespace ReducedLung
       }
 
       [[nodiscard]] double prescribed_value(const VolumeDependentPleuralPressure& pleural_pressure,
-          const AssemblyContext& assembly_context)
+          const AssemblyContext& assembly_context, int global_element_id)
       {
         switch (pleural_pressure.coupling)
         {
@@ -102,14 +108,16 @@ namespace ReducedLung
             // The context carries the volume of the last converged timestep, so the value stays
             // constant over the Newton solve.
             return evaluate_volume_dependent_pleural_pressure(
-                pleural_pressure, assembly_context.total_terminal_unit_volume);
+                pleural_pressure, assembly_context.total_terminal_unit_volume, global_element_id);
         }
         FOUR_C_THROW("Unknown coupling of volume-dependent pleural pressure.");
       }
 
       /**
        * Bind a value model to the callable that assembles its residual. The concrete alternative
-       * is captured here, so the assembly loop never inspects the variant again.
+       * is captured here, so the assembly loop never inspects the variant again. Each entry is
+       * evaluated separately by its own global_element_id, since the value model may vary
+       * spatially even within a single model.
        */
       [[nodiscard]] ResidualEvaluator make_residual_evaluator(const ValueModel& value_model)
       {
@@ -120,8 +128,12 @@ namespace ReducedLung
                          const Core::LinAlg::Vector<double>& dofs,
                          const AssemblyContext& assembly_context)
               {
-                apply_dirichlet_residual(
-                    model, rhs, dofs, prescribed_value(value, assembly_context));
+                apply_dirichlet_residual(model, rhs, dofs,
+                    [&](size_t i)
+                    {
+                      return prescribed_value(
+                          value, assembly_context, model.data.global_element_id[i]);
+                    });
               };
             },
             value_model);

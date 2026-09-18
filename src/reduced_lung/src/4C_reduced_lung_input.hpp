@@ -275,7 +275,7 @@ namespace ReducedLung
          */
         struct NormalizedLinearExponential
         {
-          double pressure_offset;
+          Core::IO::InputField<double> pressure_offset;
           double linear_coefficient;
           double exponential_coefficient;
           double exponential_rate;

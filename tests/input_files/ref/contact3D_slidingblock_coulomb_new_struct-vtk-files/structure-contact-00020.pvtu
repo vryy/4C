@@ -10,8 +10,8 @@
     <PPointData>
       <PDataArray type="Float64" Name="activeset" format="ascii"/>
       <PDataArray type="Float64" Name="gap" format="ascii"/>
-      <PDataArray type="Float64" Name="norcontactstress" NumberOfComponents="3" format="ascii"/>
-      <PDataArray type="Float64" Name="tancontactstress" NumberOfComponents="3" format="ascii"/>
+      <PDataArray type="Float64" Name="normal_contact_traction" NumberOfComponents="3" format="ascii"/>
+      <PDataArray type="Float64" Name="tangential_contact_traction" NumberOfComponents="3" format="ascii"/>
     </PPointData>
     <Piece Source="structure-contact-00020-0.vtu"/>
     <Piece Source="structure-contact-00020-1.vtu"/>
