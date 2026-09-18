@@ -7,19 +7,100 @@
 
 #include "4C_solver_nonlin_nox_linesearch_backtrack.hpp"  // class definition
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_linesearch_prepostoperator.hpp"
 #include "4C_solver_nonlin_nox_solver_linesearchbased.hpp"
 #include "4C_solver_nonlin_nox_statustest_normf.hpp"
+#include "4C_solver_nonlin_nox_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <fenv.h>
+#include <mpi.h>
 #include <NOX_GlobalData.H>
 #include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
+#include <cfenv>
+#endif
+
 FOUR_C_NAMESPACE_OPEN
+
+namespace
+{
+
+
+
+  /**
+   * @brief Runs the \p evaluation and detects whether floating point exceptions occurred on any
+   * rank.
+   *
+   * @param evaluation The evaluation to run.
+   * @param allow_floating_point_exceptions Whether to allow floating point exceptions or not.
+   * @param comm The MPI communicator to use for the reduction. No reduction is performed if \c
+   * FOUR_C_ENABLE_FE_TRAPPING is not set or if \p allow_floating_point_exceptions is false.
+   * @param os The output stream to use for logging rank-local floating point exceptions.
+   * @return true if a floating point exception occurred on any rank, false otherwise.
+   */
+  bool run_and_detect_floating_point_exceptions(const std::function<void()>& evaluation,
+      bool allow_floating_point_exceptions, MPI_Comm comm, std::ostream& os)
+  {
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
+    if (allow_floating_point_exceptions)
+    {
+      // Floating point exceptions for which backtracking should be performed.
+      constexpr int handled_floating_point_exceptions = FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW;
+
+      /// Guard to set the floating point exception environment and restore it after evaluation.
+      class FloatingPointExceptionGuard
+      {
+       public:
+        explicit FloatingPointExceptionGuard()
+        {
+          fedisableexcept(handled_floating_point_exceptions);
+          // clear any left-over flags
+          feclearexcept(handled_floating_point_exceptions);
+        }
+
+        FloatingPointExceptionGuard(const FloatingPointExceptionGuard&) = delete;
+        FloatingPointExceptionGuard& operator=(const FloatingPointExceptionGuard&) = delete;
+
+        ~FloatingPointExceptionGuard()
+        {
+          feclearexcept(handled_floating_point_exceptions);
+          // restore the previously enabled floating point exceptions
+          fedisableexcept(FE_ALL_EXCEPT);
+          feenableexcept(previously_enabled_floating_point_exceptions_);
+        }
+
+       private:
+        const int previously_enabled_floating_point_exceptions_ = fegetexcept();
+      };
+
+      FloatingPointExceptionGuard guard;
+
+      evaluation();
+
+      const bool local_fe_except = fetestexcept(handled_floating_point_exceptions) != 0;
+      feclearexcept(handled_floating_point_exceptions);
+
+      if (local_fe_except)
+      {
+        os << "WARNING: Floating point exception occurred on rank "
+           << Core::Communication::my_mpi_rank(comm);
+      }
+
+      return Core::Communication::sum_all(static_cast<int>(local_fe_except), comm) > 0;
+    }
+#endif
+
+    evaluation();
+    return false;
+  }
+}  // namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -69,7 +150,7 @@ bool NOX::Nln::LineSearch::Backtrack::reset(
   check_type_ = Teuchos::getIntegralValue<::NOX::StatusTest::CheckType>(
       params, "Inner Status Test Check Type");
 
-  fp_except_.shall_be_caught_ = p.get("Allow Exceptions", false);
+  allow_floating_point_exceptions_ = p.get("Allow Exceptions", false);
 
   pre_post_operator_ptr_ = Teuchos::make_rcp<PrePostOperator>(params);
 
@@ -93,7 +174,8 @@ void NOX::Nln::LineSearch::Backtrack::reset()
 bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, double& step,
     const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s)
 {
-  fp_except_.precompute();
+  // find out the current communicator
+  const auto comm = dynamic_cast<const NOX::Nln::Vector&>(dir).get_linalg_vector().get_comm();
   // -------------------------------------------------
   // (re)set important line search parameters
   // -------------------------------------------------
@@ -127,13 +209,19 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
   // -------------------------------------------------
   grp.computeX(oldGrp, dir, step);
   ::NOX::Abstract::Group::ReturnType rtype = ::NOX::Abstract::Group::Ok;
-  bool failed = false;
-  try
-  {
-    failed = false;
-    rtype = grp.computeF();
-    if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
+  bool fpe_occurred = false;
 
+  fpe_occurred = run_and_detect_floating_point_exceptions([&]() { rtype = grp.computeF(); },
+      allow_floating_point_exceptions_, comm, utils_->out(::NOX::Utils::Warning));
+  if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
+
+  if (fpe_occurred)
+  {
+    utils_->out() << "Last step caused a floating point exception. Reducing step length...\n";
+    status_ = NOX::Nln::Inner::StatusTest::status_step_too_long;
+  }
+  else
+  {
     /* Safe-guarding of the inner status test:
      * If the outer NormF test is converged for a full step length,
      * we don't have to reduce the step length any further.
@@ -152,22 +240,9 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
      * already converged! */
     if (ostatus == ::NOX::StatusTest::Converged)
     {
-      fp_except_.enable();
       return true;
     }
   }
-  // catch error of the computeF method
-  catch (const char* e)
-  {
-    if (not fp_except_.shall_be_caught_) FOUR_C_THROW("An exception occurred: {}", e);
-
-    utils_->out(::NOX::Utils::Warning) << "WARNING: Error caught = " << e << "\n";
-
-    status_ = NOX::Nln::Inner::StatusTest::status_step_too_long;
-    failed = true;
-  }
-  // clear the exception checks after the try/catch block
-  fp_except_.clear();
 
   // -------------------------------------------------
   // print header if desired
@@ -177,7 +252,7 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
                                             << ::NOX::Utils::fill(72, '=') << "\n"
                                             << "-- Backtrack Line Search -- \n";
 
-  if (not failed)
+  if (not fpe_occurred)
   {
     status_ = inner_tests_ptr_->check_status(controller_, grp, check_type_);
     print_update(utils_->out(::NOX::Utils::InnerIteration));
@@ -200,26 +275,19 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
     grp.computeX(oldGrp, dir, step);
     ++ls_iters_;
 
-    try
+    fpe_occurred = run_and_detect_floating_point_exceptions([&]() { rtype = grp.computeF(); },
+        allow_floating_point_exceptions_, comm, utils_->out(::NOX::Utils::Warning));
+    if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
+    if (fpe_occurred)
     {
-      rtype = grp.computeF();
-      if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
+      utils_->out() << "Last step caused a floating point exception. Reducing step length...\n";
+      status_ = NOX::Nln::Inner::StatusTest::status_step_too_long;
+    }
+    else
+    {
       status_ = inner_tests_ptr_->check_status(controller_, grp, check_type_);
       print_update(utils_->out(::NOX::Utils::InnerIteration));
     }
-    // catch error of the computeF method
-    catch (const char* e)
-    {
-      if (not fp_except_.shall_be_caught_) FOUR_C_THROW("An exception occurred: {}", e);
-
-      if (utils_->isPrintType(::NOX::Utils::Warning))
-        utils_->out() << "WARNING: Error caught = " << e << "\n";
-
-      status_ = NOX::Nln::Inner::StatusTest::status_step_too_long;
-    }
-
-    // clear the exception checks after the try/catch block
-    fp_except_.clear();
   }
   // -------------------------------------------------
   // print footer if desired
@@ -233,7 +301,6 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
   else if (status_ == NOX::Nln::Inner::StatusTest::status_no_descent_direction)
     throw_error("compute()", "The given search direction is no descent direction!");
 
-  fp_except_.enable();
   return (status_ == NOX::Nln::Inner::StatusTest::status_converged ? true : false);
 }
 
