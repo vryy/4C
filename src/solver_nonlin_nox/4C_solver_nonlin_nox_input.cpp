@@ -170,8 +170,8 @@ std::vector<Core::IO::InputSpec> NOX::valid_parameters()
                   .default_value = 0.5}),
           parameter<bool>("Allow Exceptions",
               {.description =
-                      "Set to true, if exceptions during the force evaluation and backtracking "
-                      "routine should be allowed.",
+                      "If set to true and if FOUR_C_ENABLE_FE_TRAPPING is enabled, floating point "
+                      "exceptions during trial evaluations will lead to a step reduction.",
                   .default_value = false})},
       {.required = false}));
 
