@@ -408,7 +408,11 @@ double Solid::Integrator::get_total_mid_time_str_energy(const Core::LinAlg::Vect
   mt_energy_.kin_energy_np_ = eval_data().get_energy_data(Solid::kinetic_energy);
   global_state().get_fext_np()->dot(*dis_avg, &mt_energy_.ext_energy_np_);
 
+#ifdef _MSC_VER
+  Core::IO::cout(Core::IO::debug) << __LINE__ << " -- " << __FUNCSIG__ << "\n";
+#else
   Core::IO::cout(Core::IO::debug) << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "\n";
+#endif
   mt_energy_.print(Core::IO::cout.os(Core::IO::debug));
 
   return mt_energy_.get_total();

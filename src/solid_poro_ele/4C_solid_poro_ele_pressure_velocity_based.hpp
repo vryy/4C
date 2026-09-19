@@ -224,7 +224,11 @@ namespace Discret::Elements
         const Core::LinAlg::Tensor<double, 3>& xi, const Core::LinAlg::Tensor<double, 3>& n,
         const Core::LinAlg::Tensor<double, 3>& dir,
         SolidPoroCauchyNDirLinearizations<3>& linearizations)
+#ifdef _MSC_VER
+        ;
+#else
       requires(dim == 3);
+#endif
 
     void vis_names(std::map<std::string, int>& names) const override;
 

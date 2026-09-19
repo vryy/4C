@@ -20,8 +20,16 @@
 #include "4C_utils_singleton_owner.hpp"
 
 #include <Kokkos_Core.hpp>
-#include <unistd.h>
 
+#if defined(_WIN32)
+#include <process.h>
+#include <winsock2.h>
+#define getpid _getpid
+#else
+#include <unistd.h>
+#endif
+
+#include <cstdio>
 #include <filesystem>
 #include <format>
 #include <iostream>
@@ -58,6 +66,13 @@ int main(int argc, char* argv[])
     ~CleanUpMPI() { MPI_Finalize(); }
   } cleanup_mpi;
 
+#if defined(_WIN32)
+  // Initialize winsock
+  WORD wVersionRequested = MAKEWORD(2, 2);
+  WSADATA wsaData;
+  WSAStartup(wVersionRequested, &wsaData);
+#endif
+
   // Kokkos should be initialized right after MPI.
   Kokkos::ScopeGuard kokkos_guard{};
 
@@ -90,8 +105,6 @@ int main(int argc, char* argv[])
   // Initialize our own singleton registry to ensure we clean up all singletons properly.
   Core::Utils::SingletonOwnerRegistry::ScopeGuard singleton_owner_guard{};
 
-
-
   if (arguments.interactive)
   {
     char hostname[256];
@@ -102,8 +115,8 @@ int main(int argc, char* argv[])
     {
       printf("\n** Enter a character to continue > \n");
       fflush(stdout);
-      char go = ' ';
-      if (scanf("%c", &go) == EOF)
+      int go = std::getchar();
+      if (go == EOF)
       {
         FOUR_C_THROW("Error while reading input.\n");
       }
@@ -215,6 +228,11 @@ int main(int argc, char* argv[])
           Core::Communication::my_mpi_rank(communicators.local_comm()));
     }
   }
+
+#if defined(_WIN32) || defined(_MSC_VER)
+  /// Finalize winsock
+  WSACleanup();
+#endif
 
   return (0);
 }

@@ -12,6 +12,7 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <cmath>
+#include <numbers>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -69,7 +70,7 @@ namespace ReducedLung
       model.data.ref_length.push_back(ref_length);
 
       const double radius = parameters.lung_tree.airways.radius.at(global_element_id, "radius");
-      const double area = radius * radius * M_PI;
+      const double area = radius * radius * std::numbers::pi;
       model.data.air_properties.dynamic_viscosity = parameters.air_properties.dynamic_viscosity;
       model.data.air_properties.density = parameters.air_properties.density;
       model.data.ref_area.push_back(area);

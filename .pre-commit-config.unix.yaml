@@ -1,0 +1,199 @@
+default_stages:
+  # This setting means that our own hooks are run in the pre-commit stage unless specified otherwise.
+  - pre-commit
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v20.1.0
+    hooks:
+      - id: clang-format
+        name: Format C/C++
+        # Only use on C and C++ files and not on other files that clang could format (e.g. json).
+        types_or: [c++, c]
+        exclude: "mm$"
+
+  - repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.13
+    hooks:
+      - id: cmake-format
+        name: Format cmake
+        args: [--config, utilities/code_checks/.cmake-format.yaml, --in-place]
+        additional_dependencies: [pyyaml>=5.1]
+
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 25.1.0
+    hooks:
+      - id: black
+        name: Format python
+
+  - repo: https://github.com/pamoller/xmlformatter
+    rev: v0.2.8
+    hooks:
+      - id: xml-formatter
+        name: Format xml
+        args: [--indent, "2", --indent-char, " ", --selfclose, --overwrite]
+        # Only run on "pure" XML files and not on files that internally use XML (e.g. svg)
+        files: \.xml$
+
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.16.0
+    hooks:
+      - id: yamlfmt
+        name: Format yaml
+        args: [-conf, utilities/code_checks/.yamlfmt.yaml]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: pretty-format-json
+        name: Format JSON
+        # Only run on 4C input files in JSON format for human readability.
+        files: \.4C.json$
+        args: [--autofix, --no-ensure-ascii, --no-sort-keys]
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+        # Do not modify reference vtu files, since we generate these and do not hand-edit them.
+        exclude: "vtu$"
+        # Do not trim trailing whitespace in C++ files. It is not trivial to trim whitespace
+        # correctly, e.g., when inside a string literal. Clang-format will do this correctly.
+        exclude_types: [c, c++]
+      - id: no-commit-to-branch
+        name: Don't commit to main
+      - id: check-added-large-files
+        name: Check for added large files
+        args: ["--maxkb=500"]
+        files: ^tests/performance_tests/.*
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: insert-license
+        name: Insert license header (//)
+        types_or: [c++, c]
+        exclude: "mm$"
+        args:
+          - --license-filepath
+          - utilities/license_header.txt
+          - --comment-style
+          - "//"
+          - --detect-license-in-X-top-lines=1
+      - id: insert-license
+        name: Insert license header (#)
+        types_or: [python, cmake, dockerfile, shell]
+        args:
+          - --license-filepath
+          - utilities/license_header.txt
+          - --comment-style
+          - "#"
+          # Allow the first line to be a shebang separated by a newline.
+          - --detect-license-in-X-top-lines=3
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.31.1
+    hooks:
+      - id: typos
+        name: Check for typos in code
+        types_or: [c++, c, python, cmake, shell]
+        exclude: "(mm$|list_of_tests.cmake)"
+      - id: typos
+        name: Check for typos in documentation
+        types_or: [markdown, rst]
+
+  - repo: local
+    hooks:
+      - id: check-venv-up-to-date
+        name: Python virtual environment is up to date
+        language: system
+        entry: ./utilities/code_checks/unix/check_venv
+        always_run: true
+        pass_filenames: false
+        fail_fast: true
+
+      - id: check-dependencies-hash
+        name: Github workflow dependencies hash is up to date
+        language: python
+        entry: utilities/python-venv/bin/check-workflow-dependencies-hash
+        always_run: true
+        pass_filenames: false
+
+      - id: cpp-filename
+        name: C++ file names
+        description: "Check that all C++ files have the correct file name"
+        language: system
+        types_or: [c++, c]
+        exclude: "tests/cut_test/|mm$|dummy.cpp"
+        entry: utilities/python-venv/bin/check-filenames
+        require_serial: true # To give a non duplicated error output
+
+      - id: cpp-include
+        name: C++ includes
+        description: "Check that all C++ files have correct includes"
+        language: system
+        types_or: [c++, c]
+        exclude: "tests/cut_test/|mm$"
+        entry: utilities/python-venv/bin/check-includes
+        require_serial: true # To give a non duplicated error output
+
+      - id: cpp-header-guard
+        name: Header guards
+        description: "Check that all C++ files have the correct header guards"
+        language: python
+        types_or: [c++, c]
+        files: '\.(h|hpp)$'
+        entry: utilities/python-venv/bin/check-header-guards
+
+      - id: cpp-include-cycles
+        name: C++ include cycles
+        description: "Check that all C++ headers do not have include cycles"
+        language: python
+        always_run: true
+        pass_filenames: false
+        entry: utilities/python-venv/bin/check-includes-for-cycles
+
+      - id: cpp-preprocessor
+        name: C++ preprocessor directives
+        description: "Check that all C++ files only use acceptable preprocessor directives"
+        language: python
+        types_or: [c++, c]
+        entry: utilities/python-venv/bin/check-preprocessor
+
+      - id: input-files
+        name: Check for untested input files
+        description: "Check that all input files are added in tests/list_of_tests.cmake"
+        language: python
+        files: 'tests/input_files/.*\.4C\.(yaml|json)$'
+        exclude: '.*\.mat\.4C\.(yaml|json)$'
+        entry: utilities/python-venv/bin/check-test-files
+
+      - id: companion-input-files
+        name: Check for unused companion input files
+        description: "Check that all companion input files are used within an input file"
+        language: python
+        # all individual files in tests/input_files
+        files: "tests/input_files/.*"
+        entry: utilities/python-venv/bin/check-companion-test-files
+        require_serial: true # To give a non duplicated error output
+
+      - id: non-ascii-chars
+        name: Non-ASCII characters
+        language: system
+        types_or: [c++, c, python, cmake, shell]
+        entry: ./utilities/code_checks/unix/check_non_ascii_chars
+
+      - id: check-commit-msg
+        name: Check commit message
+        description: "Check for valid commit message"
+        language: system
+        entry: ./utilities/code_checks/unix/commit-msg
+        stages: [commit-msg]
+
+      - id: check-python-files
+        name: Check python files
+        description: "Check that all python files are located within utilities/four_c_python or follow
+          the naming convention"
+        language: python
+        types: [python]
+        entry: utilities/python-venv/bin/check-python-files
+        require_serial: true # To give a non duplicated error output

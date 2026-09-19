@@ -59,6 +59,8 @@ repos:
         # Do not trim trailing whitespace in C++ files. It is not trivial to trim whitespace
         # correctly, e.g., when inside a string literal. Clang-format will do this correctly.
         exclude_types: [c, c++]
+        # Do not trim patch files
+        exclude: \.(patch|diff)$
       - id: no-commit-to-branch
         name: Don't commit to main
       - id: check-added-large-files
@@ -106,17 +108,10 @@ repos:
       - id: check-venv-up-to-date
         name: Python virtual environment is up to date
         language: system
-        entry: ./utilities/code_checks/check_venv
+        entry: cmd.exe /c "utilities\code_checks\windows\check_venv.bat"
         always_run: true
         pass_filenames: false
         fail_fast: true
-
-      - id: check-dependencies-hash
-        name: Github workflow dependencies hash is up to date
-        language: python
-        entry: utilities/python-venv/bin/check-workflow-dependencies-hash
-        always_run: true
-        pass_filenames: false
 
       - id: cpp-filename
         name: C++ file names
@@ -124,7 +119,7 @@ repos:
         language: system
         types_or: [c++, c]
         exclude: "tests/cut_test/|mm$|dummy.cpp"
-        entry: utilities/python-venv/bin/check-filenames
+        entry: utilities/python-venv/Scripts/check-filenames.exe
         require_serial: true # To give a non duplicated error output
 
       - id: cpp-include
@@ -133,7 +128,7 @@ repos:
         language: system
         types_or: [c++, c]
         exclude: "tests/cut_test/|mm$"
-        entry: utilities/python-venv/bin/check-includes
+        entry: utilities/python-venv/Scripts/check-includes.exe
         require_serial: true # To give a non duplicated error output
 
       - id: cpp-header-guard
@@ -142,7 +137,7 @@ repos:
         language: python
         types_or: [c++, c]
         files: '\.(h|hpp)$'
-        entry: utilities/python-venv/bin/check-header-guards
+        entry: utilities/python-venv/Scripts/check-header-guards.exe
 
       - id: cpp-include-cycles
         name: C++ include cycles
@@ -150,14 +145,14 @@ repos:
         language: python
         always_run: true
         pass_filenames: false
-        entry: utilities/python-venv/bin/check-includes-for-cycles
+        entry: utilities/python-venv/Scripts/check-includes-for-cycles.exe
 
       - id: cpp-preprocessor
         name: C++ preprocessor directives
         description: "Check that all C++ files only use acceptable preprocessor directives"
         language: python
         types_or: [c++, c]
-        entry: utilities/python-venv/bin/check-preprocessor
+        entry: utilities/python-venv/Scripts/check-preprocessor.exe
 
       - id: input-files
         name: Check for untested input files
@@ -165,7 +160,7 @@ repos:
         language: python
         files: 'tests/input_files/.*\.4C\.(yaml|json)$'
         exclude: '.*\.mat\.4C\.(yaml|json)$'
-        entry: utilities/python-venv/bin/check-test-files
+        entry: utilities/python-venv/Scripts/check-test-files.exe
 
       - id: companion-input-files
         name: Check for unused companion input files
@@ -173,20 +168,20 @@ repos:
         language: python
         # all individual files in tests/input_files
         files: "tests/input_files/.*"
-        entry: utilities/python-venv/bin/check-companion-test-files
+        entry: utilities/python-venv/Scripts/check-companion-test-files.exe
         require_serial: true # To give a non duplicated error output
 
       - id: non-ascii-chars
         name: Non-ASCII characters
         language: system
         types_or: [c++, c, python, cmake, shell]
-        entry: ./utilities/code_checks/check_non_ascii_chars
+        entry: cmd.exe /c "utilities\code_checks\windows\check_non_ascii_chars.bat
 
       - id: check-commit-msg
         name: Check commit message
         description: "Check for valid commit message"
         language: system
-        entry: ./utilities/code_checks/commit-msg
+        entry: cmd.exe /c "utilities\code_checks\windows\commit-msg.bat"
         stages: [commit-msg]
 
       - id: check-python-files
@@ -195,5 +190,5 @@ repos:
           the naming convention"
         language: python
         types: [python]
-        entry: utilities/python-venv/bin/check-python-files
+        entry: utilities/python-venv/Scripts/check-python-files.exe
         require_serial: true # To give a non duplicated error output
