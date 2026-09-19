@@ -78,14 +78,8 @@ four_c_process_global_option(
   )
 
 if(MSVC)
-  #if (NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang"
-  #  AND NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT MATCHES "MSVC")
   # Enables the C++ standard-compliant preprocessor in MSVC
-  #enable_compiler_flag_if_supported("/Zc:preprocessor")
-  #endif()
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    enable_compiler_flag_if_supported("/Zc:preprocessor")
-  endif()
+  enable_compiler_flag_if_supported("/Zc:preprocessor")
 
   # Enable high warning level (closest equivalent to -Wall -Wextra)
   enable_compiler_flag_if_supported("/W4")
