@@ -413,9 +413,9 @@ void Discret::Elements::Solid<dim>::for_each_gauss_point(Core::FE::Discretizatio
       *solid_calc_variant_);
 }
 
-template class Discret::Elements::SolidType<2>;
-template class Discret::Elements::Solid<2>;
-template class Discret::Elements::SolidType<3>;
-template class Discret::Elements::Solid<3>;
+template class FOUR_C_API(FOUR_C_CORE) Discret::Elements::SolidType<2>;
+template class FOUR_C_API(FOUR_C_CORE) Discret::Elements::Solid<2>;
+template class FOUR_C_API(FOUR_C_CORE) Discret::Elements::SolidType<3>;
+template class FOUR_C_API(FOUR_C_CORE) Discret::Elements::Solid<3>;
 
 FOUR_C_NAMESPACE_CLOSE
