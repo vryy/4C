@@ -47,7 +47,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ runner.os }}-ccache
-          max-size: 2000M
+          max-size: 3000M
 
       - name: System preparation
         shell: pwsh
