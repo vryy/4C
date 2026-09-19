@@ -175,7 +175,7 @@ repos:
         name: Non-ASCII characters
         language: system
         types_or: [c++, c, python, cmake, shell]
-        entry: cmd.exe /c "utilities\code_checks\windows\check_non_ascii_chars.bat
+        entry: cmd.exe /c "utilities\code_checks\windows\check_non_ascii_chars.bat"
 
       - id: check-commit-msg
         name: Check commit message
