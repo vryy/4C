@@ -9,7 +9,7 @@
 
 # Disable deprecated CXX bindings in MPI. These often lead to compiler warnings.
 set(MPI_CXX_SKIP_MPICXX ON)
-find_package(MPI REQUIRED)
+find_package(MPI REQUIRED COMPONENTS C CXX)
 
 if(WIN32 AND MPIEXEC_EXECUTABLE)
   set(MPIEXEC_EXECUTABLE
