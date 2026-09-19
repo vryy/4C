@@ -19,8 +19,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-
       - name: Set up MSVC
+
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Setup Intel Fortran
@@ -58,7 +58,7 @@ jobs:
         id: msvc-version
         shell: pwsh
         run: |
-          $version = cl 2>&1 | Select-Object -First 1
+          $version = (cl 2>&1 | Select-String "Compiler Version.*for" | Select-Object -First 1).Line
           Write-Host "MSVC: $version"
 
           $hash = [System.BitConverter]::ToString(
@@ -160,7 +160,7 @@ jobs:
         id: msvc-version
         shell: pwsh
         run: |
-          $version = cl 2>&1 | Select-Object -First 1
+          $version = (cl 2>&1 | Select-String "Compiler Version.*for" | Select-Object -First 1).Line
           Write-Host "MSVC: $version"
 
           $hash = [System.BitConverter]::ToString(
