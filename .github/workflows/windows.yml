@@ -212,7 +212,13 @@ jobs:
         run: |
           Write-Host "Running tests"
 
-          $jobs = [Environment]::ProcessorCount
+          $jobs = 1
+
+          # 1. Instruct MS-MPI to print exact rank exit codes and internal errors
+          $env:MSMPI_VERBOSE = "2"
+
+          # 2. Prevent Windows from suppressing crash details
+          $env:MSMPI_DUMP_CORE = "1"
 
           ctest `
             --test-dir ~/build `
