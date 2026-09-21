@@ -21,6 +21,7 @@
 #include <array>
 #include <map>
 #include <memory>
+#include <numbers>
 #include <unordered_map>
 #include <variant>
 #include <vector>
@@ -66,6 +67,8 @@ namespace
     params.lung_tree.airways.wall_model.kelvin_voigt.viscosity.viscous_phase_shift =
         Core::IO::InputField<double>(std::unordered_map<int, double>{{2, 0.0}});
 
+    params.lung_tree.terminal_units.v0 = Core::IO::InputField<double>(
+        std::unordered_map<int, double>{{3, 4.0 / 3.0 * std::numbers::pi}});
     params.lung_tree.terminal_units.rheological_model.rheological_model_type = Core::IO::InputField<
         ReducedLungParameters::LungTree::TerminalUnits::RheologicalModel::RheologicalModelType>(
         std::unordered_map<int,

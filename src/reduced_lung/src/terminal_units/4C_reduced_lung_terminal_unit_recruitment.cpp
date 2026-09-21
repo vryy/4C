@@ -163,7 +163,7 @@ namespace ReducedLung::TerminalUnits::Recruitment
      * Check the linear-pressure recruitment input parameters of one element for consistency.
      */
     void validate_linear_pressure_parameters(const TimeLawType time_law_type, const double v0_min,
-        const double v0_max, const double initial_v0, const double p_closing_min,
+        const double v0_max, const double v0, const double p_closing_min,
         const double p_opening_min, const double delta_p_minmax, const double epsilon_v0_switch,
         const double tau, const int global_element_id)
     {
@@ -172,9 +172,10 @@ namespace ReducedLung::TerminalUnits::Recruitment
       FOUR_C_ASSERT_ALWAYS(v0_max > v0_min,
           "Terminal unit {}: recruitment parameter 'v0_max' must be > 'v0_min'.",
           global_element_id);
-      FOUR_C_ASSERT_ALWAYS(initial_v0 >= v0_min && initial_v0 <= v0_max,
-          "Terminal unit {}: recruitment parameter 'initial_v0' must be in [v0_min, v0_max].",
-          global_element_id);
+      FOUR_C_ASSERT_ALWAYS(v0 >= v0_min && v0 <= v0_max,
+          "Terminal unit {}: reference volume 'v0' = {} must be in the recruitment range "
+          "[v0_min, v0_max] = [{}, {}].",
+          global_element_id, v0, v0_min, v0_max);
       FOUR_C_ASSERT_ALWAYS(delta_p_minmax > 0.0,
           "Terminal unit {}: recruitment parameter 'delta_p_minmax' must be > 0.",
           global_element_id);
@@ -194,7 +195,7 @@ namespace ReducedLung::TerminalUnits::Recruitment
      * Append one element to the linear-pressure recruitment block.
      */
     void append_linear_pressure_parameters(LinearPressureRecruitment& recruitment_model,
-        const int global_element_id,
+        const int global_element_id, const double v0,
         const ReducedLungParameters::LungTree::TerminalUnits::RecruitmentModel& parameters)
     {
       const TimeLawType time_law_type =
@@ -209,13 +210,11 @@ namespace ReducedLung::TerminalUnits::Recruitment
           parameters.linear_pressure.delta_p_minmax.at(global_element_id, "delta_p_minmax");
       const double epsilon_v0_switch =
           parameters.linear_pressure.epsilon_v0_switch.at(global_element_id, "epsilon_v0_switch");
-      const double initial_v0 =
-          parameters.linear_pressure.initial_v0.at(global_element_id, "initial_v0");
       const double tau = time_law_type == TimeLawType::ExponentialRelaxation
                              ? parameters.exponential_relaxation.tau.at(global_element_id, "tau")
                              : 0.0;
 
-      validate_linear_pressure_parameters(time_law_type, v0_min, v0_max, initial_v0, p_closing_min,
+      validate_linear_pressure_parameters(time_law_type, v0_min, v0_max, v0, p_closing_min,
           p_opening_min, delta_p_minmax, epsilon_v0_switch, tau, global_element_id);
 
       recruitment_model.time_law.type.push_back(time_law_type);
@@ -231,8 +230,8 @@ namespace ReducedLung::TerminalUnits::Recruitment
       recruitment_model.pressure_law.p_opening_min.push_back(p_opening_min);
       recruitment_model.pressure_law.delta_p_minmax.push_back(delta_p_minmax);
       recruitment_model.pressure_law.epsilon_v0_switch.push_back(epsilon_v0_switch);
-      recruitment_model.v0_n.push_back(initial_v0);
-      recruitment_model.v0_target.push_back(initial_v0);
+      recruitment_model.v0_n.push_back(v0);
+      recruitment_model.v0_target.push_back(v0);
     }
   }  // namespace
 
@@ -312,7 +311,7 @@ namespace ReducedLung::TerminalUnits::Recruitment
           using ModelType = std::decay_t<decltype(model)>;
           if constexpr (std::is_same_v<ModelType, NoRecruitment>)
           {
-            // The reference volume is the geometry-derived constant; there is no state to advance.
+            // The reference volume is constant; there is no state to advance.
             return [](TerminalUnitData& /*data*/,
                        const Core::LinAlg::Vector<double>& /*locally_relevant_dofs*/,
                        double /*dt*/) {};
@@ -352,7 +351,7 @@ namespace ReducedLung::TerminalUnits::Recruitment
    * Append input parameters and initialize the recruitment state vectors.
    */
   void append_model_parameters(RecruitmentModel& recruitment_model, const int global_element_id,
-      const double geometry_volume,
+      const double v0,
       const ReducedLungParameters::LungTree::TerminalUnits::RecruitmentModel& parameters)
   {
     std::visit(
@@ -368,11 +367,11 @@ namespace ReducedLung::TerminalUnits::Recruitment
                   "Terminal unit {}: recruitment time law requires an active pressure law.",
                   global_element_id);
             }
-            model.v0.push_back(geometry_volume);
+            model.v0.push_back(v0);
           }
           else if constexpr (std::is_same_v<ModelType, LinearPressureRecruitment>)
           {
-            append_linear_pressure_parameters(model, global_element_id, parameters);
+            append_linear_pressure_parameters(model, global_element_id, v0, parameters);
           }
           else
           {

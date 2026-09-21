@@ -28,6 +28,8 @@ reduced_dimensional_lung:
         constant: Rigid
     terminal_units:
       element_blocks: [2]
+      v0:
+        constant: 0.41
       rheological_model:
         rheological_model_type:
           constant: KelvinVoigt
@@ -60,8 +62,6 @@ reduced_dimensional_lung:
             constant: 0.4
           epsilon_v0_switch:
             constant: 0.05
-          initial_v0:
-            constant: 0.41
           initial_path:
             constant: Opening
   boundary_conditions:

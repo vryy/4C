@@ -23,9 +23,7 @@
 
 #include <any>
 #include <array>
-#include <cmath>
 #include <map>
-#include <numbers>
 #include <unordered_map>
 #include <vector>
 
@@ -37,7 +35,7 @@ namespace
   using namespace FourC;
   using namespace FourC::ReducedLung;
 
-  ReducedLungParameters make_single_tu_parameters(double dt, int steps, double radius)
+  ReducedLungParameters make_single_tu_parameters(double dt, int steps)
   {
     ReducedLungParameters params{};
     params.air_properties = {
@@ -55,6 +53,8 @@ namespace
         .nonlinear_increment_tolerance = 1e-10,
     };
 
+    params.lung_tree.terminal_units.v0 =
+        Core::IO::InputField<double>(std::unordered_map<int, double>{{1, 1.0}});
     params.lung_tree.terminal_units.rheological_model.rheological_model_type = Core::IO::InputField<
         ReducedLungParameters::LungTree::TerminalUnits::RheologicalModel::RheologicalModelType>(
         std::unordered_map<int,
@@ -105,15 +105,13 @@ namespace
 
   TEST(ReducedLungNoxSolverTest, SingleTerminalUnitOgdenMatchesAnalyticalVolume)
   {
-    const double radius = std::cbrt(3.0 / (4.0 * std::numbers::pi));
     const double dt = 0.4;
     const int steps = 5;
-    const auto params = make_single_tu_parameters(dt, steps, radius);
+    const auto params = make_single_tu_parameters(dt, steps);
 
     Core::FE::Discretization discretization("reduced_lung_nox_test", MPI_COMM_WORLD, 3);
     Core::Rebalance::RebalanceParameters rebalance_parameters;
-    // A single element whose length equals the reference radius of the terminal unit.
-    const std::vector<std::array<double, 3>> node_coordinates{{0.0, 0.0, 0.0}, {radius, 0.0, 0.0}};
+    const std::vector<std::array<double, 3>> node_coordinates{{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}};
     const std::vector<std::array<int, 2>> element_nodes{{0, 1}};
     build_discretization_from_nodes_and_elements(
         discretization, node_coordinates, element_nodes, rebalance_parameters);

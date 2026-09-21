@@ -30,6 +30,11 @@
         <DataArray type="Float64" Name="radius" format="ascii">
           1.5957691216057308 1.1283791670955126 0.7978845608028654 0.0 0.0
         </DataArray>
+        <!-- Only the terminal unit cells (block 2) have a meaningful v0. The airway cells
+             (block 1) carry a placeholder, for the same reason as above. -->
+        <DataArray type="Float64" Name="v0" format="ascii">
+          0.0 0.0 0.0 4.1887902047863905 4.1887902047863905
+        </DataArray>
       </CellData>
       <PointData>
         <DataArray type="Int32" Name="bc_id" format="ascii">

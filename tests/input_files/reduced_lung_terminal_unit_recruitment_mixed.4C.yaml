@@ -30,6 +30,8 @@ reduced_dimensional_lung:
         constant: Rigid
     terminal_units:
       element_blocks: [2]
+      v0:
+        from_file: "reduced_lung_terminal_unit_recruitment_mixed_fields.json"
       rheological_model:
         rheological_model_type:
           constant: KelvinVoigt
@@ -61,8 +63,6 @@ reduced_dimensional_lung:
           delta_p_minmax:
             from_file: "reduced_lung_terminal_unit_recruitment_mixed_fields.json"
           epsilon_v0_switch:
-            from_file: "reduced_lung_terminal_unit_recruitment_mixed_fields.json"
-          initial_v0:
             from_file: "reduced_lung_terminal_unit_recruitment_mixed_fields.json"
           initial_path:
             from_file: "reduced_lung_terminal_unit_recruitment_mixed_fields.json"

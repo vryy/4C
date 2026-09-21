@@ -19,7 +19,6 @@
 
 #include <array>
 #include <cmath>
-#include <numbers>
 #include <unordered_map>
 #include <vector>
 
@@ -63,7 +62,7 @@ namespace
     ReferenceVolumeLinearization reference_volume_linearization =
         ReferenceVolumeLinearization::Frozen;
     std::array<double, 3> dofs = {1.0, 1.0, 1.0};
-    std::array<double, 3> recruitment_initial_v0 = {1.2, 1.3, 1.4};
+    std::array<double, 3> v0 = {1.2, 1.3, 1.4};
     std::array<double, 3> recruitment_tau = {0.5, 0.6, 0.7};
     bool check_completed_jacobian_update = false;
   };
@@ -162,6 +161,7 @@ namespace
   {
     ReducedLungParameters params{};
 
+    params.lung_tree.terminal_units.v0 = make_elementwise_double_field(model_case.v0);
     params.lung_tree.terminal_units.rheological_model.rheological_model_type =
         Core::IO::InputField<RheologicalModelType>(model_case.rheological_model_type);
     params.lung_tree.terminal_units.rheological_model.kelvin_voigt.viscosity_kelvin_voigt_eta =
@@ -201,8 +201,6 @@ namespace
         Core::IO::InputField<double>(1.0);
     params.lung_tree.terminal_units.recruitment_model.linear_pressure.epsilon_v0_switch =
         Core::IO::InputField<double>(0.05);
-    params.lung_tree.terminal_units.recruitment_model.linear_pressure.initial_v0 =
-        make_elementwise_double_field(model_case.recruitment_initial_v0);
     params.lung_tree.terminal_units.recruitment_model.linear_pressure.initial_path =
         Core::IO::InputField<HysteresisPath>(HysteresisPath::Opening);
     params.lung_tree.terminal_units.recruitment_model.exponential_relaxation.tau =
@@ -378,7 +376,7 @@ namespace
         HysteresisPath::Opening);
   }
 
-  TEST(TerminalUnitRecruitmentTests, InitializationUsesGeometryForNoneAndInitialV0ForRecruitable)
+  TEST(TerminalUnitRecruitmentTests, InitializationSeedsReferenceVolumeFromV0)
   {
     const TerminalUnitModelCase base_case{.name = "init",
         .rheological_model_type = RheologicalModelType::KelvinVoigt,
@@ -390,22 +388,28 @@ namespace
         .ogden_kappa = {1.0, 1.0, 1.0},
         .ogden_beta = {2.0, 2.0, 2.0}};
 
-    auto none_params = make_terminal_unit_parameters(base_case);
+    auto none_case = base_case;
+    none_case.v0 = {4.0, 4.0, 4.0};
+    const auto none_params = make_terminal_unit_parameters(none_case);
     TerminalUnitContainer none_units;
-    TerminalUnits::ModelRegistry::add_terminal_unit_with_model_selection(none_units, 0, 0, 1.0,
+    TerminalUnits::ModelRegistry::add_terminal_unit_with_model_selection(none_units, 0, 0,
         none_params, RheologicalModelType::KelvinVoigt, ElasticityModelType::Linear,
         RecruitmentModelType::None);
-    EXPECT_NEAR(none_units.models.front().data.volume_v[0], 4.0 / 3.0 * std::numbers::pi, 1e-14);
+    EXPECT_DOUBLE_EQ(none_units.models.front().data.volume_v[0], 4.0);
 
     auto recruitment_case = base_case;
     recruitment_case.recruitment_model_type = RecruitmentModelType::LinearPressure;
-    recruitment_case.recruitment_initial_v0 = {1.2, 1.3, 1.4};
-    auto recruitment_params = make_terminal_unit_parameters(recruitment_case);
+    recruitment_case.v0 = {1.2, 1.2, 1.2};
+    const auto recruitment_params = make_terminal_unit_parameters(recruitment_case);
     TerminalUnitContainer recruitment_units;
     TerminalUnits::ModelRegistry::add_terminal_unit_with_model_selection(recruitment_units, 0, 0,
-        1.0, recruitment_params, RheologicalModelType::KelvinVoigt, ElasticityModelType::Linear,
+        recruitment_params, RheologicalModelType::KelvinVoigt, ElasticityModelType::Linear,
         RecruitmentModelType::LinearPressure);
     EXPECT_DOUBLE_EQ(recruitment_units.models.front().data.volume_v[0], 1.2);
+    EXPECT_DOUBLE_EQ(
+        std::get<LinearPressureRecruitment>(recruitment_units.models.front().recruitment_model)
+            .v0_n[0],
+        1.2);
   }
 
   // Recruitment is part of the model block key, so a tree that mixes recruiting and
@@ -434,7 +438,7 @@ namespace
           params.lung_tree.terminal_units.recruitment_model.pressure_law_type.at(
               global_element_id, "pressure_law_type");
       TerminalUnits::ModelRegistry::add_terminal_unit_with_model_selection(terminal_units,
-          global_element_id, global_element_id, 1.0, params, RheologicalModelType::KelvinVoigt,
+          global_element_id, global_element_id, params, RheologicalModelType::KelvinVoigt,
           ElasticityModelType::Linear, recruitment_model_type);
     }
 
@@ -475,7 +479,7 @@ namespace
           params.lung_tree.terminal_units.recruitment_model.pressure_law_type.at(
               0, "pressure_law_type");
       EXPECT_THROW(TerminalUnits::ModelRegistry::add_terminal_unit_with_model_selection(units, 0, 0,
-                       1.0, params, RheologicalModelType::KelvinVoigt, ElasticityModelType::Linear,
+                       params, RheologicalModelType::KelvinVoigt, ElasticityModelType::Linear,
                        recruitment_model_type),
           Core::Exception);
     };
@@ -492,12 +496,10 @@ namespace
           params.lung_tree.terminal_units.recruitment_model.linear_pressure.v0_max =
               Core::IO::InputField<double>(0.5);
         });
-    expect_invalid(
-        [](auto& params)
-        {
-          params.lung_tree.terminal_units.recruitment_model.linear_pressure.initial_v0 =
-              Core::IO::InputField<double>(3.0);
-        });
+    expect_invalid([](auto& params)
+        { params.lung_tree.terminal_units.v0 = Core::IO::InputField<double>(3.0); });
+    expect_invalid([](auto& params)
+        { params.lung_tree.terminal_units.v0 = Core::IO::InputField<double>(0.5); });
     expect_invalid(
         [](auto& params)
         {
@@ -590,15 +592,17 @@ namespace
     // that value here so that the two fields cannot be confused for one another.
     constexpr double current_volume = 7.5;
 
-    const auto collect_volume_output = [&](const RecruitmentModelType recruitment_model_type)
+    const auto collect_volume_output =
+        [&](const RecruitmentModelType recruitment_model_type, const double v0)
     {
       auto model_case = base_case;
       model_case.recruitment_model_type = recruitment_model_type;
+      model_case.v0 = {v0, v0, v0};
       const auto params = make_terminal_unit_parameters(model_case);
 
       TerminalUnitContainer terminal_units;
       TerminalUnits::ModelRegistry::add_terminal_unit_with_model_selection(terminal_units, 0, 0,
-          1.0, params, RheologicalModelType::KelvinVoigt, ElasticityModelType::Linear,
+          params, RheologicalModelType::KelvinVoigt, ElasticityModelType::Linear,
           recruitment_model_type);
       TerminalUnits::create_evaluators(terminal_units);
       auto& model = terminal_units.models.front();
@@ -609,14 +613,14 @@ namespace
       return collector;
     };
 
-    // A block without recruitment holds a constant reference volume seeded from the geometry.
-    const auto none_collector = collect_volume_output(RecruitmentModelType::None);
+    // A block without recruitment holds its input reference volume constant.
+    const auto none_collector = collect_volume_output(RecruitmentModelType::None, 4.0);
     EXPECT_DOUBLE_EQ(none_collector.vectors.at("volume").local_values_as_span()[0], current_volume);
-    EXPECT_NEAR(none_collector.vectors.at("v_0").local_values_as_span()[0],
-        4.0 / 3.0 * std::numbers::pi, 1e-14);
+    EXPECT_DOUBLE_EQ(none_collector.vectors.at("v_0").local_values_as_span()[0], 4.0);
 
-    // A recruiting block reports the same fields, its reference volume still at initial_v0.
-    const auto recruitment_collector = collect_volume_output(RecruitmentModelType::LinearPressure);
+    // A recruiting block reports the same fields, its reference volume still at the input v0.
+    const auto recruitment_collector =
+        collect_volume_output(RecruitmentModelType::LinearPressure, 1.2);
     EXPECT_DOUBLE_EQ(
         recruitment_collector.vectors.at("volume").local_values_as_span()[0], current_volume);
     EXPECT_DOUBLE_EQ(recruitment_collector.vectors.at("v_0").local_values_as_span()[0], 1.2);
@@ -631,13 +635,11 @@ namespace
     const auto params = make_terminal_unit_parameters(model_case);
     TerminalUnitContainer terminal_units;
 
-    constexpr std::array element_lengths{1.0, 2.0, 3.0};
     for (int global_element_id = 0; global_element_id < 3; ++global_element_id)
     {
       TerminalUnits::ModelRegistry::add_terminal_unit_with_model_selection(terminal_units,
-          global_element_id, global_element_id, element_lengths[global_element_id], params,
-          model_case.rheological_model_type, model_case.elasticity_model_type,
-          model_case.recruitment_model_type);
+          global_element_id, global_element_id, params, model_case.rheological_model_type,
+          model_case.elasticity_model_type, model_case.recruitment_model_type);
     }
     ASSERT_EQ(terminal_units.models.size(), 1u);
 
@@ -757,7 +759,7 @@ namespace
 
     TerminalUnitContainer terminal_units;
     EXPECT_THROW(TerminalUnits::ModelRegistry::add_terminal_unit_with_model_selection(
-                     terminal_units, 0, 0, 1.0, params, static_cast<RheologicalModelType>(-1),
+                     terminal_units, 0, 0, params, static_cast<RheologicalModelType>(-1),
                      ElasticityModelType::Linear, RecruitmentModelType::None),
         Core::Exception);
   }

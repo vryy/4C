@@ -14,7 +14,6 @@
 #include "4C_reduced_lung_terminal_unit_rheology.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <numbers>
 #include <utility>
 #include <vector>
 
@@ -86,7 +85,7 @@ namespace ReducedLung
      */
     template <typename RheologicalModel, typename ElasticityModel, typename RecruitmentModel>
     void add_terminal_unit_element(TerminalUnits::TerminalUnitContainer& terminal_units,
-        const int global_element_id, const int local_element_id, const double ref_length,
+        const int global_element_id, const int local_element_id,
         const ReducedLungParameters& parameters)
     {
       auto& model = register_or_access_terminal_unit_model<RheologicalModel, ElasticityModel,
@@ -95,12 +94,9 @@ namespace ReducedLung
       model.data.global_element_id.push_back(global_element_id);
       model.data.local_element_id.push_back(local_element_id);
 
-      // The terminal unit is modelled as a sphere whose radius is the element length.
-      const double radius = ref_length;
-      const double volume = (4.0 / 3.0) * std::numbers::pi * radius * radius * radius;
-
+      const double v0 = parameters.lung_tree.terminal_units.v0.at(global_element_id, "v0");
       TerminalUnits::Recruitment::append_model_parameters(model.recruitment_model,
-          global_element_id, volume, parameters.lung_tree.terminal_units.recruitment_model);
+          global_element_id, v0, parameters.lung_tree.terminal_units.recruitment_model);
       const size_t element_index = model.data.number_of_elements() - 1;
       const double initial_volume =
           TerminalUnits::Recruitment::reference_volume_n(model.recruitment_model, element_index);
@@ -134,8 +130,7 @@ namespace ReducedLung
                     rheological_model_type, elasticity_model_type, recruitment_model_type},
                 [rheological_model_type, elasticity_model_type, recruitment_model_type](
                     TerminalUnits::TerminalUnitContainer& terminal_units, int global_element_id,
-                    int local_element_id, double ref_length,
-                    const ReducedLungParameters& parameters)
+                    int local_element_id, const ReducedLungParameters& parameters)
                 {
                   TerminalUnits::Rheology::dispatch_rheological_model_type(rheological_model_type,
                       [&]<typename RheologicalModel>()
@@ -150,7 +145,7 @@ namespace ReducedLung
                                   {
                                     add_terminal_unit_element<RheologicalModel, ElasticityModel,
                                         RecruitmentModel>(terminal_units, global_element_id,
-                                        local_element_id, ref_length, parameters);
+                                        local_element_id, parameters);
                                   });
                             });
                       });
@@ -180,9 +175,9 @@ namespace ReducedLung
   namespace TerminalUnits::ModelRegistry
   {
     void add_terminal_unit_with_model_selection(TerminalUnitContainer& terminal_units,
-        int global_element_id, int local_element_id, double ref_length,
-        const ReducedLungParameters& parameters, RheologicalModelType rheological_model_type,
-        ElasticityModelType elasticity_model_type, RecruitmentModelType recruitment_model_type)
+        int global_element_id, int local_element_id, const ReducedLungParameters& parameters,
+        RheologicalModelType rheological_model_type, ElasticityModelType elasticity_model_type,
+        RecruitmentModelType recruitment_model_type)
     {
       const TerminalUnitModelKey key{
           rheological_model_type, elasticity_model_type, recruitment_model_type};
@@ -198,8 +193,7 @@ namespace ReducedLung
             TerminalUnits::Recruitment::pressure_law_name(recruitment_model_type));
       }
 
-      factory_it->second(
-          terminal_units, global_element_id, local_element_id, ref_length, parameters);
+      factory_it->second(terminal_units, global_element_id, local_element_id, parameters);
     }
   }  // namespace TerminalUnits::ModelRegistry
 }  // namespace ReducedLung

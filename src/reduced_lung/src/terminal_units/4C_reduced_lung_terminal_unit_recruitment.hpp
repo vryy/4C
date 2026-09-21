@@ -40,11 +40,11 @@ namespace ReducedLung::TerminalUnits
       RecruitmentModel::ReferenceVolumeLinearization;
 
   /**
-   * @brief Terminal units whose reference volume is the geometry-derived constant.
+   * @brief Terminal units whose reference volume stays at its input value v0.
    */
   struct NoRecruitment
   {
-    ///< Reference volume of each element, derived from the geometry and never changed.
+    ///< Reference volume of each element, taken from the input and never changed.
     std::vector<double> v0;
   };
 
@@ -153,7 +153,7 @@ namespace ReducedLung::TerminalUnits::Recruitment
   /**
    * @brief Reference volume of one element at the last converged time step.
    *
-   * Blocks without a recruitment law report their constant geometry-derived value.
+   * Blocks without a recruitment law report their constant input value.
    */
   [[nodiscard]] double reference_volume_n(
       const RecruitmentModel& recruitment_model, size_t element_index);
@@ -167,7 +167,7 @@ namespace ReducedLung::TerminalUnits::Recruitment
    * it. Under the frozen linearization the reference volume stays at the last converged value and
    * the derivatives vanish; under the coupled one it follows the recruitment law within the Newton
    * step, exactly as the end-of-timestep routine will advance it. Blocks without a recruitment law
-   * report the constant geometry-derived reference volume.
+   * report their constant reference volume.
    */
   InternalStateUpdater make_internal_state_updater(const RecruitmentModel& recruitment_model);
 
@@ -181,9 +181,12 @@ namespace ReducedLung::TerminalUnits::Recruitment
 
   /**
    * @brief Append element parameters and initialize the recruitment state vectors.
+   *
+   * @p v0 is the reference volume at simulation start: the constant reference volume without a
+   * recruitment law, the initial reference volume state with one.
    */
   void append_model_parameters(RecruitmentModel& recruitment_model, int global_element_id,
-      double geometry_volume,
+      double v0,
       const ReducedLungParameters::LungTree::TerminalUnits::RecruitmentModel& parameters);
 
   /**

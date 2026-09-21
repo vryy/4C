@@ -61,6 +61,8 @@ namespace
         Core::IO::InputField<ReducedLungParameters::LungTree::Airways::WallModelType>(
             ReducedLungParameters::LungTree::Airways::WallModelType::Rigid);
 
+    params.lung_tree.terminal_units.v0 =
+        Core::IO::InputField<double>((4.0 / 3.0) * std::numbers::pi);
     params.lung_tree.terminal_units.rheological_model.rheological_model_type = Core::IO::InputField<
         ReducedLungParameters::LungTree::TerminalUnits::RheologicalModel::RheologicalModelType>(
         ReducedLungParameters::LungTree::TerminalUnits::RheologicalModel::RheologicalModelType::
@@ -157,8 +159,8 @@ namespace
             params.lung_tree.terminal_units.recruitment_model.pressure_law_type.at(
                 element_id, "pressure_law_type");
         TerminalUnits::ModelRegistry::add_terminal_unit_with_model_selection(terminal_units,
-            element_id, local_element_id, ref_length, params, rheological_model_type,
-            elasticity_model_type, recruitment_model_type);
+            element_id, local_element_id, params, rheological_model_type, elasticity_model_type,
+            recruitment_model_type);
       }
     }
 
