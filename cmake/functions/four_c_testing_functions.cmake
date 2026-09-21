@@ -1038,10 +1038,11 @@ endfunction()
 #                                 The supported version constraint operators are: >=, <=, >, <, ==
 #                                 If multiple dependencies are provided, all must be met for the test to run.
 #                                 Note that the version is the _internal_ version that 4C assigns to the dependency.
+#   EXCLUDE_PLATFORM:             Mark to not run the test on specific platform.
 function(four_c_test_nested_parallelism)
   set(options "")
   set(oneValueArgs TEST_FILE1 TEST_FILE2 RESTART_STEP TIMEOUT)
-  set(multiValueArgs LABELS REQUIRED_DEPENDENCIES)
+  set(multiValueArgs LABELS REQUIRED_DEPENDENCIES EXCLUDE_PLATFORM)
   cmake_parse_arguments(
     _parsed
     "${options}"
@@ -1076,6 +1077,12 @@ function(four_c_test_nested_parallelism)
       "mkdir -p ${test_directory} &&  ${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np 3 $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> --ngroup=2 --glayout=1,2 --nptype=separateInputFiles ${test_file_full_path1} ${test_directory}/xxx ${test_file_full_path2} ${test_directory}/xxxAdditional"
       )
 
+  # check if the platform is matched
+  set(skip_var FALSE)
+  if(CMAKE_SYSTEM_NAME IN_LIST _parsed_EXCLUDE_PLATFORM)
+    set(skip_var TRUE)
+  endif()
+
   _add_test_with_options(
     NAME_OF_TEST
     ${name_of_test}
@@ -1085,6 +1092,8 @@ function(four_c_test_nested_parallelism)
     3
     TIMEOUT
     "${_parsed_TIMEOUT}"
+    SKIP
+    "${skip_var}"
     LABELS
     "${_parsed_LABELS}"
     INPUT_FILE
@@ -1110,6 +1119,8 @@ function(four_c_test_nested_parallelism)
       3
       TIMEOUT
       "${_parsed_TIMEOUT}"
+      SKIP
+      "${skip_var}"
       LABELS
       "${_parsed_LABELS}"
       INPUT_FILE
