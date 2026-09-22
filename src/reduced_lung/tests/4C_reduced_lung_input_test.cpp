@@ -51,6 +51,8 @@ reduced_dimensional_lung:
         constant: Rigid
     terminal_units:
       element_blocks: [2]
+      v0:
+        constant: 1.0
       rheological_model:
         rheological_model_type:
           constant: KelvinVoigt

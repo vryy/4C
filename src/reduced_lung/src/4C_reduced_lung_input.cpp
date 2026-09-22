@@ -266,7 +266,7 @@ Core::IO::InputSpec ReducedLung::valid_parameters()
               "pressure_law_type",
               {
                   .description = "Pressure law driving the recruitment reference volume; "
-                                 "None keeps it at the geometry-derived constant.",
+                                 "None keeps it constant at v0.",
                   .store = in_struct(&ReducedLungParameters::LungTree::TerminalUnits::
                           RecruitmentModel::pressure_law_type),
               }),
@@ -320,10 +320,6 @@ Core::IO::InputSpec ReducedLung::valid_parameters()
                           .store = in_struct(&ReducedLungParameters::LungTree::TerminalUnits::
                                   RecruitmentModel::LinearPressure::epsilon_v0_switch),
                           .default_value = 1.0e-3}),
-                  input_field<double>("initial_v0",
-                      {.description = "Initial reference volume V0 at simulation start.",
-                          .store = in_struct(&ReducedLungParameters::LungTree::TerminalUnits::
-                                  RecruitmentModel::LinearPressure::initial_v0)}),
                   input_field<ReducedLungParameters::LungTree::TerminalUnits::RecruitmentModel::
                           HysteresisPath>("initial_path",
                       {.description = "Initial hysteresis path (Opening or Closing).",
@@ -650,6 +646,15 @@ Core::IO::InputSpec ReducedLung::valid_parameters()
                                .store = in_struct(
                                    &ReducedLungParameters::LungTree::TerminalUnits::element_blocks),
                            }),
+                          input_field<double>("v0",
+                              {
+                                  .description =
+                                      "Reference volume of the terminal unit at simulation start. "
+                                      "Constant without a recruitment law; initial value of the "
+                                      "recruiting reference volume otherwise.",
+                                  .store = in_struct(
+                                      &ReducedLungParameters::LungTree::TerminalUnits::v0),
+                              }),
                           rheological_model_spec_terminal_unit,
                           elasticity_model_spec_terminal_units,
                           recruitment_model_spec_terminal_units},

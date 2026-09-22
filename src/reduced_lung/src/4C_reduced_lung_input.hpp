@@ -130,6 +130,12 @@ namespace ReducedLung
       struct TerminalUnits
       {
         std::vector<int> element_blocks;
+        /**
+         * Reference volume of each terminal unit at the start of the simulation. Without a
+         * recruitment law it stays constant; with one it is the initial value of the reference
+         * volume state and must lie within [v0_min, v0_max].
+         */
+        Core::IO::InputField<double> v0;
 
         struct RecruitmentModel
         {
@@ -170,7 +176,6 @@ namespace ReducedLung
             Core::IO::InputField<double> p_opening_min;
             Core::IO::InputField<double> delta_p_minmax;
             Core::IO::InputField<double> epsilon_v0_switch;
-            Core::IO::InputField<double> initial_v0;
             Core::IO::InputField<HysteresisPath> initial_path;
           } linear_pressure;
 

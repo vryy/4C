@@ -549,7 +549,7 @@ namespace ReducedLung
                 global_element_id, "pressure_law_type");
 
         TerminalUnits::ModelRegistry::add_terminal_unit_with_model_selection(terminal_units,
-            global_element_id, local_element_id, ref_length, parameters, rheological_model_name,
+            global_element_id, local_element_id, parameters, rheological_model_name,
             elasticity_model_name, recruitment_model_type);
 
         dof_per_ele[global_element_id] = 3;

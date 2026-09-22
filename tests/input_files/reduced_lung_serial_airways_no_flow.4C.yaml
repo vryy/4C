@@ -28,6 +28,8 @@ reduced_dimensional_lung:
       wall_model_type:
         constant: Rigid
     terminal_units: # These parameters are not used as there are no terminal units in this test
+      v0:
+        constant: 1.0
       rheological_model:
         rheological_model_type:
           constant: KelvinVoigt
