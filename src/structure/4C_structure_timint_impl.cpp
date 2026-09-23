@@ -36,6 +36,9 @@
 #include "4C_timestepping_time_step_control.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
+#include "4C_utils_fenv.hpp"
+#endif
 
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
 
@@ -44,9 +47,6 @@
 #include <limits>
 #include <sstream>
 #include <string>
-#ifdef FOUR_C_ENABLE_FE_TRAPPING
-#include <cfenv>
-#endif
 
 FOUR_C_NAMESPACE_OPEN
 
