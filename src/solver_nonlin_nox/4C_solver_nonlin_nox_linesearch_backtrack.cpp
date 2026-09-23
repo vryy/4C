@@ -15,24 +15,20 @@
 #include "4C_solver_nonlin_nox_statustest_normf.hpp"
 #include "4C_solver_nonlin_nox_vector.hpp"
 #include "4C_utils_exceptions.hpp"
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
+#include "4C_utils_fenv.hpp"
+#endif
 
-#include <fenv.h>
 #include <mpi.h>
 #include <NOX_GlobalData.H>
 #include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#ifdef FOUR_C_ENABLE_FE_TRAPPING
-#include <cfenv>
-#endif
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-
-
 
   /**
    * @brief Runs the \p evaluation and detects whether floating point exceptions occurred on any
