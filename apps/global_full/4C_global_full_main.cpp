@@ -18,6 +18,9 @@
 #include "4C_io_pstream.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_singleton_owner.hpp"
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
+#include "4C_utils_fenv.hpp"
+#endif
 
 #include <Kokkos_Core.hpp>
 
@@ -33,10 +36,6 @@
 #include <filesystem>
 #include <format>
 #include <iostream>
-
-#ifdef FOUR_C_ENABLE_FE_TRAPPING
-#include <cfenv>
-#endif
 
 using namespace FourC;
 
