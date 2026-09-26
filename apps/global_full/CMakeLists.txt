@@ -19,15 +19,7 @@ set_target_properties(
 four_c_set_up_executable(${FOUR_C_EXECUTABLE_NAME})
 
 if(FOUR_C_CLANGCUDA)
-  set_target_properties(
-    ${FOUR_C_EXECUTABLE_NAME}
-    PROPERTIES CXX_COMPILER_LAUNCHER ""
-               C_COMPILER_LAUNCHER ""
-               CUDA_COMPILER_LAUNCHER ""
-               RULE_LAUNCH_COMPILE ""
-               RULE_LAUNCH_LINK ""
-    )
-  target_compile_definitions(${FOUR_C_EXECUTABLE_NAME} PRIVATE CLANGCUDA_MODE_HOST)
+  set_clangcuda_mode(${FOUR_C_EXECUTABLE_NAME} CLANGCUDA_MODE_HOST)
 endif()
 
 if(FOUR_C_ENABLE_METADATA_GENERATION)

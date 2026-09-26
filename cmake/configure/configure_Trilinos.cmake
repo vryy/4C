@@ -65,6 +65,12 @@ if(Trilinos_ROOT AND NOT Kokkos_ROOT)
       )
 endif()
 
+if(FOUR_C_CLANGCUDA)
+  # The clangcuda++ wrapper selects the compiler mode for each 4C target. Do not let an installed
+  # CUDA-enabled Kokkos replace the global compile and link launchers with kokkos_launch_compiler.
+  set(Kokkos_LAUNCH_COMPILER OFF)
+endif()
+
 # We only support Trilinos versions that provide a config file.
 find_package(Trilinos REQUIRED)
 
