@@ -27,7 +27,7 @@ namespace Solid
      * @param predType The type of predictor to build
      * @return std::shared_ptr<Solid::Predict::Generic>
      */
-    std::shared_ptr<Solid::Predict::Generic> build_predictor(const Solid::PredictorType& predType);
+    std::shared_ptr<Solid::Predict::Generic> build_predictor(Solid::PredictorType predType);
 
   }  // namespace Predict
 }  // namespace Solid

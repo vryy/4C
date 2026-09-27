@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::shared_ptr<Solid::Predict::Generic> Solid::Predict::build_predictor(
-    const Solid::PredictorType& predType)
+    Solid::PredictorType predType)
 {
   std::shared_ptr<Solid::Predict::Generic> predictor = nullptr;
 

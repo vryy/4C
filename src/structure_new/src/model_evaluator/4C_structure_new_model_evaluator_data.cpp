@@ -656,7 +656,7 @@ void Solid::ModelEvaluator::Data::add_contribution_to_energy_type(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Solid::ModelEvaluator::Data::is_predictor() const { return global_state().is_predict(); }
+bool Solid::ModelEvaluator::Data::is_predictor() const { return global_state().is_predictor(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

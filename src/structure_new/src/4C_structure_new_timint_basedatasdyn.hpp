@@ -206,7 +206,7 @@ namespace Solid
       };
 
       /// Returns predictor type
-      Solid::PredictorType get_predictor_type() const
+      [[nodiscard]] Solid::PredictorType get_predictor_type() const
       {
         check_init_setup();
         return predtype_;
