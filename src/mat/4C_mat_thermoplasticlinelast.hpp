@@ -282,25 +282,11 @@ namespace Mat
     //! @name specific methods for TSI and plastic material
     //@{
 
-    //! calculate elastic strain rate, using additive split of strains
-    //! (o) save strain^e' in strainelrate_
-    void strain_rate_split(int gp,                    //!< (i): current Gauss point
-        const double stepsize,                        //!< (i): stepsize
-        const Core::LinAlg::Matrix<6, 1>& strainrate  //!< (i): total strain rate ( B d')
-    );
-
     //! return current plastic strain vector
     //! \f${\boldsymbol \varepsilon}^p_{n+1}\f$
     Core::LinAlg::SymmetricTensor<double, 3, 3> plastic_strain(int gp) const
     {
       return strainplcurr_.at(gp);
-    }
-
-    //! return current elastic strain rate vector
-    //! \f$\dot{\boldsymbol \varepsilon}^e_{n+1}\f$
-    Core::LinAlg::Matrix<6, 1> elastic_strain_rate(int gp) const
-    {
-      return Core::LinAlg::make_strain_like_voigt_matrix(strainelrate_.at(gp));
     }
 
     //! compute internal dissipation terms
@@ -388,9 +374,6 @@ namespace Mat
     std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>> dmech_d_;
     //! save plastic strain increment: Incstrainpl = strain^p_{n+1} - strain^p_n
     std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>> incstrainpl_;
-    //! elastic strain rate required for thermoelastic heating term
-    //! use additive split: strain^e' = strain' - strain^p'
-    std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>> strainelrate_;
 
     //@}
 
