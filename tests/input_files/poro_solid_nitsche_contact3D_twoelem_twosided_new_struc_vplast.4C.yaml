@@ -106,14 +106,6 @@ MATERIALS:
       DYNVISCOSITY: 1
       DENSITY: 10
       PERMEABILITY: 0.01
-  - MAT: 5
-    MAT_ElastHyper:
-      NUMMAT: 1
-      MATIDS: [6]
-      DENS: 5
-  - MAT: 6
-    ELAST_CoupNeoHooke:
-      YOUNG: 2e+06
 CLONING MATERIAL MAP:
   - SRC_FIELD: "structure"
     SRC_MAT: 1
