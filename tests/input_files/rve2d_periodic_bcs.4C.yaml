@@ -25,15 +25,6 @@ MATERIALS:
       YOUNG: 100
       NUE: 0.3
       DENS: 0.5
-  - MAT: 1
-    MAT_Struct_PlasticLinElast:
-      YOUNG: 3100
-      NUE: 0.3
-      DENS: 0.1
-      YIELD: 10
-      ISOHARD: 10000
-      KINHARD: 10000
-      TOL: 1e-06
 FUNCT1:
   - COMPONENT: 0
     SYMBOLIC_FUNCTION_OF_SPACE_TIME: "a"

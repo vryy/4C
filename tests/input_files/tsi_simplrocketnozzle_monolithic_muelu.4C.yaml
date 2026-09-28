@@ -63,15 +63,6 @@ MATERIALS:
       DENS: 8.91e-06
       THEXPANS: 1.22e-05
       INITTEMP: 293.15
-  - MAT: 0
-    MAT_Struct_PlasticLinElast:
-      YOUNG: 0
-      NUE: 0
-      DENS: 0
-      YIELD: 0
-      ISOHARD: 0
-      KINHARD: 0
-      TOL: 0
   - MAT: 2
     MAT_Fourier:
       CAPA: 3405.49
