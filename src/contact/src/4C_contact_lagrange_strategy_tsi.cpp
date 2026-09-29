@@ -229,10 +229,10 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
     tsi_interface->assemble_dm_lin_diss(nullptr, &m_LinDissDISP, nullptr, &m_LinDissContactLM, 1.);
 
     tsi_interface->assemble_lin_dm(linDcontactLM, linMcontactLM);
-    tsi_interface->assemble_lin_dm_x(
-        nullptr, &linMdiss, 1., CONTACT::TSIInterface::LinDM_Diss, gsnoderowmap_);
-    tsi_interface->assemble_lin_dm_x(
-        &linDThermoLM, &linMThermoLM, 1., CONTACT::TSIInterface::LinDM_ThermoLM, gsnoderowmap_);
+    tsi_interface->assemble_lin_dm_x(nullptr, &linMdiss, 1., CONTACT::TSIInterface::LinDM_Diss,
+        interface_[i]->source_row_nodes());
+    tsi_interface->assemble_lin_dm_x(&linDThermoLM, &linMThermoLM, 1.,
+        CONTACT::TSIInterface::LinDM_ThermoLM, interface_[i]->source_row_nodes());
   }
 
   // complete all those linearizations

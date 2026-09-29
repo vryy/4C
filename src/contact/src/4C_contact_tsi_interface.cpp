@@ -385,7 +385,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
 
 void CONTACT::TSIInterface::assemble_lin_dm_x(Core::LinAlg::SparseMatrix* linD_X,
     Core::LinAlg::SparseMatrix* linM_X, const double fac, const LinDmXMode mode,
-    const std::shared_ptr<Core::LinAlg::Map> node_rowmap)
+    const std::shared_ptr<const Core::LinAlg::Map> node_rowmap)
 {
   // get out if there's nothing to do
   if (linD_X == nullptr && linM_X == nullptr) return;
