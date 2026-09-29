@@ -624,7 +624,7 @@ void Constraints::SpringDashpot::evaluate_robin(std::shared_ptr<Core::LinAlg::Sp
           if (assvec) Core::LinAlg::assemble(*fint, res, lm, lmowner);
           if (assmat) stiff->assemble(curr.second->id(), lmstride, elestiff, lm, lmowner);
 
-          // save spring stress for postprocessing
+          // save spring stress for output
           std::vector<double> stress(numdim, 0.0);
 
           for (int node = 0; node < curr.second->num_node(); ++node)
@@ -647,7 +647,7 @@ void Constraints::SpringDashpot::evaluate_robin(std::shared_ptr<Core::LinAlg::Sp
           if (assvec) Core::LinAlg::assemble(*fint, res, lm, lmowner);
           if (assmat) stiff->assemble(curr.second->id(), lmstride, elestiff, lm, lmowner);
 
-          // save spring stress for postprocessing
+          // save spring stress for output
           std::vector<double> stress(numdim, 0.0);
 
           for (int node = 0; node < curr.second->num_node(); ++node)
@@ -708,7 +708,7 @@ void Constraints::SpringDashpot::evaluate_robin(std::shared_ptr<Core::LinAlg::Sp
           if (assvec) Core::LinAlg::assemble(*fint, res, lm, lmowner);
           if (assmat) stiff->assemble(curr.second->id(), lmstride, elestiff, lm, lmowner);
 
-          // save spring stress for postprocessing
+          // save spring stress for output
           std::vector<double> stress(numdim, 0.0);
 
           for (int node = 0; node < curr.second->num_node(); ++node)
@@ -731,7 +731,7 @@ void Constraints::SpringDashpot::evaluate_robin(std::shared_ptr<Core::LinAlg::Sp
           if (assvec) Core::LinAlg::assemble(*fint, res, lm, lmowner);
           if (assmat) stiff->assemble(curr.second->id(), lmstride, elestiff, lm, lmowner);
 
-          // save spring stress for postprocessing
+          // save spring stress for output
           std::vector<double> stress(numdim, 0.0);
 
           for (int node = 0; node < curr.second->num_node(); ++node)

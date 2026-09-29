@@ -11,15 +11,12 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_io_pstream.hpp"  // has to go before io.hpp
-#include "4C_structure_new_input.hpp"
-
-#include <iostream>
+#include "4C_io_visualization_parameters.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 Constraints::SpringDashpotManager::SpringDashpotManager(
-    std::shared_ptr<Core::FE::Discretization> dis)
+    Global::Problem& problem, std::shared_ptr<Core::FE::Discretization> dis)
     : actdisc_(dis), havespringdashpot_(false)
 {
   // get all spring dashpot conditions
@@ -38,6 +35,27 @@ Constraints::SpringDashpotManager::SpringDashpotManager(
     // new instance of spring dashpot BC with current condition for every spring dashpot condition
     for (int i = 0; i < n_conds_; ++i)
       springs_.push_back(std::make_shared<SpringDashpot>(actdisc_, *springdashpots[i]));
+
+    // set up vtk writer for spring dashpot if requested
+    if (problem.io_params().get<bool>("OUTPUT_SPRING"))
+    {
+      double restart_time = 0.0;
+      int restart_step = problem.restart();
+      if (restart_step > 0)
+      {
+        Core::IO::DiscretizationReader reader(
+            *actdisc_, problem.input_control_file(), restart_step);
+        restart_time = reader.read_double("time");
+      }
+
+      const auto use_all_elements = [](const Core::Elements::Element*) { return true; };
+      constraint_springdashpot_visualization_writer_ =
+          std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(actdisc_,
+              Core::IO::visualization_parameters_factory(
+                  problem.io_params().sublist("RUNTIME VTK OUTPUT"), *problem.output_control_file(),
+                  restart_time),
+              use_all_elements, actdisc_->name() + "-springdashpot");
+    }
   }
 
   return;
@@ -82,15 +100,13 @@ void Constraints::SpringDashpotManager::reset_prestress(Core::LinAlg::Vector<dou
   return;
 }
 
-void Constraints::SpringDashpotManager::output(Core::IO::DiscretizationWriter& output,
-    Core::FE::Discretization& discret, Core::LinAlg::Vector<double>& disp)
+void Constraints::SpringDashpotManager::output(const double time, const int step)
 {
   // only write spring output, if defined in input file
-  if (not Global::Problem::instance()->io_params().get<bool>("OUTPUT_SPRING")) return;
+  if (constraint_springdashpot_visualization_writer_ == nullptr) return;
 
   // row maps for export
-  std::shared_ptr<Core::LinAlg::Vector<double>> gap =
-      std::make_shared<Core::LinAlg::Vector<double>>(*(actdisc_->node_row_map()), true);
+  Core::LinAlg::Vector<double> gap(*(actdisc_->node_row_map()), true);
   Core::LinAlg::MultiVector<double> normals(*(actdisc_->node_row_map()), 3, true);
   Core::LinAlg::MultiVector<double> springstress(*(actdisc_->node_row_map()), 3, true);
 
@@ -98,7 +114,7 @@ void Constraints::SpringDashpotManager::output(Core::IO::DiscretizationWriter& o
   bool found_cursurfnormal = false;
   for (int i = 0; i < n_conds_; ++i)
   {
-    springs_[i]->output_gap_normal(*gap, normals, springstress);
+    springs_[i]->output_gap_normal(gap, normals, springstress);
 
     // get spring type from current condition
     const Constraints::SpringDashpot::RobinSpringDashpotType stype = springs_[i]->get_spring_type();
@@ -106,20 +122,30 @@ void Constraints::SpringDashpotManager::output(Core::IO::DiscretizationWriter& o
       found_cursurfnormal = true;
   }
 
+  // reset time and time step of writer object
+  constraint_springdashpot_visualization_writer_->reset();
+
   // write vectors to output
   if (found_cursurfnormal)
   {
-    output.write_vector("gap", gap);
-    output.write_multi_vector("curnormals", normals);
+    constraint_springdashpot_visualization_writer_->append_result_data_vector_with_context(
+        gap, Core::IO::OutputEntity::node, {"gap"});
+    const std::vector<std::optional<std::string>> context(3, "curnormals");
+    constraint_springdashpot_visualization_writer_->append_result_data_vector_with_context(
+        normals, Core::IO::OutputEntity::node, context);
   }
 
   // write spring stress
-  output.write_multi_vector("springstress", springstress);
+  const std::vector<std::optional<std::string>> context(3, "springstress");
+  constraint_springdashpot_visualization_writer_->append_result_data_vector_with_context(
+      springstress, Core::IO::OutputEntity::node, context);
+
+  constraint_springdashpot_visualization_writer_->write_to_disk(time, step);
 }
 
 void Constraints::SpringDashpotManager::output_restart(
-    std::shared_ptr<Core::IO::DiscretizationWriter> output_restart,
-    Core::FE::Discretization& discret, Core::LinAlg::Vector<double>& disp)
+    std::shared_ptr<Core::IO::DiscretizationWriter> output_restart, const double time,
+    const int step)
 {
   // row maps for export
   std::shared_ptr<Core::LinAlg::Vector<double>> springoffsetprestr =
@@ -146,7 +172,7 @@ void Constraints::SpringDashpotManager::output_restart(
   output_restart->write_multi_vector("springoffsetprestr_old", *springoffsetprestr_old);
 
   // normal output as well
-  output(*output_restart, discret, disp);
+  output(time, step);
 
   return;
 }

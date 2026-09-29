@@ -219,8 +219,8 @@ void Solid::TimInt::setup()
   conman_->setup((*dis_)(0), sdynparams_);
 
   // initialize spring dashpot manager
-  springman_ = std::make_shared<Constraints::SpringDashpotManager>(discret_);
-
+  springman_ =
+      std::make_shared<Constraints::SpringDashpotManager>(*Global::Problem::instance(), discret_);
 
   // initialize constraint solver if constraints are defined
   if (conman_->have_constraint())
@@ -1930,7 +1930,7 @@ void Solid::TimInt::output_restart(bool& datawritten)
   }
 
   // springdashpot output
-  if (springman_->have_spring_dashpot()) springman_->output_restart(output_, *discret_, *disn_);
+  if (springman_->have_spring_dashpot()) springman_->output_restart(output_, (*time_)[0], step_);
 
   // info dedicated to user's eyes staring at standard out
   if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
@@ -1988,7 +1988,7 @@ void Solid::TimInt::output_state(bool& datawritten)
   }
 
   // springdashpot output
-  if (springman_->have_spring_dashpot()) springman_->output(*output_, *discret_, *disn_);
+  if (springman_->have_spring_dashpot()) springman_->output((*time_)[0], step_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2010,7 +2010,7 @@ void Solid::TimInt::add_restart_to_output_state()
   }
 
   // springdashpot output
-  if (springman_->have_spring_dashpot()) springman_->output_restart(output_, *discret_, *disn_);
+  if (springman_->have_spring_dashpot()) springman_->output_restart(output_, (*time_)[0], step_);
 
   // contact/meshtying
   if (have_contact_meshtying()) cmtbridge_->write_restart(*output_, true);

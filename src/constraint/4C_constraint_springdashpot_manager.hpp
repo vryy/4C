@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -33,6 +34,11 @@ namespace Core::IO
   class DiscretizationReader;
 }  // namespace Core::IO
 
+namespace Global
+{
+  class Problem;
+}  // namespace Global
+
 namespace Constraints
 {
   class SpringDashpot;
@@ -43,7 +49,7 @@ namespace Constraints
     /*!
       \brief Constructor
     */
-    SpringDashpotManager(std::shared_ptr<Core::FE::Discretization> dis);
+    SpringDashpotManager(Global::Problem& problem, std::shared_ptr<Core::FE::Discretization> dis);
 
     /*!
      \brief Return if there are spring dashpots
@@ -60,12 +66,11 @@ namespace Constraints
     void update();
 
     //! output of gap, normal, and nodal stiffness
-    void output(Core::IO::DiscretizationWriter& output, Core::FE::Discretization& discret,
-        Core::LinAlg::Vector<double>& disp);
+    void output(double time, int step);
 
     //! output of prestressing offset for restart
-    void output_restart(std::shared_ptr<Core::IO::DiscretizationWriter> output_restart,
-        Core::FE::Discretization& discret, Core::LinAlg::Vector<double>& disp);
+    void output_restart(
+        std::shared_ptr<Core::IO::DiscretizationWriter> output_restart, double time, int step);
 
     /*!
      \brief Read restart information
@@ -78,6 +83,10 @@ namespace Constraints
    private:
     std::shared_ptr<Core::FE::Discretization> actdisc_;    ///< standard discretization
     std::vector<std::shared_ptr<SpringDashpot>> springs_;  ///< all spring dashpot instances
+
+    //! constraint spring dashpot runtime output writer
+    std::unique_ptr<Core::IO::DiscretizationVisualizationWriterMesh>
+        constraint_springdashpot_visualization_writer_{nullptr};
 
     bool havespringdashpot_;  ///< are there any spring dashpot BCs at all?
     int n_conds_;             ///< number of spring dashpot conditions

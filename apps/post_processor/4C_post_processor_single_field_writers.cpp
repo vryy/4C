@@ -31,6 +31,7 @@ void StructureFilter::write_all_results(PostField* field)
 
   // contact and meshtying results
   writer_->write_result("activeset", "activeset", nodebased, 1);
+  writer_->write_result("gap", "gap", nodebased, 1);
   writer_->write_result("contactowner", "contactowner", nodebased, 1);
   writer_->write_result(
       "normal_contact_traction", "normal_contact_traction", dofbased, field->problem()->num_dim());
@@ -54,11 +55,6 @@ void StructureFilter::write_all_results(PostField* field)
       "normasterforceg", "normasterforceg", dofbased, field->problem()->num_dim());
   writer_->write_result(
       "poronopen_lambda", "poronopen_lambda", dofbased, field->problem()->num_dim());
-
-  // spring dashpot
-  writer_->write_result("gap", "gap", nodebased, 1);
-  writer_->write_result("curnormals", "curnormals", nodebased, 3);
-  writer_->write_result("springstress", "springstress", nodebased, 3);
 
   // error norms
   writer_->write_result("L2_norm", "L2_norm", elementbased, 1);
