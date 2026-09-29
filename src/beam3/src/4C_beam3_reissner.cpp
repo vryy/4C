@@ -74,7 +74,7 @@ void Discret::Elements::Beam3rType::nodal_block_information(
   Discret::Elements::Beam3r* currele = dynamic_cast<Discret::Elements::Beam3r*>(dwele);
   if (!currele) FOUR_C_THROW("cast to Beam3r* failed");
 
-  if (!currele->hermite_centerline_interpolation() or currele->num_node() > 3)
+  if (!currele->hermite_centerline_interpolation() and currele->num_node() > 3)
   {
     FOUR_C_THROW(
         "method nodal_block_information not implemented for element type beam3r in case of higher "
