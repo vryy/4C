@@ -83,8 +83,6 @@
 #include "4C_mat_modpowerlaw.hpp"
 #include "4C_mat_myocard.hpp"
 #include "4C_mat_newtonianfluid.hpp"
-#include "4C_mat_plastic_VarConstUpdate.hpp"
-#include "4C_mat_plasticelasthyper.hpp"
 #include "4C_mat_plasticlinelast.hpp"
 #include "4C_mat_robinson.hpp"
 #include "4C_mat_scalardepinterp.hpp"
@@ -207,8 +205,6 @@ namespace
       << Mat::ConstraintMixtureHistoryType::instance().name() << " "
       << Mat::CrystalPlasticityType::instance().name() << " "
       << Mat::ElastHyperType::instance().name() << " "
-      << Mat::PlasticElastHyperType::instance().name() << " "
-      << Mat::PlasticElastHyperVCUType::instance().name() << " "
       << Mat::ViscoElastHyperType::instance().name() << " " << Mat::FluidPoroType::instance().name()
       << " " << Mat::FluidPoroSinglePhaseType::instance().name() << " "
       << Mat::FluidPoroSingleVolFracType::instance().name() << " "

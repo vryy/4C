@@ -21,7 +21,6 @@
 #include "4C_linalg_tensor_conversion.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
-#include "4C_mat_plasticelasthyper.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_mat_thermoplastichyperelast.hpp"
 #include "4C_mat_thermoplasticlinelast.hpp"
@@ -1293,24 +1292,13 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
       // (8x1)   (8x3) (3x1)
       efint->multiply_tn(fac_, derxy_, heatflux_, 1.0);
 
-#ifndef TSISLMNOGOUGHJOULE
       // fint_{Td} = - N^T . ctemp : (1/2 . C') . N . T
       //              (1x8)  (6x1)       (6x1)(8x1)(8x1)
       //              (1x8)        (1x1)        (1x1)
       // fint = fint + fint_{Td}
       // with fint_{Td} += - N^T . ctemp : (1/2 . C') . N . T +
       //                   + B^T . k_0 . F^{-1} . F^{-T} . B . T
-      if (structmat->material_type() == Core::Materials::m_plelasthyper)
-      {
-        std::shared_ptr<Mat::PlasticElastHyper> plmat =
-            std::dynamic_pointer_cast<Mat::PlasticElastHyper>(structmat);
-        double He = plmat->hep_diss(iquad);
-        efint->update((-fac_ * He), funct_, 1.0);
-      }
-      else
-        efint->multiply((-fac_ * ctempCdot), funct_, NT, 1.0);
-#endif
-      // efint += H_p term is added to fint within material call
+      efint->multiply((-fac_ * ctempCdot), funct_, NT, 1.0);
 
     }  // (efint != nullptr)
 
@@ -1339,22 +1327,8 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
       Core::LinAlg::Matrix<nsd_, nen_> CinvdCmatGradTN(Core::LinAlg::Initialization::uninitialized);
       CinvdCmatGradTN.multiply_nt(CinvdCmatGradT, funct_);
       econd->multiply_tn(fac_, derxy_, CinvdCmatGradTN, 1.0);  //(8x8)=(8x3)(3x8)
-#ifndef TSISLMNOGOUGHJOULE
       // linearization of thermo-mechanical effects
-      if (structmat->material_type() == Core::Materials::m_plelasthyper)
-      {
-        std::shared_ptr<Mat::PlasticElastHyper> plmat =
-            std::dynamic_pointer_cast<Mat::PlasticElastHyper>(structmat);
-        double dHeDT = plmat->d_hep_dt(iquad);
-        econd->multiply_nt((-fac_ * dHeDT), funct_, funct_, 1.0);
-        if (plmat->d_hep_d_teas() != nullptr)
-          Core::LinAlg::DenseFunctions::multiply_nt<double, nen_, 1, nen_>(
-              1., econd->data(), -fac_, funct_.data(), plmat->d_hep_d_teas()->at(iquad).values());
-      }
-      else
-        econd->multiply_nt((-fac_ * ctempCdot), funct_, funct_, 1.0);
-#endif
-      // be aware: special terms of materials are added within material call
+      econd->multiply_nt((-fac_ * ctempCdot), funct_, funct_, 1.0);
     }  // (econd != nullptr)
 
     // --------------------------------------- capacity matrix m_capa
@@ -1645,38 +1619,24 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_coupled_tang(
     // ----------------- coupling matrix k_Td only for monolithic TSI
     if (etangcoupl != nullptr)
     {
-      // for PlasticElastHyper materials (i.e. Semi-smooth Newton type plasticity)
-      // these coupling terms have already been computed during the structural
-      // evaluate to efficiently combine it with the condensation of plastic
-      // deformation DOFs
-      if (structmat->material_type() == Core::Materials::m_plelasthyper)
-      {
-        std::shared_ptr<Mat::PlasticElastHyper> plmat =
-            std::dynamic_pointer_cast<Mat::PlasticElastHyper>(structmat);
-        Core::LinAlg::DenseFunctions::multiply_nt<double, nen_, 1, nsd_ * nen_>(
-            1., etangcoupl->data(), -fac_, funct_.data(), plmat->d_hep_diss_dd(iquad).values());
-      }
-      // other materials do specific computations here
-      else
-      {
-        // B_T: thermal gradient matrix
-        // B_L: linear B-operator, gradient matrix == B_T
-        // B: nonlinear B-operator, i.e. B = F^T . B_L
-        // dC'/dd = timefac_d ( B^T + B ) + F'T . B_L + B_L^T . F'
-        // --> 1/2 dC'/dd = sym dC'/dd = 1/(theta . Dt) . B + B'
-        // with boprate := B' = F'^T . B_L
-        // dC^{-1}/dd = - F^{-1} . (B_L . F^{-1} + B_L^{T} . F^{-T}) . F^{-T}
-        //
-        // C_mat = k_0 . I
+      // B_T: thermal gradient matrix
+      // B_L: linear B-operator, gradient matrix == B_T
+      // B: nonlinear B-operator, i.e. B = F^T . B_L
+      // dC'/dd = timefac_d ( B^T + B ) + F'T . B_L + B_L^T . F'
+      // --> 1/2 dC'/dd = sym dC'/dd = 1/(theta . Dt) . B + B'
+      // with boprate := B' = F'^T . B_L
+      // dC^{-1}/dd = - F^{-1} . (B_L . F^{-1} + B_L^{T} . F^{-T}) . F^{-T}
+      //
+      // C_mat = k_0 . I
 
-        // k^e_Td += - timefac . N_T^T . N_T . T . C_T : 1/2 dC'/dd . detJ . w(gp)
-        // (8x24)                (8x3) (3x8)(8x1)   (6x1)       (6x24)
-        // (8x24)                   (8x8)   (8x1)   (1x6)       (6x24)
-        // (8x24)                       (8x1)       (1x6)       (6x24)
-        // (8x24)                             (8x6)             (6x24)
-        etangcoupl->multiply(-fac_, NNTC, boprate, 1.0);
-        etangcoupl->multiply((-fac_ * timefac_d), NNTC, bop, 1.0);
-      }
+      // k^e_Td += - timefac . N_T^T . N_T . T . C_T : 1/2 dC'/dd . detJ . w(gp)
+      // (8x24)                (8x3) (3x8)(8x1)   (6x1)       (6x24)
+      // (8x24)                   (8x8)   (8x1)   (1x6)       (6x24)
+      // (8x24)                       (8x1)       (1x6)       (6x24)
+      // (8x24)                             (8x6)             (6x24)
+      etangcoupl->multiply(-fac_, NNTC, boprate, 1.0);
+      etangcoupl->multiply((-fac_ * timefac_d), NNTC, bop, 1.0);
+
       // k^e_Td += timefac . ( B_T^T . C_mat . dC^{-1}/dd . B_T . T . detJ . w(gp) )
       //        += timefac . ( B_T^T . C_mat . B_T . T . dC^{-1}/dd . detJ . w(gp) )
       // (8x24)                        (8x3)   (3x3)  (3x8)(8x1)  (6x24)

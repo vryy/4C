@@ -91,14 +91,6 @@ namespace TSI
     Inf         //!< Maximum/infinity norm
   };
 
-  //! Method used to calculate plastic dissipation
-  enum class DissipationMode
-  {
-    pl_multiplier,  //!< Dissipation = yield stress times plastic multiplier
-    pl_flow,        //!< Dissipation = Mandel stress : sym(L^p)
-    Taylor_Quinney  //!< Dissipation based on Taylor Quinney factor
-  };
-
   //@}
 
   /// tsi parameters
