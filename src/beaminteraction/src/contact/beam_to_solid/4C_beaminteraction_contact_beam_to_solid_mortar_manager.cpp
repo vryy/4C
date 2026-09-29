@@ -796,19 +796,24 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_stiff(
   Core::LinAlg::SparseMatrix lm_lm =
       Core::LinAlg::SparseMatrix(block_lm_displ_row_map, 81, true, true);
 
-  auto lambda_non_active = Core::LinAlg::Vector<double>(lambda_active_->get_map());
-  for (int lid = 0; lid < lambda_active_->get_map().num_my_elements(); lid++)
+  // Add a 1 on the main diagonal for inactive Lagrange multipliers.
+  const auto& lambda_active_map = lambda_active_->get_map();
+  Core::LinAlg::Vector<double> lambda_non_active_vector_with_ones(lambda_active_map, true);
+  for (int lid = 0; lid < lambda_active_map.num_my_elements(); lid++)
   {
     if (lambda_active_->get_values()[lid] < 0.1)
-      lambda_non_active.replace_local_value(lid, 1.0);
-    else
-      lambda_non_active.replace_local_value(lid, 0.0);
+      lambda_non_active_vector_with_ones.replace_local_value(lid, 1.0);
   }
-  auto lambda_non_active_structure_map = Core::LinAlg::Vector<double>(block_lm_displ_row_map);
-  Core::LinAlg::export_to(lambda_non_active, lambda_non_active_structure_map);
-  Core::LinAlg::SparseMatrix lambda_non_active_matrix(lambda_non_active_structure_map);
-  lambda_non_active_matrix.complete();
-  lm_lm.add(lambda_non_active_matrix, false, 1.0, 1.0);
+  // We need to export the vector to the map of the structure lagrange multipliers as they are in
+  // general not the same as the ones in the current mortar manager.
+  auto lambda_non_active_vector_with_ones_structure_map =
+      Core::LinAlg::Vector<double>(block_lm_displ_row_map);
+  Core::LinAlg::export_to(
+      lambda_non_active_vector_with_ones, lambda_non_active_vector_with_ones_structure_map);
+  Core::LinAlg::SparseMatrix lambda_non_active_matrix_with_ones(
+      lambda_non_active_vector_with_ones_structure_map);
+  lambda_non_active_matrix_with_ones.complete();
+  lm_lm.add(lambda_non_active_matrix_with_ones, false, 1.0, 1.0);
 
   if (parameters_.lagrange_formulation == BeamToSolid::BeamToSolidLagrangeFormulation::regularized)
   {
