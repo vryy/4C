@@ -42,26 +42,28 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
   {
     int numdf = -1;
 
-    if (nullspace_node_map == nullptr and dis.num_my_row_nodes() > 0)
+    if (nullspace_node_map == nullptr)
     {
       // no map given, just grab the block information on the first element that appears
-      Core::Elements::Element* dwele = dis.l_row_element(0);
-      dwele->element_type().nodal_block_information(dwele, numdf, dimns);
+      if (dis.num_my_row_elements() > 0)
+      {
+        auto* element = dis.l_row_element(0);
+        element->element_type().nodal_block_information(element, numdf, dimns);
+      }
     }
     else
     {
       // if a map is given, grab the block information of the first element in that map
       for (int i = 0; i < dis.num_my_row_nodes(); ++i)
       {
-        auto* actnode = dis.l_row_node(i);
-        const auto node_gid = actnode->id();
-        const int localIndex = nullspace_node_map->lid(node_gid);
+        auto* node = dis.l_row_node(i);
 
-        if (localIndex == -1) continue;
+        if (nullspace_node_map->lid(node->id()) == -1) continue;
+        if (node->adjacent_elements().empty()) continue;
 
-        Core::Elements::Element* dwele = dis.l_row_element(localIndex);
-        actnode->adjacent_elements()[0].user_element()->element_type().nodal_block_information(
-            dwele, numdf, dimns);
+        auto* element = node->adjacent_elements()[0].user_element();
+        element->element_type().nodal_block_information(element, numdf, dimns);
+
         break;
       }
     }
