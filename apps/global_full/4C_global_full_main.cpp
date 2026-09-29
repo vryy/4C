@@ -199,21 +199,6 @@ int main(int argc, char* argv[])
     /*----------------------------------------------------------------------*/
 
     get_memory_high_water_mark(communicators.global_comm());
-
-    Core::Communication::barrier(communicators.local_comm());
-    if (communicators.num_groups() > 1)
-    {
-      printf("Global processor %d with local rank %d finished normally\n",
-          Core::Communication::my_mpi_rank(communicators.global_comm()),
-          Core::Communication::my_mpi_rank(communicators.local_comm()));
-      Core::Communication::barrier(communicators.global_comm());
-    }
-    else
-    {
-      Core::Communication::barrier(communicators.global_comm());
-      printf("processor %d finished normally\n",
-          Core::Communication::my_mpi_rank(communicators.local_comm()));
-    }
   }
 
   return (0);
