@@ -140,11 +140,13 @@ void Mat::ConstraintMixture::pack(Core::Communication::PackBuffer& data) const
     add_to_pack(data, a2_->at(gp));
     add_to_pack(data, a3_->at(gp));
     add_to_pack(data, a4_->at(gp));
-    add_to_pack(data, vismassstress_->at(gp));
-    add_to_pack(data, refmassdens_->at(gp));
-    add_to_pack(data, visrefmassdens_->at(gp));
+    add_to_pack(data, visualize_massstress_.at(gp));
+    add_to_pack(data, refmassdens_.at(gp));
+    add_to_pack(data, visualize_refmassdens_.at(gp));
     add_to_pack(data, localprestretch_->at(gp));
     add_to_pack(data, localhomstress_->at(gp));
+    add_to_pack(data, visualize_growthfactor_.at(gp));
+    add_to_pack(data, visualize_elastinsurvival_.at(gp));
   }
   if (numgp > 0)
   {
@@ -208,11 +210,13 @@ void Mat::ConstraintMixture::unpack(Core::Communication::UnpackBuffer& buffer)
   a2_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 1>>>(numgp);
   a3_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 1>>>(numgp);
   a4_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 1>>>(numgp);
-  vismassstress_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 1>>>(numgp);
-  refmassdens_ = std::make_shared<std::vector<double>>(numgp);
-  visrefmassdens_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 1>>>(numgp);
+  visualize_massstress_.resize(numgp);
+  refmassdens_.resize(numgp);
+  visualize_refmassdens_.resize(numgp);
   localprestretch_ = std::make_shared<std::vector<Core::LinAlg::Matrix<4, 1>>>(numgp);
   localhomstress_ = std::make_shared<std::vector<Core::LinAlg::Matrix<4, 1>>>(numgp);
+  visualize_growthfactor_.resize(numgp);
+  visualize_elastinsurvival_.resize(numgp);
 
   for (int gp = 0; gp < numgp; gp++)
   {
@@ -226,17 +230,19 @@ void Mat::ConstraintMixture::unpack(Core::Communication::UnpackBuffer& buffer)
     extract_from_pack(buffer, alin);
     a4_->at(gp) = alin;
     extract_from_pack(buffer, alin);
-    vismassstress_->at(gp) = alin;
+    visualize_massstress_.at(gp) = alin;
     double a;
     extract_from_pack(buffer, a);
-    refmassdens_->at(gp) = a;
+    refmassdens_.at(gp) = a;
     extract_from_pack(buffer, alin);
-    visrefmassdens_->at(gp) = alin;
+    visualize_refmassdens_.at(gp) = alin;
     Core::LinAlg::Matrix<4, 1> pre;
     extract_from_pack(buffer, pre);
     localprestretch_->at(gp) = pre;
     extract_from_pack(buffer, pre);
     localhomstress_->at(gp) = pre;
+    extract_from_pack(buffer, visualize_growthfactor_.at(gp));
+    extract_from_pack(buffer, visualize_elastinsurvival_.at(gp));
   }
   double basal;
   extract_from_pack(buffer, basal);
@@ -264,59 +270,6 @@ void Mat::ConstraintMixture::unpack(Core::Communication::UnpackBuffer& buffer)
   {
     history_->at(idpast).unpack(buffer);
   }
-
-
-
-  /*
-  double oldesttime = 0.0;
-  double acttime = 0.0;
-  double tempdt = 0.0;
-  history_->begin()->get_time(&oldesttime, &tempdt);
-  history_->at(sizehistory-2).get_time(&acttime, &tempdt);
-  double intdegr = 0.0;
-  double degrtime = 0.0;
-  double degrdt = 0.0;
-  for (int idpast = 0; idpast < sizehistory -1; idpast++)
-  {
-    double degr = 0.0;
-    history_->at(idpast).get_time(&degrtime, &degrdt);
-    double timeloc = 0.0;
-    double dtloc = 0.0;
-    history_->at(idpast+1).get_time(&timeloc, &dtloc);
-    degrdt = dtloc;
-    Degradation(acttime-degrtime, degr);
-    intdegr += degr * degrdt;
-  }
-
-  for (int idpast = 0; idpast < sizehistory-1; idpast++)
-  {
-    double temptime = 0.0;
-    history_->at(idpast).get_time(&temptime, &tempdt);
-    for (int idgauss = 0; idgauss < numgp; idgauss++)
-    {
-      Core::LinAlg::Matrix<4,1> stretchtemp(Core::LinAlg::Initialization::zero);
-      Core::LinAlg::Matrix<4,1> stretchact(Core::LinAlg::Initialization::zero);
-      Core::LinAlg::Matrix<4,1> stretchold(Core::LinAlg::Initialization::zero);
-      history_->at(sizehistory-2).get_stretches(idgauss, &stretchact);
-      history_->begin()->get_stretches(idgauss, &stretchold);
-      stretchtemp.update(stretchact);
-      // linear interpolated stretch
-      //double scalar = (temptime - acttime) / (oldesttime - acttime);
-      //stretchtemp.update(scalar,stretchold,1.0);
-      //stretchtemp.update(-scalar,stretchact,1.0);
-      // modify stretch
-      //history_->at(idpast).set_stretches(idgauss,stretchtemp);
-      // distribute mass equally
-      double massprodbasal = (refmassdens_->at(idgauss) - (params_->phimuscle_ +
-  params_->phielastin_) * params_->density_) / 4.0 / intdegr; Core::LinAlg::Matrix<4,1>
-  masstemp(true); masstemp.put_scalar(massprodbasal);
-  history_->at(idpast).set_mass(idgauss,masstemp);
-    }
-  }
-  std::cout << "Unpack called, history of mass/stretch is lost" << std::endl;
-  */
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -339,28 +292,30 @@ void Mat::ConstraintMixture::setup(int numgp, const Discret::Elements::Fibers& f
     FOUR_C_THROW("unknown option for mass production function");
 
   // visualization
-  vismassstress_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 1>>>(numgp);
-  refmassdens_ = std::make_shared<std::vector<double>>(numgp);
-  visrefmassdens_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 1>>>(numgp);
+  visualize_massstress_.resize(numgp);
+  refmassdens_.resize(numgp);
+  visualize_refmassdens_.resize(numgp);
+  visualize_growthfactor_.assign(numgp, 0.0);
+  visualize_elastinsurvival_.assign(numgp, 1.0);
   // homeostatic prestretch of collagen fibers
   localprestretch_ = std::make_shared<std::vector<Core::LinAlg::Matrix<4, 1>>>(numgp);
   localhomstress_ = std::make_shared<std::vector<Core::LinAlg::Matrix<4, 1>>>(numgp);
 
   for (int gp = 0; gp < numgp; gp++)
   {
-    vismassstress_->at(gp)(0) = 0.0;
-    vismassstress_->at(gp)(1) = 0.0;
-    vismassstress_->at(gp)(2) = 0.0;
-    refmassdens_->at(gp) = params_->density_;
-    visrefmassdens_->at(gp)(0) =
+    visualize_massstress_.at(gp)(0) = 0.0;
+    visualize_massstress_.at(gp)(1) = 0.0;
+    visualize_massstress_.at(gp)(2) = 0.0;
+    refmassdens_.at(gp) = params_->density_;
+    visualize_refmassdens_.at(gp)(0) =
         params_->density_ * (1.0 - params_->phielastin_ - params_->phimuscle_) / 4.0;
-    visrefmassdens_->at(gp)(1) =
+    visualize_refmassdens_.at(gp)(1) =
         params_->density_ * (1.0 - params_->phielastin_ - params_->phimuscle_) / 4.0;
-    visrefmassdens_->at(gp)(2) =
+    visualize_refmassdens_.at(gp)(2) =
         params_->density_ * (1.0 - params_->phielastin_ - params_->phimuscle_) / 4.0;
-    //    visrefmassdens_->at(gp)(0) = params_->density_*(1.0 - params_->phielastin_ -
-    //    params_->phimuscle_)/10.0; visrefmassdens_->at(gp)(1) = params_->density_*(1.0 -
-    //    params_->phielastin_ - params_->phimuscle_)/10.0; visrefmassdens_->at(gp)(2) =
+    //    visualize_refmassdens_.at(gp)(0) = params_->density_*(1.0 - params_->phielastin_ -
+    //    params_->phimuscle_)/10.0; visualize_refmassdens_.at(gp)(1) = params_->density_*(1.0 -
+    //    params_->phielastin_ - params_->phimuscle_)/10.0; visualize_refmassdens_.at(gp)(2) =
     //    params_->density_*(1.0 - params_->phielastin_ - params_->phimuscle_)/5.0*2.0;
   }
 
@@ -779,6 +734,10 @@ void Mat::ConstraintMixture::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* 
   if (params_->elastindegrad_ == "InvEla")
     elastin_survival = params_->get_parameter(params_->elastin_survival, eleGID);
 
+  // store for visualization
+  visualize_growthfactor_.at(gp) = growthfactor;
+  visualize_elastinsurvival_.at(gp) = elastin_survival;
+
   // stuff for collagen damage
   deletemass_->resize(0);
 
@@ -1114,9 +1073,9 @@ void Mat::ConstraintMixture::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* 
       if (params_->integration_ == "Explicit")
       {
         history_->back().set_mass(gp, massprodcomp);
-        vismassstress_->at(gp)(0) = massstress(0);
-        vismassstress_->at(gp)(1) = massstress(1);
-        vismassstress_->at(gp)(2) = massstress(2);
+        visualize_massstress_.at(gp)(0) = massstress(0);
+        visualize_massstress_.at(gp)(1) = massstress(1);
+        visualize_massstress_.at(gp)(2) = massstress(2);
       }
       else
       {
@@ -1145,9 +1104,9 @@ void Mat::ConstraintMixture::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* 
     else
     {
       // visualization of massstresss for the other cases
-      vismassstress_->at(gp)(0) = massstress(0);
-      vismassstress_->at(gp)(1) = massstress(1);
-      vismassstress_->at(gp)(2) = massstress(2);
+      visualize_massstress_.at(gp)(0) = massstress(0);
+      visualize_massstress_.at(gp)(1) = massstress(1);
+      visualize_massstress_.at(gp)(2) = massstress(2);
       if ((params_->initstretch_ == "SetConstantHistory" ||
               params_->initstretch_ == "SetLinearHistory") &&
           time > (0.6 * params_->starttime_ + 1.0e-12) &&
@@ -1245,7 +1204,7 @@ void Mat::ConstraintMixture::evaluate_stress(const Core::LinAlg::Matrix<NUM_STRE
   (*cmat) += cmatvol;
 
   // set actual mass density
-  refmassdens_->at(gp) = currmassdens;
+  refmassdens_.at(gp) = currmassdens;
 }
 
 /*----------------------------------------------------------------------*
@@ -1267,7 +1226,7 @@ void Mat::ConstraintMixture::evaluate_fiber_family(const Core::LinAlg::Matrix<NU
   double density = params_->density_;
   int sizehistory = history_->size();
   double eps = 1.0e-11;
-  if (idfiber != 3) visrefmassdens_->at(gp)(idfiber) = 0.0;
+  if (idfiber != 3) visualize_refmassdens_.at(gp)(idfiber) = 0.0;
 
   //--------------------------------------------------------------------------------------
   // structural tensors in voigt notation
@@ -1381,7 +1340,7 @@ void Mat::ConstraintMixture::evaluate_fiber_family(const Core::LinAlg::Matrix<NU
     }
 
     (*currmassdens) += qdegrad * collmass(idfiber) * depdt;
-    if (idfiber != 3) visrefmassdens_->at(gp)(idfiber) += qdegrad * collmass(idfiber) * depdt;
+    if (idfiber != 3) visualize_refmassdens_.at(gp)(idfiber) += qdegrad * collmass(idfiber) * depdt;
   }
 
   // matrices for stress and cmat
@@ -2476,9 +2435,9 @@ void Mat::ConstraintMixture::evaluate_implicit_all(Core::LinAlg::Matrix<3, 3> de
   int err = solver.solve();                // X = A^-1 B
   if ((err != 0) || (err2 != 0)) FOUR_C_THROW("solving linear system for cmat failed");
 
-  vismassstress_->at(gp)(0) = massstress(0);
-  vismassstress_->at(gp)(1) = massstress(1);
-  vismassstress_->at(gp)(2) = massstress(2);
+  visualize_massstress_.at(gp)(0) = massstress(0);
+  visualize_massstress_.at(gp)(1) = massstress(1);
+  visualize_massstress_.at(gp)(2) = massstress(2);
 }
 
 /*----------------------------------------------------------------------*
@@ -2765,10 +2724,10 @@ void Mat::ConstraintMixture::evaluate_implicit_single(Core::LinAlg::Matrix<3, 3>
   (*stress) += Svol;
   (*cmat) += cmatvol;
 
-  vismassstress_->at(gp)(0) = massstress(0);
-  vismassstress_->at(gp)(1) = massstress(1);
-  vismassstress_->at(gp)(2) = massstress(2);
-  refmassdens_->at(gp) = currmassdens;
+  visualize_massstress_.at(gp)(0) = massstress(0);
+  visualize_massstress_.at(gp)(1) = massstress(1);
+  visualize_massstress_.at(gp)(2) = massstress(2);
+  refmassdens_.at(gp) = currmassdens;
 }
 
 /*----------------------------------------------------------------------*
@@ -2948,156 +2907,95 @@ void Mat::ConstraintMixture::evaluate_fiber_vecs(const int gp,
 }
 
 /*----------------------------------------------------------------------*
- |  Return names of visualization data            (public)         03/13|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::vis_names(std::map<std::string, int>& names) const
+void Mat::ConstraintMixture::register_output_data_names(
+    std::unordered_map<std::string, int>& names_and_size) const
 {
-  std::string fiber = "MassStress";
-  names[fiber] = 3;
-  fiber = "Fiber1";
-  names[fiber] = 3;  // 3-dim vector
-  fiber = "Fiber2";
-  names[fiber] = 3;  // 3-dim vector
-  fiber = "referentialMassDensity";
-  names[fiber] = 1;
-  fiber = "CollagenMassDensity";
-  names[fiber] = 3;
-  fiber = "Prestretch";
-  names[fiber] = 3;
-  fiber = "Homstress";
-  names[fiber] = 3;
-  fiber = "MassProd";
-  names[fiber] = 3;
-  fiber = "growthfactor";
-  names[fiber] = 1;
-  fiber = "elastin_survival";
-  names[fiber] = 1;
+  names_and_size["MassStress"] = 3;
+  names_and_size["Fiber1"] = 3;
+  names_and_size["Fiber2"] = 3;
+  names_and_size["referentialMassDensity"] = 1;
+  names_and_size["CollagenMassDensity"] = 3;
+  names_and_size["Prestretch"] = 3;
+  names_and_size["Homstress"] = 3;
+  names_and_size["MassProd"] = 3;
+  names_and_size["growthfactor"] = 1;
+  names_and_size["elastin_survival"] = 1;
 }
 
 /*----------------------------------------------------------------------*
- |  Return visualization data                     (public)         03/13|
  *----------------------------------------------------------------------*/
-bool Mat::ConstraintMixture::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
+bool Mat::ConstraintMixture::evaluate_output_data(
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
+  const auto set_vector = [&](int gp, const auto& vec)
+  {
+    for (int i = 0; i < 3; ++i) data(gp, i) = vec(i);
+  };
+
+  const int numgp = data.numRows();
+  FOUR_C_ASSERT_ALWAYS(isinit_ && static_cast<int>(a1_->size()) == numgp,
+      "Material is not initialized or number of Gauss points of the output data ({}) does not "
+      "match the number of Gauss points of the material ({}).",
+      numgp, isinit_ ? a1_->size() : 0);
+
   if (name == "MassStress")
   {
-    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
-    Core::LinAlg::Matrix<3, 1> temp(Core::LinAlg::Initialization::zero);
-    for (int iter = 0; iter < numgp; iter++) temp.update(1.0, vismassstress_->at(iter), 1.0);
-    data[0] = temp(0) / numgp;
-    data[1] = temp(1) / numgp;
-    data[2] = temp(2) / numgp;
+    for (int gp = 0; gp < numgp; ++gp) set_vector(gp, visualize_massstress_.at(gp));
+    return true;
   }
-  else if (name == "Fiber1")
+  if (name == "Fiber1")
   {
-    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
-    Core::LinAlg::Matrix<3, 1> a1 = a1_->at(0);  // get a1 of first gp
-    data[0] = a1(0);
-    data[1] = a1(1);
-    data[2] = a1(2);
+    for (int gp = 0; gp < numgp; ++gp) set_vector(gp, a1_->at(gp));
+    return true;
   }
-  else if (name == "Fiber2")
+  if (name == "Fiber2")
   {
-    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
-    Core::LinAlg::Matrix<3, 1> a2 = a2_->at(0);  // get a2 of first gp
-    data[0] = a2(0);
-    data[1] = a2(1);
-    data[2] = a2(2);
+    for (int gp = 0; gp < numgp; ++gp) set_vector(gp, a2_->at(gp));
+    return true;
   }
-  else if (name == "referentialMassDensity")
+  if (name == "referentialMassDensity")
   {
-    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
-    double temp = 0.0;
-    for (int iter = 0; iter < numgp; iter++) temp += refmassdens_->at(iter);
-    data[0] = temp / numgp;
+    for (int gp = 0; gp < numgp; ++gp) data(gp, 0) = refmassdens_.at(gp);
+    return true;
   }
-  else if (name == "CollagenMassDensity")
+  if (name == "CollagenMassDensity")
   {
-    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
-    Core::LinAlg::Matrix<3, 1> temp(Core::LinAlg::Initialization::zero);
-    for (int iter = 0; iter < numgp; iter++) temp.update(1.0, visrefmassdens_->at(iter), 1.0);
-    data[0] = temp(0) / numgp;
-    data[1] = temp(1) / numgp;
-    data[2] = temp(2) / numgp;
+    for (int gp = 0; gp < numgp; ++gp) set_vector(gp, visualize_refmassdens_.at(gp));
+    return true;
   }
-  else if (name == "Prestretch")
+  if (name == "Prestretch")
   {
-    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
-    Core::LinAlg::Matrix<3, 1> temp(Core::LinAlg::Initialization::zero);
-    for (int iter = 0; iter < numgp; iter++) temp.update(1.0, get_prestretch(iter), 1.0);
-    data[0] = temp(0) / numgp;
-    data[1] = temp(1) / numgp;
-    data[2] = temp(2) / numgp;
+    for (int gp = 0; gp < numgp; ++gp) set_vector(gp, get_prestretch(gp));
+    return true;
   }
-  else if (name == "Homstress")
+  if (name == "Homstress")
   {
-    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
-    Core::LinAlg::Matrix<3, 1> temp(Core::LinAlg::Initialization::zero);
-    for (int iter = 0; iter < numgp; iter++) temp.update(1.0, get_homstress(iter), 1.0);
-    data[0] = temp(0) / numgp;
-    data[1] = temp(1) / numgp;
-    data[2] = temp(2) / numgp;
+    for (int gp = 0; gp < numgp; ++gp) set_vector(gp, get_homstress(gp));
+    return true;
   }
-  else if (name == "MassProd")
+  if (name == "MassProd")
   {
-    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
-    Core::LinAlg::Matrix<4, 1> temp(Core::LinAlg::Initialization::zero);
-    int sizehistory = history_->size();
-    for (int iter = 0; iter < numgp; iter++)
+    const int sizehistory = history_->size();
+    for (int gp = 0; gp < numgp; ++gp)
     {
-      Core::LinAlg::Matrix<4, 1> temp_loc(Core::LinAlg::Initialization::zero);
-      history_->at(sizehistory - 2).get_mass(iter, &temp_loc);
-      // history_->at(0).get_mass(iter,&temp_loc);
-      // history_->at(0).get_stretches(iter,&temp_loc);
-      temp.update(1.0, temp_loc, 1.0);
+      Core::LinAlg::Matrix<4, 1> massprod(Core::LinAlg::Initialization::zero);
+      history_->at(sizehistory - 2).get_mass(gp, &massprod);
+      set_vector(gp, massprod);
     }
-    data[0] = temp(0) / numgp;
-    data[1] = temp(1) / numgp;
-    data[2] = temp(2) / numgp;
+    return true;
   }
-  else if (name == "growthfactor")
+  if (name == "growthfactor")
   {
-    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
-    // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
-    // int eleLID = Global::Problem::instance()->GetDis("structure")->ElementColMap()->LID(eleID);
-    data[0] = params_->get_parameter(params_->growthfactor, eleID);
+    for (int gp = 0; gp < numgp; ++gp) data(gp, 0) = visualize_growthfactor_.at(gp);
+    return true;
   }
-  else if (name == "elastin_survival")
+  if (name == "elastin_survival")
   {
-    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
-    // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
-    // int eleLID = Global::Problem::instance()->GetDis("structure")->ElementColMap()->LID(eleID);
-    if (params_->elastindegrad_ == "InvEla")
-      data[0] = params_->get_parameter(params_->elastin_survival, eleID);
-    else if (params_->elastindegrad_ == "Rectangle" ||
-             params_->elastindegrad_ == "RectanglePlate" || params_->elastindegrad_ == "Wedge" ||
-             params_->elastindegrad_ == "Circles")
-    {
-      Core::Elements::Element* myele =
-          Global::Problem::instance()->get_dis("structure")->g_element(eleID);
-      Core::Nodes::Node** mynodes = myele->nodes();
-      for (int idnodes = 0; idnodes < myele->num_node(); idnodes++)
-      {
-        Core::Nodes::Node* locnode = mynodes[idnodes];
-        double elastin_survival = 0.0;
-        Core::LinAlg::Tensor<double, 3> point_refe;
-        point_refe(0) = locnode->x()[0];
-        point_refe(1) = locnode->x()[1];
-        point_refe(2) = locnode->x()[2];
-        elastin_degradation(point_refe, elastin_survival);
-        data[0] += elastin_survival;
-      }
-      data[0] = data[0] / myele->num_node();
-    }
-    else
-      data[0] = 1.0;
+    for (int gp = 0; gp < numgp; ++gp) data(gp, 0) = visualize_elastinsurvival_.at(gp);
+    return true;
   }
-  else
-  {
-    return false;
-  }
-  return true;
+  return false;
 }
 
 /*----------------------------------------------------------------------*
