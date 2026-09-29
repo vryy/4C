@@ -257,13 +257,13 @@ namespace Mat
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// Return variables for visualization
-    Core::LinAlg::Matrix<3, 1> get_vis(int gp) const { return vismassstress_->at(gp); }
+    Core::LinAlg::Matrix<3, 1> get_vis(int gp) const { return visualize_massstress_.at(gp); }
     /// Return actual mass density in reference configuration
-    double get_mass_density(int gp) const { return refmassdens_->at(gp); }
+    double get_mass_density(int gp) const { return refmassdens_.at(gp); }
     /// Return actual mass density in reference configuration
     Core::LinAlg::Matrix<3, 1> get_mass_density_collagen(int gp) const
     {
-      return visrefmassdens_->at(gp);
+      return visualize_refmassdens_.at(gp);
     }
     /// Return prestretch of collagen fibers
     Core::LinAlg::Matrix<3, 1> get_prestretch(int gp) const
@@ -292,24 +292,29 @@ namespace Mat
     void evaluate_fiber_vecs(const int gp, const Core::LinAlg::Matrix<3, 3>& locsys,
         const Core::LinAlg::Matrix<3, 3>& defgrd);
 
-    /// Return names of visualization data
-    void vis_names(std::map<std::string, int>& names) const override;
+    //! Return names of visualization data for runtime output
+    void register_output_data_names(
+        std::unordered_map<std::string, int>& names_and_size) const override;
 
-    /// Return visualization data
-    bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
+    //! Return visualization data for runtime output
+    bool evaluate_output_data(
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
    private:
     /// my material parameters
     Mat::PAR::ConstraintMixture* params_;
 
     /// temporary for visualization
-    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 1>>> vismassstress_;
+    std::vector<Core::LinAlg::Matrix<3, 1>> visualize_massstress_;
     /// actual mass density in reference configuration
-    std::shared_ptr<std::vector<double>> refmassdens_;
+    std::vector<double> refmassdens_;
     /// actual mass density in reference configuration for collagen fibers
-    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 1>>> visrefmassdens_;
-    /// basal rate of mass production
+    std::vector<Core::LinAlg::Matrix<3, 1>> visualize_refmassdens_;
+    //! growth factor per gp used in the last evaluation (for visualization)
+    std::vector<double> visualize_growthfactor_;
+    //! amount of surviving elastin per gp used in the last evaluation (for visualization)
+    std::vector<double> visualize_elastinsurvival_;
+    //! basal rate of mass production
     double massprodbasal_;
 
     /// first fiber vector per gp (reference), circumferential
