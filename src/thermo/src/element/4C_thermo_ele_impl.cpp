@@ -19,7 +19,6 @@
 #include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor_conversion.hpp"
-#include "4C_linalg_tensor_generators.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_plasticelasthyper.hpp"
@@ -36,7 +35,6 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include <algorithm>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -885,10 +883,6 @@ void Discret::Elements::TemperImpl<distype>::linear_disp_contribution(
 
   Core::LinAlg::Matrix<nen_, 1> Ndctemp_dTBvNT(Core::LinAlg::Initialization::zero);
 
-  // --------------------------------------------------- time integration
-  // get the time step size
-  const double stepsize = params.get<double>("delta time");
-
   // ----------------------------------- integration loop for one element
 
   // integrations points and weights
@@ -933,29 +927,6 @@ void Discret::Elements::TemperImpl<distype>::linear_disp_contribution(
 
       Ndctemp_dTBvNT.multiply(Ndctemp_dTBv, NT);
     }
-    else if (structmat->material_type() == Core::Materials::m_thermopllinelast)
-    {
-      std::shared_ptr<Mat::ThermoPlasticLinElast> thrpllinelast =
-          std::dynamic_pointer_cast<Mat::ThermoPlasticLinElast>(structmat);
-      // get the temperature-dependent material tangent
-      thrpllinelast->setup_cthermo(ctemp_t);
-
-      // thermoELASTIC heating term f_Td = T . (m . I) : strain',
-      // thermoPLASTICITY:               = T . (m . I) : strain_e'
-      // in case of a thermo-elasto-plastic solid material, strainvel != elastic strains
-      // e' = (e^e)' + (e^p)'
-      // split strainvel (=total strain) into elastic and plastic terms
-      // --> thermomechanical coupling term requires elastic strain rates and
-      // --> dissipation term requires the plastic strain rates
-      // call the structural material
-
-      // extract elastic part of the total strain
-      thrpllinelast->strain_rate_split(iquad, stepsize, strainvel);
-      // overwrite strainvel, strainvel has to include only elastic strain rates
-      strainvel.update(thrpllinelast->elastic_strain_rate(iquad));
-
-    }  // m_thermopllinelast
-
 
     // N_T^T . (- ctemp) : ( B_L .  (d^e)' )
     Core::LinAlg::Matrix<nen_, 6> Nctemp(
@@ -1113,14 +1084,6 @@ void Discret::Elements::TemperImpl<distype>::linear_coupled_tang(
       thermoSolid->reinit(NT(0), iquad);
       thermoSolid->stress_temperature_modulus_and_deriv(ctemp_t, dctemp_dT, iquad);
     }
-    else if (structmat->material_type() == Core::Materials::m_thermopllinelast)
-    {
-      std::shared_ptr<Mat::ThermoPlasticLinElast> thrpllinelast =
-          std::dynamic_pointer_cast<Mat::ThermoPlasticLinElast>(structmat);
-
-      // get the temperature-dependent material tangent
-      thrpllinelast->setup_cthermo(ctemp_t);
-    }  // m_thermopllinelast
 
     // N_temp^T . N_temp . temp
     Core::LinAlg::Matrix<nen_, 1> NNT(Core::LinAlg::Initialization::uninitialized);
@@ -1669,9 +1632,6 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_coupled_tang(
       std::shared_ptr<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
           std::dynamic_pointer_cast<Mat::ThermoPlasticHyperElast>(structmat);
 
-      // insert matrices into parameter list which are only required for thrplasthyperelast
-      params.set<Core::LinAlg::Matrix<nsd_, nsd_>>("defgrd", defgrd);
-      params.set<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>("Cinv_vct", Cinvvct);
       // calculate Jacobi-determinant
       J = defgrd.determinant();
 

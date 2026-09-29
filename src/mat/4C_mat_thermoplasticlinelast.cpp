@@ -110,7 +110,6 @@ void Mat::ThermoPlasticLinElast::pack(Core::Communication::PackBuffer& data) con
     add_to_pack(data, dmech_d_[var]);
 
     add_to_pack(data, incstrainpl_[var]);
-    add_to_pack(data, strainelrate_[var]);
 
     // insert current iteration states
     add_to_pack(data, strainplcurr_[var]);
@@ -176,7 +175,6 @@ void Mat::ThermoPlasticLinElast::unpack(Core::Communication::UnpackBuffer& buffe
   dmech_d_ = std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>>();
 
   incstrainpl_ = std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>>();
-  strainelrate_ = std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>>();
 
   Core::LinAlg::SymmetricTensor<double, 3, 3> tmp_tensor{};
   for (int var = 0; var < histsize; ++var)
@@ -196,8 +194,6 @@ void Mat::ThermoPlasticLinElast::unpack(Core::Communication::UnpackBuffer& buffe
     dmech_d_.push_back(tmp_tensor);
     extract_from_pack(buffer, tmp_tensor);
     incstrainpl_.push_back(tmp_tensor);
-    extract_from_pack(buffer, tmp_tensor);
-    strainelrate_.push_back(tmp_tensor);
 
     // current iteration states are unpacked
     extract_from_pack(buffer, tmp_tensor);
@@ -232,7 +228,6 @@ void Mat::ThermoPlasticLinElast::setup(int numgp, const Discret::Elements::Fiber
   dmech_d_ = std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>>();
 
   incstrainpl_ = std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>>();
-  strainelrate_ = std::vector<Core::LinAlg::SymmetricTensor<double, 3, 3>>();
 
   strainpllast_.resize(numgp);
   strainplcurr_.resize(numgp);
@@ -247,7 +242,6 @@ void Mat::ThermoPlasticLinElast::setup(int numgp, const Discret::Elements::Fiber
   dmech_d_.resize(numgp);
 
   incstrainpl_.resize(numgp);
-  strainelrate_.resize(numgp);
 
   Core::LinAlg::SymmetricTensor<double, 3, 3> empty_tensor{};
   for (int i = 0; i < numgp; i++)
@@ -265,7 +259,6 @@ void Mat::ThermoPlasticLinElast::setup(int numgp, const Discret::Elements::Fiber
     dmech_d_[i] = empty_tensor;
 
     incstrainpl_[i] = empty_tensor;
-    strainelrate_[i] = empty_tensor;
   }
 
   isinit_ = true;
@@ -868,24 +861,6 @@ void Mat::ThermoPlasticLinElast::setup_cmat_elasto_plastic(
   cmat += epfac2 * Core::LinAlg::dyadic(Nbar, Nbar);
 
 }  // setup_cmat_elasto_plastic()
-
-
-/*----------------------------------------------------------------------*
- | split given strain rate into elastic and plastic term     dano 08/11 |
- *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::strain_rate_split(int gp,  // current Gauss point
-    const double stepsize,                                  // step size
-    const Core::LinAlg::Matrix<6, 1>& strainrate            // total strain rate, i.e. B d'
-)
-{
-  const auto strainrate_tensor =
-      Core::LinAlg::make_symmetric_tensor_from_strain_like_voigt_matrix(strainrate);
-  // elastic strain rate strain^e'
-  // strain^e' = strain' - strain^p'
-  // with strain^p' = Inc_strain^p / dt: use implicit Euler scheme
-  strainelrate_[gp] = strainrate_tensor - (1.0 / stepsize) * incstrainpl_[gp];
-
-}  // StrainRateSplit
 
 
 /*----------------------------------------------------------------------*
