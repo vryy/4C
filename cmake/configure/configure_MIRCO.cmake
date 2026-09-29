@@ -42,7 +42,7 @@ else() # Fetch MIRCO from GIT repository
   endif()
 
   set(MIRCO_GIT_REPO "https://github.com/imcs-compsim/MIRCO.git")
-  set(MIRCO_GIT_TAG "8b049a6462eba5809d7cffe039a77f3bc5593767") # latest hash as of 2026-06-02
+  set(MIRCO_GIT_TAG "0846e745aeda1ce7f11ceaa824dd411bd2775a68") # latest hash as of 2026-09-29
 
   set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE NEVER)
   fetchcontent_declare(
