@@ -641,7 +641,7 @@ void FSI::Monolithic::time_step(const std::shared_ptr<NOX::Nln::Interface::Requi
       *this, printParams, interface, noxSoln, Teuchos::rcpFromRef(*linSys));
 
   // Convergence Tests
-  Teuchos::RCP<::NOX::StatusTest::Combo> combo = create_status_test(nlParams, grp);
+  Teuchos::RCP<::NOX::StatusTest::Combo> combo = create_status_test(nlParams);
 
   // Create the solver
   Teuchos::RCP<::NOX::Solver::Generic> solver =
