@@ -95,8 +95,7 @@ jobs:
           compute-dependencies-hash-script: ./docker/kokkosparallel/compute_dependencies_hash.sh
       - name: Install ccache with Clang-CUDA support
         # Ubuntu 24.04 only provides ccache 4.9.1 from apt, but support for Clang CUDA caching support was added in ccache 4.12.
-        # Therefore, we must manually install a newer version (we choose the newest version as of 2026-05-04).
-        # We download and verify a pinned upstream binary so build_4C can use its normal use-ccache configuration.
+        # We download and verify a pinned upstream binary (2026-05-04) so build_4C can use its normal use-ccache configuration.
         # See https://ccache.dev/releasenotes.html#_ccache_4_12 and https://packages.ubuntu.com/noble/ccache
         env:
           CCACHE_VERSION: 4.13.6
