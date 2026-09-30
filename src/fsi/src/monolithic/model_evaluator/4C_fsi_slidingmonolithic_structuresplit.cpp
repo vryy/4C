@@ -990,7 +990,7 @@ void FSI::SlidingMonolithicStructureSplit::unscale_solution(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::StatusTest::Combo> FSI::SlidingMonolithicStructureSplit::create_status_test(
-    Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Abstract::Group> grp)
+    Teuchos::ParameterList& nlParams)
 {
   // ---------------------------------------------------------------------------
   // Setup the test framework

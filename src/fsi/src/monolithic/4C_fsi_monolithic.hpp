@@ -429,7 +429,7 @@ namespace FSI
 
     //! setup of NOX convergence tests
     virtual Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(
-        Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Abstract::Group> grp) = 0;
+        Teuchos::ParameterList& nlParams) = 0;
 
     /*! \brief Extract the three field vectors from a given composed vector
      *
