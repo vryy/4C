@@ -18,6 +18,8 @@
 
 #include <Stratimikos_DefaultLinearSolverBuilder.hpp>
 #include <Stratimikos_MueLuHelpers.hpp>
+#include <Teko_EpetraInverseOpWrapper.hpp>
+#include <Teko_GaussSeidelPreconditionerFactory.hpp>
 #include <Teko_InverseLibrary.hpp>
 #include <Teko_LU2x2PreconditionerFactory.hpp>
 #include <Teko_StratimikosFactory.hpp>
@@ -52,12 +54,6 @@ void Core::LinearSolver::TekoPreconditioner::setup(
   Teuchos::ParameterList tekoParams;
   auto comm = Core::Communication::to_teuchos_comm<int>(matrix.get_comm());
   Teuchos::updateParametersFromXmlFileAndBroadcast(xmlFileName, Teuchos::Ptr(&tekoParams), *comm);
-
-  if (tekolist_.sublist("Teko Parameters").isParameter("scaling vector"))
-  {
-    auto scaling_matrix = tekolist_.sublist("Teko Parameters")
-                              .get<std::shared_ptr<Core::LinAlg::Vector<double>>>("scaling vector");
-  }
 
   auto A = std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(
       Core::Utils::shared_ptr_from_ref(matrix));
@@ -152,6 +148,27 @@ void Core::LinearSolver::TekoPreconditioner::setup(
     // add special in-house block preconditioning methods
     Teuchos::RCP<Teko::Cloneable> clone = Teuchos::make_rcp<Teko::AutoClone<LU2x2SpaiStrategy>>();
     Teko::LU2x2PreconditionerFactory::addStrategy("Spai Strategy", clone);
+
+    auto arrowhead_clone = Teuchos::make_rcp<Teko::AutoClone<ModifiedALPreconditionerFactory>>();
+
+    if (tekolist_.sublist("Teko Parameters").isParameter("scaling vector"))
+    {
+      auto scaling_vector =
+          tekolist_.sublist("Teko Parameters")
+              .get<std::shared_ptr<Core::LinAlg::Vector<double>>>("scaling vector");
+      auto scaling_matrix = Core::LinAlg::SparseMatrix(*scaling_vector);
+      scaling_matrix.complete();
+      auto scaling_matrix_thyra =
+          Utils::create_thyra_linear_op(scaling_matrix, LinAlg::DataAccess::Copy);
+
+      tekoParams.sublist("Inverse Factory Library")
+          .sublist("Preconditioner")
+          .set<Teuchos::RCP<const Thyra::LinearOpBase<double>>>(
+              "Scaling Matrix", scaling_matrix_thyra);
+    }
+
+    Teko::PreconditionerFactory::addPreconditionerFactory(
+        "Modified Augmented Lagrangian Preconditioner", arrowhead_clone);
 
     // get preconditioner parameter list
     Teuchos::RCP<Teuchos::ParameterList> stratimikos_params =
@@ -307,6 +324,137 @@ void Core::LinearSolver::LU2x2SpaiStrategy::initializeFromParameterList(
     inv_factory_s_ = inv_factory_f_;
   else
     inv_factory_s_ = invLib.getInverseFactory(invSStr);
+}
+
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void Core::LinearSolver::ModifiedALPreconditionerFactory::initializeFromParameterList(
+    const Teuchos::ParameterList& pl)
+{
+  const std::string inverse_type = "Inverse Type";
+  const std::string preconditioner_type = "Preconditioner Type";
+  std::vector<Teuchos::RCP<Teko::InverseFactory>> inverses;
+  std::vector<Teuchos::RCP<Teko::InverseFactory>> preconditioners;
+
+  Teuchos::RCP<const Teko::InverseLibrary> invLib = getInverseLibrary();
+
+  // get string specifying default inverse
+  std::string invStr = "";
+  invStr = "Amesos";
+  std::string precStr = "None";
+  if (pl.isParameter(inverse_type)) invStr = pl.get<std::string>(inverse_type);
+  if (pl.isParameter(preconditioner_type)) precStr = pl.get<std::string>(preconditioner_type);
+  solveType_ = Teko::GS_UseLowerTriangle;
+
+  Teuchos::RCP<Teko::InverseFactory> defaultInverse = invLib->getInverseFactory(invStr);
+  Teuchos::RCP<Teko::InverseFactory> defaultPrec;
+  if (precStr != "None") defaultPrec = invLib->getInverseFactory(precStr);
+
+  // now check individual solvers
+  Teuchos::ParameterList::ConstIterator itr;
+  for (itr = pl.begin(); itr != pl.end(); ++itr)
+  {
+    std::string fieldName = itr->first;
+
+    // figure out what the integer is
+    if (fieldName.compare(0, inverse_type.length(), inverse_type) == 0 && fieldName != inverse_type)
+    {
+      int position = -1;
+      std::string inverse, type;
+
+      // figure out position
+      std::stringstream ss(fieldName);
+      ss >> inverse >> type >> position;
+
+      // inserting inverse factory into vector
+      std::string invStr2 = pl.get<std::string>(fieldName);
+      if (position > static_cast<int>(inverses.size()))
+      {
+        inverses.resize(position, defaultInverse);
+        inverses[position - 1] = invLib->getInverseFactory(invStr2);
+      }
+      else
+        inverses[position - 1] = invLib->getInverseFactory(invStr2);
+    }
+    else if (fieldName.compare(0, preconditioner_type.length(), preconditioner_type) == 0 &&
+             fieldName != preconditioner_type)
+    {
+      int position = -1;
+      std::string preconditioner, type;
+
+      // figure out position
+      std::stringstream ss(fieldName);
+      ss >> preconditioner >> type >> position;
+
+      // inserting preconditioner factory into vector
+      std::string precStr2 = pl.get<std::string>(fieldName);
+      if (position > static_cast<int>(preconditioners.size()))
+      {
+        preconditioners.resize(position, defaultPrec);
+        preconditioners[position - 1] = invLib->getInverseFactory(precStr2);
+      }
+      else
+        preconditioners[position - 1] = invLib->getInverseFactory(precStr2);
+    }
+  }
+
+  // use default inverse
+  if (inverses.size() == 0) inverses.push_back(defaultInverse);
+
+  auto modifiedALInvOpsStrategy = Teuchos::rcp(
+      new ModifiedALInvDiagonalStrategy(inverses, preconditioners, defaultInverse, defaultPrec));
+
+  if (pl.isParameter("Scaling Matrix"))
+  {
+    auto scaling_matrix = pl.get<Teuchos::RCP<const Thyra::LinearOpBase<double>>>("Scaling Matrix");
+    modifiedALInvOpsStrategy->set_scaling_matrix(scaling_matrix);
+  }
+
+  invOpsStrategy_ = modifiedALInvOpsStrategy;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+Core::LinearSolver::ModifiedALInvDiagonalStrategy::ModifiedALInvDiagonalStrategy(
+    const std::vector<Teuchos::RCP<Teko::InverseFactory>>& inverseFactories,
+    const std::vector<Teuchos::RCP<Teko::InverseFactory>>& preconditionerFactories,
+    const Teuchos::RCP<Teko::InverseFactory>& defaultInverseFact,
+    const Teuchos::RCP<Teko::InverseFactory>& defaultPreconditionerFact)
+    : Teko::InvFactoryDiagStrategy(
+          inverseFactories, preconditionerFactories, defaultInverseFact, defaultPreconditionerFact)
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void Core::LinearSolver::ModifiedALInvDiagonalStrategy::getInvD(const Teko::BlockedLinearOp& A,
+    Teko::BlockPreconditionerState& state, std::vector<Teko::LinearOp>& invDiag) const
+{
+  size_t num_blocks = A->productRange()->numBlocks();
+  const std::string opPrefix = "BlockDiagOp";
+
+  FOUR_C_ASSERT(num_blocks == 3,
+      "The ModifiedALInvDiagonalStrategy currently only works for 3x3 block matrices.");
+
+  for (size_t i = 0; i < num_blocks; i++)
+  {
+    auto precFact = ((i < precDiagFact_.size()) && (!precDiagFact_[i].is_null()))
+                        ? precDiagFact_[i]
+                        : defaultPrecFact_;
+    auto invFact = (i < invDiagFact_.size()) ? invDiagFact_[i] : defaultInvFact_;
+
+    if (i == num_blocks - 1)
+    {
+      auto schur_complement = Teko::explicitScale(-1.0, scaling_matrix_);
+      invDiag.push_back(schur_complement);
+    }
+    else
+    {
+      auto block = Teko::getBlock(i, i, A);
+      invDiag.push_back(buildInverse(*invFact, precFact, block, state, opPrefix, i));
+    }
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE
