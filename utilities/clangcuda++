@@ -80,52 +80,57 @@ for arg in "$@"; do
   esac
 done
 
-# Sanity check
+# Host-only and device compilation are mutually exclusive.
 if [[ "$mode_cuda_host" == "1" && "$mode_cuda_device" == "1" ]]; then
-  has_explicit_device=0
-  for arg in "$@"; do
-    if [[ "$arg" == "-DCLANGCUDA_MODE_DEVICE" ]]; then
-      has_explicit_device=1
-      break
-    fi
-  done
-
-  if [[ "$has_explicit_device" == "1" ]]; then
-    echo "clangcuda++ wrapper error: both CLANGCUDA_MODE_HOST and CLANGCUDA_MODE_DEVICE were set" >&2
-    exit 1
-  fi
-fi
-
-if [[ "$compile" == "1" && ( "$mode_cuda_host" == "1" || "$mode_cuda_device" == "1" ) && -z "$arch" ]]; then
-  echo "clangcuda++ wrapper error: no CUDA architecture specified or supplied by Kokkos; please specify the architecture with CLANGCUDA_ARCH (e.g. export CLANGCUDA_ARCH=sm_90)" >&2
+  echo "clangcuda++ wrapper error: both CLANGCUDA_MODE_HOST and CLANGCUDA_MODE_DEVICE were set" >&2
   exit 1
 fi
 
-if [[ "$compile" == "1" && "$mode_cuda_host" == "1" ]]; then
-  final=(
-    "$clang_path"
-    -x cuda
-    --cuda-host-only
+final=("$clang_path")
+if [[ "$compile" == "1" && ( "$mode_cuda_host" == "1" || "$mode_cuda_device" == "1" ) ]]; then
+  if [[ -z "$arch" ]]; then
+    echo "clangcuda++ wrapper error: no CUDA architecture specified or supplied by Kokkos; please specify the architecture with CLANGCUDA_ARCH (e.g. export CLANGCUDA_ARCH=sm_90)" >&2
+    exit 1
+  fi
+
+  final+=(-x cuda)
+  if [[ "$mode_cuda_host" == "1" ]]; then
+    final+=(--cuda-host-only)
+  fi
+  final+=(
     --cuda-path="$cuda_path"
     --cuda-gpu-arch="$arch"
-    -Wno-unknown-cuda-version
-    "${args[@]}"
   )
-elif [[ "$compile" == "1" && "$mode_cuda_device" == "1" ]]; then
-  final=(
-    "$clang_path"
-    -x cuda
-    --cuda-path="$cuda_path"
-    --cuda-gpu-arch="$arch"
-    -Wno-unknown-cuda-version
-    "${args[@]}"
-  )
-else
-  final=(
-    "$clang_path"
-    -Wno-unknown-cuda-version
-    "${args[@]}"
-  )
+fi
+final+=(-Wno-unknown-cuda-version "${args[@]}")
+
+# Only compilation needs a launcher; link commands skip its setup and validation entirely.
+if [[ "$compile" == "1" ]]; then
+  # Reconstruct the launcher (e.g. ccache) after preparing the final Clang arguments.
+  # Numbered environment variables preserve spaces and argument boundaries through wrappers.
+  compiler_launcher=()
+  if [[ -n "${CLANGCUDA_COMPILER_LAUNCHER_ARG_COUNT:-}" ]]; then
+    if [[ ! "$CLANGCUDA_COMPILER_LAUNCHER_ARG_COUNT" =~ ^[0-9]+$ ]]; then
+      echo "clangcuda++ wrapper error: invalid compiler launcher argument count" >&2
+      exit 1
+    fi
+
+    # Interpret the count as decimal, including values with leading zeros.
+    for ((i = 0; i < 10#$CLANGCUDA_COMPILER_LAUNCHER_ARG_COUNT; ++i)); do
+      compiler_launcher_arg_variable="CLANGCUDA_COMPILER_LAUNCHER_ARG_${i}"
+      if ! declare -p "$compiler_launcher_arg_variable" &>/dev/null; then
+        echo "clangcuda++ wrapper error: missing compiler launcher argument ${i}" >&2
+        exit 1
+      fi
+      compiler_launcher+=("${!compiler_launcher_arg_variable}")
+    done
+  elif [[ -n "${CLANGCUDA_COMPILER_LAUNCHER:-}" ]]; then
+    # Alternatively, accept a single launcher executable without numbered argument variables.
+    compiler_launcher+=("$CLANGCUDA_COMPILER_LAUNCHER")
+  fi
+
+  # An empty launcher array leaves the command unchanged.
+  final=("${compiler_launcher[@]}" "${final[@]}")
 fi
 
 if [[ -n "$CLANGCUDA_LOG" ]]; then

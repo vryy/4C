@@ -74,8 +74,6 @@ jobs:
           OMP_DYNAMIC: "FALSE"
 
   kokkoscuda_build:
-    # Temporarily disabled while fixing ccache; see #2183.
-    if: ${{ false }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies-trilinos-kokkosparallel:02bfab2a
@@ -95,12 +93,30 @@ jobs:
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
           compute-dependencies-hash-script: ./docker/kokkosparallel/compute_dependencies_hash.sh
+      - name: Install ccache with Clang-CUDA support
+        # Ubuntu 24.04 only provides ccache 4.9.1 from apt, but support for Clang CUDA caching support was added in ccache 4.12.
+        # We download and verify a pinned upstream binary (2026-05-04) so build_4C can use its normal use-ccache configuration.
+        # See https://ccache.dev/releasenotes.html#_ccache_4_12 and https://packages.ubuntu.com/noble/ccache
+        env:
+          CCACHE_VERSION: 4.13.6
+          CCACHE_ARCHIVE_SHA256: 508b2a1217dc6e04a23e967c7b95a0fb45d8a7e16fde9e180919698f2e2be060
+        run: |
+          ccache_tmp_dir=$(mktemp -d)
+          trap 'rm -rf "$ccache_tmp_dir"' EXIT
+          ccache_archive="ccache-${CCACHE_VERSION}-linux-x86_64-glibc.tar.xz"
+          ccache_archive_path="${ccache_tmp_dir}/${ccache_archive}"
+          wget --quiet "https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/${ccache_archive}" -O "$ccache_archive_path"
+          echo "${CCACHE_ARCHIVE_SHA256}  ${ccache_archive_path}" | sha256sum --check --strict
+          tar --extract --xz --file "$ccache_archive_path" --directory "$ccache_tmp_dir"
+          install -m 0755 "${ccache_tmp_dir}/${ccache_archive%.tar.xz}/ccache" /usr/local/bin/ccache
+          ccache --version
       - uses: ./.github/actions/build_4C
         with:
           cmake-preset: docker_kokkoscuda_clangcuda
           build-targets: 4C
           build-directory: ${{ github.workspace }}/build
           use-ccache: "true"
+          cache-key: kokkoscuda-clangcuda-ccache-4.13.6
 
   ensure_all_tests_pass_kokkos:
     needs:
