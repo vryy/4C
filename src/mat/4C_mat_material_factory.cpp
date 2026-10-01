@@ -110,9 +110,7 @@
 #include "4C_mat_particle_sph_boundary.hpp"
 #include "4C_mat_particle_sph_fluid.hpp"
 #include "4C_mat_particle_wall_dem.hpp"
-#include "4C_mat_plastic_VarConstUpdate.hpp"
 #include "4C_mat_plasticdruckerprager.hpp"
-#include "4C_mat_plasticelasthyper.hpp"
 #include "4C_mat_plasticgtn.hpp"
 #include "4C_mat_plasticlinelast.hpp"
 #include "4C_mat_plasticnlnlogneohooke.hpp"
@@ -558,14 +556,6 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     case Core::Materials::m_viscoelasthyper:
     {
       return make_parameter_impl<Mat::PAR::ViscoElastHyper>(id, type, input_data);
-    }
-    case Core::Materials::m_plelasthyper:
-    {
-      return make_parameter_impl<Mat::PAR::PlasticElastHyper>(id, type, input_data);
-    }
-    case Core::Materials::m_plelasthyperVCU:
-    {
-      return make_parameter_impl<Mat::PAR::PlasticElastHyperVCU>(id, type, input_data);
     }
     case Core::Materials::m_sc_dep_interp:
     {
