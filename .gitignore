@@ -12,6 +12,9 @@ build/
 # Docker
 .devcontainer
 
+# direnv
+.envrc
+
 # Other build
 DartConfiguration.tcl
 
