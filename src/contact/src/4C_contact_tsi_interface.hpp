@@ -95,7 +95,7 @@ namespace CONTACT
       */
     virtual void assemble_lin_dm_x(Core::LinAlg::SparseMatrix* linD_X,
         Core::LinAlg::SparseMatrix* linM_X, const double fac, const LinDmXMode mode,
-        const std::shared_ptr<Core::LinAlg::Map> node_rowmap);
+        const std::shared_ptr<const Core::LinAlg::Map> node_rowmap);
 
     /*!
       \brief Assemble D and M times the linearization of the nodal frictional dissipation
