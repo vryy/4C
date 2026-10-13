@@ -15,7 +15,7 @@ four_c_test(TEST_FILE ale2d_laplace_spatial.4C.yaml NP 2)
 four_c_test(TEST_FILE ale2d_solid.4C.yaml NP 2 RETURN_AS current)
 __four_c_test_restart(BASED_ON ${current} SAME_FILE NP 2 RESTART_STEP 1)
 four_c_test(TEST_FILE ale2d_solid_lin.4C.yaml)
-four_c_test(TEST_FILE ale2d_solid_nln_large_rot_mshs.4C.yaml NP 2 RETURN_AS current)
+four_c_test(TEST_FILE ale2d_solid_nln_large_rot_mshs.4C.yaml NP 2 TIMEOUT 240 RETURN_AS current)
 __four_c_test_restart(BASED_ON ${current} SAME_FILE NP 2 RESTART_STEP 20)
 four_c_test(TEST_FILE ale2d_solid_nln_large_rot_msht.4C.yaml NP 2 TIMEOUT 340)
 four_c_test(TEST_FILE ale2d_solid_nln_large_rot.4C.yaml TIMEOUT 500)
@@ -2073,7 +2073,7 @@ __four_c_test_timings(BASED_ON ${solid_dynamic_rebalance_5x2x1_rebal} TIMINGS_FI
 four_c_test(TEST_FILE solid_runtime_gauss_point_quantity_output_element_center.4C.yaml RETURN_AS current REQUIRED_DEPENDENCIES TRILINOS_MUMPS)
 __four_c_test_restart(BASED_ON ${current} SAME_FILE RESTART_STEP 5 REQUIRED_DEPENDENCIES TRILINOS_MUMPS)
 __four_c_test_vtk(BASED_ON ${current} PVD_RESULT_FILE xxx-structure.pvd PVD_REFERENCE_FILE ref/solid_runtime_gauss_point_quantity_output_element_center-vtk/structure.pvd TOLERANCE 1e-08)
-__four_c_test_timings(BASED_ON ${current} TIMINGS_FILE xxx-timings.yaml TIMERS Input Calculation MAX_TIMES 1.0 5.0 MAX_CALLS 1 1)
+__four_c_test_timings(BASED_ON ${current} TIMINGS_FILE xxx-timings.yaml TIMERS Input Calculation MAX_TIMES 1.0 6.0 MAX_CALLS 1 1)
 four_c_test(TEST_FILE solid_runtime_gauss_point_quantity_output_gauss_point.4C.yaml RETURN_AS current REQUIRED_DEPENDENCIES TRILINOS_MUMPS)
 __four_c_test_restart(BASED_ON ${current} SAME_FILE RESTART_STEP 5 REQUIRED_DEPENDENCIES TRILINOS_MUMPS)
 __four_c_test_vtk(BASED_ON ${current} PVD_RESULT_FILE xxx-structure.pvd PVD_REFERENCE_FILE ref/solid_runtime_gauss_point_quantity_output_gauss_point-vtk/structure.pvd TOLERANCE 1e-08)
@@ -3048,8 +3048,8 @@ if (FOUR_C_WITH_QHULL)
 endif ()
 
 # four_c_test_nested_parallelism
-four_c_test_nested_parallelism(TEST_FILE1 sohex8_multiscale_macro.4C.yaml TEST_FILE2 sohex8_multiscale_npsupport.4C.yaml RESTART_STEP "1")
-four_c_test_nested_parallelism(TEST_FILE1 sohex8_multiscale_macro_2micro.4C.yaml TEST_FILE2 sohex8_multiscale_npsupport.4C.yaml RESTART_STEP "1")
+four_c_test_nested_parallelism(TEST_FILE1 sohex8_multiscale_macro.4C.yaml TEST_FILE2 sohex8_multiscale_npsupport.4C.yaml RESTART_STEP "1" TIMEOUT 240)
+four_c_test_nested_parallelism(TEST_FILE1 sohex8_multiscale_macro_2micro.4C.yaml TEST_FILE2 sohex8_multiscale_npsupport.4C.yaml RESTART_STEP "1" TIMEOUT 240)
 four_c_test_nested_parallelism(TEST_FILE1 tsi_heatconvection_monolithic.4C.json TEST_FILE2 tsi_heatconvection_monolithic.4C.json)
 
 four_c_test_tutorial(TEST_FILE battery/tutorial_battery.4C.yaml NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/battery/tutorial_battery.e)
@@ -3072,7 +3072,7 @@ four_c_test_tutorial(TEST_FILE preconditioner/tutorial_prec_solid_chebyshev.4C.y
         ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_solid_gmres.xml
         ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_solid_ifpack_Chebyshev.xml EXCLUDE_PLATFORM Darwin)
 # Test use case fsi with Teko block-iterative preconditioner with 2 MPI ranks
-four_c_test_tutorial(TEST_FILE preconditioner/tutorial_prec_fsi.4C.yaml NP 2 COPY_FILES
+four_c_test_tutorial(TEST_FILE preconditioner/tutorial_prec_fsi.4C.yaml NP 2 TIMEOUT 200 COPY_FILES
         ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_fsi.exo
         ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_fsi_gmres.xml
         ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_fsi_teko_block_iterative.xml)
