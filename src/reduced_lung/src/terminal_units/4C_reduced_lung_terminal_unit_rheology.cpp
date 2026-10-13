@@ -22,11 +22,23 @@ namespace ReducedLung::TerminalUnits::Rheology
 {
   namespace
   {
-    std::span<double> resize_scratch(std::vector<double>& scratch, size_t size)
+    /**
+     * Storage locations of the state-dependent p1, p2, and q coefficients of one terminal-unit
+     * block.
+     */
+    struct TerminalUnitTreeCoefficients
     {
-      scratch.resize(size);
-      return std::span<double>(scratch.data(), scratch.size());
-    }
+      TreeCoefficientSlots p1;
+      TreeCoefficientSlots p2;
+      TreeCoefficientSlots q;
+
+      void bind(TreeNewtonLinearSolver& target, const TerminalUnitData& data)
+      {
+        p1.bind(target, data.local_row_id, data.lid_p1);
+        p2.bind(target, data.local_row_id, data.lid_p2);
+        q.bind(target, data.local_row_id, data.lid_q);
+      }
+    };
 
     /**
      * Assemble Kelvin-Voigt residual entries for one model block.
@@ -180,15 +192,14 @@ namespace ReducedLung::TerminalUnits::Rheology
     }
 
     void evaluate_kelvin_voigt_tree_linearization(TreeNewtonLinearSolver& target,
-        KelvinVoigt& kelvin_voigt_model, TerminalUnitData& data,
-        const Core::LinAlg::Vector<double>& locally_relevant_dofs,
+        TerminalUnitTreeCoefficients& coefficients, KelvinVoigt& kelvin_voigt_model,
+        TerminalUnitData& data, const Core::LinAlg::Vector<double>& locally_relevant_dofs,
         const Elasticity::ElasticPressurePartialsView& elastic_pressure_partials)
     {
       /* Static setup inserted the row pattern; recruitment can make every value state-dependent. */
       const size_t element_count = data.number_of_elements();
       const auto& viscosity = kelvin_voigt_model.viscosity_eta;
-      std::span<double> grad_q =
-          resize_scratch(kelvin_voigt_model.tree_linearization_grad_q, element_count);
+      coefficients.bind(target, data);
       for (size_t i = 0; i < element_count; i++)
       {
         const auto& context = data.reference_volume_context[i];
@@ -197,25 +208,23 @@ namespace ReducedLung::TerminalUnits::Rheology
         const double alpha = (-elastic_pressure_partials.dp_el_dv0[i] +
                                  damping * q * context.inv_v0_eff * context.inv_v0_eff) *
                              context.dv0_dp;
-        target.set_value(data.local_row_id[i], data.lid_p1[i], 1.0 + alpha);
-        target.set_value(data.local_row_id[i], data.lid_p2[i], -1.0 - alpha);
-        grad_q[i] = -elastic_pressure_partials.dp_el_dq[i] - damping * context.inv_v0_eff;
+        coefficients.p1[i] = 1.0 + alpha;
+        coefficients.p2[i] = -1.0 - alpha;
+        coefficients.q[i] = -elastic_pressure_partials.dp_el_dq[i] - damping * context.inv_v0_eff;
       }
-      target.set_values(data.local_row_id, data.lid_q, grad_q);
     }
 
     void evaluate_four_element_maxwell_tree_linearization(TreeNewtonLinearSolver& target,
-        FourElementMaxwell& four_element_maxwell_model, TerminalUnitData& data,
-        const Core::LinAlg::Vector<double>& locally_relevant_dofs,
+        TerminalUnitTreeCoefficients& coefficients, FourElementMaxwell& four_element_maxwell_model,
+        TerminalUnitData& data, const Core::LinAlg::Vector<double>& locally_relevant_dofs,
         const Elasticity::ElasticPressurePartialsView& elastic_pressure_partials, double dt)
     {
-      /* Batch Four-element Maxwell q coefficients into persistent scratch before replacement. */
+      /* Static setup inserted the row pattern; recruitment can make every value state-dependent. */
       const size_t element_count = data.number_of_elements();
       const auto& viscosity = four_element_maxwell_model.viscosity_eta;
       const auto& maxwell_elasticity = four_element_maxwell_model.elasticity_E_m;
       const auto& maxwell_viscosity = four_element_maxwell_model.viscosity_eta_m;
-      std::span<double> grad_q =
-          resize_scratch(four_element_maxwell_model.tree_linearization_grad_q, element_count);
+      coefficients.bind(target, data);
       for (size_t i = 0; i < element_count; i++)
       {
         const auto& context = data.reference_volume_context[i];
@@ -227,11 +236,10 @@ namespace ReducedLung::TerminalUnits::Rheology
         const double alpha = (-elastic_pressure_partials.dp_el_dv0[i] +
                                  damping * q * context.inv_v0_eff * context.inv_v0_eff) *
                              context.dv0_dp;
-        target.set_value(data.local_row_id[i], data.lid_p1[i], 1.0 + alpha);
-        target.set_value(data.local_row_id[i], data.lid_p2[i], -1.0 - alpha);
-        grad_q[i] = -elastic_pressure_partials.dp_el_dq[i] - damping * context.inv_v0_eff;
+        coefficients.p1[i] = 1.0 + alpha;
+        coefficients.p2[i] = -1.0 - alpha;
+        coefficients.q[i] = -elastic_pressure_partials.dp_el_dq[i] - damping * context.inv_v0_eff;
       }
-      target.set_values(data.local_row_id, data.lid_q, grad_q);
     }
 
     void initialize_tree_linearization(TreeNewtonLinearSolver& target, TerminalUnitData& data)
@@ -367,26 +375,28 @@ namespace ReducedLung::TerminalUnits::Rheology
           using ModelType = std::decay_t<decltype(model)>;
           if constexpr (std::is_same_v<ModelType, KelvinVoigt>)
           {
-            return [&model, elastic_pressure_partials_evaluator](TerminalUnitData& data,
+            return [&model, elastic_pressure_partials_evaluator,
+                       coefficients = TerminalUnitTreeCoefficients{}](TerminalUnitData& data,
                        TreeNewtonLinearSolver& target,
-                       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt)
+                       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt) mutable
             {
               const auto elastic_pressure_partials =
                   elastic_pressure_partials_evaluator(data, locally_relevant_dofs, dt);
-              evaluate_kelvin_voigt_tree_linearization(
-                  target, model, data, locally_relevant_dofs, elastic_pressure_partials);
+              evaluate_kelvin_voigt_tree_linearization(target, coefficients, model, data,
+                  locally_relevant_dofs, elastic_pressure_partials);
             };
           }
           else if constexpr (std::is_same_v<ModelType, FourElementMaxwell>)
           {
-            return [&model, elastic_pressure_partials_evaluator](TerminalUnitData& data,
+            return [&model, elastic_pressure_partials_evaluator,
+                       coefficients = TerminalUnitTreeCoefficients{}](TerminalUnitData& data,
                        TreeNewtonLinearSolver& target,
-                       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt)
+                       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt) mutable
             {
               const auto elastic_pressure_partials =
                   elastic_pressure_partials_evaluator(data, locally_relevant_dofs, dt);
-              evaluate_four_element_maxwell_tree_linearization(
-                  target, model, data, locally_relevant_dofs, elastic_pressure_partials, dt);
+              evaluate_four_element_maxwell_tree_linearization(target, coefficients, model, data,
+                  locally_relevant_dofs, elastic_pressure_partials, dt);
             };
           }
           else
@@ -496,7 +506,6 @@ namespace ReducedLung::TerminalUnits::Rheology
           {
             model.viscosity_eta.push_back(parameters.kelvin_voigt.viscosity_kelvin_voigt_eta.at(
                 global_element_id, "viscosity_kelvin_voigt_eta"));
-            model.tree_linearization_grad_q.push_back(0.0);
           }
           else if constexpr (std::is_same_v<ModelType, FourElementMaxwell>)
           {
@@ -510,7 +519,6 @@ namespace ReducedLung::TerminalUnits::Rheology
                 parameters.four_element_maxwell.viscosity_maxwell_eta_m.at(
                     global_element_id, "viscosity_maxwell_eta_m"));
             model.maxwell_pressure_p_m.push_back(0.0);
-            model.tree_linearization_grad_q.push_back(0.0);
           }
           else
           {

@@ -29,8 +29,6 @@ namespace ReducedLung::TerminalUnits
   struct KelvinVoigt
   {
     std::vector<double> viscosity_eta;
-    std::vector<double>
-        tree_linearization_grad_q;  ///< Reusable q-coefficient scratch for structured assembly.
   };
 
   /**
@@ -45,8 +43,6 @@ namespace ReducedLung::TerminalUnits
     std::vector<double> elasticity_E_m;
     std::vector<double> viscosity_eta_m;
     std::vector<double> maxwell_pressure_p_m;
-    std::vector<double>
-        tree_linearization_grad_q;  ///< Reusable q-coefficient scratch for structured assembly.
   };
 
   /**

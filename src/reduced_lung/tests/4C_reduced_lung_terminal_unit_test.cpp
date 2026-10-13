@@ -683,8 +683,7 @@ namespace
         FourElementMaxwell{.viscosity_eta = std::vector<double>{0.5, 1.0, 1.5},
             .elasticity_E_m = std::vector<double>{10.0, 20.0, 30.0},
             .viscosity_eta_m = std::vector<double>{2.5, 3.5, 4.5},
-            .maxwell_pressure_p_m = std::vector<double>{0.1, -0.2, 0.3},
-            .tree_linearization_grad_q = std::vector<double>(3, 0.0)};
+            .maxwell_pressure_p_m = std::vector<double>{0.1, -0.2, 0.3}};
     terminal_units.models.push_back(model);
 
     Airways::AirwayContainer airways;
@@ -740,8 +739,7 @@ namespace
               .dp_el_dq = std::vector<double>(3, 0.0),
               .dp_el_dv0 = std::vector<double>(3, 0.0)};
       model.rheological_model = KelvinVoigt{
-          .viscosity_eta = std::vector<double>{viscosity[0], viscosity[1], viscosity[2]},
-          .tree_linearization_grad_q = std::vector<double>(3, 0.0)};
+          .viscosity_eta = std::vector<double>{viscosity[0], viscosity[1], viscosity[2]}};
       terminal_units.models.push_back(model);
 
       Airways::AirwayContainer airways;
@@ -793,8 +791,7 @@ namespace
         FourElementMaxwell{.viscosity_eta = std::vector<double>{0.5, 1.0, 1.5},
             .elasticity_E_m = std::vector<double>{10.0, 20.0, 30.0},
             .viscosity_eta_m = std::vector<double>{2.5, 3.5, 4.5},
-            .maxwell_pressure_p_m = std::vector<double>{0.1, -0.2, 0.3},
-            .tree_linearization_grad_q = std::vector<double>(3, 0.0)};
+            .maxwell_pressure_p_m = std::vector<double>{0.1, -0.2, 0.3}};
     terminal_units.models.push_back(model);
 
     Airways::AirwayContainer airways;

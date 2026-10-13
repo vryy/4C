@@ -708,9 +708,17 @@ namespace
       const double current_time = params.dynamics.time_increment * static_cast<double>(step + 1);
       auto residual = fixture.assemble_residual(current_time);
       fixture.assemble_tree_coefficients(tree_solver, current_time, step == 0);
+
+      // Assembly pipelines bind their coefficient slots to a single tree solver, so each fresh
+      // solver gets its own fixture and pipeline, set to the same state.
+      LinearSolverFixture step_fresh_fixture(
+          name + "_fresh_" + std::to_string(step), problem, {"0.25 + 0.5 * t", "0.0"});
+      seed_nonzero_initial_state(step_fresh_fixture, state_scales[step]);
+      step_fresh_fixture.sync_state_from_x();
+      const auto fresh_tree_metadata = step_fresh_fixture.build_tree_metadata();
       TreeNewtonLinearSolver fresh_tree_solver(TreeNewtonLinearSolverContext{
-          .tree_metadata = tree_metadata, .pivot_tolerance = 1.0e-12});
-      fixture.assemble_tree_coefficients(fresh_tree_solver, current_time, true);
+          .tree_metadata = fresh_tree_metadata, .pivot_tolerance = 1.0e-12});
+      step_fresh_fixture.assemble_tree_coefficients(fresh_tree_solver, current_time, true);
 
       Core::LinAlg::Vector<double> tree_delta(*fixture.row_map, true);
       Core::LinAlg::Vector<double> fresh_tree_delta(*fixture.row_map, true);
@@ -820,6 +828,54 @@ namespace
       }
     }
   }
+
+  TEST(ReducedLungTreeLinearSolverTests, CoefficientSlotsAliasSetValueStorage)
+  {
+    LinearSolverFixture fixture("tree_linear_coefficient_slots_alias",
+        make_mixed_airway_terminal_unit_parameters(0.1), {"0.25 + 0.5 * t", "0.0"});
+    const auto tree_metadata = fixture.build_tree_metadata();
+    TreeNewtonLinearSolver tree_solver(
+        TreeNewtonLinearSolverContext{.tree_metadata = tree_metadata});
+
+    ASSERT_FALSE(fixture.terminal_units.models.empty());
+    const auto& data = fixture.terminal_units.models.front().data;
+    ASSERT_GT(data.number_of_elements(), 0u);
+
+    TreeCoefficientSlots slots;
+    slots.bind(tree_solver, data.local_row_id, data.lid_q);
+    ASSERT_EQ(slots.size(), data.number_of_elements());
+
+    for (std::size_t i = 0; i < data.number_of_elements(); ++i)
+    {
+      EXPECT_EQ(&slots[i], tree_solver.resolve_slot(data.local_row_id[i], data.lid_q[i]));
+
+      tree_solver.set_value(data.local_row_id[i], data.lid_q[i], 3.0 + static_cast<double>(i));
+      EXPECT_EQ(slots[i], 3.0 + static_cast<double>(i));
+
+      slots[i] = -7.0 - static_cast<double>(i);
+      EXPECT_EQ(*tree_solver.resolve_slot(data.local_row_id[i], data.lid_q[i]),
+          -7.0 - static_cast<double>(i));
+    }
+  }
+
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  TEST(ReducedLungTreeLinearSolverTests, CoefficientSlotsRejectDifferentSolver)
+  {
+    LinearSolverFixture fixture("tree_linear_coefficient_slots_reject",
+        make_mixed_airway_terminal_unit_parameters(0.1), {"0.25 + 0.5 * t", "0.0"});
+    const auto tree_metadata = fixture.build_tree_metadata();
+    const auto& data = fixture.terminal_units.models.front().data;
+    TreeNewtonLinearSolver tree_solver(
+        TreeNewtonLinearSolverContext{.tree_metadata = tree_metadata});
+    TreeNewtonLinearSolver other_tree_solver(
+        TreeNewtonLinearSolverContext{.tree_metadata = tree_metadata});
+
+    TreeCoefficientSlots slots;
+    slots.bind(tree_solver, data.local_row_id, data.lid_q);
+    EXPECT_NO_THROW(slots.bind(tree_solver, data.local_row_id, data.lid_q));
+    EXPECT_THROW(slots.bind(other_tree_solver, data.local_row_id, data.lid_q), Core::Exception);
+  }
+#endif
 
   TEST(ReducedLungTreeLinearSolverTests, ReusedStructuredTreeSolverMatchesFreshSolver)
   {
