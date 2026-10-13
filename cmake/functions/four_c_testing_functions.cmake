@@ -72,12 +72,16 @@ function(set_run_serial name_of_test)
   set_tests_properties(${name_of_test} PROPERTIES RUN_SERIAL TRUE)
 endfunction()
 
-# set timeout to this test (name_of_test). Optional, set timeout value
+# set the timeout for the test defined by (name_of_test).
+# FOUR_C_TEST_TIMEOUT_SCALE already scales the global timeout,
+# which is used when no test-specific timeout is set via the optional parameter TIMEOUT.
+# An explicitly provided test-specific timeout value is scaled here to maintain consistency.
 function(set_timeout name_of_test)
   if("${ARGN}" STREQUAL "")
     set_tests_properties(${name_of_test} PROPERTIES TIMEOUT ${FOUR_C_TEST_GLOBAL_TIMEOUT})
   else()
-    set_tests_properties(${name_of_test} PROPERTIES TIMEOUT ${ARGN})
+    math(EXPR _scaled_timeout "${FOUR_C_TEST_TIMEOUT_SCALE} * ${ARGN}")
+    set_tests_properties(${name_of_test} PROPERTIES TIMEOUT ${_scaled_timeout})
   endif()
 endfunction()
 
@@ -342,7 +346,8 @@ endfunction()
 #
 # optional parameters:
 #   NP:                           Number of processors the test should use. Fallback to 1 if not specified.
-#   TIMEOUT:                      Manually defined duration for test timeout; defaults to global timeout if not specified
+#   TIMEOUT:                      Manually defined base duration for test timeout, scaled by
+#                                 FOUR_C_TEST_TIMEOUT_SCALE; defaults to global timeout if not specified
 #   OMP_THREADS:                  Number of OpenMP threads per processor the test should use; defaults to no OpenMP if not specified
 #   LABELS:                       Add labels to the test
 #   REQUIRED_DEPENDENCIES:        Any required external dependencies. The test will be skipped if the dependencies are not met.
@@ -423,12 +428,6 @@ function(four_c_test)
                 && ${MPIEXEC_EXECUTABLE} ${_mpiexec_all_args_for_testing} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${test_file_full_path} ${test_directory}/xxx"
       )
 
-  # Optional timeout
-  if(DEFINED _parsed_TIMEOUT)
-    # scale testtimeout with the global test timeout scale
-    math(EXPR _parsed_TIMEOUT "${FOUR_C_TEST_TIMEOUT_SCALE} * ${_parsed_TIMEOUT}")
-  endif()
-
   # check if the platform is matched
   set(skip_var FALSE)
   if(CMAKE_SYSTEM_NAME IN_LIST _parsed_EXCLUDE_PLATFORM)
@@ -478,7 +477,8 @@ endfunction()
 #                            using --restartfrom=same_directory_implicit (also holds for multiple SAME_FILE / TEST_FILE restart tests using this --restartfrom #                            option).
 #   RESTARTFROM_PATH_TYPE     <absolute|relative|relative_from_parent|same_directory|same_directory_implicit>. Defaults to absolute if not specified.
 #   NP:                      number of processors the test should use. Fallback to 1 if not specified.
-#   TIMEOUT:                 manually defined duration for test timeout; defaults to global timeout if not specified
+#   TIMEOUT:                 manually defined base duration for test timeout, scaled by
+#                            FOUR_C_TEST_TIMEOUT_SCALE; defaults to global timeout if not specified
 #   OMP_THREADS:             number of OpenMP threads per processor the test should use; defaults to no OpenMP if not specified
 #   LABELS:                  Add labels to the test
 #   REQUIRED_DEPENDENCIES:   Any required external dependencies. The test will be skipped if the dependencies are not met.
@@ -1008,7 +1008,8 @@ endfunction()
 #
 # optional parameters:
 #   RESTART_STEP:                 Restart step if restart should be tested.
-#   TIMEOUT:                      Manually defined duration for test timeout; defaults to global timeout if not specified
+#   TIMEOUT:                      Manually defined base duration for test timeout, scaled by
+#                                 FOUR_C_TEST_TIMEOUT_SCALE; defaults to global timeout if not specified
 #   LABELS:                       Add labels to the test
 #   REQUIRED_DEPENDENCIES:        Any required external dependencies. The test will be skipped if the dependencies are not met.
 #                                 Either a dependency, e.g. "Trilinos", or a dependency with a version constraint, e.g. "Trilinos>=2025.2".
@@ -1110,7 +1111,8 @@ endfunction()
 #
 # TEST_FILE: must equal the name of the input file in directory tests/tutorials
 # NP: number of MPI ranks for this test
-# TIMEOUT: Manually defined duration for test timeout in <seconds>; defaults to global timeout if not specified
+# TIMEOUT: Manually defined base duration for test timeout in <seconds>, scaled by
+#          FOUR_C_TEST_TIMEOUT_SCALE; defaults to global timeout if not specified
 # COPY_FILES: copy any additional files to the test directory
 # REQUIRED_DEPENDENCIES:        Any required external dependencies. The test will be skipped if the dependencies are not met.
 #                                Either a dependency, e.g. "Trilinos", or a dependency with a version constraint, e.g. "Trilinos>=2025.2".
@@ -1140,11 +1142,8 @@ function(four_c_test_tutorial)
   set(name_of_test ${name_of_input_file}-p${num_proc}-fw)
   set(test_directory tutorials/${name_of_input_file})
 
-  # optional timeout (scaled)
-  set(local_timeout "")
-  if(DEFINED _parsed_TIMEOUT AND NOT "${_parsed_TIMEOUT}" STREQUAL "")
-    math(EXPR local_timeout "${FOUR_C_TEST_TIMEOUT_SCALE} * ${_parsed_TIMEOUT}")
-  endif()
+  # optional timeout (scaling is handled consistently in set_timeout)
+  set(local_timeout "${_parsed_TIMEOUT}")
 
   list(
     APPEND
@@ -1327,7 +1326,8 @@ endfunction()
 # optional parameters:
 #   REFERENCE_TEST:                Optional: Name of the fixture to be used as reference
 #   TIME_STEPS:                    Timesteps to compare
-#   TIMEOUT:                       Manually defined duration for test timeout; defaults to global timeout if not specified
+#   TIMEOUT:                       Manually defined base duration for test timeout, scaled by
+#                                  FOUR_C_TEST_TIMEOUT_SCALE; defaults to global timeout if not specified
 #   LABELS:                        Add labels to the test
 #   REQUIRED_DEPENDENCIES:         Any required external dependencies. The test will be skipped if the dependencies are not met.
 #                                  Either a dependency, e.g. "Trilinos", or a dependency with a version constraint, e.g. "Trilinos>=2025.2".

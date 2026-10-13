@@ -19,8 +19,10 @@
 # optional parameters:
 #   NP_FULL:                      Number of processors the test should use. Fallback to all available ranks if not specified.
 #   NP_MINIMAL:                   Number of processors the test should use. Fallback to 1 if not specified.
-#   TIMEOUT_MINIMAL:              Manually defined duration for test timeout for the minimal test; defaults to global timeout if not specified.
-#   TIMEOUT_FULL:                 Manually defined duration for test timeout for the full test; defaults to 10 minutes if not specified.
+#   TIMEOUT_MINIMAL:              Manually defined base duration for test timeout for the minimal test, scaled by
+#                                 FOUR_C_TEST_TIMEOUT_SCALE; defaults to global timeout if not specified.
+#   TIMEOUT_FULL:                 Manually defined base duration for test timeout for the full test, scaled by
+#                                 FOUR_C_TEST_TIMEOUT_SCALE; defaults to 10 minutes if not specified.
 #   LABELS:                       Add labels to the test; The label `performance_tests` is added by default.
 #   REQUIRED_DEPENDENCIES:        Any required external dependencies. The test will be skipped if the dependencies are not met.
 #                                 Either a dependency, e.g. "Trilinos", or a dependency with a version constraint, e.g. "Trilinos>=2025.2".
