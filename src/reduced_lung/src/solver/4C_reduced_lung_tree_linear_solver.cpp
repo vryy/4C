@@ -449,6 +449,11 @@ namespace ReducedLung
 
   void TreeNewtonLinearSolver::set_value(int local_row_id, int local_dof_id, double value)
   {
+    *resolve_slot(local_row_id, local_dof_id) = value;
+  }
+
+  double* TreeNewtonLinearSolver::resolve_slot(int local_row_id, int local_dof_id)
+  {
     const DirectCoefficientEntry* entry = nullptr;
     if (local_row_id >= 0 &&
         static_cast<std::size_t>(local_row_id) + 1 < direct_coefficient_row_offsets_.size())
@@ -473,7 +478,32 @@ namespace ReducedLung
     FOUR_C_ASSERT(entry->value != nullptr,
         "TreeNewtonLinearSolver direct coefficient for row {} dof {} has no storage.", local_row_id,
         local_dof_id);
-    *entry->value = value;
+    return entry->value;
+  }
+
+  void TreeCoefficientSlots::bind(TreeNewtonLinearSolver& target,
+      std::span<const int> local_row_ids, std::span<const int> local_dof_ids, int row_offset)
+  {
+    FOUR_C_ASSERT(local_row_ids.size() == local_dof_ids.size(),
+        "TreeCoefficientSlots bind size mismatch: rows {}, dofs {}.", local_row_ids.size(),
+        local_dof_ids.size());
+    if (bound_solver_ != nullptr)
+    {
+      FOUR_C_ASSERT(bound_solver_ == &target,
+          "TreeCoefficientSlots are bound to a different TreeNewtonLinearSolver. An assembly "
+          "pipeline must be used with a single tree solver.");
+      FOUR_C_ASSERT(slots_.size() == local_row_ids.size(),
+          "TreeCoefficientSlots are bound to {} coefficients but {} were requested.", slots_.size(),
+          local_row_ids.size());
+      return;
+    }
+
+    slots_.resize(local_row_ids.size());
+    for (std::size_t i = 0; i < local_row_ids.size(); ++i)
+    {
+      slots_[i] = target.resolve_slot(local_row_ids[i] + row_offset, local_dof_ids[i]);
+    }
+    bound_solver_ = &target;
   }
 
   void TreeNewtonLinearSolver::validate_solve_inputs(

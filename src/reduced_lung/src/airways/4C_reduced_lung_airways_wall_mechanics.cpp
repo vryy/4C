@@ -28,16 +28,44 @@ namespace ReducedLung::Airways::WallMechanics
       return std::span<double>(scratch.data(), scratch.size());
     }
 
-    std::span<int> resize_scratch(std::vector<int>& scratch, size_t size)
-    {
-      scratch.resize(size);
-      return std::span<int>(scratch.data(), scratch.size());
-    }
-
     std::span<const double> as_const_span(const std::vector<double>& values)
     {
       return std::span<const double>(values.data(), values.size());
     }
+
+    /**
+     * Storage locations of the state-dependent q coefficient of one rigid-airway block.
+     */
+    struct RigidWallTreeCoefficients
+    {
+      TreeCoefficientSlots q1;
+
+      void bind(TreeNewtonLinearSolver& target, const AirwayData& data)
+      {
+        q1.bind(target, data.local_row_id, data.lid_q1);
+      }
+    };
+
+    /**
+     * Storage locations of the state-dependent q coefficients of one compliant-airway block, whose
+     * momentum row is followed by a mass row.
+     */
+    struct CompliantWallTreeCoefficients
+    {
+      TreeCoefficientSlots momentum_q1;
+      TreeCoefficientSlots momentum_q2;
+      TreeCoefficientSlots mass_q1;
+      TreeCoefficientSlots mass_q2;
+
+      void bind(TreeNewtonLinearSolver& target, const AirwayData& data)
+      {
+        momentum_q1.bind(target, data.local_row_id, data.lid_q1);
+        momentum_q2.bind(target, data.local_row_id, data.lid_q2);
+        // The mass row directly follows the momentum row.
+        mass_q1.bind(target, data.local_row_id, data.lid_q1, 1);
+        mass_q2.bind(target, data.local_row_id, data.lid_q2, 1);
+      }
+    };
 
   }  // namespace
 
@@ -161,52 +189,52 @@ namespace ReducedLung::Airways::WallMechanics
   }
 
   void evaluate_tree_linearization_rigid_wall(TreeNewtonLinearSolver& target,
-      AirwayData const& data, std::span<double> resistance_derivative,
-      std::span<const double> inertia_derivative)
+      AirwayData const& data, RigidWallTreeCoefficients& coefficients,
+      std::span<const double> resistance_derivative, std::span<const double> inertia_derivative)
   {
-    /* Static setup inserted pressure entries and a q placeholder; only q changes with state. */
+    /* Static setup inserted pressure entries and a q placeholder; only q changes with state. The
+     * q slots are resolved on first use and written directly afterwards. */
     FOUR_C_ASSERT_ALWAYS(resistance_derivative.size() == data.number_of_elements(),
         "Rigid airway tree coefficient buffer has {} entries but expected {}.",
         resistance_derivative.size(), data.number_of_elements());
     FOUR_C_ASSERT_ALWAYS(inertia_derivative.size() == data.number_of_elements(),
         "Rigid airway inertia derivative buffer has {} entries but expected {}.",
         inertia_derivative.size(), data.number_of_elements());
+    coefficients.bind(target, data);
     for (size_t i = 0; i < data.number_of_elements(); i++)
     {
-      resistance_derivative[i] = -resistance_derivative[i] - inertia_derivative[i];
+      coefficients.q1[i] = -resistance_derivative[i] - inertia_derivative[i];
     }
-    target.set_values(data.local_row_id, data.lid_q1, resistance_derivative);
   }
 
   void evaluate_tree_linearization_kelvin_voigt_wall(TreeNewtonLinearSolver& target,
-      AirwayData const& data, std::span<double> resistance_derivative_q1,
-      std::span<double> resistance_derivative_q2, std::span<const double> inertia_derivative_q1,
-      std::span<const double> inertia_derivative_q2,
+      AirwayData const& data, CompliantWallTreeCoefficients& coefficients,
+      std::span<const double> resistance_derivative_q1,
+      std::span<const double> resistance_derivative_q2,
+      std::span<const double> inertia_derivative_q1, std::span<const double> inertia_derivative_q2,
       std::span<const double> viscous_wall_resistance_derivative_q1,
-      std::span<const double> viscous_wall_resistance_derivative_q2, std::span<int> mass_row_id)
+      std::span<const double> viscous_wall_resistance_derivative_q2)
   {
-    /* Combine derivative terms in scratch and set all dynamic q-coefficients in batches. */
+    /* Combine derivative terms and write all dynamic q-coefficients of the momentum row and the
+     * following mass row. The slots are resolved on first use and written directly afterwards.
+     */
     const size_t element_count = data.number_of_elements();
     FOUR_C_ASSERT_ALWAYS(resistance_derivative_q1.size() == element_count &&
                              resistance_derivative_q2.size() == element_count &&
                              inertia_derivative_q1.size() == element_count &&
                              inertia_derivative_q2.size() == element_count &&
                              viscous_wall_resistance_derivative_q1.size() == element_count &&
-                             viscous_wall_resistance_derivative_q2.size() == element_count &&
-                             mass_row_id.size() == element_count,
+                             viscous_wall_resistance_derivative_q2.size() == element_count,
         "Kelvin-Voigt airway tree coefficient buffers must all have {} entries.", element_count);
 
+    coefficients.bind(target, data);
     for (size_t i = 0; i < element_count; i++)
     {
-      mass_row_id[i] = data.local_row_id[i] + 1;
-      resistance_derivative_q1[i] += inertia_derivative_q1[i];
-      resistance_derivative_q2[i] += inertia_derivative_q2[i];
+      coefficients.momentum_q1[i] = resistance_derivative_q1[i] + inertia_derivative_q1[i];
+      coefficients.momentum_q2[i] = resistance_derivative_q2[i] + inertia_derivative_q2[i];
+      coefficients.mass_q1[i] = viscous_wall_resistance_derivative_q1[i];
+      coefficients.mass_q2[i] = viscous_wall_resistance_derivative_q2[i];
     }
-
-    target.set_values(data.local_row_id, data.lid_q1, resistance_derivative_q1);
-    target.set_values(data.local_row_id, data.lid_q2, resistance_derivative_q2);
-    target.set_values(mass_row_id, data.lid_q1, viscous_wall_resistance_derivative_q1);
-    target.set_values(mass_row_id, data.lid_q2, viscous_wall_resistance_derivative_q2);
   }
 
   void initialize_rigid_wall_tree_linearization(
@@ -436,7 +464,8 @@ namespace ReducedLung::Airways::WallMechanics
             auto inertia_evaluator = FlowResistance::make_inertia_evaluator(flow_model);
             return [resistance_derivative_evaluator, inertia_evaluator,
                        resistance_derivative = std::vector<double>{},
-                       inertia_derivative = std::vector<double>{}](const AirwayData& airway_data,
+                       inertia_derivative = std::vector<double>{},
+                       coefficients = RigidWallTreeCoefficients{}](const AirwayData& airway_data,
                        TreeNewtonLinearSolver& target,
                        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt) mutable
             {
@@ -449,9 +478,8 @@ namespace ReducedLung::Airways::WallMechanics
               {
                 value /= dt;
               }
-              evaluate_tree_linearization_rigid_wall(target, airway_data,
-                  std::span<double>(resistance_derivative.data(), resistance_derivative.size()),
-                  as_const_span(inertia_derivative));
+              evaluate_tree_linearization_rigid_wall(target, airway_data, coefficients,
+                  as_const_span(resistance_derivative), as_const_span(inertia_derivative));
             };
           }
           else if constexpr (std::is_same_v<WallModelType, KelvinVoigtWall>)
@@ -470,8 +498,8 @@ namespace ReducedLung::Airways::WallMechanics
                        inertia_derivative_q2 = std::vector<double>{},
                        viscous_wall_resistance_derivative_q1 = std::vector<double>{},
                        viscous_wall_resistance_derivative_q2 = std::vector<double>{},
-                       mass_row_id = std::vector<int>{}](const AirwayData& airway_data,
-                       TreeNewtonLinearSolver& target,
+                       coefficients = CompliantWallTreeCoefficients{}](
+                       const AirwayData& airway_data, TreeNewtonLinearSolver& target,
                        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt) mutable
             {
               const size_t element_count = airway_data.number_of_elements();
@@ -486,15 +514,11 @@ namespace ReducedLung::Airways::WallMechanics
                   resize_scratch(viscous_wall_resistance_derivative_q1, element_count),
                   resize_scratch(viscous_wall_resistance_derivative_q2, element_count));
 
-              evaluate_tree_linearization_kelvin_voigt_wall(target, airway_data,
-                  std::span<double>(
-                      resistance_derivative_q1.data(), resistance_derivative_q1.size()),
-                  std::span<double>(
-                      resistance_derivative_q2.data(), resistance_derivative_q2.size()),
+              evaluate_tree_linearization_kelvin_voigt_wall(target, airway_data, coefficients,
+                  as_const_span(resistance_derivative_q1), as_const_span(resistance_derivative_q2),
                   as_const_span(inertia_derivative_q1), as_const_span(inertia_derivative_q2),
                   as_const_span(viscous_wall_resistance_derivative_q1),
-                  as_const_span(viscous_wall_resistance_derivative_q2),
-                  resize_scratch(mass_row_id, element_count));
+                  as_const_span(viscous_wall_resistance_derivative_q2));
             };
           }
           else

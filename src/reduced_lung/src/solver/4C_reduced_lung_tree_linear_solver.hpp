@@ -11,8 +11,10 @@
 #include "4C_config.hpp"
 
 #include "4C_reduced_lung_tree_metadata.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <array>
+#include <cstddef>
 #include <span>
 #include <string>
 #include <vector>
@@ -67,6 +69,13 @@ namespace ReducedLung
      */
     explicit TreeNewtonLinearSolver(const TreeNewtonLinearSolverContext& context);
 
+    // Coefficient storage is referenced by raw pointers (direct coefficient lookup table and
+    // TreeCoefficientSlots), so the solver must stay at its construction address.
+    TreeNewtonLinearSolver(const TreeNewtonLinearSolver&) = delete;
+    TreeNewtonLinearSolver& operator=(const TreeNewtonLinearSolver&) = delete;
+    TreeNewtonLinearSolver(TreeNewtonLinearSolver&&) = delete;
+    TreeNewtonLinearSolver& operator=(TreeNewtonLinearSolver&&) = delete;
+
     /**
      * @brief Set a structured coefficient value in this solver target.
      *
@@ -85,6 +94,18 @@ namespace ReducedLung
      */
     void set_values(std::span<const int> local_row_ids, std::span<const int> local_dof_ids,
         std::span<const double> values);
+
+    /**
+     * @brief Resolve one coefficient location to its storage.
+     *
+     * The returned pointer stays valid for the lifetime of this solver: the symbolic plan and the
+     * coefficient storage are built once in the constructor and never reallocated.
+     *
+     * @param local_row_id Local residual row id.
+     * @param local_dof_id Local dof id on the locally relevant dof map.
+     * @return Pointer to the coefficient storage.
+     */
+    [[nodiscard]] double* resolve_slot(int local_row_id, int local_dof_id);
 
     /**
      * @brief Solve one Newton correction system with the tree algorithm.
@@ -211,6 +232,42 @@ namespace ReducedLung
     std::vector<double> inlet_pressure_by_element_;
     std::vector<int> inlet_pressure_stamp_;
     int current_solve_stamp_ = 0;
+  };
+
+  /**
+   * @brief Cached storage locations for a fixed set of tree-solver coefficients.
+   *
+   * Dynamic tree-linearization kernels write the same (row, dof) pairs in every Newton iteration.
+   * bind() resolves these pairs once on first use; afterwards values are written directly to the
+   * coefficient storage without repeating the row/dof lookup of
+   * TreeNewtonLinearSolver::set_value().
+   *
+   * The slots stay bound to the solver of the first bind() call. Each assembly pipeline, and thus
+   * every TreeCoefficientSlots captured by its kernels, must be used with a single
+   * TreeNewtonLinearSolver and always with the same (row, dof) pairs.
+   */
+  class TreeCoefficientSlots
+  {
+   public:
+    /**
+     * @brief Bind the pairs (local_row_ids[i] + row_offset, local_dof_ids[i]) to @p target on the
+     * first call; later calls only check (with assertions enabled) that the binding matches.
+     */
+    void bind(TreeNewtonLinearSolver& target, std::span<const int> local_row_ids,
+        std::span<const int> local_dof_ids, int row_offset = 0);
+
+    [[nodiscard]] std::size_t size() const { return slots_.size(); }
+
+    double& operator[](std::size_t i) const
+    {
+      FOUR_C_ASSERT(i < slots_.size(), "TreeCoefficientSlots index {} is out of range [0, {}).", i,
+          slots_.size());
+      return *slots_[i];
+    }
+
+   private:
+    std::vector<double*> slots_;
+    const TreeNewtonLinearSolver* bound_solver_ = nullptr;  ///< nullptr while unbound.
   };
 
 }  // namespace ReducedLung
