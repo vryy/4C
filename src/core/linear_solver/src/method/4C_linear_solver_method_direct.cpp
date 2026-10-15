@@ -21,14 +21,33 @@ FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Core::LinearSolver::DirectSolver::DirectSolver(Core::LinearSolver::SolverType solvertype)
+Core::LinearSolver::DirectSolver::DirectSolver(
+    Core::LinearSolver::SolverType solvertype, const Teuchos::ParameterList& params)
     : solvertype_(solvertype),
+      auto_detect_contiguous_dof_ids_(!params.isParameter("auto_detect_contiguous_dof_ids") ||
+                                      params.get<bool>("auto_detect_contiguous_dof_ids")),
       factored_(false),
       solver_(nullptr),
       created_matrix_(nullptr),
       created_rhs_(nullptr),
       projector_(nullptr)
 {
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+bool Core::LinearSolver::DirectSolver::has_contiguous_dof_ids() const
+{
+  // Amesos2 'ROOTED' needs the GIDs to be exactly [base, base + N) in LID order: the matrix is
+  // redistributed by GID while a single vector is copied in LID order.
+  const auto is_ordered_range = [](const Core::LinAlg::Map& map)
+  { return map.linear_map() && map.min_all_gid() == map.index_base(); };
+
+  return a_->filled() && Core::Communication::num_mpi_ranks(a_->get_comm()) == 1 &&
+         a_->num_global_rows() == a_->num_global_cols() &&
+         a_->col_map().same_as(a_->domain_map()) && a_->row_map().same_as(a_->range_map()) &&
+         b_->get_map().same_as(a_->range_map()) && is_ordered_range(a_->row_map()) &&
+         is_ordered_range(a_->domain_map());
 }
 
 //----------------------------------------------------------------------------------
@@ -76,27 +95,29 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
     std::string solver_type;
     Teuchos::ParameterList params("Amesos2");
 
+    const bool is_contiguous = auto_detect_contiguous_dof_ids_ && has_contiguous_dof_ids();
+
     switch (solvertype_)
     {
       case SolverType::KLU2:
       {
         solver_type = "KLU2";
         auto& klu_params = params.sublist(solver_type);
-        klu_params.set("IsContiguous", false, "Are GIDs Contiguous");
+        klu_params.set("IsContiguous", is_contiguous, "Are GIDs Contiguous");
         break;
       }
       case SolverType::MUMPS:
       {
         solver_type = "MUMPS";
         auto& mumps_params = params.sublist(solver_type);
-        mumps_params.set("IsContiguous", false, "Are GIDs Contiguous");
+        mumps_params.set("IsContiguous", is_contiguous, "Are GIDs Contiguous");
         break;
       }
       case SolverType::UMFPACK:
       {
         solver_type = "Umfpack";
         auto& umfpack_params = params.sublist(solver_type);
-        umfpack_params.set("IsContiguous", false, "Are GIDs Contiguous");
+        umfpack_params.set("IsContiguous", is_contiguous, "Are GIDs Contiguous");
         break;
       }
       case SolverType::Superlu:
@@ -106,7 +127,7 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
         superludist_params.set("Equil", true, "Whether to equilibrate the system before solve");
         superludist_params.set("RowPerm", "LargeDiag_MC64", "Row ordering");
         superludist_params.set("ReplaceTinyPivot", true, "Replace tiny pivot");
-        superludist_params.set("IsContiguous", false, "Are GIDs Contiguous");
+        superludist_params.set("IsContiguous", is_contiguous, "Are GIDs Contiguous");
         break;
       }
       default:

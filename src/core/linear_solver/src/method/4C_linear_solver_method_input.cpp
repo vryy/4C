@@ -77,6 +77,13 @@ namespace Core::LinearSolver
         parameter<std::optional<std::filesystem::path>>(
             "SOLVER_XML_FILE", {.description = "xml file defining any iterative solver"}),
 
+        parameter<bool>("AUTO_DETECT_CONTIGUOUS_DOF_IDS",
+            {.description = "Direct solvers only: If true, Amesos2 is told to skip its "
+                            "renumbering if the (serial) system has dof ids exactly [0, N) in "
+                            "the order of the local ids. Set to false to always use the general "
+                            "path, i.e., to opt out of this automatic detection.",
+                .default_value = true}),
+
         // user-given name of solver block (just for beauty)
         parameter<std::string>("NAME",
             {.description = "User specified name for solver block", .default_value = "No_name"}),

@@ -227,6 +227,23 @@ or
     SOLVER 1:
       SOLVER: "Superlu"
 
+Advanced: contiguous GIDs
+"""""""""""""""""""""""""
+
+By default, Amesos2 redistributes the matrix and vectors into a contiguous numbering before factorization.
+If the (serial) system has global IDs exactly :math:`0, \dots, N-1` in the order of the local IDs,
+|FOURC| detects this automatically and tells Amesos2 to skip this step.
+Dof numbering in |FOURC| follows the node ids, so gaps in the node numbering lead to gaps in the dof numbering.
+In this case, the general path is used.
+
+To opt out of the automatic detection, set ``AUTO_DETECT_CONTIGUOUS_DOF_IDS`` to ``false``:
+
+.. code-block:: yaml
+
+    SOLVER 1:
+      SOLVER: "UMFPACK"
+      AUTO_DETECT_CONTIGUOUS_DOF_IDS: false
+
 Iterative solver
 ^^^^^^^^^^^^^^^^^^
 

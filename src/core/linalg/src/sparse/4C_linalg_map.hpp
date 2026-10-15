@@ -133,6 +133,10 @@ namespace Core::LinAlg
     //! returns the index base for this map.
     int index_base() const { return wrapped().IndexBase(); }
 
+    //! Returns true if the global ID space is contiguously divided (but not necessarily uniformly)
+    //! across all processors, i.e. the GIDs are consecutive in the order of the local IDs.
+    bool linear_map() const { return wrapped().LinearMap(); }
+
     //! Returns true if map is defined across more than one processor.
     bool distributed_global() const { return wrapped().DistributedGlobal(); }
 

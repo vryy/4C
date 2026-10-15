@@ -24,7 +24,15 @@ namespace Core::LinearSolver
   class DirectSolver : public SolverTypeBase
   {
    public:
-    explicit DirectSolver(Core::LinearSolver::SolverType solvertype);
+    /*! \brief Construct the solver
+     *
+     * @param solvertype Amesos2 solver to use
+     * @param params Solver parameters. Amesos2 is told that the GIDs are contiguous if the system
+     * is serial and its GIDs are exactly [0, N) in LID order. This detection is switched off if
+     * params contains the bool "auto_detect_contiguous_dof_ids" set to false.
+     */
+    explicit DirectSolver(
+        Core::LinearSolver::SolverType solvertype, const Teuchos::ParameterList& params);
 
     /*! \brief Setup the solver object
      *
@@ -43,8 +51,14 @@ namespace Core::LinearSolver
     [[nodiscard]] bool is_factored() const { return factored_; }
 
    private:
+    //! Whether Amesos2 can be told that the dof ids of the current system a_ and b_ are contiguous
+    [[nodiscard]] bool has_contiguous_dof_ids() const;
+
     //! type/implementation of Amesos solver to be used
     const Core::LinearSolver::SolverType solvertype_;
+
+    //! whether contiguous dof ids are detected automatically (opt-out)
+    const bool auto_detect_contiguous_dof_ids_;
 
     //! flag indicating whether a valid factorization is stored
     bool factored_;
