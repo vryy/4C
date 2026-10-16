@@ -44,8 +44,6 @@ namespace
       EXPECT_EQ(exceptions & FE_DIVBYZERO, 0) << "FE_DIVBYZERO was raised";
       EXPECT_EQ(exceptions & FE_OVERFLOW, 0) << "FE_OVERFLOW was raised";
     }
-
-    std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives_, predicates_;
   };
 
   /**
@@ -54,17 +52,18 @@ namespace
    */
   TEST_F(GeometricSearch, CollisionSearchKDOPVsKDOP)
   {
+    std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives, predicates;
     const auto volumes = create_kdop_bounding_volumes();
 
     // Add the volumes to the primitives and predicates
-    primitives_.emplace_back(std::pair{0, volumes[0]});
-    primitives_.emplace_back(std::pair{1, volumes[1]});
-    predicates_.emplace_back(std::pair{2, volumes[2]});
+    primitives.emplace_back(std::pair{0, volumes[0]});
+    primitives.emplace_back(std::pair{1, volumes[1]});
+    predicates.emplace_back(std::pair{2, volumes[2]});
 
-    EXPECT_EQ(primitives_.size(), 2);
-    EXPECT_EQ(predicates_.size(), 1);
+    EXPECT_EQ(primitives.size(), 2);
+    EXPECT_EQ(predicates.size(), 1);
 
-    const auto pairs = Core::GeometricSearch::collision_search(primitives_, predicates_);
+    const auto pairs = Core::GeometricSearch::collision_search(primitives, predicates);
 
     EXPECT_EQ(pairs.size(), 1);
     EXPECT_EQ(pairs[0].gid_primitive, 0);
@@ -76,17 +75,18 @@ namespace
    */
   TEST_F(GeometricSearch, CollisionSearchNoPrimitives)
   {
+    std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives, predicates;
     const auto volumes = create_kdop_bounding_volumes();
 
     // Add the volumes to the primitives and predicates
-    predicates_.emplace_back(std::pair{0, volumes[0]});
-    predicates_.emplace_back(std::pair{1, volumes[1]});
-    predicates_.emplace_back(std::pair{2, volumes[2]});
+    predicates.emplace_back(std::pair{0, volumes[0]});
+    predicates.emplace_back(std::pair{1, volumes[1]});
+    predicates.emplace_back(std::pair{2, volumes[2]});
 
-    EXPECT_EQ(primitives_.size(), 0);
-    EXPECT_EQ(predicates_.size(), 3);
+    EXPECT_EQ(primitives.size(), 0);
+    EXPECT_EQ(predicates.size(), 3);
 
-    const auto& pairs = Core::GeometricSearch::collision_search(primitives_, predicates_);
+    const auto& pairs = Core::GeometricSearch::collision_search(primitives, predicates);
 
     EXPECT_EQ(pairs.size(), 0);
   }
@@ -96,17 +96,18 @@ namespace
    */
   TEST_F(GeometricSearch, CollisionSearchNoPredicates)
   {
+    std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives, predicates;
     const auto volumes = create_kdop_bounding_volumes();
 
     // Add the volumes to the primitives and predicates
-    primitives_.emplace_back(std::pair{0, volumes[0]});
-    primitives_.emplace_back(std::pair{1, volumes[1]});
-    primitives_.emplace_back(std::pair{2, volumes[2]});
+    primitives.emplace_back(std::pair{0, volumes[0]});
+    primitives.emplace_back(std::pair{1, volumes[1]});
+    primitives.emplace_back(std::pair{2, volumes[2]});
 
-    EXPECT_EQ(primitives_.size(), 3);
-    EXPECT_EQ(predicates_.size(), 0);
+    EXPECT_EQ(primitives.size(), 3);
+    EXPECT_EQ(predicates.size(), 0);
 
-    const auto& pairs = Core::GeometricSearch::collision_search(primitives_, predicates_);
+    const auto& pairs = Core::GeometricSearch::collision_search(primitives, predicates);
 
     EXPECT_EQ(pairs.size(), 0);
   }
@@ -116,10 +117,11 @@ namespace
    */
   TEST_F(GeometricSearch, CollisionSearchNoPrimitivesNoPredicates)
   {
-    EXPECT_EQ(primitives_.size(), 0);
-    EXPECT_EQ(predicates_.size(), 0);
+    std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives, predicates;
+    EXPECT_EQ(primitives.size(), 0);
+    EXPECT_EQ(predicates.size(), 0);
 
-    const auto pairs = Core::GeometricSearch::collision_search(primitives_, predicates_);
+    const auto pairs = Core::GeometricSearch::collision_search(primitives, predicates);
 
     EXPECT_EQ(pairs.size(), 0);
   }
