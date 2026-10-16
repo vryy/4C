@@ -35,36 +35,25 @@ namespace Core::GeometricSearch
 
     TEUCHOS_FUNC_TIME_MONITOR("Core::GeometricSearch::CollisionSearch");
 
+    // Build tree structure containing all primitives.
+    BoundingVolumeHierarchy bounding_volume_hierarchy(
+        BoundingVolumeVectorPlaceholder<PrimitivesTag>{primitives});
+
+    // Search for collisions between predicates and primitives.
+    const auto [indices_full, offset_full] = bounding_volume_hierarchy.query(predicates);
+
+    // Create the vector with the pairs.
     std::vector<CollisionSearchResult> pairs;
-
-    if (primitives.size() == 0 or predicates.size() == 0)
+    pairs.reserve(indices_full.size());
+    for (size_t i_offset = 0; i_offset < offset_full.size() - 1; i_offset++)
     {
-      // This is the special case, where we can a priori say that there are no collisions. ArborX
-      // produces a floating point exception if primitives.size() == 0, therefore, we take care of
-      // this special case here.
-      pairs.resize(0);
-    }
-    else
-    {
-      // Build tree structure containing all primitives.
-      BoundingVolumeHierarchy bounding_volume_hierarchy(
-          BoundingVolumeVectorPlaceholder<PrimitivesTag>{primitives});
-
-      // Search for collisions between predicates and primitives.
-      const auto [indices_full, offset_full] = bounding_volume_hierarchy.query(predicates);
-
-      // Create the vector with the pairs.
-      pairs.reserve(indices_full.size());
-      for (size_t i_offset = 0; i_offset < offset_full.size() - 1; i_offset++)
+      const int gid_predicate = predicates[i_offset].first;
+      for (int j = offset_full[i_offset]; j < offset_full[i_offset + 1]; j++)
       {
-        const int gid_predicate = predicates[i_offset].first;
-        for (int j = offset_full[i_offset]; j < offset_full[i_offset + 1]; j++)
-        {
-          pairs.emplace_back(CollisionSearchResult{
-              .gid_predicate = gid_predicate,
-              .gid_primitive = indices_full[j],
-          });
-        }
+        pairs.emplace_back(CollisionSearchResult{
+            .gid_predicate = gid_predicate,
+            .gid_primitive = indices_full[j],
+        });
       }
     }
 
