@@ -28,9 +28,10 @@ else() # Fetch ArborX from GIT repository
   message(STATUS "Fetch content for ArborX")
   # Unconditionally turn on MPI support inside ArborX
   set(ARBORX_ENABLE_MPI "ON")
-  set(ARBORX_GIT_REPO "https://github.com/kokkos/ArborX.git")
-  # Post v2.1, includes fix for empty BVH
-  set(ARBORX_GIT_TAG "f804f078c9aefedfa9eed6127a5e6e9fb169f53b")
+  set(ARBORX_GIT_REPO "https://github.com/aprokop/ArborX.git")
+  # TEMP, try out fix for empty BVH in the distriburted case
+  # https://github.com/kokkos/ArborX/pull/1404
+  set(ARBORX_GIT_TAG "09738a2f045cc47689ee84a2417b9ad8830231ee")
 
   fetchcontent_declare(
     arborx
