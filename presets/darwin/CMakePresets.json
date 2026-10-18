@@ -30,7 +30,9 @@
         "FOUR_C_WITH_VTK": "ON",
         "FOUR_C_WITH_GMSH": "ON",
         "FOUR_C_WITH_FFTW": "ON",
-        "FOUR_C_ENABLE_PYTHON_BINDINGS": "ON"
+        "FOUR_C_ENABLE_PYTHON_BINDINGS": "ON",
+        "FOUR_C_WITH_PYTHON": "ON",
+        "FOUR_C_PYTHON_ROOT": "/opt/homebrew/opt/python@3.14"
       }
     },
     {
