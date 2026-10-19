@@ -12,45 +12,21 @@
 #include "4C_geometric_search_bounding_volume.hpp"
 #include "4C_geometric_search_utils.hpp"
 
-#include <cfenv>
-
 #ifdef FOUR_C_WITH_ARBORX
 
 #include "4C_geometric_search_bvh.hpp"
 #include "4C_geometric_search_create_bounding_volumes_test.hpp"
+#include "4C_geometric_search_utils_test.hpp"
 
 namespace
 {
   using namespace FourC;
 
-  class GeometricSearch : public ::testing::Test
-  {
-   public:
-    GeometricSearch() = default;
-
-   protected:
-    void SetUp() override
-    {
-      // Start every test with a clean floating-point environment.
-      std::feclearexcept(FE_ALL_EXCEPT);
-    }
-
-    void TearDown() override
-    {
-      // We don't allow a call to ArborX to raise any of the following floating point exceptions.
-      constexpr int critical_exceptions = FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW;
-      const int exceptions = std::fetestexcept(critical_exceptions);
-      EXPECT_EQ(exceptions & FE_INVALID, 0) << "FE_INVALID was raised";
-      EXPECT_EQ(exceptions & FE_DIVBYZERO, 0) << "FE_DIVBYZERO was raised";
-      EXPECT_EQ(exceptions & FE_OVERFLOW, 0) << "FE_OVERFLOW was raised";
-    }
-  };
-
   /**
    * Test setup is based on https://github.com/arborx/ArborX/issues/867
    * Checking collision search of kdop primitives against kdop predicates
    */
-  TEST_F(GeometricSearch, CollisionSearchKDOPVsKDOP)
+  TEST_F(TestWithFloatingPointExceptions, CollisionSearchKDOPVsKDOP)
   {
     std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives, predicates;
     const auto volumes = create_kdop_bounding_volumes();
@@ -73,7 +49,7 @@ namespace
   /**
    * Checking collision search with no primitives
    */
-  TEST_F(GeometricSearch, CollisionSearchNoPrimitives)
+  TEST_F(TestWithFloatingPointExceptions, CollisionSearchNoPrimitives)
   {
     std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives, predicates;
     const auto volumes = create_kdop_bounding_volumes();
@@ -94,7 +70,7 @@ namespace
   /**
    * Checking collision search with no predicates
    */
-  TEST_F(GeometricSearch, CollisionSearchNoPredicates)
+  TEST_F(TestWithFloatingPointExceptions, CollisionSearchNoPredicates)
   {
     std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives, predicates;
     const auto volumes = create_kdop_bounding_volumes();
@@ -115,7 +91,7 @@ namespace
   /**
    * Checking collision search with no primitives and no predicates
    */
-  TEST_F(GeometricSearch, CollisionSearchNoPrimitivesNoPredicates)
+  TEST_F(TestWithFloatingPointExceptions, CollisionSearchNoPrimitivesNoPredicates)
   {
     std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives, predicates;
     EXPECT_EQ(primitives.size(), 0);
@@ -130,7 +106,7 @@ namespace
    * Check that the tolerance mechanism in the kDOP visualization works. The present values are
    * taken from a previously failing kDOP.
    */
-  TEST_F(GeometricSearch, KdopVisualizationTolerances)
+  TEST_F(TestWithFloatingPointExceptions, KdopVisualizationTolerances)
   {
     Core::GeometricSearch::BoundingVolume kdop;
     kdop.bounding_volume_._min_values[0] = -16.185886383056640625;

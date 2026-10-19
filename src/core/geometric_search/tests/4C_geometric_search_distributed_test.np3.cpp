@@ -18,15 +18,16 @@
 
 #include "4C_geometric_search_create_bounding_volumes_test.hpp"
 #include "4C_geometric_search_distributed_tree.hpp"
+#include "4C_geometric_search_utils_test.hpp"
 
 namespace
 {
   using namespace FourC;
 
-  class GeometricSearchDistributed : public ::testing::Test
+  class GeometricSearchDistributed : public TestWithFloatingPointExceptions
   {
    public:
-    GeometricSearchDistributed()
+    GeometricSearchDistributed() : TestWithFloatingPointExceptions()
     {
       comm_ = MPI_COMM_WORLD;
       my_rank_ = Core::Communication::my_mpi_rank(comm_);
