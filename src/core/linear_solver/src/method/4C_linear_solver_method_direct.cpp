@@ -15,7 +15,9 @@
 
 #include <magic_enum/magic_enum.hpp>
 
+#include <algorithm>
 #include <memory>
+#include <ranges>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -39,9 +41,15 @@ Core::LinearSolver::DirectSolver::DirectSolver(
 bool Core::LinearSolver::DirectSolver::has_contiguous_dof_ids() const
 {
   // Amesos2 'ROOTED' needs the GIDs to be exactly [base, base + N) in LID order: the matrix is
-  // redistributed by GID while a single vector is copied in LID order.
+  // redistributed by GID while a single vector is copied in LID order. Epetra only flags maps as
+  // linear if they are not built from a list of GIDs, so the GIDs are checked, too.
   const auto is_ordered_range = [](const Core::LinAlg::Map& map)
-  { return map.linear_map() && map.min_all_gid() == map.index_base(); };
+  {
+    if (map.linear_map()) return true;
+
+    return std::ranges::all_of(std::views::iota(0, map.num_my_elements()),
+        [&map](int lid) { return map.gid(lid) == map.index_base() + lid; });
+  };
 
   return a_->filled() && Core::Communication::num_mpi_ranks(a_->get_comm()) == 1 &&
          a_->num_global_rows() == a_->num_global_cols() &&
