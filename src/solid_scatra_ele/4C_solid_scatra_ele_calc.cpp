@@ -536,13 +536,17 @@ void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
                   Core::FE::dim<celltype> * Core::FE::num_nodes(celltype);
 
               // Assemble matrix
-              // k_dS = dNdxi . F . dS/dc * detJ * N * w(gp) (analogous to force vector)
+              // k_dS = d(internal force)/dc . N, i.e., the internal force vector of the solid
+              // formulation evaluated with dS/dc instead of the stress
               Core::LinAlg::Matrix<num_dof_per_ele, 1> BdSdc(Core::LinAlg::Initialization::zero);
+              Stress<celltype> d_stress_d_scalar{};
               for (int k = 0; k < scatra_column_stride; ++k)
               {
                 BdSdc.put_scalar(0.0);
-                Discret::Elements::add_internal_force_vector(
-                    jacobian_mapping, deformation_gradient, dSdc[k], integration_factor, BdSdc);
+                d_stress_d_scalar.pk2_ = dSdc[k];
+                add_internal_force_vector(jacobian_mapping, deformation_gradient, linearization,
+                    d_stress_d_scalar, integration_factor, preparation_data, history_data_, gp,
+                    BdSdc);
 
                 for (int row = 0; row < num_dof_per_ele; ++row)
                 {
