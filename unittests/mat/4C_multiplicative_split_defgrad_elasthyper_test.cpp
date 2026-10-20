@@ -9,7 +9,9 @@
 
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
+#include "4C_linalg_tensor.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
@@ -620,6 +622,67 @@ namespace
     DFDx_ref(8) = 2.409332473394e-02;
 
     FOUR_C_EXPECT_NEAR(DFDx, DFDx_ref, 1.0e-10);
+  }
+
+  TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateLinearizationODForSeveralStates)
+  {
+    // we need to first set this dummy concentration. otherwise the call below results in a
+    // segfault
+    const double dummy_conc(-1.0);
+    set_concentration_to_inelastic_material(dummy_conc);
+
+    const double concentration(1.0);
+    Core::LinAlg::Matrix<9, 1> DFDx(Core::LinAlg::Initialization::zero);
+    multiplicative_split_defgrad_->evaluate_linearization_od(F_, concentration, DFDx);
+    Core::LinAlg::Matrix<9, 1> DFDx_transposed(Core::LinAlg::Initialization::zero);
+    multiplicative_split_defgrad_->evaluate_linearization_od(
+        Core::LinAlg::transpose(F_), concentration, DFDx_transposed);
+
+    // the isotropic growth yields dF/dc = s(det F) F, i.e., the linearization evaluated with F^T
+    // is the transpose of the linearization evaluated with F
+    Core::LinAlg::Matrix<3, 3> DFDx_matrix;
+    Core::LinAlg::Voigt::matrix_9x1_to_3x3(DFDx, DFDx_matrix);
+    Core::LinAlg::Matrix<3, 3> DFDx_matrix_transposed;
+    DFDx_matrix_transposed.update_t(1.0, DFDx_matrix, 0.0);
+    Core::LinAlg::Matrix<9, 1> DFDx_transposed_ref;
+    Core::LinAlg::Voigt::matrix_3x3_to_9x1(DFDx_matrix_transposed, DFDx_transposed_ref);
+
+    FOUR_C_EXPECT_NEAR(DFDx_transposed, DFDx_transposed_ref, 1.0e-10);
+  }
+
+  TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateLinearizationODWithoutGrowth)
+  {
+    // multiplicative split material whose inelastic deformation gradient does not depend on the
+    // scalar
+    const int no_growth_id(3);
+    Global::Problem::instance()->materials()->insert(
+        no_growth_id, Mat::make_parameter(1, Core::Materials::MaterialType::mfi_no_growth, {}));
+
+    Core::IO::InputParameterContainer no_growth_material_data;
+    no_growth_material_data.add("NUMMATEL", 1);
+    no_growth_material_data.add("MATIDSEL", std::vector<int>{1});
+    no_growth_material_data.add("NUMFACINEL", 1);
+    no_growth_material_data.add("INELDEFGRADFACIDS", std::vector<int>{no_growth_id});
+    no_growth_material_data.add("DENS", 1.32e1);
+    no_growth_material_data.add("REF_TEMPERATURE", 293.0);
+    no_growth_material_data.add("THERMAL_EXPANSION_COEFFICIENT", 0.1);
+    Mat::PAR::MultiplicativeSplitDefgradElastHyper no_growth_parameters(
+        Core::Mat::PAR::Parameter::Data{.parameters = no_growth_material_data});
+    Mat::MultiplicativeSplitDefgradElastHyper no_growth_material(&no_growth_parameters);
+
+    // evaluate the material with growth first, its linearization must not affect the one of the
+    // material without growth
+    const double dummy_conc(-1.0);
+    set_concentration_to_inelastic_material(dummy_conc);
+    const double concentration(1.0);
+    Core::LinAlg::Matrix<9, 1> DFDx_growth(Core::LinAlg::Initialization::zero);
+    multiplicative_split_defgrad_->evaluate_linearization_od(F_, concentration, DFDx_growth);
+
+    Core::LinAlg::Matrix<9, 1> DFDx(Core::LinAlg::Initialization::zero);
+    no_growth_material.evaluate_linearization_od(F_, concentration, DFDx);
+
+    const Core::LinAlg::Matrix<9, 1> DFDx_ref(Core::LinAlg::Initialization::zero);
+    FOUR_C_EXPECT_NEAR(DFDx, DFDx_ref, 1.0e-14);
   }
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateOdStiffMat)
