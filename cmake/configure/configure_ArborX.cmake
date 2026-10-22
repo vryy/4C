@@ -29,8 +29,9 @@ else() # Fetch ArborX from GIT repository
   # Unconditionally turn on MPI support inside ArborX
   set(ARBORX_ENABLE_MPI "ON")
   set(ARBORX_GIT_REPO "https://github.com/kokkos/ArborX.git")
-  # Post v2.1, includes fix for empty BVH
-  set(ARBORX_GIT_TAG "f804f078c9aefedfa9eed6127a5e6e9fb169f53b")
+  # Post v2.1, includes floating-point exception fixes for
+  # empty local and distributed trees
+  set(ARBORX_GIT_TAG "826d457a53cadfd8385f6f8a4ed241bb19c54bde")
 
   fetchcontent_declare(
     arborx
