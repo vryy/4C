@@ -9,6 +9,7 @@
 
 #include "4C_linalg_sparsematrix.hpp"
 
+#include "4C_linalg_graph.hpp"
 #include "4C_linalg_map.hpp"
 
 #include <mpi.h>
@@ -21,68 +22,71 @@ namespace
 {
   constexpr int num_rows = 5;
 
-  // Tridiagonal matrix with an optional additional entry in the upper right corner
+  // Tridiagonal matrix with an optional additional entry in the upper right corner. The global ids
+  // start at first_gid.
   std::unique_ptr<Core::LinAlg::SparseMatrix> make_matrix(
-      const Core::LinAlg::Map& map, double diagonal, bool corner, bool optimize_data_storage)
+      double diagonal, bool corner, bool optimize_data_storage, int first_gid = 0)
   {
+    const Core::LinAlg::Map map(num_rows, first_gid, MPI_COMM_SELF);
+
     auto matrix = std::make_unique<Core::LinAlg::SparseMatrix>(map, 3);
-    for (int gid = 0; gid < num_rows; ++gid)
+    for (int i = 0; i < num_rows; ++i)
     {
-      matrix->set_value(diagonal, gid, gid);
-      if (gid > 0) matrix->set_value(-1.0, gid, gid - 1);
-      if (gid < num_rows - 1) matrix->set_value(-1.0, gid, gid + 1);
+      matrix->set_value(diagonal, first_gid + i, first_gid + i);
+      if (i > 0) matrix->set_value(-1.0, first_gid + i, first_gid + i - 1);
+      if (i < num_rows - 1) matrix->set_value(-1.0, first_gid + i, first_gid + i + 1);
     }
-    if (corner) matrix->set_value(0.5, 0, num_rows - 1);
+    if (corner) matrix->set_value(0.5, first_gid, first_gid + num_rows - 1);
 
     matrix->complete({.optimize_data_storage = optimize_data_storage});
     return matrix;
   }
 
-  class LocalSparsityPatternTest : public testing::TestWithParam<bool>
+  class SparseMatrixGraphTest : public testing::TestWithParam<bool>
   {
-   protected:
-    const Core::LinAlg::Map map_{num_rows, 0, MPI_COMM_SELF};
   };
 
-  TEST_P(LocalSparsityPatternTest, PatternIsInCrsForm)
+  TEST_P(SparseMatrixGraphTest, ChangedValuesKeepGraph)
   {
-    const auto matrix = make_matrix(map_, 2.0, false, GetParam());
+    const auto matrix = make_matrix(2.0, false, GetParam());
+    const auto other_values = make_matrix(7.0, false, GetParam());
 
-    const Core::LinAlg::LocalSparsityPattern pattern = matrix->local_sparsity_pattern();
+    const Core::LinAlg::Graph graph = matrix->get_current_graph();
 
-    EXPECT_EQ(pattern.row_offsets, (std::vector<std::size_t>{0, 2, 5, 8, 11, 13}));
-    EXPECT_EQ(pattern.column_indices, (std::vector<int>{0, 1, 0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 4}));
+    EXPECT_TRUE(graph.is_identical_to(other_values->get_current_graph()));
+    EXPECT_TRUE(other_values->get_current_graph().is_identical_to(graph));
+    EXPECT_TRUE(graph.is_identical_to(matrix->get_current_graph()));
   }
 
-  TEST_P(LocalSparsityPatternTest, ChangedValuesKeepPattern)
+  TEST_P(SparseMatrixGraphTest, AdditionalEntryChangesGraph)
   {
-    const auto matrix = make_matrix(map_, 2.0, false, GetParam());
-    const auto other_values = make_matrix(map_, 7.0, false, GetParam());
+    const auto matrix = make_matrix(2.0, false, GetParam());
+    const auto with_corner = make_matrix(2.0, true, GetParam());
 
-    EXPECT_TRUE(other_values->has_local_sparsity_pattern(matrix->local_sparsity_pattern()));
-    EXPECT_TRUE(matrix->has_local_sparsity_pattern(matrix->local_sparsity_pattern()));
+    EXPECT_FALSE(with_corner->get_current_graph().is_identical_to(matrix->get_current_graph()));
+    EXPECT_FALSE(matrix->get_current_graph().is_identical_to(with_corner->get_current_graph()));
   }
 
-  TEST_P(LocalSparsityPatternTest, AdditionalEntryChangesPattern)
+  TEST_P(SparseMatrixGraphTest, DifferentMapsChangeGraph)
   {
-    const auto matrix = make_matrix(map_, 2.0, false, GetParam());
-    const auto with_corner = make_matrix(map_, 2.0, true, GetParam());
+    const auto matrix = make_matrix(2.0, false, GetParam());
+    const auto shifted = make_matrix(2.0, false, GetParam(), 10);
 
-    EXPECT_FALSE(with_corner->has_local_sparsity_pattern(matrix->local_sparsity_pattern()));
-    EXPECT_FALSE(matrix->has_local_sparsity_pattern(with_corner->local_sparsity_pattern()));
+    EXPECT_FALSE(shifted->get_current_graph().is_identical_to(matrix->get_current_graph()));
   }
 
-  TEST_P(LocalSparsityPatternTest, DifferentNumberOfRowsChangesPattern)
+  TEST_P(SparseMatrixGraphTest, GraphOutlivesMatrix)
   {
-    const auto matrix = make_matrix(map_, 2.0, false, GetParam());
+    auto matrix = make_matrix(2.0, false, GetParam());
+    const Core::LinAlg::Graph graph = matrix->get_current_graph();
+    const auto same_graph = make_matrix(3.0, false, GetParam());
 
-    Core::LinAlg::LocalSparsityPattern pattern = matrix->local_sparsity_pattern();
-    pattern.row_offsets.pop_back();
+    matrix.reset();
 
-    EXPECT_FALSE(matrix->has_local_sparsity_pattern(pattern));
+    EXPECT_TRUE(graph.is_identical_to(same_graph->get_current_graph()));
   }
 
-  INSTANTIATE_TEST_SUITE_P(OptimizedAndNotOptimizedStorage, LocalSparsityPatternTest,
+  INSTANTIATE_TEST_SUITE_P(OptimizedAndNotOptimizedStorage, SparseMatrixGraphTest,
       testing::Values(true, false), [](const testing::TestParamInfo<bool>& info)
       { return info.param ? "OptimizedStorage" : "NotOptimizedStorage"; });
 }  // namespace

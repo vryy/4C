@@ -12,7 +12,6 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include <algorithm>
 #include <fstream>
 #include <iterator>
 #include <memory>
@@ -1262,6 +1261,13 @@ MPI_Comm Core::LinAlg::SparseMatrix::get_comm() const
   return Core::Communication::unpack_epetra_comm(sysmat_->Comm());
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Core::LinAlg::Graph Core::LinAlg::SparseMatrix::get_current_graph() const
+{
+  return Core::LinAlg::Graph(sysmat_->Graph());
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1401,81 +1407,6 @@ void Core::LinAlg::SparseMatrix::extract_global_row_view(
     int global_row, int& num_entries, double*& values, int*& indices) const
 {
   ASSERT_EPETRA_CALL(sysmat_->ExtractGlobalRowView(global_row, num_entries, values, indices));
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Core::LinAlg::LocalSparsityPattern Core::LinAlg::SparseMatrix::local_sparsity_pattern() const
-{
-  FOUR_C_ASSERT(filled(), "The sparsity pattern is only available for a filled matrix.");
-
-  const int num_rows = num_my_rows();
-  LocalSparsityPattern pattern;
-
-  int* row_offsets = nullptr;
-  int* column_indices = nullptr;
-  double* values = nullptr;
-  if (sysmat_->ExtractCrsDataPointers(row_offsets, column_indices, values) == 0)
-  {
-    pattern.row_offsets.assign(row_offsets, row_offsets + num_rows + 1);
-    pattern.column_indices.assign(column_indices, column_indices + row_offsets[num_rows]);
-    return pattern;
-  }
-
-  // Without optimized storage the rows are not stored contiguously.
-  pattern.row_offsets.reserve(num_rows + 1);
-  pattern.row_offsets.push_back(0);
-  for (int row = 0; row < num_rows; ++row)
-  {
-    int num_entries = 0;
-    double* row_values = nullptr;
-    int* row_indices = nullptr;
-    extract_my_row_view(row, num_entries, row_values, row_indices);
-
-    pattern.column_indices.insert(
-        pattern.column_indices.end(), row_indices, row_indices + num_entries);
-    pattern.row_offsets.push_back(pattern.column_indices.size());
-  }
-  return pattern;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool Core::LinAlg::SparseMatrix::has_local_sparsity_pattern(
-    const LocalSparsityPattern& pattern) const
-{
-  FOUR_C_ASSERT(filled(), "The sparsity pattern is only available for a filled matrix.");
-
-  const std::size_t num_rows = num_my_rows();
-  if (pattern.row_offsets.size() != num_rows + 1) return false;
-
-  const auto equal_index = [](std::size_t a, int b) { return a == static_cast<std::size_t>(b); };
-
-  int* row_offsets = nullptr;
-  int* column_indices = nullptr;
-  double* values = nullptr;
-  if (sysmat_->ExtractCrsDataPointers(row_offsets, column_indices, values) == 0)
-  {
-    return pattern.column_indices.size() == static_cast<std::size_t>(row_offsets[num_rows]) &&
-           std::equal(
-               pattern.row_offsets.begin(), pattern.row_offsets.end(), row_offsets, equal_index) &&
-           std::equal(pattern.column_indices.begin(), pattern.column_indices.end(), column_indices);
-  }
-
-  // Without optimized storage the rows are not stored contiguously.
-  for (std::size_t row = 0; row < num_rows; ++row)
-  {
-    int num_entries = 0;
-    double* row_values = nullptr;
-    int* row_indices = nullptr;
-    extract_my_row_view(static_cast<int>(row), num_entries, row_values, row_indices);
-
-    const std::size_t first = pattern.row_offsets[row];
-    if (pattern.row_offsets[row + 1] - first != static_cast<std::size_t>(num_entries) ||
-        !std::equal(row_indices, row_indices + num_entries, pattern.column_indices.begin() + first))
-      return false;
-  }
-  return true;
 }
 
 /*----------------------------------------------------------------------*

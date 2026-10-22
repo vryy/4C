@@ -9,6 +9,8 @@
 
 #include "4C_linalg_utils_exceptions.hpp"
 
+#include <algorithm>
+
 FOUR_C_NAMESPACE_OPEN
 
 Core::LinAlg::Graph::Graph(const Epetra_CrsGraph& Source)
@@ -139,6 +141,46 @@ void Core::LinAlg::Graph::extract_global_row_view(int GlobalRow, std::span<int>&
   int* indices;
   ASSERT_EPETRA_CALL(graph_->ExtractGlobalRowView(GlobalRow, num_indices, indices));
   Indices = std::span(indices, num_indices);
+}
+
+bool Core::LinAlg::Graph::is_identical_to(const Graph& other) const
+{
+  FOUR_C_ASSERT(filled() && other.filled(), "Only filled graphs can be compared.");
+
+  // Comparing maps can be collective, so none of the comparisons is skipped.
+  const bool same_row_map = graph_->RowMap().SameAs(other.graph_->RowMap());
+  const bool same_col_map = graph_->ColMap().SameAs(other.graph_->ColMap());
+  const bool same_domain_map = graph_->DomainMap().SameAs(other.graph_->DomainMap());
+  const bool same_range_map = graph_->RangeMap().SameAs(other.graph_->RangeMap());
+  if (!(same_row_map && same_col_map && same_domain_map && same_range_map)) return false;
+
+  const int num_rows = num_local_rows();
+  const int num_nonzeros = num_local_nonzeros();
+  if (num_rows != other.num_local_rows() || num_nonzeros != other.num_local_nonzeros())
+    return false;
+
+  if (graph_->StorageOptimized() && other.graph_->StorageOptimized())
+  {
+    // The expert accessors are not const but only read here.
+    const int* offsets = graph_->ExpertExtractIndexOffset().Values();
+    const int* other_offsets = other.graph_->ExpertExtractIndexOffset().Values();
+    const int* indices = graph_->ExpertExtractIndices().Values();
+    const int* other_indices = other.graph_->ExpertExtractIndices().Values();
+
+    return std::equal(offsets, offsets + num_rows + 1, other_offsets) &&
+           std::equal(indices, indices + num_nonzeros, other_indices);
+  }
+
+  for (int row = 0; row < num_rows; ++row)
+  {
+    std::span<int> indices;
+    std::span<int> other_indices;
+    extract_local_row_view(row, indices);
+    other.extract_local_row_view(row, other_indices);
+
+    if (!std::ranges::equal(indices, other_indices)) return false;
+  }
+  return true;
 }
 
 FOUR_C_NAMESPACE_CLOSE

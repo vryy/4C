@@ -20,9 +20,6 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FECrsMatrix.h>
 
-#include <cstddef>
-#include <vector>
-
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -33,17 +30,6 @@ namespace Core::LinAlg
 
   template <class Strategy>
   class BlockSparseMatrix;
-
-  /*! \brief Sparsity pattern of the locally owned rows of a matrix in CRS form
-   *
-   * The entries of local row i are the local column indices
-   * column_indices[row_offsets[i]] ... column_indices[row_offsets[i + 1] - 1].
-   */
-  struct LocalSparsityPattern
-  {
-    std::vector<std::size_t> row_offsets;
-    std::vector<int> column_indices;
-  };
 
   /// A single sparse matrix enhanced with features for FE simulations
   /*!
@@ -372,6 +358,14 @@ namespace Core::LinAlg
      */
     bool save_graph() const { return savegraph_; }
 
+    /*! \brief Graph of the matrix as it is now
+     *
+     * In contrast to the graph saved with save_graph(), this is the graph after e.g. Dirichlet
+     * conditions have been applied. The returned graph shares its data with the matrix, so no data
+     * is copied. The data is not modified as long as the matrix stays filled.
+     */
+    [[nodiscard]] Core::LinAlg::Graph get_current_graph() const;
+
     /// Return matrix type
     MatrixType get_matrixtype() const { return matrixtype_; }
 
@@ -583,16 +577,6 @@ namespace Core::LinAlg
     /// Returns a view of the values and indices of a global row.
     void extract_global_row_view(
         int global_row, int& num_entries, double*& values, int*& indices) const;
-
-    /// Returns a copy of the sparsity pattern of the locally owned rows. The matrix must be filled.
-    [[nodiscard]] LocalSparsityPattern local_sparsity_pattern() const;
-
-    /*! \brief Whether the sparsity pattern of the locally owned rows equals the given pattern
-     *
-     * The matrix must be filled. No copy of the pattern is made, so this is cheaper than comparing
-     * with local_sparsity_pattern(). The result is local to the calling rank.
-     */
-    [[nodiscard]] bool has_local_sparsity_pattern(const LocalSparsityPattern& pattern) const;
 
     //@}
 
