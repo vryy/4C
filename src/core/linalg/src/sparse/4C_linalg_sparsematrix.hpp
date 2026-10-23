@@ -358,6 +358,14 @@ namespace Core::LinAlg
      */
     bool save_graph() const { return savegraph_; }
 
+    /*! \brief Graph of the matrix as it is now
+     *
+     * In contrast to the graph saved with save_graph(), this is the graph after e.g. Dirichlet
+     * conditions have been applied. The returned graph shares its data with the matrix, so no data
+     * is copied. The data is not modified as long as the matrix stays filled.
+     */
+    [[nodiscard]] Core::LinAlg::Graph get_current_graph() const;
+
     /// Return matrix type
     MatrixType get_matrixtype() const { return matrixtype_; }
 

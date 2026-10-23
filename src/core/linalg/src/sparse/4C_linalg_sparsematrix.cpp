@@ -1261,6 +1261,13 @@ MPI_Comm Core::LinAlg::SparseMatrix::get_comm() const
   return Core::Communication::unpack_epetra_comm(sysmat_->Comm());
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Core::LinAlg::Graph Core::LinAlg::SparseMatrix::get_current_graph() const
+{
+  return Core::LinAlg::Graph(sysmat_->Graph());
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

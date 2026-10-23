@@ -113,6 +113,14 @@ namespace Core::LinAlg
     //! Returns the Column Map associated with this graph.
     const Map& col_map() const { return col_map_.sync(graph_->ColMap()); }
 
+    /*! \brief Whether this graph has the same maps and the same local sparsity pattern as another
+     * graph
+     *
+     * Both graphs must be filled. The result is local to the calling rank, but comparing the maps
+     * can be collective, so the method has to be called on all ranks.
+     */
+    [[nodiscard]] bool is_identical_to(const Graph& other) const;
+
    private:
     GraphType graphtype_;
 
