@@ -1781,7 +1781,6 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
       ref_temperature_(ref_temperature),
       potsumel_(std::move(pot_sum_el)),
       potsumel_transviso_(std::move(pot_sum_el_transv_iso)),
-      viscoplastic_law_(std::move(viscoplastic_law)),
       fiber_reader_(std::move(fiber_reader)),
       state_quantities_(),
       state_quantity_derivatives_(),
@@ -1805,6 +1804,10 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
 
   // initialize vector tracking plastic flow for a single Gauss point; we resize it afterwards
   is_plastic_gp_.resize(1, false);
+
+  // initialize viscoplasticity law at a single Gauss point; we resize it via clones afterwards
+  viscoplastic_laws_at_gp_.resize(1);
+  viscoplastic_laws_at_gp_[0] = std::move(viscoplastic_law);
 }
 
 
@@ -1863,7 +1866,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pre_evaluate(
   // call pre_evaluate method of the time step quantities
   time_step_quantities_.pre_evaluate(gp);
   // call preevaluate method of the viscoplastic law
-  viscoplastic_law_->pre_evaluate(params, gp);
+  viscoplastic_laws_at_gp_[gp]->pre_evaluate(params);
 }
 
 /*--------------------------------------------------------------------*
@@ -2048,8 +2051,9 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
 
 
   // calculate equivalent plastic strain rate using the viscoplastic law
-  state_quantities.curr_equiv_plastic_strain_rate = viscoplastic_law_->evaluate_plastic_strain_rate(
-      state_quantities.curr_equiv_stress, plastic_strain, step, err_status, update_hist_var_);
+  state_quantities.curr_equiv_plastic_strain_rate =
+      viscoplastic_laws_at_gp_[gp_]->evaluate_plastic_strain_rate(
+          state_quantities.curr_equiv_stress, plastic_strain, step, err_status, update_hist_var_);
 
   if (eval_type == ViscoplastUtils::StateQuantityEvalType::plastic_strain_rate_only)
   {
@@ -2524,7 +2528,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
 
   // compute the relevant derivatives of the plastic strain rate
   InelasticDefgradTransvIsotropElastViscoplastUtils::PlasticStrainRateDerivs evoEqFunctionDers =
-      viscoplastic_law_->evaluate_derivatives_of_plastic_strain_rate(
+      viscoplastic_laws_at_gp_[gp_]->evaluate_derivatives_of_plastic_strain_rate(
           equiv_stress, plastic_strain, step, err_status);
 
   // return if we get an error, all other calculations are useless since substepping is
@@ -3253,7 +3257,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
     if (is_plastic_gp_[gp])
     {
       // call update method of the viscoplastic law
-      viscoplastic_law_->update(gp);
+      viscoplastic_laws_at_gp_[gp]->update();
     }
   }
 }
@@ -3275,8 +3279,15 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(const int numgp,
   time_step_quantities_.resize(numgp);
   thermo_mechanical_coupling_cache_.resize(numgp);
 
-  // call corresponding method of the viscoplastic law
-  viscoplastic_law_->setup(numgp, fibers, coord_system);
+  // resize Gauss point storage of viscoplasticity laws
+  if (numgp > 1)
+  {
+    viscoplastic_laws_at_gp_.resize(numgp);
+    for (int gp = 1; gp < numgp; ++gp)
+    {
+      viscoplastic_laws_at_gp_[gp] = viscoplastic_laws_at_gp_[0]->clone();
+    }
+  }
 
   // setup the Local Newton data tracker with the correct number
   // of Gauss points
@@ -3317,14 +3328,15 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pack_inelastic(
   // pack history variables of this specific inelastic factor
   if (parameter() != nullptr)
   {
-    // pack viscoplastic law
-    viscoplastic_law_->pack_viscoplastic_law(data);
-
     // pack fiber direction
     add_to_pack(data, m_);
 
     // pack time_step_quantities_
     time_step_quantities_.pack(data);
+
+    // pack viscoplastic law
+    for (unsigned int gp = 0; gp < num_gp_; ++gp)
+      viscoplastic_laws_at_gp_[gp]->pack_viscoplastic_law(data);
 
     // pack Local Newton manager
     local_newton_manager_.pack(data);
@@ -3354,14 +3366,19 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
   // viscoplastic law with its params), we only need to unpack the history variablesj
   if (parameter() != nullptr)
   {
-    // unpack viscoplastic law
-    viscoplastic_law_->unpack_viscoplastic_law(buffer);
     // unpack fiber direction
     extract_from_pack(buffer, m_);
     // unpack time step quantities
     time_step_quantities_.unpack(buffer);
     // set number of Gauss points manually, since the setup method is not called
     num_gp_ = time_step_quantities_.last_defgrad.size();
+    // unpack viscoplastic law
+    viscoplastic_laws_at_gp_.resize(num_gp_);
+    for (unsigned int gp = 0; gp < num_gp_; ++gp)
+    {
+      viscoplastic_laws_at_gp_[gp] = viscoplastic_laws_at_gp_[0]->clone();
+      viscoplastic_laws_at_gp_[gp]->unpack_viscoplastic_law(buffer);
+    }
     // unpack the Local Newton manager
     local_newton_manager_.unpack(buffer);
     // unpack the plastic flow tracking vector
@@ -3729,7 +3746,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::viscoplastic_correction(
             extract_inverse_inelastic_defgrad(sol.value());
         time_step_quantities_.last_substep_plastic_strain[gp_] = sol.value()(9);
         // update last substep history variables of the viscoplastic flow rule
-        viscoplastic_law_->update_gp_state_after_substep(gp_);
+        viscoplastic_laws_at_gp_[gp_]->update_after_substep();
       }
       else
       {
@@ -3758,7 +3775,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::viscoplastic_correction(
   }
 
   // reset the substep history variables to the values from the previous time instant $t_n$
-  viscoplastic_law_->reset_gp_substep_state(gp_);
+  viscoplastic_laws_at_gp_[gp_]->reset_substep_state();
 
   // return the obtained solution
   return sol.value();
@@ -4317,7 +4334,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat_pe
 
     // set the perturbed temperature in the viscoplastic law.
     params_.set<double>("temperature", perturbed_temperature);
-    viscoplastic_law_->pre_evaluate(params_, gp_);
+    viscoplastic_laws_at_gp_[gp_]->pre_evaluate(params_);
 
     // run return-mapping with the perturbed temperature
     const HistoryVariables perturbed_history_variables =
@@ -4337,7 +4354,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat_pe
   // reset everything to the unperturbed state
   time_step_quantities_ = unperturbed_time_step_quantities;
   params_.set<double>("temperature", temperature);
-  viscoplastic_law_->pre_evaluate(params_, gp_);
+  viscoplastic_laws_at_gp_[gp_]->pre_evaluate(params_);
   state_quantities_ = unperturbed_state_quantities;
   update_hist_var_ = true;
 }
@@ -4359,7 +4376,7 @@ Mat::HeatSource Mat::InelasticDefgradTransvIsotropElastViscoplast::
 
   // Evaluate the incoming state
   params_.set<double>("temperature", temperature);
-  viscoplastic_law_->pre_evaluate(params_, gp_);
+  viscoplastic_laws_at_gp_[gp_]->pre_evaluate(params_);
   constitutive_update(FredM, temperature);
 
   update_hist_var_ = false;  // no update of the current values during perturbed evaluations
@@ -4428,7 +4445,7 @@ Mat::HeatSource Mat::InelasticDefgradTransvIsotropElastViscoplast::
 
       // The viscoplastic law caches temperature-dependent data during pre-evaluation.
       params_.set<double>("temperature", perturbed_temperature);
-      viscoplastic_law_->pre_evaluate(params_, gp_);
+      viscoplastic_laws_at_gp_[gp_]->pre_evaluate(params_);
 
       // run return-mapping with the perturbed temperature. This populates the state_quantities_
       constitutive_update(FredM, perturbed_temperature);
@@ -4444,7 +4461,7 @@ Mat::HeatSource Mat::InelasticDefgradTransvIsotropElastViscoplast::
 
   // reset the temperature in the viscoplastic law
   params_.set<double>("temperature", temperature);
-  viscoplastic_law_->pre_evaluate(params_, gp_);
+  viscoplastic_laws_at_gp_[gp_]->pre_evaluate(params_);
   update_hist_var_ = true;
 
   return result;
@@ -4541,7 +4558,7 @@ std::string Mat::InelasticDefgradTransvIsotropElastViscoplast::get_error_warning
   // add the material parameters
   extended_error_string += "PARAMETERS: \n";
   parameter()->raw_parameters().print(temp_ostream);
-  viscoplastic_law_->parameter()->raw_parameters().print(temp_ostream);
+  viscoplastic_laws_at_gp_[gp_]->parameter()->raw_parameters().print(temp_ostream);
   temp_ostream << std::endl;
   extended_error_string += temp_ostream.str();
   temp_ostream.str("");
@@ -4618,7 +4635,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::register_output_data_nam
   names_and_size["defgrad"] = 9;
   names_and_size["rightCG"] = 9;
   names_and_size["local_newton_iters"] = 1;
-  viscoplastic_law_->register_output_data_names(names_and_size);
+  viscoplastic_laws_at_gp_[gp_]->register_output_data_names(names_and_size);
 }
 
 /*--------------------------------------------------------------------*
@@ -4697,8 +4714,14 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_output_data(
     return true;
   }
 
-
-  return viscoplastic_law_->evaluate_output_data(name, data);
+  bool has_viscoplastic_law_output = false;
+  for (std::size_t gp = 0; gp < viscoplastic_laws_at_gp_.size(); ++gp)
+  {
+    has_viscoplastic_law_output =
+        viscoplastic_laws_at_gp_[gp]->evaluate_output_data(name, gp, data);
+    if (not has_viscoplastic_law_output) return false;  // early return if the data is not available
+  }
+  return true;
 }
 
 /*--------------------------------------------------------------------*
@@ -4719,7 +4742,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::determine_local_newton_init_e
     // surface (slightly "under" within a given numerical tolerance) (only for yield-surface-based
     // viscoplasticity formulations; for no-yield-surface formulations, we currently accept the
     // preliminary plastic predictor as the plastic predictor)
-    if (viscoplastic_law_->uses_yield_surface())
+    if (viscoplastic_laws_at_gp_[gp_]->uses_yield_surface())
     {
       // construct plastic predictor; return empty if this has not succeeded
       if (not construct_plastic_predictor(local_integration_input))
@@ -4747,10 +4770,10 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::exhibits_plastic_flow(
   // numerical tolerance for stresses = 0.0
   const double numerical_tol = 1.0e-12;
 
-  if (viscoplastic_law_->uses_yield_surface())
+  if (viscoplastic_laws_at_gp_[gp_]->uses_yield_surface())
   {
     auto err_status = ViscoplastUtils::ErrorType::no_errors;
-    const double yield_stress = viscoplastic_law_->compute_flow_resistance(
+    const double yield_stress = viscoplastic_laws_at_gp_[gp_]->compute_flow_resistance(
         curr_equiv_stress, last_plastic_strain, err_status);
     FOUR_C_ASSERT_ALWAYS(err_status == ViscoplastUtils::ErrorType::no_errors,
         "It is currently assumed that this computation will not fail");
@@ -4868,9 +4891,9 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::construct_plastic_predic
                                          "the manager for adaptive estimate interpolation!")));
 
   // determine lowest meaningful threshold $S$ (yield stress at previous timestep)
-  const double S =
-      viscoplastic_law_->compute_flow_resistance(time_step_quantities_.last_equiv_stress[gp_],
-          local_integration_input.last_plastic_strain, err_status);
+  const double S = viscoplastic_laws_at_gp_[gp_]->compute_flow_resistance(
+      time_step_quantities_.last_equiv_stress[gp_], local_integration_input.last_plastic_strain,
+      err_status);
   if (err_status != ViscoplastUtils::ErrorType::no_errors)
   {
     // early return with error, managed eventually by substepping strategy
@@ -5092,7 +5115,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::interpolate_estimate(
       case AEI::HardeningManagementMethod::integrate_via_evolution_equations:
       {
         std::optional<double> integrated_plastic_strain =
-            viscoplastic_law_->integrate_plastic_strain(
+            viscoplastic_laws_at_gp_[gp_]->integrate_plastic_strain(
                 Viscoplastic::Law::InputIntegratePlasticStrain{
                     .equiv_stress = state_quantities_stress_only.curr_equiv_stress,
                     .last_plastic_strain = last_plastic_strain,
@@ -5239,7 +5262,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::reestimate_to_restart_local_n
       }
       case AEI::HardeningManagementMethod::integrate_via_evolution_equations:
       {
-        return viscoplastic_law_->integrate_plastic_strain(
+        return viscoplastic_laws_at_gp_[gp_]->integrate_plastic_strain(
             Viscoplastic::Law::InputIntegratePlasticStrain{
                 .equiv_stress = interp_state_quantities.curr_equiv_stress,
                 .last_plastic_strain = last_plastic_strain,
