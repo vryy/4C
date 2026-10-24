@@ -57,16 +57,19 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::ReformulatedJohnsonCook(
           parameter()->isotrop_harden_prefac(), parameter()->isotrop_harden_exp(),
           parameter()->init_yield_strength())
 {
+  current_yield_strength_ =
+      parameter()->init_yield_strength();  // initialize with the initial yield strength; this will
+                                           // get changed afterwards anyway by \ref
+                                           // evaluate_plastic_strain_rate
 }
 
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::Viscoplastic::ReformulatedJohnsonCook::pre_evaluate(
-    const Teuchos::ParameterList& params, const unsigned int gp)
+void Mat::Viscoplastic::ReformulatedJohnsonCook::pre_evaluate(const Teuchos::ParameterList& params)
 {
   // call pre_evaluate of base class
-  Mat::Viscoplastic::Law::pre_evaluate(params, gp);
+  Mat::Viscoplastic::Law::pre_evaluate(params);
 
 
   // get temperature factors
@@ -140,14 +143,9 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
   // save yield strength
   if (update_hist_var)
   {
-    // GP index safeguard
-    FOUR_C_ASSERT_ALWAYS(static_cast<size_t>(gp_) < current_yield_strength_.size(),
-        "The current gp index is {} while the stored number of GP within Reformulated Johnson - "
-        "Cook is {} ",
-        gp_, current_yield_strength_.size());
     InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType yield_strength_err_status =
         InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::no_errors;
-    current_yield_strength_[gp_] =
+    current_yield_strength_ =
         compute_flow_resistance(equiv_stress, equiv_plastic_strain, yield_strength_err_status);
     FOUR_C_ASSERT_ALWAYS(
         yield_strength_err_status ==
@@ -320,16 +318,6 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::Viscoplastic::ReformulatedJohnsonCook::setup(const unsigned int numgp,
-    const Discret::Elements::Fibers& fibers,
-    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
-{
-  current_yield_strength_.resize(numgp, parameter()->init_yield_strength());
-}
-
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
 void Mat::Viscoplastic::ReformulatedJohnsonCook::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
@@ -339,44 +327,16 @@ void Mat::Viscoplastic::ReformulatedJohnsonCook::register_output_data_names(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 bool Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_output_data(
-    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
+    const std::string& name, const unsigned int gp, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (name == "yield_strength")
   {
-    for (unsigned int gp = 0; gp < current_yield_strength_.size(); ++gp)
-    {
-      data(static_cast<int>(gp), 0) = current_yield_strength_[gp];
-    }
+    data(static_cast<int>(gp), 0) = current_yield_strength_;
     return true;
   }
 
   return false;
 }
 
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-void Mat::Viscoplastic::ReformulatedJohnsonCook::pack_viscoplastic_law(
-    Core::Communication::PackBuffer& data) const
-{
-  // pack relevant variables
-  if (parameter() != nullptr)
-  {
-    // we need to pack this current value since it also saves the number
-    // of Gauss points
-    add_to_pack(data, static_cast<int>(current_yield_strength_.size()));
-  }
-}
-
-void Mat::Viscoplastic::ReformulatedJohnsonCook::unpack_viscoplastic_law(
-    Core::Communication::UnpackBuffer& buffer)
-{
-  int numgp = -1;
-  extract_from_pack(buffer, numgp);
-  FOUR_C_ASSERT(numgp > 0, "The number of GP is {}! It should be higher than 0!", numgp);
-  current_yield_strength_.resize(numgp,
-      parameter()
-          ->init_yield_strength());  // will get re-evaluated anyway, so it only matters that it has
-                                     // the correct size without necessarily the previous value
-}
 
 FOUR_C_NAMESPACE_CLOSE
