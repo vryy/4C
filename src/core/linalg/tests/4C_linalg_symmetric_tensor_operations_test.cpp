@@ -375,6 +375,32 @@ namespace
     EXPECT_NEAR(t2_sym_dyad(1, 1, 1, 1), 13.26, 1e-10);
   }
 
+  template <typename TensorDimension>
+  class SymmetricTensorOperationsTemplatedTest : public ::testing::Test
+  {
+  };
+  using tensor_dimensions = ::testing::Types<std::integral_constant<std::size_t, 2>,
+      std::integral_constant<std::size_t, 3>, std::integral_constant<std::size_t, 4>,
+      std::integral_constant<std::size_t, 5>>;
+
+  TYPED_TEST_SUITE(SymmetricTensorOperationsTemplatedTest, tensor_dimensions);
+
+  TYPED_TEST(SymmetricTensorOperationsTemplatedTest, dyadic)
+  {
+    constexpr std::size_t size = TypeParam::value;
+    Core::LinAlg::SymmetricTensor<double, size, size> t2_sym = create_symmetric_tensor<size>();
+    Core::LinAlg::SymmetricTensor<double, size, size> t2_sym_2 =
+        create_symmetric_tensor<size>(1.1, 0.2);
+    Core::LinAlg::SymmetricTensor<double, size, size, size, size> t2_sym_dyad =
+        Core::LinAlg::dyadic(t2_sym, t2_sym_2);
+
+    for (std::size_t i = 0; i < size; ++i)
+      for (std::size_t j = 0; j < size; ++j)
+        for (std::size_t k = 0; k < size; ++k)
+          for (std::size_t l = 0; l < size; ++l)
+            EXPECT_DOUBLE_EQ(t2_sym_dyad(i, j, k, l), t2_sym(i, j) * t2_sym_2(k, l));
+  }
+
   TEST(SymmetricTensorOperationsTest, selfDyadic)
   {
     Core::LinAlg::Tensor<double, 2> t1 = create_tensor<2>();

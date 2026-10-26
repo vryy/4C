@@ -802,7 +802,22 @@ namespace Core::LinAlg
     requires(is_symmetric_tensor<TensorLeft> && is_symmetric_tensor<TensorRight>)
   constexpr auto dyadic(const TensorLeft& A, const TensorRight& B)
   {
-    return assume_symmetry(dyadic(get_full(A), get_full(B)));
+    static_assert(TensorLeft::rank() == 2 && TensorRight::rank() == 2,
+        "The dyadic product of symmetric tensors is only implemented for 2-tensors.");
+
+    using value_type = FADUtils::ScalarOperationResultType<std::multiplies<>,
+        typename TensorLeft::value_type, typename TensorRight::value_type>;
+
+    SymmetricTensor<value_type, TensorLeft::template extent<0>(), TensorLeft::template extent<1>(),
+        TensorRight::template extent<0>(), TensorRight::template extent<1>()>
+        result;
+
+    // the compressed storage of the symmetric 4-tensor is the outer product of the compressed
+    // storages of the symmetric 2-tensors
+    DenseFunctions::multiply<value_type, TensorLeft::compressed_size, 1,
+        TensorRight::compressed_size>(result.data(), A.data(), B.data());
+
+    return result;
   }
 
   template <unsigned num_dyads>
