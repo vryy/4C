@@ -60,8 +60,21 @@ bool Core::LinearSolver::DirectSolver::has_contiguous_dof_ids() const
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
+void Core::LinearSolver::DirectSolver::reset()
+{
+  a_ = nullptr;
+  b_ = nullptr;
+  projector_ = nullptr;
+  factored_ = false;
+  solver_ = Teuchos::null;
+  created_matrix_ = nullptr;
+  created_rhs_ = nullptr;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::SparseOperator> matrix,
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor,
     std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector)
 {
   // 1. project the linear system if close to being singular and set the final matrix and vectors
@@ -97,7 +110,7 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
   a_ = crsA;
 
   // 3. create linear solver
-  if (reset or refactor or not is_factored() or created_matrix_ != &a_->epetra_matrix() or
+  if (refactor or not is_factored() or created_matrix_ != &a_->epetra_matrix() or
       created_rhs_ != &b_->get_epetra_multi_vector())
   {
     std::string solver_type;

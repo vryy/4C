@@ -539,7 +539,7 @@ namespace
     solver.solve(massmatrix, initialvals, rhs, solver_params);
 
     // perform resets for solver and matrix
-    solver.reset();
+    solver.hard_reset();
     massmatrix->reset();
 
     if (myrank == 0)

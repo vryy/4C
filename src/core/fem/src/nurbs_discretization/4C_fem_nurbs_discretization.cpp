@@ -498,7 +498,7 @@ void Core::FE::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& pa
   if (assemblevecdd) solver.solve(massmatrix, dbcvectordd, rhsdd, solver_params);
 
   // perform resets for solver and matrix
-  solver.reset();
+  solver.hard_reset();
   massmatrix->reset();
 
   // insert nodal values to sysvec

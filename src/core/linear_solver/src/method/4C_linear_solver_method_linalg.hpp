@@ -136,11 +136,12 @@ namespace Core::LinAlg
         std::shared_ptr<Core::LinAlg::Vector<double>> b, const SolverParams& params);
 
     /*!
-    \brief Reset the solver and clear data
+    \brief Destroy the solver and clear data
 
-    All data is destroyed except the parameter list
+    All data is destroyed except the parameter list. In contrast, SolverParams::reset only asks the
+    solver to forget what it computed from earlier systems and lets it keep what is still valid.
     */
-    void reset();
+    void hard_reset();
 
     //! get tolerance from Belos solver
     double get_tolerance() const

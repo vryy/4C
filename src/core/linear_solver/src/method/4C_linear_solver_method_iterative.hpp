@@ -30,17 +30,20 @@ namespace Core::LinearSolver
     //! Constructor
     IterativeSolver(MPI_Comm comm, Teuchos::ParameterList& params);
 
+    /*! \brief Forget the preconditioner and the system, so that the next setup() computes a new
+     * preconditioner
+     */
+    void reset() override;
+
     /*! \brief Setup the solver object
      *
      * @param A Matrix of the linear system
-     * @param x Solution vector of the linear system
      * @param b Right-hand side vector of the linear system
      * @param refactor Boolean flag to enforce a refactorization of the matrix
-     * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
     void setup(std::shared_ptr<Core::LinAlg::SparseOperator> A,
-        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor,
         std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector) override;
 
     //! Actual call to the underlying Belos solver
@@ -56,19 +59,18 @@ namespace Core::LinearSolver
    private:
     /*! \brief Check whether preconditioner will be reused
      *
-     * The user can control reuse/recomputation of the preconditioner by setting appropriate input
-     * arguments \c reuse and \c reset. In addition, contact mechanics problems perform some
+     * The user can control reuse/recomputation of the preconditioner by setting the input argument
+     * \c reuse. In addition, contact mechanics problems perform some
      * additional checks since they require to rebuild the preconditioner when the active set has
-     * changed.
+     * changed. A reset() forces the recomputation, since it sets the number of calls to zero.
      *
      * @param[in] reuse Parameter AZREUSE from parameter list
-     * @param reset Force preconditioner to be rebuilt
      * @return Boolean flag to indicate whether preconditioner is reused (\c true) or has to be
      * re-computed (\c false)
      *
      * \sa check_reuse_status_of_active_set()
      */
-    bool allow_reuse_preconditioner(const int reuse, const bool reset);
+    bool allow_reuse_preconditioner(const int reuse);
 
     /*! \brief Function for creating preconditioner object
      *

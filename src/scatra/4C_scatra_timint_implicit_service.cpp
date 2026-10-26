@@ -192,7 +192,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> ScaTra::ScaTraTimIntImpl::cal
     solver_->solve_with_multi_vector(massmatrix, flux_projected, flux, solver_params);
 
     // reset solver
-    solver_->reset();
+    solver_->hard_reset();
   }
 
   return flux_projected;
@@ -409,7 +409,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> ScaTra::ScaTraTimIntImpl::cal
       solver_->solve(massmatrix_boundary, normalfluxes, trueresidual_boundary, solver_params);
 
       // reset solver
-      solver_->reset();
+      solver_->hard_reset();
 
       // overwrite action in parameter list
       Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
@@ -669,7 +669,7 @@ void ScaTra::ScaTraTimIntImpl::calc_initial_time_derivative()
   sysmat_->reset();
 
   // reset solver
-  solver_->reset();
+  solver_->hard_reset();
 
   // reset true residual vector computed during assembly of the standard global system of equations,
   // since not yet needed

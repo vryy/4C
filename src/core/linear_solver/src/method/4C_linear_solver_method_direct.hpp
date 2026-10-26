@@ -34,16 +34,18 @@ namespace Core::LinearSolver
     explicit DirectSolver(
         Core::LinearSolver::SolverType solvertype, const Teuchos::ParameterList& params);
 
+    //! \brief Forget the system and the factorization
+    void reset() override;
+
     /*! \brief Setup the solver object
      *
      * @param matrix Matrix of the linear system
      * @param b Right-hand side vector of the linear system
      * @param refactor Boolean flag to enforce a refactorization of the matrix
-     * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
     void setup(std::shared_ptr<Core::LinAlg::SparseOperator> matrix,
-        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor,
         std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector = nullptr) override;
 
     int solve(Core::LinAlg::MultiVector<double>& x) override;

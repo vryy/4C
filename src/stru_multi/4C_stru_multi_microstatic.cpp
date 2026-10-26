@@ -437,12 +437,12 @@ void MultiScale::MicroStatic::predict_tang_dis(const Core::LinAlg::Matrix<3, 3>*
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-  solver_->reset();
+  solver_->hard_reset();
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   solver_->solve(stiff_, disi_, fresn_, solver_params);
-  solver_->reset();
+  solver_->hard_reset();
 
   // store norm of displacement increments
   normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
