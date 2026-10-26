@@ -343,8 +343,7 @@ namespace Core::LinAlg
   Tensor<T, n...> make_tensor_from_nested_array(
       const typename Internal::NestedArrayHelper<Tensor<T, n...>>::type& nested_array)
   {
-    constexpr std::array<std::size_t, (n * ...)> index_mapping =
-        Internal::order_type_mapping<n...>();
+    const auto& index_mapping = Internal::order_type_index_mapping<n...>;
 
     Tensor<T, n...> tensor;
     for (std::size_t i = 0; i < (n * ...); ++i)
@@ -364,8 +363,7 @@ namespace Core::LinAlg
   typename Internal::NestedArrayHelper<Tensor<T, n...>>::type make_nested_array_from_tensor(
       const Tensor<T, n...>& tensor)
   {
-    constexpr std::array<std::size_t, (n * ...)> index_mapping =
-        Internal::order_type_mapping<n...>();
+    const auto& index_mapping = Internal::order_type_index_mapping<n...>;
 
     typename Internal::NestedArrayHelper<Tensor<T, n...>>::type nested_array;
     for (std::size_t i = 0; i < (n * ...); ++i)

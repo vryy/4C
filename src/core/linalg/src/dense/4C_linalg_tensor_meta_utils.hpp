@@ -188,8 +188,9 @@ namespace Core::LinAlg::Internal
     }
   };
 
+  // array mapping row-major index to column-major index
   template <std::size_t... n>
-  consteval std::array<std::size_t, (n * ...)> order_type_mapping()
+  inline constexpr auto order_type_index_mapping = []() consteval
   {
     std::array<std::size_t, (n * ...)> order_type_mapping{};
 
@@ -205,7 +206,7 @@ namespace Core::LinAlg::Internal
         std::make_tuple());
 
     return order_type_mapping;
-  }
+  }();
 
   template <std::size_t... n>
   consteval std::array<std::tuple<decltype(n)...>, (n * ...)> get_array_of_indices()
