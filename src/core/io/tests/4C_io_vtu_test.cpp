@@ -216,8 +216,8 @@ namespace
 
     EXPECT_EQ(mesh.cell_blocks()[0].cell_data().size(), 10);
 
-    const auto& cell_block = mesh.cell_blocks()[0];
-    const auto& cell_reference = cell_block.cells_with_data()[1];
+    const auto cell_block = mesh.cell_blocks()[0];
+    const auto cell_reference = cell_block.cells_with_data()[1];
 
     // Check scalar double field
     ASSERT_TRUE((std::holds_alternative<Core::Utils::Vector2D<double>>(
