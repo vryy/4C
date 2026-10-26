@@ -45,29 +45,41 @@ namespace BeamToSolid
 
   /**
    * \brief Constraint enforcement for beam to solid interactions.
+   *
+   * See Chapter 2.5 from the following thesis:
+   *
+   * I. Steinbrecher: Mixed-dimensional finite element formulations for beam-to-solid interaction,
+   * PhD Thesis, 2023, https://athene-forschung.unibw.de/143755
+   *
    */
   enum class BeamToSolidConstraintEnforcement
   {
     //! Default value.
     none,
-    //! Penalty method.
+    //! Penalty-regularization of the Lagrange multiplier system.
     penalty,
-    //! Lagrange Multiplier approach
+    //! Lagrange multiplier approach.
     lagrange
   };
 
   /**
-   * \brief Lagrange Formulation type for Lagrange Multiplier constraint enforcement approach
+   * \brief Lagrange formulation type for Lagrange multiplier constraint enforcement approach
+   *
+   *  See the following publication Chapter 11 for more information:
+   *
+   *  O. C. Zienkiewicz, R. L. Taylor and J. Z. Zhu: The finite element method: Its basis and
+   * fundamentals, 7th edition, 2013, Butterworth-Heinemann
+   *
    */
   enum class BeamToSolidLagrangeFormulation
   {
     //! Default value.
     none,
-    //!  Lagrange multiplier preserving the saddlepoint nature of the system
+    //!  Lagrange multiplier preserving the saddlepoint nature of the system.
     saddlepoint,
-    //!  Augmented system adding penalty contributions to the saddlepoint system
+    //!  Augmented system adding penalty-regularized contributions to the saddlepoint system.
     augmented,
-    //!  Penalty regularized approach assembled into a 2x2 block system.
+    //!  Perturbed saddlepoint approach assembling a penalty-regularization into the zero block.
     regularized
   };
 
