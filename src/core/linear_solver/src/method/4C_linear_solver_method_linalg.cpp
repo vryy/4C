@@ -40,11 +40,11 @@ Core::LinAlg::Solver::Solver(const Teuchos::ParameterList& inparams, MPI_Comm co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::Solver::~Solver() { reset(); }
+Core::LinAlg::Solver::~Solver() { hard_reset(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Solver::reset() { solver_ = nullptr; }
+void Core::LinAlg::Solver::hard_reset() { solver_ = nullptr; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -171,7 +171,7 @@ void Core::LinAlg::Solver::setup(std::shared_ptr<Core::LinAlg::SparseOperator> m
   bool refactor = params.refactor;
   if (params.reset)
   {
-    reset();
+    if (solver_ != nullptr) solver_->reset();
     refactor = true;
   }
 
@@ -197,7 +197,7 @@ void Core::LinAlg::Solver::setup(std::shared_ptr<Core::LinAlg::SparseOperator> m
     }
   }
 
-  solver_->setup(matrix, b, refactor, params.reset, params.projector);
+  solver_->setup(matrix, b, refactor, params.projector);
 }
 
 /*----------------------------------------------------------------------*

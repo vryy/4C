@@ -53,7 +53,7 @@ namespace
     for (int gid = 0; gid < num_rows; ++gid) b->replace_global_value(gid, 0, 1.0 + gid * gid);
 
     Core::LinearSolver::DirectSolver solver(GetParam(), Teuchos::ParameterList());
-    solver.setup(matrix, b, /*refactor=*/true, /*reset=*/true);
+    solver.setup(matrix, b, /*refactor=*/true);
 
     Core::LinAlg::MultiVector<double> x(map, 1, true);
     solver.solve(x);

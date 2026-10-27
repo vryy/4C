@@ -397,7 +397,7 @@ void LevelSet::LevelSetAlgorithm::calc_node_based_reinit_vel()
 
       system_matrix()->reset();
       // reset the solver as well
-      solver_->reset();
+      solver_->hard_reset();
 
       // TODO: add simple ILU/SGS/... for projection case, such that the standard system can be
       // solved by efficient AMG methods
@@ -481,7 +481,7 @@ void LevelSet::LevelSetAlgorithm::correction_reinit()
 
   system_matrix()->reset();
   // reset the solver as well
-  solver_->reset();
+  solver_->hard_reset();
 }
 
 

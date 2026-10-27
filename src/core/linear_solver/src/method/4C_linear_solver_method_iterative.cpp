@@ -42,8 +42,20 @@ Core::LinearSolver::IterativeSolver::IterativeSolver(MPI_Comm comm, Teuchos::Par
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
+void Core::LinearSolver::IterativeSolver::reset()
+{
+  preconditioner_ = nullptr;
+  active_dof_map_ = nullptr;
+  a_ = nullptr;
+  b_ = nullptr;
+  ncall_ = 0;
+  numiters_ = -1;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 void Core::LinearSolver::IterativeSolver::setup(std::shared_ptr<Core::LinAlg::SparseOperator> A,
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor,
     std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector)
 {
   if (!params().isSublist("Belos Parameters")) FOUR_C_THROW("Do not have belos parameter list");
@@ -53,7 +65,7 @@ void Core::LinearSolver::IterativeSolver::setup(std::shared_ptr<Core::LinAlg::Sp
     std::cout << "*******************************************************" << std::endl;
 
   const int reuse = belist.get("reuse", 0);
-  const bool create = !allow_reuse_preconditioner(reuse, reset);
+  const bool create = !allow_reuse_preconditioner(reuse);
   if (create)
   {
     ncall_ = 0;
@@ -209,8 +221,7 @@ int Core::LinearSolver::IterativeSolver::solve(Core::LinAlg::MultiVector<double>
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-bool Core::LinearSolver::IterativeSolver::allow_reuse_preconditioner(
-    const int reuse, const bool reset)
+bool Core::LinearSolver::IterativeSolver::allow_reuse_preconditioner(const int reuse)
 {
   // first, check some parameters with information that has to be updated
   Teuchos::ParameterList& linSysParams = params().sublist("Belos Parameters");
@@ -232,15 +243,6 @@ bool Core::LinearSolver::IterativeSolver::allow_reuse_preconditioner(
   {
     if (Core::Communication::my_mpi_rank(comm_) == 0)
       std::cout << "Recomputation due to linear solver stalling." << std::endl;
-
-    bAllowReuse = false;
-  }
-
-  // 3. check if there's an external reset
-  if (reset)
-  {
-    if (Core::Communication::my_mpi_rank(comm_) == 0)
-      std::cout << "Recomputation due to reset." << std::endl;
 
     bAllowReuse = false;
   }

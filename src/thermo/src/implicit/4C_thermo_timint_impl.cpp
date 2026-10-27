@@ -270,12 +270,12 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
 
   // solve for tempi_
   // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
-  solver_->reset();
+  solver_->hard_reset();
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   solver_->solve(tang_, tempi_, fres_, solver_params);
-  solver_->reset();
+  solver_->hard_reset();
 
   // build residual temperature norm
   normtempi_ = Thermo::Aux::calculate_vector_norm(iternorm_, *tempi_);

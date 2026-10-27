@@ -2300,7 +2300,7 @@ void FSI::MonolithicXFEM::linear_solve()
   // TODO: can we do this?!
   // reset the solver (frees the pointer to the Core::LinAlg:: matrix and vectors
   // also!) std::cout << "reset the solver" << std::endl;
-  solver_->reset();
+  solver_->hard_reset();
 
   //---------------------------------------------
   // permute the increment and rhs vector back to the reference configuration w.r.t which iterinc_

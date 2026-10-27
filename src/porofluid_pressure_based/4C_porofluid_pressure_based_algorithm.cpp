@@ -2237,7 +2237,7 @@ void PoroPressureBased::PorofluidAlgorithm::calc_initial_time_derivative()
   sysmat_->reset();
 
   // reset solver
-  solver_->reset();
+  solver_->hard_reset();
 
   // reset true residual vector computed during assembly of the standard global system of equations,
   // since not yet needed

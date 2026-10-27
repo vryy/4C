@@ -107,17 +107,22 @@ namespace Core::LinearSolver
     //! Destructor
     virtual ~SolverTypeBase() = default;
 
+    /*! \brief Forget everything that was computed from earlier systems
+     *
+     * The next setup() must treat the system as new and may only use state that the solver can
+     * prove to be still valid, e.g., a symbolic factorization of an unchanged sparsity pattern.
+     */
+    virtual void reset() = 0;
+
     /*! \brief Setup the solver object
      *
      * @param A Matrix of the linear system
-     * @param x Solution vector of the linear system
      * @param b Right-hand side vector of the linear system
      * @param refactor Boolean flag to enforce a refactorization of the matrix
-     * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
     virtual void setup(std::shared_ptr<Core::LinAlg::SparseOperator> A,
-        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor,
         std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector) = 0;
 
     virtual int solve(Core::LinAlg::MultiVector<double>& x) = 0;

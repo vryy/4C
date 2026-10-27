@@ -1117,7 +1117,7 @@ namespace ReducedLung1dPipeFlow
 
       mass_matrix->epetra_matrix().FillComplete();
 
-      solver.reset();
+      solver.hard_reset();
       // y = M^-1 * rhs
       [[maybe_unused]] int error = solver.solve(mass_matrix, y, rhs, {});
       FOUR_C_ASSERT(error == 0, "Error Code {}: solver solve failed.", error);
