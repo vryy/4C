@@ -4631,6 +4631,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::register_output_data_nam
 {
   names_and_size["inverse_plastic_defgrad"] = 9;
   names_and_size["plastic_strain"] = 1;
+  names_and_size["flow_resistance"] = 1;
   names_and_size["equiv_stress"] = 1;
   names_and_size["defgrad"] = 9;
   names_and_size["rightCG"] = 9;
@@ -4667,6 +4668,19 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_output_data(
         ++gp)
     {
       data(gp, 0) = time_step_quantities_.current_plastic_strain[gp];
+    }
+    return true;
+  }
+  else if (name == "flow_resistance")
+  {
+    for (int gp = 0; gp < static_cast<int>(viscoplastic_laws_at_gp_.size()); ++gp)
+    {
+      ViscoplastUtils::ErrorType err_status{ViscoplastUtils::ErrorType::no_errors};
+      data(gp, 0) = viscoplastic_laws_at_gp_[gp]->compute_flow_resistance(
+          time_step_quantities_.current_equiv_stress[gp],
+          time_step_quantities_.current_plastic_strain[gp], err_status, true);
+      FOUR_C_ASSERT(err_status == ViscoplastUtils::ErrorType::no_errors,
+          "The flow resistance should be evaluable!");
     }
     return true;
   }

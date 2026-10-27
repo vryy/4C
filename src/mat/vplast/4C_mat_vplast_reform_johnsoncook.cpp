@@ -57,10 +57,6 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::ReformulatedJohnsonCook(
           parameter()->isotrop_harden_prefac(), parameter()->isotrop_harden_exp(),
           parameter()->init_yield_strength())
 {
-  current_yield_strength_ =
-      parameter()->init_yield_strength();  // initialize with the initial yield strength; this will
-                                           // get changed afterwards anyway by \ref
-                                           // evaluate_plastic_strain_rate
 }
 
 
@@ -110,7 +106,8 @@ void Mat::Viscoplastic::ReformulatedJohnsonCook::pre_evaluate(const Teuchos::Par
  *--------------------------------------------------------------------*/
 double Mat::Viscoplastic::ReformulatedJohnsonCook::compute_flow_resistance(
     const double equiv_stress, const double equiv_plastic_strain,
-    Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status) const
+    Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
+    const bool return_cached_value) const
 {
   // extract yield strength from the plastic strain and the material parameters
   return (parameter()->init_yield_strength() * temperature_ratio_ +
@@ -139,22 +136,6 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
 
   // compute the viscoplastic strain rate; first we set it to 0
   double equiv_plastic_strain_rate = 0.0;
-
-  // save yield strength
-  if (update_hist_var)
-  {
-    InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType yield_strength_err_status =
-        InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::no_errors;
-    current_yield_strength_ =
-        compute_flow_resistance(equiv_stress, equiv_plastic_strain, yield_strength_err_status);
-    FOUR_C_ASSERT_ALWAYS(
-        yield_strength_err_status ==
-            InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::no_errors,
-        "Computing yield strength during the evaluation of the plastic strain rate has failed with "
-        "error {}",
-        EnumTools::enum_name(yield_strength_err_status));
-  }
-
 
   // stress ratio
   const double yield_stress =
@@ -315,28 +296,5 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
       .deriv_plastic_strain = deriv_plastic_strain,
       .deriv_temperature = deriv_temperature};
 }
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-void Mat::Viscoplastic::ReformulatedJohnsonCook::register_output_data_names(
-    std::unordered_map<std::string, int>& names_and_size) const
-{
-  names_and_size["yield_strength"] = 1;
-}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-bool Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_output_data(
-    const std::string& name, const unsigned int gp, Core::LinAlg::SerialDenseMatrix& data) const
-{
-  if (name == "yield_strength")
-  {
-    data(static_cast<int>(gp), 0) = current_yield_strength_;
-    return true;
-  }
-
-  return false;
-}
-
 
 FOUR_C_NAMESPACE_CLOSE

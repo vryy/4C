@@ -102,12 +102,16 @@ namespace Mat
        * @param[in] equiv_stress equivalent stress
        * @param[in] equiv_plastic_strain accumulated plastic strain
        * @param[in/out] err_status error status of the evaluation
+       * @param[in] return_cached_value whether the function should simply return an already cached
+       * value; makes sense e.g., when the value is only required for Gauss point output, and
+       * recomputation is expensive because it involves solving a nonlinear equation as in the case
+       * of the Anand law
        *
        */
       [[nodiscard]] virtual double compute_flow_resistance(double equiv_stress,
           double equiv_plastic_strain,
-          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status) const = 0;
-
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
+          bool return_cached_value = false) const = 0;
 
       /*!
        * @brief Evaluate the equivalent plastic strain rate \f$ \dot{\varepsilon}^{\text{p}} \f$ for

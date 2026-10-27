@@ -127,8 +127,8 @@ namespace Mat
       [[nodiscard]] bool uses_yield_surface() const override { return true; }
 
       [[nodiscard]] double compute_flow_resistance(double equiv_stress, double equiv_plastic_strain,
-          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status)
-          const override;
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
+          const bool return_cached_value = false) const override;
 
       double evaluate_plastic_strain_rate(double equiv_stress, double equiv_plastic_strain,
           double dt, Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
@@ -140,12 +140,6 @@ namespace Mat
           const override;
 
       void pre_evaluate(const Teuchos::ParameterList& params) override;
-
-      void register_output_data_names(
-          std::unordered_map<std::string, int>& names_and_size) const override;
-
-      bool evaluate_output_data(const std::string& name, unsigned int gp,
-          Core::LinAlg::SerialDenseMatrix& data) const override;
 
      private:
       /// struct containing constant parameters to be evaluated only once
@@ -232,9 +226,6 @@ namespace Mat
       /// D_T / \partial T) = \log(M
       /// \frac{T^{M-1}}{T_{\mathrm{melt}}^M - T_{\mathrm{ref}}^M} ) \f$
       double log_neg_temperature_ratio_deriv_;
-
-      /// current yield strength
-      double current_yield_strength_;
     };
 
   }  // namespace Viscoplastic
