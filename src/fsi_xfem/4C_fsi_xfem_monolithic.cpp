@@ -381,6 +381,9 @@ void FSI::MonolithicXFEM::setup_system()
     Initialise XFSI-systemmatrix_
    ----------------------------------------------------------------------*/
   create_system_matrix();
+
+  // setup contact flags for the monolithic poro algorithm
+  if (structure_poro()->is_poro()) structure_poro()->poro_field()->setup_poro_contact_flags();
 }
 
 /*----------------------------------------------------------------------*

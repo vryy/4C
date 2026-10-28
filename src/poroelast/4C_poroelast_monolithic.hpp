@@ -241,6 +241,11 @@ namespace PoroElast
     //! read restart data
     void read_restart(const int step) override;
 
+    void post_setup() override;
+
+    //! setup flags associated with contact
+    void setup_poro_contact_flags();
+
    protected:
     //! Aitken
     void aitken();
