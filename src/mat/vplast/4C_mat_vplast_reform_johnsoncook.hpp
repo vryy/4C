@@ -108,6 +108,11 @@ namespace Mat
           const InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorRegistrationSettings&
               error_registration_settings);
 
+      [[nodiscard]] std::shared_ptr<Mat::Viscoplastic::Law> clone() const override
+      {
+        return std::make_shared<ReformulatedJohnsonCook>(*this);
+      }
+
       [[nodiscard]] Mat::Viscoplastic::PAR::ReformulatedJohnsonCook* parameter() const override
       {
         return dynamic_cast<Mat::Viscoplastic::PAR::ReformulatedJohnsonCook*>(
@@ -122,8 +127,8 @@ namespace Mat
       [[nodiscard]] bool uses_yield_surface() const override { return true; }
 
       [[nodiscard]] double compute_flow_resistance(double equiv_stress, double equiv_plastic_strain,
-          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status)
-          const override;
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
+          const bool return_cached_value = false) const override;
 
       double evaluate_plastic_strain_rate(double equiv_stress, double equiv_plastic_strain,
           double dt, Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
@@ -134,20 +139,7 @@ namespace Mat
           double dt, Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status)
           const override;
 
-      void setup(unsigned int numgp, const Discret::Elements::Fibers& fibers,
-          const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
-
-      void pre_evaluate(const Teuchos::ParameterList& params, unsigned int gp) override;
-
-      void pack_viscoplastic_law(Core::Communication::PackBuffer& data) const override;
-
-      void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) override;
-
-      void register_output_data_names(
-          std::unordered_map<std::string, int>& names_and_size) const override;
-
-      bool evaluate_output_data(
-          const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
+      void pre_evaluate(const Teuchos::ParameterList& params) override;
 
      private:
       /// struct containing constant parameters to be evaluated only once
@@ -234,9 +226,6 @@ namespace Mat
       /// D_T / \partial T) = \log(M
       /// \frac{T^{M-1}}{T_{\mathrm{melt}}^M - T_{\mathrm{ref}}^M} ) \f$
       double log_neg_temperature_ratio_deriv_;
-
-      /// yield strength for all Gauss points
-      std::vector<double> current_yield_strength_;
     };
 
   }  // namespace Viscoplastic

@@ -72,6 +72,9 @@ namespace Mat
       /// virtual destructor
       virtual ~Law() = default;
 
+      /// create a clone
+      [[nodiscard]] virtual std::shared_ptr<Mat::Viscoplastic::Law> clone() const = 0;
+
       /*!
        * @brief create object by input parameter ID
        *
@@ -99,12 +102,16 @@ namespace Mat
        * @param[in] equiv_stress equivalent stress
        * @param[in] equiv_plastic_strain accumulated plastic strain
        * @param[in/out] err_status error status of the evaluation
+       * @param[in] return_cached_value whether the function should simply return an already cached
+       * value; makes sense e.g., when the value is only required for Gauss point output, and
+       * recomputation is expensive because it involves solving a nonlinear equation as in the case
+       * of the Anand law
        *
        */
       [[nodiscard]] virtual double compute_flow_resistance(double equiv_stress,
           double equiv_plastic_strain,
-          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status) const = 0;
-
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
+          bool return_cached_value = false) const = 0;
 
       /*!
        * @brief Evaluate the equivalent plastic strain rate \f$ \dot{\varepsilon}^{\text{p}} \f$ for
@@ -160,83 +167,39 @@ namespace Mat
       [[nodiscard]] virtual Core::Mat::PAR::Parameter* parameter() const { return params_; }
 
       /*!
-       * @brief Setup viscoplasticity law for the specific element
-       *
-       * @param[in] numgp Number of Gauss points
-       * @param[in] container Input parameter Container
-       */
-      virtual void setup(unsigned int numgp, const Discret::Elements::Fibers& fibers,
-          const std::optional<Discret::Elements::CoordinateSystem>& coord_system) {};
-
-      /*!
        * @brief Pre-evaluation, intended to be used for stuff that has to be done only once per
        *        evaluate()
        *
        * @param[in] params  Various parameters, such as e.g. the temperature in TSI simulations
-       * @param[in] gp      Current Gauss point
        */
-      virtual void pre_evaluate(const Teuchos::ParameterList& params, unsigned int gp)
-      {
-        gp_ = gp;
-      };
+      virtual void pre_evaluate(const Teuchos::ParameterList& params) {};
 
       /*!
-       * @brief Update history variables of the viscoplasticity law for next time step at a given
-       * Gauss point
+       * @brief Update history variables of the viscoplasticity law for next time step
        *
-       * @param[in] gp Current Gauss point
        */
-      virtual void update(unsigned int gp) {};
+      virtual void update() {};
 
       /*!
-       * @brief Update the history variables for a specific GP after a converged substep
+       * @brief Update the history variables after a converged substep
        * (substepping procedure)
        *
-       * @param[in] gp      Gauss point
        */
-      virtual void update_gp_state_after_substep(unsigned int gp) {};
+      virtual void update_after_substep() {};
 
       /*!
-       * @brief Reset the history variables for a specific GP to the state before substepping.
+       * @brief Reset the history variables to the state before substepping.
        * Specifically, it resets the substep history variables to the ones from the previous
        * converged time instant: \f$ S_{n + \tilde{m}} \gets S_{n} \f$ for history variables $S_{n +
        * \tilde{m}}$ and $S_{n}$ at the previous time instant in the current substep, and at the
        * previous time instant in the current timestep, respectively.
        *
-       * @param[in] gp Gauss point
        */
-      virtual void reset_gp_substep_state(unsigned int gp) {};
+      virtual void reset_substep_state() {};
 
       virtual void pack_viscoplastic_law(Core::Communication::PackBuffer& data) const {};
 
       virtual void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) {};
-
-
-      /*!
-       * @brief Register names of the internal data that should be saved during runtime output
-       *
-       * @param[out] name_and_size Unordered map of names of the data with the respective vector
-       * size
-       */
-      virtual void register_output_data_names(
-          std::unordered_map<std::string, int>& names_and_size) const
-      {
-      }
-
-      /*!
-       * @brief Evaluate internal data for every Gauss point saved for output during runtime
-       * output
-       *
-       * @param[in] name  Name of the data to export
-       * @param[out] data NUMGPxNUMDATA Matrix holding the data
-       *
-       * @return true if data is set by the material, otherwise false
-       */
-      virtual bool evaluate_output_data(
-          const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
-      {
-        return false;
-      }
 
       //! struct containing information required for integrating the plastic strain according
       //! to its evolution equation / flow rule
@@ -273,9 +236,6 @@ namespace Mat
           const InputIntegratePlasticStrain& input_integrate_plastic_strain);
 
      protected:
-      /// Gauss point index
-      unsigned int gp_;
-
       /// error registration settings for the plastic strain increments and the derivative
       /// increments
       const Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorRegistrationSettings

@@ -1494,7 +1494,8 @@ namespace Mat
      *
      * @param[in] params material parameters
      * @param[in] viscoplastic_law viscoplasticity law, determining the flow rule and the hardening
-     *                             model
+     *                             model; currently assumed to initialize the viscoplasticity laws
+     * at all Gauss points via clones during \ref setup and \ref unpack_inelastic
      * @param[in] fiber_reader dummy hyperelastic model utilized to read the fiber direction for
      * transverse isotropy
      * @param[in] pot_sum_el elastic components / potential summands (only isotropic)
@@ -1665,8 +1666,8 @@ namespace Mat
     //! map to elastic materials/potential summands (only transversely isotropic)
     std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> potsumel_transviso_;
 
-    //! viscoplastic law
-    std::shared_ptr<Mat::Viscoplastic::Law> viscoplastic_law_;
+    //! viscoplasticity laws at all Gauss points
+    std::vector<std::shared_ptr<Mat::Viscoplastic::Law>> viscoplastic_laws_at_gp_;
 
     //! fiber reader (hyperelastic transversely isotropic material used for fiber reading)
     Mat::Elastic::CoupTransverselyIsotropic fiber_reader_;

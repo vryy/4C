@@ -62,13 +62,10 @@ namespace
     auto material = std::make_shared<Mat::Viscoplastic::ReformulatedJohnsonCook>(
         params.get(), error_registration_settings);
 
-    // call setup method for ReformulatedJohnsonCook
-    int numgp = 1;
-    material->setup(numgp, {}, {});
     // pre_evaluate
     Teuchos::ParameterList param_list{};
     param_list.set<double>("temperature", 313.0);
-    material->pre_evaluate(param_list, 0);
+    material->pre_evaluate(param_list);
 
     return {.params = params, .material = material};
   }
