@@ -167,8 +167,6 @@ namespace
     material_data.add("MATRIX_LOG_DERIV_CALC_METHOD",
         Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract);
     material_data.add("MAT_BEHAVIOR", setup.mat_behavior);
-    material_data.add("MAX_PLASTIC_STRAIN_DERIV_INCR", std::exp(30.0));
-    material_data.add("MAX_PLASTIC_STRAIN_INCR", std::exp(30.0));
     material_data.add("TIME_INTEGRATION_HIST_VARS",
         Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimIntType::logarithmic);
     material_data.add("VISCOPLAST_LAW_ID", viscoplastic_law_id);
