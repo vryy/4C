@@ -201,34 +201,6 @@ namespace Mat
 
       virtual void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) {};
 
-
-      /*!
-       * @brief Register names of the internal data that should be saved during runtime output
-       *
-       * @param[out] name_and_size Unordered map of names of the data with the respective vector
-       * size
-       */
-      virtual void register_output_data_names(
-          std::unordered_map<std::string, int>& names_and_size) const
-      {
-      }
-
-      /*!
-       * @brief Evaluate internal data for output during runtime
-       * output
-       *
-       * @param[in] name  Name of the data to export
-       * @param[in] gp Gauss point id for which the specific data should be output
-       * @param[out] data NUMGPxNUMDATA Matrix holding the data
-       *
-       * @return true if data is set by the material, otherwise false
-       */
-      virtual bool evaluate_output_data(
-          const std::string& name, unsigned int gp, Core::LinAlg::SerialDenseMatrix& data) const
-      {
-        return false;
-      }
-
       //! struct containing information required for integrating the plastic strain according
       //! to its evolution equation / flow rule
       struct InputIntegratePlasticStrain

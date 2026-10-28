@@ -4636,7 +4636,6 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::register_output_data_nam
   names_and_size["defgrad"] = 9;
   names_and_size["rightCG"] = 9;
   names_and_size["local_newton_iters"] = 1;
-  viscoplastic_laws_at_gp_[gp_]->register_output_data_names(names_and_size);
 }
 
 /*--------------------------------------------------------------------*
@@ -4728,14 +4727,7 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_output_data(
     return true;
   }
 
-  bool has_viscoplastic_law_output = false;
-  for (std::size_t gp = 0; gp < viscoplastic_laws_at_gp_.size(); ++gp)
-  {
-    has_viscoplastic_law_output =
-        viscoplastic_laws_at_gp_[gp]->evaluate_output_data(name, gp, data);
-    if (not has_viscoplastic_law_output) return false;  // early return if the data is not available
-  }
-  return true;
+  return false;
 }
 
 /*--------------------------------------------------------------------*
