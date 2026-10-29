@@ -203,6 +203,9 @@ namespace Core::LinAlg
         return index_mapping;
       }
 
+      // array mapping reordered tensor index to original tensor index
+      static constexpr auto index_mapping = get_index_mapping();
+
       using result_type = TensorInternal<std::remove_cvref_t<T>, TensorStorageType::owning,
           NoCompression<get_axis(new_order)...>, get_axis(new_order)...>;
     };
@@ -368,8 +371,9 @@ namespace Core::LinAlg
    * @return A tensor with the axes reordered according to @p new_order
    */
   template <std::size_t... new_order>
-  constexpr auto reorder_axis(auto tensor)
-    requires(is_tensor<decltype(tensor)> && sizeof...(new_order) == decltype(tensor)::rank() &&
+  constexpr auto reorder_axis(const auto& tensor)
+    requires(is_tensor<decltype(tensor)> &&
+             sizeof...(new_order) == std::remove_cvref_t<decltype(tensor)>::rank() &&
              !is_compressed_tensor<decltype(tensor)>);
 
   /*!
@@ -785,12 +789,15 @@ namespace Core::LinAlg
   }
 
   template <std::size_t... new_order>
-  constexpr auto reorder_axis(auto tensor)
-    requires(is_tensor<decltype(tensor)> && sizeof...(new_order) == decltype(tensor)::rank() &&
+  constexpr auto reorder_axis(const auto& tensor)
+    requires(is_tensor<decltype(tensor)> &&
+             sizeof...(new_order) == std::remove_cvref_t<decltype(tensor)>::rank() &&
              !is_compressed_tensor<decltype(tensor)>)
   {
+    using Tensor = std::remove_cvref_t<decltype(tensor)>;
+
     constexpr std::array new_order_array = {new_order...};
-    static_assert(std::ranges::max(new_order_array) < tensor.rank(),
+    static_assert(std::ranges::max(new_order_array) < Tensor::rank(),
         "Invalid tensor axis reordering. An axis index is out of bounds.");
     static_assert(
         [new_order_array]() constexpr
@@ -801,15 +808,11 @@ namespace Core::LinAlg
         }(),
         "All indices must be unique during reordering!");
 
-    using Tensor = decltype(tensor);
-    typename Internal::ReorderAxisTensorHelper<typename Tensor::value_type,
-        typename Tensor::shape_type, new_order...>::result_type result;
+    using Helper = Internal::ReorderAxisTensorHelper<typename Tensor::value_type,
+        typename Tensor::shape_type, new_order...>;
+    typename Helper::result_type result;
 
-    constexpr std::array<std::size_t, result.size()> index_reorder =
-        Internal::ReorderAxisTensorHelper<typename Tensor::value_type, typename Tensor::shape_type,
-            new_order...>::get_index_mapping();
-
-    std::transform(index_reorder.begin(), index_reorder.end(), result.data(),
+    std::transform(Helper::index_mapping.begin(), Helper::index_mapping.end(), result.data(),
         [&tensor](const auto& i) { return tensor.container()[i]; });
 
     return result;

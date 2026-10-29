@@ -402,7 +402,7 @@ namespace Core::LinAlg
       const Internal::TensorInitializerList<Number, n...>::type& lst)
     requires(std::is_default_constructible_v<ContainerType> && !is_compressed)
   {
-    constexpr std::array<std::size_t, size()> index_mapping = Internal::order_type_mapping<n...>();
+    const auto& index_mapping = Internal::order_type_index_mapping<n...>;
     for (std::size_t i = 0; i < size(); ++i)
     {
       data_[index_mapping[i]] = *(Internal::get_view_to_first_element<Number, n...>(lst) + i);

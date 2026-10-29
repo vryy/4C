@@ -31,8 +31,9 @@ namespace Core::LinAlg
 
   namespace Internal
   {
+    // array mapping full tensor index to index in the compressed storage
     template <std::size_t... n>
-    consteval auto get_symmetry_index_mapping()
+    inline constexpr auto index_reorder_from_symmetric_tensor = []() consteval
     {
       static_assert(
           sizeof...(n) == 2 || sizeof...(n) == 4, "Only rank 2 and rank 4 tensors are supported");
@@ -78,10 +79,10 @@ namespace Core::LinAlg
             "match (for the implemented type of symmetry)");
 
         // reuse the same logic pairwise for the first two and the last two dimensions
-        std::array indices_i =
-            get_symmetry_index_mapping<shape[0], shape[1]>();  // 1, 3, 5, 3, 2, ...
-        std::array indices_j =
-            get_symmetry_index_mapping<shape[2], shape[3]>();  // 1, 3, 5, 3, 2, ...
+        constexpr const auto& indices_i =
+            index_reorder_from_symmetric_tensor<shape[0], shape[1]>;  // 1, 3, 5, 3, 2, ...
+        constexpr const auto& indices_j =
+            index_reorder_from_symmetric_tensor<shape[2], shape[3]>;  // 1, 3, 5, 3, 2, ...
 
 
         constexpr std::size_t symmetric_size_i = shape[0] * (shape[0] + 1) / 2;
@@ -102,18 +103,13 @@ namespace Core::LinAlg
 
         return indexes;
       }
-    }
+    }();
 
+    // array mapping index in the compressed storage to one corresponding full tensor index
     template <std::size_t... n>
-    consteval auto get_index_reorder_from_symmetric_tensor()
+    inline constexpr auto index_reorder_to_symmetric_tensor = []() consteval
     {
-      return get_symmetry_index_mapping<n...>();
-    }
-
-    template <std::size_t... n>
-    consteval auto get_index_reorder_to_symmetric_tensor()
-    {
-      constexpr std::array index_mapping = get_symmetry_index_mapping<n...>();
+      constexpr const auto& index_mapping = index_reorder_from_symmetric_tensor<n...>;
       constexpr std::size_t max = std::ranges::max(index_mapping);
 
       std::array<std::size_t, max + 1> reverse_mapping = {};
@@ -122,15 +118,15 @@ namespace Core::LinAlg
         reverse_mapping[index_mapping[i]] = i;
       }
       return reverse_mapping;
-    }
+    }();
 
+    // array of pairs of full tensor indices whose values are equal due to the symmetry
     template <std::size_t... n>
-    consteval auto get_enforced_equality_pairs()
+    inline constexpr auto enforced_equality_pairs = []() consteval
     {
       auto evaluator = [](auto eval)
       {
-        constexpr std::array index_reorder =
-            Internal::get_index_reorder_from_symmetric_tensor<n...>();
+        constexpr const auto& index_reorder = index_reorder_from_symmetric_tensor<n...>;
         for (auto i = index_reorder.rbegin(); i != index_reorder.rend(); ++i)
         {
           auto j = std::find(index_reorder.begin(), index_reorder.end(), *i);
@@ -165,19 +161,18 @@ namespace Core::LinAlg
           });
 
       return pairs;
-    }
+    }();
 
     template <std::size_t... n>
     struct SymmetricCompression
     {
-      static constexpr std::size_t compressed_size =
-          get_index_reorder_to_symmetric_tensor<n...>().size();
+      static constexpr std::size_t compressed_size = index_reorder_to_symmetric_tensor<n...>.size();
 
       template <TensorBoundCheck bound_check>
       static constexpr std::size_t flatten_index(decltype(n)... i)
       {
-        constexpr std::array index_reorder = get_index_reorder_from_symmetric_tensor<n...>();
-        return index_reorder[get_flat_index<OrderType::column_major, bound_check, n...>(i...)];
+        return index_reorder_from_symmetric_tensor<
+            n...>[get_flat_index<OrderType::column_major, bound_check, n...>(i...)];
       }
     };
 
@@ -455,7 +450,7 @@ namespace Core::LinAlg
   constexpr bool is_symmetric(
       const TensorInternal<Number, storage_type, NoCompression<n...>, n...>& tensor)
   {
-    for (const auto& [i, j] : Internal::get_enforced_equality_pairs<n...>())
+    for (const auto& [i, j] : Internal::enforced_equality_pairs<n...>)
     {
       if (tensor.container()[i] != tensor.container()[j]) return false;
     }
@@ -466,7 +461,7 @@ namespace Core::LinAlg
   constexpr SymmetricTensor<Number, n...> assume_symmetry(
       const TensorInternal<Number, storage_type, NoCompression<n...>, n...>& tensor)
   {
-    constexpr std::array index_reorder = Internal::get_index_reorder_to_symmetric_tensor<n...>();
+    const auto& index_reorder = Internal::index_reorder_to_symmetric_tensor<n...>;
     SymmetricTensor<Number, n...> symmetric_tensor;
     std::transform(index_reorder.begin(), index_reorder.end(), symmetric_tensor.data(),
         [&tensor](const auto& i) { return tensor.container()[i]; });
@@ -488,7 +483,7 @@ namespace Core::LinAlg
           symmetric_tensor)
   {
     // returns a full tensor of the input tensor
-    constexpr std::array index_reorder = Internal::get_index_reorder_from_symmetric_tensor<n...>();
+    const auto& index_reorder = Internal::index_reorder_from_symmetric_tensor<n...>;
 
     Tensor<std::remove_cvref_t<Number>, n...> tensor;
     std::transform(index_reorder.begin(), index_reorder.end(), tensor.data(),
@@ -807,7 +802,22 @@ namespace Core::LinAlg
     requires(is_symmetric_tensor<TensorLeft> && is_symmetric_tensor<TensorRight>)
   constexpr auto dyadic(const TensorLeft& A, const TensorRight& B)
   {
-    return assume_symmetry(dyadic(get_full(A), get_full(B)));
+    static_assert(TensorLeft::rank() == 2 && TensorRight::rank() == 2,
+        "The dyadic product of symmetric tensors is only implemented for 2-tensors.");
+
+    using value_type = FADUtils::ScalarOperationResultType<std::multiplies<>,
+        typename TensorLeft::value_type, typename TensorRight::value_type>;
+
+    SymmetricTensor<value_type, TensorLeft::template extent<0>(), TensorLeft::template extent<1>(),
+        TensorRight::template extent<0>(), TensorRight::template extent<1>()>
+        result;
+
+    // the compressed storage of the symmetric 4-tensor is the outer product of the compressed
+    // storages of the symmetric 2-tensors
+    DenseFunctions::multiply<value_type, TensorLeft::compressed_size, 1,
+        TensorRight::compressed_size>(result.data(), A.data(), B.data());
+
+    return result;
   }
 
   template <unsigned num_dyads>

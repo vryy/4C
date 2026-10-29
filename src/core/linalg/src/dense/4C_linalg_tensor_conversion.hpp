@@ -296,18 +296,10 @@ namespace Core::LinAlg
   Core::LinAlg::Matrix<6, 6, T> make_6x6_voigt_matrix_from_tensor(
       const Core::LinAlg::SymmetricTensor<T, 3, 3, 3, 3>& tensor)
   {
-    constexpr std::array<std::array<std::size_t, 2>, 6> vi = {
-        {{0, 0}, {1, 1}, {2, 2}, {0, 1}, {1, 2}, {0, 2}}};
-
-    Core::LinAlg::Matrix<6, 6, T> result;
-    for (std::size_t r = 0; r < 6; ++r)
-    {
-      for (std::size_t c = 0; c < 6; ++c)
-      {
-        result(r, c) = tensor(vi[r][0], vi[r][1], vi[c][0], vi[c][1]);
-      }
-    }
-    return result;
+    // the compressed storage of a symmetric 4-tensor is a column-major 6x6 matrix in stress-like
+    // Voigt order (see SymmetricTensor)
+    static_assert(Core::LinAlg::SymmetricTensor<T, 3, 3, 3, 3>::compressed_size == 6 * 6);
+    return Core::LinAlg::Matrix<6, 6, T>(tensor.data());
   }
 
   /*!
@@ -351,8 +343,7 @@ namespace Core::LinAlg
   Tensor<T, n...> make_tensor_from_nested_array(
       const typename Internal::NestedArrayHelper<Tensor<T, n...>>::type& nested_array)
   {
-    constexpr std::array<std::size_t, (n * ...)> index_mapping =
-        Internal::order_type_mapping<n...>();
+    const auto& index_mapping = Internal::order_type_index_mapping<n...>;
 
     Tensor<T, n...> tensor;
     for (std::size_t i = 0; i < (n * ...); ++i)
@@ -372,8 +363,7 @@ namespace Core::LinAlg
   typename Internal::NestedArrayHelper<Tensor<T, n...>>::type make_nested_array_from_tensor(
       const Tensor<T, n...>& tensor)
   {
-    constexpr std::array<std::size_t, (n * ...)> index_mapping =
-        Internal::order_type_mapping<n...>();
+    const auto& index_mapping = Internal::order_type_index_mapping<n...>;
 
     typename Internal::NestedArrayHelper<Tensor<T, n...>>::type nested_array;
     for (std::size_t i = 0; i < (n * ...); ++i)

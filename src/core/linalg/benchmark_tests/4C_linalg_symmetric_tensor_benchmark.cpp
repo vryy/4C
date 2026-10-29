@@ -193,4 +193,29 @@ BENCHMARK(symmetric_matrix_dyad_symmetric_matrix<4>);
 BENCHMARK(symmetric_matrix_dyad_symmetric_matrix<5>);
 BENCHMARK(symmetric_matrix_dyad_symmetric_matrix<6>);
 
+template <std::size_t size>
+static void symmetric_four_tensor_element_access(benchmark::State& state)
+{
+  Core::LinAlg::SymmetricTensor<double, size, size, size, size> A =
+      Core::LinAlg::assume_symmetry(get_random_tensor<size, size, size, size>());
+
+  for (auto _ : state)
+  {
+    // hide the loop bound from the compiler such that the tensor is accessed with runtime indices
+    std::size_t n = size;
+    benchmark::DoNotOptimize(n);
+    double sum = 0.0;
+    for (std::size_t i = 0; i < n; ++i)
+      for (std::size_t j = 0; j < n; ++j)
+        for (std::size_t k = 0; k < n; ++k)
+          for (std::size_t l = 0; l < n; ++l) sum += A(i, j, k, l);
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(symmetric_four_tensor_element_access<2>);
+BENCHMARK(symmetric_four_tensor_element_access<3>);
+BENCHMARK(symmetric_four_tensor_element_access<4>);
+BENCHMARK(symmetric_four_tensor_element_access<5>);
+BENCHMARK(symmetric_four_tensor_element_access<6>);
+
 FOUR_C_NAMESPACE_CLOSE

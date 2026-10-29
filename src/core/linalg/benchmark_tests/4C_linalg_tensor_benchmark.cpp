@@ -204,4 +204,22 @@ BENCHMARK(matrix_dyad_matrix<4>);
 BENCHMARK(matrix_dyad_matrix<5>);
 BENCHMARK(matrix_dyad_matrix<6>);
 
+template <std::size_t size>
+static void four_tensor_reorder_axis(benchmark::State& state)
+{
+  Core::LinAlg::Tensor<double, size, size, size, size> A =
+      get_random_tensor<size, size, size, size>();
+  for (auto _ : state)
+  {
+    Core::LinAlg::Tensor<double, size, size, size, size> result =
+        Core::LinAlg::reorder_axis<0, 2, 3, 1>(A);
+    benchmark::DoNotOptimize(result);
+  }
+}
+BENCHMARK(four_tensor_reorder_axis<2>);
+BENCHMARK(four_tensor_reorder_axis<3>);
+BENCHMARK(four_tensor_reorder_axis<4>);
+BENCHMARK(four_tensor_reorder_axis<5>);
+BENCHMARK(four_tensor_reorder_axis<6>);
+
 FOUR_C_NAMESPACE_CLOSE
