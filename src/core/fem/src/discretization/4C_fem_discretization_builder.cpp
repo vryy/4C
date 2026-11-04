@@ -305,6 +305,6 @@ void Core::FE::DiscretizationBuilder<dim>::assert_consistent() const
   }
 }
 
-template class FOUR_C_API(FOUR_C_CORE) Core::FE::DiscretizationBuilder<3>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::DiscretizationBuilder<3>;
 
 FOUR_C_NAMESPACE_CLOSE

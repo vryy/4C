@@ -194,11 +194,11 @@ void Mat::Elastic::CoupAnisoExpoBase::set_fiber_vecs(
 }
 
 // explicit instantiation of template functions
-template FOUR_C_API(FOUR_C_CORE) void Mat::Elastic::CoupAnisoExpoBase::get_derivatives_aniso<
-    double>(Core::LinAlg::Matrix<2, 1, double>&, Core::LinAlg::Matrix<3, 1, double>&,
-    Core::LinAlg::Matrix<4, 1, double>&, Core::LinAlg::SymmetricTensor<double, 3, 3> const&, int,
-    int) const;
-template FOUR_C_API(FOUR_C_CORE) void Mat::Elastic::CoupAnisoExpoBase::evaluate_func<double>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Mat::Elastic::CoupAnisoExpoBase::get_derivatives_aniso<double>(Core::LinAlg::Matrix<2, 1, double>&,
+    Core::LinAlg::Matrix<3, 1, double>&, Core::LinAlg::Matrix<4, 1, double>&,
+    Core::LinAlg::SymmetricTensor<double, 3, 3> const&, int, int) const;
+template FOUR_C_EXPORT_INSTANTIATION void Mat::Elastic::CoupAnisoExpoBase::evaluate_func<double>(
     double&, Core::LinAlg::SymmetricTensor<double, 3, 3> const&, int, int) const;
 
 FOUR_C_NAMESPACE_CLOSE

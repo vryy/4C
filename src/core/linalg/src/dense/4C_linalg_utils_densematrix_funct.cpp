@@ -1748,34 +1748,34 @@ void Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(const Core::LinAlg::Matrix
 
 
 // explicit instantiation of template functions
-template FOUR_C_API(FOUR_C_CORE) Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_sqrt<2>(
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_sqrt<2>(
     const Core::LinAlg::Matrix<2, 2>& input, Core::LinAlg::MatrixFunctErrorType& err_status,
     Core::LinAlg::MatrixSqrtCalcMethod calc_method);
-template FOUR_C_API(FOUR_C_CORE) Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_sqrt<2>(
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_sqrt<2>(
     const Core::LinAlg::Matrix<2, 2>& input, Core::LinAlg::MatrixFunctErrorType& err_status,
     unsigned int& num_of_iters, Core::LinAlg::MatrixSqrtCalcMethod calc_method);
-template FOUR_C_API(FOUR_C_CORE) Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_sqrt<3>(
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_sqrt<3>(
     const Core::LinAlg::Matrix<3, 3>& input, Core::LinAlg::MatrixFunctErrorType& err_status,
     Core::LinAlg::MatrixSqrtCalcMethod calc_method);
-template FOUR_C_API(FOUR_C_CORE) Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_sqrt<3>(
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_sqrt<3>(
     const Core::LinAlg::Matrix<3, 3>& input, Core::LinAlg::MatrixFunctErrorType& err_status,
     unsigned int& num_of_iters, Core::LinAlg::MatrixSqrtCalcMethod calc_method);
-template FOUR_C_API(FOUR_C_CORE) Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_exp<2>(
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_exp<2>(
     const Core::LinAlg::Matrix<2, 2>& input, Core::LinAlg::MatrixFunctErrorType& err_status,
     Core::LinAlg::MatrixExpCalcMethod calc_method);
-template FOUR_C_API(FOUR_C_CORE) Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_exp<3>(
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_exp<3>(
     const Core::LinAlg::Matrix<3, 3>& input, Core::LinAlg::MatrixFunctErrorType& err_status,
     Core::LinAlg::MatrixExpCalcMethod calc_method);
-template FOUR_C_API(FOUR_C_CORE) Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_log<2>(
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_log<2>(
     const Core::LinAlg::Matrix<2, 2>& input, Core::LinAlg::MatrixFunctErrorType& err_status,
     Core::LinAlg::MatrixLogCalcMethod calc_method);
-template FOUR_C_API(FOUR_C_CORE) Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_log<2>(
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_log<2>(
     const Core::LinAlg::Matrix<2, 2>& input, Core::LinAlg::MatrixFunctErrorType& err_status,
     unsigned int& pade_order, Core::LinAlg::MatrixLogCalcMethod calc_method);
-template FOUR_C_API(FOUR_C_CORE) Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_log<3>(
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_log<3>(
     const Core::LinAlg::Matrix<3, 3>& input, Core::LinAlg::MatrixFunctErrorType& err_status,
     Core::LinAlg::MatrixLogCalcMethod calc_method);
-template FOUR_C_API(FOUR_C_CORE) Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_log<3>(
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_log<3>(
     const Core::LinAlg::Matrix<3, 3>& input, Core::LinAlg::MatrixFunctErrorType& err_status,
     unsigned int& pade_order, Core::LinAlg::MatrixLogCalcMethod calc_method);
 

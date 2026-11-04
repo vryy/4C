@@ -1103,10 +1103,10 @@ double Mixture::RemodelFiber<numstates>::evaluate_d_growth_scalar_d_nonlocal_sti
   return impl_->evaluate_d_growth_scalar_d_nonlocal_stimulus();
 }
 
-template class FOUR_C_API(FOUR_C_CORE) Mixture::RemodelFiber<2>;
-template class FOUR_C_API(
-    FOUR_C_CORE) Mixture::Implementation::RemodelFiberImplementation<2, Sacado::Fad::DFad<double>>;
-template class FOUR_C_API(
-    FOUR_C_CORE) Mixture::Implementation::RemodelFiberImplementation<2, double>;
+template class FOUR_C_EXPORT_INSTANTIATION Mixture::RemodelFiber<2>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Mixture::Implementation::RemodelFiberImplementation<2, Sacado::Fad::DFad<double>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Mixture::Implementation::RemodelFiberImplementation<2, double>;
 
 FOUR_C_NAMESPACE_CLOSE
