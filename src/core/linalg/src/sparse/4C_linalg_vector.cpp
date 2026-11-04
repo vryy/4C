@@ -352,7 +352,7 @@ const Core::LinAlg::Map& Core::LinAlg::Vector<T>::get_map() const
 
 
 // explicit instantiation
-template class FOUR_C_API(FOUR_C_CORE) Core::LinAlg::Vector<double>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Vector<double>;
 
 
 

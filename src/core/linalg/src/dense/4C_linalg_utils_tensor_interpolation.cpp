@@ -980,8 +980,8 @@ Core::LinAlg::Matrix<9, 1> Core::LinAlg::SecondOrderTensorInterpolator<
 }
 
 // explicit instantiation of template functions
-template class FOUR_C_API(FOUR_C_CORE) Core::LinAlg::SecondOrderTensorInterpolator<1>;
-template class FOUR_C_API(FOUR_C_CORE) Core::LinAlg::SecondOrderTensorInterpolator<2>;
-template class FOUR_C_API(FOUR_C_CORE) Core::LinAlg::SecondOrderTensorInterpolator<3>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::SecondOrderTensorInterpolator<1>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::SecondOrderTensorInterpolator<2>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::SecondOrderTensorInterpolator<3>;
 
 FOUR_C_NAMESPACE_CLOSE

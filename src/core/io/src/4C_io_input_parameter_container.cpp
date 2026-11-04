@@ -133,27 +133,27 @@ Core::IO::InputParameterContainer::get_type_actions()
 
 // Explicit instantiation of the template functions.
 
-template FOUR_C_API(FOUR_C_CORE) void Core::IO::InputParameterContainer::add(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::InputParameterContainer::add(
     const std::string& name, const int& data);
-template FOUR_C_API(FOUR_C_CORE) void Core::IO::InputParameterContainer::add(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::InputParameterContainer::add(
     const std::string& name, const double& data);
-template FOUR_C_API(FOUR_C_CORE) void Core::IO::InputParameterContainer::add(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::InputParameterContainer::add(
     const std::string& name, const std::string& data);
-template FOUR_C_API(FOUR_C_CORE) void Core::IO::InputParameterContainer::add(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::InputParameterContainer::add(
     const std::string& name, const bool& data);
 
-template FOUR_C_API(FOUR_C_CORE) void Core::IO::InputParameterContainer::add(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::InputParameterContainer::add(
     const std::string& name, const std::vector<int>& data);
-template FOUR_C_API(FOUR_C_CORE) void Core::IO::InputParameterContainer::add(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::InputParameterContainer::add(
     const std::string& name, const std::vector<double>& data);
-template FOUR_C_API(FOUR_C_CORE) void Core::IO::InputParameterContainer::add(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::InputParameterContainer::add(
     const std::string& name, const std::vector<std::string>& data);
-template FOUR_C_API(FOUR_C_CORE) void Core::IO::InputParameterContainer::add(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::InputParameterContainer::add(
     const std::string& name, const std::vector<bool>& data);
 
-template FOUR_C_API(FOUR_C_CORE) void Core::IO::InputParameterContainer::add(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::InputParameterContainer::add(
     const std::string& name, const std::filesystem::path& data);
-template FOUR_C_API(FOUR_C_CORE) void Core::IO::InputParameterContainer::add(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::InputParameterContainer::add(
     const std::string& name, const std::vector<std::filesystem::path>& data);
 
 FOUR_C_NAMESPACE_CLOSE

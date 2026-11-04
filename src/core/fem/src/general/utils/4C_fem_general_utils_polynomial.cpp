@@ -733,21 +733,21 @@ namespace Core::FE
   }
 
   // explicit instantiations
-  template class FOUR_C_API(FOUR_C_CORE) PolynomialSpaceTensor<1, LagrangePolynomial>;
-  template class FOUR_C_API(FOUR_C_CORE) PolynomialSpaceTensor<2, LagrangePolynomial>;
-  template class FOUR_C_API(FOUR_C_CORE) PolynomialSpaceTensor<3, LagrangePolynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceTensor<1, LagrangePolynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceTensor<2, LagrangePolynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceTensor<3, LagrangePolynomial>;
 
-  template class FOUR_C_API(FOUR_C_CORE) PolynomialSpaceComplete<1, Polynomial>;
-  template class FOUR_C_API(FOUR_C_CORE) PolynomialSpaceComplete<2, Polynomial>;
-  template class FOUR_C_API(FOUR_C_CORE) PolynomialSpaceComplete<3, Polynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceComplete<1, Polynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceComplete<2, Polynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceComplete<3, Polynomial>;
 
-  template class FOUR_C_API(FOUR_C_CORE) LagrangeBasisTet<1>;
-  template class FOUR_C_API(FOUR_C_CORE) LagrangeBasisTet<2>;
-  template class FOUR_C_API(FOUR_C_CORE) LagrangeBasisTet<3>;
+  template class FOUR_C_EXPORT_INSTANTIATION LagrangeBasisTet<1>;
+  template class FOUR_C_EXPORT_INSTANTIATION LagrangeBasisTet<2>;
+  template class FOUR_C_EXPORT_INSTANTIATION LagrangeBasisTet<3>;
 
-  template class FOUR_C_API(FOUR_C_CORE) PolynomialSpaceCache<1>;
-  template class FOUR_C_API(FOUR_C_CORE) PolynomialSpaceCache<2>;
-  template class FOUR_C_API(FOUR_C_CORE) PolynomialSpaceCache<3>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceCache<1>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceCache<2>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceCache<3>;
 
 }  // namespace Core::FE
 

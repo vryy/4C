@@ -48,7 +48,8 @@ void Core::FE::MeshFree::MeshfreeBin<Element>::delete_node(int gid)
 /*--------------------------------------------------------------------------*
  | Explicit instantiations                                kronbichler 03/15 |
  *--------------------------------------------------------------------------*/
-template class FOUR_C_API(FOUR_C_CORE) Core::FE::MeshFree::MeshfreeBin<Core::Elements::Element>;
-template class FOUR_C_API(FOUR_C_CORE) Core::FE::MeshFree::MeshfreeBin<Core::Elements::FaceElement>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::MeshFree::MeshfreeBin<Core::Elements::Element>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::MeshFree::MeshfreeBin<Core::Elements::FaceElement>;
 
 FOUR_C_NAMESPACE_CLOSE

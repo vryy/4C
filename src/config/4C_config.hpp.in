@@ -69,11 +69,18 @@
         #define FOUR_C_API_EXPORT
     #endif
 
+    #if defined(_WIN32)
+        #define FOUR_C_EXPORT_INSTANTIATION __declspec(dllexport)
+    #else
+        #define FOUR_C_EXPORT_INSTANTIATION
+    #endif
+
 #else
 
     #define FOUR_C_API_HIDDEN
     #define FOUR_C_API_IMPORT
     #define FOUR_C_API_EXPORT
+    #define FOUR_C_EXPORT_INSTANTIATION
 
 #endif
 

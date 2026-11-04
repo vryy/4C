@@ -177,7 +177,7 @@ int Mat::FiberAnisotropyExtension<numfib>::get_fibers_per_element() const
 }
 
 // explicit instantiations of template classes
-template class FOUR_C_API(FOUR_C_CORE) Mat::FiberAnisotropyExtension<1u>;
-template class FOUR_C_API(FOUR_C_CORE) Mat::FiberAnisotropyExtension<2u>;
+template class FOUR_C_EXPORT_INSTANTIATION Mat::FiberAnisotropyExtension<1u>;
+template class FOUR_C_EXPORT_INSTANTIATION Mat::FiberAnisotropyExtension<2u>;
 
 FOUR_C_NAMESPACE_CLOSE
