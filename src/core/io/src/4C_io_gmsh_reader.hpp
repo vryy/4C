@@ -41,6 +41,7 @@ namespace Core::IO::Gmsh
    * @param msh_file Path to the Gmsh `.msh` file.
    * @return Core::IO::MeshInput::RawMesh<3> The intermediate mesh.
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::IO::MeshInput::RawMesh<3> read_msh_file(const std::filesystem::path& msh_file);
 
 #ifdef FOUR_C_WITH_GMSH

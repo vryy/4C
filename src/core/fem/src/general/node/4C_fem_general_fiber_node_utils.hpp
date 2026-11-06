@@ -19,7 +19,6 @@ namespace Core::Nodes
 {
   class NodalFiberHolder;
 
-
   /*!
    * \brief Projects the fibers and angles to the Gauss points with the shape functions
    *

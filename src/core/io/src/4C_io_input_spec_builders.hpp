@@ -317,7 +317,7 @@ namespace Core::IO
     /**
      * Entries in the MatchTree.
      */
-    struct MatchEntry
+    struct FOUR_C_API(FOUR_C_CORE) MatchEntry
     {
       MatchTree* tree;
       const InputSpec* spec;
@@ -451,8 +451,7 @@ namespace Core::IO
       deprecated_selection,
     };
 
-
-    class InputSpecImpl
+    class FOUR_C_API(FOUR_C_CORE) InputSpecImpl
     {
      public:
       /**
@@ -492,7 +491,6 @@ namespace Core::IO
          */
         const std::type_info* stores_to;
       };
-
 
       virtual ~InputSpecImpl() = default;
 
@@ -599,6 +597,7 @@ namespace Core::IO
 
     //! Validate if possible. Returns false only if validation was attempted and failed.
     template <typename T>
+      requires(!ProxyTypeConcept<T>)
     [[nodiscard]] bool validate_helper(
         const T& val, const std::optional<InputSpecBuilders::Validators::Validator<T>>& validator)
     {
@@ -1076,7 +1075,7 @@ namespace Core::IO
           const InputSpecEmitOptions& options) const;
     };
 
-    struct GroupSpec
+    struct FOUR_C_API(FOUR_C_CORE) GroupSpec
     {
       std::string name;
       struct
@@ -1356,7 +1355,6 @@ namespace Core::IO
       requires(std::is_enum_v<T>)
     [[nodiscard]] InputSpec deprecated_selection(std::string name,
         std::map<std::string, RemoveOptional<T>> choices, ParameterDataIn<T> data = {});
-
 
     /**
      * Like the other deprecated_selection() function, but the choices are stored as strings and not
@@ -1718,7 +1716,7 @@ namespace Core::IO
      *
      * @relatedalso InputSpec
      */
-    [[nodiscard]] InputSpec all_of(std::vector<InputSpec> specs);
+    [[nodiscard]] FOUR_C_API(FOUR_C_CORE) InputSpec all_of(std::vector<InputSpec> specs);
 
     /**
      * Exactly one of the given InputSpecs is expected. For example, to require exactly one of two
@@ -1761,7 +1759,7 @@ namespace Core::IO
      *
      * @relatedalso InputSpec
      */
-    [[nodiscard]] InputSpec one_of(std::vector<InputSpec> specs,
+    [[nodiscard]] FOUR_C_API(FOUR_C_CORE) InputSpec one_of(std::vector<InputSpec> specs,
         std::function<void(InputParameterContainer& container, std::size_t index)>
             on_parse_callback = nullptr);
 
@@ -1828,11 +1826,11 @@ namespace Core::IO
      * Use the `parameter<std::vector<T>>()` function for this purpose. As a developer of a new
      * InputSpec, you should rarely need the list() function.
      */
-    [[nodiscard]] InputSpec list(std::string name, InputSpec spec, ListData data = {});
+    [[nodiscard]] FOUR_C_API(FOUR_C_CORE) InputSpec
+        list(std::string name, InputSpec spec, ListData data = {});
 
   }  // namespace InputSpecBuilders
 }  // namespace Core::IO
-
 
 // --- template definitions --- //
 
@@ -1888,7 +1886,6 @@ void Core::IO::Internal::ParameterSpec<T>::parse(
 
   if (data.on_parse_callback) data.on_parse_callback(container);
 }
-
 
 template <Core::IO::SupportedType T>
 bool Core::IO::Internal::ParameterSpec<T>::match(ConstYamlNodeRef node,
@@ -2559,7 +2556,6 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::parameter(
 
     FOUR_C_THROW("{}", validation_error_stream.str());
   }
-
 
   return IO::Internal::make_spec(Internal::ParameterSpec<T>{.name = name, .data = internal_data},
       {

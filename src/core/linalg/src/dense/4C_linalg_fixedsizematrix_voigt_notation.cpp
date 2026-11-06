@@ -1008,7 +1008,8 @@ void Core::LinAlg::Voigt::setup_9x9_voigt_matrix_from_four_tensor(
   matrixVoigt(8, 8) = fourTensor(2, 0, 2, 0);
 }
 
-template void Core::LinAlg::Voigt::setup_9x9_voigt_matrix_from_four_tensor<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::Voigt::setup_9x9_voigt_matrix_from_four_tensor<3>(
     Core::LinAlg::Matrix<9, 9>& matrix_voigt, const Core::LinAlg::FourTensor<3>& four_tensor);
 
 /*----------------------------------------------------------------------------*
@@ -1030,48 +1031,57 @@ void Core::LinAlg::Voigt::VoigtUtils<type>::unscale_off_diagonal_vals(
 }
 
 // explicit template declarations
-template class Core::LinAlg::Voigt::VoigtUtils<NotationType::strain>;
-template class Core::LinAlg::Voigt::VoigtUtils<NotationType::stress>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Voigt::VoigtUtils<NotationType::strain>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Voigt::VoigtUtils<NotationType::stress>;
 
-template void Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::strain>::
-    matrix_to_vector<double>(
+template FOUR_C_EXPORT_INSTANTIATION void Core::LinAlg::Voigt::
+    VoigtUtils<Core::LinAlg::Voigt::NotationType::strain>::matrix_to_vector<double>(
         Core::LinAlg::Matrix<3, 3, double> const& in, Core::LinAlg::Matrix<6, 1, double>& out);
-template void Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::stress>::
-    matrix_to_vector<double>(
+template FOUR_C_EXPORT_INSTANTIATION void Core::LinAlg::Voigt::
+    VoigtUtils<Core::LinAlg::Voigt::NotationType::stress>::matrix_to_vector<double>(
         Core::LinAlg::Matrix<3, 3, double> const& in, Core::LinAlg::Matrix<6, 1, double>& out);
 
 using FAD = Sacado::Fad::DFad<double>;
-template void
+template FOUR_C_EXPORT_INSTANTIATION void
 Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::strain>::matrix_to_vector<FAD>(
     Core::LinAlg::Matrix<3, 3, FAD> const& in, Core::LinAlg::Matrix<6, 1, FAD>& out);
-template void
+template FOUR_C_EXPORT_INSTANTIATION void
 Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::stress>::matrix_to_vector<FAD>(
     Core::LinAlg::Matrix<3, 3, FAD> const& in, Core::LinAlg::Matrix<6, 1, FAD>& out);
 
-template void Core::LinAlg::Voigt::fourth_order_identity_matrix<NotationType::stress,
+template FOUR_C_API(
+    FOUR_C_CORE) void Core::LinAlg::Voigt::fourth_order_identity_matrix<NotationType::stress,
     NotationType::stress>(Core::LinAlg::Matrix<6, 6>& id);
-template void Core::LinAlg::Voigt::fourth_order_identity_matrix<NotationType::stress,
+template FOUR_C_API(
+    FOUR_C_CORE) void Core::LinAlg::Voigt::fourth_order_identity_matrix<NotationType::stress,
     NotationType::strain>(Core::LinAlg::Matrix<6, 6>& id);
 
-template void Core::LinAlg::Voigt::setup_four_tensor_from_6x6_voigt_matrix<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::Voigt::setup_four_tensor_from_6x6_voigt_matrix<3>(
     Core::LinAlg::FourTensor<3>& four_tensor, const Core::LinAlg::Matrix<6, 6>& matrix_voigt);
 
-template void Core::LinAlg::Voigt::setup_four_tensor_from_6x9_voigt_matrix<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::Voigt::setup_four_tensor_from_6x9_voigt_matrix<3>(
     Core::LinAlg::FourTensor<3>& four_tensor, const Core::LinAlg::Matrix<6, 9>& matrix_voigt);
 
-template void Core::LinAlg::Voigt::setup_four_tensor_from_9x6_voigt_matrix<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::Voigt::setup_four_tensor_from_9x6_voigt_matrix<3>(
     Core::LinAlg::FourTensor<3>& four_tensor, const Core::LinAlg::Matrix<9, 6>& matrix_voigt);
 
-template void Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix<3>(
     Core::LinAlg::FourTensor<3>& four_tensor, const Core::LinAlg::Matrix<9, 9>& matrix_voigt);
 
-template void Core::LinAlg::Voigt::setup_6x6_voigt_matrix_from_four_tensor<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::Voigt::setup_6x6_voigt_matrix_from_four_tensor<3>(
     Core::LinAlg::Matrix<6, 6>& matrix_voigt, const Core::LinAlg::FourTensor<3>& four_tensor);
 
-template void Core::LinAlg::Voigt::setup_9x6_voigt_matrix_from_four_tensor<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::Voigt::setup_9x6_voigt_matrix_from_four_tensor<3>(
     Core::LinAlg::Matrix<9, 6>& matrix_voigt, const Core::LinAlg::FourTensor<3>& four_tensor);
 
-template void Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor<3>(
     Core::LinAlg::Matrix<6, 9>& matrix_voigt, const Core::LinAlg::FourTensor<3>& four_tensor);
 
 FOUR_C_NAMESPACE_CLOSE

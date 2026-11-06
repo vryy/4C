@@ -38,9 +38,8 @@ namespace Mat
    * @brief Returns the second invariant of the deviatoric stress tensor,
    * \f$J_2 = \dfrac{1}{2} \mathbf(s) : \mathbf{s}\f$
    */
+  FOUR_C_API(FOUR_C_CORE)
   double second_invariant_of_deviatoric_stress(const Core::LinAlg::Matrix<3, 3>& stress);
-
-
 
   /*!
    * @brief Put apart the volumetric and isochoric part of the 2nd Piola--Kirchhoff stress and the
@@ -94,12 +93,11 @@ namespace Mat
    *                        S^{33}\; S^{12}\; S^{23}\; S^{31} ]\f$
    * @param[in] cmat        Constitutive tensor
    */
+  FOUR_C_API(FOUR_C_CORE)
   void volumetrify_and_isochorify(Core::LinAlg::Matrix<6, 1>* pk2vol,
       Core::LinAlg::Matrix<6, 6>* cvol, Core::LinAlg::Matrix<6, 1>* pk2iso,
       Core::LinAlg::Matrix<6, 6>* ciso, const Core::LinAlg::Matrix<6, 1>& gl,
       const Core::LinAlg::Matrix<6, 1>& pk2, const Core::LinAlg::Matrix<6, 6>& cmat);
-
-
 
   /*!
    * @brief Evaluates the principal invariants of any symmetric tensor
@@ -107,6 +105,7 @@ namespace Mat
    * @param[out] prinv  Principal invariants of the tensor
    * @param[in]  tens   Tensor
    */
+  FOUR_C_API(FOUR_C_CORE)
   void invariants_principal(
       Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 3>& tens);
 
@@ -116,6 +115,7 @@ namespace Mat
    * @param[out] modinv Modified principal invariants of the Right Cauchy-Green strain tensor
    * @param[in] prinv   Principal invariants of the Right Cauchy-Green strain tensor
    */
+  FOUR_C_API(FOUR_C_CORE)
   void invariants_modified(
       Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<3, 1>& prinv);
 
@@ -126,6 +126,7 @@ namespace Mat
    * @param[out] prdir  Principal directions
    * @param[in] rcg     Right Cauchy-Green strain tensor in strain-like Voigt notation
    */
+  FOUR_C_API(FOUR_C_CORE)
   void stretches_principal(Core::LinAlg::Matrix<3, 1>& prstr, Core::LinAlg::Matrix<3, 3>& prdir,
       const Core::LinAlg::Matrix<6, 1>& rcg);
 
@@ -135,9 +136,9 @@ namespace Mat
    * @param[out] modstr Modified principal stretches
    * @param[in] prstr   Principal stretches
    */
+  FOUR_C_API(FOUR_C_CORE)
   void stretches_modified(
       Core::LinAlg::Matrix<3, 1>& modstr, const Core::LinAlg::Matrix<3, 1>& prstr);
-
 
   template <class T>
   T* create_material_parameter_instance(Core::Mat::PAR::Parameter* curmat)
@@ -150,6 +151,7 @@ namespace Mat
    * @brief Pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation) via the 2nd
    * order deformation gradient (also in matrix notation)
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::Matrix<6, 6> pull_back_four_tensor(const double det_F,
       const Core::LinAlg::Matrix<3, 3>& F_inv, const Core::LinAlg::Matrix<6, 6>& cmat_voigt);
 
@@ -157,6 +159,7 @@ namespace Mat
    * @brief Pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt
    * notation) via the 2nd order deformation gradient (also in matrix notation)
    */
+  FOUR_C_API(FOUR_C_CORE)
   double get_pull_back_four_tensor_entry(const double det_F,
       const Core::LinAlg::Matrix<3, 3>& F_inv, const Core::LinAlg::FourTensor<3>& four_tensor,
       const int i, const int j, const int k, const int l);
@@ -166,6 +169,7 @@ namespace Mat
    *
    * @return Core::LinAlg::Matrix<6, 1>
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::Matrix<6, 1> push_forward_stress_tensor_voigt(
       const Core::LinAlg::Matrix<6, 1>& stress_elastic,
       const Core::LinAlg::Matrix<3, 3>& deformation_gradient);
@@ -174,6 +178,7 @@ namespace Mat
    * @brief Push forward of a symmetric elastic 4th order tensor (in matrix/voigt notation) via
    * the 2nd order deformation gradient (also in matrix notation)
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::Matrix<6, 6> push_forward_four_tensor(const double det_F,
       const Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<6, 6>& cmat_lagr_voigt);
 
@@ -184,6 +189,7 @@ namespace Mat
    * @param[in]  youngs_modulus     Young's modulus
    * @param[in]  poisson_ratio      Poisson ratio
    */
+  FOUR_C_API(FOUR_C_CORE)
   void setup_linear_isotropic_elastic_tensor(Core::LinAlg::FourTensor<3>& elasticity_tensor,
       const double youngs_modulus, const double poisson_ratio);
 

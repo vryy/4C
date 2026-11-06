@@ -59,7 +59,7 @@ namespace Mat
      * Viscoplasticity in the Context of the Lithium Anode in Solid State Batteries, Supervisor:
      * Christoph Schmidt, 2024
      */
-    class Law
+    class FOUR_C_API(FOUR_C_CORE) Law
     {
      public:
       /// construct viscoplastic laws with specific material params and error registration settings

@@ -83,7 +83,6 @@ namespace Core::LinAlg
    *
    * @tparam loc_dim dimension of the location vectors \f$ \boldsymbol{x}_j \f$
    */
-
   template <unsigned int loc_dim>
   class SecondOrderTensorInterpolator
   {
@@ -246,6 +245,7 @@ namespace Core::LinAlg
    * @param[out]  eigenval_matrix  eigenvalue matrix of the stretch matrix \boldsymbol{U}
    * @param[out]  spectral_pairs  vector of eigenpairs of the stretch matrix \boldsymbol{U}
    */
+  FOUR_C_API(FOUR_C_CORE)
   void matrix_3x3_polar_decomposition(const Core::LinAlg::Matrix<3, 3>& inp_matrix,
       Core::LinAlg::Matrix<3, 3>& R_matrix, Core::LinAlg::Matrix<3, 3>& U_matrix,
       Core::LinAlg::Matrix<3, 3>& eigenval_matrix,
@@ -259,6 +259,7 @@ namespace Core::LinAlg
    * @param[in]  inp_matrix  input matrix \boldsymbol{T} to be decomposed
    * @return  material stretch \boldsymbol{U}
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::Matrix<3, 3> matrix_3x3_material_stretch(
       const Core::LinAlg::Matrix<3, 3>& inp_matrix);
 
@@ -270,9 +271,9 @@ namespace Core::LinAlg
    * @param[in]  inp_matrix  input matrix \boldsymbol{T} to be decomposed
    * @return  spatial stretch \boldsymbol{v}
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::Matrix<3, 3> matrix_3x3_spatial_stretch(
       const Core::LinAlg::Matrix<3, 3>& inp_matrix);
-
 
   /*!
    * @brief Calculate the rotation vector from a given rotation matrix, using Spurrier's algorithm
@@ -287,9 +288,9 @@ namespace Core::LinAlg
    * @param[in]  rot_matrix  input rotation matrix
    * @returns  corresponding rotation vector
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::Matrix<3, 1> calc_rot_vect_from_rot_matrix(
       const Core::LinAlg::Matrix<3, 3>& rot_matrix);
-
 
   /*!
    * @brief Calculate the rotation matrix from a given rotation vector, using the Rodrigues
@@ -301,6 +302,7 @@ namespace Core::LinAlg
    * @param[in]  rot_vect  input rotation vector
    * @returns  corresponding rotation matrix
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::Matrix<3, 3> calc_rot_matrix_from_rot_vect(
       const Core::LinAlg::Matrix<3, 1>& rot_vect);
 }  // namespace Core::LinAlg

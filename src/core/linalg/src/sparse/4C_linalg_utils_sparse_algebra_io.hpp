@@ -29,20 +29,24 @@ namespace Core::LinAlg
 {
   //! Print content of @p sparsematrix in Matlab format to file @p filename. Create new file or
   //! overwrite existing one if @p newfile is true
+  FOUR_C_API(FOUR_C_CORE)
   void print_matrix_in_matlab_format(const std::string& filename,
       const Core::LinAlg::SparseMatrix& sparsematrix, const bool newfile = true);
 
   //! Print content of @p blockmatrix in Matlab format to file @p filename
+  FOUR_C_API(FOUR_C_CORE)
   void print_block_matrix_in_matlab_format(
       const std::string& filename, const BlockSparseMatrixBase& blockmatrix);
 
   //! Print content of @p vector in Matlab format to file @p filename. Create new file or overwrite
   //! existing one if @p newfile is true
+  FOUR_C_API(FOUR_C_CORE)
   void print_vector_in_matlab_format(const std::string& filename,
       const Core::LinAlg::Vector<double>& vector, const bool newfile = true);
 
   //! Print content of @p map in Matlab format to file @p filename. Create new file or overwrite
   //! existing one if @p newfile is true
+  FOUR_C_API(FOUR_C_CORE)
   void print_map_in_matlab_format(
       const std::string& filename, const Core::LinAlg::Map& map, const bool newfile = true);
 
@@ -62,6 +66,7 @@ namespace Core::LinAlg
    * @return A Core::LinAlg::SparseMatrix containing the data read from the file, distributed
    *         across the given MPI communicator.
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::SparseMatrix read_matrix_market_file_as_sparse_matrix(
       const std::string& filename, MPI_Comm comm);
 
@@ -80,6 +85,7 @@ namespace Core::LinAlg
    * @return MultiVector containing the data read from the Matrix Market file, distributed according
    * to \p map.
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::MultiVector<double> read_matrix_market_file_as_multi_vector(
       const std::filesystem::path& filename, const Core::LinAlg::Map& map);
 }  // namespace Core::LinAlg

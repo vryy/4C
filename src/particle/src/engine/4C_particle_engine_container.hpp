@@ -31,7 +31,7 @@ namespace Particle
    * states is provided.
    *
    */
-  class ParticleContainer final
+  class FOUR_C_API(FOUR_C_CORE) ParticleContainer final
   {
    public:
     //! constructor

@@ -27,7 +27,7 @@ namespace Mat
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for St. Venant--Kirchhoff
-    class StVenantKirchhoff : public Core::Mat::PAR::Parameter
+    class FOUR_C_API(FOUR_C_CORE) StVenantKirchhoff : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
@@ -65,7 +65,7 @@ namespace Mat
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for St.-Venant-Kirchhoff material
-  class StVenantKirchhoff : public So3Material
+  class FOUR_C_API(FOUR_C_CORE) StVenantKirchhoff : public So3Material
   {
    public:
     /// construct empty material object
@@ -168,7 +168,6 @@ namespace Mat
 
       return cmat;
     }
-
 
    private:
     /// my material parameters

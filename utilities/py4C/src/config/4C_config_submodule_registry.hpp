@@ -23,7 +23,7 @@ namespace Py4C
 {
   // Explicitly tell the compiler this struct is internal and should not be exported to match
   // Pybind11's internal visibility
-  struct __attribute__((visibility("hidden"))) SubmoduleRegistryEntry
+  struct FOUR_C_API(HIDDEN) SubmoduleRegistryEntry
   {
     std::string name;
     std::string doc;

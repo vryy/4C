@@ -40,7 +40,8 @@ namespace
 
   TEST(InputFile, BasicYaml)
   {
-    const std::string input_file_name = TESTING::get_support_file_path("test_files/yaml/basic.yml");
+    const std::string input_file_name =
+        TESTING::get_support_file_path("test_files/yaml/basic.yml").generic_string();
 
     MPI_Comm comm(MPI_COMM_WORLD);
     Core::IO::InputFile input{{},
@@ -64,7 +65,7 @@ namespace
   {
     using namespace Core::IO::InputSpecBuilders;
     const std::string input_file_name =
-        TESTING::get_support_file_path("test_files/yaml_includes/main.yaml");
+        TESTING::get_support_file_path("test_files/yaml_includes/main.yaml").generic_string();
 
     MPI_Comm comm(MPI_COMM_WORLD);
     Core::IO::InputFile input(

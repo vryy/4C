@@ -30,7 +30,7 @@ namespace Core::DOFSets
     written into and the list of DofSets the current DofSet is connected to.
 
     */
-  class DofSetBase : public DofSetInterface
+  class FOUR_C_API(FOUR_C_CORE) DofSetBase : public DofSetInterface
   {
    public:
     /// Standard Constructor

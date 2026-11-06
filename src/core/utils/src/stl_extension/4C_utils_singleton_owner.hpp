@@ -43,7 +43,7 @@ namespace Core::Utils
    *
    * @note Funnily enough, this class is a singleton itself.
    */
-  class SingletonOwnerRegistry
+  class FOUR_C_API(FOUR_C_CORE) SingletonOwnerRegistry
   {
    public:
     /**
@@ -404,7 +404,6 @@ namespace Core::Utils
     return T(std::forward<Fn>(creator));
   }
 }  // namespace Core::Utils
-
 
 FOUR_C_NAMESPACE_CLOSE
 

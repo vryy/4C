@@ -13,6 +13,7 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <array>
 #include <map>
 #include <memory>
 #include <vector>
@@ -46,7 +47,7 @@ namespace Core::GeometricSearch
   class OctreeElement;
 
   //! Base class for parallel octree to establish neighborhood relations between entities
-  class MatchingOctree
+  class FOUR_C_API(FOUR_C_CORE) MatchingOctree
   {
    public:
     /// Data structure to hold entity id and position regardless of entity type
@@ -295,7 +296,7 @@ namespace Core::GeometricSearch
 
 
   //! Parallel octree to establish neighborhood relations between two sets of nodes
-  class NodeMatchingOctree : public MatchingOctree
+  class FOUR_C_API(FOUR_C_CORE) NodeMatchingOctree : public MatchingOctree
   {
    public:
     //! Constructor
@@ -329,7 +330,7 @@ namespace Core::GeometricSearch
 
 
   //! Parallel octree to establish neighborhood relations between two sets of elements
-  class ElementMatchingOctree : public MatchingOctree
+  class FOUR_C_API(FOUR_C_CORE) ElementMatchingOctree : public MatchingOctree
   {
    public:
     //! Constructor
@@ -380,7 +381,7 @@ namespace Core::GeometricSearch
 
 
   //! Leaf in parallel octree
-  class OctreeElement
+  class FOUR_C_API(FOUR_C_CORE) OctreeElement
   {
    public:
     //! Standard Constructor
@@ -552,7 +553,7 @@ namespace Core::GeometricSearch
 
 
   //! Leaf in parallel octree for FEM nodes
-  class OctreeNodalElement : public OctreeElement
+  class FOUR_C_API(FOUR_C_CORE) OctreeNodalElement : public OctreeElement
   {
    public:
     //! Constructor
@@ -571,7 +572,7 @@ namespace Core::GeometricSearch
 
 
   //! Leaf in parallel octree for FEM elements
-  class OctreeElementElement : public OctreeElement
+  class FOUR_C_API(FOUR_C_CORE) OctreeElementElement : public OctreeElement
   {
    public:
     //! Constructor

@@ -37,7 +37,7 @@ namespace CONTACT::CONSTITUTIVELAW
   /**
    * \brief Base object to hold 'quick' access contact constitutive law parameters
    */
-  class Parameter
+  class FOUR_C_API(FOUR_C_CORE) Parameter
   {
    public:
     Parameter() = delete;

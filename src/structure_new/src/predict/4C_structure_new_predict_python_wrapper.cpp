@@ -46,7 +46,7 @@ FOUR_C_NAMESPACE_OPEN
  * performed in every load / time step which might pose some limitations on the
  * practical applicability of this class.
  */
-class FOUR_C_HIDDEN Solid::Predict::PythonWrapper::Implementation
+class FOUR_C_API(HIDDEN) Solid::Predict::PythonWrapper::Implementation
 {
  public:
   /*!

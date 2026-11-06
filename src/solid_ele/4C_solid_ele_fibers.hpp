@@ -45,12 +45,13 @@ namespace Discret::Elements
    * @brief Read fiber directions from the input definition of the element (either from the legacy
    * FIBER1, ... keywords or from input fields FIBERS)
    */
-  Fibers read_fibers(const Core::IO::InputParameterContainer& input_data);
+  FOUR_C_API(FOUR_C_CORE) Fibers read_fibers(const Core::IO::InputParameterContainer& input_data);
 
   /*!
    * @brief Read local coordinate system from the input definition of the element (either from
    * RAD,AXI,CIR or from input field COORDINATE_SYSTEM), if present.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::optional<CoordinateSystem> read_coordinate_system(
       const Core::IO::InputParameterContainer& input_data);
 

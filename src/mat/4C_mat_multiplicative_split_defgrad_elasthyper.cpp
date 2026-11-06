@@ -37,7 +37,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
@@ -1391,6 +1390,5 @@ bool Mat::InelasticFactorsHandler::evaluate_output_data(
 
   return (num_inel_fac_GP_data > 0);
 }
-
 
 FOUR_C_NAMESPACE_CLOSE

@@ -37,6 +37,7 @@ function(four_c_auto_define_module)
     # Add all global compile settings as PRIVATE. We only want to use them to compile our own files and not force
     # them on other users of the library.
     target_link_libraries(${_target}_objs PRIVATE four_c_private_compile_interface)
+    target_compile_definitions(${_target}_objs PRIVATE FOUR_C_CORE=EXPORT)
 
     if(FOUR_C_CLANGCUDA)
       set_clangcuda_mode(${_target}_objs CLANGCUDA_MODE_HOST)
@@ -52,6 +53,7 @@ function(four_c_auto_define_module)
       # Define an additional library built from the sources. In developer mode, we link unit tests against this library which can
       # be faster to build than lib4C.
       add_library(4C_${_target})
+      target_compile_definitions(4C_${_target} PRIVATE FOUR_C_CORE=EXPORT)
       target_link_libraries(4C_${_target} PUBLIC ${_target}_deps)
       target_link_libraries(4C_${_target} PUBLIC ${_target}_objs)
       add_library(${_target}_module ALIAS 4C_${_target})

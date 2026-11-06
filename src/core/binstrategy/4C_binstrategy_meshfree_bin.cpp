@@ -27,7 +27,6 @@ Core::FE::MeshFree::MeshfreeBin<Element>::MeshfreeBin(
 {
 }
 
-
 /*--------------------------------------------------------------------------*
  | Delete a single node from the element               (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
@@ -49,7 +48,8 @@ void Core::FE::MeshFree::MeshfreeBin<Element>::delete_node(int gid)
 /*--------------------------------------------------------------------------*
  | Explicit instantiations                                kronbichler 03/15 |
  *--------------------------------------------------------------------------*/
-template class Core::FE::MeshFree::MeshfreeBin<Core::Elements::Element>;
-template class Core::FE::MeshFree::MeshfreeBin<Core::Elements::FaceElement>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::MeshFree::MeshfreeBin<Core::Elements::Element>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::MeshFree::MeshfreeBin<Core::Elements::FaceElement>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -28,7 +28,7 @@ namespace Core::LinAlg
     implemented in terms of the matrix blocks.
 
    */
-  class BlockSparseMatrixBase : public SparseOperator
+  class FOUR_C_API(FOUR_C_CORE) BlockSparseMatrixBase : public SparseOperator
   {
    public:
     /// constructor
@@ -43,7 +43,6 @@ namespace Core::LinAlg
      */
     BlockSparseMatrixBase(const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps,
         int npr, bool explicitdirichlet = true, bool savegraph = false);
-
 
     /// make a copy of me
     virtual std::unique_ptr<BlockSparseMatrixBase> clone(DataAccess access) = 0;
@@ -91,7 +90,6 @@ namespace Core::LinAlg
         const Core::LinAlg::Vector<double>& dbctoggle, bool diagonalblock = true) override;
 
     void apply_dirichlet(const Core::LinAlg::Map& dbcmap, bool diagonalblock = true) override;
-
 
     //@}
 
@@ -193,7 +191,6 @@ namespace Core::LinAlg
   };
 
 
-
   /// Block matrix consisting of SparseMatrix blocks
   /*!
       There are strange algorithms that need to split a large sparse matrix into
@@ -283,7 +280,7 @@ namespace Core::LinAlg
       \sa BlockSparseMatrix
 
    */
-  class DefaultBlockMatrixStrategy
+  class FOUR_C_API(FOUR_C_CORE) DefaultBlockMatrixStrategy
   {
    public:
     /// construct with a block matrix base

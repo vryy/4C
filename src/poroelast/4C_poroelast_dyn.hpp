@@ -13,8 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 //! global control routine for standard porous media problem
-void poroelast_drt();
-
+FOUR_C_API(FOUR_C_CORE) void poroelast_drt();
 
 FOUR_C_NAMESPACE_CLOSE
 

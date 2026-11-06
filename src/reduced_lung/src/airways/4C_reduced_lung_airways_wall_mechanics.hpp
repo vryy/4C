@@ -118,11 +118,13 @@ namespace ReducedLung::Airways::WallMechanics
   /**
    * @brief Build residual evaluator callback for the concrete wall-model variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   ResidualEvaluator make_residual_evaluator(WallModel& wall_model, FlowModel& flow_model);
 
   /**
    * @brief Build Jacobian evaluator callback for the concrete wall-model variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   JacobianEvaluator make_jacobian_evaluator(WallModel& wall_model, FlowModel& flow_model);
 
   /**
@@ -131,6 +133,7 @@ namespace ReducedLung::Airways::WallMechanics
    * The callback appends wall-model-specific row entries once so later dynamic assembly can replace
    * only the flow-dependent coefficients.
    */
+  FOUR_C_API(FOUR_C_CORE)
   StaticTreeLinearizationEvaluator make_static_tree_linearization_evaluator(WallModel& wall_model);
 
   /**
@@ -140,28 +143,31 @@ namespace ReducedLung::Airways::WallMechanics
    * The callback evaluates resistance, inertia, and wall derivatives into reusable scratch buffers
    * and writes them through TreeLinearSolver.
    */
+  FOUR_C_API(FOUR_C_CORE)
   TreeLinearizationEvaluator make_tree_linearization_evaluator(
       WallModel& wall_model, FlowModel& flow_model);
 
   /**
    * @brief Build internal-state updater callback for the concrete wall-model variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   InternalStateUpdater make_internal_state_updater(
       WallModel& wall_model, FlowModelInternalStateUpdater flow_state_updater);
 
   /**
    * @brief Build output evaluator callback for the concrete wall-model variant.
    */
-  OutputEvaluator make_output_evaluator(WallModel& wall_model);
+  FOUR_C_API(FOUR_C_CORE) OutputEvaluator make_output_evaluator(WallModel& wall_model);
 
   /**
    * @brief Build end-of-timestep callback for the concrete wall-model variant.
    */
-  EndOfTimestepRoutine make_end_of_timestep_routine(WallModel& wall_model);
+  FOUR_C_API(FOUR_C_CORE) EndOfTimestepRoutine make_end_of_timestep_routine(WallModel& wall_model);
 
   /**
    * @brief Append element parameters and initialize vectors for a concrete wall model.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void append_model_parameters(WallModel& wall_model, int global_element_id,
       const ReducedLungParameters::LungTree::Airways::WallModel& parameters, double ref_area);
 }  // namespace ReducedLung::Airways::WallMechanics

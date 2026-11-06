@@ -29,7 +29,7 @@ namespace CONTACT
      * contact pressure
      *
      */
-    class PythonSurrogateConstitutiveLawParams : public Parameter
+    class FOUR_C_API(FOUR_C_CORE) PythonSurrogateConstitutiveLawParams : public Parameter
     {
      public:
       /** \brief standard constructor
@@ -50,7 +50,7 @@ namespace CONTACT
     /** \brief implements a Python-based surrogate for the contact constitutive law relating the gap
      * to the contact pressure
      */
-    class PythonSurrogateConstitutiveLaw : public ConstitutiveLaw
+    class FOUR_C_API(FOUR_C_CORE) PythonSurrogateConstitutiveLaw : public ConstitutiveLaw
     {
      public:
       /// construct the constitutive law object given a set of parameters

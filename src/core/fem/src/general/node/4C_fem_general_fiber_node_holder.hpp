@@ -32,7 +32,7 @@ namespace Core::Nodes
    * It is internally a std::unordered_map<> that adds the << operator so that it can be stored
    * in a Teuchos::ParameterList.
    */
-  class NodalFiberHolder
+  class FOUR_C_API(FOUR_C_CORE) NodalFiberHolder
   {
    public:
     /*!

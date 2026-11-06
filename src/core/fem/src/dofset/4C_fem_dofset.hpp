@@ -27,6 +27,7 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
+
 /*!
 \brief A set of degrees of freedom
 
@@ -95,7 +96,7 @@ reason to deep copy any of the local map and vector variables.
 
 namespace Core::DOFSets
 {
-  class DofSet : public DofSetBase
+  class FOUR_C_API(FOUR_C_CORE) DofSet : public DofSetBase
   {
    public:
     /// Standard Constructor

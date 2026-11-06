@@ -22,8 +22,7 @@ namespace Core::Utils
    * the input string. You should typically pass the result of a call to typeid().name to this
    * function.
    */
-  std::string try_demangle(const char* mangled_name);
-
+  FOUR_C_API(FOUR_C_CORE) std::string try_demangle(const char* mangled_name);
 
   /**
    * This function is a wrapper around typeid(). It returns the dynamic type of the given @p expr.

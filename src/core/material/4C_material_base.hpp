@@ -18,7 +18,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /// MAT: materials
 namespace Core::Mat
 {
@@ -48,7 +47,7 @@ namespace Core::Mat
    * processing, ...) this class does implement Core::Communication::ParObject. The
    * elements pack and unpack its materials along with its other data.
    */
-  class Material : public Core::Communication::ParObject
+  class FOUR_C_API(FOUR_C_CORE) Material : public Core::Communication::ParObject
   {
    public:
     /// return type of this material

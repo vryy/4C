@@ -43,7 +43,6 @@ namespace XFEM
   class ConditionManager;
 }
 
-
 namespace Cut
 {
   class CombIntersection;
@@ -52,7 +51,7 @@ namespace Cut
   class SideHandle;
 
   /// contains the cut, and shared functionality between the level set and mesh cut.
-  class CutWizard
+  class FOUR_C_API(FOUR_C_CORE) CutWizard
   {
    public:
     /*------------------------------------------------------------------------*/

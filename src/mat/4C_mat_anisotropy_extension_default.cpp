@@ -244,8 +244,8 @@ void Mat::DefaultAnisotropyExtension<numfib>::do_external_fiber_initialization()
   set_fiber_vecs(-1.0, Id, Id);
 }
 
-
 // explicit instantiations of template classes
-template class Mat::DefaultAnisotropyExtension<1u>;
-template class Mat::DefaultAnisotropyExtension<2u>;
+template class FOUR_C_EXPORT_INSTANTIATION Mat::DefaultAnisotropyExtension<1u>;
+template class FOUR_C_EXPORT_INSTANTIATION Mat::DefaultAnisotropyExtension<2u>;
+
 FOUR_C_NAMESPACE_CLOSE

@@ -161,7 +161,7 @@ namespace ReducedLung
      * volume-dependent pleural pressure's offset varies spatially over the boundary nodes of the
      * definition.
      */
-    struct BoundaryConditionModel
+    struct FOUR_C_API(FOUR_C_CORE) BoundaryConditionModel
     {
       //! The `id` of the input definition all entries of this model come from.
       int definition_id = 0;
@@ -184,7 +184,7 @@ namespace ReducedLung
     /**
      * @brief Container for all boundary condition models.
      */
-    struct BoundaryConditionContainer
+    struct FOUR_C_API(FOUR_C_CORE) BoundaryConditionContainer
     {
       std::vector<BoundaryConditionModel> models;
 
@@ -201,6 +201,7 @@ namespace ReducedLung
      * data of the mesh. This function creates one model per definition, maps boundary nodes to
      * the connected element, and assigns the constrained dof id.
      */
+    FOUR_C_API(FOUR_C_CORE)
     void create_boundary_conditions(const Core::FE::Discretization& discretization,
         const ReducedLungParameters& parameters, const std::map<int, std::vector<int>>& bc_nodes,
         const std::map<int, std::vector<int>>& global_ele_ids_per_node,
@@ -212,34 +213,39 @@ namespace ReducedLung
     /**
      * @brief Count the total number of boundary condition equations.
      */
+    FOUR_C_API(FOUR_C_CORE)
     int count_boundary_conditions(const BoundaryConditionContainer& boundary_conditions);
 
     /**
      * @brief Assign local equation ids for all boundary condition equations.
      */
+    FOUR_C_API(FOUR_C_CORE)
     void assign_local_equation_ids(
         BoundaryConditionContainer& boundary_conditions, int& n_local_equations);
 
     /**
      * @brief Assign global equation ids from the row map.
      */
+    FOUR_C_API(FOUR_C_CORE)
     void assign_global_equation_ids(
         const Core::LinAlg::Map& row_map, BoundaryConditionContainer& boundary_conditions);
 
     /**
      * @brief Assign local dof ids from the locally relevant dof map.
      */
+    FOUR_C_API(FOUR_C_CORE)
     void assign_local_dof_ids(const Core::LinAlg::Map& locally_relevant_dof_map,
         BoundaryConditionContainer& boundary_conditions);
 
     /**
      * @brief Create evaluator function objects for all models.
      */
-    void create_evaluators(BoundaryConditionContainer& boundary_conditions);
+    FOUR_C_API(FOUR_C_CORE) void create_evaluators(BoundaryConditionContainer& boundary_conditions);
 
     /**
      * @brief Assemble the boundary condition residual contributions.
      */
+    FOUR_C_API(FOUR_C_CORE)
     void update_residual_vector(Core::LinAlg::Vector<double>& rhs,
         const BoundaryConditionContainer& boundary_conditions,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time);
@@ -247,6 +253,7 @@ namespace ReducedLung
     /**
      * @brief Assemble the boundary condition Jacobian contributions.
      */
+    FOUR_C_API(FOUR_C_CORE)
     void update_jacobian(Core::LinAlg::SparseMatrix& sysmat,
         const BoundaryConditionContainer& boundary_conditions,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time);
@@ -256,6 +263,7 @@ namespace ReducedLung
      *
      * Must be called once per timestep, before the Newton solve, and collectively on all ranks.
      */
+    FOUR_C_API(FOUR_C_CORE)
     void refresh_total_terminal_unit_volume(BoundaryConditionContainer& boundary_conditions,
         const TerminalUnits::TerminalUnitContainer& terminal_units, MPI_Comm comm);
 
@@ -265,6 +273,7 @@ namespace ReducedLung
      * Boundary conditions impose identity rows on constrained dofs; prescribed values enter only
      * the residual, so the structured coefficients are state- and time-independent.
      */
+    FOUR_C_API(FOUR_C_CORE)
     void update_tree_linearization(
         TreeLinearSolver& target, const BoundaryConditionContainer& boundary_conditions);
   }  // namespace BoundaryConditions

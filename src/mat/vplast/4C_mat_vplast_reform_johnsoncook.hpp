@@ -23,9 +23,7 @@
 #include <cmath>
 #include <memory>
 
-
 FOUR_C_NAMESPACE_OPEN
-
 
 namespace Mat
 {
@@ -101,7 +99,7 @@ namespace Mat
      *  -# Mareau et al., A thermodynamically consistent formulation of the Johnson-Cook model,
      *     Mechanics of Materials 143, 2020
      */
-    class ReformulatedJohnsonCook : public Law
+    class FOUR_C_API(FOUR_C_CORE) ReformulatedJohnsonCook : public Law
     {
      public:
       explicit ReformulatedJohnsonCook(Core::Mat::PAR::Parameter* params,

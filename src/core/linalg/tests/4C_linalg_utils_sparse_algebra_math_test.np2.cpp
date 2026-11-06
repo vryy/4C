@@ -39,7 +39,8 @@ namespace
   TEST_F(SparseAlgebraMathTest, MatrixSparseInverse1)
   {
     Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-        TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), comm_);
+        TESTING::get_support_file_path("test_matrices/poisson1d.mm").generic_string().c_str(),
+        comm_);
 
     std::shared_ptr<Core::LinAlg::SparseMatrix> A_inverse = Core::LinAlg::matrix_sparse_inverse(
         A, std::make_shared<Core::LinAlg::Graph>(A.epetra_matrix().Graph()));
@@ -72,7 +73,7 @@ namespace
   TEST_F(SparseAlgebraMathTest, MatrixSparseInverse2)
   {
     Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-        TESTING::get_support_file_path("test_matrices/nonsym.mm").c_str(), comm_);
+        TESTING::get_support_file_path("test_matrices/nonsym.mm").generic_string().c_str(), comm_);
 
     std::shared_ptr<Core::LinAlg::SparseMatrix> A_inverse = Core::LinAlg::matrix_sparse_inverse(
         A, std::make_shared<Core::LinAlg::Graph>(A.epetra_matrix().Graph()));
@@ -118,7 +119,7 @@ namespace
   TEST_F(SparseAlgebraMathTest, MatrixSparseInverse3)
   {
     Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-        TESTING::get_support_file_path("test_matrices/beamI.mm").c_str(), comm_);
+        TESTING::get_support_file_path("test_matrices/beamI.mm").generic_string().c_str(), comm_);
 
     {
       const double tol = 1e-8;
@@ -178,7 +179,8 @@ namespace
     // Try to invert pure Neumann problem, this should fail as the matrix is singular.
     {
       Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-          TESTING::get_support_file_path("test_matrices/beamII.mm").c_str(), comm_);
+          TESTING::get_support_file_path("test_matrices/beamII.mm").generic_string().c_str(),
+          comm_);
 
       const double tol = 1e-14;
       const int power = 4;
@@ -200,7 +202,10 @@ namespace
     // a-priori diagonal perturbation
     {
       Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-          TESTING::get_support_file_path("test_matrices/beamII_projected.mm").c_str(), comm_);
+          TESTING::get_support_file_path("test_matrices/beamII_projected.mm")
+              .generic_string()
+              .c_str(),
+          comm_);
 
       const double tol = 1e-14;
       const int power = 4;
@@ -339,7 +344,10 @@ namespace
   TEST_F(SparseAlgebraMathTest, MatrixRankmCorrection)
   {
     Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-        TESTING::get_support_file_path("test_matrices/poisson1d_periodic.mm").c_str(), comm_);
+        TESTING::get_support_file_path("test_matrices/poisson1d_periodic.mm")
+            .generic_string()
+            .c_str(),
+        comm_);
 
     auto basis = Core::LinAlg::MultiVector<double>(A.row_map(), 1);
     basis.put_scalar(1.0);

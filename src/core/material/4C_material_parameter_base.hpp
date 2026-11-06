@@ -36,7 +36,7 @@ namespace Core::Mat::PAR
    * class must implement the create_material() method to create the material instance of the
    * correct type.
    */
-  class Parameter
+  class FOUR_C_API(FOUR_C_CORE) Parameter
   {
    public:
     /**

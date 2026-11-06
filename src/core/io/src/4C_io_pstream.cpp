@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::IO
 {
   /// this is the Core::IO::cout that everyone can refer to
-  Pstream cout;
+  FOUR_C_API(FOUR_C_CORE) Pstream cout;
 }  // namespace Core::IO
 
 

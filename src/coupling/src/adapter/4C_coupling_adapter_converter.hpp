@@ -256,7 +256,7 @@ namespace Coupling::Adapter
     \sa MatrixLogicalSplitAndTransform, MatrixColTransform, MatrixRowColTransform
 
    */
-  class MatrixRowTransform
+  class FOUR_C_API(FOUR_C_CORE) MatrixRowTransform
   {
    public:
     /// transformation operation

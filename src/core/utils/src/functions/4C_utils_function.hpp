@@ -30,7 +30,7 @@ namespace Core::Utils
    *
    * Functions can be defined either scalar-valued or vector-valued.
    */
-  class FunctionOfSpaceTime
+  class FOUR_C_API(FOUR_C_CORE) FunctionOfSpaceTime
   {
    public:
     //! Virtual destructor.
@@ -62,7 +62,6 @@ namespace Core::Utils
      */
     virtual void evaluate_vector(
         std::span<const double> x, double t, std::span<double> values) const;
-
 
     /*!
      * \brief Evaluation of first spatial derivative of time and space dependent function
@@ -96,7 +95,6 @@ namespace Core::Utils
     [[nodiscard]] virtual std::size_t number_components() const = 0;
   };
 
-
   /**
    * @brief Function based on user-supplied expressions
    *
@@ -104,7 +102,7 @@ namespace Core::Utils
    * \f$ \mathbf{x} \f$ is the spatial coordinate with `dim` components and where \f$ a_1(t), ...,
    * a_k(t) \f$ are time-dependent FunctionVariable objects.
    */
-  class SymbolicFunctionOfSpaceTime : public FunctionOfSpaceTime
+  class FOUR_C_API(FOUR_C_CORE) SymbolicFunctionOfSpaceTime : public FunctionOfSpaceTime
   {
    public:
     /**
@@ -134,7 +132,6 @@ namespace Core::Utils
     std::vector<std::shared_ptr<FunctionVariable>> variables_;
   };
 
-
   /*!
    * \brief Interface for mathematical functions and with arbitrary arguments
    *
@@ -158,7 +155,7 @@ namespace Core::Utils
    * The functions can be defined either scalar-valued or vector-valued.
    *
    */
-  class FunctionOfAnything
+  class FOUR_C_API(FOUR_C_CORE) FunctionOfAnything
   {
    public:
     //! Virtual destructor.
@@ -202,7 +199,6 @@ namespace Core::Utils
     [[nodiscard]] virtual std::size_t number_components() const = 0;
   };
 
-
   /**
    * @brief Function to evaluate and form the derivative of user defined
    * symbolic expressions.
@@ -213,17 +209,15 @@ namespace Core::Utils
    *
    * It is possible to predefine values of constants in the input file.
    */
-  class SymbolicFunctionOfAnything : public FunctionOfAnything
+  class FOUR_C_API(FOUR_C_CORE) SymbolicFunctionOfAnything : public FunctionOfAnything
   {
    public:
     SymbolicFunctionOfAnything(
         const std::string& component, std::vector<std::pair<std::string, double>> constants);
 
-
     double evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
-
 
     std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
@@ -255,8 +249,6 @@ namespace Core::Utils
   std::shared_ptr<FunctionOfSpaceTime> try_create_symbolic_function_of_space_time(
       const std::vector<Core::IO::InputParameterContainer>& parameters);
 }  // namespace Core::Utils
-
-
 
 FOUR_C_NAMESPACE_CLOSE
 

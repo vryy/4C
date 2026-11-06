@@ -40,7 +40,7 @@ namespace ReducedLung
      *
      * Stores identifiers and dof mappings for connection equations.
      */
-    struct ConnectionData
+    struct FOUR_C_API(FOUR_C_CORE) ConnectionData
     {
       /**
        * @brief Dof ordering for connection equations and structured coefficient assembly.
@@ -76,7 +76,7 @@ namespace ReducedLung
      *
      * Stores identifiers and dof mappings for bifurcation equations.
      */
-    struct BifurcationData
+    struct FOUR_C_API(FOUR_C_CORE) BifurcationData
     {
       /**
        * @brief Dof ordering for bifurcation equations and structured coefficient assembly.
@@ -116,34 +116,41 @@ namespace ReducedLung
      * inlet/parent, nodes[1] the outlet/child side. This is required for correct classification and
      * dof layout.
      */
+    FOUR_C_API(FOUR_C_CORE)
     void create_junctions(const Core::FE::Discretization& discretization,
         const std::map<int, std::vector<int>>& global_ele_ids_per_node,
         const std::map<int, int>& global_dof_per_ele,
         const std::map<int, int>& first_global_dof_of_ele, ConnectionData& connections,
         BifurcationData& bifurcations);
 
+    FOUR_C_API(FOUR_C_CORE)
     void assign_junction_local_equation_ids(
         ConnectionData& connections, BifurcationData& bifurcations, int& n_local_equations);
 
+    FOUR_C_API(FOUR_C_CORE)
     void assign_junction_global_equation_ids(const Core::LinAlg::Map& row_map,
         ConnectionData& connections, BifurcationData& bifurcations);
 
     /**
      * @brief Assign local dof ids and cache named dof handles for junction assembly.
      */
+    FOUR_C_API(FOUR_C_CORE)
     void assign_junction_local_dof_ids(const Core::LinAlg::Map& locally_relevant_dof_map,
         ConnectionData& connections, BifurcationData& bifurcations);
 
+    FOUR_C_API(FOUR_C_CORE)
     void update_residual_vector(Core::LinAlg::Vector<double>& rhs,
         const ConnectionData& connections, const BifurcationData& bifurcations,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs);
 
+    FOUR_C_API(FOUR_C_CORE)
     void update_jacobian(Core::LinAlg::SparseMatrix& sysmat, const ConnectionData& connections,
         const BifurcationData& bifurcations);
 
     /**
      * @brief Assemble connection and bifurcation coefficients into structured tree storage.
      */
+    FOUR_C_API(FOUR_C_CORE)
     void update_tree_linearization(TreeLinearSolver& target, const ConnectionData& connections,
         const BifurcationData& bifurcations);
   }  // namespace Junctions

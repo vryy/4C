@@ -630,52 +630,63 @@ Core::FE::ShapeValuesInteriorOnFaceCache<distype>::create(ShapeValuesFaceParams 
 
 
 // explicit instantiation of template classes
-template class Core::FE::ShapeValues<Core::FE::CellType::hex8>;
-template class Core::FE::ShapeValues<Core::FE::CellType::hex20>;
-template class Core::FE::ShapeValues<Core::FE::CellType::hex27>;
-template class Core::FE::ShapeValues<Core::FE::CellType::tet4>;
-template class Core::FE::ShapeValues<Core::FE::CellType::tet10>;
-template class Core::FE::ShapeValues<Core::FE::CellType::wedge6>;
-template class Core::FE::ShapeValues<Core::FE::CellType::wedge15>;
-template class Core::FE::ShapeValues<Core::FE::CellType::pyramid5>;
-template class Core::FE::ShapeValues<Core::FE::CellType::quad4>;
-template class Core::FE::ShapeValues<Core::FE::CellType::quad8>;
-template class Core::FE::ShapeValues<Core::FE::CellType::quad9>;
-template class Core::FE::ShapeValues<Core::FE::CellType::tri3>;
-template class Core::FE::ShapeValues<Core::FE::CellType::tri6>;
-template class Core::FE::ShapeValues<Core::FE::CellType::nurbs9>;
-template class Core::FE::ShapeValues<Core::FE::CellType::nurbs27>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::hex8>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::hex20>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::hex27>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::tet4>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::tet10>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::wedge6>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::wedge15>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::pyramid5>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::quad4>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::quad8>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::quad9>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::tri3>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::tri6>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::nurbs9>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValues<Core::FE::CellType::nurbs27>;
 
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::hex8>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::hex20>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::hex27>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::tet4>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::tet10>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::wedge6>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::wedge15>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::pyramid5>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::quad4>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::quad8>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::quad9>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::tri3>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::tri6>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::nurbs9>;
-template class Core::FE::ShapeValuesFace<Core::FE::CellType::nurbs27>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::hex8>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::hex20>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::hex27>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::tet4>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::tet10>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::wedge6>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::wedge15>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::pyramid5>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::quad4>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::quad8>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::quad9>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::tri3>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::tri6>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::nurbs9>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFace<Core::FE::CellType::nurbs27>;
 
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::hex8>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::hex20>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::hex27>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tet4>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tet10>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::wedge6>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::wedge15>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::pyramid5>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::quad4>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::quad8>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::quad9>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tri3>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tri6>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::nurbs9>;
-template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::nurbs27>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFaceCache<Core::FE::CellType::hex8>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::ShapeValuesFaceCache<Core::FE::CellType::hex20>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::ShapeValuesFaceCache<Core::FE::CellType::hex27>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tet4>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tet10>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::ShapeValuesFaceCache<Core::FE::CellType::wedge6>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::ShapeValuesFaceCache<Core::FE::CellType::wedge15>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::ShapeValuesFaceCache<Core::FE::CellType::pyramid5>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::ShapeValuesFaceCache<Core::FE::CellType::quad4>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::ShapeValuesFaceCache<Core::FE::CellType::quad8>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::ShapeValuesFaceCache<Core::FE::CellType::quad9>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tri3>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tri6>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::ShapeValuesFaceCache<Core::FE::CellType::nurbs9>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Core::FE::ShapeValuesFaceCache<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

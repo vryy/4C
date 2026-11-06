@@ -23,6 +23,7 @@ namespace Global
  * \param problem  global problem providing parameters, discretizations and solvers
  * \param restart  restart step (0 if no restart is performed)
  */
+FOUR_C_API(FOUR_C_CORE)
 void levelset_dyn(Global::Problem& problem, int restart);
 
 FOUR_C_NAMESPACE_CLOSE

@@ -45,7 +45,7 @@ namespace Core::FE
     not a mesh point coordinate.
 
     */
-    class ControlPoint : public Core::Nodes::Node
+    class FOUR_C_API(FOUR_C_CORE) ControlPoint : public Core::Nodes::Node
     {
      public:
       //! @name Enums and Friends

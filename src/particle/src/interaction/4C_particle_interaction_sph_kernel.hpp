@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 namespace Particle
 {
-  class SPHKernelBase
+  class FOUR_C_API(FOUR_C_CORE) SPHKernelBase
   {
    public:
     //! constructor
@@ -64,7 +64,7 @@ namespace Particle
     Particle::KernelSpaceDimension kernelspacedim_;
   };
 
-  class SPHKernelCubicSpline final : public SPHKernelBase
+  class FOUR_C_API(FOUR_C_CORE) SPHKernelCubicSpline final : public SPHKernelBase
   {
    public:
     //! constructor
@@ -89,7 +89,7 @@ namespace Particle
     double d2_wdrij2(const double& rij, const double& support) const override;
   };
 
-  class SPHKernelQuinticSpline final : public SPHKernelBase
+  class FOUR_C_API(FOUR_C_CORE) SPHKernelQuinticSpline final : public SPHKernelBase
   {
    public:
     //! constructor

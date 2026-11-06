@@ -56,8 +56,11 @@ T Mixture::RemodelFiberMaterialExponential<T>::get_d_cauchy_stress_d_i4_d_i4(T I
   return Mixture::get_d_exponential_fiber_cauchy_stress_d_i4_d_i4<T>(params_->params_, I4);
 }
 
-template class Mixture::PAR::RemodelFiberMaterialExponential<double>;
-template class Mixture::PAR::RemodelFiberMaterialExponential<Sacado::Fad::DFad<double>>;
-template class Mixture::RemodelFiberMaterialExponential<double>;
-template class Mixture::RemodelFiberMaterialExponential<Sacado::Fad::DFad<double>>;
+template class FOUR_C_EXPORT_INSTANTIATION Mixture::PAR::RemodelFiberMaterialExponential<double>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Mixture::PAR::RemodelFiberMaterialExponential<Sacado::Fad::DFad<double>>;
+template class FOUR_C_EXPORT_INSTANTIATION Mixture::RemodelFiberMaterialExponential<double>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Mixture::RemodelFiberMaterialExponential<Sacado::Fad::DFad<double>>;
+
 FOUR_C_NAMESPACE_CLOSE

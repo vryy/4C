@@ -18,7 +18,7 @@ namespace GeometryPair
   /**
    * \brief A base class that all geometry pair evaluation data container have to inherit from.
    */
-  class GeometryEvaluationDataBase
+  class FOUR_C_API(FOUR_C_CORE) GeometryEvaluationDataBase
   {
    public:
     /**

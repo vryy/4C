@@ -50,6 +50,7 @@ namespace Core::FE
    * P. Clement: Approximation by finite element functions using local regularization,
    * RAIRO. Analyse numerique, 2:77-84, 1975
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::MultiVector<double>> compute_nodal_clement_interpolation(
       const Core::FE::Discretization& dis, const Core::LinAlg::MultiVector<double>& values);
 }  // namespace Core::FE

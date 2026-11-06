@@ -68,7 +68,7 @@ namespace Mat
      * <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
      * </ul>
      */
-    class IsoNeoHooke : public Summand
+    class FOUR_C_API(FOUR_C_CORE) IsoNeoHooke : public Summand
     {
      public:
       /// constructor with given material parameters

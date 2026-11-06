@@ -163,7 +163,7 @@ namespace Core::IO
       : outputname_(std::move(outputname)),
         restart_step_(output_control.restart_step()),
         time_(0.0),
-        timestep_(-1)
+        timestep_(0)
   {
     // determine full path to output prefix
     const std::string fullpathoutputprefix = output_control.file_name();

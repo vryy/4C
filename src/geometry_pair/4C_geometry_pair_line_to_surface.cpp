@@ -501,114 +501,124 @@ void GeometryPair::project_point_to_surface(const Core::LinAlg::Matrix<3, 1, Sca
  */
 namespace GeometryPair
 {
-  template class GeometryPairLineToSurface<double, t_line2, t_tri3>;
-  template class GeometryPairLineToSurface<double, t_line2, t_tri6>;
-  template class GeometryPairLineToSurface<double, t_line2, t_quad4>;
-  template class GeometryPairLineToSurface<double, t_line2, t_quad8>;
-  template class GeometryPairLineToSurface<double, t_line2, t_quad9>;
-  template class GeometryPairLineToSurface<double, t_line2, t_nurbs9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_line2, t_tri3>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_line2, t_tri6>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_line2, t_quad4>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_line2, t_quad8>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_line2, t_quad9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_line2, t_nurbs9>;
 
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2,
-      t_tri3>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2,
-      t_tri6>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2,
-      t_quad4>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2,
-      t_quad8>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2,
-      t_quad9>;
-  template class GeometryPairLineToSurface<
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri6>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad8>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<
       line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
 
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_tri3>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_tri6>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_quad4>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_quad8>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_quad9>;
-  template class GeometryPairLineToSurface<
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_tri3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_tri6>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_quad4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_quad8>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_quad9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<
       line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
 
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
-      t_line2, t_tri3>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
-      t_line2, t_tri6>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
-      t_line2, t_quad4>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
-      t_line2, t_quad8>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
-      t_line2, t_quad9>;
-  template class GeometryPairLineToSurfaceFADWrapper<
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri3>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri6>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad4>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad8>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
       line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
 
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2,
-      t_tri3>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2,
-      t_tri6>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2,
-      t_quad4>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2,
-      t_quad8>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2,
-      t_quad9>;
-  template class GeometryPairLineToSurfaceFADWrapper<
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2, t_tri3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2, t_tri6>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2, t_quad4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2, t_quad8>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2, t_quad9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
       line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
 
-  template class GeometryPairLineToSurface<double, t_hermite, t_tri3>;
-  template class GeometryPairLineToSurface<double, t_hermite, t_tri6>;
-  template class GeometryPairLineToSurface<double, t_hermite, t_quad4>;
-  template class GeometryPairLineToSurface<double, t_hermite, t_quad8>;
-  template class GeometryPairLineToSurface<double, t_hermite, t_quad9>;
-  template class GeometryPairLineToSurface<double, t_hermite, t_nurbs9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_hermite, t_tri3>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_hermite, t_tri6>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_hermite, t_quad4>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_hermite, t_quad8>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_hermite, t_quad9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<double, t_hermite, t_nurbs9>;
 
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
-      t_tri3>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
-      t_tri6>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
-      t_quad4>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
-      t_quad8>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite,
-      t_quad9>;
-  template class GeometryPairLineToSurface<
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri6>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad8>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<
       line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>, t_hermite,
       t_nurbs9>;
 
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_tri3>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_tri6>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad4>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad8>;
-  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad9>;
-  template class GeometryPairLineToSurface<
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_tri3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_tri6>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad8>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_hermite, t_quad9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurface<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
-      t_hermite, t_tri3>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
-      t_hermite, t_tri6>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
-      t_hermite, t_quad4>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
-      t_hermite, t_quad8>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
-      t_hermite, t_quad9>;
-  template class GeometryPairLineToSurfaceFADWrapper<
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri3>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri6>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad4>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad8>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
       line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>, t_hermite,
       t_nurbs9>;
 
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite,
-      t_tri3>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite,
-      t_tri6>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite,
-      t_quad4>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite,
-      t_quad8>;
-  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite,
-      t_quad9>;
-  template class GeometryPairLineToSurfaceFADWrapper<
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite, t_tri3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite, t_tri6>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite, t_quad4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite, t_quad8>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_hermite, t_quad9>;
+  template class FOUR_C_EXPORT_INSTANTIATION GeometryPairLineToSurfaceFADWrapper<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
 }  // namespace GeometryPair
 

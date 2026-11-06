@@ -44,7 +44,7 @@ namespace Core::DOFSets
    *
 
    * */
-  class DofSetInterface
+  class FOUR_C_API(FOUR_C_CORE) DofSetInterface
   {
    public:
     //! @name Construction
@@ -163,8 +163,6 @@ namespace Core::DOFSets
 
     //@}
 
-
-
     //! @name Setup and Initialization
 
     /// Assign dof numbers using all elements and nodes of the discretization.
@@ -200,7 +198,6 @@ namespace Core::DOFSets
   };  // class DofSetInterface
 
 }  // namespace Core::DOFSets
-
 
 FOUR_C_NAMESPACE_CLOSE
 

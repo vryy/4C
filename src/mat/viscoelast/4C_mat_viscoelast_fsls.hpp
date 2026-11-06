@@ -212,7 +212,7 @@ namespace Mat::ViscoElast
    *          Large Deformations
    * </ul>
    */
-  class Fsls : public Summand
+  class FOUR_C_API(FOUR_C_CORE) Fsls : public Summand
   {
    public:
     /// constructor with given material parameters
@@ -294,6 +294,7 @@ namespace Mat::ViscoElast
     };
 
     /// Evaluate FSLS artificial stress, additive stress contribution, and additive tangent.
+    FOUR_C_API(FOUR_C_CORE)
     void evaluate_fsls_kernel(const FslsStressVector& stress, const FslsTangentMatrix& cmat,
         FslsStressVector& q_current_for_history, FslsStressVector& q_additive,
         FslsTangentMatrix& cmatq_additive, const FslsKernelInput& input);
@@ -304,6 +305,7 @@ namespace Mat::ViscoElast
     /// large k and avoids overflow of the prefactor for extreme tau/h ratios. Exposed for
     /// testing; production evaluation should go through the cached lookup in
     /// evaluate_fsls_kernel.
+    FOUR_C_API(FOUR_C_CORE)
     double evaluate_l1_weight(std::size_t k, double alpha, double tau, double dt);
   }  // namespace Kernels
 }  // namespace Mat::ViscoElast

@@ -49,7 +49,7 @@ namespace Mat
        * 100 MAT 100 ELAST_StructuralTensor STRATEGY ByDistributionFunction DISTR vonMisesFisher C1
        * 500.0
        */
-      class StructuralTensorParameter : public Core::Mat::PAR::Parameter
+      class FOUR_C_API(FOUR_C_CORE) StructuralTensorParameter : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
@@ -85,7 +85,7 @@ namespace Mat
     /*!
      * @brief Base class for evaluation strategy of structural tensor for anisotropic materials.
      */
-    class StructuralTensorStrategyBase
+    class FOUR_C_API(FOUR_C_CORE) StructuralTensorStrategyBase
     {
      public:
       /// constructor
@@ -113,7 +113,6 @@ namespace Mat
 
     };  // class StructuralTensorStrategyBase
 
-
     /*!
      *
      * @brief Class for computing the standard structural tensor for anisotropic materials via
@@ -125,7 +124,8 @@ namespace Mat
      * By H we denote the structural tensor. M is the direction of the fiber.
      * Here, x denotes the dyadic product.
      */
-    class StructuralTensorStrategyStandard : public StructuralTensorStrategyBase
+    class FOUR_C_API(FOUR_C_CORE) StructuralTensorStrategyStandard
+        : public StructuralTensorStrategyBase
     {
      public:
       /// constructor with given material parameters
@@ -146,7 +146,6 @@ namespace Mat
       void setup_structural_tensor(const Core::LinAlg::Tensor<double, 3>& fiber_vector,
           Core::LinAlg::SymmetricTensor<double, 3, 3>& structural_tensor_stress) override;
     };  // namespace Elastic
-
 
     /*!
      * @brief Class for computing the generalized structural tensor
@@ -219,7 +218,8 @@ namespace Mat
      * The integration is performed by an Gauss integration rule in accordance with:
      * Atkinson K.; Numerical Integration on the Sphere.; J. Austral. Math. Soc.B; 23; 1982
      */
-    class StructuralTensorStrategyByDistributionFunction : public StructuralTensorStrategyBase
+    class FOUR_C_API(FOUR_C_CORE) StructuralTensorStrategyByDistributionFunction
+        : public StructuralTensorStrategyBase
     {
      public:
       /// constructor with given material parameters
@@ -264,7 +264,7 @@ namespace Mat
      * if c1 = 0.0 -> same as StructuralTensorStrategyStandard
      * if 0<c1<1/3 -> varying transverse isotropy
      */
-    class StructuralTensorStrategyDispersedTransverselyIsotropic
+    class FOUR_C_API(FOUR_C_CORE) StructuralTensorStrategyDispersedTransverselyIsotropic
         : public StructuralTensorStrategyBase
     {
      public:

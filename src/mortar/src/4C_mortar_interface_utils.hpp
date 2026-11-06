@@ -27,6 +27,7 @@ namespace Mortar
     \param[out] maxOverAllRanks Largest element in input vector
     \param[out] meanOverAllRanks Mean of all elements in input vector
     */
+    FOUR_C_API(FOUR_C_CORE)
     void compute_parallel_distribution_statistics(const std::vector<int>& quantityAcrossAllRanks,
         int& minOverAllRanks, int& maxOverAllRanks, double& meanOverAllRanks);
 
@@ -37,6 +38,7 @@ namespace Mortar
     \param[in] quantityAcrossAllRanks Vector with number of nodes/elements per rank
     \param[in] printOnThisRank Flag to en-/disable screen output on this rank
     */
+    FOUR_C_API(FOUR_C_CORE)
     void compute_and_print_row_of_parallel_distribution_statisctics(
         const std::string& nameOfQuantity, const std::vector<int>& quantityAcrossAllRanks,
         const bool printOnThisRank);

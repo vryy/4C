@@ -791,7 +791,6 @@ double Adapter::FluidFSI::get_tim_ada_err_order() const
     FOUR_C_THROW(
         "Cannot return error order for adaptive time integration, since"
         "no auxiliary scheme has been chosen for the fluid field.");
-    return 0.0;
   }
 }
 

@@ -205,5 +205,4 @@ namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 
-
 #endif

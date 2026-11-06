@@ -161,23 +161,26 @@ namespace ReducedLung::Airways::FlowResistance
   /**
    * @brief Build inertia evaluator callback for the concrete flow-model variant.
    */
-  InertiaEvaluator make_inertia_evaluator(FlowModel& flow_model);
+  FOUR_C_API(FOUR_C_CORE) InertiaEvaluator make_inertia_evaluator(FlowModel& flow_model);
 
   /**
    * @brief Build rigid-wall flow-resistance evaluator callback for the concrete flow-model variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   FlowResistanceEvaluator make_flow_resistance_evaluator_rigid(FlowModel& flow_model);
 
   /**
    * @brief Build Kelvin-Voigt flow-resistance evaluator callback for the concrete flow-model
    * variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   FlowResistanceEvaluator make_flow_resistance_evaluator_kelvin_voigt(FlowModel& flow_model);
 
   /**
    * @brief Build rigid-wall flow-resistance-derivative evaluator callback for the concrete
    * flow-model variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   FlowResistanceDerivativeEvaluatorRigid make_flow_resistance_derivative_evaluator_rigid(
       FlowModel& flow_model);
 
@@ -185,6 +188,7 @@ namespace ReducedLung::Airways::FlowResistance
    * @brief Build Kelvin-Voigt flow-resistance-derivative evaluator callback for the concrete
    * flow-model variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   FlowResistanceDerivativeEvaluatorKelvinVoigt
   make_flow_resistance_derivative_evaluator_kelvin_voigt(
       FlowModel& flow_model, KelvinVoigtWall& kelvin_voigt_wall_model);
@@ -193,22 +197,25 @@ namespace ReducedLung::Airways::FlowResistance
    * @brief Build Kelvin-Voigt inertia-derivative evaluator callback for the concrete flow-model
    * variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   InertiaDerivativeEvaluatorKelvinVoigt make_inertia_derivative_evaluator_kelvin_voigt(
       FlowModel& flow_model, KelvinVoigtWall& kelvin_voigt_wall_model);
 
   /**
    * @brief Build internal-state updater callback for the concrete flow-model variant.
    */
+  FOUR_C_API(FOUR_C_CORE)
   InternalStateUpdaterFlowModel make_internal_state_updater(FlowModel& flow_model);
 
   /**
    * @brief Build output evaluator callback for the concrete flow-model variant.
    */
-  OutputEvaluator make_output_evaluator(FlowModel& flow_model);
+  FOUR_C_API(FOUR_C_CORE) OutputEvaluator make_output_evaluator(FlowModel& flow_model);
 
   /**
    * @brief Append element parameters and initialize vectors for a concrete flow model.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void append_model_parameters(FlowModel& flow_model, int global_element_id,
       const ReducedLungParameters::LungTree::Airways::FlowModel& parameters);
 }  // namespace ReducedLung::Airways::FlowResistance

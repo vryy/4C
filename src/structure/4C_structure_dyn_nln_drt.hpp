@@ -12,10 +12,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-void dyn_nlnstructural_drt();
-void caldyn_drt();
-
+FOUR_C_API(FOUR_C_CORE) void dyn_nlnstructural_drt();
+FOUR_C_API(FOUR_C_CORE) void caldyn_drt();
 
 FOUR_C_NAMESPACE_CLOSE
 

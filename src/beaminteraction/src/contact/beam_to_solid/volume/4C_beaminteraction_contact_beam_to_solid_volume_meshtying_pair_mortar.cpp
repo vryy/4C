@@ -409,62 +409,110 @@ namespace BeamInteraction
 {
   using namespace GeometryPair;
 
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex8, t_line2>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex20, t_line2>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex27, t_line2>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet4, t_line2>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet10, t_line2>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_nurbs27, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex8, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex20, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex27, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet4, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet10, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_nurbs27, t_line2>;
 
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex8, t_line3>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex20, t_line3>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex27, t_line3>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet4, t_line3>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet10, t_line3>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_nurbs27, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex8, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex20, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex27, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet4, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet10, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_nurbs27, t_line3>;
 
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex8, t_line4>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex20, t_line4>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex27, t_line4>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet4, t_line4>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet10, t_line4>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_nurbs27, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex8, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex20, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex27, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet4, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet10, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_nurbs27, t_line4>;
 
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex8, t_hermite_dual>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex20, t_hermite_dual>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex27, t_hermite_dual>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet4, t_hermite_dual>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet10, t_hermite_dual>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_nurbs27, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex8, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex20, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_hex27, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet4, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_tet10, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_line2, t_nurbs27, t_hermite_dual>;
 
 
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex8, t_line2>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex20, t_line2>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex27, t_line2>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_line2>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_line2>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex8, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex20, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex27, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_line2>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line2>;
 
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex8, t_line3>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex20, t_line3>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex27, t_line3>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_line3>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_line3>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex8, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex20, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex27, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_line3>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line3>;
 
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex8, t_line4>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex20, t_line4>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex27, t_line4>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_line4>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_line4>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex8, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex20, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex27, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_line4>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line4>;
 
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex8, t_hermite_dual>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex20, t_hermite_dual>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex27, t_hermite_dual>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_hermite_dual>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_hermite_dual>;
-  template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex8, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex20, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_hex27, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet4, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_tet10, t_hermite_dual>;
+  template class FOUR_C_EXPORT_INSTANTIATION
+      BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_hermite_dual>;
 }  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE

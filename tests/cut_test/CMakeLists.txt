@@ -84,4 +84,5 @@ add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
 
 set_target_properties(cut_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
+message(STATUS "setting the executable cut_test")
 four_c_set_up_executable(cut_test)

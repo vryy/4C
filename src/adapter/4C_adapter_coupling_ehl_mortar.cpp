@@ -497,10 +497,10 @@ void Adapter::CouplingEhlMortar::condense_contact(
       std::shared_ptr<Core::LinAlg::Vector<double>> lmDBC =
           std::make_shared<Core::LinAlg::Vector<double>>(*interface_->active_dofs(), true);
       Core::LinAlg::export_to(*sdirichtoggle_, *lmDBC);
-      std::shared_ptr<Core::LinAlg::Vector<double>> tmp =
+      std::shared_ptr<Core::LinAlg::Vector<double>> tmp1 =
           std::make_shared<Core::LinAlg::Vector<double>>(*interface_->active_dofs(), true);
-      tmp->multiply(1., *diag, *lmDBC, 0.);
-      diag->update(-1., *tmp, 1.);
+      tmp1->multiply(1., *diag, *lmDBC, 0.);
+      diag->update(-1., *tmp1, 1.);
       dInvA->replace_diagonal_values(*diag);
       dInvMa = Core::LinAlg::matrix_multiply(*dInvA, false, *mA, false, false, false, true);
     }
@@ -860,8 +860,8 @@ void Adapter::CouplingEhlMortar::assemble_real_gap_deriv()
           p != cnode->data().get_deriv_d().at(cnode->id()).end(); ++p)
       {
         const double val = -w_gap / (d * d) * p->second;
-        for (int d = 0; d < interface_->n_dim(); ++d)
-          deriv_nodal_gap_->assemble(val, cnode->dofs()[d], p->first);
+        for (int d1 = 0; d1 < interface_->n_dim(); ++d1)
+          deriv_nodal_gap_->assemble(val, cnode->dofs()[d1], p->first);
       }
 
     if (d == -1 && cnode->data().get_deriv_g().size() != 0) FOUR_C_THROW("inconsistency");
@@ -871,8 +871,8 @@ void Adapter::CouplingEhlMortar::assemble_real_gap_deriv()
           ++p)
       {
         const double val = p->second / d;
-        for (int d = 0; d < interface_->n_dim(); ++d)
-          deriv_nodal_gap_->assemble(val, cnode->dofs()[d], p->first);
+        for (int d1 = 0; d1 < interface_->n_dim(); ++d1)
+          deriv_nodal_gap_->assemble(val, cnode->dofs()[d1], p->first);
       }
   }
   deriv_nodal_gap_->complete(*source_target_dof_row_map_, *source_dof_row_map_);
@@ -893,7 +893,6 @@ void Adapter::CouplingEhlMortar::assemble_interface_velocities(const double dt)
     if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) FOUR_C_THROW("not a contact node");
-
 
     double d_val = 0.;
     switch (cnode->mo_data().get_d().size())

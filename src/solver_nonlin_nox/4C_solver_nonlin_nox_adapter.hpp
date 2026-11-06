@@ -88,7 +88,7 @@ namespace NOX
      *   const unsigned int iterations = adapter.solve();
      * @endcode
      */
-    class Adapter
+    class FOUR_C_API(FOUR_C_CORE) Adapter
     {
      public:
       using ResidualCallback = std::function<bool(

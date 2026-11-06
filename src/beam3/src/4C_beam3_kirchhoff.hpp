@@ -130,7 +130,7 @@ namespace Discret
     \brief 3D nonlinear Kirchhoff-like beam element that can display initially curved beams.
 
     */
-    class Beam3k : public Beam3Base
+    class FOUR_C_API(FOUR_C_CORE) Beam3k : public Beam3Base
     {
      public:
       //! @name Friends

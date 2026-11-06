@@ -29,8 +29,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-
 template <typename Beam, typename Fluid>
 BeamInteraction::BeamToFluidMeshtyingPairBase<Beam, Fluid>::BeamToFluidMeshtyingPairBase()
     : base_class()
@@ -264,19 +262,19 @@ void BeamInteraction::BeamToFluidMeshtyingPairBase<Beam, Fluid>::evaluate_beam_p
  * Explicit template initialization of template class.
  */
 // Hermite beam element, hex8 solid element.
-template class BeamInteraction::BeamToFluidMeshtyingPairBase<GeometryPair::t_hermite,
-    GeometryPair::t_hex8>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    BeamInteraction::BeamToFluidMeshtyingPairBase<GeometryPair::t_hermite, GeometryPair::t_hex8>;
 // Hermite beam element, hex20 solid element.
-template class BeamInteraction::BeamToFluidMeshtyingPairBase<GeometryPair::t_hermite,
-    GeometryPair::t_hex20>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    BeamInteraction::BeamToFluidMeshtyingPairBase<GeometryPair::t_hermite, GeometryPair::t_hex20>;
 // Hermite beam element, hex27 solid element.
-template class BeamInteraction::BeamToFluidMeshtyingPairBase<GeometryPair::t_hermite,
-    GeometryPair::t_hex27>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    BeamInteraction::BeamToFluidMeshtyingPairBase<GeometryPair::t_hermite, GeometryPair::t_hex27>;
 // Hermite beam element, tet4 solid element.
-template class BeamInteraction::BeamToFluidMeshtyingPairBase<GeometryPair::t_hermite,
-    GeometryPair::t_tet4>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    BeamInteraction::BeamToFluidMeshtyingPairBase<GeometryPair::t_hermite, GeometryPair::t_tet4>;
 // Hermite beam element, tet10 solid element.
-template class BeamInteraction::BeamToFluidMeshtyingPairBase<GeometryPair::t_hermite,
-    GeometryPair::t_tet10>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    BeamInteraction::BeamToFluidMeshtyingPairBase<GeometryPair::t_hermite, GeometryPair::t_tet10>;
 
 FOUR_C_NAMESPACE_CLOSE

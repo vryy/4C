@@ -732,23 +732,23 @@ namespace Core::FE
     return ps;
   }
 
-
   // explicit instantiations
-  template class PolynomialSpaceTensor<1, LagrangePolynomial>;
-  template class PolynomialSpaceTensor<2, LagrangePolynomial>;
-  template class PolynomialSpaceTensor<3, LagrangePolynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceTensor<1, LagrangePolynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceTensor<2, LagrangePolynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceTensor<3, LagrangePolynomial>;
 
-  template class PolynomialSpaceComplete<1, Polynomial>;
-  template class PolynomialSpaceComplete<2, Polynomial>;
-  template class PolynomialSpaceComplete<3, Polynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceComplete<1, Polynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceComplete<2, Polynomial>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceComplete<3, Polynomial>;
 
-  template class LagrangeBasisTet<1>;
-  template class LagrangeBasisTet<2>;
-  template class LagrangeBasisTet<3>;
+  template class FOUR_C_EXPORT_INSTANTIATION LagrangeBasisTet<1>;
+  template class FOUR_C_EXPORT_INSTANTIATION LagrangeBasisTet<2>;
+  template class FOUR_C_EXPORT_INSTANTIATION LagrangeBasisTet<3>;
 
-  template class PolynomialSpaceCache<1>;
-  template class PolynomialSpaceCache<2>;
-  template class PolynomialSpaceCache<3>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceCache<1>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceCache<2>;
+  template class FOUR_C_EXPORT_INSTANTIATION PolynomialSpaceCache<3>;
+
 }  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE

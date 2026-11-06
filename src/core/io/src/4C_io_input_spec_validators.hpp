@@ -314,7 +314,6 @@ namespace Core::IO::InputSpecBuilders::Validators
           typename InclExclTypeExtractor<T1>::type>;
     };
 
-
   }  // namespace Internal
 
   /**
@@ -440,7 +439,6 @@ namespace Core::IO::InputSpecBuilders::Validators
   template <typename T>
   [[nodiscard]] Validator<std::optional<T>> null_or(Internal::ValidatorImpl<T> validator);
 
-
   /**
    * A validator that ensures a string matches a given regular expression @p pattern.
    * Note that the pattern is expected to be a valid regular expression in the modified ECMAScript
@@ -449,12 +447,11 @@ namespace Core::IO::InputSpecBuilders::Validators
    * @note The validator internally will match any string that contains the @p pattern
    * _anywhere_ in the string. To achieve a full match, surround the @p pattern with `^` and `$`.
    */
-  [[nodiscard]] Validator<std::string> pattern(std::string pattern);
+  [[nodiscard]] FOUR_C_API(FOUR_C_CORE) Validator<std::string> pattern(std::string pattern);
 
 }  // namespace Core::IO::InputSpecBuilders::Validators
 
 // --- template definitions --- //
-
 
 template <typename Low, typename High, typename T>
   requires((std::integral<T> && !std::same_as<T, bool>) || std::floating_point<T>)

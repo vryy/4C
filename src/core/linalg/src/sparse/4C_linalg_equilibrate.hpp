@@ -67,7 +67,7 @@ namespace Core::LinAlg
    * possible to use equilibrate_matrix() after assembly and equilibrate_rhs() before every Solve()
    * call.
    */
-  class Equilibration
+  class FOUR_C_API(FOUR_C_CORE) Equilibration
   {
    public:
     Equilibration(std::shared_ptr<const Core::LinAlg::Map> dofrowmap);

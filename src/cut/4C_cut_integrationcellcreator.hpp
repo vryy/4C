@@ -14,7 +14,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   class Mesh;
@@ -25,7 +24,7 @@ namespace Cut
   Some cuts lead to known shapes those meshes are known. Here we collect
   these cases. Feel free to add your own.
  */
-  class IntegrationCellCreator
+  class FOUR_C_API(FOUR_C_CORE) IntegrationCellCreator
   {
    public:
     static bool create_cells(Mesh& mesh, Element* element, const plain_volumecell_set& cells);
@@ -159,7 +158,6 @@ namespace Cut
   };
 
 }  // namespace Cut
-
 
 FOUR_C_NAMESPACE_CLOSE
 

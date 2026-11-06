@@ -104,7 +104,7 @@ namespace Core::LinAlg
 
   \return the determinant of the matrix A
   */
-  double determinant_lu(const Core::LinAlg::SerialDenseMatrix& A);
+  FOUR_C_API(FOUR_C_CORE) double determinant_lu(const Core::LinAlg::SerialDenseMatrix& A);
 
 }  // namespace Core::LinAlg
 

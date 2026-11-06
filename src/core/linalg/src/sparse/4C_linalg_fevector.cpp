@@ -215,6 +215,6 @@ const Core::LinAlg::Map& Core::LinAlg::FEVector<T>::get_map() const
 }
 
 // explicit instantiation
-template class Core::LinAlg::FEVector<double>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::FEVector<double>;
 
 FOUR_C_NAMESPACE_CLOSE

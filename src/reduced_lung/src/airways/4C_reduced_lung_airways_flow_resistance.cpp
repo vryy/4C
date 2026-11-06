@@ -466,7 +466,8 @@ namespace ReducedLung::Airways::FlowResistance
                 model.k_turb[i] =
                     model.turbulence_factor_gamma[i] *
                     std::sqrt((4 * data.air_properties.density) /
-                              (M_PI * data.air_properties.dynamic_viscosity * data.ref_length[i]) *
+                              (std::numbers::pi * data.air_properties.dynamic_viscosity *
+                                  data.ref_length[i]) *
                               q_characteristic);
                 if (model.k_turb[i] < 1.0) model.k_turb[i] = 1.0;
               }

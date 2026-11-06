@@ -18,13 +18,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /// MAT: materials
 namespace Mat
 {
   const int NUM_STRESS_3D = 6;  ///< 6 stresses for 3D
 
   /// create element material object given the number of a material definition
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::Mat::Material> factory(int matnum  ///< material ID
   );
 
@@ -32,6 +32,7 @@ namespace Mat
    * Create material parameter object from @p input_data. This function maps the material @p type
    * to a statically known material parameter class.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::unique_ptr<Core::Mat::PAR::Parameter> make_parameter(int id,
       Core::Materials::MaterialType type, const Core::IO::InputParameterContainer& input_data);
 

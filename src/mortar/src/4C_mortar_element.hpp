@@ -311,7 +311,7 @@ namespace Mortar
   \brief A mortar coupling element
 
   */
-  class Element : public Core::Elements::FaceElement
+  class FOUR_C_API(FOUR_C_CORE) Element : public Core::Elements::FaceElement
   {
    public:
     //! @name Enums and Friends

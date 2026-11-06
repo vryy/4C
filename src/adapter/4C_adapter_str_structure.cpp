@@ -452,9 +452,9 @@ Adapter::StructureBaseAlgorithm::create_contact_meshtying_solver(
       if (soltype == CONTACT::SolvingStrategy::lagmult)
       {
         // get the solver number used for structural problems
-        const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
+        const int linsolvernumber1 = sdyn.get<int>("LINEAR_SOLVER");
         // check if the structural solver has a valid solver number
-        if (linsolvernumber == (-1))
+        if (linsolvernumber1 == (-1))
           FOUR_C_THROW(
               "No linear solver defined for structural field. Please set LINEAR_SOLVER in "
               "STRUCTURAL DYNAMIC to a valid number!");

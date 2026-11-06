@@ -19,7 +19,6 @@ FOUR_C_NAMESPACE_OPEN
 // #define DIRECTDIV_EXTENDED_DEBUG_OUTPUT
 // #define TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
 
-
 namespace Cut
 {
   class Element;
@@ -30,7 +29,7 @@ namespace Cut
   facet should be arranged in anti-clockwise manner when looking the facet away from the volume
   this ensures outward normal vector when divergence theorem is used
   */
-  class FacetIntegration
+  class FOUR_C_API(FOUR_C_CORE) FacetIntegration
   {
    public:
     FacetIntegration(Facet* face1, Element* element1, const Cut::Point::PointPosition posi,

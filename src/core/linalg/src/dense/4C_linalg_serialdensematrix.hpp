@@ -20,7 +20,7 @@ namespace Core::LinAlg
   /*!
    * \brief A wrapper around Teuchos::SerialDenseMatrix
    */
-  class SerialDenseMatrix
+  class FOUR_C_API(FOUR_C_CORE) SerialDenseMatrix
   {
    public:
     using ordinalType = int;
@@ -82,23 +82,24 @@ namespace Core::LinAlg
    * \brief Update matrix components with scaled values of A,
    *        B = alpha*A + beta*B
    */
+  FOUR_C_API(FOUR_C_CORE)
   void update(double alpha, const SerialDenseMatrix& A, double beta, SerialDenseMatrix& B);
 
   /*!
    * \brief Zero out first n elements of the matrix (column-major order).
    */
-  void zero(SerialDenseMatrix& mat, int length);
+  FOUR_C_API(FOUR_C_CORE) void zero(SerialDenseMatrix& mat, int length);
 
   /*!
    * \brief Determinant computation using recursive expansion (Sarrus rule).
    * \note Only safe for n <= 4 due to complexity.
    */
-  long double det_long(const SerialDenseMatrix& matrix);
+  FOUR_C_API(FOUR_C_CORE) long double det_long(const SerialDenseMatrix& matrix);
 
   /*!
    * \brief Utility function to copy raw vector data into a SerialDenseMatrix (column-major).
    */
-  void copy(const double* vec, SerialDenseMatrix& mat);
+  FOUR_C_API(FOUR_C_CORE) void copy(const double* vec, SerialDenseMatrix& mat);
 
   //! Output stream operator
   inline std::ostream& operator<<(std::ostream& out, const SerialDenseMatrix& mat)

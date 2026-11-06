@@ -710,7 +710,8 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
   auto lagmultquad = Teuchos::getIntegralValue<Mortar::LagMultQuad>(params(), "LM_QUAD");
   if ((shapefcn == Mortar::shape_dual || shapefcn == Mortar::shape_petrovgalerkin) &&
       (n_dim() == 3 || (n_dim() == 2 && lagmultquad == Mortar::lagmult_lin)))
-    for (const auto& interface : interfaces()) dualquadsourcetrafo_ += interface->quadsource();
+    for (const auto& interface : interfaces())
+      dualquadsourcetrafo_ = dualquadsourcetrafo_ || interface->quadsource();
 
   //----------------------------------------------------------------------
   // IF SO, COMPUTE TRAFO MATRIX AND ITS INVERSE

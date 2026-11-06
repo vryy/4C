@@ -51,7 +51,7 @@ namespace Core::FE
     ParObject is implemented to be able to write the knotvector to disc for I/O.
 
     */
-    class Knotvector : public Core::Communication::ParObject
+    class FOUR_C_API(FOUR_C_CORE) Knotvector : public Core::Communication::ParObject
     {
      public:
       //! Knotvector types

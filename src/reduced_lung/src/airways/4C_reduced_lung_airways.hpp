@@ -50,12 +50,14 @@ namespace ReducedLung::Airways
   /**
    * @brief Assemble airway residual contributions for all local model blocks.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void update_residual_vector(Core::LinAlg::Vector<double>& res_vector, AirwayContainer& airways,
       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 
   /**
    * @brief Assemble airway Jacobian contributions for all local model blocks.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void update_jacobian(Core::LinAlg::SparseMatrix& jac, AirwayContainer& airways,
       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 
@@ -65,6 +67,7 @@ namespace ReducedLung::Airways
    * Appends the coefficient row patterns consumed by the direct and generic structured tree
    * assembly paths.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void update_static_tree_linearization(TreeLinearSolver& target, AirwayContainer& airways);
 
   /**
@@ -73,34 +76,39 @@ namespace ReducedLung::Airways
    * Replaces only the flow-dependent coefficients in the row patterns created by
    * update_static_tree_linearization().
    */
+  FOUR_C_API(FOUR_C_CORE)
   void update_tree_linearization(TreeLinearSolver& target, AirwayContainer& airways,
       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 
   /**
    * @brief Build residual/Jacobian/state callback objects for all model blocks.
    */
-  void create_evaluators(AirwayContainer& airways);
+  FOUR_C_API(FOUR_C_CORE) void create_evaluators(AirwayContainer& airways);
 
   /**
    * @brief Assign local row ids for airway equations.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void assign_local_equation_ids(AirwayContainer& airways, int& n_local_equations);
 
   /**
    * @brief Assign local dof ids from the locally relevant dof map.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void assign_local_dof_ids(
       const Core::LinAlg::Map& locally_relevant_dof_map, AirwayContainer& airways);
 
   /**
    * @brief Synchronize model-internal state from converged dofs.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void update_internal_state_vectors(AirwayContainer& airways,
       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 
   /**
    * @brief Run end-of-step updates, including history-variable advancement.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void end_of_timestep_routine(AirwayContainer& airways,
       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 }  // namespace ReducedLung::Airways

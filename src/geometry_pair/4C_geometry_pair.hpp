@@ -29,7 +29,7 @@ namespace GeometryPair
   /**
    * \brief Base class for all geometry pairs.
    */
-  class GeometryPairBase
+  class FOUR_C_API(FOUR_C_CORE) GeometryPairBase
   {
    public:
     /**

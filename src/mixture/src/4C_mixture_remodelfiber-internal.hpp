@@ -32,7 +32,6 @@ namespace Mixture
   template <typename T>
   class LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution;
 
-
   namespace Implementation
   {
     // Definition of the time integration routine
@@ -241,7 +240,6 @@ namespace Mixture
       [[nodiscard]] T evaluate_d_current_lambda_r_d_lambda_f_sq() const;
       [[nodiscard]] T evaluate_d_current_cauchy_stress_d_lambda_f_sq() const;
       [[nodiscard]] T evaluate_d_growth_scalar_d_nonlocal_stimulus() const;
-
 
       /// @}
 

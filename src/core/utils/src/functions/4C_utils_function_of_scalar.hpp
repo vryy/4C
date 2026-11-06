@@ -18,7 +18,7 @@ namespace Core::Utils
    * This interface encodes functions \f$ y = f(s) \f$ which take a single scalar \f$ s \f$ and
    * return a single scalar \f$ y \f$.
    */
-  class FunctionOfScalar
+  class FOUR_C_API(FOUR_C_CORE) FunctionOfScalar
   {
    public:
     /**

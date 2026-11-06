@@ -33,7 +33,8 @@ namespace FBI
   /**
    * \brief Class for beam to fluid meshtying parameters.
    */
-  class BeamToFluidMeshtyingParams : public BeamInteraction::BeamContactParams
+  class FOUR_C_API(FOUR_C_CORE) BeamToFluidMeshtyingParams
+      : public BeamInteraction::BeamContactParams
   {
    public:
     /**

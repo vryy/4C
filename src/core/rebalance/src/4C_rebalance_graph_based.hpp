@@ -52,6 +52,7 @@ namespace Core::Rebalance
 
   @return Node row map and node column map after rebalancing with weights
   */
+  FOUR_C_API(FOUR_C_CORE)
   std::pair<std::shared_ptr<Core::LinAlg::Map>, std::shared_ptr<Core::LinAlg::Map>>
   rebalance_node_maps(const Core::LinAlg::Graph& initialGraph,
       Teuchos::ParameterList& rebalanceParams,
@@ -78,6 +79,7 @@ namespace Core::Rebalance
 
   @return std::shared_ptr<Core::LinAlg::Graph>
   */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::LinAlg::Graph> rebalance_graph(const Core::LinAlg::Graph& initialGraph,
       Teuchos::ParameterList& rebalanceParams,
       const std::shared_ptr<Core::LinAlg::Vector<double>>& initialNodeWeights = nullptr,
@@ -96,6 +98,7 @@ namespace Core::Rebalance
 
   @return Rebalanced coordinates
   */
+  FOUR_C_API(FOUR_C_CORE)
   std::pair<std::shared_ptr<Core::LinAlg::MultiVector<double>>,
       std::shared_ptr<Core::LinAlg::MultiVector<double>>>
   rebalance_coordinates(const Core::LinAlg::MultiVector<double>& initialCoordinates,
@@ -115,6 +118,7 @@ namespace Core::Rebalance
 
   @return Node and edge weights to be used for repartitioning
   */
+  FOUR_C_API(FOUR_C_CORE)
   PartitionWeights build_static_partition_weights(const Core::FE::Discretization& dis);
 
   /**
@@ -123,6 +127,7 @@ namespace Core::Rebalance
    * Node weights are set to the average evaluation time of adjacent owned elements, while every
    * graph edge weight is set to the scaled global average element evaluation time.
    */
+  FOUR_C_API(FOUR_C_CORE)
   PartitionWeights build_eval_time_partition_weights(const Core::FE::Discretization& dis,
       const Core::LinAlg::Graph& graph, double edge_weight_multiplier);
 
@@ -136,6 +141,7 @@ namespace Core::Rebalance
 
   @return Uncompleted node graph of input discretization
   */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<const Core::LinAlg::Graph> build_graph(
       Core::FE::Discretization& dis, const Core::LinAlg::Map& element_row_map);
 
@@ -154,6 +160,7 @@ namespace Core::Rebalance
 
   @return Completed monolithic node graph of input discretization
   */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<const Core::LinAlg::Graph> build_monolithic_node_graph(
       const Core::FE::Discretization& dis,
       const Core::GeometricSearch::GeometricSearchParams& params,

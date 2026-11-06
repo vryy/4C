@@ -36,7 +36,7 @@ namespace ReducedLung
    *
    * Reference: Nakatsukasa, Sete, Trefethen (SIAM SISC 2018).
    */
-  struct AAAResult
+  struct FOUR_C_API(FOUR_C_CORE) AAAResult
   {
     /// Greedy-selected support points (size m).
     std::vector<double> z;
@@ -90,6 +90,7 @@ namespace ReducedLung
    *                 with a support point.
    * @return Residues in the same order as @p poles.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::vector<std::complex<double>> compute_residues(const std::vector<std::complex<double>>& poles,
       const AAAResult& aaa_result, const double tiny_abs = 0.0, const double eps_rel = 1e-14);
 
@@ -112,10 +113,10 @@ namespace ReducedLung
    *   "The AAA Algorithm for Rational Approximation,"
    *   SIAM Journal on Scientific Computing, 40(3), A1494-A1522, 2018.
    */
+  FOUR_C_API(FOUR_C_CORE)
   AAAResult aaa(const std::vector<double>& Z, const EvaluationFunction& target_function,
       AAAOptions opts = {});
 }  // namespace ReducedLung
-
 
 FOUR_C_NAMESPACE_CLOSE
 

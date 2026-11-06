@@ -794,9 +794,9 @@ std::shared_ptr<GeometryPair::FaceElement> GeometryPair::face_element_factory(
   return nullptr;
 }
 
-template class GeometryPair::FaceElementTemplate<GeometryPair::t_quad4,
+template class FOUR_C_EXPORT_INSTANTIATION GeometryPair::FaceElementTemplate<GeometryPair::t_quad4,
     GeometryPair::line_to_surface_patch_scalar_type>;
-template class GeometryPair::FaceElementPatchTemplate<GeometryPair::t_quad4,
-    GeometryPair::line_to_surface_patch_scalar_type>;
+template class FOUR_C_EXPORT_INSTANTIATION GeometryPair::FaceElementPatchTemplate<
+    GeometryPair::t_quad4, GeometryPair::line_to_surface_patch_scalar_type>;
 
 FOUR_C_NAMESPACE_CLOSE

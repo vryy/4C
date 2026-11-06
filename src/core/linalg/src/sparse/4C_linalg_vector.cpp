@@ -17,7 +17,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-
 template <typename T>
 Core::LinAlg::Vector<T>::Vector(const Map& Map, bool zeroOut)
     : vector_(Utils::make_owner<Epetra_Vector>(Map.get_epetra_block_map(), zeroOut))
@@ -353,7 +352,7 @@ const Core::LinAlg::Map& Core::LinAlg::Vector<T>::get_map() const
 
 
 // explicit instantiation
-template class Core::LinAlg::Vector<double>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::Vector<double>;
 
 
 
@@ -432,6 +431,5 @@ MPI_Comm Core::LinAlg::Vector<int>::get_comm() const
 {
   return Core::Communication::unpack_epetra_comm(vector_->Comm());
 }
-
 
 FOUR_C_NAMESPACE_CLOSE

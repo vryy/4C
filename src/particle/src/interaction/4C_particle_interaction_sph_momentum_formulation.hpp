@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 namespace Particle
 {
-  class SPHMomentumFormulationBase
+  class FOUR_C_API(FOUR_C_CORE) SPHMomentumFormulationBase
   {
    public:
     //! constructor
@@ -67,7 +67,8 @@ namespace Particle
         double* acc_j) const = 0;
   };
 
-  class SPHMomentumFormulationMonaghan final : public SPHMomentumFormulationBase
+  class FOUR_C_API(FOUR_C_CORE) SPHMomentumFormulationMonaghan final
+      : public SPHMomentumFormulationBase
   {
    public:
     //! constructor
@@ -109,7 +110,8 @@ namespace Particle
         double* acc_j) const override;
   };
 
-  class SPHMomentumFormulationAdami final : public SPHMomentumFormulationBase
+  class FOUR_C_API(FOUR_C_CORE) SPHMomentumFormulationAdami final
+      : public SPHMomentumFormulationBase
   {
    public:
     //! constructor

@@ -323,7 +323,7 @@ namespace ReducedLung
     } air_properties;
   };
   /// reduced airways parameters
-  Core::IO::InputSpec valid_parameters();
+  FOUR_C_API(FOUR_C_CORE) Core::IO::InputSpec valid_parameters();
 
 }  // namespace ReducedLung
 

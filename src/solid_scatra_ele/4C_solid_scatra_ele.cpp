@@ -325,8 +325,8 @@ Mat::So3Material& Discret::Elements::SolidScatra<dim>::solid_material(int nummat
 }
 
 template class Discret::Elements::SolidScatraType<2>;
-template class Discret::Elements::SolidScatra<2>;
+template class FOUR_C_EXPORT_INSTANTIATION Discret::Elements::SolidScatra<2>;
 template class Discret::Elements::SolidScatraType<3>;
-template class Discret::Elements::SolidScatra<3>;
+template class FOUR_C_EXPORT_INSTANTIATION Discret::Elements::SolidScatra<3>;
 
 FOUR_C_NAMESPACE_CLOSE

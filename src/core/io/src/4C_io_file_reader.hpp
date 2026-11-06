@@ -28,6 +28,7 @@ namespace Core::IO
    * @param[in] csv_file_path      absolute path to csv file
    * @return vector of column vectors read from csv file
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::vector<std::vector<double>> read_csv_as_columns(
       int number_of_columns, const std::string& csv_file_path);
 
@@ -38,6 +39,7 @@ namespace Core::IO
    * @param[in] csv_stream         csv input stream
    * @return vector of column vectors read from csv stream
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::vector<std::vector<double>> read_csv_as_columns(
       int number_of_columns, std::istream& csv_stream);
 

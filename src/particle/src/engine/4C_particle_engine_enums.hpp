@@ -114,7 +114,7 @@ namespace Particle
    *
    * \return particle state dimension
    */
-  int enum_to_state_dim(const ParticleState& state);
+  FOUR_C_API(FOUR_C_CORE) int enum_to_state_dim(const ParticleState& state);
 
   /*!
    * \brief convert particle state enum to name
@@ -124,7 +124,7 @@ namespace Particle
    *
    * \return particle state name
    */
-  std::string enum_to_state_name(const ParticleState& state);
+  FOUR_C_API(FOUR_C_CORE) std::string enum_to_state_name(const ParticleState& state);
 
   /*!
    * \brief convert particle state name to enum
@@ -140,7 +140,7 @@ namespace Particle
    *
    * \return particle state
    */
-  ParticleState enum_from_state_name(const std::string& name);
+  FOUR_C_API(FOUR_C_CORE) ParticleState enum_from_state_name(const std::string& name);
 
   //! @}
 
@@ -178,7 +178,7 @@ namespace Particle
    *
    * \return particle type name
    */
-  std::string enum_to_type_name(const ParticleType& type);
+  FOUR_C_API(FOUR_C_CORE) std::string enum_to_type_name(const ParticleType& type);
 
   /*!
    * \brief convert particle type name to enum
@@ -191,9 +191,9 @@ namespace Particle
    *
    * \return particle type
    */
-  ParticleType enum_from_type_name(const std::string& name);
+  FOUR_C_API(FOUR_C_CORE) ParticleType enum_from_type_name(const std::string& name);
 
-  const std::vector<std::string>& get_particle_type_names();
+  FOUR_C_API(FOUR_C_CORE) const std::vector<std::string>& get_particle_type_names();
 
   //! @}
 
@@ -222,7 +222,7 @@ namespace Particle
    *
    * \return particle status name
    */
-  std::string enum_to_status_name(const ParticleStatus& status);
+  FOUR_C_API(FOUR_C_CORE) std::string enum_to_status_name(const ParticleStatus& status);
 
   //! @}
 

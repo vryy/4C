@@ -52,6 +52,7 @@ namespace Core::LinAlg
    \param B          (in/out) : Matrix to be added to (must have Filled()==false)
    \param scalarB    (in)     : scaling factor for B
    */
+  FOUR_C_API(FOUR_C_CORE)
   void matrix_add(const Core::LinAlg::SparseMatrix& A, const bool transposeA, const double scalarA,
       Core::LinAlg::SparseMatrix& B, const double scalarB);
 
@@ -67,6 +68,7 @@ namespace Core::LinAlg
   \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==nullptr)
   \param B          (in/out) : Matrix to be added to (must have Filled()==false)
   */
+  FOUR_C_API(FOUR_C_CORE)
   void matrix_put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
       std::shared_ptr<const Core::LinAlg::Map> rowmap, Core::LinAlg::SparseMatrix& B);
 
@@ -88,6 +90,7 @@ namespace Core::LinAlg
                             exit, (defaults to true)
    \return Matrix product A(^T)*B(^T)
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::unique_ptr<SparseMatrix> matrix_multiply(
       const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, bool complete = true);
 
@@ -115,10 +118,10 @@ namespace Core::LinAlg
                                    exit, (defaults to true)
    \return Matrix product A(^T)*B(^T)
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::unique_ptr<SparseMatrix> matrix_multiply(const SparseMatrix& A, bool transA,
       const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
       bool complete = true);
-
 
   /*!
    \brief Compute transposed matrix of a sparse matrix explicitly
@@ -131,7 +134,7 @@ namespace Core::LinAlg
 
    \return matrix_transpose of the input matrix A.
    */
-  std::shared_ptr<SparseMatrix> matrix_transpose(const SparseMatrix& A);
+  FOUR_C_API(FOUR_C_CORE) std::shared_ptr<SparseMatrix> matrix_transpose(const SparseMatrix& A);
 
   /**
    * \brief Options for sparse matrix inverse
@@ -170,6 +173,7 @@ namespace Core::LinAlg
    *
    * \return Sparse inverse A^(-1) of the input matrix A.
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<SparseMatrix> matrix_sparse_inverse(const SparseMatrix& A,
       std::shared_ptr<Core::LinAlg::Graph> sparsity_pattern,
       OptionsSparseMatrixInverse options = {});
@@ -210,6 +214,7 @@ namespace Core::LinAlg
    *
    * @return A unique pointer to a new sparse matrix containing the corrected matrix
    */
+  FOUR_C_API(FOUR_C_CORE)
   std::unique_ptr<SparseMatrix> matrix_rank_correction(const SparseMatrix& A,
       const MultiVector<double>& basis, OptionsSparseMatrixRankCorrection options = {});
 
@@ -221,7 +226,8 @@ namespace Core::LinAlg
    *
    * \return MultiVector containing multi_vector*matrix
    */
-  MultiVector<double> multiply_multi_vector_dense_matrix(
+  FOUR_C_API(FOUR_C_CORE)
+  Core::LinAlg::MultiVector<double> multiply_multi_vector_dense_matrix(
       const Core::LinAlg::MultiVector<double>& multi_vector,
       const Core::LinAlg::SerialDenseMatrix& matrix);
 
@@ -236,6 +242,7 @@ namespace Core::LinAlg
    *
    * \return SparseMatrix containing the outer-product MV*MV^T
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::SparseMatrix multiply_multi_vector_multi_vector(
       const Core::LinAlg::MultiVector<double>& mv1, const Core::LinAlg::MultiVector<double>& mv2,
       const int id = 1, const bool fill = true);
@@ -252,6 +259,7 @@ namespace Core::LinAlg
    * \return A new multi-vector with orthonormal columns spanning the same column space as the
    * input.
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::MultiVector<double> orthonormalize_multi_vector(
       const Core::LinAlg::MultiVector<double>& multi_vector);
 

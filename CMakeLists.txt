@@ -11,6 +11,7 @@
 ### General Setup
 
 cmake_minimum_required(VERSION 3.30)
+cmake_policy(SET CMP0141 NEW)
 
 # try to prevent modification of source directory
 # note: some files may still be written before CMake can abort and need to be removed manually
@@ -195,6 +196,8 @@ set(FOUR_C_LIBRARY_NAME lib4C)
 add_library(${FOUR_C_LIBRARY_NAME})
 # Remove the CMake generated prefix "lib" because we already added it manually, to have a distinct target name.
 set_target_properties(${FOUR_C_LIBRARY_NAME} PROPERTIES PREFIX "")
+# Define the DLL export interface on Windows
+target_compile_definitions(${FOUR_C_LIBRARY_NAME} PRIVATE FOUR_C_CORE=EXPORT)
 target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE four_c_private_compile_interface)
 if(NOT FOUR_C_BUILD_SHARED_LIBS)
   install(

@@ -42,11 +42,11 @@ namespace Mat
    * \note: This is an optional class. There are anisotropic materials that do not use this
    * interface.
    */
-  class Anisotropy
+  class FOUR_C_API(FOUR_C_CORE) Anisotropy
   {
    public:
     //! Numerical tolerance used to check for unit vectors
-    static constexpr float TOLERANCE = 1e-9;
+    static constexpr float TOLERANCE = 1e-9f;
 
     /*!
      * Constructor of the anisotropy class

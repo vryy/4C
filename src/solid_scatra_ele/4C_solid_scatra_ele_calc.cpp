@@ -939,64 +939,83 @@ template struct VerifyPackable<Core::FE::CellType::hex8, Core::FE::CellType::hex
 
 // explicit instantiations of template classes
 // for displacement based formulation
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
-    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::hex8>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex27,
-    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::hex27>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tet4,
-    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tet4>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tet10,
-    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tet10>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::nurbs27,
-    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::nurbs27>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
+        Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::hex8>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex27,
+        Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::hex27>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tet4,
+        Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tet4>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tet10,
+        Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tet10>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::nurbs27,
+        Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::nurbs27>>;
 
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad4,
-    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::quad4>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad9,
-    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::quad9>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri3,
-    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tri3>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri6,
-    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tri6>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad4,
+        Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::quad4>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad9,
+        Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::quad9>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri3,
+        Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tri3>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri6,
+        Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tri6>>;
 
 // for displacement based formulation with linear kinematics
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
-    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex8>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex27,
-    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex27>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tet4,
-    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tet4>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tet10,
-    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tet10>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::nurbs27,
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
+        Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex8>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex27,
+        Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex27>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tet4,
+        Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tet4>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tet10,
+        Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tet10>>;
+template class FOUR_C_EXPORT_INSTANTIATION Discret::Elements::SolidScatraEleCalc<
+    Core::FE::CellType::nurbs27,
     Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::nurbs27>>;
 
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad4,
-    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::quad4>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad9,
-    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::quad9>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri3,
-    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tri3>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri6,
-    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tri6>>;
-
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad4,
+        Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::quad4>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad9,
+        Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::quad9>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri3,
+        Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tri3>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::tri6,
+        Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tri6>>;
 
 // FBar based formulation
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
-    Discret::Elements::FBarFormulation<Core::FE::CellType::hex8>>;
+template class FOUR_C_EXPORT_INSTANTIATION Discret::Elements::SolidScatraEleCalc<
+    Core::FE::CellType::hex8, Discret::Elements::FBarFormulation<Core::FE::CellType::hex8>>;
 
 // explicit instantiations for hex8 with EAS
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
-    Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_9, Solid::KinemType::nonlinearTotLag>>;
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
-    Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
-        Discret::Elements::EasType::eastype_h8_21, Solid::KinemType::nonlinearTotLag>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
+        Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
+            Discret::Elements::EasType::eastype_h8_9, Solid::KinemType::nonlinearTotLag>>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::hex8,
+        Discret::Elements::EASFormulation<Core::FE::CellType::hex8,
+            Discret::Elements::EasType::eastype_h8_21, Solid::KinemType::nonlinearTotLag>>;
 
 // explicit instantiations for quad4 with EAS
-template class Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad4,
-    Discret::Elements::EASFormulation<Core::FE::CellType::quad4,
-        Discret::Elements::EasType::eastype_q4_4, Solid::KinemType::nonlinearTotLag>>;
-
+template class FOUR_C_EXPORT_INSTANTIATION
+    Discret::Elements::SolidScatraEleCalc<Core::FE::CellType::quad4,
+        Discret::Elements::EASFormulation<Core::FE::CellType::quad4,
+            Discret::Elements::EasType::eastype_q4_4, Solid::KinemType::nonlinearTotLag>>;
 
 FOUR_C_NAMESPACE_CLOSE

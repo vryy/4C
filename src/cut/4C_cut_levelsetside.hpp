@@ -17,7 +17,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Cut
 {
   /*! \brief Class to handle level-set cut side which does not have a regular
@@ -164,7 +163,6 @@ namespace Cut
   };  // class LevelSetSide
 
 }  // namespace Cut
-
 
 FOUR_C_NAMESPACE_CLOSE
 

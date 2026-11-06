@@ -12,6 +12,9 @@ get_property(
   FOUR_C_DEFINES_FOR_EXTERNAL_DEPENDENCIES GLOBAL PROPERTY FOUR_C_DEFINES_FOR_EXTERNAL_DEPENDENCIES
   )
 
+# check if the compiler supports the visibility attribute
+check_cxx_compiler_flag("-fvisibility=hidden" HAVE_VISIBILITY_ATTRIBUTE)
+
 # configure a header file to pass some of the CMake settings to the source code
 configure_file("4C_config.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/config/4C_config.hpp")
 

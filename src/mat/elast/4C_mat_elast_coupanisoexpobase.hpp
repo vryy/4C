@@ -27,7 +27,7 @@ namespace Mat
      * \brief Pure abstract class to define the interface to the implementation of specific
      * materials
      */
-    class CoupAnisoExpoBaseInterface
+    class FOUR_C_API(FOUR_C_CORE) CoupAnisoExpoBaseInterface
     {
      public:
       virtual ~CoupAnisoExpoBaseInterface() = default;
@@ -60,7 +60,7 @@ namespace Mat
        * MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0
        * ADAPT_ANGLE 0
        */
-      class CoupAnisoExpoBase
+      class FOUR_C_API(FOUR_C_CORE) CoupAnisoExpoBase
       {
        public:
         /// standard constructor
@@ -103,7 +103,7 @@ namespace Mat
      * wall mechanics and a comparative study of material models, J. of Elasticity 61 (2000) 1-48.
      * </ul>
      */
-    class CoupAnisoExpoBase : public Summand
+    class FOUR_C_API(FOUR_C_CORE) CoupAnisoExpoBase : public Summand
     {
      public:
       /// constructor with given material parameters
@@ -134,7 +134,6 @@ namespace Mat
        */
       void evaluate_second_derivatives_aniso(Core::LinAlg::Matrix<3, 1>& ddPII_aniso,
           const Core::LinAlg::SymmetricTensor<double, 3, 3>& rcg, int gp, int eleGID) override;
-
 
       /*!
        * @brief retrieve coefficients of first, second and third derivative of summand with respect

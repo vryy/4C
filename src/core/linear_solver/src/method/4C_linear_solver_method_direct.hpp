@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinearSolver
 {
   /// direct linear solver (using amesos)
-  class DirectSolver : public SolverTypeBase
+  class FOUR_C_API(FOUR_C_CORE) DirectSolver : public SolverTypeBase
   {
    public:
     /*! \brief Construct the solver

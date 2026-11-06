@@ -26,7 +26,7 @@ namespace Core::LinAlg
    *       via Teuchos::RCP. Referenced objects must remain alive until
    *       factor(), solve(), and invert() complete.
    */
-  class SerialDenseSolver
+  class FOUR_C_API(FOUR_C_CORE) SerialDenseSolver
   {
    public:
     using Base = Teuchos::SerialDenseSolver<int, double>;

@@ -44,7 +44,7 @@ namespace CONTACT
    \brief A contact element
 
    */
-  class Element : public Mortar::Element
+  class FOUR_C_API(FOUR_C_CORE) Element : public Mortar::Element
   {
    public:
     //! @name Constructors and destructors and related methods

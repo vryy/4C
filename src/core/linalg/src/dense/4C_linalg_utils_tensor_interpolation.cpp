@@ -844,6 +844,7 @@ Core::LinAlg::Matrix<3, 3> Core::LinAlg::calc_rot_matrix_from_rot_vect(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 template <>
+FOUR_C_API(FOUR_C_CORE)
 Core::LinAlg::Matrix<3, 3> Core::LinAlg::SecondOrderTensorInterpolator<1>::get_interpolated_matrix(
     const std::vector<Core::LinAlg::Matrix<3, 3>>& ref_matrices,
     const std::vector<double>& ref_locs, const double interp_loc,
@@ -951,9 +952,9 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolation_gradient
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 template <>
-Core::LinAlg::Matrix<9, 1>
-Core::LinAlg::SecondOrderTensorInterpolator<1>::get_interpolation_gradient(
-    const std::vector<Core::LinAlg::Matrix<3, 3>>& ref_matrices,
+FOUR_C_API(FOUR_C_CORE)
+Core::LinAlg::Matrix<9, 1> Core::LinAlg::SecondOrderTensorInterpolator<
+    1>::get_interpolation_gradient(const std::vector<Core::LinAlg::Matrix<3, 3>>& ref_matrices,
     const std::vector<double>& ref_locs, const double interp_loc,
     Core::LinAlg::TensorInterpolationErrorType& err_type, const double perturbation_factor)
 {
@@ -978,11 +979,9 @@ Core::LinAlg::SecondOrderTensorInterpolator<1>::get_interpolation_gradient(
       ref_matrices, converted_ref_locs, converted_interp_loc, err_type, perturbation_factor);
 }
 
-
-
 // explicit instantiation of template functions
-template class Core::LinAlg::SecondOrderTensorInterpolator<1>;
-template class Core::LinAlg::SecondOrderTensorInterpolator<2>;
-template class Core::LinAlg::SecondOrderTensorInterpolator<3>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::SecondOrderTensorInterpolator<1>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::SecondOrderTensorInterpolator<2>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::SecondOrderTensorInterpolator<3>;
 
 FOUR_C_NAMESPACE_CLOSE

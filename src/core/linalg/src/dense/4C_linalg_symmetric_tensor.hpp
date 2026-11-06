@@ -168,8 +168,8 @@ namespace Core::LinAlg
     {
       static constexpr std::size_t compressed_size = index_reorder_to_symmetric_tensor<n...>.size();
 
-      template <TensorBoundCheck bound_check>
-      static constexpr std::size_t flatten_index(decltype(n)... i)
+      template <TensorBoundCheck bound_check, typename... Indices>
+      static constexpr std::size_t flatten_index(Indices... i)
       {
         return index_reorder_from_symmetric_tensor<
             n...>[get_flat_index<OrderType::column_major, bound_check, n...>(i...)];

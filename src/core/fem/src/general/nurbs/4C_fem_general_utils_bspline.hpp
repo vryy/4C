@@ -19,7 +19,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Core::FE::Nurbs
 {
   /*!
@@ -28,7 +27,7 @@ namespace Core::FE::Nurbs
          polynomials which are nonzero in the 'central'
          knotvector interval
   */
-  class BsplinePolynomial
+  class FOUR_C_API(FOUR_C_CORE) BsplinePolynomial
   {
    public:
     //--------------------------------------------------

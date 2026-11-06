@@ -20,7 +20,7 @@ namespace Mat
 {
   namespace Trait
   {
-    class Thermo
+    class FOUR_C_API(FOUR_C_CORE) Thermo
     {
      public:
       virtual ~Thermo() = default;

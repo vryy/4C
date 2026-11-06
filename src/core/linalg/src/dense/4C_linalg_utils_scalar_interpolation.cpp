@@ -264,17 +264,17 @@ std::vector<double> Core::LinAlg::calculate_normalized_weights(
 }
 
 // Explicit template instantiations for calculate_normalized_weights
-template std::vector<double> Core::LinAlg::calculate_normalized_weights<1>(
-    const std::vector<Core::LinAlg::Matrix<1, 1>>&, const Core::LinAlg::Matrix<1, 1>&,
-    const Core::LinAlg::ScalarInterpolationWeightingFunction,
+template FOUR_C_EXPORT_INSTANTIATION std::vector<double>
+Core::LinAlg::calculate_normalized_weights<1>(const std::vector<Core::LinAlg::Matrix<1, 1>>&,
+    const Core::LinAlg::Matrix<1, 1>&, const Core::LinAlg::ScalarInterpolationWeightingFunction,
     const Core::LinAlg::ScalarInterpolationParams&);
-template std::vector<double> Core::LinAlg::calculate_normalized_weights<2>(
-    const std::vector<Core::LinAlg::Matrix<2, 1>>&, const Core::LinAlg::Matrix<2, 1>&,
-    const Core::LinAlg::ScalarInterpolationWeightingFunction,
+template FOUR_C_EXPORT_INSTANTIATION std::vector<double>
+Core::LinAlg::calculate_normalized_weights<2>(const std::vector<Core::LinAlg::Matrix<2, 1>>&,
+    const Core::LinAlg::Matrix<2, 1>&, const Core::LinAlg::ScalarInterpolationWeightingFunction,
     const Core::LinAlg::ScalarInterpolationParams&);
-template std::vector<double> Core::LinAlg::calculate_normalized_weights<3>(
-    const std::vector<Core::LinAlg::Matrix<3, 1>>&, const Core::LinAlg::Matrix<3, 1>&,
-    const Core::LinAlg::ScalarInterpolationWeightingFunction,
+template FOUR_C_EXPORT_INSTANTIATION std::vector<double>
+Core::LinAlg::calculate_normalized_weights<3>(const std::vector<Core::LinAlg::Matrix<3, 1>>&,
+    const Core::LinAlg::Matrix<3, 1>&, const Core::LinAlg::ScalarInterpolationWeightingFunction,
     const Core::LinAlg::ScalarInterpolationParams&);
 
 /*--------------------------------------------------------------------*
@@ -485,18 +485,18 @@ Core::LinAlg::ScalarInterpolator<loc_dim, poly_order, num_coefficients>::get_int
 }
 
 // Explicit template instantiations
-template class Core::LinAlg::ScalarInterpolator<1>;
-template class Core::LinAlg::ScalarInterpolator<2>;
-template class Core::LinAlg::ScalarInterpolator<3>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::ScalarInterpolator<1>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::ScalarInterpolator<2>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::ScalarInterpolator<3>;
 
-template class Core::LinAlg::ScalarInterpolator<1, 1, 2>;
-template class Core::LinAlg::ScalarInterpolator<1, 2, 3>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::ScalarInterpolator<1, 1, 2>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::ScalarInterpolator<1, 2, 3>;
 
-template class Core::LinAlg::ScalarInterpolator<2, 1, 4>;
-template class Core::LinAlg::ScalarInterpolator<2, 2, 6>;
-template class Core::LinAlg::ScalarInterpolator<2, 2, 8>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::ScalarInterpolator<2, 1, 4>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::ScalarInterpolator<2, 2, 6>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::ScalarInterpolator<2, 2, 8>;
 
-template class Core::LinAlg::ScalarInterpolator<3, 1, 8>;
-template class Core::LinAlg::ScalarInterpolator<3, 2, 10>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::ScalarInterpolator<3, 1, 8>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::ScalarInterpolator<3, 2, 10>;
 
 FOUR_C_NAMESPACE_CLOSE

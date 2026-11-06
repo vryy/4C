@@ -560,7 +560,8 @@ void Core::LinAlg::GeneralizedSphericalLinearInterpolator<loc_dim>::right_orthon
 }
 
 // Explicit instantiations
-template class Core::LinAlg::GeneralizedSphericalLinearInterpolator<1>;
-template class Core::LinAlg::GeneralizedSphericalLinearInterpolator<2>;
-template class Core::LinAlg::GeneralizedSphericalLinearInterpolator<3>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::GeneralizedSphericalLinearInterpolator<1>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::GeneralizedSphericalLinearInterpolator<2>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::GeneralizedSphericalLinearInterpolator<3>;
+
 FOUR_C_NAMESPACE_CLOSE

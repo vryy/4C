@@ -36,6 +36,7 @@ namespace Core::IO::GridGenerator
     \param inputData              (i) class holding all input parameters
     \param outputFlag             (i) triggers output writing
   */
+  FOUR_C_API(FOUR_C_CORE)
   void create_rectangular_cuboid_discretization(
       Core::FE::Discretization& dis, const RectangularCuboidInputs& inputData, bool outputFlag);
 
@@ -84,7 +85,7 @@ namespace Core::IO::GridGenerator
   };
 
 }  // namespace Core::IO::GridGenerator
-   // namespace Discret
+
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

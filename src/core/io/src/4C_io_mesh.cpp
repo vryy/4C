@@ -17,7 +17,6 @@
 #include <set>
 
 
-
 FOUR_C_NAMESPACE_OPEN
 
 std::string Core::IO::MeshInput::describe(VerbosityLevel level)
@@ -353,12 +352,12 @@ void Core::IO::MeshInput::print(const PointSet& point_set, std::ostream& os, Ver
   os << "\n";
 }
 
-template void Core::IO::MeshInput::assert_valid(const RawMesh<3>& mesh);
-template void Core::IO::MeshInput::print(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::MeshInput::assert_valid(const RawMesh<3>& mesh);
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::MeshInput::print(
     const Mesh<3>& mesh, std::ostream& os, VerbosityLevel verbose);
-template void Core::IO::MeshInput::print(
+template FOUR_C_EXPORT_INSTANTIATION void Core::IO::MeshInput::print(
     const CellBlock<3>& block, std::ostream& os, VerbosityLevel verbose);
 
-template class Core::IO::MeshInput::Mesh<3>;
+template class FOUR_C_EXPORT_INSTANTIATION Core::IO::MeshInput::Mesh<3>;
 
 FOUR_C_NAMESPACE_CLOSE

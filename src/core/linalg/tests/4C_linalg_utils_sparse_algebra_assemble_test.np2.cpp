@@ -39,7 +39,8 @@ namespace
     int rank = Core::Communication::my_mpi_rank(comm_);
 
     Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-        TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), comm_);
+        TESTING::get_support_file_path("test_matrices/poisson1d.mm").generic_string().c_str(),
+        comm_);
 
     // Matrix has no Dirichlet rows
     {

@@ -46,7 +46,7 @@ namespace Core::Communication
           already unpacked in the instance. The calling method is responsible for
           freeing this instance!
   */
-  ParObject* factory(Core::Communication::UnpackBuffer& buffer);
+  FOUR_C_API(FOUR_C_CORE) ParObject* factory(Core::Communication::UnpackBuffer& buffer);
 
   /*!
   \brief Create an instance of a finite element depending on the type of element
@@ -60,6 +60,7 @@ namespace Core::Communication
   \param owner   (in): owner of the new element
 
   */
+  FOUR_C_API(FOUR_C_CORE)
   std::shared_ptr<Core::Elements::Element> factory(
       const std::string& eletype, Core::FE::CellType celltype, const int id, const int owner);
 
@@ -219,8 +220,6 @@ namespace Core::Communication
   }
 
 }  // namespace Core::Communication
-
-
 
 FOUR_C_NAMESPACE_CLOSE
 

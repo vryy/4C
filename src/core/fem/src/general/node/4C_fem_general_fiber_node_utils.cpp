@@ -233,117 +233,136 @@ bool Core::Nodes::have_nodal_fibers(const Core::Nodes::Node* const* nodes)
   return std::all_of(nodes, &nodes[numberOfNodes], nodeHasFibers);
 }
 
-template void Core::Nodes::project_quantity_with_shape_functions<Core::FE::CellType::tet4>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_quantity_with_shape_functions<Core::FE::CellType::tet4>(
     const std::array<double, Core::FE::num_nodes(Core::FE::CellType::tet4)> quantity,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tet4), 1>>&
         shapefcts,
     std::vector<double>& quantityProjected);
-template void Core::Nodes::project_quantity_with_shape_functions<Core::FE::CellType::tet10>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_quantity_with_shape_functions<Core::FE::CellType::tet10>(
     const std::array<double, Core::FE::num_nodes(Core::FE::CellType::tet10)> quantity,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tet10), 1>>&
         shapefcts,
     std::vector<double>& quantityProjected);
-template void Core::Nodes::project_quantity_with_shape_functions<Core::FE::CellType::hex8>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_quantity_with_shape_functions<Core::FE::CellType::hex8>(
     const std::array<double, Core::FE::num_nodes(Core::FE::CellType::hex8)> quantity,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::hex8), 1>>&
         shapefcts,
     std::vector<double>& quantityProjected);
-template void Core::Nodes::project_quantity_with_shape_functions<Core::FE::CellType::tri3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_quantity_with_shape_functions<Core::FE::CellType::tri3>(
     const std::array<double, Core::FE::num_nodes(Core::FE::CellType::tri3)> quantity,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>>&
         shapefcts,
     std::vector<double>& quantityProjected);
 
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::tet4>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::tet4>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tet4), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::tet10>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::tet10>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tet10), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::hex8>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::hex8>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::hex8), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::hex18>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::hex18>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::hex18), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::hex20>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::hex20>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::hex20), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::hex27>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::hex27>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::hex27), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::nurbs27>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::nurbs27>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::nurbs27), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::tri3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::tri3>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri3), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::tri6>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::tri6>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::tri6), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::quad4>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::quad4>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad4), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::quad8>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::quad8>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad8), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::quad9>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::quad9>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::quad9), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::pyramid5>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::pyramid5>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::pyramid5), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::wedge6>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::wedge6>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::wedge6), 1>>&,
     NodalFiberHolder&);
-template void Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::nurbs9>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::nurbs9>(
     const Core::Nodes::Node* const*,
     const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes(Core::FE::CellType::nurbs9), 1>>&,
     NodalFiberHolder&);
 
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tet4>(
+template FOUR_C_EXPORT_INSTANTIATION bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tet4>(
     const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tet10>(
+template FOUR_C_EXPORT_INSTANTIATION bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tet10>(
     const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::hex8>(
+template FOUR_C_EXPORT_INSTANTIATION bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::hex8>(
     const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::hex18>(
+template FOUR_C_EXPORT_INSTANTIATION bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::hex18>(
     const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::hex20>(
+template FOUR_C_EXPORT_INSTANTIATION bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::hex20>(
     const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::hex27>(
+template FOUR_C_EXPORT_INSTANTIATION bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::hex27>(
     const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::nurbs27>(
+template FOUR_C_EXPORT_INSTANTIATION bool
+Core::Nodes::have_nodal_fibers<Core::FE::CellType::nurbs27>(const Core::Nodes::Node* const* nodes);
+template FOUR_C_EXPORT_INSTANTIATION bool
+Core::Nodes::have_nodal_fibers<Core::FE::CellType::pyramid5>(const Core::Nodes::Node* const* nodes);
+template FOUR_C_EXPORT_INSTANTIATION bool
+Core::Nodes::have_nodal_fibers<Core::FE::CellType::wedge6>(const Core::Nodes::Node* const* nodes);
+template FOUR_C_EXPORT_INSTANTIATION bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::quad4>(
     const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::pyramid5>(
+template FOUR_C_EXPORT_INSTANTIATION bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::quad8>(
     const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::wedge6>(
+template FOUR_C_EXPORT_INSTANTIATION bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::quad9>(
     const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::quad4>(
+template FOUR_C_EXPORT_INSTANTIATION bool
+Core::Nodes::have_nodal_fibers<Core::FE::CellType::nurbs9>(const Core::Nodes::Node* const* nodes);
+template FOUR_C_EXPORT_INSTANTIATION bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tri3>(
     const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::quad8>(
-    const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::quad9>(
-    const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::nurbs9>(
-    const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tri3>(
-    const Core::Nodes::Node* const* nodes);
-template bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tri6>(
+template FOUR_C_EXPORT_INSTANTIATION bool Core::Nodes::have_nodal_fibers<Core::FE::CellType::tri6>(
     const Core::Nodes::Node* const* nodes);
 
 FOUR_C_NAMESPACE_CLOSE

@@ -22,7 +22,7 @@ namespace Global
  *
  * \param problem  global problem providing parameters, discretizations and solvers
  */
-void ssti_drt(Global::Problem& problem);
+FOUR_C_API(FOUR_C_CORE) void ssti_drt(Global::Problem& problem);
 
 FOUR_C_NAMESPACE_CLOSE
 

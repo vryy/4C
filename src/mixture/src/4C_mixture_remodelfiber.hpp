@@ -28,7 +28,6 @@ namespace Mixture
   template <typename T>
   class RemodelFiberMaterial;
 
-
   namespace Implementation
   {
     template <int numstates, typename T>

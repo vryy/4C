@@ -41,6 +41,7 @@ namespace Mat
    * @param properties    (in)      : Data class with flags of the type of the summands
    * @param checkpolyconvexity (in) : Flag, whether to check the polyconvexity
    */
+  FOUR_C_API(FOUR_C_CORE)
   void elast_hyper_evaluate(const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
       const Teuchos::ParameterList& params, const EvaluationContext<3>& context,
@@ -57,6 +58,7 @@ namespace Mat
    * @param E_strain (in) : Green-Lagrange in strain-like Voigt notation
    * @param C_strain (out) : Cauchy-Green in strain-like Voigt notation
    */
+  FOUR_C_API(FOUR_C_CORE)
   void evaluate_right_cauchy_green_strain_like_voigt(
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& E_strain,
       Core::LinAlg::SymmetricTensor<double, 3, 3>& C_strain);
@@ -72,6 +74,7 @@ namespace Mat
    * @param gp Gauss point
    * @param eleGID Global element id
    */
+  FOUR_C_API(FOUR_C_CORE)
   void elast_hyper_evaluate_invariant_derivatives(const Core::LinAlg::Matrix<3, 1>& prinv,
       Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII,
       const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
@@ -102,6 +105,7 @@ namespace Mat
    * @param ddPII (out) : Second derivatives of the Free-energy function with respect to the
    * principal invariants
    */
+  FOUR_C_API(FOUR_C_CORE)
   void convert_mod_to_princ(const Core::LinAlg::Matrix<3, 1>& prinv,
       const Core::LinAlg::Matrix<3, 1>& dPmodI, const Core::LinAlg::Matrix<6, 1>& ddPmodII,
       Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII);
@@ -120,6 +124,7 @@ namespace Mat
    * @param ddPII Second derivatives of the Free-energy function with respect to the
    * principal invariants
    */
+  FOUR_C_API(FOUR_C_CORE)
   void elast_hyper_add_isotropic_stress_cmat(Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
       Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& C_strain,
@@ -202,6 +207,7 @@ namespace Mat
    * @param gp (in) : Gauss point
    * @param eleGID (in) : Global element id
    */
+  FOUR_C_API(FOUR_C_CORE)
   void elast_hyper_add_response_stretches(Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
       Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& C_strain,
@@ -220,6 +226,7 @@ namespace Mat
    * @param eleGID Global element id
    * @param potsum Summands of the Free-energy function
    */
+  FOUR_C_API(FOUR_C_CORE)
   void elast_hyper_add_anisotropic_princ(Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
       Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& C_strain,
@@ -239,6 +246,7 @@ namespace Mat
    * @param context Container for additional information
    * @param potsum Summands of the Free-energy function
    */
+  FOUR_C_API(FOUR_C_CORE)
   void elast_hyper_add_anisotropic_mod(Core::LinAlg::SymmetricTensor<double, 3, 3>& S_stress,
       Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& C_strain,
@@ -334,6 +342,7 @@ namespace Mat
    * @param ddPII (in) : Second derivatives of the Free energy function w.r.t the principal
    * invariants of the Right Cauchy-Green strain tensor
    */
+  FOUR_C_API(FOUR_C_CORE)
   void calculate_gamma_delta(Core::LinAlg::Matrix<3, 1>& gamma, Core::LinAlg::Matrix<8, 1>& delta,
       const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& dPI,
       const Core::LinAlg::Matrix<6, 1>& ddPII);
@@ -344,6 +353,7 @@ namespace Mat
    * @param potsum List of the summands
    * @param properties Class holding the properties of the formulation of the summands
    */
+  FOUR_C_API(FOUR_C_CORE)
   void elast_hyper_properties(const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
       SummandProperties& properties);
 
@@ -367,6 +377,7 @@ namespace Mat
    * @param eleGID (in) : Global element id
    * @param properties (in) : Class holding the properties of the formulation of the summands
    */
+  FOUR_C_API(FOUR_C_CORE)
   void elast_hyper_check_polyconvexity(const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
       const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& dPI,
       const Core::LinAlg::Matrix<6, 1>& ddPII, const Teuchos::ParameterList& params, int gp,
@@ -384,6 +395,7 @@ namespace Mat
    *                           deformation gradient (full 4th order tensor)
    *
    */
+  FOUR_C_API(FOUR_C_CORE)
   void elast_hyper_get_derivs_of_elastic_right_cg_tensor(
       const Core::LinAlg::Tensor<double, 3, 3>& iFinM,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& CM,

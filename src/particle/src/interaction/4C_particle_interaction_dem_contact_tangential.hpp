@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 namespace Particle
 {
-  class DEMContactTangentialBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactTangentialBase
   {
    public:
     //! constructor
@@ -57,7 +57,8 @@ namespace Particle
     double dt_;
   };
 
-  class DEMContactTangentialLinearSpringDamp : public DEMContactTangentialBase
+  class FOUR_C_API(FOUR_C_CORE) DEMContactTangentialLinearSpringDamp
+      : public DEMContactTangentialBase
   {
    public:
     //! constructor

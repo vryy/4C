@@ -251,7 +251,7 @@ namespace Core::Utils::SymbolicExpressionDetails
    * Parse symbolic expressions into a syntax tree.
    * This is a handwritten recursive descent parser.
    */
-  class Parser
+  class FOUR_C_API(FOUR_C_CORE) Parser
   {
    public:
     //! Parse @p expression into a syntax tree.

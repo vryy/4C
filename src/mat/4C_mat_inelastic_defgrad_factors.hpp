@@ -5,8 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_MAT_INELASTIC_DEFGRAD_FACTORS_HPP
-#define FOUR_C_MAT_INELASTIC_DEFGRAD_FACTORS_HPP
+#ifndef FOUR_C_CORE_INELASTIC_DEFGRAD_FACTORS_HPP
+#define FOUR_C_CORE_INELASTIC_DEFGRAD_FACTORS_HPP
 
 #include "4C_config.hpp"
 
@@ -51,7 +51,7 @@ namespace Mat
      *
      * Calculates and holds the growth direction in tensor format for anisotropic growth
      */
-    class InelasticDeformationDirection
+    class FOUR_C_API(FOUR_C_CORE) InelasticDeformationDirection
     {
      public:
       /*!
@@ -79,14 +79,13 @@ namespace Mat
      * This is a parameter class that is only needed to implement the pure virtual method
      * 'create_material()'.
      */
-    class InelasticDefgradNoGrowth : public Core::Mat::PAR::Parameter
+    class FOUR_C_API(FOUR_C_CORE) InelasticDefgradNoGrowth : public Core::Mat::PAR::Parameter
     {
      public:
       explicit InelasticDefgradNoGrowth(const Core::Mat::PAR::Parameter::Data& matdata);
 
       std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; }
     };
-
 
     /*----------------------------------------------------------------------
      *----------------------------------------------------------------------*/
@@ -95,7 +94,7 @@ namespace Mat
      * This is a parameter class holding parameters for evaluation of inelastic deformation (incl.
      * linearization) induced by a scalar.
      */
-    class InelasticDefgradScalar : public Core::Mat::PAR::Parameter
+    class FOUR_C_API(FOUR_C_CORE) InelasticDefgradScalar : public Core::Mat::PAR::Parameter
     {
      public:
       explicit InelasticDefgradScalar(const Core::Mat::PAR::Parameter::Data& matdata);
@@ -123,7 +122,7 @@ namespace Mat
      * This is a parameter class holding parameters for evaluation of an inelastic deformation
      * induced by a given time-dependent function.
      */
-    class InelasticDefgradTimeFunct : public Core::Mat::PAR::Parameter
+    class FOUR_C_API(FOUR_C_CORE) InelasticDefgradTimeFunct : public Core::Mat::PAR::Parameter
     {
      public:
       explicit InelasticDefgradTimeFunct(const Core::Mat::PAR::Parameter::Data& matdata);
@@ -145,7 +144,7 @@ namespace Mat
      * This is a specialized parameter class that can return the anisotropic growth direction
      * represented as a growth matrix
      */
-    class InelasticDefgradTimeFunctAniso : public InelasticDefgradTimeFunct
+    class FOUR_C_API(FOUR_C_CORE) InelasticDefgradTimeFunctAniso : public InelasticDefgradTimeFunct
     {
      public:
       /// standard constructor
@@ -168,7 +167,7 @@ namespace Mat
      *
      * This is a specialized parameter class that holds the growth factor for linear growth
      */
-    class InelasticDefgradLinScalar : public InelasticDefgradScalar
+    class FOUR_C_API(FOUR_C_CORE) InelasticDefgradLinScalar : public InelasticDefgradScalar
     {
      public:
       /// standard constructor
@@ -189,7 +188,7 @@ namespace Mat
      * This is a specialized parameter class that can return the anisotropic growth direction
      * represented as a growth matrix
      */
-    class InelasticDefgradLinScalarAniso : public InelasticDefgradLinScalar
+    class FOUR_C_API(FOUR_C_CORE) InelasticDefgradLinScalarAniso : public InelasticDefgradLinScalar
     {
      public:
       /// standard constructor
@@ -213,7 +212,7 @@ namespace Mat
      * This parameter class provides all electrochemical quantities that are needed to calculate the
      * intercalation fraction from a given species concentration.
      */
-    class InelasticDefgradIntercalFrac : public InelasticDefgradScalar
+    class FOUR_C_API(FOUR_C_CORE) InelasticDefgradIntercalFrac : public InelasticDefgradScalar
     {
      public:
       explicit InelasticDefgradIntercalFrac(const Core::Mat::PAR::Parameter::Data& matdata);
@@ -237,7 +236,8 @@ namespace Mat
      * This parameter class provides the value of the polynomial that models the growth evaluated in
      * the reference configuration.
      */
-    class InelasticDefgradPolyIntercalFrac : public InelasticDefgradIntercalFrac
+    class FOUR_C_API(FOUR_C_CORE) InelasticDefgradPolyIntercalFrac
+        : public InelasticDefgradIntercalFrac
     {
      public:
       explicit InelasticDefgradPolyIntercalFrac(const Core::Mat::PAR::Parameter::Data& matdata);
@@ -280,7 +280,8 @@ namespace Mat
      * This is a specialized parameter class that can return the anisotropic growth direction
      * represented as a growth matrix
      */
-    class InelasticDefgradPolyIntercalFracAniso : public InelasticDefgradPolyIntercalFrac
+    class FOUR_C_API(FOUR_C_CORE) InelasticDefgradPolyIntercalFracAniso
+        : public InelasticDefgradPolyIntercalFrac
     {
      public:
       /// standard constructor
@@ -304,7 +305,7 @@ namespace Mat
 
     Parameter class of InelasticDefgradLinTempIso.
     */
-    class InelasticDefgradLinTempIso : public Core::Mat::PAR::Parameter
+    class FOUR_C_API(FOUR_C_CORE) InelasticDefgradLinTempIso : public Core::Mat::PAR::Parameter
     {
      public:
       explicit InelasticDefgradLinTempIso(const Core::Mat::PAR::Parameter::Data& matdata);
@@ -330,7 +331,8 @@ namespace Mat
     /*! \class InelasticDefgradTransvIsotropElastViscoplast
      * Parameter class of InelasticDefgradTransvIsotropElastViscoplast.
      */
-    class InelasticDefgradTransvIsotropElastViscoplast : public Core::Mat::PAR::Parameter
+    class FOUR_C_API(FOUR_C_CORE) InelasticDefgradTransvIsotropElastViscoplast
+        : public Core::Mat::PAR::Parameter
     {
      public:
       explicit InelasticDefgradTransvIsotropElastViscoplast(
@@ -459,10 +461,8 @@ namespace Mat
       //! use local substepping to integrate the viscoplastic evolution equations
       const bool use_local_substepping_;
 
-
       //! maximum number of times the global time step can be halved in the substepping procedure
       const unsigned int max_local_substepping_halve_num_;
-
 
       //! utilized computation method for the matrix exponential
       const Core::LinAlg::MatrixExpCalcMethod mat_exp_calc_method_;
@@ -496,7 +496,7 @@ namespace Mat
    *
    * This class provides the functionality to be used if the growth law obeys a linear relation
    */
-  class InelasticDefgradLinearShape
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradLinearShape
   {
    public:
     /*!
@@ -531,7 +531,7 @@ namespace Mat
    *
    * This class provides the functionality to be used if the growth law obeys a polynomial relation
    */
-  class InelasticDefgradPolynomialShape
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradPolynomialShape
   {
    public:
     /*!
@@ -592,7 +592,7 @@ namespace Mat
       The derived classes below are needed to evaluate the inverse of the j-th inelastic
       deformation gradient F_{in,j}^{-1} and its derivatives w.r.t. the primary variables.
   */
-  class InelasticDefgradFactors
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradFactors
   {
    public:
     /**
@@ -758,7 +758,7 @@ namespace Mat
    no volume changes, i.e. the inelastic deformation gradient is always the identity tensor and
    contributions to the linearizations therefore vanish.
    */
-  class InelasticDefgradNoGrowth : public InelasticDefgradFactors
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradNoGrowth : public InelasticDefgradFactors
   {
    public:
     /*!
@@ -816,7 +816,7 @@ namespace Mat
    * the magnitude of the inelastic part of the deformation gradient used in the
    * InelasticDefgradTimeFunctIso and InelasticDefgradTimeFunctAniso classes.
    */
-  class InelasticDefgradTimeFunct : public InelasticDefgradFactors
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradTimeFunct : public InelasticDefgradFactors
   {
    public:
     explicit InelasticDefgradTimeFunct(Core::Mat::PAR::Parameter* params);
@@ -876,7 +876,7 @@ namespace Mat
    * of the inelastic part of the deformation gradient such that the determinant of the inelastic
    * part evaluates to (1 + time function value).
    */
-  class InelasticDefgradTimeFunctAniso : public InelasticDefgradTimeFunct
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradTimeFunctAniso : public InelasticDefgradTimeFunct
   {
    public:
     explicit InelasticDefgradTimeFunctAniso(Core::Mat::PAR::Parameter* params);
@@ -940,7 +940,7 @@ namespace Mat
    * of the inelastic part of the deformation gradient such that the determinant of the inelastic
    * part evaluates to (1 + time function value).
    */
-  class InelasticDefgradTimeFunctIso : public InelasticDefgradTimeFunct
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradTimeFunctIso : public InelasticDefgradTimeFunct
   {
    public:
     explicit InelasticDefgradTimeFunctIso(Core::Mat::PAR::Parameter* params);
@@ -995,7 +995,7 @@ namespace Mat
     Core::LinAlg::SymmetricTensor<double, 3, 3> identity_;
   };
 
-  class InelasticDefgradScalar : public InelasticDefgradFactors
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradScalar : public InelasticDefgradFactors
   {
    public:
     /*!
@@ -1064,7 +1064,7 @@ namespace Mat
    describes the growth of material with respect to intercalation fraction and it is prescribed by
    user in input file by defining it coefficients.
    */
-  class InelasticDefgradPolyIntercalFrac : public InelasticDefgradScalar
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradPolyIntercalFrac : public InelasticDefgradScalar
   {
    public:
     /*!
@@ -1145,7 +1145,7 @@ namespace Mat
       \boldsymbol{I}
       \f]
       */
-  class InelasticDefgradLinScalarIso : public InelasticDefgradScalar
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradLinScalarIso : public InelasticDefgradScalar
   {
    public:
     /*!
@@ -1216,7 +1216,7 @@ namespace Mat
      \f$ \mathbf{g} \f$ is normalized to length 1 before calculation of \f$ \mathbf{G} \f$.
      \f$ f(\chi) \f$ is defined by the user in the input file.
      */
-  class InelasticDefgradLinScalarAniso : public InelasticDefgradScalar
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradLinScalarAniso : public InelasticDefgradScalar
   {
    public:
     /*!
@@ -1282,7 +1282,8 @@ namespace Mat
    \f]
    where \f$ f(\chi) \f$ is defined by the user in the input file.
    */
-  class InelasticDefgradPolyIntercalFracIso : public InelasticDefgradPolyIntercalFrac
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradPolyIntercalFracIso
+      : public InelasticDefgradPolyIntercalFrac
   {
    public:
     /*!
@@ -1347,7 +1348,8 @@ namespace Mat
    \f$ \boldsymbol{g} \f$ is normalized to length 1 before calculation of \f$ \boldsymbol{G} \f$.
    \f$ f(\chi) \f$ is defined by the user in the input file.
    */
-  class InelasticDefgradPolyIntercalFracAniso : public InelasticDefgradPolyIntercalFrac
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradPolyIntercalFracAniso
+      : public InelasticDefgradPolyIntercalFrac
   {
    public:
     /*!
@@ -1403,7 +1405,7 @@ namespace Mat
    \boldsymbol{F}_\text{in} = \boldsymbol{I} \left[ 1 + \beta \left( T - T_\text{ref} \right)
    \right]^\frac{1}{3}, \f]
    */
-  class InelasticDefgradLinTempIso : public InelasticDefgradFactors
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradLinTempIso : public InelasticDefgradFactors
   {
    public:
     explicit InelasticDefgradLinTempIso(Core::Mat::PAR::Parameter* params);
@@ -1486,7 +1488,8 @@ namespace Mat
    *  -# Bonet et al., A simple orthotropic, transversely isotropic hyperelastic constitutive
    * equation for large strain computations, Comput. Methods Appl. Mech. Engrg. 162, 1998
    */
-  class InelasticDefgradTransvIsotropElastViscoplast : public InelasticDefgradFactors
+  class FOUR_C_API(FOUR_C_CORE) InelasticDefgradTransvIsotropElastViscoplast
+      : public InelasticDefgradFactors
   {
    public:
     /*!
@@ -1658,7 +1661,6 @@ namespace Mat
 
     /// reference temperature for thermal expansion
     const double ref_temperature_;
-
 
     //! map to elastic materials/potential summands (only isotropic)
     std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsumel_;
@@ -1957,7 +1959,6 @@ namespace Mat
             local_integration_input,
         InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status);
 
-
     /*!
      * @brief Setup halved substep in case of an encountered evaluation error within the substep
      * Local Newton Loop
@@ -2061,7 +2062,6 @@ namespace Mat
       }
     }
 
-
     /*!
      * @brief Determines the initial estimate to be used within the Local Newton.
      * If adaptive estimate interpolation is used, this method also prepares everything for the
@@ -2155,7 +2155,6 @@ namespace Mat
         const Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalIntegrationInput&
             local_integration_input,
         const Core::LinAlg::Matrix<3, 3>& iFin_candidate, const double plastic_strain_candidate);
-
 
     /*!
      * @brief Perform the re-estimation procedure of the Adaptive Estimate Interpolation

@@ -1688,40 +1688,40 @@ std::vector<double> PoroPressureBased::LungCarbonDioxideExchangeLaw<dim>::evalua
 
 // explicit instantiations
 
-template class PoroPressureBased::TumorGrowthLawHeaviside<1>;
-template class PoroPressureBased::TumorGrowthLawHeaviside<2>;
-template class PoroPressureBased::TumorGrowthLawHeaviside<3>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::TumorGrowthLawHeaviside<1>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::TumorGrowthLawHeaviside<2>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::TumorGrowthLawHeaviside<3>;
 
-template class PoroPressureBased::NecrosisLawHeaviside<1>;
-template class PoroPressureBased::NecrosisLawHeaviside<2>;
-template class PoroPressureBased::NecrosisLawHeaviside<3>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::NecrosisLawHeaviside<1>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::NecrosisLawHeaviside<2>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::NecrosisLawHeaviside<3>;
 
-template class PoroPressureBased::OxygenConsumptionLawHeaviside<1>;
-template class PoroPressureBased::OxygenConsumptionLawHeaviside<2>;
-template class PoroPressureBased::OxygenConsumptionLawHeaviside<3>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::OxygenConsumptionLawHeaviside<1>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::OxygenConsumptionLawHeaviside<2>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::OxygenConsumptionLawHeaviside<3>;
 
-template class PoroPressureBased::TumorGrowthLawHeavisideOxy<1>;
-template class PoroPressureBased::TumorGrowthLawHeavisideOxy<2>;
-template class PoroPressureBased::TumorGrowthLawHeavisideOxy<3>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::TumorGrowthLawHeavisideOxy<1>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::TumorGrowthLawHeavisideOxy<2>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::TumorGrowthLawHeavisideOxy<3>;
 
-template class PoroPressureBased::TumorGrowthLawHeavisideNecro<1>;
-template class PoroPressureBased::TumorGrowthLawHeavisideNecro<2>;
-template class PoroPressureBased::TumorGrowthLawHeavisideNecro<3>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::TumorGrowthLawHeavisideNecro<1>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::TumorGrowthLawHeavisideNecro<2>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::TumorGrowthLawHeavisideNecro<3>;
 
-template class PoroPressureBased::OxygenTransvascularExchangeLawCont<1>;
-template class PoroPressureBased::OxygenTransvascularExchangeLawCont<2>;
-template class PoroPressureBased::OxygenTransvascularExchangeLawCont<3>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::OxygenTransvascularExchangeLawCont<1>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::OxygenTransvascularExchangeLawCont<2>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::OxygenTransvascularExchangeLawCont<3>;
 
-template class PoroPressureBased::OxygenTransvascularExchangeLawDisc<1>;
-template class PoroPressureBased::OxygenTransvascularExchangeLawDisc<2>;
-template class PoroPressureBased::OxygenTransvascularExchangeLawDisc<3>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::OxygenTransvascularExchangeLawDisc<1>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::OxygenTransvascularExchangeLawDisc<2>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::OxygenTransvascularExchangeLawDisc<3>;
 
-template class PoroPressureBased::LungOxygenExchangeLaw<1>;
-template class PoroPressureBased::LungOxygenExchangeLaw<2>;
-template class PoroPressureBased::LungOxygenExchangeLaw<3>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::LungOxygenExchangeLaw<1>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::LungOxygenExchangeLaw<2>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::LungOxygenExchangeLaw<3>;
 
-template class PoroPressureBased::LungCarbonDioxideExchangeLaw<1>;
-template class PoroPressureBased::LungCarbonDioxideExchangeLaw<2>;
-template class PoroPressureBased::LungCarbonDioxideExchangeLaw<3>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::LungCarbonDioxideExchangeLaw<1>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::LungCarbonDioxideExchangeLaw<2>;
+template class FOUR_C_EXPORT_INSTANTIATION PoroPressureBased::LungCarbonDioxideExchangeLaw<3>;
 
 FOUR_C_NAMESPACE_CLOSE

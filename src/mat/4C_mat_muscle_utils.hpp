@@ -36,6 +36,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     tol Tolerance for Halley's approximation
    * @param[in]     maxiter Maximal number of iterations
    */
+  FOUR_C_API(FOUR_C_CORE)
   void evaluate_lambert(const double xi, double& W0, const double tol, const int maxiter);
 
   /*!
@@ -50,6 +51,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     lambdaOpt Optimal fiber stretch
    * @returns       fxi Force-stretch function result between zero and one
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_force_stretch_dependency_ehret(
       const double lambdaM, const double lambdaMin, const double lambdaOpt);
 
@@ -67,6 +69,7 @@ namespace Mat::Utils::Muscle
    * @returns       dFxidLambdaM Derivative of the force-stretch function w.r.t. the fiber
    *                             stretch
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_derivative_force_stretch_dependency_ehret(
       const double lambdaM, const double lambdaMin, const double lambdaOpt);
 
@@ -83,6 +86,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     lambdaOpt Optimal fiber stretch
    * @returns       intFxi Integral of the force-stretch function w.r.t. the fiber stretch
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_integral_force_stretch_dependency_ehret(
       const double lambdaM, const double lambdaMin, const double lambdaOpt);
 
@@ -107,6 +111,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     kc Curvature of the concentric velocity dependency function
    * @returns       fv Force-velocity function result between zero and one
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_force_velocity_dependency_boel(const double dotLambdaM,
       const double dotLambdaMMin, const double de, const double dc, const double ke,
       const double kc);
@@ -136,6 +141,7 @@ namespace Mat::Utils::Muscle
    * @returns       dFvdLambdaM Derivative of the force-velocity function w.r.t. the fiber
    *                            stretch
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_derivative_force_velocity_dependency_boel(const double dotLambdaM,
       const double dDotLambdaMdLambdaM, const double dotLambdaMMin, const double de,
       const double dc, const double ke, const double kc);
@@ -161,6 +167,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     currentTime Current time
    * @returns       Poptft Time-dependent optimal active stress at currentTime
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_time_dependent_active_stress_ehret(const double Na, const int muTypesNum,
       const std::vector<double>& rho, const std::vector<double>& I, const std::vector<double>& F,
       const std::vector<double>& T, const int actIntervalsNum, const std::vector<double>& actTimes,
@@ -177,6 +184,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     lambdaOpt Optimal fiber stretch
    * @returns       fxi Force-stretch function result between zero and one
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_active_force_stretch_dependency_blemker(
       const double lambdaM, const double lambdaOpt);
 
@@ -193,6 +201,7 @@ namespace Mat::Utils::Muscle
    * @returns       dFxidLambdaM Derivative of the force-stretch function w.r.t. the fiber
    *                             stretch
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_derivative_active_force_stretch_dependency_blemker(
       const double lambdaM, const double lambdaOpt);
 
@@ -210,6 +219,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     P2 Exponential material parameter for along-fiber response
    * @returns       fxi Force-stretch function result between zero and one
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_passive_force_stretch_dependency_blemker(const double lambdaM,
       const double lambdaOpt, const double lambdaStar, const double P1, const double P2);
 
@@ -229,6 +239,7 @@ namespace Mat::Utils::Muscle
    * @returns       dFxidLambdaM Derivative of the force-stretch function w.r.t. the fiber
    *                stretch
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_derivative_passive_force_stretch_dependency_blemker(const double lambdaM,
       const double lambdaOpt, const double lambdaStar, const double P1, const double P2);
 
@@ -248,6 +259,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     t_current Current time
    * @returns       sigma_max_ft Time-dependent optimal active stress at t_current
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_time_dependent_active_stress_tanh(const double sigma_max, const double alpha,
       const double beta, const double t_act_start, const double t_current);
 
@@ -263,6 +275,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     x Point in 3D space (e.g., element centroid)
    * @returns       ft Time-/space-dependent activation at x, t_current
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_time_space_dependent_activation_by_funct(
       const Core::Utils::FunctionOfSpaceTime& activation_function, const double t_current,
       const Core::LinAlg::Tensor<double, 3>& x);
@@ -286,6 +299,7 @@ namespace Mat::Utils::Muscle
    * @param[in]     element_id Global element id serving as key for the defined mapping
    * @returns       ft Time-/space-dependent activation at the given element_id and t_current
    */
+  FOUR_C_API(FOUR_C_CORE)
   double evaluate_time_space_dependent_activation_by_field(
       const Core::IO::InputField<std::vector<std::pair<double, double>>>& activation_field,
       const double t_current, const int element_id);
@@ -297,6 +311,7 @@ namespace Mat::Utils::Muscle
    *  @param[in] M Structural tensor of fiber directions
    *  @returns lambdaM Fiber stretch
    */
+  FOUR_C_API(FOUR_C_CORE)
   double fiber_stretch(const Core::LinAlg::SymmetricTensor<double, 3, 3>& C,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& M);
 
@@ -308,6 +323,7 @@ namespace Mat::Utils::Muscle
    *  @param[in] M Structural tensor of fiber directions
    *  @returns dlambdaMdC Derivative of the fiber stretch w.r.t. the Cauchy-Green strains
    */
+  FOUR_C_API(FOUR_C_CORE)
   Core::LinAlg::SymmetricTensor<double, 3, 3> d_fiber_stretch_dc(const double lambdaM,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& C,
       const Core::LinAlg::SymmetricTensor<double, 3, 3>& M);
@@ -320,6 +336,7 @@ namespace Mat::Utils::Muscle
    *  @param[in] timeStepSize Timestep size t_n - t_{n-1}
    *  @return dotLambdaM Contraction velocity, i.e. time derivative of the fiber stretch
    */
+  FOUR_C_API(FOUR_C_CORE)
   double contraction_velocity_bw_euler(
       const double lambdaM, const double lambdaMOld, const double timeStepSize);
 }  // namespace Mat::Utils::Muscle

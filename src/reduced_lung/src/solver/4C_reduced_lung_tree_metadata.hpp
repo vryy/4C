@@ -190,26 +190,29 @@ namespace ReducedLung
    * @param context Existing reduced-lung setup data used to construct the tree metadata.
    * @return Directed tree metadata with topology, dof, equation, and traversal information.
    */
+  FOUR_C_API(FOUR_C_CORE)
   ReducedLungTreeMetadata build_reduced_lung_tree_metadata(
       const ReducedLungTreeMetadataContext& context);
 
   /**
    * @brief Return the validated junction metadata for a non-leaf parent element.
    */
-  [[nodiscard]] const TreeJunctionMetadata& tree_junction_for_parent(
+  [[nodiscard]] FOUR_C_API(FOUR_C_CORE) const TreeJunctionMetadata& tree_junction_for_parent(
       const ReducedLungTreeMetadata& metadata, int parent_element_index);
 
   /**
    * @brief Return the validated outlet boundary metadata for a leaf element.
    */
-  [[nodiscard]] const TreeBoundaryConditionMetadata& tree_outlet_boundary_for_element(
-      const ReducedLungTreeMetadata& metadata, int element_index);
+  [[nodiscard]] FOUR_C_API(FOUR_C_CORE) const
+      TreeBoundaryConditionMetadata& tree_outlet_boundary_for_element(
+          const ReducedLungTreeMetadata& metadata, int element_index);
 
   /**
    * @brief Return the validated root inlet boundary metadata.
    */
-  [[nodiscard]] const TreeBoundaryConditionMetadata& tree_root_inlet_boundary(
-      const ReducedLungTreeMetadata& metadata);
+  [[nodiscard]] FOUR_C_API(FOUR_C_CORE) const
+      TreeBoundaryConditionMetadata& tree_root_inlet_boundary(
+          const ReducedLungTreeMetadata& metadata);
 }  // namespace ReducedLung
 
 FOUR_C_NAMESPACE_CLOSE

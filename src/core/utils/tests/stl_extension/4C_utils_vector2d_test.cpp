@@ -17,19 +17,17 @@ namespace
   using ::testing::ElementsAre;
 
   template <typename T, std::size_t cols>
-  Vector2D<T> fill_vector(std::vector<std::array<T, cols>> data)
+  Vector2D<T> fill_vector(std::initializer_list<std::initializer_list<T>> data)
   {
     Vector2D<T> v{cols};
     v.reserve(data.size());
 
     for (const auto& row : data)
     {
-      std::vector<T> v_row(row.begin(), row.end());
-      v.push_back(v_row);
+      v.push_back(std::vector<T>(row));
     }
     return v;
   }
-
 
   TEST(Vector2DTest, Default)
   {

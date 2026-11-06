@@ -253,7 +253,7 @@ namespace Core::LinAlg
    * Epetra_IntVector.
    */
   template <>
-  class Vector<int>
+  class FOUR_C_API(FOUR_C_CORE) Vector<int>
   {
    public:
     explicit Vector(const Map& map, bool zeroOut = true);

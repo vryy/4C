@@ -809,51 +809,57 @@ void Core::LinAlg::FourTensorOperations::add_contraction_matrix_four_tensor(
 }
 
 // explicit instantiation of template functions
-template void Core::LinAlg::FourTensorOperations::add_holzapfel_product<double>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::FourTensorOperations::add_holzapfel_product<double>(
     Core::LinAlg::Matrix<6, 6, double>&, const Core::LinAlg::Matrix<6, 1, double>&,
     const double scalar);
-template void Core::LinAlg::FourTensorOperations::add_holzapfel_product<FAD>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::FourTensorOperations::add_holzapfel_product<FAD>(
     Core::LinAlg::Matrix<6, 6, FAD>&, const Core::LinAlg::Matrix<6, 1, FAD>&, const FAD scalar);
-template Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>
 Core::LinAlg::FourTensorOperations::holzapfel_product<double>(
     const Core::LinAlg::SymmetricTensor<double, 3, 3>&);
-template Core::LinAlg::SymmetricTensor<FAD, 3, 3, 3, 3>
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::SymmetricTensor<FAD, 3, 3, 3, 3>
 Core::LinAlg::FourTensorOperations::holzapfel_product<FAD>(
     const Core::LinAlg::SymmetricTensor<FAD, 3, 3>&);
-template Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>
 Core::LinAlg::FourTensorOperations::symmetric_holzapfel_product<double>(
     const Core::LinAlg::Tensor<double, 3, 3>&, const Core::LinAlg::Tensor<double, 3, 3>&);
-template Core::LinAlg::SymmetricTensor<FAD, 3, 3, 3, 3>
+template FOUR_C_EXPORT_INSTANTIATION Core::LinAlg::SymmetricTensor<FAD, 3, 3, 3, 3>
 Core::LinAlg::FourTensorOperations::symmetric_holzapfel_product<FAD>(
     const Core::LinAlg::Tensor<FAD, 3, 3>&, const Core::LinAlg::Tensor<FAD, 3, 3>&);
-template void Core::LinAlg::FourTensorOperations::add_right_non_symmetric_holzapfel_product<double>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::FourTensorOperations::add_right_non_symmetric_holzapfel_product<double>(
     Core::LinAlg::Matrix<6, 9, double>&, Core::LinAlg::Matrix<3, 3, double> const&,
     Core::LinAlg::Matrix<3, 3, double> const&, double const);
-template void Core::LinAlg::FourTensorOperations::add_right_non_symmetric_holzapfel_product<FAD>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::FourTensorOperations::add_right_non_symmetric_holzapfel_product<FAD>(
     Core::LinAlg::Matrix<6, 9, FAD>&, Core::LinAlg::Matrix<3, 3, FAD> const&,
     Core::LinAlg::Matrix<3, 3, FAD> const&, FAD const);
-template void
+template FOUR_C_EXPORT_INSTANTIATION void
 Core::LinAlg::FourTensorOperations::add_right_non_symmetric_holzapfel_product_strain_like<double>(
     Core::LinAlg::Matrix<6, 9, double>& out, Core::LinAlg::Matrix<3, 3, double> const& A,
     Core::LinAlg::Matrix<3, 3, double> const& B, double const fac);
-template void
+template FOUR_C_EXPORT_INSTANTIATION void
 Core::LinAlg::FourTensorOperations::add_right_non_symmetric_holzapfel_product_strain_like<FAD>(
     Core::LinAlg::Matrix<6, 9, FAD>& out, Core::LinAlg::Matrix<3, 3, FAD> const& A,
     Core::LinAlg::Matrix<3, 3, FAD> const& B, FAD const fac);
-template void Core::LinAlg::FourTensorOperations::multiply_four_tensor_matrix<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::FourTensorOperations::multiply_four_tensor_matrix<3>(
     Core::LinAlg::FourTensor<3>& four_tensor_result, const Core::LinAlg::FourTensor<3>& four_tensor,
     const Core::LinAlg::Matrix<3, 3>& matrix, const bool clear_result_tensor);
-template void Core::LinAlg::FourTensorOperations::multiply_matrix_four_tensor<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::FourTensorOperations::multiply_matrix_four_tensor<3>(
     Core::LinAlg::FourTensor<3>& four_tensor_result, const Core::LinAlg::Matrix<3, 3>& matrix,
     const Core::LinAlg::FourTensor<3>& four_tensor, const bool clear_result_tensor);
-template void Core::LinAlg::FourTensorOperations::multiply_matrix_four_tensor_by_second_index<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::FourTensorOperations::multiply_matrix_four_tensor_by_second_index<3>(
     Core::LinAlg::FourTensor<3>& four_tensor_result, const Core::LinAlg::Matrix<3, 3>& matrix,
     const Core::LinAlg::FourTensor<3>& four_tensor, const bool clear_result_tensor);
-template void Core::LinAlg::FourTensorOperations::multiply_four_tensor_four_tensor<3>(
+template FOUR_C_EXPORT_INSTANTIATION void
+Core::LinAlg::FourTensorOperations::multiply_four_tensor_four_tensor<3>(
     Core::LinAlg::FourTensor<3>& four_tensor_result,
     const Core::LinAlg::FourTensor<3>& four_tensor_1,
     const Core::LinAlg::FourTensor<3>& four_tensor_2, const bool clear_result_tensor);
-
-
 
 FOUR_C_NAMESPACE_CLOSE

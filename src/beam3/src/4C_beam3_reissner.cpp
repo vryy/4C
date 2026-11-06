@@ -2147,16 +2147,16 @@ template void Discret::Elements::Beam3r::set_up_reference_geometry<2, 2, 2>(
     const std::vector<double>&, const std::vector<double>&);
 template void Discret::Elements::Beam3r::set_up_reference_geometry<3, 3, 1>(
     const std::vector<double>&, const std::vector<double>&);
-template void Discret::Elements::Beam3r::set_up_reference_geometry<3, 2, 2>(
-    const std::vector<double>&, const std::vector<double>&);
+template FOUR_C_EXPORT_INSTANTIATION void Discret::Elements::Beam3r::set_up_reference_geometry<3, 2,
+    2>(const std::vector<double>&, const std::vector<double>&);
 template void Discret::Elements::Beam3r::set_up_reference_geometry<4, 4, 1>(
     const std::vector<double>&, const std::vector<double>&);
 template void Discret::Elements::Beam3r::set_up_reference_geometry<4, 2, 2>(
     const std::vector<double>&, const std::vector<double>&);
 template void Discret::Elements::Beam3r::set_up_reference_geometry<5, 5, 1>(
     const std::vector<double>&, const std::vector<double>&);
-template void Discret::Elements::Beam3r::set_up_reference_geometry<5, 2, 2>(
-    const std::vector<double>&, const std::vector<double>&);
+template FOUR_C_EXPORT_INSTANTIATION void Discret::Elements::Beam3r::set_up_reference_geometry<5, 2,
+    2>(const std::vector<double>&, const std::vector<double>&);
 template void Discret::Elements::Beam3r::update_disp_tot_lag_and_nodal_triads<2, 2, 1, double>(
     const std::vector<double>&, Core::LinAlg::Matrix<6, 1, double>&,
     std::vector<Core::LinAlg::Matrix<4, 1, double>>&);

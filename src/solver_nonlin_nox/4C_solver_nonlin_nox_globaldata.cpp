@@ -265,7 +265,7 @@ void NOX::Nln::GlobalData::set_status_test_parameters()
           "The \"Status Test\"->\"XML File\" was not found! "
           "Please check the path in your input file! \n"
           "CURRENT PATH = {}",
-          xmlfilename->c_str());
+          xmlfilename->string().c_str());
     }
   }
   else

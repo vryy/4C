@@ -48,7 +48,7 @@ namespace Core::LinAlg::Internal
   template <>
   inline std::string get_matrix_or_vector_case<Core::LinAlg::SerialDenseMatrix>(char ch)
   {
-    char c = std::toupper(ch);
+    char c = static_cast<char>(std::toupper(ch));
     std::string s;
     s = c;
     return s;
@@ -57,7 +57,7 @@ namespace Core::LinAlg::Internal
   template <>
   inline std::string get_matrix_or_vector_case<Core::LinAlg::SerialDenseVector>(char ch)
   {
-    char c = std::tolower(ch);
+    char c = static_cast<char>(std::tolower(ch));
     std::string s;
     s = c;
     return s;

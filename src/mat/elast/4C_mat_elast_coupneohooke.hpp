@@ -27,7 +27,7 @@ namespace Mat
        * <h3>Input line</h3>
        * MAT 1 ELAST_CoupNeoHooke YOUNG 1 NUE 1
        */
-      class CoupNeoHooke : public Core::Mat::PAR::Parameter
+      class FOUR_C_API(FOUR_C_CORE) CoupNeoHooke : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
@@ -86,7 +86,7 @@ namespace Mat
      *
      * [1] Holzapfel, G. A., Nonlinear Solid Mechanics, 2002
      */
-    class CoupNeoHooke : public Summand
+    class FOUR_C_API(FOUR_C_CORE) CoupNeoHooke : public Summand
     {
      public:
       /// constructor with given material parameters

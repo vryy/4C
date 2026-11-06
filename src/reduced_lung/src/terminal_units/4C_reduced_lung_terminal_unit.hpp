@@ -53,6 +53,7 @@ namespace ReducedLung::TerminalUnits
   /**
    * @brief Assemble terminal-unit residual contributions for all local model blocks.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void update_residual_vector(Core::LinAlg::Vector<double>& res_vector,
       TerminalUnitContainer& terminal_units,
       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
@@ -60,6 +61,7 @@ namespace ReducedLung::TerminalUnits
   /**
    * @brief Assemble terminal-unit Jacobian contributions for all local model blocks.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void update_jacobian(Core::LinAlg::SparseMatrix& jac, TerminalUnitContainer& terminal_units,
       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 
@@ -69,6 +71,7 @@ namespace ReducedLung::TerminalUnits
    * Appends p1, p2, and q placeholders consumed by the direct and generic structured tree assembly
    * paths.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void update_static_tree_linearization(
       TreeLinearSolver& target, TerminalUnitContainer& terminal_units);
 
@@ -78,6 +81,7 @@ namespace ReducedLung::TerminalUnits
    * Replaces all three coefficients in the row pattern. Coupled recruitment makes the pressure
    * coefficients state-dependent as well as the q coefficient.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void update_tree_linearization(TreeLinearSolver& target, TerminalUnitContainer& terminal_units,
       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 
@@ -87,28 +91,32 @@ namespace ReducedLung::TerminalUnits
    * This routine composes elasticity and rheology module callbacks into executable evaluator
    * functions stored in each @ref TerminalUnitModel.
    */
-  void create_evaluators(TerminalUnitContainer& terminal_units);
+  FOUR_C_API(FOUR_C_CORE) void create_evaluators(TerminalUnitContainer& terminal_units);
 
   /**
    * @brief Assign local row ids for terminal-unit equations.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void assign_local_equation_ids(TerminalUnitContainer& terminal_units, int& n_local_equations);
 
   /**
    * @brief Assign local dof ids from the locally relevant dof map.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void assign_local_dof_ids(
       const Core::LinAlg::Map& locally_relevant_dof_map, TerminalUnitContainer& terminal_units);
 
   /**
    * @brief Synchronize model-internal state from converged dofs.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void update_internal_state_vectors(TerminalUnitContainer& terminal_units,
       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 
   /**
    * @brief Run end-of-step updates, including volume state advancement.
    */
+  FOUR_C_API(FOUR_C_CORE)
   void end_of_timestep_routine(TerminalUnitContainer& terminal_units,
       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
 }  // namespace ReducedLung::TerminalUnits

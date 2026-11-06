@@ -966,7 +966,8 @@ Number Mixture::FullConstrainedMixtureFiber<
 }
 
 
+template class FOUR_C_EXPORT_INSTANTIATION Mixture::FullConstrainedMixtureFiber<double>;
+template class FOUR_C_EXPORT_INSTANTIATION
+    Mixture::FullConstrainedMixtureFiber<Sacado::Fad::DFad<double>>;
 
-template class Mixture::FullConstrainedMixtureFiber<double>;
-template class Mixture::FullConstrainedMixtureFiber<Sacado::Fad::DFad<double>>;
 FOUR_C_NAMESPACE_CLOSE

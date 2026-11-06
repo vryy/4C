@@ -48,7 +48,7 @@ namespace ReducedLung
    * pipeline, but owns the nonlinear iteration loop and delegates correction solves to
    * @ref TreeLinearSolver.
    */
-  class TreeNewtonSolver final : public NonlinearSolver
+  class FOUR_C_API(FOUR_C_CORE) TreeNewtonSolver final : public NonlinearSolver
   {
    public:
     /**

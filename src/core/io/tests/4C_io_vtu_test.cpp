@@ -261,14 +261,18 @@ namespace
       ASSERT_THAT(array_float[2], ref(2));
 
       // Cannot read a vector as a array of double with wrong size
-      EXPECT_ANY_THROW(({
-        [[maybe_unused]] const auto& _ =
-            cell_reference.data_as<std::array<double, 2>>("vector_float");
-      }));
-      EXPECT_ANY_THROW(({
-        [[maybe_unused]] const auto& _ =
-            cell_reference.data_as<std::array<double, 4>>("vector_float");
-      }));
+      EXPECT_ANY_THROW((
+          [&]
+          {
+            [[maybe_unused]] const auto& _ =
+                cell_reference.data_as<std::array<double, 2>>("vector_float");
+          }()));
+      EXPECT_ANY_THROW((
+          [&]
+          {
+            [[maybe_unused]] const auto& _ =
+                cell_reference.data_as<std::array<double, 4>>("vector_float");
+          }()));
 
       // Can read a vector as a Tensor of double with correct size
       const auto& tensor_float =

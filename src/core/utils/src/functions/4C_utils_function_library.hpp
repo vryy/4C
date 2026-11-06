@@ -41,7 +41,7 @@ namespace Core::Utils
    * In particular, evaluating the derivative is faster for this function compared to
    * a SymbolicFunctionOfAnything representing the same polynomial.
    */
-  class FastPolynomialFunction : public FunctionOfScalar
+  class FOUR_C_API(FOUR_C_CORE) FastPolynomialFunction : public FunctionOfScalar
   {
    public:
     /**
@@ -88,7 +88,7 @@ namespace Core::Utils
    * intersection of two segments. Furthermore, so-called natural boundary conditions, i.e. the
    * second derivatives at the two boundaries are set to zero, are applied.
    */
-  class CubicSplineFromCSV : public FunctionOfScalar
+  class FOUR_C_API(FOUR_C_CORE) CubicSplineFromCSV : public FunctionOfScalar
   {
    public:
     /*!
@@ -98,6 +98,8 @@ namespace Core::Utils
      * @param[in] csv_file  absolute path to csv file
      */
     CubicSplineFromCSV(const std::string& csv_file);
+
+    ~CubicSplineFromCSV() override;
 
     [[nodiscard]] double evaluate(double scalar) const override;
 

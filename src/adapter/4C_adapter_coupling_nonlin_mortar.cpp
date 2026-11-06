@@ -685,9 +685,9 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
    */
   {
     bool isFinalDistribution = false;
-    const Teuchos::ParameterList& input =
+    const Teuchos::ParameterList& input1 =
         problem->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
-    if (Teuchos::getIntegralValue<Mortar::ParallelRedist>(input, "PARALLEL_REDIST") ==
+    if (Teuchos::getIntegralValue<Mortar::ParallelRedist>(input1, "PARALLEL_REDIST") ==
             Mortar::ParallelRedist::redist_none or
         Core::Communication::num_mpi_ranks(comm_) == 1)
       isFinalDistribution = true;

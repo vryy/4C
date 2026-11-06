@@ -64,7 +64,7 @@ namespace BeamInteraction
   /*!
    \brief
    */
-  class BeamContactPair
+  class FOUR_C_API(FOUR_C_CORE) BeamContactPair
   {
    public:
     //! @name Friends

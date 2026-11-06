@@ -21,7 +21,7 @@ namespace Mat
   {
     namespace PAR
     {
-      class IsoOgden : public Core::Mat::PAR::Parameter
+      class FOUR_C_API(FOUR_C_CORE) IsoOgden : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
@@ -68,7 +68,7 @@ namespace Mat
      * [3] S. Budday et. al., 'Mechanical characterization of human brain tissue', Acta
      * Biomaterialia, vol. 48, pp. 319-340, 2017, doi: 10.1016/j.actbio.2016.10.036.
      */
-    class IsoOgden : public Summand
+    class FOUR_C_API(FOUR_C_CORE) IsoOgden : public Summand
     {
      public:
       /// constructor with given material parameters

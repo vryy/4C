@@ -62,7 +62,7 @@ namespace Mixture
    * @f$x...x...x...x...x.x.x.x.x.x.xxxxx@f$
    * the TimestepAdaptivityInfo would be @f$[(2, 2), (1, 3)]@f$.
    */
-  class TimestepAdaptivityInfo
+  class FOUR_C_API(FOUR_C_CORE) TimestepAdaptivityInfo
   {
    public:
     struct TimestepAdaptivityInfoItem
@@ -248,8 +248,10 @@ namespace Mixture
 
   namespace Internal
   {
+    FOUR_C_API(FOUR_C_CORE)
     void adapt_timestep_adaptivity_info(Mixture::TimestepAdaptivityInfo& timestep_adaptivity_info,
         unsigned int level, unsigned int num_coarsened_intervals);
+    FOUR_C_API(FOUR_C_CORE)
     void mark_coarsened_timestep_as_to_be_deleted(std::vector<bool>& items_to_delete,
         const unsigned int num_items_to_delete, const unsigned int begin_index);
 

@@ -34,7 +34,7 @@ CONTACT::CONSTITUTIVELAW::PythonSurrogateConstitutiveLawParams::
 /*----------------------------------------------------------------------*/
 /*  PIMPL implementation                                                */
 /*----------------------------------------------------------------------*/
-class FOUR_C_HIDDEN CONTACT::CONSTITUTIVELAW::PythonSurrogateConstitutiveLaw::Impl
+class FOUR_C_API(HIDDEN) CONTACT::CONSTITUTIVELAW::PythonSurrogateConstitutiveLaw::Impl
 {
  public:
   pybind11::object evaluate;

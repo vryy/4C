@@ -19,7 +19,6 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
-
 namespace Cut
 {
   class Node;
@@ -31,7 +30,7 @@ namespace Cut
   /*!
   \brief Interface class for the surface mesh cut. The surface mesh is in general triangulated.
   */
-  class MeshIntersection : public virtual ParentIntersection
+  class FOUR_C_API(FOUR_C_CORE) MeshIntersection : public virtual ParentIntersection
   {
     using my = ParentIntersection;
 

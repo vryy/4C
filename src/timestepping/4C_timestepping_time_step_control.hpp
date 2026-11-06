@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace TimeStepping
 {
-  struct TimeStepControlSettings
+  struct FOUR_C_API(FOUR_C_CORE) TimeStepControlSettings
   {
     /// Input parameters used to construct TimeStepControlSettings.
     struct InputParameters
@@ -75,6 +75,7 @@ namespace TimeStepping
    *
    * @throws Core::Exception if the reduced time-step size is below the configured minimum
    */
+  FOUR_C_API(FOUR_C_CORE)
   double compute_reduced_time_step(
       const double current_dt, const TimeStepControlSettings& settings);
 
@@ -91,6 +92,7 @@ namespace TimeStepping
    * @param remaining_steps remaining number of steps after the accepted step
    * @return time-step size for the next step
    */
+  FOUR_C_API(FOUR_C_CORE)
   double compute_time_step_after_successful_step(const double current_dt,
       const TimeStepControlSettings& settings, const size_t num_successful_steps_at_current_dt,
       const std::deque<size_t>& newton_iterations, const double remaining_time,

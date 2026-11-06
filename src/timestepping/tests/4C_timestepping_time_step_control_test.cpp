@@ -54,11 +54,11 @@ namespace
 
     const double initial_time_step = 0.5;
     const int max_iter = 5;
-    const TimeStepControlSettings settings(input, initial_time_step, max_iter);
+    const TimeStepControlSettings local_settings(input, initial_time_step, max_iter);
 
-    EXPECT_EQ(settings.max_time_step, initial_time_step);
-    EXPECT_EQ(settings.increase_factor, 1.0 / input.decrease_factor);
-    EXPECT_EQ(settings.max_average_nonlinear_iterations, max_iter);
+    EXPECT_EQ(local_settings.max_time_step, initial_time_step);
+    EXPECT_EQ(local_settings.increase_factor, 1.0 / input.decrease_factor);
+    EXPECT_EQ(local_settings.max_average_nonlinear_iterations, max_iter);
   }
 
   TEST(TimeStepControlTest, ConstructorDoesNotOverrideOptionals)
@@ -73,11 +73,11 @@ namespace
         .reduce_to_max_time = true,
     };
 
-    const TimeStepControlSettings settings(input, 0.5, 5);
+    const TimeStepControlSettings local_settings(input, 0.5, 5);
 
-    EXPECT_EQ(settings.max_time_step, 0.75);
-    EXPECT_EQ(settings.increase_factor, 1.5);
-    EXPECT_EQ(settings.max_average_nonlinear_iterations, 3);
+    EXPECT_EQ(local_settings.max_time_step, 0.75);
+    EXPECT_EQ(local_settings.increase_factor, 1.5);
+    EXPECT_EQ(local_settings.max_average_nonlinear_iterations, 3);
   }
 
   // Test compute_reduced_time_step

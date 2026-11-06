@@ -29,6 +29,7 @@ namespace Core
      * @param t Interpolation parameter in [0, 1].
      * @return Interpolated quaternion (normalized).
      */
+    FOUR_C_API(FOUR_C_CORE)
     Core::LinAlg::Matrix<4, 1> spherical_linear_interpolation(
         const Core::LinAlg::Matrix<4, 1>& q1, const Core::LinAlg::Matrix<4, 1>& q2, double t);
 

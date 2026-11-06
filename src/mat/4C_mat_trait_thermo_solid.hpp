@@ -20,7 +20,8 @@ namespace Mat
 {
   namespace Trait
   {
-    class ThermoSolid : public So3Material, public MonolithicSolidScalarMaterial
+    class FOUR_C_API(FOUR_C_CORE) ThermoSolid : public So3Material,
+                                                public MonolithicSolidScalarMaterial
     {
      public:
       /*!

@@ -25,7 +25,7 @@ namespace CONTACT
      * relating the gap to the contact pressure
      *
      */
-    class BrokenRationalConstitutiveLawParams : public Parameter
+    class FOUR_C_API(FOUR_C_CORE) BrokenRationalConstitutiveLawParams : public Parameter
     {
      public:
       /// standard constructor
@@ -57,7 +57,7 @@ namespace CONTACT
      * \brief implements a broken rational function \f$ A/(x-B)+C \f$ as contact constitutive law
      * relating the gap to the contact pressure
      */
-    class BrokenRationalConstitutiveLaw : public ConstitutiveLaw
+    class FOUR_C_API(FOUR_C_CORE) BrokenRationalConstitutiveLaw : public ConstitutiveLaw
     {
      public:
       /// construct the constitutive law object given a set of parameters

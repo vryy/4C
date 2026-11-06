@@ -1884,7 +1884,7 @@ bool Mortar::Element::evaluate_shape(const double* xi, Core::LinAlg::SerialDense
   {
     const Node* mymrtrnode = dynamic_cast<const Node*>(mynodes[i]);
     if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
-    bound += mymrtrnode->is_on_bound();
+    bound = bound || mymrtrnode->is_on_bound();
   }
 
   switch (Element::shape())
@@ -2546,7 +2546,7 @@ bool Mortar::Element::evaluate_shape_lag_mult_lin(const Mortar::ShapeFcn& lmtype
   {
     const Node* mymrtrnode = dynamic_cast<const Node*>(mynodes[i]);
     if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
-    bound += mymrtrnode->is_on_bound();
+    bound = bound || mymrtrnode->is_on_bound();
   }
 
   // all nodes are interior: use unmodified shape functions

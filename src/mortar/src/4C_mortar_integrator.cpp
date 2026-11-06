@@ -735,7 +735,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_2d(
   {
     Mortar::Node* mymrtrnode = dynamic_cast<Mortar::Node*>(mynodes[k]);
     if (!mymrtrnode) FOUR_C_THROW("integrate_deriv_segment_2d: Null pointer!");
-    bound += mymrtrnode->is_on_bound();
+    bound = bound || mymrtrnode->is_on_bound();
   }
 
   // decide whether linear LM are used for quadratic FE here
@@ -1735,7 +1735,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane_q
   {
     Mortar::Node* mymrtrnode = dynamic_cast<Mortar::Node*>(mynodes[k]);
     if (!mymrtrnode) FOUR_C_THROW("integrate_deriv_segment_2d: Null pointer!");
-    bound += mymrtrnode->is_on_boundor_ce();
+    bound = bound || mymrtrnode->is_on_boundor_ce();
   }
 
   // decide whether displacement shape fct. modification has to be considered or not

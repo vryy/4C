@@ -112,7 +112,7 @@ namespace Discret::Elements
   Kirchhoff type element.
 
   */
-  class Beam3eb : public Beam3Base
+  class FOUR_C_API(FOUR_C_CORE) Beam3eb : public Beam3Base
   {
    public:
     //! @name Friends

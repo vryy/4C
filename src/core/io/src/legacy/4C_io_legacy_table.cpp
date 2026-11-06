@@ -870,7 +870,21 @@ MAP* symbol_map(const SYMBOL* symbol)
 
 /// Legacy table manages strings itself, so we have to give it a full copy that can be freed
 /// later
-static char* string_copy(ryml::csubstr in) { return strndup(in.data(), in.size()); }
+static char* string_copy(ryml::csubstr in)
+{
+#if defined(_WIN32)
+  const std::size_t len = in.size();
+  char* out = static_cast<char*>(std::malloc(len + 1));
+  if (out)
+  {
+    std::memcpy(out, in.data(), len);
+    out[len] = '\0';
+  }
+  return out;
+#else
+  return strndup(in.data(), in.size());
+#endif
+}
 
 static void parse_yaml_node(ryml::ConstNodeRef node, MAP* parent)
 {

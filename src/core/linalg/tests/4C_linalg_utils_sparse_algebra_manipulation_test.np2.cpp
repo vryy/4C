@@ -37,7 +37,8 @@ namespace
   TEST_F(SparseAlgebraManipulationTest, ThresholdMatrix1)
   {
     Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-        TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), comm_);
+        TESTING::get_support_file_path("test_matrices/poisson1d.mm").generic_string().c_str(),
+        comm_);
 
     const double tol = 1.1;
     auto A_thresh = Core::LinAlg::threshold_matrix(A, tol);
@@ -57,7 +58,7 @@ namespace
   TEST_F(SparseAlgebraManipulationTest, ThresholdMatrix2)
   {
     Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-        TESTING::get_support_file_path("test_matrices/filter.mm").c_str(), comm_);
+        TESTING::get_support_file_path("test_matrices/filter.mm").generic_string().c_str(), comm_);
 
     const double tol = 1e-5;
     auto A_thresh = Core::LinAlg::threshold_matrix(A, tol);
@@ -77,7 +78,7 @@ namespace
   TEST_F(SparseAlgebraManipulationTest, ThresholdMatrixGraph)
   {
     Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-        TESTING::get_support_file_path("test_matrices/filter.mm").c_str(), comm_);
+        TESTING::get_support_file_path("test_matrices/filter.mm").generic_string().c_str(), comm_);
 
     const double tol = 1e-5;
     std::shared_ptr<Core::LinAlg::Graph> G = Core::LinAlg::threshold_matrix_graph(A, tol);
@@ -96,7 +97,8 @@ namespace
   TEST_F(SparseAlgebraManipulationTest, EnrichMatrixGraph1)
   {
     Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-        TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), comm_);
+        TESTING::get_support_file_path("test_matrices/poisson1d.mm").generic_string().c_str(),
+        comm_);
 
     {
       const int power = 0;
@@ -156,7 +158,7 @@ namespace
   TEST_F(SparseAlgebraManipulationTest, EnrichMatrixGraph2)
   {
     Core::LinAlg::SparseMatrix A = Core::LinAlg::read_matrix_market_file_as_sparse_matrix(
-        TESTING::get_support_file_path("test_matrices/beamI.mm").c_str(), comm_);
+        TESTING::get_support_file_path("test_matrices/beamI.mm").generic_string().c_str(), comm_);
 
     {
       const int power = 3;
